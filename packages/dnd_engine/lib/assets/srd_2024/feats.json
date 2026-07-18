@@ -1,0 +1,114 @@
+[
+  {
+    "id": "savage-attacker",
+    "name": "Atacante Salvaje",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "passiveTrait", "name": "Atacante Salvaje", "description": "Una vez por turno, al impactar con un arma, puedes volver a tirar el daño y quedarte con el mejor resultado." }
+    ]
+  },
+  {
+    "id": "tough",
+    "name": "Robustez",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "bonusMaxHpPerLevel", "perLevel": 2 }
+    ]
+  },
+  {
+    "id": "skilled",
+    "name": "Hábil",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "passiveTrait", "name": "Hábil", "description": "Ganas competencia en 3 habilidades o herramientas a tu elección." }
+    ]
+  },
+  {
+    "id": "alert",
+    "name": "Alerta",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "passiveTrait", "name": "Alerta", "description": "Sumas tu bonif. de competencia a la iniciativa. Puedes intercambiar tu iniciativa con la de un aliado consentidor." }
+    ]
+  },
+  {
+    "id": "lucky",
+    "name": "Afortunado",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "passiveTrait", "name": "Afortunado", "description": "Tienes puntos de suerte iguales a tu bonif. de competencia. Puedes gastarlos para obtener ventaja en una tirada de d20 o imponer desventaja en un ataque contra ti." }
+    ]
+  },
+  {
+    "id": "fs-defense",
+    "name": "Estilo de Combate: Defensa",
+    "source": "srd_2024",
+    "category": "fighting-style",
+    "effects": [
+      { "type": "armorClassBonus", "amount": 1 }
+    ]
+  },
+  {
+    "id": "fs-dueling",
+    "name": "Estilo de Combate: Duelo",
+    "source": "srd_2024",
+    "category": "fighting-style",
+    "effects": [
+      { "type": "passiveTrait", "name": "Duelo", "description": "+2 al daño con un arma cuerpo a cuerpo a una mano y sin otra arma." }
+    ]
+  },
+  {
+    "id": "fs-archery",
+    "name": "Estilo de Combate: Arquería",
+    "source": "srd_2024",
+    "category": "fighting-style",
+    "effects": [
+      { "type": "passiveTrait", "name": "Arquería", "description": "+2 a las tiradas de ataque con armas a distancia." }
+    ]
+  },
+  {
+    "id": "fs-great-weapon",
+    "name": "Estilo de Combate: Arma Grande",
+    "source": "srd_2024",
+    "category": "fighting-style",
+    "effects": [
+      { "type": "passiveTrait", "name": "Arma Grande", "description": "Al tirar daño con un arma cuerpo a cuerpo a dos manos, puedes volver a tirar los 1 y 2, usando el nuevo resultado." }
+    ]
+  },
+  {
+    "id": "great-weapon-master",
+    "name": "Maestro de Armas Grandes",
+    "source": "srd_2024",
+    "category": "general",
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Maestro de Armas Grandes", "description": "Al reducir a 0 PG o impactar con crítico con un arma cuerpo a cuerpo pesada, puedes hacer un ataque adicional como acción adicional. Tus ataques con arma pesada suman tu bonif. de competencia al daño." }
+    ]
+  },
+  {
+    "id": "sharpshooter",
+    "name": "Tirador de Élite",
+    "source": "srd_2024",
+    "category": "general",
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Tirador de Élite", "description": "Ignoras cobertura media/tres cuartos y la desventaja a largo alcance. Puedes restar el bonif. de competencia al ataque para sumarlo al daño con armas a distancia." }
+    ]
+  },
+  {
+    "id": "resilient-wisdom",
+    "name": "Resistente (Sabiduría)",
+    "source": "srd_2024",
+    "category": "general",
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "savingThrowProficiency", "ability": "wisdom" },
+      { "type": "passiveTrait", "name": "Resistente (Sabiduría)", "description": "Ganas competencia en salvaciones de Sabiduría." }
+    ]
+  }
+]

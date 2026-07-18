@@ -1,0 +1,37 @@
+[
+  {
+    "id": "leather",
+    "name": "Armadura de cuero",
+    "source": "srd_2024",
+    "category": "light",
+    "baseAc": 11,
+    "addDexMod": true
+  },
+  {
+    "id": "studded-leather",
+    "name": "Armadura de cuero tachonado",
+    "source": "srd_2024",
+    "category": "light",
+    "baseAc": 12,
+    "addDexMod": true
+  },
+  {
+    "id": "chain-shirt",
+    "name": "Camisa de malla",
+    "source": "srd_2024",
+    "category": "medium",
+    "baseAc": 13,
+    "addDexMod": true,
+    "maxDexBonus": 2
+  },
+  {
+    "id": "chain-mail",
+    "name": "Cota de malla",
+    "source": "srd_2024",
+    "category": "heavy",
+    "baseAc": 16,
+    "addDexMod": false,
+    "strengthRequirement": 13,
+    "stealthDisadvantage": true
+  }
+]

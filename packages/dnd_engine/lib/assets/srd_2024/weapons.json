@@ -1,0 +1,43 @@
+[
+  {
+    "id": "longsword",
+    "name": "Espada larga",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "slashing",
+    "properties": ["versatile"],
+    "versatileDice": "1d10",
+    "mastery": "sap"
+  },
+  {
+    "id": "greatsword",
+    "name": "Mandoble",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "2d6",
+    "damageType": "slashing",
+    "properties": ["heavy", "two-handed"],
+    "mastery": "graze"
+  },
+  {
+    "id": "dagger",
+    "name": "Daga",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d4",
+    "damageType": "piercing",
+    "properties": ["finesse", "light", "thrown"],
+    "mastery": "nick"
+  },
+  {
+    "id": "shortbow",
+    "name": "Arco corto",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d6",
+    "damageType": "piercing",
+    "properties": ["ranged", "two-handed", "ammunition"],
+    "mastery": "vex"
+  }
+]

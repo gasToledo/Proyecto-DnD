@@ -1,0 +1,32 @@
+[
+  {
+    "id": "soldier",
+    "name": "Soldado",
+    "source": "srd_2024",
+    "abilityOptions": ["strength", "dexterity", "constitution"],
+    "skillProficiencies": ["athletics", "intimidation"],
+    "toolProficiencies": ["gaming-set"],
+    "originFeatId": "savage-attacker",
+    "effects": []
+  },
+  {
+    "id": "guard",
+    "name": "Guardia",
+    "source": "srd_2024",
+    "abilityOptions": ["strength", "intelligence", "wisdom"],
+    "skillProficiencies": ["athletics", "perception"],
+    "toolProficiencies": ["gaming-set"],
+    "originFeatId": "alert",
+    "effects": []
+  },
+  {
+    "id": "wayfarer",
+    "name": "Trotamundos",
+    "source": "srd_2024",
+    "abilityOptions": ["dexterity", "wisdom", "charisma"],
+    "skillProficiencies": ["insight", "stealth"],
+    "toolProficiencies": ["thieves-tools"],
+    "originFeatId": "lucky",
+    "effects": []
+  }
+]

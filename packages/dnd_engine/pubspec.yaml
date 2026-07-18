@@ -1,0 +1,13 @@
+name: dnd_engine
+description: >-
+  Motor de reglas dirigido por datos para fichas de personaje de D&D 5e.
+  Núcleo Dart puro (sin Flutter): modelos de contenido, compilador de ficha y
+  validación no bloqueante. Baseline de reglas: SRD 5.2 (2024, CC-BY-4.0).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.0
+
+dev_dependencies:
+  test: ^1.25.0

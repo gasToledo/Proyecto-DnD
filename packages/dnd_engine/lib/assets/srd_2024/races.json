@@ -1,0 +1,105 @@
+[
+  {
+    "id": "human",
+    "name": "Humano",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 30,
+    "skillChoiceCount": 1,
+    "skillChoiceFrom": [],
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Ingenioso",
+        "description": "Obtienes Inspiración Heroica cada vez que terminas un descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Versátil",
+        "description": "Obtienes una dote de Origen a tu elección."
+      },
+      { "type": "grantFeat", "featId": null }
+    ]
+  },
+  {
+    "id": "dwarf",
+    "name": "Enano",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 30,
+    "effects": [
+      { "type": "darkvision", "range": 120 },
+      { "type": "resistance", "damageType": "poison" },
+      {
+        "type": "passiveTrait",
+        "name": "Resistencia Enana",
+        "description": "Ventaja en salvaciones para evitar o terminar el estado envenenado."
+      },
+      { "type": "bonusMaxHpPerLevel", "perLevel": 1 },
+      {
+        "type": "passiveTrait",
+        "name": "Dureza Enana",
+        "description": "Tus PG máximos aumentan en 1 por cada nivel de personaje."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Sentir la Piedra",
+        "description": "Como acción adicional, obtienes sentido del temblor de 60 pies (solo superficie de piedra) hasta el fin de tu turno."
+      }
+    ]
+  },
+  {
+    "id": "halfling",
+    "name": "Mediano",
+    "source": "srd_2024",
+    "size": "Pequeño",
+    "speed": 30,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Valiente",
+        "description": "Ventaja en salvaciones para evitar o terminar el estado asustado."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Agilidad Mediana",
+        "description": "Puedes moverte a través del espacio de cualquier criatura de tamaño mayor que el tuyo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Suerte",
+        "description": "Cuando sacas un 1 en el d20 de una tirada, puedes volver a tirar el dado y debes usar el nuevo resultado."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Sigiloso por Naturaleza",
+        "description": "Puedes intentar esconderte incluso cuando solo te cubre una criatura al menos un tamaño mayor que tú."
+      }
+    ]
+  },
+  {
+    "id": "orc",
+    "name": "Orco",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 30,
+    "effects": [
+      { "type": "darkvision", "range": 120 },
+      {
+        "type": "passiveTrait",
+        "name": "Impulso de Adrenalina",
+        "description": "Como acción adicional, avanzas una distancia igual a tu velocidad y ganas PG temporales iguales a tu bonif. de competencia. Usos iguales a tu competencia por descanso corto o largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistencia Implacable",
+        "description": "Cuando caerías a 0 PG sin morir, en su lugar caes a 1 PG. Una vez por descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Complexión Poderosa",
+        "description": "Cuentas como un tamaño más grande al determinar tu capacidad de carga y lo que puedes empujar, arrastrar o levantar."
+      }
+    ]
+  }
+]

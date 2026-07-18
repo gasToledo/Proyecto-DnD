@@ -1,0 +1,74 @@
+[
+  {
+    "id": "fighter",
+    "name": "Guerrero",
+    "source": "srd_2024",
+    "hitDie": 10,
+    "savingThrows": ["strength", "constitution"],
+    "armorProficiencies": ["light", "medium", "heavy", "shields"],
+    "weaponProficiencies": ["simple", "martial"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": [
+      "acrobatics", "animal-handling", "athletics", "history",
+      "insight", "intimidation", "perception", "persuasion", "survival"
+    ],
+    "subclassLevel": 3,
+    "asiLevels": [4, 6, 8, 12, 14, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Estilo de Combate",
+        "description": "Adoptas un estilo de combate como dote de estilo de combate.",
+        "effects": []
+      },
+      {
+        "level": 1,
+        "name": "Segundo Aliento",
+        "description": "Usas una acción adicional para recuperar 1d10 + nivel de Guerrero PG.",
+        "effects": [
+          { "type": "resource", "id": "second_wind", "name": "Segundo Aliento", "max": 2, "recharge": "short" }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Maestría de Armas",
+        "description": "Puedes usar la propiedad de Maestría de 3 armas con las que seas competente.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 3 }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Oleada de Acción",
+        "description": "En tu turno puedes realizar una acción adicional.",
+        "effects": [
+          { "type": "resource", "id": "action_surge", "name": "Oleada de Acción", "max": 1, "recharge": "short" }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Mente Táctica",
+        "description": "Al fallar una prueba de característica, puedes gastar un uso de Segundo Aliento para sumar 1d10.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Mente Táctica", "description": "Gasta Segundo Aliento para sumar 1d10 a una prueba de característica fallida." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces al realizar la acción de Ataque.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Indomable",
+        "description": "Puedes volver a tirar una salvación fallida. Usos que escalan con el nivel.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Indomable", "description": "Vuelve a tirar una tirada de salvación fallida; debes usar el nuevo resultado." }
+        ]
+      }
+    ]
+  }
+]

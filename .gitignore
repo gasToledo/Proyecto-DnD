@@ -1,0 +1,27 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+*.g.dart
+
+# Windows desktop build artifacts (generados por flutter, no versionar)
+packages/dnd_app/windows/flutter/ephemeral/
+packages/dnd_app/windows/flutter/generated_plugin_registrant.cc
+packages/dnd_app/windows/flutter/generated_plugin_registrant.h
+packages/dnd_app/windows/flutter/generated_plugins.cmake
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

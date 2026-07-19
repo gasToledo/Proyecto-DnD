@@ -3,6 +3,7 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/spell_slots.dart';
 import 'character_compiler.dart';
 
 enum WarningSeverity { info, warning }
@@ -170,6 +171,8 @@ class CharacterValidator {
       }
     }
 
+    _validateSpells(c, sheet, w);
+
     final chosenFeatIds = <String?>[
       background?.originFeatId,
       ...c.featIds,
@@ -192,6 +195,75 @@ class CharacterValidator {
     return w;
   }
 
+  /// Chequeos no bloqueantes sobre trucos y conjuros elegidos.
+  void _validateSpells(
+      Character c, ComputedSheet sheet, List<ValidationWarning> w) {
+    final sc = sheet.spellcasting;
+    if (sc == null) {
+      if (c.cantripIds.isNotEmpty || c.spellIds.isNotEmpty) {
+        w.add(ValidationWarning(
+          'spells_without_caster',
+          'Hay conjuros elegidos pero esta clase no lanza conjuros.',
+        ));
+      }
+      return;
+    }
+
+    final list = repo.spellsForList(sc.spellList).map((s) => s.id).toSet();
+    final maxSlotLevel =
+        sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
+
+    if (c.cantripIds.length > sc.cantripsKnown) {
+      w.add(ValidationWarning(
+        'too_many_cantrips',
+        'Elegiste ${c.cantripIds.length} trucos pero conocés ${sc.cantripsKnown}.',
+      ));
+    }
+    for (final id in c.cantripIds) {
+      final sp = repo.spell(id);
+      if (sp == null) {
+        w.add(ValidationWarning('spell_missing', 'Truco "$id" no encontrado.'));
+      } else if (!sp.isCantrip) {
+        w.add(ValidationWarning(
+            'cantrip_not_level_0', '${sp.name} no es un truco.'));
+      } else if (!list.contains(id)) {
+        w.add(ValidationWarning('cantrip_wrong_list',
+            '${sp.name} no está en la lista de ${sc.spellList}.'));
+      }
+    }
+
+    if (sc.preparation == SpellPreparation.prepared &&
+        c.spellIds.length > sc.preparedCount) {
+      w.add(ValidationWarning(
+        'too_many_prepared',
+        'Preparaste ${c.spellIds.length} conjuros pero podés preparar ${sc.preparedCount}.',
+      ));
+    }
+    for (final id in c.spellIds) {
+      final sp = repo.spell(id);
+      if (sp == null) {
+        w.add(ValidationWarning('spell_missing', 'Conjuro "$id" no encontrado.'));
+        continue;
+      }
+      if (sp.isCantrip) {
+        w.add(ValidationWarning('spell_is_cantrip',
+            '${sp.name} es un truco; va en la lista de trucos.'));
+        continue;
+      }
+      if (!list.contains(id)) {
+        w.add(ValidationWarning('spell_wrong_list',
+            '${sp.name} no está en la lista de ${sc.spellList}.'));
+      }
+      if (maxSlotLevel > 0 && sp.level > maxSlotLevel) {
+        w.add(ValidationWarning(
+          'spell_level_too_high',
+          '${sp.name} (nivel ${sp.level}) supera tu mayor espacio (nivel $maxSlotLevel).',
+          WarningSeverity.info,
+        ));
+      }
+    }
+  }
+
   /// Devuelve una descripción del primer prerrequisito incumplido, o null si
   /// se cumplen todos.
   String? _unmetPrerequisite(
@@ -204,7 +276,7 @@ class CharacterValidator {
     final reqProf = prereq.requiredProficiency;
     if (reqProf != null) {
       final has = reqProf == 'spellcasting'
-          ? false // El motor todavía no modela lanzamiento; se deja pendiente.
+          ? sheet.spellcasting != null
           : (sheet.weaponProficiencies.contains(reqProf) ||
               sheet.armorProficiencies.contains(reqProf) ||
               sheet.toolProficiencies.contains(reqProf) ||

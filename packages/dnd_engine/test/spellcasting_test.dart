@@ -135,6 +135,84 @@ void main() {
     });
   });
 
+  group('Estado de combate: espacios y concentración', () {
+    final repo = ContentRepository(classes: {'testmage': _mageClass()});
+    final compiler = CharacterCompiler(repo);
+
+    test('gastar y recuperar espacios respeta el máximo', () {
+      final c = _caster(level: 5, hp: [6, 4, 4, 4, 4]);
+      final sc = compiler.compile(c).spellcasting!;
+      // Nivel 3: hay 2 espacios.
+      expect(CombatOps.spendSpellSlot(c.combat, sc, 3), isTrue);
+      expect(CombatOps.spendSpellSlot(c.combat, sc, 3), isTrue);
+      expect(CombatOps.spendSpellSlot(c.combat, sc, 3), isFalse); // agotado
+      expect(CombatOps.spellSlotsRemaining(c.combat, sc, 3), 0);
+      CombatOps.recoverSpellSlot(c.combat, 3);
+      expect(CombatOps.spellSlotsRemaining(c.combat, sc, 3), 1);
+    });
+
+    test('descanso largo recupera espacios y corta concentración', () {
+      final c = _caster(level: 5, hp: [6, 4, 4, 4, 4]);
+      final sc = compiler.compile(c).spellcasting!;
+      CombatOps.spendSpellSlot(c.combat, sc, 1);
+      CombatOps.startConcentration(c.combat, 'Bendición');
+      CombatOps.longRest(c.combat, 30, const [], 5);
+      expect(c.combat.spellSlotsUsed, isEmpty);
+      expect(c.combat.concentratingOn, isNull);
+    });
+
+    test('el estado de combate hace round-trip por JSON', () {
+      final c = _caster(level: 5, hp: [6, 4, 4, 4, 4]);
+      c.combat.spellSlotsUsed[2] = 1;
+      c.combat.concentratingOn = 'Invisibilidad';
+      final restored = Character.fromJson(c.toJson());
+      expect(restored.combat.spellSlotsUsed[2], 1);
+      expect(restored.combat.concentratingOn, 'Invisibilidad');
+    });
+  });
+
+  group('Selección de conjuros: round-trip y validación', () {
+    late ContentRepository realRepo;
+    setUpAll(() async {
+      realRepo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+      realRepo.classes['testmage'] = _mageClass();
+    });
+
+    test('cantripIds/spellIds sobreviven copyWith y JSON', () {
+      final c = _caster(level: 5, hp: [6, 4, 4, 4, 4]);
+      final withSpells =
+          c.copyWith(cantripIds: ['fire-bolt'], spellIds: ['magic-missile']);
+      // copyWith de otra cosa NO debe perder los conjuros.
+      final renamed = withSpells.copyWith(name: 'Otro');
+      expect(renamed.cantripIds, ['fire-bolt']);
+      expect(renamed.spellIds, ['magic-missile']);
+      final restored = Character.fromJson(renamed.toJson());
+      expect(restored.spellIds, ['magic-missile']);
+    });
+
+    test('advierte truco fuera de lista y conjuro de nivel demasiado alto', () {
+      final c = _caster(level: 3, hp: [6, 4, 4]).copyWith(
+        cantripIds: ['sacred-flame'], // truco de Clérigo, no de Mago
+        spellIds: ['fireball'], // nivel 3, sin espacio (máx nivel 2)
+      );
+      final codes =
+          CharacterValidator(realRepo).validate(c).map((x) => x.code).toSet();
+      expect(codes, contains('cantrip_wrong_list'));
+      expect(codes, contains('spell_level_too_high'));
+    });
+
+    test('un lanzador válido no dispara advertencias de conjuros', () {
+      final c = _caster(level: 5, hp: [6, 4, 4, 4, 4]).copyWith(
+        cantripIds: ['fire-bolt'],
+        spellIds: ['magic-missile', 'fireball'],
+      );
+      final codes =
+          CharacterValidator(realRepo).validate(c).map((x) => x.code).toSet();
+      expect(codes.any((x) => x.startsWith('cantrip') || x.startsWith('spell')),
+          isFalse);
+    });
+  });
+
   group('Lista de conjuros del repositorio real', () {
     late ContentRepository repo;
     setUpAll(() async {

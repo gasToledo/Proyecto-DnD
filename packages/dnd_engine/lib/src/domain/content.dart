@@ -219,6 +219,49 @@ class Background {
       );
 }
 
+/// Prerrequisitos de una dote (p.ej. Forcejeador exige Fuerza 13, Iniciado
+/// Mágico exige ser competente con conjuros). Todos los campos son opcionales
+/// y se combinan con Y lógico; ausentes = sin restricción de ese tipo.
+class FeatPrerequisite {
+  /// Puntuación mínima requerida por característica.
+  final Map<Ability, int> minAbilityScores;
+
+  /// Competencia requerida (id o categoría de arma/armadura/herramienta),
+  /// o 'spellcasting' para exigir alguna competencia de lanzamiento.
+  final String? requiredProficiency;
+
+  final int? minLevel;
+
+  const FeatPrerequisite({
+    this.minAbilityScores = const {},
+    this.requiredProficiency,
+    this.minLevel,
+  });
+
+  bool get isEmpty =>
+      minAbilityScores.isEmpty && requiredProficiency == null && minLevel == null;
+
+  Map<String, dynamic> toJson() => {
+        'minAbilityScores': _abilityMapToJson(minAbilityScores),
+        'requiredProficiency': requiredProficiency,
+        'minLevel': minLevel,
+      };
+
+  factory FeatPrerequisite.fromJson(Map<String, dynamic> j) => FeatPrerequisite(
+        minAbilityScores: _abilityMapFromJson(j['minAbilityScores']),
+        requiredProficiency: j['requiredProficiency'] as String?,
+        minLevel: j['minLevel'] as int?,
+      );
+}
+
+Map<String, int> _abilityMapToJson(Map<Ability, int> m) =>
+    {for (final e in m.entries) e.key.name: e.value};
+
+Map<Ability, int> _abilityMapFromJson(dynamic j) => {
+      for (final e in (j as Map? ?? const {}).entries)
+        Ability.fromKey(e.key as String): e.value as int,
+    };
+
 /// Dote. `category`: 'origin' | 'general' | 'fighting-style'.
 class Feat {
   final String id;
@@ -227,6 +270,7 @@ class Feat {
   final String category;
   final bool repeatable;
   final List<Effect> effects;
+  final FeatPrerequisite? prerequisite;
 
   const Feat({
     required this.id,
@@ -235,6 +279,7 @@ class Feat {
     this.category = 'general',
     this.repeatable = false,
     this.effects = const [],
+    this.prerequisite,
   });
 
   Map<String, dynamic> toJson() => {
@@ -244,6 +289,7 @@ class Feat {
         'category': category,
         'repeatable': repeatable,
         'effects': effects.map((e) => e.toJson()).toList(),
+        'prerequisite': prerequisite?.toJson(),
       };
 
   factory Feat.fromJson(Map<String, dynamic> j) => Feat(
@@ -253,6 +299,10 @@ class Feat {
         category: j['category'] as String? ?? 'general',
         repeatable: j['repeatable'] as bool? ?? false,
         effects: Effect.listFromJson(j['effects']),
+        prerequisite: j['prerequisite'] == null
+            ? null
+            : FeatPrerequisite.fromJson(
+                (j['prerequisite'] as Map).cast<String, dynamic>()),
       );
 }
 

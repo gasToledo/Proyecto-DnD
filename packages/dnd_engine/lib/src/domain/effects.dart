@@ -64,6 +64,7 @@ sealed class Effect {
           name: json['name'] as String,
           max: json['max'] as int,
           recharge: _rechargeFromJson(json['recharge'] as String?),
+          description: json['description'] as String? ?? '',
         ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
@@ -235,11 +236,13 @@ class ResourceEffect extends Effect {
   final String name;
   final int max;
   final RechargeOn recharge;
+  final String description;
   const ResourceEffect({
     required this.id,
     required this.name,
     required this.max,
     required this.recharge,
+    this.description = '',
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -248,5 +251,6 @@ class ResourceEffect extends Effect {
         'name': name,
         'max': max,
         'recharge': _rechargeToJson(recharge),
+        'description': description,
       };
 }

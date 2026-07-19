@@ -26,7 +26,7 @@
         "name": "Segundo Aliento",
         "description": "Usas una acción adicional para recuperar 1d10 + nivel de Guerrero PG.",
         "effects": [
-          { "type": "resource", "id": "second_wind", "name": "Segundo Aliento", "max": 2, "recharge": "short" }
+          { "type": "resource", "id": "second_wind", "name": "Segundo Aliento", "max": 2, "recharge": "short", "description": "Como acción adicional, recuperas 1d10 + tu nivel de Guerrero en puntos de golpe." }
         ]
       },
       {
@@ -42,7 +42,7 @@
         "name": "Oleada de Acción",
         "description": "En tu turno puedes realizar una acción adicional.",
         "effects": [
-          { "type": "resource", "id": "action_surge", "name": "Oleada de Acción", "max": 1, "recharge": "short" }
+          { "type": "resource", "id": "action_surge", "name": "Oleada de Acción", "max": 1, "recharge": "short", "description": "En tu turno, además de tu acción normal, podés realizar una acción adicional." }
         ]
       },
       {

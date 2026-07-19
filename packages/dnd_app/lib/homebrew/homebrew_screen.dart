@@ -2,6 +2,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../data/homebrew_store.dart';
+import '../theme/app_widgets.dart';
 import 'effect_editor.dart';
 
 const _skills = [
@@ -66,36 +67,53 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     required VoidCallback onAdd,
     required List<Widget> items,
   }) {
-    return ListView(
-      padding: const EdgeInsets.all(12),
+    return PageBody(
       children: [
         FilledButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add),
           label: Text(addLabel),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         if (items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(child: Text('Todavía no agregaste nada aquí.')),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: Text('Todavía no agregaste nada aquí.',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ),
           )
         else
-          ...items,
+          DenseRows(children: items),
       ],
     );
   }
 
   Widget _tile(String title, String subtitle,
       {required VoidCallback onEdit, required VoidCallback onDelete}) {
-    return Card(
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(subtitle),
-        onTap: onEdit,
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline),
-          onPressed: onDelete,
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return InkWell(
+      onTap: onEdit,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(fontSize: 13, color: muted)),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              onPressed: onDelete,
+            ),
+          ],
         ),
       ),
     );
@@ -249,7 +267,7 @@ class _WeaponFormState extends State<WeaponForm> {
         _text(_versatile, 'Dado versátil (opcional, p.ej. 1d10)'),
         _text(_mastery, 'Maestría (opcional, p.ej. sap)'),
         const SizedBox(height: 8),
-        const Text('Propiedades'),
+        const Eyebrow('Propiedades'),
         Wrap(
           spacing: 6,
           children: _weaponProps
@@ -364,7 +382,7 @@ class _FeatFormState extends State<FeatForm> {
         _categoryDropdown(['origin', 'general', 'fighting-style'], _category,
             (v) => setState(() => _category = v)),
         const SizedBox(height: 12),
-        const Text('Efectos'),
+        const Eyebrow('Efectos'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
       ],
     );
@@ -408,7 +426,7 @@ class _RaceFormState extends State<RaceForm> {
         _text(_speed, 'Velocidad (ft)', number: true),
         _text(_skillCount, 'Habilidades a elegir', number: true),
         const SizedBox(height: 12),
-        const Text('Rasgos (efectos)'),
+        const Eyebrow('Rasgos (efectos)'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
       ],
     );
@@ -453,7 +471,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
       children: [
         _text(_name, 'Nombre', onChanged: () => setState(() {})),
         const SizedBox(height: 8),
-        const Text('Características (elegí 3)'),
+        const Eyebrow('Características (elegí 3)'),
         Wrap(
           spacing: 6,
           children: Ability.values
@@ -471,7 +489,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
               .toList(),
         ),
         const SizedBox(height: 8),
-        const Text('Competencias de habilidad'),
+        const Eyebrow('Competencias de habilidad'),
         Wrap(
           spacing: 6,
           children: _skills
@@ -497,7 +515,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
           onChanged: (v) => setState(() => _originFeatId = v),
         ),
         const SizedBox(height: 12),
-        const Text('Efectos adicionales'),
+        const Eyebrow('Efectos adicionales'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
       ],
     );
@@ -535,7 +553,7 @@ class _FormScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: ListView(padding: const EdgeInsets.all(16), children: children),
+      body: PageBody(children: children),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),

@@ -1,6 +1,8 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 import 'level_up_summary_screen.dart';
 
 enum _HpMethod { average, roll }
@@ -120,10 +122,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     final newFeatures = _klass?.featuresAt(_newLevel) ?? const [];
     return Scaffold(
       appBar: AppBar(title: Text('Subir a nivel $_newLevel')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: PageBody(
         children: [
-          _label('Puntos de golpe (dado d$_hitDie)'),
+          Eyebrow('Puntos de golpe (dado d$_hitDie)'),
           SegmentedButton<_HpMethod>(
             segments: [
               ButtonSegment(
@@ -151,25 +152,44 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
                   const SizedBox(width: 12),
                   if (_rolledHp != null)
                     Text('Resultado: $_rolledHp',
-                        style: Theme.of(context).textTheme.titleMedium),
+                        style: TextStyle(
+                            fontFamily: 'Georgia',
+                            fontSize: 18,
+                            color: context.palette.gold)),
                 ],
               ),
             ),
           const SizedBox(height: 8),
           Text('PG ganados: +$_hpGain (más tu mod. de CON)',
-              style: Theme.of(context).textTheme.bodyMedium),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 24),
           if (_isAsi) _buildAsi() else const SizedBox.shrink(),
           if (newFeatures.isNotEmpty) ...[
             const SizedBox(height: 8),
-            _label('Rasgos ganados a nivel $_newLevel'),
-            ...newFeatures.map((f) => Card(
-                  child: ListTile(
-                    dense: true,
-                    title: Text(f.name),
-                    subtitle: f.description.isEmpty ? null : Text(f.description),
+            Eyebrow('Rasgos ganados a nivel $_newLevel'),
+            DenseRows(children: [
+              for (final f in newFeatures)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(f.name,
+                          style: const TextStyle(fontWeight: FontWeight.w500)),
+                      if (f.description.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(f.description,
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant)),
+                      ],
+                    ],
                   ),
-                )),
+                ),
+            ]),
           ],
         ],
       ),
@@ -190,7 +210,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label('Mejora de característica (nivel $_newLevel)'),
+        Eyebrow('Mejora de característica (nivel $_newLevel)'),
         SegmentedButton<_AsiKind>(
           segments: const [
             ButtonSegment(
@@ -292,8 +312,4 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     );
   }
 
-  Widget _label(String t) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(t, style: Theme.of(context).textTheme.titleMedium),
-      );
 }

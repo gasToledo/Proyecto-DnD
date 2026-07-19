@@ -6,12 +6,19 @@ import '../domain/effects.dart';
 /// lo finaliza en un [ComputedSheet] inmutable.
 class SheetBuilder {
   final Map<Ability, int> baseScores;
+
+  /// Nivel de personaje, necesario para recursos que escalan (maxPerLevel).
+  final int level;
+
   final Map<Ability, int> abilityBonuses = {
     for (final a in Ability.values) a: 0,
   };
 
   int speed = 30;
   int? darkvision;
+
+  /// Característica que suma a la CA por Defensa sin Armadura (null = ninguna).
+  Ability? unarmoredDefenseAbility;
 
   final Set<Ability> saveProficiencies = {};
   final Set<String> skillProficiencies = {};
@@ -30,7 +37,7 @@ class SheetBuilder {
   int bonusMaxHpPerLevel = 0;
   int acBonus = 0;
 
-  SheetBuilder({required this.baseScores});
+  SheetBuilder({required this.baseScores, this.level = 1});
 
   List<CharacterResource> get resources => _resources.values.toList();
 
@@ -81,17 +88,20 @@ class SheetBuilder {
         bonusMaxHpPerLevel += perLevel;
       case ArmorClassBonusEffect(:final amount):
         acBonus += amount;
+      case UnarmoredDefenseEffect(:final ability):
+        unarmoredDefenseAbility = ability;
       case ResourceEffect(
           :final id,
           :final name,
           :final max,
           :final recharge,
-          :final description
+          :final description,
+          :final maxPerLevel
         ):
         _resources[id] = CharacterResource(
           id: id,
           name: name,
-          max: max,
+          max: maxPerLevel ? level : max,
           recharge: recharge,
           description: description,
         );

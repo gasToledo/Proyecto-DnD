@@ -70,5 +70,338 @@
         ]
       }
     ]
+  },
+  {
+    "id": "barbarian",
+    "name": "Bárbaro",
+    "source": "srd_2024",
+    "hitDie": 12,
+    "savingThrows": ["strength", "constitution"],
+    "armorProficiencies": ["light", "medium", "shields"],
+    "weaponProficiencies": ["simple", "martial"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": [
+      "animal-handling", "athletics", "intimidation", "nature", "perception", "survival"
+    ],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Furia",
+        "description": "Como acción adicional entras en Furia: ventaja en pruebas y salvaciones de Fuerza, bonif. al daño cuerpo a cuerpo con Fuerza (+2, sube a +3 a nivel 9 y +4 a nivel 16) y resistencia a daño contundente, perforante y cortante. Dura hasta 10 minutos.",
+        "effects": [
+          { "type": "resource", "id": "rage", "name": "Furia", "max": 2, "recharge": "long", "description": "Usos de Furia. Recuperas al menos uno tras un descanso corto y todos tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Defensa sin Armadura",
+        "description": "Sin armadura, tu CA es 10 + mod. de Destreza + mod. de Constitución. Puedes usar escudo.",
+        "effects": [
+          { "type": "unarmoredDefense", "ability": "constitution" }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Maestría de Armas",
+        "description": "Puedes usar la propiedad de Maestría de 2 armas con las que seas competente.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 2 }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Sentido del Peligro",
+        "description": "Ventaja en salvaciones de Destreza contra efectos que puedas ver.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Sentido del Peligro", "description": "Tienes ventaja en las salvaciones de Destreza contra efectos que puedas ver, salvo que estés incapacitado." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Ataque Temerario",
+        "description": "Puedes atacar con ventaja a cambio de que los ataques contra ti tengan ventaja hasta tu próximo turno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ataque Temerario", "description": "En tu primer ataque del turno puedes atacar de forma temeraria: ventaja en ataques cuerpo a cuerpo con Fuerza este turno, pero los ataques contra ti tienen ventaja hasta tu siguiente turno." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Furia (3 usos)",
+        "description": "Tus usos de Furia aumentan a 3.",
+        "effects": [
+          { "type": "resource", "id": "rage", "name": "Furia", "max": 3, "recharge": "long", "description": "Usos de Furia." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conocimiento Primario",
+        "description": "Al ganar esta clase obtienes competencia en una habilidad adicional y puedes canalizar tu Furia en movimiento.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conocimiento Primario", "description": "Mientras estás en Furia, puedes usar ciertas acciones (Correr, Forcejear, Saltar, etc.) sumando tu bonif. de Furia como daño en algunas maniobras." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces al realizar la acción de Ataque.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Movimiento Rápido",
+        "description": "Tu velocidad aumenta en 10 pies mientras no lleves armadura pesada.",
+        "effects": [
+          { "type": "speedBonus", "feet": 10 }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Furia (4 usos)",
+        "description": "Tus usos de Furia aumentan a 4.",
+        "effects": [
+          { "type": "resource", "id": "rage", "name": "Furia", "max": 4, "recharge": "long", "description": "Usos de Furia." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Instinto Feral",
+        "description": "Ventaja en tiradas de Iniciativa.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Instinto Feral", "description": "Tienes ventaja en las tiradas de Iniciativa." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Golpe Brutal",
+        "description": "Al usar Ataque Temerario puedes renunciar a la ventaja para aplicar un efecto adicional (empuje o daño extra).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Brutal", "description": "Cuando usas Ataque Temerario, puedes renunciar a la ventaja para infligir 1d10 de daño extra y aplicar un efecto de Golpe Brutal (empujar 15 pies o reducir la velocidad del objetivo)." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Furia Implacable",
+        "description": "Si caerías a 0 PG en Furia, puedes hacer una salvación para quedar a 1 PG.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia Implacable", "description": "Mientras estás en Furia y caerías a 0 PG sin morir, haces una salvación de Constitución CD 10 (sube cada uso) para quedar a 1 PG." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rogue",
+    "name": "Pícaro",
+    "source": "srd_2024",
+    "hitDie": 8,
+    "savingThrows": ["dexterity", "intelligence"],
+    "armorProficiencies": ["light"],
+    "weaponProficiencies": ["simple", "rapier", "shortsword", "scimitar", "whip"],
+    "skillChoiceCount": 4,
+    "skillChoiceFrom": [
+      "acrobatics", "athletics", "deception", "insight", "intimidation",
+      "investigation", "perception", "performance", "persuasion",
+      "sleight-of-hand", "stealth"
+    ],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 10, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Pericia",
+        "description": "Duplicas tu bonif. de competencia en dos habilidades elegidas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pericia", "description": "Elige dos de tus competencias de habilidad; tu bonif. de competencia se duplica en cualquier prueba que las use. A nivel 6 eliges otras dos." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Ataque Furtivo",
+        "description": "Una vez por turno, si tienes ventaja o un aliado adyacente al objetivo, sumas daño extra con un arma sutil o a distancia. Empieza en 1d6 y sube 1d6 cada dos niveles impares.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ataque Furtivo", "description": "Una vez por turno, al impactar con un arma con propiedad Sutileza o a distancia teniendo ventaja (o un aliado del objetivo adyacente a él), sumas daño extra. Dados = redondeo hacia arriba de (nivel de Pícaro ÷ 2) d6." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Jerga de Ladrones",
+        "description": "Conoces la jerga secreta de los ladrones.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Jerga de Ladrones", "description": "Conoces la Jerga de Ladrones y un lenguaje de signos con el que puedes ocultar mensajes en una conversación aparentemente normal." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Maestría de Armas",
+        "description": "Puedes usar la propiedad de Maestría de 2 armas con las que seas competente.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 2 }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Acción Astuta",
+        "description": "Como acción adicional puedes Correr, Retirarte o Esconderte.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Acción Astuta", "description": "En cada uno de tus turnos, como acción adicional, puedes realizar la acción de Correr, Retirarse o Esconderse." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Puntería Firme",
+        "description": "Como acción adicional obtienes ventaja en tu próximo ataque si no te mueves este turno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Puntería Firme", "description": "Como acción adicional, ganas ventaja en tu próxima tirada de ataque este turno, a cambio de tener velocidad 0 hasta el fin del turno." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Esquiva Asombrosa",
+        "description": "Cuando un atacante que ves te impacta, puedes reducir su daño a la mitad como reacción.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Esquiva Asombrosa", "description": "Como reacción, cuando un atacante que puedes ver te impacta con un ataque, reduces a la mitad el daño de ese ataque." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Pericia (mejora)",
+        "description": "Eliges otras dos habilidades para duplicar tu bonif. de competencia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pericia (mejora)", "description": "Eliges otras dos de tus competencias de habilidad para aplicar Pericia." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Evasión",
+        "description": "Recibes menos daño de efectos de área que permiten salvación de Destreza.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Evasión", "description": "Cuando haces una salvación de Destreza para reducir daño a la mitad, no recibes daño si tienes éxito y solo la mitad si fallas. No aplica si estás incapacitado." }
+        ]
+      },
+      {
+        "level": 8,
+        "name": "Talento Fiable",
+        "description": "Tus pruebas con competencia rara vez fallan.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Talento Fiable", "description": "Cuando haces una prueba de característica con la que aplicas tu bonif. de competencia, tratas cualquier resultado del d20 de 9 o menos como un 10." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "monk",
+    "name": "Monje",
+    "source": "srd_2024",
+    "hitDie": 8,
+    "savingThrows": ["strength", "dexterity"],
+    "armorProficiencies": [],
+    "weaponProficiencies": ["simple", "shortsword", "scimitar"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": [
+      "acrobatics", "athletics", "history", "insight", "religion", "stealth"
+    ],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Artes Marciales",
+        "description": "Puedes usar Destreza para ataques con armas de monje y golpes sin armas; tu golpe sin armas inflige un dado de Artes Marciales (1d6, sube a 1d8 a nivel 5, 1d10 a 11 y 1d12 a 17). Como acción adicional haces un golpe sin armas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Artes Marciales", "description": "Usas Destreza para ataque y daño con armas de monje y golpes sin armas. El dado de Artes Marciales es 1d6 (1d8 a nivel 5, 1d10 a 11, 1d12 a 17). Puedes hacer un golpe sin armas como acción adicional tras la acción de Ataque." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Defensa sin Armadura",
+        "description": "Sin armadura ni escudo, tu CA es 10 + mod. de Destreza + mod. de Sabiduría.",
+        "effects": [
+          { "type": "unarmoredDefense", "ability": "wisdom" }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Puntos de Enfoque",
+        "description": "Tienes Puntos de Enfoque iguales a tu nivel de Monje para alimentar rasgos como Ráfaga de Golpes, Defensa Paciente y Paso del Viento.",
+        "effects": [
+          { "type": "resource", "id": "focus_points", "name": "Puntos de Enfoque", "max": 0, "maxPerLevel": true, "recharge": "short", "description": "Puntos iguales a tu nivel de Monje. Se recuperan tras un descanso corto o largo. Alimentan Ráfaga de Golpes, Defensa Paciente y Paso del Viento." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Movimiento sin Armadura",
+        "description": "Tu velocidad aumenta mientras no lleves armadura ni escudo (+10 pies, más a niveles superiores).",
+        "effects": [
+          { "type": "speedBonus", "feet": 10 }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Desviar Ataques",
+        "description": "Como reacción reduces el daño de ataques contundentes, perforantes o cortantes.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Desviar Ataques", "description": "Como reacción, cuando te impacta un ataque contundente, perforante o cortante, reduces su daño en 1d10 + mod. de Destreza + nivel de Monje. Si lo reduces a 0 y gastas un Punto de Enfoque, puedes redirigirlo." }
+        ]
+      },
+      {
+        "level": 4,
+        "name": "Caída Lenta",
+        "description": "Reduces el daño por caída como reacción.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Caída Lenta", "description": "Como reacción al caer, reduces el daño de caída en 5 × tu nivel de Monje." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces al realizar la acción de Ataque.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Golpe Aturdidor",
+        "description": "Gastando un Punto de Enfoque al impactar puedes intentar aturdir al objetivo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Aturdidor", "description": "Al impactar con un ataque cuerpo a cuerpo, puedes gastar 1 Punto de Enfoque para forzar una salvación de Constitución; si falla, queda Aturdido hasta el inicio de tu próximo turno." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Movimiento sin Armadura (mejora)",
+        "description": "El bono de velocidad sin armadura aumenta a +15 pies.",
+        "effects": [
+          { "type": "speedBonus", "feet": 5 }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Golpes Fortalecidos",
+        "description": "Tus golpes sin armas cuentan como mágicos para superar resistencias.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpes Fortalecidos", "description": "Tus golpes sin armas cuentan como mágicos para efectos de resistencia e inmunidad al daño." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Evasión",
+        "description": "Recibes menos daño de efectos de área con salvación de Destreza.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Evasión", "description": "Cuando haces una salvación de Destreza para reducir daño a la mitad, no recibes daño si tienes éxito y solo la mitad si fallas. No aplica si estás incapacitado." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Movimiento sin Armadura (mejora)",
+        "description": "El bono de velocidad sin armadura aumenta a +20 pies.",
+        "effects": [
+          { "type": "speedBonus", "feet": 5 }
+        ]
+      }
+    ]
   }
 ]

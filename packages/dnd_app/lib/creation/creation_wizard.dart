@@ -118,7 +118,7 @@ class _ClassStep extends StatelessWidget {
     final styles =
         repo.feats.values.where((f) => f.category == 'fighting-style').toList();
     final masteryWeapons = draft.proficientWeapons;
-    final slots = 3; // Guerrero 2024
+    final slots = draft.weaponMasterySlots;
 
     return ListView(
       children: [
@@ -133,24 +133,27 @@ class _ClassStep extends StatelessWidget {
                       draft.classId = c.id;
                       draft.classSkills.clear();
                       draft.weaponMasteries.clear();
+                      draft.fightingStyleId = null;
                       onChanged();
                     },
                   ))
               .toList(),
         ),
         if (klass != null) ...[
+          if (draft.grantsFightingStyle) ...[
+            const SizedBox(height: 20),
+            Eyebrow('Estilo de combate'),
+            _SingleSelect(
+              options: {for (final f in styles) f.id: f.name},
+              selected: draft.fightingStyleId,
+              onSelect: (id) {
+                draft.fightingStyleId = id;
+                onChanged();
+              },
+            ),
+          ],
           const SizedBox(height: 20),
-          Eyebrow('Estilo de combate'),
-          _SingleSelect(
-            options: {for (final f in styles) f.id: f.name},
-            selected: draft.fightingStyleId,
-            onSelect: (id) {
-              draft.fightingStyleId = id;
-              onChanged();
-            },
-          ),
-          const SizedBox(height: 20),
-          Eyebrow('Habilidades de clase (elige 2)'),
+          Eyebrow('Habilidades de clase (elige ${klass.skillChoiceCount})'),
           _MultiSelect(
             options: {for (final s in klass.skillChoiceFrom) s: titleCase(s)},
             selected: draft.classSkills,
@@ -161,17 +164,19 @@ class _ClassStep extends StatelessWidget {
             },
             onChanged: onChanged,
           ),
-          const SizedBox(height: 20),
-          Eyebrow('Maestría de armas (elige $slots)'),
-          Text('Solo armas con las que ${klass.name} es competente.',
-              style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 6),
-          _WeaponChecklist(
-            weapons: masteryWeapons,
-            selected: draft.weaponMasteries,
-            max: slots,
-            onChanged: onChanged,
-          ),
+          if (slots > 0) ...[
+            const SizedBox(height: 20),
+            Eyebrow('Maestría de armas (elige $slots)'),
+            Text('Solo armas con las que ${klass.name} es competente.',
+                style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 6),
+            _WeaponChecklist(
+              weapons: masteryWeapons,
+              selected: draft.weaponMasteries,
+              max: slots,
+              onChanged: onChanged,
+            ),
+          ],
         ],
       ],
     );
@@ -480,6 +485,11 @@ class _EquipmentStep extends StatelessWidget {
         _SingleSelect(
           options: {for (final a in armors) a.id: '${a.name} (CA ${a.baseAc})'},
           selected: draft.equippedArmorId,
+          noneLabel: 'Sin armadura',
+          onNone: () {
+            draft.equippedArmorId = null;
+            onChanged();
+          },
           onSelect: (id) {
             draft.equippedArmorId = id;
             onChanged();
@@ -583,26 +593,40 @@ class _NameStepState extends State<_NameStep> {
 // Widgets reutilizables
 // ----------------------------------------------------------------------------
 
-/// Selección única mediante chips.
+/// Selección única mediante chips. Si se pasa [noneLabel] + [onNone], se
+/// muestra un chip inicial que representa "ninguno" (selección = null).
 class _SingleSelect extends StatelessWidget {
   final Map<String, String> options; // id -> label
   final String? selected;
   final ValueChanged<String> onSelect;
-  const _SingleSelect(
-      {required this.options, required this.selected, required this.onSelect});
+  final String? noneLabel;
+  final VoidCallback? onNone;
+  const _SingleSelect({
+    required this.options,
+    required this.selected,
+    required this.onSelect,
+    this.noneLabel,
+    this.onNone,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.entries
-          .map((e) => ChoiceChip(
-                label: Text(e.value),
-                selected: selected == e.key,
-                onSelected: (_) => onSelect(e.key),
-              ))
-          .toList(),
+      children: [
+        if (noneLabel != null && onNone != null)
+          ChoiceChip(
+            label: Text(noneLabel!),
+            selected: selected == null,
+            onSelected: (_) => onNone!(),
+          ),
+        ...options.entries.map((e) => ChoiceChip(
+              label: Text(e.value),
+              selected: selected == e.key,
+              onSelected: (_) => onSelect(e.key),
+            )),
+      ],
     );
   }
 }
@@ -750,11 +774,12 @@ class _WeaponChecklistState extends State<_WeaponChecklist> {
   }
 }
 
-/// Selección única de arma con búsqueda y agrupación por categoría.
+/// Selección única de arma con búsqueda y agrupación por categoría. Incluye una
+/// opción "Sin arma (puños)" que representa la ausencia de arma (selección null).
 class _WeaponSelect extends StatefulWidget {
   final List<Weapon> weapons;
   final String? selected;
-  final ValueChanged<String> onSelect;
+  final ValueChanged<String?> onSelect;
   const _WeaponSelect({
     required this.weapons,
     required this.selected,
@@ -781,6 +806,17 @@ class _WeaponSelectState extends State<_WeaponSelect> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _WeaponSearchField(onChanged: (v) => setState(() => _query = v)),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ChoiceChip(
+              label: const Text('Sin arma (puños)'),
+              selected: widget.selected == null,
+              onSelected: (_) => widget.onSelect(null),
+            ),
+          ),
+        ),
         for (final group in [
           ('simple', simple),
           ('martial', martial),

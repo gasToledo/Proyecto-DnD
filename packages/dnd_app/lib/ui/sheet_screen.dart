@@ -9,6 +9,7 @@ import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import 'portrait_screen.dart';
+import 'spell_edit_screen.dart';
 
 /// Condición: etiqueta + qué le hace al personaje (reglas 2024), para el
 /// gestor de estados en combate.
@@ -764,7 +765,18 @@ class _SheetScreenState extends State<SheetScreen> {
 
     return PageBody(
       children: [
-        const Eyebrow('Lanzamiento de conjuros'),
+        Row(
+          children: [
+            const Expanded(child: Eyebrow('Lanzamiento de conjuros')),
+            TextButton.icon(
+              onPressed: () => _openSpellEditor(sc),
+              icon: const Icon(Icons.edit, size: 16),
+              label: Text(sc.preparation == SpellPreparation.prepared
+                  ? 'Preparar'
+                  : 'Editar'),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -838,6 +850,20 @@ class _SheetScreenState extends State<SheetScreen> {
               style: Theme.of(context).textTheme.bodySmall),
         ],
       ],
+    );
+  }
+
+  void _openSpellEditor(Spellcasting sc) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SpellEditScreen(
+          character: _c,
+          repo: repo,
+          spellcasting: sc,
+          onSave: (cantrips, spells) => _replace(
+              _c.copyWith(cantripIds: cantrips, spellIds: spells)),
+        ),
+      ),
     );
   }
 

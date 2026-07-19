@@ -1,4 +1,5 @@
 import 'ability.dart';
+import 'spell_slots.dart';
 
 /// Tipo de descanso que recarga un recurso.
 enum RechargeOn { shortRest, longRest, none }
@@ -61,6 +62,13 @@ sealed class Effect {
       'armorClassBonus' => ArmorClassBonusEffect(json['amount'] as int),
       'unarmoredDefense' => UnarmoredDefenseEffect(
           Ability.fromKey(json['ability'] as String),
+        ),
+      'spellcasting' => SpellcastingEffect(
+          ability: Ability.fromKey(json['ability'] as String),
+          progression: CasterProgression.fromJson(json['progression'] as String?),
+          preparation: SpellPreparation.fromJson(json['preparation'] as String?),
+          spellList: json['spellList'] as String,
+          cantripsKnown: json['cantripsKnown'] as int? ?? 0,
         ),
       'resource' => ResourceEffect(
           id: json['id'] as String,
@@ -243,6 +251,40 @@ class UnarmoredDefenseEffect extends Effect {
   @override
   Map<String, dynamic> toJson() =>
       {'type': 'unarmoredDefense', 'ability': ability.name};
+}
+
+/// Concede lanzamiento de conjuros: característica de lanzamiento, progresión de
+/// espacios, forma de obtención (preparados/conocidos) y de qué lista de clase
+/// se nutre. La CD y el bono de ataque de conjuro se derivan en la ficha.
+class SpellcastingEffect extends Effect {
+  final Ability ability;
+  final CasterProgression progression;
+  final SpellPreparation preparation;
+
+  /// Id de la lista de conjuros de la que se nutre (p.ej. 'wizard').
+  final String spellList;
+
+  /// Trucos conocidos a nivel 1 (por simplicidad, valor base; el escalado por
+  /// nivel puede refinarse luego con efectos gated).
+  final int cantripsKnown;
+
+  const SpellcastingEffect({
+    required this.ability,
+    required this.progression,
+    required this.preparation,
+    required this.spellList,
+    this.cantripsKnown = 0,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'spellcasting',
+        'ability': ability.name,
+        'progression': progression.toJson(),
+        'preparation': preparation.toJson(),
+        'spellList': spellList,
+        'cantripsKnown': cantripsKnown,
+      };
 }
 
 /// Plantilla de un recurso consumible (Segundo Aliento, Oleada de Acción).

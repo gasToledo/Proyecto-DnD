@@ -24,6 +24,10 @@ class CreationDraft {
   String? raceFeatId; // dote de origen de la especie (p.ej. Humano "Versátil")
   String? backgroundId;
 
+  // Conjuros elegidos (para clases lanzadoras).
+  final Set<String> cantrips = {};
+  final Set<String> spells = {};
+
   // Reparto de característica del trasfondo.
   AbilitySpreadMode spreadMode = AbilitySpreadMode.twoOne;
   Ability? spreadPlusTwo; // en modo +2/+1
@@ -79,6 +83,16 @@ class CreationDraft {
     return k.features
         .any((f) => f.name.toLowerCase().contains('estilo de combate'));
   }
+
+  /// Si la clase elegida lanza conjuros (tiene un SpellcastingEffect a nivel 1).
+  bool get isCaster => klass?.featuresUpTo(1).any(
+          (f) => f.effects.any((e) => e is SpellcastingEffect)) ??
+      false;
+
+  /// Bloque de lanzamiento derivado de las elecciones actuales (para saber
+  /// cupos de trucos/preparados y CD en el paso de conjuros).
+  Spellcasting? get spellcasting =>
+      isCaster ? CharacterCompiler(repo).compile(build()).spellcasting : null;
 
   int get hitDie => klass?.hitDie ?? 10;
 
@@ -141,6 +155,8 @@ class CreationDraft {
       },
       backgroundAbilityBonuses: abilitySpread,
       chosenSkills: [...classSkills, ...raceSkills],
+      cantripIds: cantrips.toList(),
+      spellIds: spells.toList(),
       fightingStyleId: fightingStyleId,
       weaponMasteryChoices: List.of(weaponMasteries),
       featIds: [?raceFeatId],

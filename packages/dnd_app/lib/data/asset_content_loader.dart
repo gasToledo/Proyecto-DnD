@@ -22,6 +22,7 @@ class AssetContentLoader {
       feats: await _load('feats.json'),
       weapons: await _load('weapons.json'),
       armor: await _load('armor.json'),
+      spells: await _load('spells.json'),
     );
   }
 }

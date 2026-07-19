@@ -403,5 +403,69 @@
         ]
       }
     ]
+  },
+  {
+    "id": "wizard",
+    "name": "Mago",
+    "source": "srd_2024",
+    "hitDie": 6,
+    "savingThrows": ["intelligence", "wisdom"],
+    "armorProficiencies": [],
+    "weaponProficiencies": ["simple"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": [
+      "arcana", "history", "insight", "investigation", "medicine", "nature", "religion"
+    ],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Mago usando Inteligencia. Preparas conjuros de tu libro tras un descanso largo. Conoces 3 trucos a nivel 1.",
+        "effects": [
+          {
+            "type": "spellcasting",
+            "ability": "intelligence",
+            "progression": "full",
+            "preparation": "prepared",
+            "spellList": "wizard",
+            "cantripsKnown": 3
+          }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Libro de Conjuros",
+        "description": "Tienes un libro con tus conjuros de Mago. Puedes copiar conjuros nuevos que encuentres.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Libro de Conjuros", "description": "Tu repertorio vive en tu libro de conjuros; preparas de ahí. Puedes copiar conjuros de Mago que encuentres pagando tiempo y oro." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Recuperación Arcana",
+        "description": "Una vez por día, tras un descanso corto, recuperas espacios de conjuro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Recuperación Arcana", "description": "Tras un descanso corto, una vez por descanso largo, recuperas espacios de conjuro cuyo total de niveles no supere la mitad de tu nivel de Mago (redondeando hacia arriba), ninguno de nivel 6+." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Erudito Académico",
+        "description": "Tu experiencia en un campo de estudio te da beneficios (subclase a nivel 3).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Erudito Académico", "description": "Ganas competencia (o Pericia) en una habilidad mental y beneficios menores según tu tradición arcana." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Recuperación Arcana (mejora)",
+        "description": "Tus conjuros de nivel 1 y 2 se potencian con el tiempo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Rituales", "description": "Puedes lanzar como ritual cualquier conjuro de Mago preparado que tenga la etiqueta de ritual, sin gastar espacio." }
+        ]
+      }
+    ]
   }
 ]

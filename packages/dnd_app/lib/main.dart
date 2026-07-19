@@ -178,8 +178,11 @@ class DashboardScreen extends StatelessWidget {
           if (characters.isEmpty) {
             return const Center(child: Text('Todavía no hay personajes.'));
           }
-          return ListView.separated(
-            padding: const EdgeInsets.all(12),
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 760),
+              child: ListView.separated(
+            padding: const EdgeInsets.all(16),
             itemCount: characters.length,
             separatorBuilder: (_, _) => const SizedBox(height: 8),
             itemBuilder: (context, i) {
@@ -214,6 +217,8 @@ class DashboardScreen extends StatelessWidget {
                 ),
               );
             },
+              ),
+            ),
           );
         },
       ),

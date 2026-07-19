@@ -2,6 +2,28 @@ import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
 
+/// Cuerpo de página centrado con ancho máximo, para que el contenido no se
+/// estire de borde a borde en ventanas anchas de escritorio.
+class PageBody extends StatelessWidget {
+  final List<Widget> children;
+  final double maxWidth;
+  final EdgeInsetsGeometry padding;
+  const PageBody({
+    super.key,
+    required this.children,
+    this.maxWidth = 760,
+    this.padding = const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+  });
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: ListView(padding: padding, children: children),
+        ),
+      );
+}
+
 /// Rótulo tipo "eyebrow": mayúsculas, espaciado, apagado.
 class Eyebrow extends StatelessWidget {
   final String text;
@@ -290,6 +312,7 @@ class DenseRows extends StatelessWidget {
         border: Border.all(color: p.hairline),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var i = 0; i < children.length; i++) ...[
             if (i > 0) Divider(height: 1, color: p.hairline),

@@ -17,11 +17,13 @@ class CharacterResource {
   final String name;
   final int max;
   final RechargeOn recharge;
+  final String description;
   const CharacterResource({
     required this.id,
     required this.name,
     required this.max,
     required this.recharge,
+    this.description = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -29,6 +31,7 @@ class CharacterResource {
         'name': name,
         'max': max,
         'recharge': recharge.name,
+        'description': description,
       };
 }
 

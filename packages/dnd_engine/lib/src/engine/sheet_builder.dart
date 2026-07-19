@@ -81,12 +81,19 @@ class SheetBuilder {
         bonusMaxHpPerLevel += perLevel;
       case ArmorClassBonusEffect(:final amount):
         acBonus += amount;
-      case ResourceEffect(:final id, :final name, :final max, :final recharge):
+      case ResourceEffect(
+          :final id,
+          :final name,
+          :final max,
+          :final recharge,
+          :final description
+        ):
         _resources[id] = CharacterResource(
           id: id,
           name: name,
           max: max,
           recharge: recharge,
+          description: description,
         );
     }
   }

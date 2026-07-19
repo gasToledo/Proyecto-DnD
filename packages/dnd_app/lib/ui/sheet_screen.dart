@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/characters_controller.dart';
 import '../levelup/level_up_screen.dart';
@@ -9,22 +10,62 @@ import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import 'portrait_screen.dart';
 
-/// Condiciones 2024 (id → etiqueta) para el gestor de estados en combate.
-const _conditions = {
-  'blinded': 'Cegado',
-  'charmed': 'Hechizado',
-  'deafened': 'Ensordecido',
-  'frightened': 'Asustado',
-  'grappled': 'Agarrado',
-  'incapacitated': 'Incapacitado',
-  'invisible': 'Invisible',
-  'paralyzed': 'Paralizado',
-  'petrified': 'Petrificado',
-  'poisoned': 'Envenenado',
-  'prone': 'Derribado',
-  'restrained': 'Apresado',
-  'stunned': 'Aturdido',
-  'unconscious': 'Inconsciente',
+/// Condición: etiqueta + qué le hace al personaje (reglas 2024), para el
+/// gestor de estados en combate.
+class _ConditionInfo {
+  final String label;
+  final String description;
+  const _ConditionInfo(this.label, this.description);
+}
+
+const _conditions = <String, _ConditionInfo>{
+  'blinded': _ConditionInfo('Cegado',
+      'No podés ver y fallás automáticamente cualquier prueba que requiera vista. '
+          'Los ataques contra vos tienen ventaja, y tus ataques tienen desventaja.'),
+  'charmed': _ConditionInfo('Hechizado',
+      'No podés atacar a quien te hechizó ni dirigirle habilidades u efectos '
+          'dañinos. Esa criatura tiene ventaja en pruebas sociales contra vos.'),
+  'deafened': _ConditionInfo('Ensordecido',
+      'No podés oír y fallás automáticamente cualquier prueba que requiera oído.'),
+  'frightened': _ConditionInfo('Asustado',
+      'Tenés desventaja en pruebas de característica y ataques mientras la '
+          'fuente de tu miedo esté a la vista. No podés acercarte voluntariamente a ella.'),
+  'grappled': _ConditionInfo('Agarrado',
+      'Tu velocidad se vuelve 0 y no podés beneficiarte de ningún bonus a la '
+          'velocidad. La condición termina si quien te agarra queda incapacitado.'),
+  'incapacitated': _ConditionInfo('Incapacitado',
+      'No podés realizar acciones ni reacciones. (En 2024 tampoco te movés ni hablás.)'),
+  'invisible': _ConditionInfo('Invisible',
+      'Sos imposible de ver sin magia o sentidos especiales. A efectos de '
+          'esconderte, se te considera fuertemente oscurecido. Tus ataques tienen '
+          'ventaja; los ataques contra vos tienen desventaja.'),
+  'paralyzed': _ConditionInfo('Paralizado',
+      'Estás incapacitado y no podés moverte ni hablar. Fallás automáticamente '
+          'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
+          'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.'),
+  'petrified': _ConditionInfo('Petrificado',
+      'Te transformás en sustancia sólida inanimada (junto a tu equipo). '
+          'Incapacitado, no podés moverte ni hablar, sos inconsciente de tu entorno. '
+          'Los ataques contra vos tienen ventaja, fallás salvaciones de Fuerza y '
+          'Destreza, tenés resistencia a todo el daño e inmunidad a veneno y enfermedad.'),
+  'poisoned': _ConditionInfo('Envenenado',
+      'Tenés desventaja en tiradas de ataque y en pruebas de característica.'),
+  'prone': _ConditionInfo('Derribado',
+      'Solo podés moverte arrastrándote (o levantarte). Tenés desventaja al '
+          'atacar. Los ataques cuerpo a cuerpo contra vos tienen ventaja; los '
+          'ataques a distancia contra vos tienen desventaja.'),
+  'restrained': _ConditionInfo('Apresado',
+      'Tu velocidad se vuelve 0. Los ataques contra vos tienen ventaja y tus '
+          'ataques tienen desventaja. Tenés desventaja en salvaciones de Destreza.'),
+  'stunned': _ConditionInfo('Aturdido',
+      'Estás incapacitado, no podés moverte y hablás solo entrecortadamente. '
+          'Fallás automáticamente las salvaciones de Fuerza y Destreza. Los '
+          'ataques contra vos tienen ventaja.'),
+  'unconscious': _ConditionInfo('Inconsciente',
+      'Estás incapacitado, no podés moverte ni hablar, y no sos consciente de tu '
+          'entorno. Soltás lo que sostenías y caés derribado. Fallás automáticamente '
+          'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
+          'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.'),
 };
 
 /// Ficha editable. Combate/Inventario/Notas modifican el personaje y disparan
@@ -79,6 +120,18 @@ class _SheetScreenState extends State<SheetScreen> {
           repo: repo,
           onDone: _replace,
         ),
+      ),
+    );
+  }
+
+  void _openPortraitViewer(String path) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black87,
+        pageBuilder: (_, _, _) => _PortraitViewer(path: path),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
       ),
     );
   }
@@ -153,14 +206,21 @@ class _SheetScreenState extends State<SheetScreen> {
     final bg = repo.background(_c.backgroundId)?.name ?? '';
     final subtitle = [race, klass, if (bg.isNotEmpty) bg].join(' · ');
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return PageBody(
       children: [
         Row(
           children: [
-            Medallion(
-              image: hasPortrait ? FileImage(File(portrait)) : null,
-              fallback: _c.name.characters.first,
+            GestureDetector(
+              onTap: hasPortrait ? () => _openPortraitViewer(portrait) : null,
+              child: MouseRegion(
+                cursor: hasPortrait
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.basic,
+                child: Medallion(
+                  image: hasPortrait ? FileImage(File(portrait)) : null,
+                  fallback: _c.name.characters.first,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -227,8 +287,12 @@ class _SheetScreenState extends State<SheetScreen> {
   Widget _statPlaques(ComputedSheet s) {
     final pal = context.palette;
     final c = _c.combat;
-    Widget box(Widget child) => SizedBox(width: 104, child: child);
-    return Wrap(spacing: 10, runSpacing: 10, children: [
+    Widget box(Widget child) => SizedBox(width: 108, child: child);
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      alignment: WrapAlignment.center,
+      children: [
       box(StatPlaque(
         label: 'Puntos de golpe',
         value: '${c.currentHp}/${s.maxHp}',
@@ -342,34 +406,34 @@ class _SheetScreenState extends State<SheetScreen> {
   Widget _buildCombat() {
     final s = sheet;
     final combat = _c.combat;
-    return ListView(
-      padding: const EdgeInsets.all(12),
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return PageBody(
       children: [
-        _HpCard(current: combat.currentHp, max: s.maxHp, temp: combat.tempHp),
-        const SizedBox(height: 12),
+        _hpPanel(s, combat),
+        const SizedBox(height: 14),
         _hpControls(s),
-        const SizedBox(height: 16),
+        const SizedBox(height: 22),
         if (combat.currentHp <= 0) ...[
-          const _SectionTitle('Salvaciones de muerte'),
+          const Eyebrow('Salvaciones de muerte'),
           _deathSaves(combat),
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
         ],
-        const _SectionTitle('Descansos y recuperación'),
+        const Eyebrow('Descansos y recuperación'),
         Text(
           'El descanso corto no cura PG: recarga recursos de recarga corta. '
           'Para curarte, gastá dados de golpe.',
-          style: Theme.of(context).textTheme.bodySmall,
+          style: TextStyle(fontSize: 13, color: muted),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         Wrap(spacing: 8, runSpacing: 8, children: [
           OutlinedButton.icon(
             onPressed: () => _shortRest(s),
-            icon: const Icon(Icons.local_cafe),
+            icon: const Icon(Icons.local_cafe, size: 18),
             label: const Text('Descanso corto'),
           ),
           FilledButton.icon(
             onPressed: () => _longRest(s),
-            icon: const Icon(Icons.bedtime),
+            icon: const Icon(Icons.bedtime, size: 18),
             label: const Text('Descanso largo'),
           ),
           OutlinedButton.icon(
@@ -381,32 +445,71 @@ class _SheetScreenState extends State<SheetScreen> {
                     _mutateCombat(() {});
                     _snack('Recuperaste $healed PG (dado de golpe)');
                   },
-            icon: const Icon(Icons.casino),
+            icon: const Icon(Icons.casino, size: 18),
             label: Text(
                 'Dado de golpe (${_c.level - _c.combat.hitDiceUsed}/${_c.level})'),
           ),
         ]),
-        const SizedBox(height: 16),
-        const _SectionTitle('Recursos'),
-        if (s.resources.isEmpty)
-          const Text('—')
-        else
-          ...s.resources.map(_resourceRow),
-        const SizedBox(height: 16),
-        const _SectionTitle('Condiciones'),
+        const SizedBox(height: 22),
+        if (s.resources.isNotEmpty) ...[
+          const Eyebrow('Recursos'),
+          DenseRows(children: [for (final r in s.resources) _resourceRow(r)]),
+          const SizedBox(height: 22),
+        ],
+        const Eyebrow('Condiciones'),
         _conditionChips(combat),
-        const SizedBox(height: 16),
-        const _SectionTitle('Ataques'),
-        ...s.attacks.map((a) => Card(
-              child: ListTile(
-                title: Text(a.name),
-                subtitle: Text('Daño ${a.damage} (${_title(a.damageType)})'
-                    '${a.mastery != null ? ' · Maestría: ${_title(a.mastery!)}' : ''}'),
-                trailing: Text(_signed(a.attackBonus),
-                    style: Theme.of(context).textTheme.titleLarge),
-              ),
-            )),
+        const SizedBox(height: 22),
+        if (s.attacks.isNotEmpty) ...[
+          const Eyebrow('Ataques'),
+          DenseRows(children: [for (final a in s.attacks) _attackRow(a)]),
+        ],
       ],
+    );
+  }
+
+  Widget _hpPanel(ComputedSheet s, CombatState combat) {
+    final pal = context.palette;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final ratio = s.maxHp == 0 ? 0.0 : combat.currentHp / s.maxHp;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: pal.hairline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text('${combat.currentHp}',
+                  style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 40,
+                      height: 1,
+                      color: pal.crimson)),
+              Text(' / ${s.maxHp} PG',
+                  style: TextStyle(
+                      fontFamily: 'Georgia', fontSize: 18, color: muted)),
+              const Spacer(),
+              if (combat.tempHp > 0) GoldPill('+${combat.tempHp} temp'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: ratio.clamp(0, 1),
+              minHeight: 8,
+              backgroundColor: pal.plaque,
+              valueColor: AlwaysStoppedAnimation(pal.crimson),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -447,22 +550,24 @@ class _SheetScreenState extends State<SheetScreen> {
             ),
           ),
         ),
-        FilledButton.tonalIcon(
+        FilledButton.icon(
           style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.errorContainer),
+            backgroundColor: context.palette.crimson,
+            foregroundColor: Colors.white,
+          ),
           onPressed: () => _mutateCombat(() {
             CombatOps.applyDamage(_c.combat, _amount);
             _amountCtrl.clear();
           }),
-          icon: const Icon(Icons.remove),
+          icon: const Icon(Icons.remove, size: 18),
           label: const Text('Daño'),
         ),
-        FilledButton.tonalIcon(
+        OutlinedButton.icon(
           onPressed: () => _mutateCombat(() {
             CombatOps.applyHealing(_c.combat, s.maxHp, _amount);
             _amountCtrl.clear();
           }),
-          icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add, size: 18),
           label: const Text('Curar'),
         ),
         OutlinedButton(
@@ -489,7 +594,7 @@ class _SheetScreenState extends State<SheetScreen> {
         );
     return Row(
       children: [
-        pips(combat.deathSuccesses, Colors.greenAccent),
+        pips(combat.deathSuccesses, context.palette.gold),
         const SizedBox(width: 8),
         OutlinedButton(
           onPressed: () => _mutateCombat(() {
@@ -499,7 +604,7 @@ class _SheetScreenState extends State<SheetScreen> {
           child: const Text('+Éxito'),
         ),
         const Spacer(),
-        pips(combat.deathFailures, Colors.redAccent),
+        pips(combat.deathFailures, context.palette.crimson),
         const SizedBox(width: 8),
         OutlinedButton(
           onPressed: () => _mutateCombat(() {
@@ -513,46 +618,75 @@ class _SheetScreenState extends State<SheetScreen> {
   }
 
   Widget _resourceRow(CharacterResource r) {
+    final pal = context.palette;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final used = _c.combat.resourceUsage[r.id] ?? 0;
-    return Card(
-      child: ListTile(
-        dense: true,
-        title: Text(r.name),
-        subtitle: Row(
-          children: List.generate(
-              r.max,
-              (i) => Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: Icon(
-                      i < r.max - used ? Icons.bolt : Icons.bolt_outlined,
-                      size: 18,
-                      color: i < r.max - used
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey,
+    final hasInfo = r.description.isNotEmpty;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Tooltip(
+              message: hasInfo ? r.description : '',
+              waitDuration: const Duration(milliseconds: 400),
+              child: InkWell(
+                onTap: hasInfo
+                    ? () => _showInfoDialog(r.name, r.description)
+                    : null,
+                borderRadius: BorderRadius.circular(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(r.name,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w500)),
+                        if (hasInfo) ...[
+                          const SizedBox(width: 5),
+                          Icon(Icons.info_outline, size: 14, color: muted),
+                        ],
+                      ],
                     ),
-                  )),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              tooltip: 'Usar',
-              onPressed: used >= r.max
-                  ? null
-                  : () => _mutateCombat(
-                      () => _c.combat.resourceUsage[r.id] = used + 1),
-              icon: const Icon(Icons.remove_circle_outline),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: List.generate(
+                          r.max,
+                          (i) => Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Icon(
+                                  i < r.max - used
+                                      ? Icons.bolt
+                                      : Icons.bolt_outlined,
+                                  size: 18,
+                                  color:
+                                      i < r.max - used ? pal.gold : pal.textMuted,
+                                ),
+                              )),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            IconButton(
-              tooltip: 'Restaurar',
-              onPressed: used <= 0
-                  ? null
-                  : () => _mutateCombat(
-                      () => _c.combat.resourceUsage[r.id] = used - 1),
-              icon: const Icon(Icons.add_circle_outline),
-            ),
-          ],
-        ),
+          ),
+          IconButton(
+            tooltip: 'Usar',
+            onPressed: used >= r.max
+                ? null
+                : () => _mutateCombat(
+                    () => _c.combat.resourceUsage[r.id] = used + 1),
+            icon: const Icon(Icons.remove_circle_outline),
+          ),
+          IconButton(
+            tooltip: 'Restaurar',
+            onPressed: used <= 0
+                ? null
+                : () => _mutateCombat(
+                    () => _c.combat.resourceUsage[r.id] = used - 1),
+            icon: const Icon(Icons.add_circle_outline),
+          ),
+        ],
       ),
     );
   }
@@ -563,18 +697,38 @@ class _SheetScreenState extends State<SheetScreen> {
       runSpacing: 6,
       children: _conditions.entries.map((e) {
         final active = combat.conditions.contains(e.key);
-        return FilterChip(
-          label: Text(e.value),
-          selected: active,
-          onSelected: (v) => _mutateCombat(() {
-            if (v) {
-              combat.conditions.add(e.key);
-            } else {
-              combat.conditions.remove(e.key);
-            }
-          }),
+        return Tooltip(
+          message: e.value.description,
+          waitDuration: const Duration(milliseconds: 400),
+          child: FilterChip(
+            label: Text(e.value.label),
+            selected: active,
+            onSelected: (v) => _mutateCombat(() {
+              if (v) {
+                combat.conditions.add(e.key);
+              } else {
+                combat.conditions.remove(e.key);
+              }
+            }),
+          ),
         );
       }).toList(),
+    );
+  }
+
+  void _showInfoDialog(String title, String description) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        content: Text(description),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -583,14 +737,13 @@ class _SheetScreenState extends State<SheetScreen> {
   Widget _buildInventory() {
     final armors = repo.armor.values.where((a) => !a.isShield).toList();
     final weapons = repo.weapons.values.toList();
-    return ListView(
-      padding: const EdgeInsets.all(12),
+    return PageBody(
       children: [
-        const _SectionTitle('Armadura equipada'),
-        DropdownButton<String?>(
+        const Eyebrow('Armadura equipada'),
+        DropdownButtonFormField<String?>(
+          initialValue: _c.equippedArmorId,
           isExpanded: true,
-          value: _c.equippedArmorId,
-          hint: const Text('Sin armadura'),
+          decoration: const InputDecoration(isDense: true),
           items: [
             const DropdownMenuItem(value: null, child: Text('Sin armadura')),
             ...armors.map((a) => DropdownMenuItem(
@@ -604,23 +757,36 @@ class _SheetScreenState extends State<SheetScreen> {
           value: _c.shieldEquipped,
           onChanged: (v) => _replace(_c.copyWith(shieldEquipped: v)),
         ),
-        const SizedBox(height: 12),
-        const _SectionTitle('Arma equipada'),
-        DropdownButton<String>(
-          isExpanded: true,
-          value:
+        const SizedBox(height: 16),
+        const Eyebrow('Arma equipada'),
+        DropdownButtonFormField<String>(
+          initialValue:
               _c.equippedWeaponIds.isEmpty ? null : _c.equippedWeaponIds.first,
+          isExpanded: true,
+          decoration: const InputDecoration(isDense: true),
           hint: const Text('Sin arma'),
           items: weapons
               .map((w) => DropdownMenuItem(
                   value: w.id, child: Text('${w.name} (${w.damageDice})')))
               .toList(),
-          onChanged: (v) =>
-              _replace(_c.copyWith(equippedWeaponIds: [?v])),
+          onChanged: (v) => _replace(_c.copyWith(equippedWeaponIds: [?v])),
         ),
-        const SizedBox(height: 16),
-        Text('CA actual: ${sheet.armorClass}',
-            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            SizedBox(width: 108, child: _acPlaque(sheet.armorClass)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'La Clase de Armadura se recalcula automáticamente según la '
+                'armadura, el escudo y tu modificador de Destreza.',
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -628,22 +794,25 @@ class _SheetScreenState extends State<SheetScreen> {
   // ---------------------------------------------------------------- Notas
 
   Widget _buildNotes() {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: TextFormField(
-        initialValue: _c.notes,
-        maxLines: null,
-        keyboardType: TextInputType.multiline,
-        decoration: const InputDecoration(
-          labelText: 'Notas del personaje',
-          alignLabelWithHint: true,
-          border: OutlineInputBorder(),
+    return PageBody(
+      children: [
+        const Eyebrow('Notas del personaje'),
+        TextFormField(
+          initialValue: _c.notes,
+          minLines: 12,
+          maxLines: null,
+          keyboardType: TextInputType.multiline,
+          decoration: const InputDecoration(
+            hintText: 'Historia, objetivos, recordatorios de la mesa…',
+            alignLabelWithHint: true,
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (v) {
+            _c.notes = v;
+            ctrl.touch(_c);
+          },
         ),
-        onChanged: (v) {
-          _c.notes = v;
-          ctrl.touch(_c);
-        },
-      ),
+      ],
     );
   }
 
@@ -657,57 +826,69 @@ class _SheetScreenState extends State<SheetScreen> {
 
 // ---------------------------------------------------------------- Widgets
 
-class _HpCard extends StatelessWidget {
-  final int current;
-  final int max;
-  final int temp;
-  const _HpCard({required this.current, required this.max, required this.temp});
+/// Visor de retrato a pantalla completa, con zoom/pan y cierre con Escape,
+/// clic afuera o el botón de cerrar.
+class _PortraitViewer extends StatelessWidget {
+  final String path;
+  const _PortraitViewer({required this.path});
 
   @override
   Widget build(BuildContext context) {
-    final ratio = max == 0 ? 0.0 : (current / max).clamp(0.0, 1.0);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text('$current',
-                    style: Theme.of(context).textTheme.displaySmall),
-                Text(' / $max PG',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const Spacer(),
-                if (temp > 0)
-                  Chip(
-                    avatar: const Icon(Icons.shield, size: 16),
-                    label: Text('+$temp temp'),
+    return Shortcuts(
+      shortcuts: {
+        LogicalKeySet(LogicalKeyboardKey.escape):
+            const _DismissViewerIntent(),
+      },
+      child: Actions(
+        actions: {
+          _DismissViewerIntent: CallbackAction<_DismissViewerIntent>(
+            onInvoke: (_) => Navigator.of(context).pop(),
+          ),
+        },
+        child: Focus(
+          autofocus: true,
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Stack(
+                children: [
+                  Center(
+                    child: GestureDetector(
+                      onTap: () {}, // absorbe el tap para no cerrar sobre la imagen
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: InteractiveViewer(
+                          minScale: 1,
+                          maxScale: 4,
+                          child: Image.file(File(path), fit: BoxFit.contain),
+                        ),
+                      ),
+                    ),
                   ),
-              ],
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black45,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(value: ratio, minHeight: 10),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  const _SectionTitle(this.text);
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium),
-      );
+class _DismissViewerIntent extends Intent {
+  const _DismissViewerIntent();
 }
 
 String _signed(int v) => v >= 0 ? '+$v' : '$v';

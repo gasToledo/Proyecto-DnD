@@ -93,10 +93,14 @@ class _SheetScreenState extends State<SheetScreen> {
   ComputedSheet get sheet => CharacterCompiler(repo).compile(_c);
 
   final _amountCtrl = TextEditingController();
+  // Controlador propio de las notas: sobrevive los cambios de tab y evita el
+  // footgun de TextFormField(initialValue:), que ignora cambios posteriores.
+  late final _notesCtrl = TextEditingController(text: widget.character.notes);
 
   @override
   void dispose() {
     _amountCtrl.dispose();
+    _notesCtrl.dispose();
     super.dispose();
   }
 
@@ -741,6 +745,7 @@ class _SheetScreenState extends State<SheetScreen> {
       children: [
         const Eyebrow('Armadura equipada'),
         DropdownButtonFormField<String?>(
+          key: ValueKey('armor-${_c.equippedArmorId}'),
           initialValue: _c.equippedArmorId,
           isExpanded: true,
           decoration: const InputDecoration(isDense: true),
@@ -759,16 +764,18 @@ class _SheetScreenState extends State<SheetScreen> {
         ),
         const SizedBox(height: 16),
         const Eyebrow('Arma equipada'),
-        DropdownButtonFormField<String>(
+        DropdownButtonFormField<String?>(
+          key: ValueKey('weapon-'
+              '${_c.equippedWeaponIds.isEmpty ? null : _c.equippedWeaponIds.first}'),
           initialValue:
               _c.equippedWeaponIds.isEmpty ? null : _c.equippedWeaponIds.first,
           isExpanded: true,
           decoration: const InputDecoration(isDense: true),
-          hint: const Text('Sin arma'),
-          items: weapons
-              .map((w) => DropdownMenuItem(
-                  value: w.id, child: Text('${w.name} (${w.damageDice})')))
-              .toList(),
+          items: [
+            const DropdownMenuItem(value: null, child: Text('Sin arma (puños)')),
+            ...weapons.map((w) => DropdownMenuItem(
+                value: w.id, child: Text('${w.name} (${w.damageDice})'))),
+          ],
           onChanged: (v) => _replace(_c.copyWith(equippedWeaponIds: [?v])),
         ),
         const SizedBox(height: 24),
@@ -797,8 +804,8 @@ class _SheetScreenState extends State<SheetScreen> {
     return PageBody(
       children: [
         const Eyebrow('Notas del personaje'),
-        TextFormField(
-          initialValue: _c.notes,
+        TextField(
+          controller: _notesCtrl,
           minLines: 12,
           maxLines: null,
           keyboardType: TextInputType.multiline,

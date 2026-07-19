@@ -59,12 +59,16 @@ sealed class Effect {
       'bonusMaxHpPerLevel' =>
         BonusMaxHpPerLevelEffect(json['perLevel'] as int),
       'armorClassBonus' => ArmorClassBonusEffect(json['amount'] as int),
+      'unarmoredDefense' => UnarmoredDefenseEffect(
+          Ability.fromKey(json['ability'] as String),
+        ),
       'resource' => ResourceEffect(
           id: json['id'] as String,
           name: json['name'] as String,
-          max: json['max'] as int,
+          max: json['max'] as int? ?? 0,
           recharge: _rechargeFromJson(json['recharge'] as String?),
           description: json['description'] as String? ?? '',
+          maxPerLevel: json['maxPerLevel'] as bool? ?? false,
         ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
@@ -230,19 +234,38 @@ class ArmorClassBonusEffect extends Effect {
       {'type': 'armorClassBonus', 'amount': amount};
 }
 
+/// Defensa sin Armadura: cuando no se lleva armadura, la CA base pasa a ser
+/// 10 + mod. de Destreza + mod. de [ability]. El Bárbaro usa Constitución y el
+/// Monje Sabiduría. Si hay armadura equipada, este efecto se ignora.
+class UnarmoredDefenseEffect extends Effect {
+  final Ability ability;
+  const UnarmoredDefenseEffect(this.ability);
+  @override
+  Map<String, dynamic> toJson() =>
+      {'type': 'unarmoredDefense', 'ability': ability.name};
+}
+
 /// Plantilla de un recurso consumible (Segundo Aliento, Oleada de Acción).
+///
+/// El máximo puede ser fijo ([max]) o escalar con el nivel de personaje
+/// ([maxPerLevel] = true, p.ej. Puntos de Enfoque del Monje = nivel de Monje).
+/// Para recursos con tramos por nivel (p.ej. Furia del Bárbaro: 2/3/4/5/6) se
+/// declaran varios ResourceEffect con el mismo [id] a distintos niveles: el de
+/// mayor nivel aplicable sobrescribe a los previos.
 class ResourceEffect extends Effect {
   final String id;
   final String name;
   final int max;
   final RechargeOn recharge;
   final String description;
+  final bool maxPerLevel;
   const ResourceEffect({
     required this.id,
     required this.name,
     required this.max,
     required this.recharge,
     this.description = '',
+    this.maxPerLevel = false,
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -252,5 +275,6 @@ class ResourceEffect extends Effect {
         'max': max,
         'recharge': _rechargeToJson(recharge),
         'description': description,
+        'maxPerLevel': maxPerLevel,
       };
 }

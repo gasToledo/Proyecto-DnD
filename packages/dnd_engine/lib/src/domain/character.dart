@@ -130,6 +130,10 @@ class CombatState {
 
 enum CharacterStatus { active, archivedInactive, dead }
 
+/// Centinela para distinguir "no se pasó el argumento" de "se pasó null" en
+/// [Character.copyWith] (necesario para poder **desequipar** la armadura).
+const Object _unset = Object();
+
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
@@ -296,7 +300,7 @@ class Character {
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
     List<int>? hpPerLevel,
-    String? equippedArmorId,
+    Object? equippedArmorId = _unset,
     bool? shieldEquipped,
     List<String>? equippedWeaponIds,
     Map<String, bool>? weaponTwoHanded,
@@ -320,7 +324,10 @@ class Character {
       featIds: featIds ?? this.featIds,
       asiChoices: asiChoices ?? this.asiChoices,
       hpPerLevel: hpPerLevel ?? this.hpPerLevel,
-      equippedArmorId: equippedArmorId ?? this.equippedArmorId,
+      // Con el centinela, pasar `equippedArmorId: null` sí desequipa.
+      equippedArmorId: identical(equippedArmorId, _unset)
+          ? this.equippedArmorId
+          : equippedArmorId as String?,
       shieldEquipped: shieldEquipped ?? this.shieldEquipped,
       equippedWeaponIds: equippedWeaponIds ?? this.equippedWeaponIds,
       weaponTwoHanded: weaponTwoHanded ?? this.weaponTwoHanded,

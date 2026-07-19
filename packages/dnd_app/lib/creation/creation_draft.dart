@@ -57,6 +57,29 @@ class CreationDraft {
         .toList();
   }
 
+  /// Espacios de Maestría de Armas que otorga la clase a nivel 1 (Guerrero 3,
+  /// Bárbaro/Pícaro 2, Monje 0…). Se lee de los efectos de la clase, no se
+  /// hardcodea.
+  int get weaponMasterySlots {
+    final k = klass;
+    if (k == null) return 0;
+    var slots = 0;
+    for (final f in k.featuresUpTo(1)) {
+      for (final e in f.effects) {
+        if (e is WeaponMasterySlotsEffect && e.count > slots) slots = e.count;
+      }
+    }
+    return slots;
+  }
+
+  /// Si la clase concede una elección de Estilo de Combate (hoy: Guerrero).
+  bool get grantsFightingStyle {
+    final k = klass;
+    if (k == null) return false;
+    return k.features
+        .any((f) => f.name.toLowerCase().contains('estilo de combate'));
+  }
+
   int get hitDie => klass?.hitDie ?? 10;
 
   /// Reparto resultante según el modo elegido y las 3 opciones del trasfondo.

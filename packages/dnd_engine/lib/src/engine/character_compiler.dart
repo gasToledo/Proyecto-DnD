@@ -19,9 +19,12 @@ class CharacterCompiler {
     final klass = repo.characterClass(c.classId);
     final background = repo.background(c.backgroundId);
 
-    final builder = SheetBuilder(baseScores: {
-      for (final a in Ability.values) a: c.assignedScores[a] ?? 10,
-    });
+    final builder = SheetBuilder(
+      baseScores: {
+        for (final a in Ability.values) a: c.assignedScores[a] ?? 10,
+      },
+      level: c.level,
+    );
 
     if (race != null) builder.speed = race.speed;
 
@@ -126,6 +129,10 @@ class CharacterCompiler {
       if (armor.addDexMod) {
         ac += armor.maxDexBonus == null ? dexMod : min(dexMod, armor.maxDexBonus!);
       }
+    } else if (b.unarmoredDefenseAbility != null) {
+      // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
+      final mod = abilityModifier(b.finalScore(b.unarmoredDefenseAbility!));
+      ac = 10 + dexMod + mod;
     }
     if (c.shieldEquipped) ac += 2;
     ac += b.acBonus;

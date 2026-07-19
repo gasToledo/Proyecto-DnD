@@ -1,6 +1,8 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 import 'creation_draft.dart';
 
 /// Habilidades 2024 (para elecciones "de cualquier lista").
@@ -70,9 +72,14 @@ class _CreationWizardState extends State<CreationWizard> {
           child: LinearProgressIndicator(value: (_step + 1) / _titles.length),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: _buildStep(),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: _buildStep(),
+          ),
+        ),
       ),
       bottomNavigationBar: _NavBar(
         step: _step,
@@ -115,7 +122,7 @@ class _ClassStep extends StatelessWidget {
 
     return ListView(
       children: [
-        _SectionLabel('Clase'),
+        Eyebrow('Clase'),
         Wrap(
           spacing: 8,
           children: repo.classes.values
@@ -131,7 +138,7 @@ class _ClassStep extends StatelessWidget {
         ),
         if (klass != null) ...[
           const SizedBox(height: 20),
-          _SectionLabel('Estilo de combate'),
+          Eyebrow('Estilo de combate'),
           _SingleSelect(
             options: {for (final f in styles) f.id: f.name},
             selected: draft.fightingStyleId,
@@ -141,7 +148,7 @@ class _ClassStep extends StatelessWidget {
             },
           ),
           const SizedBox(height: 20),
-          _SectionLabel('Habilidades de clase (elige 2)'),
+          Eyebrow('Habilidades de clase (elige 2)'),
           _MultiSelect(
             options: {for (final s in klass.skillChoiceFrom) s: titleCase(s)},
             selected: draft.classSkills,
@@ -149,7 +156,7 @@ class _ClassStep extends StatelessWidget {
             onChanged: onChanged,
           ),
           const SizedBox(height: 20),
-          _SectionLabel('Maestría de armas (elige $slots)'),
+          Eyebrow('Maestría de armas (elige $slots)'),
           _MultiSelectList(
             options: {for (final w in masteryWeapons) w.id: w.name},
             selected: draft.weaponMasteries,
@@ -177,7 +184,7 @@ class _SpeciesStep extends StatelessWidget {
 
     return ListView(
       children: [
-        _SectionLabel('Especie'),
+        Eyebrow('Especie'),
         _SingleSelect(
           options: {for (final r in repo.races.values) r.id: r.name},
           selected: draft.raceId,
@@ -193,7 +200,7 @@ class _SpeciesStep extends StatelessWidget {
           _TraitList(effects: race.effects),
           if (race.skillChoiceCount > 0) ...[
             const SizedBox(height: 16),
-            _SectionLabel('Habilidad de especie (elige ${race.skillChoiceCount})'),
+            Eyebrow('Habilidad de especie (elige ${race.skillChoiceCount})'),
             _MultiSelect(
               options: {
                 for (final s in (race.skillChoiceFrom.isEmpty
@@ -208,7 +215,7 @@ class _SpeciesStep extends StatelessWidget {
           ],
           if (grantsFeat) ...[
             const SizedBox(height: 16),
-            _SectionLabel('Dote de origen (especie)'),
+            Eyebrow('Dote de origen (especie)'),
             _SingleSelect(
               options: {for (final f in originFeats) f.id: f.name},
               selected: draft.raceFeatId,
@@ -236,7 +243,7 @@ class _BackgroundStep extends StatelessWidget {
 
     return ListView(
       children: [
-        _SectionLabel('Trasfondo'),
+        Eyebrow('Trasfondo'),
         _SingleSelect(
           options: {for (final b in repo.backgrounds.values) b.id: b.name},
           selected: draft.backgroundId,
@@ -254,7 +261,7 @@ class _BackgroundStep extends StatelessWidget {
             Text('Dote de origen: '
                 '${repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!}'),
           const SizedBox(height: 20),
-          _SectionLabel('Aumento de característica (2024)'),
+          Eyebrow('Aumento de característica (2024)'),
           SegmentedButton<AbilitySpreadMode>(
             segments: const [
               ButtonSegment(value: AbilitySpreadMode.twoOne, label: Text('+2 / +1')),
@@ -356,7 +363,7 @@ class _ScoresStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        _SectionLabel('Método'),
+        Eyebrow('Método'),
         SegmentedButton<ScoreMethod>(
           segments: const [
             ButtonSegment(
@@ -430,7 +437,7 @@ class _ScoreRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           if (spread > 0)
-            Text('+$spread', style: const TextStyle(color: Colors.greenAccent)),
+            Text('+$spread', style: TextStyle(color: context.palette.gold)),
           SizedBox(
             width: 56,
             child: Text(assigned == null ? '' : '= $finalScore',
@@ -456,7 +463,7 @@ class _EquipmentStep extends StatelessWidget {
 
     return ListView(
       children: [
-        _SectionLabel('Armadura'),
+        Eyebrow('Armadura'),
         _SingleSelect(
           options: {for (final a in armors) a.id: '${a.name} (CA ${a.baseAc})'},
           selected: draft.equippedArmorId,
@@ -474,7 +481,7 @@ class _EquipmentStep extends StatelessWidget {
           },
         ),
         const SizedBox(height: 12),
-        _SectionLabel('Arma equipada'),
+        Eyebrow('Arma equipada'),
         _SingleSelect(
           options: {for (final w in weapons) w.id: '${w.name} (${w.damageDice})'},
           selected: draft.weaponId,
@@ -530,7 +537,7 @@ class _NameStepState extends State<_NameStep> {
           },
         ),
         const SizedBox(height: 20),
-        _SectionLabel('Resumen'),
+        Eyebrow('Resumen'),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -562,16 +569,6 @@ class _NameStepState extends State<_NameStep> {
 // ----------------------------------------------------------------------------
 // Widgets reutilizables
 // ----------------------------------------------------------------------------
-
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  const _SectionLabel(this.text);
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium),
-      );
-}
 
 /// Selección única mediante chips.
 class _SingleSelect extends StatelessWidget {

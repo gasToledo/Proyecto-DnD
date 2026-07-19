@@ -12,6 +12,7 @@ import 'data/transfer_service.dart';
 import 'demo/demo_characters.dart';
 import 'homebrew/homebrew_screen.dart';
 import 'theme/app_theme.dart';
+import 'theme/app_widgets.dart';
 import 'ui/import_dialog.dart';
 import 'ui/settings_dialog.dart';
 import 'ui/sheet_screen.dart';
@@ -176,47 +177,31 @@ class DashboardScreen extends StatelessWidget {
         builder: (context, _) {
           final characters = controller.characters;
           if (characters.isEmpty) {
-            return const Center(child: Text('Todavía no hay personajes.'));
+            final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.shield_outlined, size: 40, color: muted),
+                  const SizedBox(height: 12),
+                  Text('Todavía no hay personajes.',
+                      style: TextStyle(color: muted)),
+                ],
+              ),
+            );
           }
           return Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 760),
               child: ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: characters.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 8),
-            itemBuilder: (context, i) {
-              final c = characters[i];
-              final klass = repo.characterClass(c.classId)?.name ?? c.classId;
-              final race = repo.race(c.raceId)?.name ?? c.raceId;
-              final portrait =
-                  c.portraitPaths.isNotEmpty ? c.portraitPaths.first : null;
-              final hasPortrait = portrait != null && File(portrait).existsSync();
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    radius: 26,
-                    backgroundImage:
-                        hasPortrait ? FileImage(File(portrait)) : null,
-                    child: hasPortrait ? null : Text(c.name.characters.first),
-                  ),
-                  title: Text(c.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('$race $klass · Nivel ${c.level}'),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (v) {
-                      if (v == 'delete') _confirmDelete(context, c);
-                      if (v == 'export') _exportCharacter(context, c);
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'export', child: Text('Exportar')),
-                      PopupMenuItem(value: 'delete', child: Text('Eliminar')),
-                    ],
-                  ),
-                  onTap: () => _openSheet(context, c),
-                ),
-              );
-            },
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                itemCount: characters.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (context, i) =>
+                    _CharacterCard(character: characters[i], repo: repo,
+                        onTap: () => _openSheet(context, characters[i]),
+                        onExport: () => _exportCharacter(context, characters[i]),
+                        onDelete: () => _confirmDelete(context, characters[i])),
               ),
             ),
           );
@@ -298,5 +283,90 @@ class DashboardScreen extends StatelessWidget {
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Error al importar: $e')));
     }
+  }
+}
+
+/// Tarjeta de personaje del dashboard: mismo lenguaje que la banda de
+/// identidad de la ficha (medallón + nombre + nivel en serif dorado).
+class _CharacterCard extends StatelessWidget {
+  final Character character;
+  final ContentRepository repo;
+  final VoidCallback onTap;
+  final VoidCallback onExport;
+  final VoidCallback onDelete;
+  const _CharacterCard({
+    required this.character,
+    required this.repo,
+    required this.onTap,
+    required this.onExport,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = character;
+    final pal = context.palette;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final klass = repo.characterClass(c.classId)?.name ?? c.classId;
+    final race = repo.race(c.raceId)?.name ?? c.raceId;
+    final portrait = c.portraitPaths.isNotEmpty ? c.portraitPaths.first : null;
+    final hasPortrait = portrait != null && File(portrait).existsSync();
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
+          child: Row(
+            children: [
+              Medallion(
+                image: hasPortrait ? FileImage(File(portrait)) : null,
+                fallback: c.name.characters.first,
+                size: 52,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(c.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w500, fontSize: 16)),
+                    const SizedBox(height: 2),
+                    Text('$race $klass', style: TextStyle(color: muted, fontSize: 13)),
+                  ],
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('${c.level}',
+                      style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 22,
+                          height: 1,
+                          color: pal.gold)),
+                  Text('NIVEL',
+                      style: TextStyle(
+                          fontSize: 9, letterSpacing: 1, color: pal.textMuted)),
+                ],
+              ),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert, color: muted),
+                onSelected: (v) {
+                  if (v == 'delete') onDelete();
+                  if (v == 'export') onExport();
+                },
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'export', child: Text('Exportar')),
+                  PopupMenuItem(value: 'delete', child: Text('Eliminar')),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

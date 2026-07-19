@@ -45,6 +45,33 @@
     ]
   },
   {
+    "id": "crafter",
+    "name": "Artesano",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "passiveTrait", "name": "Artesano", "description": "Ganas competencia con tres herramientas de artesano a tu elección, obtienes 20% de descuento al comprar objetos no mágicos y puedes fabricar más rápido durante un descanso." }
+    ]
+  },
+  {
+    "id": "healer",
+    "name": "Sanador",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "passiveTrait", "name": "Sanador", "description": "Con un kit de sanador, como acción puedes gastar un uso para restaurar 1d6 + bonif. de competencia PG a una criatura (más dados según el nivel del objetivo). También puedes estabilizar y curar 1 PG a una criatura a 0 PG." }
+    ]
+  },
+  {
+    "id": "musician",
+    "name": "Músico",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      { "type": "passiveTrait", "name": "Músico", "description": "Ganas competencia con tres instrumentos musicales. Tras un descanso, puedes tocar para otorgar Inspiración Heroica a aliados (hasta tu bonif. de competencia)." }
+    ]
+  },
+  {
     "id": "fs-defense",
     "name": "Estilo de Combate: Defensa",
     "source": "srd_2024",

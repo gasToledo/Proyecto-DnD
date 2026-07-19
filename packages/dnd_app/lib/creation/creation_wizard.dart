@@ -117,7 +117,7 @@ class _ClassStep extends StatelessWidget {
     final klass = draft.klass;
     final styles =
         repo.feats.values.where((f) => f.category == 'fighting-style').toList();
-    final masteryWeapons = repo.weapons.values.toList();
+    final masteryWeapons = draft.proficientWeapons;
     final slots = 3; // Guerrero 2024
 
     return ListView(
@@ -131,6 +131,8 @@ class _ClassStep extends StatelessWidget {
                     selected: draft.classId == c.id,
                     onSelected: (_) {
                       draft.classId = c.id;
+                      draft.classSkills.clear();
+                      draft.weaponMasteries.clear();
                       onChanged();
                     },
                   ))
@@ -161,8 +163,11 @@ class _ClassStep extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Eyebrow('Maestría de armas (elige $slots)'),
-          _MultiSelectList(
-            options: {for (final w in masteryWeapons) w.id: w.name},
+          Text('Solo armas con las que ${klass.name} es competente.',
+              style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 6),
+          _WeaponChecklist(
+            weapons: masteryWeapons,
             selected: draft.weaponMasteries,
             max: slots,
             onChanged: onChanged,
@@ -490,8 +495,8 @@ class _EquipmentStep extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Eyebrow('Arma equipada'),
-        _SingleSelect(
-          options: {for (final w in weapons) w.id: '${w.name} (${w.damageDice})'},
+        _WeaponSelect(
+          weapons: weapons,
           selected: draft.weaponId,
           onSelect: (id) {
             draft.weaponId = id;
@@ -650,39 +655,176 @@ class _MultiSelect extends StatelessWidget {
   }
 }
 
-/// Multiselección con tope, mediante lista (para listas largas como armas).
-class _MultiSelectList extends StatelessWidget {
-  final Map<String, String> options;
+/// Etiqueta en español de la categoría de arma.
+String _weaponCategoryLabel(String category) =>
+    category == 'simple' ? 'Simples' : 'Marciales';
+
+/// Subtítulo con daño y (si aplica) la propiedad de maestría del arma.
+String _weaponSubtitle(Weapon w) {
+  final dmg = '${w.damageDice} ${titleCase(w.damageType)}';
+  return w.mastery == null ? dmg : '$dmg · Maestría: ${titleCase(w.mastery!)}';
+}
+
+/// Encabezado de grupo (Simples / Marciales) dentro de un picker de armas.
+Widget _weaponGroupHeader(BuildContext context, String label) => Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 2),
+      child: Text(label.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              letterSpacing: 1,
+              color: Theme.of(context).colorScheme.onSurfaceVariant)),
+    );
+
+/// Multiselección de armas con tope, búsqueda y agrupación por categoría.
+/// Usada para elegir Maestrías de Armas sobre la lista ya filtrada por
+/// competencia.
+class _WeaponChecklist extends StatefulWidget {
+  final List<Weapon> weapons;
   final List<String> selected;
   final int max;
   final VoidCallback onChanged;
-  const _MultiSelectList({
-    required this.options,
+  const _WeaponChecklist({
+    required this.weapons,
     required this.selected,
     required this.max,
     required this.onChanged,
   });
 
   @override
+  State<_WeaponChecklist> createState() => _WeaponChecklistState();
+}
+
+class _WeaponChecklistState extends State<_WeaponChecklist> {
+  String _query = '';
+
+  @override
   Widget build(BuildContext context) {
+    final q = _query.trim().toLowerCase();
+    final matches = widget.weapons
+        .where((w) => q.isEmpty || w.name.toLowerCase().contains(q))
+        .toList();
+    final simple = matches.where((w) => w.category == 'simple').toList();
+    final martial = matches.where((w) => w.category == 'martial').toList();
+    final full = widget.selected.length >= widget.max;
+
     return Column(
-      children: options.entries.map((e) {
-        final isSel = selected.contains(e.key);
-        return CheckboxListTile(
-          dense: true,
-          title: Text(e.value),
-          value: isSel,
-          onChanged: (v) {
-            if (v == true) {
-              if (selected.length >= max) return;
-              selected.add(e.key);
-            } else {
-              selected.remove(e.key);
-            }
-            onChanged();
-          },
-        );
-      }).toList(),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _WeaponSearchField(onChanged: (v) => setState(() => _query = v)),
+        for (final group in [
+          ('simple', simple),
+          ('martial', martial),
+        ])
+          if (group.$2.isNotEmpty) ...[
+            _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
+            ...group.$2.map((w) {
+              final isSel = widget.selected.contains(w.id);
+              return CheckboxListTile(
+                dense: true,
+                value: isSel,
+                title: Text(w.name),
+                subtitle: Text(_weaponSubtitle(w)),
+                onChanged: (isSel || !full)
+                    ? (v) {
+                        if (v == true) {
+                          if (!widget.selected.contains(w.id)) {
+                            widget.selected.add(w.id);
+                          }
+                        } else {
+                          widget.selected.remove(w.id);
+                        }
+                        widget.onChanged();
+                        setState(() {});
+                      }
+                    : null,
+              );
+            }),
+          ],
+        if (matches.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text('Sin coincidencias.',
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
+      ],
+    );
+  }
+}
+
+/// Selección única de arma con búsqueda y agrupación por categoría.
+class _WeaponSelect extends StatefulWidget {
+  final List<Weapon> weapons;
+  final String? selected;
+  final ValueChanged<String> onSelect;
+  const _WeaponSelect({
+    required this.weapons,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  State<_WeaponSelect> createState() => _WeaponSelectState();
+}
+
+class _WeaponSelectState extends State<_WeaponSelect> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _query.trim().toLowerCase();
+    final matches = widget.weapons
+        .where((w) => q.isEmpty || w.name.toLowerCase().contains(q))
+        .toList();
+    final simple = matches.where((w) => w.category == 'simple').toList();
+    final martial = matches.where((w) => w.category == 'martial').toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _WeaponSearchField(onChanged: (v) => setState(() => _query = v)),
+        for (final group in [
+          ('simple', simple),
+          ('martial', martial),
+        ])
+          if (group.$2.isNotEmpty) ...[
+            _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: group.$2
+                  .map((w) => ChoiceChip(
+                        label: Text('${w.name} (${w.damageDice})'),
+                        selected: widget.selected == w.id,
+                        onSelected: (_) => widget.onSelect(w.id),
+                      ))
+                  .toList(),
+            ),
+          ],
+        if (matches.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text('Sin coincidencias.',
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
+      ],
+    );
+  }
+}
+
+/// Campo de búsqueda compacto compartido por los pickers de armas.
+class _WeaponSearchField extends StatelessWidget {
+  final ValueChanged<String> onChanged;
+  const _WeaponSearchField({required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        isDense: true,
+        prefixIcon: Icon(Icons.search, size: 20),
+        hintText: 'Buscar arma…',
+        border: OutlineInputBorder(),
+      ),
+      onChanged: onChanged,
     );
   }
 }

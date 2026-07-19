@@ -1,24 +1,13 @@
 [
   {
-    "id": "longsword",
-    "name": "Espada larga",
+    "id": "club",
+    "name": "Garrote",
     "source": "srd_2024",
-    "category": "martial",
-    "damageDice": "1d8",
-    "damageType": "slashing",
-    "properties": ["versatile"],
-    "versatileDice": "1d10",
-    "mastery": "sap"
-  },
-  {
-    "id": "greatsword",
-    "name": "Mandoble",
-    "source": "srd_2024",
-    "category": "martial",
-    "damageDice": "2d6",
-    "damageType": "slashing",
-    "properties": ["heavy", "two-handed"],
-    "mastery": "graze"
+    "category": "simple",
+    "damageDice": "1d4",
+    "damageType": "bludgeoning",
+    "properties": ["light"],
+    "mastery": "slow"
   },
   {
     "id": "dagger",
@@ -31,6 +20,108 @@
     "mastery": "nick"
   },
   {
+    "id": "greatclub",
+    "name": "Clava",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d8",
+    "damageType": "bludgeoning",
+    "properties": ["two-handed"],
+    "mastery": "push"
+  },
+  {
+    "id": "handaxe",
+    "name": "Hacha de mano",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d6",
+    "damageType": "slashing",
+    "properties": ["light", "thrown"],
+    "mastery": "vex"
+  },
+  {
+    "id": "javelin",
+    "name": "Jabalina",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d6",
+    "damageType": "piercing",
+    "properties": ["thrown"],
+    "mastery": "slow"
+  },
+  {
+    "id": "light-hammer",
+    "name": "Martillo ligero",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d4",
+    "damageType": "bludgeoning",
+    "properties": ["light", "thrown"],
+    "mastery": "nick"
+  },
+  {
+    "id": "mace",
+    "name": "Maza",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d6",
+    "damageType": "bludgeoning",
+    "properties": [],
+    "mastery": "sap"
+  },
+  {
+    "id": "quarterstaff",
+    "name": "Bastón",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d6",
+    "damageType": "bludgeoning",
+    "properties": ["versatile"],
+    "versatileDice": "1d8",
+    "mastery": "topple"
+  },
+  {
+    "id": "sickle",
+    "name": "Hoz",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d4",
+    "damageType": "slashing",
+    "properties": ["light"],
+    "mastery": "nick"
+  },
+  {
+    "id": "spear",
+    "name": "Lanza",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d6",
+    "damageType": "piercing",
+    "properties": ["thrown", "versatile"],
+    "versatileDice": "1d8",
+    "mastery": "sap"
+  },
+  {
+    "id": "dart",
+    "name": "Dardo",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d4",
+    "damageType": "piercing",
+    "properties": ["finesse", "thrown", "ranged"],
+    "mastery": "vex"
+  },
+  {
+    "id": "light-crossbow",
+    "name": "Ballesta ligera",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d8",
+    "damageType": "piercing",
+    "properties": ["ammunition", "loading", "two-handed", "ranged"],
+    "mastery": "slow"
+  },
+  {
     "id": "shortbow",
     "name": "Arco corto",
     "source": "srd_2024",
@@ -39,5 +130,229 @@
     "damageType": "piercing",
     "properties": ["ranged", "two-handed", "ammunition"],
     "mastery": "vex"
+  },
+  {
+    "id": "sling",
+    "name": "Honda",
+    "source": "srd_2024",
+    "category": "simple",
+    "damageDice": "1d4",
+    "damageType": "bludgeoning",
+    "properties": ["ammunition", "ranged"],
+    "mastery": "slow"
+  },
+  {
+    "id": "battleaxe",
+    "name": "Hacha de batalla",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "slashing",
+    "properties": ["versatile"],
+    "versatileDice": "1d10",
+    "mastery": "topple"
+  },
+  {
+    "id": "flail",
+    "name": "Mangual",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "bludgeoning",
+    "properties": [],
+    "mastery": "sap"
+  },
+  {
+    "id": "glaive",
+    "name": "Guja",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d10",
+    "damageType": "slashing",
+    "properties": ["heavy", "reach", "two-handed"],
+    "mastery": "graze"
+  },
+  {
+    "id": "greataxe",
+    "name": "Gran hacha",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d12",
+    "damageType": "slashing",
+    "properties": ["heavy", "two-handed"],
+    "mastery": "cleave"
+  },
+  {
+    "id": "greatsword",
+    "name": "Mandoble",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "2d6",
+    "damageType": "slashing",
+    "properties": ["heavy", "two-handed"],
+    "mastery": "graze"
+  },
+  {
+    "id": "halberd",
+    "name": "Alabarda",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d10",
+    "damageType": "slashing",
+    "properties": ["heavy", "reach", "two-handed"],
+    "mastery": "cleave"
+  },
+  {
+    "id": "lance",
+    "name": "Lanza de caballería",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d10",
+    "damageType": "piercing",
+    "properties": ["heavy", "reach", "two-handed"],
+    "mastery": "topple"
+  },
+  {
+    "id": "longsword",
+    "name": "Espada larga",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "slashing",
+    "properties": ["versatile"],
+    "versatileDice": "1d10",
+    "mastery": "sap"
+  },
+  {
+    "id": "maul",
+    "name": "Mazo",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "2d6",
+    "damageType": "bludgeoning",
+    "properties": ["heavy", "two-handed"],
+    "mastery": "topple"
+  },
+  {
+    "id": "morningstar",
+    "name": "Lucero del alba",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "piercing",
+    "properties": [],
+    "mastery": "sap"
+  },
+  {
+    "id": "pike",
+    "name": "Pica",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d10",
+    "damageType": "piercing",
+    "properties": ["heavy", "reach", "two-handed"],
+    "mastery": "push"
+  },
+  {
+    "id": "rapier",
+    "name": "Estoque",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "piercing",
+    "properties": ["finesse"],
+    "mastery": "vex"
+  },
+  {
+    "id": "scimitar",
+    "name": "Cimitarra",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d6",
+    "damageType": "slashing",
+    "properties": ["finesse", "light"],
+    "mastery": "nick"
+  },
+  {
+    "id": "shortsword",
+    "name": "Espada corta",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d6",
+    "damageType": "piercing",
+    "properties": ["finesse", "light"],
+    "mastery": "vex"
+  },
+  {
+    "id": "trident",
+    "name": "Tridente",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "piercing",
+    "properties": ["thrown", "versatile"],
+    "versatileDice": "1d10",
+    "mastery": "topple"
+  },
+  {
+    "id": "war-pick",
+    "name": "Pico de guerra",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "piercing",
+    "properties": [],
+    "mastery": "sap"
+  },
+  {
+    "id": "warhammer",
+    "name": "Martillo de guerra",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "bludgeoning",
+    "properties": ["versatile"],
+    "versatileDice": "1d10",
+    "mastery": "push"
+  },
+  {
+    "id": "whip",
+    "name": "Látigo",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d4",
+    "damageType": "slashing",
+    "properties": ["finesse", "reach"],
+    "mastery": "slow"
+  },
+  {
+    "id": "hand-crossbow",
+    "name": "Ballesta de mano",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d6",
+    "damageType": "piercing",
+    "properties": ["ammunition", "light", "loading", "ranged"],
+    "mastery": "vex"
+  },
+  {
+    "id": "heavy-crossbow",
+    "name": "Ballesta pesada",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d10",
+    "damageType": "piercing",
+    "properties": ["ammunition", "heavy", "loading", "two-handed", "ranged"],
+    "mastery": "push"
+  },
+  {
+    "id": "longbow",
+    "name": "Arco largo",
+    "source": "srd_2024",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "piercing",
+    "properties": ["ammunition", "heavy", "two-handed", "ranged"],
+    "mastery": "slow"
   }
 ]

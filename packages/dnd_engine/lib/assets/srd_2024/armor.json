@@ -1,5 +1,14 @@
 [
   {
+    "id": "padded",
+    "name": "Armadura acolchada",
+    "source": "srd_2024",
+    "category": "light",
+    "baseAc": 11,
+    "addDexMod": true,
+    "stealthDisadvantage": true
+  },
+  {
     "id": "leather",
     "name": "Armadura de cuero",
     "source": "srd_2024",
@@ -16,6 +25,15 @@
     "addDexMod": true
   },
   {
+    "id": "hide",
+    "name": "Armadura de pieles",
+    "source": "srd_2024",
+    "category": "medium",
+    "baseAc": 12,
+    "addDexMod": true,
+    "maxDexBonus": 2
+  },
+  {
     "id": "chain-shirt",
     "name": "Camisa de malla",
     "source": "srd_2024",
@@ -23,6 +41,44 @@
     "baseAc": 13,
     "addDexMod": true,
     "maxDexBonus": 2
+  },
+  {
+    "id": "scale-mail",
+    "name": "Cota de escamas",
+    "source": "srd_2024",
+    "category": "medium",
+    "baseAc": 14,
+    "addDexMod": true,
+    "maxDexBonus": 2,
+    "stealthDisadvantage": true
+  },
+  {
+    "id": "breastplate",
+    "name": "Peto",
+    "source": "srd_2024",
+    "category": "medium",
+    "baseAc": 14,
+    "addDexMod": true,
+    "maxDexBonus": 2
+  },
+  {
+    "id": "half-plate",
+    "name": "Armadura de media placa",
+    "source": "srd_2024",
+    "category": "medium",
+    "baseAc": 15,
+    "addDexMod": true,
+    "maxDexBonus": 2,
+    "stealthDisadvantage": true
+  },
+  {
+    "id": "ring-mail",
+    "name": "Cota de anillas",
+    "source": "srd_2024",
+    "category": "heavy",
+    "baseAc": 14,
+    "addDexMod": false,
+    "stealthDisadvantage": true
   },
   {
     "id": "chain-mail",
@@ -33,5 +89,33 @@
     "addDexMod": false,
     "strengthRequirement": 13,
     "stealthDisadvantage": true
+  },
+  {
+    "id": "splint",
+    "name": "Cota de bandas",
+    "source": "srd_2024",
+    "category": "heavy",
+    "baseAc": 17,
+    "addDexMod": false,
+    "strengthRequirement": 15,
+    "stealthDisadvantage": true
+  },
+  {
+    "id": "plate",
+    "name": "Armadura de placas",
+    "source": "srd_2024",
+    "category": "heavy",
+    "baseAc": 18,
+    "addDexMod": false,
+    "strengthRequirement": 15,
+    "stealthDisadvantage": true
+  },
+  {
+    "id": "shield",
+    "name": "Escudo",
+    "source": "srd_2024",
+    "category": "shield",
+    "baseAc": 2,
+    "addDexMod": false
   }
 ]

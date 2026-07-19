@@ -235,16 +235,26 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Future<void> _exportCharacter(BuildContext context, Character c) async {
-    final path = await TransferService().exportCharacter(c);
-    if (!context.mounted) return;
-    _showExported(context, 'Personaje exportado', path);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final path = await TransferService().exportCharacter(c);
+      if (!context.mounted) return;
+      _showExported(context, 'Personaje exportado', path);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Error al exportar: $e')));
+    }
   }
 
   Future<void> _exportBackup(BuildContext context) async {
-    final path = await TransferService().exportBackup(controller.characters);
-    if (!context.mounted) return;
-    _showExported(context,
-        'Respaldo completo (${controller.characters.length} personajes)', path);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final path = await TransferService().exportBackup(controller.characters);
+      if (!context.mounted) return;
+      _showExported(context,
+          'Respaldo completo (${controller.characters.length} personajes)', path);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Error al exportar: $e')));
+    }
   }
 
   void _showExported(BuildContext context, String title, String path) {

@@ -153,6 +153,10 @@ class _ClassStep extends StatelessWidget {
             options: {for (final s in klass.skillChoiceFrom) s: titleCase(s)},
             selected: draft.classSkills,
             max: klass.skillChoiceCount,
+            disabled: {
+              ...draft.raceSkills,
+              ...?draft.background?.skillProficiencies,
+            },
             onChanged: onChanged,
           ),
           const SizedBox(height: 20),
@@ -210,6 +214,10 @@ class _SpeciesStep extends StatelessWidget {
               },
               selected: draft.raceSkills,
               max: race.skillChoiceCount,
+              disabled: {
+                ...draft.classSkills,
+                ...?draft.background?.skillProficiencies,
+              },
               onChanged: onChanged,
             ),
           ],
@@ -600,11 +608,18 @@ class _MultiSelect extends StatelessWidget {
   final Set<String> selected;
   final int max;
   final VoidCallback onChanged;
+
+  /// Opciones ya tomadas en otro grupo (p.ej. una habilidad elegida como
+  /// competencia de clase no puede volver a elegirse como de especie). Se
+  /// muestran deshabilitadas para evitar competencias duplicadas.
+  final Set<String> disabled;
+
   const _MultiSelect({
     required this.options,
     required this.selected,
     required this.max,
     required this.onChanged,
+    this.disabled = const {},
   });
 
   @override
@@ -614,18 +629,21 @@ class _MultiSelect extends StatelessWidget {
       runSpacing: 8,
       children: options.entries.map((e) {
         final isSel = selected.contains(e.key);
+        final isBlocked = disabled.contains(e.key) && !isSel;
         return FilterChip(
           label: Text(e.value),
           selected: isSel,
-          onSelected: (v) {
-            if (v) {
-              if (selected.length >= max) return;
-              selected.add(e.key);
-            } else {
-              selected.remove(e.key);
-            }
-            onChanged();
-          },
+          onSelected: isBlocked
+              ? null
+              : (v) {
+                  if (v) {
+                    if (selected.length >= max) return;
+                    selected.add(e.key);
+                  } else {
+                    selected.remove(e.key);
+                  }
+                  onChanged();
+                },
         );
       }).toList(),
     );

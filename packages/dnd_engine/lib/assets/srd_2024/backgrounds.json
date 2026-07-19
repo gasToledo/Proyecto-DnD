@@ -28,5 +28,95 @@
     "toolProficiencies": ["thieves-tools"],
     "originFeatId": "lucky",
     "effects": []
+  },
+  {
+    "id": "artisan",
+    "name": "Artesano",
+    "source": "srd_2024",
+    "abilityOptions": ["strength", "dexterity", "intelligence"],
+    "skillProficiencies": ["investigation", "persuasion"],
+    "toolProficiencies": ["artisans-tools"],
+    "originFeatId": "crafter",
+    "effects": []
+  },
+  {
+    "id": "charlatan",
+    "name": "Charlatán",
+    "source": "srd_2024",
+    "abilityOptions": ["dexterity", "constitution", "charisma"],
+    "skillProficiencies": ["deception", "sleight-of-hand"],
+    "toolProficiencies": ["forgery-kit"],
+    "originFeatId": "skilled",
+    "effects": []
+  },
+  {
+    "id": "criminal",
+    "name": "Criminal",
+    "source": "srd_2024",
+    "abilityOptions": ["dexterity", "constitution", "intelligence"],
+    "skillProficiencies": ["sleight-of-hand", "stealth"],
+    "toolProficiencies": ["thieves-tools"],
+    "originFeatId": "alert",
+    "effects": []
+  },
+  {
+    "id": "entertainer",
+    "name": "Artista",
+    "source": "srd_2024",
+    "abilityOptions": ["strength", "dexterity", "charisma"],
+    "skillProficiencies": ["acrobatics", "performance"],
+    "toolProficiencies": ["musical-instrument"],
+    "originFeatId": "musician",
+    "effects": []
+  },
+  {
+    "id": "farmer",
+    "name": "Granjero",
+    "source": "srd_2024",
+    "abilityOptions": ["strength", "constitution", "wisdom"],
+    "skillProficiencies": ["animal-handling", "nature"],
+    "toolProficiencies": ["carpenters-tools"],
+    "originFeatId": "tough",
+    "effects": []
+  },
+  {
+    "id": "hermit",
+    "name": "Ermitaño",
+    "source": "srd_2024",
+    "abilityOptions": ["constitution", "wisdom", "charisma"],
+    "skillProficiencies": ["medicine", "religion"],
+    "toolProficiencies": ["herbalism-kit"],
+    "originFeatId": "healer",
+    "effects": []
+  },
+  {
+    "id": "merchant",
+    "name": "Mercader",
+    "source": "srd_2024",
+    "abilityOptions": ["constitution", "intelligence", "charisma"],
+    "skillProficiencies": ["animal-handling", "persuasion"],
+    "toolProficiencies": ["navigators-tools"],
+    "originFeatId": "lucky",
+    "effects": []
+  },
+  {
+    "id": "noble",
+    "name": "Noble",
+    "source": "srd_2024",
+    "abilityOptions": ["strength", "intelligence", "charisma"],
+    "skillProficiencies": ["history", "persuasion"],
+    "toolProficiencies": ["gaming-set"],
+    "originFeatId": "skilled",
+    "effects": []
+  },
+  {
+    "id": "scribe",
+    "name": "Escriba",
+    "source": "srd_2024",
+    "abilityOptions": ["dexterity", "intelligence", "wisdom"],
+    "skillProficiencies": ["investigation", "perception"],
+    "toolProficiencies": ["calligraphers-supplies"],
+    "originFeatId": "skilled",
+    "effects": []
   }
 ]

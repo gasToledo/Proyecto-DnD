@@ -46,6 +46,17 @@ class CreationDraft {
   Background? get background =>
       backgroundId == null ? null : repo.background(backgroundId!);
 
+  /// Armas con las que la clase elegida es competente. La Maestría de Armas
+  /// 2024 solo puede aplicarse a estas.
+  List<Weapon> get proficientWeapons {
+    final k = klass;
+    if (k == null) return const [];
+    final profs = k.weaponProficiencies.toSet();
+    return repo.weapons.values
+        .where((w) => profs.contains(w.category) || profs.contains(w.id))
+        .toList();
+  }
+
   int get hitDie => klass?.hitDie ?? 10;
 
   /// Reparto resultante según el modo elegido y las 3 opciones del trasfondo.

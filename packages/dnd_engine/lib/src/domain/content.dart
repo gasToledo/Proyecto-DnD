@@ -1,5 +1,6 @@
 import 'ability.dart';
 import 'effects.dart';
+import 'spell_slots.dart';
 
 /// Origen del contenido. Oficial y homebrew comparten estructura; solo cambia
 /// esta etiqueta (y de qué edición proviene lo oficial).
@@ -367,6 +368,77 @@ class Weapon {
             .toList(),
         versatileDice: j['versatileDice'] as String?,
         mastery: j['mastery'] as String?,
+      );
+}
+
+/// Conjuro. Es contenido como cualquier otro: oficial y homebrew comparten
+/// este modelo. `level` 0 = truco (cantrip). `classes` lista los ids de clase
+/// cuya lista lo incluye (p.ej. ['wizard', 'sorcerer']).
+class Spell {
+  final String id;
+  final String name;
+  final ContentSource source;
+  final int level;
+  final String school;
+  final String castingTime;
+  final String range;
+  final String components;
+  final String duration;
+  final bool concentration;
+  final bool ritual;
+  final String description;
+  final List<String> classes;
+
+  const Spell({
+    required this.id,
+    required this.name,
+    required this.source,
+    required this.level,
+    this.school = '',
+    this.castingTime = '1 acción',
+    this.range = '',
+    this.components = '',
+    this.duration = '',
+    this.concentration = false,
+    this.ritual = false,
+    this.description = '',
+    this.classes = const [],
+  });
+
+  bool get isCantrip => level == 0;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'source': source.toJson(),
+        'level': level,
+        'school': school,
+        'castingTime': castingTime,
+        'range': range,
+        'components': components,
+        'duration': duration,
+        'concentration': concentration,
+        'ritual': ritual,
+        'description': description,
+        'classes': classes,
+      };
+
+  factory Spell.fromJson(Map<String, dynamic> j) => Spell(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        source: ContentSource.fromJson(j['source'] as String?),
+        level: j['level'] as int,
+        school: j['school'] as String? ?? '',
+        castingTime: j['castingTime'] as String? ?? '1 acción',
+        range: j['range'] as String? ?? '',
+        components: j['components'] as String? ?? '',
+        duration: j['duration'] as String? ?? '',
+        concentration: j['concentration'] as bool? ?? false,
+        ritual: j['ritual'] as bool? ?? false,
+        description: j['description'] as String? ?? '',
+        classes: (j['classes'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
       );
 }
 

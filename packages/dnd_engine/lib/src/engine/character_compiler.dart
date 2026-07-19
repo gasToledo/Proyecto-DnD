@@ -5,6 +5,7 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/spell_slots.dart';
 import 'sheet_builder.dart';
 
 /// Toma un [Character] con elecciones resueltas + el [ContentRepository] y
@@ -94,6 +95,8 @@ class CharacterCompiler {
       attacks.add(_attack(c, w, mods, profBonus, builder));
     }
 
+    final spellcasting = _spellcasting(builder, c.level, mods, profBonus);
+
     return ComputedSheet(
       level: c.level,
       proficiencyBonus: profBonus,
@@ -118,6 +121,36 @@ class CharacterCompiler {
       attacks: attacks,
       passives: builder.passives,
       resources: builder.resources,
+      spellcasting: spellcasting,
+    );
+  }
+
+  /// Deriva el bloque de lanzamiento a partir del rasgo de lanzamiento activo.
+  /// Sin multiclase, el nivel de lanzador == nivel de personaje.
+  Spellcasting? _spellcasting(
+    SheetBuilder b,
+    int level,
+    Map<Ability, int> mods,
+    int profBonus,
+  ) {
+    final sc = b.spellcasting;
+    if (sc == null || sc.progression == CasterProgression.none) return null;
+    final abilityMod = mods[sc.ability]!;
+    // Nº de conjuros preparables: aproximación (nivel + mod, mínimo 1). Las
+    // cifras exactas 2024 son una tabla por clase, a afinar al autorear cada una.
+    final prepared = sc.preparation == SpellPreparation.prepared
+        ? max(1, level + abilityMod)
+        : 0;
+    return Spellcasting(
+      ability: sc.ability,
+      progression: sc.progression,
+      preparation: sc.preparation,
+      spellList: sc.spellList,
+      saveDc: 8 + profBonus + abilityMod,
+      attackBonus: profBonus + abilityMod,
+      cantripsKnown: sc.cantripsKnown,
+      preparedCount: prepared,
+      slotsByLevel: spellSlotsFor(sc.progression, level),
     );
   }
 

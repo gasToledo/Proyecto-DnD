@@ -4,6 +4,7 @@ library dnd_engine;
 
 export 'src/domain/ability.dart';
 export 'src/domain/effects.dart';
+export 'src/domain/spell_slots.dart';
 export 'src/domain/content.dart';
 export 'src/domain/character.dart';
 export 'src/domain/computed_sheet.dart';

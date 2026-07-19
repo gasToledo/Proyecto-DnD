@@ -1,0 +1,212 @@
+[
+  {
+    "id": "fire-bolt", "name": "Rayo de Fuego", "source": "srd_2024", "level": 0,
+    "school": "Evocación", "castingTime": "1 acción", "range": "120 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer"],
+    "description": "Ataque de conjuro a distancia; 1d10 de daño por fuego. Escala a niveles 5, 11 y 17."
+  },
+  {
+    "id": "ray-of-frost", "name": "Rayo de Escarcha", "source": "srd_2024", "level": 0,
+    "school": "Evocación", "castingTime": "1 acción", "range": "60 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer"],
+    "description": "Ataque de conjuro a distancia; 1d8 de daño por frío y reduce la velocidad del objetivo 10 pies."
+  },
+  {
+    "id": "mage-hand", "name": "Mano de Mago", "source": "srd_2024", "level": 0,
+    "school": "Conjuración", "castingTime": "1 acción", "range": "30 pies",
+    "components": "V, S", "duration": "1 minuto",
+    "classes": ["wizard", "sorcerer", "bard", "warlock"],
+    "description": "Crea una mano espectral que manipula objetos de hasta 10 libras a distancia."
+  },
+  {
+    "id": "prestidigitation", "name": "Prestidigitación", "source": "srd_2024", "level": 0,
+    "school": "Transmutación", "castingTime": "1 acción", "range": "10 pies",
+    "components": "V, S", "duration": "Hasta 1 hora",
+    "classes": ["wizard", "sorcerer", "bard", "warlock"],
+    "description": "Pequeños efectos mágicos menores: chispas, limpiar o ensuciar, sabores, etc."
+  },
+  {
+    "id": "light", "name": "Luz", "source": "srd_2024", "level": 0,
+    "school": "Evocación", "castingTime": "1 acción", "range": "Toque",
+    "components": "V, M", "duration": "1 hora",
+    "classes": ["wizard", "sorcerer", "cleric", "bard"],
+    "description": "Un objeto emite luz brillante en 20 pies y tenue otros 20. Salvación de DES si es sobre una criatura."
+  },
+  {
+    "id": "sacred-flame", "name": "Llama Sagrada", "source": "srd_2024", "level": 0,
+    "school": "Evocación", "castingTime": "1 acción", "range": "60 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["cleric"],
+    "description": "El objetivo hace salvación de DES o recibe 1d8 de daño radiante; ignora cobertura. Escala por nivel."
+  },
+  {
+    "id": "guidance", "name": "Guía", "source": "srd_2024", "level": 0,
+    "school": "Adivinación", "castingTime": "1 acción", "range": "Toque",
+    "components": "V, S", "duration": "Concentración, hasta 1 minuto", "concentration": true,
+    "classes": ["cleric", "druid"],
+    "description": "El objetivo suma 1d4 a una prueba de característica a su elección."
+  },
+  {
+    "id": "vicious-mockery", "name": "Burla Cruel", "source": "srd_2024", "level": 0,
+    "school": "Encantamiento", "castingTime": "1 acción", "range": "60 pies",
+    "components": "V", "duration": "Instantánea",
+    "classes": ["bard"],
+    "description": "Salvación de SAB o el objetivo recibe 1d6 psíquico y desventaja en su próximo ataque. Escala por nivel."
+  },
+  {
+    "id": "eldritch-blast", "name": "Descarga Sobrenatural", "source": "srd_2024", "level": 0,
+    "school": "Evocación", "castingTime": "1 acción", "range": "120 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["warlock"],
+    "description": "Ataque de conjuro a distancia; 1d10 de daño de fuerza. Rayos adicionales a niveles 5, 11 y 17."
+  },
+  {
+    "id": "minor-illusion", "name": "Ilusión Menor", "source": "srd_2024", "level": 0,
+    "school": "Ilusión", "castingTime": "1 acción", "range": "30 pies",
+    "components": "S, M", "duration": "1 minuto",
+    "classes": ["wizard", "sorcerer", "bard", "warlock"],
+    "description": "Crea un sonido o una imagen de un objeto dentro del alcance."
+  },
+  {
+    "id": "magic-missile", "name": "Proyectil Mágico", "source": "srd_2024", "level": 1,
+    "school": "Evocación", "castingTime": "1 acción", "range": "120 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer"],
+    "description": "Tres dardos que impactan automáticamente por 1d4+1 de fuerza cada uno. +1 dardo por espacio superior."
+  },
+  {
+    "id": "shield", "name": "Escudo", "source": "srd_2024", "level": 1,
+    "school": "Abjuración", "castingTime": "1 reacción", "range": "Personal",
+    "components": "V, S", "duration": "1 asalto",
+    "classes": ["wizard", "sorcerer"],
+    "description": "Como reacción, +5 a la CA hasta tu próximo turno y anulas Proyectil Mágico."
+  },
+  {
+    "id": "burning-hands", "name": "Manos Ardientes", "source": "srd_2024", "level": 1,
+    "school": "Evocación", "castingTime": "1 acción", "range": "Cono de 15 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer"],
+    "description": "Cono de fuego; salvación de DES para mitad. 3d6 de daño (+1d6 por espacio superior)."
+  },
+  {
+    "id": "cure-wounds", "name": "Curar Heridas", "source": "srd_2024", "level": 1,
+    "school": "Abjuración", "castingTime": "1 acción", "range": "Toque",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["cleric", "druid", "bard", "paladin", "ranger"],
+    "description": "Restaura 2d8 + mod. de lanzamiento PG (+2d8 por espacio superior)."
+  },
+  {
+    "id": "healing-word", "name": "Palabra de Curación", "source": "srd_2024", "level": 1,
+    "school": "Abjuración", "castingTime": "1 acción adicional", "range": "60 pies",
+    "components": "V", "duration": "Instantánea",
+    "classes": ["cleric", "druid", "bard"],
+    "description": "Restaura 2d4 + mod. de lanzamiento PG a distancia (+2d4 por espacio superior)."
+  },
+  {
+    "id": "detect-magic", "name": "Detectar Magia", "source": "srd_2024", "level": 1,
+    "school": "Adivinación", "castingTime": "1 acción", "range": "Personal",
+    "components": "V, S", "duration": "Concentración, hasta 10 minutos", "concentration": true, "ritual": true,
+    "classes": ["wizard", "sorcerer", "cleric", "druid", "bard", "paladin", "ranger"],
+    "description": "Percibes la presencia de magia en 30 pies y su escuela. Ritual."
+  },
+  {
+    "id": "bless", "name": "Bendición", "source": "srd_2024", "level": 1,
+    "school": "Encantamiento", "castingTime": "1 acción", "range": "30 pies",
+    "components": "V, S, M", "duration": "Concentración, hasta 1 minuto", "concentration": true,
+    "classes": ["cleric", "paladin"],
+    "description": "Tres criaturas suman 1d4 a ataques y salvaciones (+1 objetivo por espacio superior)."
+  },
+  {
+    "id": "faerie-fire", "name": "Fuego Feérico", "source": "srd_2024", "level": 1,
+    "school": "Evocación", "castingTime": "1 acción", "range": "60 pies",
+    "components": "V", "duration": "Concentración, hasta 1 minuto", "concentration": true,
+    "classes": ["druid", "bard"],
+    "description": "Cubo de 20 pies; salvación de DES o los objetivos brillan y dan ventaja a los ataques contra ellos."
+  },
+  {
+    "id": "misty-step", "name": "Paso Brumoso", "source": "srd_2024", "level": 2,
+    "school": "Conjuración", "castingTime": "1 acción adicional", "range": "Personal",
+    "components": "V", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer", "warlock"],
+    "description": "Te teletransportas hasta 30 pies a un espacio libre que puedas ver."
+  },
+  {
+    "id": "scorching-ray", "name": "Rayo Abrasador", "source": "srd_2024", "level": 2,
+    "school": "Evocación", "castingTime": "1 acción", "range": "120 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer"],
+    "description": "Tres rayos; ataque de conjuro por cada uno, 2d6 de fuego. +1 rayo por espacio superior."
+  },
+  {
+    "id": "hold-person", "name": "Inmovilizar Persona", "source": "srd_2024", "level": 2,
+    "school": "Encantamiento", "castingTime": "1 acción", "range": "60 pies",
+    "components": "V, S, M", "duration": "Concentración, hasta 1 minuto", "concentration": true,
+    "classes": ["wizard", "sorcerer", "cleric", "druid", "bard", "warlock"],
+    "description": "Un humanoide hace salvación de SAB o queda Paralizado; repite al final de cada turno."
+  },
+  {
+    "id": "spiritual-weapon", "name": "Arma Espiritual", "source": "srd_2024", "level": 2,
+    "school": "Evocación", "castingTime": "1 acción adicional", "range": "60 pies",
+    "components": "V, S", "duration": "Concentración, hasta 1 minuto", "concentration": true,
+    "classes": ["cleric"],
+    "description": "Arma espectral que ataca por 1d8 + mod. de lanzamiento de daño de fuerza; la mueves como acción adicional."
+  },
+  {
+    "id": "invisibility", "name": "Invisibilidad", "source": "srd_2024", "level": 2,
+    "school": "Ilusión", "castingTime": "1 acción", "range": "Toque",
+    "components": "V, S, M", "duration": "Concentración, hasta 1 hora", "concentration": true,
+    "classes": ["wizard", "sorcerer", "bard", "warlock"],
+    "description": "El objetivo se vuelve invisible hasta que ataque o lance un conjuro. +1 objetivo por espacio superior."
+  },
+  {
+    "id": "lesser-restoration", "name": "Restauración Menor", "source": "srd_2024", "level": 2,
+    "school": "Abjuración", "castingTime": "1 acción", "range": "Toque",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["cleric", "druid", "bard", "paladin", "ranger"],
+    "description": "Termina una enfermedad o un estado: cegado, ensordecido, paralizado o envenenado."
+  },
+  {
+    "id": "fireball", "name": "Bola de Fuego", "source": "srd_2024", "level": 3,
+    "school": "Evocación", "castingTime": "1 acción", "range": "150 pies",
+    "components": "V, S, M", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer"],
+    "description": "Esfera de 20 pies; salvación de DES para mitad. 8d6 de fuego (+1d6 por espacio superior)."
+  },
+  {
+    "id": "counterspell", "name": "Contrahechizo", "source": "srd_2024", "level": 3,
+    "school": "Abjuración", "castingTime": "1 reacción", "range": "60 pies",
+    "components": "S", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer", "warlock"],
+    "description": "Como reacción, interrumpes el lanzamiento de un conjuro de otra criatura (con salvación si es de nivel alto)."
+  },
+  {
+    "id": "fly", "name": "Volar", "source": "srd_2024", "level": 3,
+    "school": "Transmutación", "castingTime": "1 acción", "range": "Toque",
+    "components": "V, S, M", "duration": "Concentración, hasta 10 minutos", "concentration": true,
+    "classes": ["wizard", "sorcerer", "warlock"],
+    "description": "El objetivo gana velocidad de vuelo de 60 pies. +1 objetivo por espacio superior."
+  },
+  {
+    "id": "revivify", "name": "Revivir", "source": "srd_2024", "level": 3,
+    "school": "Nigromancia", "castingTime": "1 acción", "range": "Toque",
+    "components": "V, S, M", "duration": "Instantánea",
+    "classes": ["cleric", "paladin", "druid", "ranger"],
+    "description": "Devuelve la vida a una criatura muerta hace menos de 1 minuto, con 1 PG. Requiere diamantes por 300 po."
+  },
+  {
+    "id": "dispel-magic", "name": "Disipar Magia", "source": "srd_2024", "level": 3,
+    "school": "Abjuración", "castingTime": "1 acción", "range": "120 pies",
+    "components": "V, S", "duration": "Instantánea",
+    "classes": ["wizard", "sorcerer", "cleric", "druid", "bard", "paladin", "warlock"],
+    "description": "Termina conjuros de nivel 3 o inferior sobre un objetivo; niveles superiores requieren prueba de característica."
+  },
+  {
+    "id": "spirit-guardians", "name": "Guardianes Espirituales", "source": "srd_2024", "level": 3,
+    "school": "Conjuración", "castingTime": "1 acción", "range": "Personal (aura de 15 pies)",
+    "components": "V, S, M", "duration": "Concentración, hasta 10 minutos", "concentration": true,
+    "classes": ["cleric"],
+    "description": "Espíritus protectores; los enemigos en el aura sufren 3d8 (salvación de SAB para mitad) y velocidad reducida."
+  }
+]

@@ -89,6 +89,12 @@ class CombatState {
   /// Usos consumidos por recurso (id de recurso → cantidad usada).
   final Map<String, int> resourceUsage;
 
+  /// Espacios de conjuro gastados por nivel de conjuro (nivel → cantidad usada).
+  final Map<int, int> spellSlotsUsed;
+
+  /// Conjuro en el que se está concentrando (nombre), o null.
+  String? concentratingOn;
+
   CombatState({
     this.currentHp = 0,
     this.tempHp = 0,
@@ -98,8 +104,11 @@ class CombatState {
     this.exhaustion = 0,
     Set<String>? conditions,
     Map<String, int>? resourceUsage,
+    Map<int, int>? spellSlotsUsed,
+    this.concentratingOn,
   })  : conditions = conditions ?? {},
-        resourceUsage = resourceUsage ?? {};
+        resourceUsage = resourceUsage ?? {},
+        spellSlotsUsed = spellSlotsUsed ?? {};
 
   Map<String, dynamic> toJson() => {
         'currentHp': currentHp,
@@ -110,6 +119,10 @@ class CombatState {
         'exhaustion': exhaustion,
         'conditions': conditions.toList(),
         'resourceUsage': resourceUsage,
+        'spellSlotsUsed': {
+          for (final e in spellSlotsUsed.entries) '${e.key}': e.value
+        },
+        'concentratingOn': concentratingOn,
       };
 
   factory CombatState.fromJson(Map<String, dynamic> j) => CombatState(
@@ -125,6 +138,11 @@ class CombatState {
           for (final e in (j['resourceUsage'] as Map? ?? const {}).entries)
             e.key as String: e.value as int,
         },
+        spellSlotsUsed: {
+          for (final e in (j['spellSlotsUsed'] as Map? ?? const {}).entries)
+            int.parse(e.key as String): e.value as int,
+        },
+        concentratingOn: j['concentratingOn'] as String?,
       );
 }
 
@@ -161,6 +179,12 @@ class Character {
 
   /// Armas en las que se eligió Maestría (2024).
   final List<String> weaponMasteryChoices;
+
+  /// Trucos elegidos (ids de conjuro de nivel 0).
+  final List<String> cantripIds;
+
+  /// Conjuros conocidos o preparados (ids de conjuro de nivel 1+).
+  final List<String> spellIds;
 
   /// Dotes tomadas por elección: dote de origen de la especie (Humano
   /// "Versátil") y dotes generales de niveles ASI.
@@ -202,6 +226,8 @@ class Character {
     this.chosenSkills = const [],
     this.fightingStyleId,
     this.weaponMasteryChoices = const [],
+    this.cantripIds = const [],
+    this.spellIds = const [],
     this.featIds = const [],
     this.asiChoices = const [],
     this.hpPerLevel = const [],
@@ -230,6 +256,8 @@ class Character {
         'chosenSkills': chosenSkills,
         'fightingStyleId': fightingStyleId,
         'weaponMasteryChoices': weaponMasteryChoices,
+        'cantripIds': cantripIds,
+        'spellIds': spellIds,
         'featIds': featIds,
         'asiChoices': asiChoices.map((e) => e.toJson()).toList(),
         'hpPerLevel': hpPerLevel,
@@ -262,6 +290,12 @@ class Character {
             .toList(),
         fightingStyleId: j['fightingStyleId'] as String?,
         weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        cantripIds: (j['cantripIds'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        spellIds: (j['spellIds'] as List? ?? const [])
             .map((e) => e as String)
             .toList(),
         featIds: (j['featIds'] as List? ?? const [])
@@ -300,6 +334,8 @@ class Character {
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
     List<int>? hpPerLevel,
+    List<String>? cantripIds,
+    List<String>? spellIds,
     Object? equippedArmorId = _unset,
     bool? shieldEquipped,
     List<String>? equippedWeaponIds,
@@ -321,6 +357,8 @@ class Character {
       chosenSkills: chosenSkills,
       fightingStyleId: fightingStyleId,
       weaponMasteryChoices: weaponMasteryChoices,
+      cantripIds: cantripIds ?? this.cantripIds,
+      spellIds: spellIds ?? this.spellIds,
       featIds: featIds ?? this.featIds,
       asiChoices: asiChoices ?? this.asiChoices,
       hpPerLevel: hpPerLevel ?? this.hpPerLevel,

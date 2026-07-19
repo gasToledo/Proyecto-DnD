@@ -34,14 +34,17 @@ class _CreationWizardState extends State<CreationWizard> {
   late final CreationDraft d = CreationDraft(widget.repo);
   int _step = 0;
 
-  static const _titles = [
-    'Clase',
-    'Especie',
-    'Trasfondo',
-    'Características',
-    'Equipo',
-    'Nombre',
-  ];
+  /// Los pasos son dinámicos: el de "Conjuros" solo aparece para clases
+  /// lanzadoras, tras asignar características (necesita el mod. de aptitud).
+  List<String> get _titles => [
+        'Clase',
+        'Especie',
+        'Trasfondo',
+        'Características',
+        if (d.isCaster) 'Conjuros',
+        'Equipo',
+        'Nombre',
+      ];
 
   void _next() {
     if (_step < _titles.length - 1) {
@@ -90,16 +93,20 @@ class _CreationWizardState extends State<CreationWizard> {
     );
   }
 
-  Widget _buildStep() => switch (_step) {
-        0 => _ClassStep(draft: d, onChanged: _refresh),
-        1 => _SpeciesStep(draft: d, onChanged: _refresh),
-        2 => _BackgroundStep(draft: d, onChanged: _refresh),
-        3 => _ScoresStep(draft: d, onChanged: _refresh),
-        4 => _EquipmentStep(draft: d, onChanged: _refresh),
+  Widget _buildStep() => switch (_titles[_step]) {
+        'Clase' => _ClassStep(draft: d, onChanged: _refresh),
+        'Especie' => _SpeciesStep(draft: d, onChanged: _refresh),
+        'Trasfondo' => _BackgroundStep(draft: d, onChanged: _refresh),
+        'Características' => _ScoresStep(draft: d, onChanged: _refresh),
+        'Conjuros' => _SpellsStep(draft: d, onChanged: _refresh),
+        'Equipo' => _EquipmentStep(draft: d, onChanged: _refresh),
         _ => _NameStep(draft: d, repo: widget.repo, onChanged: _refresh),
       };
 
-  void _refresh() => setState(() {});
+  void _refresh() => setState(() {
+        // Cambiar de clase puede agregar/quitar el paso de Conjuros: reajusta.
+        if (_step >= _titles.length) _step = _titles.length - 1;
+      });
 }
 
 // ----------------------------------------------------------------------------
@@ -134,6 +141,8 @@ class _ClassStep extends StatelessWidget {
                       draft.classSkills.clear();
                       draft.weaponMasteries.clear();
                       draft.fightingStyleId = null;
+                      draft.cantrips.clear();
+                      draft.spells.clear();
                       onChanged();
                     },
                   ))
@@ -512,6 +521,59 @@ class _EquipmentStep extends StatelessWidget {
             draft.weaponId = id;
             onChanged();
           },
+        ),
+      ],
+    );
+  }
+}
+
+class _SpellsStep extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _SpellsStep({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final sc = draft.spellcasting;
+    if (sc == null) {
+      return const Center(child: Text('Esta clase no lanza conjuros.'));
+    }
+    final all = draft.repo.spellsForList(sc.spellList);
+    final maxLevel = sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
+    final cantrips = all.where((s) => s.isCantrip).toList();
+    final leveled =
+        all.where((s) => !s.isCantrip && s.level <= maxLevel).toList();
+    final prepared = sc.preparation == SpellPreparation.prepared;
+
+    return ListView(
+      children: [
+        Text(
+          'CD de salvación ${sc.saveDc} · Ataque de conjuro '
+          '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus} (${sc.ability.abbr})',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 20),
+        Eyebrow('Trucos (elige ${sc.cantripsKnown})'),
+        _MultiSelect(
+          options: {for (final s in cantrips) s.id: s.name},
+          selected: draft.cantrips,
+          max: sc.cantripsKnown,
+          onChanged: onChanged,
+        ),
+        const SizedBox(height: 20),
+        Eyebrow(prepared
+            ? 'Conjuros preparados (elige ${sc.preparedCount})'
+            : 'Conjuros conocidos'),
+        Text('Podés preparar conjuros de hasta nivel $maxLevel.',
+            style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 6),
+        _MultiSelect(
+          options: {
+            for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'
+          },
+          selected: draft.spells,
+          max: prepared ? sc.preparedCount : 999,
+          onChanged: onChanged,
         ),
       ],
     );

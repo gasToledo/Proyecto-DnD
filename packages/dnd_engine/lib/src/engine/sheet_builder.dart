@@ -20,6 +20,9 @@ class SheetBuilder {
   /// Característica que suma a la CA por Defensa sin Armadura (null = ninguna).
   Ability? unarmoredDefenseAbility;
 
+  /// Rasgo de lanzamiento de conjuros activo (null = no lanza).
+  SpellcastingEffect? spellcasting;
+
   final Set<Ability> saveProficiencies = {};
   final Set<String> skillProficiencies = {};
   final Set<String> armorProficiencies = {};
@@ -90,6 +93,9 @@ class SheetBuilder {
         acBonus += amount;
       case UnarmoredDefenseEffect(:final ability):
         unarmoredDefenseAbility = ability;
+      case SpellcastingEffect():
+        // El último rasgo de lanzamiento gana (una clase por ahora).
+        spellcasting = e;
       case ResourceEffect(
           :final id,
           :final name,

@@ -467,5 +467,358 @@
         ]
       }
     ]
+  },
+  {
+    "id": "cleric",
+    "name": "Clérigo",
+    "source": "srd_2024",
+    "hitDie": 8,
+    "savingThrows": ["wisdom", "charisma"],
+    "armorProficiencies": ["light", "medium", "shields"],
+    "weaponProficiencies": ["simple"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": ["history", "insight", "medicine", "persuasion", "religion"],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Clérigo usando Sabiduría; los preparas tras un descanso largo.",
+        "effects": [
+          { "type": "spellcasting", "ability": "wisdom", "progression": "full", "preparation": "prepared", "spellList": "cleric", "cantripsKnown": 3 }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Orden Divina",
+        "description": "Eliges una orden: Protector (competencia con armas marciales) o Taumaturgo (un truco extra y bonif. a Religión).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Orden Divina", "description": "Protector: competencia con armas marciales y armadura pesada. Taumaturgo: un truco de Clérigo adicional y sumas tu mod. de Sabiduría a las pruebas de Arcanos y Religión." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Canalizar Divinidad",
+        "description": "Canalizas energía divina para efectos como Expulsar Muertos Vivientes.",
+        "effects": [
+          { "type": "resource", "id": "channel_divinity", "name": "Canalizar Divinidad", "max": 2, "recharge": "short", "description": "Usos de Canalizar Divinidad (p.ej. Expulsar Muertos Vivientes o Chispa Divina). Recuperas usos tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Destruir Muertos Vivientes",
+        "description": "Tu Expulsar Muertos Vivientes puede destruir directamente a los más débiles.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Destruir Muertos Vivientes", "description": "Cuando un muerto viviente falla su salvación contra tu Expulsar y su nivel de desafío es bajo, es destruido al instante." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "druid",
+    "name": "Druida",
+    "source": "srd_2024",
+    "hitDie": 8,
+    "savingThrows": ["intelligence", "wisdom"],
+    "armorProficiencies": ["light", "medium", "shields"],
+    "weaponProficiencies": ["simple"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": ["arcana", "animal-handling", "insight", "medicine", "nature", "perception", "religion", "survival"],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Druida usando Sabiduría; los preparas tras un descanso largo.",
+        "effects": [
+          { "type": "spellcasting", "ability": "wisdom", "progression": "full", "preparation": "prepared", "spellList": "druid", "cantripsKnown": 2 }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Druídico",
+        "description": "Conoces el idioma secreto Druídico y puedes lanzar el conjuro Sentido Animal como ritual.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Druídico", "description": "Conoces el idioma Druídico. Siempre tienes preparado el truco Guía y puedes lanzar Sentido Animal como ritual." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Forma Salvaje",
+        "description": "Como acción adicional adoptas la forma de una bestia que conozcas.",
+        "effects": [
+          { "type": "resource", "id": "wild_shape", "name": "Forma Salvaje", "max": 2, "recharge": "short", "description": "Como acción adicional te transformas en una bestia. Usos que se recuperan tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Compañero Salvaje",
+        "description": "Gastas un uso de Forma Salvaje para lanzar Encontrar Familiar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Compañero Salvaje", "description": "Puedes gastar un uso de Forma Salvaje para lanzar Encontrar Familiar sin componentes materiales, convocando un espíritu feérico." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "bard",
+    "name": "Bardo",
+    "source": "srd_2024",
+    "hitDie": 8,
+    "savingThrows": ["dexterity", "charisma"],
+    "armorProficiencies": ["light"],
+    "weaponProficiencies": ["simple"],
+    "skillChoiceCount": 3,
+    "skillChoiceFrom": [],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Bardo usando Carisma; los preparas tras un descanso largo.",
+        "effects": [
+          { "type": "spellcasting", "ability": "charisma", "progression": "full", "preparation": "prepared", "spellList": "bard", "cantripsKnown": 2 }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Inspiración Bárdica",
+        "description": "Como acción adicional das a un aliado un dado de Inspiración (d6) para sumar a una prueba, ataque o salvación.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Inspiración Bárdica", "description": "Como acción adicional otorgas un dado de Inspiración Bárdica (d6, sube con el nivel). Usos iguales a tu mod. de Carisma, recuperados tras un descanso largo (o corto desde nivel 5)." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Versatilidad",
+        "description": "Sumas la mitad de tu bonif. de competencia a pruebas de características en las que no seas competente.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Versatilidad", "description": "Sumas la mitad de tu bonif. de competencia (redondeando hacia abajo) a cualquier prueba de característica que no incluya ya tu bonif. de competencia." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Pericia",
+        "description": "Duplicas tu bonif. de competencia en dos habilidades.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pericia", "description": "Elige dos de tus competencias de habilidad; duplicas tu bonif. de competencia en ellas. Otras dos a nivel 9." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sorcerer",
+    "name": "Hechicero",
+    "source": "srd_2024",
+    "hitDie": 6,
+    "savingThrows": ["constitution", "charisma"],
+    "armorProficiencies": [],
+    "weaponProficiencies": ["simple"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": ["arcana", "deception", "insight", "intimidation", "persuasion", "religion"],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Hechicero usando Carisma; los preparas de tu repertorio innato.",
+        "effects": [
+          { "type": "spellcasting", "ability": "charisma", "progression": "full", "preparation": "prepared", "spellList": "sorcerer", "cantripsKnown": 4 }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Hechicería Innata",
+        "description": "Como acción adicional potencias tu magia: ventaja en ataques de conjuro y +1 a tu CD.",
+        "effects": [
+          { "type": "resource", "id": "innate_sorcery", "name": "Hechicería Innata", "max": 2, "recharge": "long", "description": "Como acción adicional, durante 1 minuto: +1 a tu CD de conjuro y ventaja en tus ataques de conjuro. Dos usos por descanso largo." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Fuente de Magia (Puntos de Hechicería)",
+        "description": "Tienes Puntos de Hechicería iguales a tu nivel para crear espacios o alimentar Metamagia.",
+        "effects": [
+          { "type": "resource", "id": "sorcery_points", "name": "Puntos de Hechicería", "max": 0, "maxPerLevel": true, "recharge": "long", "description": "Puntos iguales a tu nivel de Hechicero. Convierten en espacios de conjuro y alimentan Metamagia. Se recuperan tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Metamagia",
+        "description": "Aprendes opciones para modificar tus conjuros gastando Puntos de Hechicería.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Metamagia", "description": "Aprendes dos opciones de Metamagia (p.ej. Conjuro Acelerado, Conjuro Gemelo) que aplicas gastando Puntos de Hechicería." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "warlock",
+    "name": "Brujo",
+    "source": "srd_2024",
+    "hitDie": 8,
+    "savingThrows": ["wisdom", "charisma"],
+    "armorProficiencies": ["light"],
+    "weaponProficiencies": ["simple"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": ["arcana", "deception", "history", "intimidation", "investigation", "nature", "religion"],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Magia de Pacto",
+        "description": "Lanzas conjuros de Brujo usando Carisma. Tus espacios son pocos pero siempre del nivel más alto, y se recuperan en descanso corto.",
+        "effects": [
+          { "type": "spellcasting", "ability": "charisma", "progression": "pact", "preparation": "prepared", "spellList": "warlock", "cantripsKnown": 2 }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Invocaciones Sobrenaturales",
+        "description": "Aprendes fragmentos de conocimiento prohibido que otorgan capacidades mágicas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Invocaciones Sobrenaturales", "description": "Conoces invocaciones (p.ej. Vista del Diablo, Máscara de Muchos Rostros) que puedes cambiar al subir de nivel." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Astucia Mágica",
+        "description": "Tras un descanso corto puedes recuperar espacios de Magia de Pacto gastados.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Astucia Mágica", "description": "Como 1 minuto de concentración ritual, una vez por descanso largo, recuperas tus espacios de Magia de Pacto gastados." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Dádiva de Pacto",
+        "description": "Tu mecenas te concede un don: Pacto de la Hoja, del Grimorio o de la Cadena.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Dádiva de Pacto", "description": "Eliges un Pacto: de la Hoja (arma de pacto), del Grimorio (trucos extra) o de la Cadena (familiar especial)." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "paladin",
+    "name": "Paladín",
+    "source": "srd_2024",
+    "hitDie": 10,
+    "savingThrows": ["wisdom", "charisma"],
+    "armorProficiencies": ["light", "medium", "heavy", "shields"],
+    "weaponProficiencies": ["simple", "martial"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": ["athletics", "insight", "intimidation", "medicine", "persuasion", "religion"],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Paladín usando Carisma (semi-lanzador); los preparas tras un descanso largo.",
+        "effects": [
+          { "type": "spellcasting", "ability": "charisma", "progression": "half", "preparation": "prepared", "spellList": "paladin", "cantripsKnown": 0 }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Imposición de Manos",
+        "description": "Tienes una reserva de curación igual a 5 × tu nivel de Paladín.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Imposición de Manos", "description": "Reserva de PG igual a 5 × tu nivel de Paladín. Como acción, tocas a una criatura y gastas PG de la reserva para curarla; 5 PG también curan una enfermedad o veneno." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Maestría de Armas",
+        "description": "Puedes usar la propiedad de Maestría de 2 armas con las que seas competente.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 2 }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Castigo Divino",
+        "description": "Al impactar con un arma puedes gastar un espacio de conjuro para infligir daño radiante extra.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Castigo Divino", "description": "Siempre tienes preparado Castigo Divino. Al impactar con un ataque de arma, puedes gastar un espacio de conjuro para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes/infernales)." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad",
+        "description": "Canalizas poder divino para efectos de tu juramento.",
+        "effects": [
+          { "type": "resource", "id": "channel_divinity", "name": "Canalizar Divinidad", "max": 2, "recharge": "short", "description": "Usos de Canalizar Divinidad según tu juramento. Se recuperan tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces al realizar la acción de Ataque.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ranger",
+    "name": "Explorador",
+    "source": "srd_2024",
+    "hitDie": 10,
+    "savingThrows": ["strength", "dexterity"],
+    "armorProficiencies": ["light", "medium", "shields"],
+    "weaponProficiencies": ["simple", "martial"],
+    "skillChoiceCount": 3,
+    "skillChoiceFrom": ["animal-handling", "athletics", "insight", "investigation", "nature", "perception", "stealth", "survival"],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Explorador usando Sabiduría (semi-lanzador); los preparas tras un descanso largo.",
+        "effects": [
+          { "type": "spellcasting", "ability": "wisdom", "progression": "half", "preparation": "prepared", "spellList": "ranger", "cantripsKnown": 0 }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Enemigo Predilecto",
+        "description": "Siempre tienes preparado Marca del Cazador y puedes lanzarlo varias veces por descanso largo sin gastar espacio.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Enemigo Predilecto", "description": "Siempre tienes preparado Marca del Cazador. Puedes lanzarlo sin gastar espacio un número de veces igual a tu bonif. de competencia por descanso largo." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Maestría de Armas",
+        "description": "Puedes usar la propiedad de Maestría de 2 armas con las que seas competente.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 2 }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Explorador Hábil",
+        "description": "Ganas Pericia y beneficios de movimiento y exploración.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Explorador Hábil", "description": "Ganas Pericia en una habilidad en la que ya seas competente y otros beneficios de exploración." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces al realizar la acción de Ataque.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      }
+    ]
   }
 ]

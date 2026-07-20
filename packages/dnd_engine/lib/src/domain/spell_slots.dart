@@ -67,9 +67,10 @@ const List<List<int>> _fullTable = [
 ];
 
 /// Tabla del semi-lanzador (Paladín/Explorador): niveles de conjuro 1..5.
+/// Reglas 2024: obtienen lanzamiento y espacios ya a nivel 1.
 const List<List<int>> _halfTable = [
   [0, 0, 0, 0, 0], // 0
-  [0, 0, 0, 0, 0], // 1 (obtiene lanzamiento a nivel 2)
+  [2, 0, 0, 0, 0],
   [2, 0, 0, 0, 0],
   [3, 0, 0, 0, 0],
   [3, 0, 0, 0, 0],

@@ -54,9 +54,8 @@ void main() {
           {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1});
     });
 
-    test('semi-lanzador no lanza a nivel 1 y escala más lento', () {
-      expect(spellSlotsFor(CasterProgression.half, 1), isEmpty);
-      expect(spellSlotsFor(CasterProgression.half, 2), {1: 2});
+    test('semi-lanzador (2024) lanza desde nivel 1 y escala más lento', () {
+      expect(spellSlotsFor(CasterProgression.half, 1), {1: 2});
       expect(spellSlotsFor(CasterProgression.half, 5), {1: 4, 2: 2});
       expect(spellSlotsFor(CasterProgression.half, 20), {1: 4, 2: 3, 3: 3, 4: 3, 5: 2});
     });
@@ -233,6 +232,69 @@ void main() {
       final clericIds = repo.spellsForList('cleric').map((s) => s.id).toSet();
       expect(clericIds, contains('sacred-flame'));
       expect(clericIds, isNot(contains('fireball')));
+    });
+  });
+
+  group('Clases lanzadoras oficiales (Fase E)', () {
+    late ContentRepository repo;
+    late CharacterCompiler compiler;
+    setUpAll(() async {
+      repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+      compiler = CharacterCompiler(repo);
+    });
+
+    Character mk(String classId, int level) => Character(
+          id: 't-$classId',
+          name: 'x',
+          raceId: 'human',
+          classId: classId,
+          backgroundId: 'soldier',
+          level: level,
+          assignedScores: {for (final a in Ability.values) a: 14},
+          hpPerLevel: List.filled(level, 6),
+        );
+
+    test('lanzadores completos: aptitud y espacios a nivel 3', () {
+      const expected = {
+        'cleric': Ability.wisdom,
+        'druid': Ability.wisdom,
+        'bard': Ability.charisma,
+        'sorcerer': Ability.charisma,
+      };
+      for (final e in expected.entries) {
+        final sc = compiler.compile(mk(e.key, 3)).spellcasting!;
+        expect(sc.ability, e.value, reason: e.key);
+        expect(sc.progression, CasterProgression.full, reason: e.key);
+        expect(sc.slotsByLevel, {1: 4, 2: 2}, reason: e.key);
+      }
+    });
+
+    test('brujo usa Magia de Pacto', () {
+      final sc = compiler.compile(mk('warlock', 3)).spellcasting!;
+      expect(sc.ability, Ability.charisma);
+      expect(sc.progression, CasterProgression.pact);
+      expect(sc.slotsByLevel, {2: 2});
+    });
+
+    test('semi-lanzadores: espacios desde nivel 1 y Ataque Adicional a nivel 5', () {
+      for (final id in ['paladin', 'ranger']) {
+        final l1 = compiler.compile(mk(id, 1)).spellcasting!;
+        expect(l1.progression, CasterProgression.half, reason: id);
+        expect(l1.slotsByLevel, {1: 2}, reason: id);
+        final l5 = compiler.compile(mk(id, 5));
+        expect(l5.attacksPerAction, 2, reason: id);
+        expect(l5.spellcasting!.slotsByLevel, {1: 4, 2: 2}, reason: id);
+        expect(l5.weaponMasterySlots, 2, reason: id);
+      }
+    });
+
+    test('cada clase lanzadora tiene conjuros en su lista', () {
+      for (final id in [
+        'wizard', 'cleric', 'druid', 'bard', 'sorcerer', 'warlock',
+        'paladin', 'ranger'
+      ]) {
+        expect(repo.spellsForList(id), isNotEmpty, reason: id);
+      }
     });
   });
 }

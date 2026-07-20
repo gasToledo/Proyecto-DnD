@@ -45,15 +45,17 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
       appBar: AppBar(title: const Text('Editar conjuros')),
       body: PageBody(
         children: [
-          Eyebrow('Trucos (${_cantrips.length}/${_sc.cantripsKnown})'),
-          const SizedBox(height: 6),
-          _chips(
-            options: cantrips,
-            selected: _cantrips,
-            max: _sc.cantripsKnown,
-            label: (s) => s.name,
-          ),
-          const SizedBox(height: 20),
+          if (_sc.cantripsKnown > 0) ...[
+            Eyebrow('Trucos (${_cantrips.length}/${_sc.cantripsKnown})'),
+            const SizedBox(height: 6),
+            _chips(
+              options: cantrips,
+              selected: _cantrips,
+              max: _sc.cantripsKnown,
+              label: (s) => s.name,
+            ),
+            const SizedBox(height: 20),
+          ],
           Eyebrow(_prepared
               ? 'Conjuros preparados (${_spells.length}/${_sc.preparedCount})'
               : 'Conjuros conocidos (${_spells.length})'),

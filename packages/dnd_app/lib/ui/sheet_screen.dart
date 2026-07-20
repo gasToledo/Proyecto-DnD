@@ -792,9 +792,13 @@ class _SheetScreenState extends State<SheetScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          sc.preparation == SpellPreparation.prepared
-              ? 'Preparados: ${_c.spellIds.length} / ${sc.preparedCount} · Trucos: ${cantrips.length} / ${sc.cantripsKnown}'
-              : 'Conocidos: ${_c.spellIds.length} · Trucos: ${cantrips.length} / ${sc.cantripsKnown}',
+          [
+            sc.preparation == SpellPreparation.prepared
+                ? 'Preparados: ${_c.spellIds.length} / ${sc.preparedCount}'
+                : 'Conocidos: ${_c.spellIds.length}',
+            if (sc.cantripsKnown > 0)
+              'Trucos: ${cantrips.length} / ${sc.cantripsKnown}',
+          ].join(' · '),
           style: Theme.of(context).textTheme.bodySmall,
         ),
 

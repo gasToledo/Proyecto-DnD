@@ -552,14 +552,16 @@ class _SpellsStep extends StatelessWidget {
           '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus} (${sc.ability.abbr})',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
-        const SizedBox(height: 20),
-        Eyebrow('Trucos (elige ${sc.cantripsKnown})'),
-        _MultiSelect(
-          options: {for (final s in cantrips) s.id: s.name},
-          selected: draft.cantrips,
-          max: sc.cantripsKnown,
-          onChanged: onChanged,
-        ),
+        if (sc.cantripsKnown > 0) ...[
+          const SizedBox(height: 20),
+          Eyebrow('Trucos (elige ${sc.cantripsKnown})'),
+          _MultiSelect(
+            options: {for (final s in cantrips) s.id: s.name},
+            selected: draft.cantrips,
+            max: sc.cantripsKnown,
+            onChanged: onChanged,
+          ),
+        ],
         const SizedBox(height: 20),
         Eyebrow(prepared
             ? 'Conjuros preparados (elige ${sc.preparedCount})'

@@ -162,6 +162,9 @@ class Character {
   final String raceId;
   final String classId;
   final String backgroundId;
+
+  /// Subclase elegida (id), o null si aún no se eligió (nivel < subclassLevel).
+  final String? subclassId;
   int level;
 
   /// Puntuaciones asignadas por el método elegido (4d6 o array), antes de
@@ -220,6 +223,7 @@ class Character {
     required this.raceId,
     required this.classId,
     required this.backgroundId,
+    this.subclassId,
     this.level = 1,
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
@@ -249,6 +253,7 @@ class Character {
         'raceId': raceId,
         'classId': classId,
         'backgroundId': backgroundId,
+        'subclassId': subclassId,
         'level': level,
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses':
@@ -281,6 +286,7 @@ class Character {
         raceId: j['raceId'] as String,
         classId: j['classId'] as String,
         backgroundId: j['backgroundId'] as String,
+        subclassId: j['subclassId'] as String?,
         level: j['level'] as int? ?? 1,
         assignedScores: _abilityMapFromJson(j['assignedScores']),
         backgroundAbilityBonuses:
@@ -330,6 +336,7 @@ class Character {
   Character copyWith({
     String? name,
     CharacterStatus? status,
+    Object? subclassId = _unset,
     int? level,
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
@@ -351,6 +358,9 @@ class Character {
       raceId: raceId,
       classId: classId,
       backgroundId: backgroundId,
+      subclassId: identical(subclassId, _unset)
+          ? this.subclassId
+          : subclassId as String?,
       level: level ?? this.level,
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,

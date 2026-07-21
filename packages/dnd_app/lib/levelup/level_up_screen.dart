@@ -37,6 +37,15 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   late final int _hitDie = _klass?.hitDie ?? 10;
   late final bool _isAsi = _klass?.isAsiLevel(_newLevel) ?? false;
 
+  /// Este nivel debe elegir subclase: se alcanza el nivel de subclase de la
+  /// clase y aún no hay una elegida.
+  late final bool _needsSubclass = _klass != null &&
+      widget.character.subclassId == null &&
+      _newLevel >= _klass.subclassLevel;
+  late final List<Subclass> _subclassOptions =
+      _needsSubclass ? widget.repo.subclassesForClass(widget.character.classId) : const [];
+  String? _subclassId;
+
   _HpMethod _hpMethod = _HpMethod.average;
   int? _rolledHp;
 
@@ -51,6 +60,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
   bool get _canConfirm {
     if (_hpMethod == _HpMethod.roll && _rolledHp == null) return false;
+    if (_needsSubclass && _subclassId == null) return false;
     if (_isAsi) {
       if (_asiKind == _AsiKind.improve) {
         if (_abilityA == null) return false;
@@ -88,7 +98,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     if (_isAsi) {
       if (_asiKind == _AsiKind.improve) {
         asiChoices.add(AsiChoice(level: _newLevel, abilityIncreases: _abilityIncreases));
-      } else {
+      } else if (_featId != null) {
+        // La dote solo se agrega si ya se eligió: `_buildUpdated` corre en cada
+        // build (previsualización de conjuros), incluso antes de elegir dote.
         asiChoices.add(AsiChoice(level: _newLevel, featId: _featId));
         featIds.add(_featId!);
       }
@@ -96,12 +108,29 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
     return c.copyWith(
       level: _newLevel,
+      // Si se eligió subclase en esta subida se fija; si no, se conserva la
+      // actual (pasar null solo ocurre por debajo del nivel de subclase).
+      subclassId: _subclassId ?? c.subclassId,
       hpPerLevel: [...c.hpPerLevel, _hpGain],
       asiChoices: asiChoices,
       featIds: featIds,
       cantripIds: _newCantrips,
       spellIds: _newSpells,
     );
+  }
+
+  /// Rasgos ganados exactamente en el nuevo nivel: los de clase más, si hay
+  /// subclase (elegida ahora o antes), los de subclase.
+  List<ClassFeature> _gainedFeatures() {
+    final feats = <ClassFeature>[...?_klass?.featuresAt(_newLevel)];
+    final subId = _subclassId ?? widget.character.subclassId;
+    if (subId != null) {
+      final sub = widget.repo.subclass(subId);
+      if (sub != null && sub.classId == widget.character.classId) {
+        feats.addAll(sub.featuresAt(_newLevel));
+      }
+    }
+    return feats;
   }
 
   void _confirm() {
@@ -126,9 +155,72 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
         builder: (_) => LevelUpSummaryScreen(
           level: _newLevel,
           diff: diffSheets(before, after),
-          newFeatures: _klass?.featuresAt(_newLevel) ?? const [],
+          newFeatures: _gainedFeatures(),
         ),
       ),
+    );
+  }
+
+  /// Paso de elección de subclase (solo al alcanzar el nivel de subclase).
+  Widget _buildSubclassSection() {
+    if (!_needsSubclass) return const SizedBox.shrink();
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Eyebrow('Subclase (nivel $_newLevel)'),
+        const SizedBox(height: 8),
+        for (final s in _subclassOptions)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => setState(() => _subclassId = s.id),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _subclassId == s.id
+                      ? context.palette.goldSoft
+                      : context.palette.plaque,
+                  border: Border.all(
+                    color: _subclassId == s.id
+                        ? context.palette.gold
+                        : context.palette.hairline,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _subclassId == s.id
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      size: 20,
+                      color: _subclassId == s.id ? context.palette.gold : muted,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(s.name,
+                              style: const TextStyle(fontWeight: FontWeight.w600)),
+                          if (s.description.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(s.description,
+                                style: TextStyle(fontSize: 13, color: muted)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
@@ -201,7 +293,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final newFeatures = _klass?.featuresAt(_newLevel) ?? const [];
+    final newFeatures = _gainedFeatures();
     return Scaffold(
       appBar: AppBar(title: Text('Subir a nivel $_newLevel')),
       body: PageBody(
@@ -246,6 +338,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
               style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 24),
+          _buildSubclassSection(),
           if (_isAsi) _buildAsi() else const SizedBox.shrink(),
           if (newFeatures.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -357,8 +450,17 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   }
 
   Widget _buildFeatPicker() {
-    final feats =
-        widget.repo.feats.values.where((f) => f.category == 'general').toList();
+    // No se puede repetir una dote ya tomada salvo que sea repetible (2024).
+    final taken = widget.character.featIds.toSet();
+    final feats = widget.repo.feats.values
+        .where((f) => f.category == 'general')
+        .where((f) => f.repeatable || !taken.contains(f.id))
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+    if (feats.isEmpty) {
+      return Text('No quedan dotes disponibles.',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant));
+    }
     return Wrap(
       spacing: 8,
       runSpacing: 8,

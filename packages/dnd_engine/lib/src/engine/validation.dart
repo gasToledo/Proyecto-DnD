@@ -169,6 +169,30 @@ class CharacterValidator {
           ));
         }
       }
+
+      // Subclase: obligatoria a partir del subclassLevel; debe existir y
+      // pertenecer a la clase.
+      final subId = c.subclassId;
+      if (subId == null) {
+        if (c.level >= klass.subclassLevel) {
+          w.add(ValidationWarning(
+            'subclass_pending',
+            'Nivel ${klass.subclassLevel}: falta elegir subclase de ${klass.name}.',
+            WarningSeverity.info,
+          ));
+        }
+      } else {
+        final sub = repo.subclass(subId);
+        if (sub == null) {
+          w.add(ValidationWarning(
+              'subclass_missing', 'Subclase "$subId" no encontrada.'));
+        } else if (sub.classId != c.classId) {
+          w.add(ValidationWarning(
+            'subclass_wrong_class',
+            'La subclase ${sub.name} no pertenece a ${klass.name}.',
+          ));
+        }
+      }
     }
 
     for (final r in sheet.resources) {

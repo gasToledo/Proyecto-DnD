@@ -1,0 +1,279 @@
+[
+  {
+    "id": "champion",
+    "name": "Campeón",
+    "classId": "fighter",
+    "source": "srd_2024",
+    "description": "Un guerrero que confía en la fuerza y destreza puras, llevando sus capacidades marciales a la perfección.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Crítico Mejorado",
+        "description": "Tus ataques con arma obtienen un impacto crítico con una tirada de 19 o 20 en el d20.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Crítico Mejorado", "description": "Obtienes un crítico con arma al sacar 19 o 20 en el dado de ataque." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Atleta Notable",
+        "description": "Sumas la mitad de tu bono de competencia (redondeando hacia arriba) a cualquier prueba de Fuerza, Destreza o Constitución en la que no seas competente.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Atleta Notable", "description": "Sumas medio bono de competencia a pruebas de FUE/DES/CON sin competencia." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Estilo de Combate Adicional",
+        "description": "Adoptas un segundo Estilo de Combate como dote.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Estilo de Combate Adicional", "description": "Ganas una segunda dote de Estilo de Combate." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "berserker",
+    "name": "Camino del Berserker",
+    "classId": "barbarian",
+    "source": "srd_2024",
+    "description": "Un canal de furia pura y sanguinaria: cuanto más lucha el berserker, más peligroso se vuelve.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Frenesí",
+        "description": "Mientras estés en Furia, al realizar la acción de Ataque puedes hacer un único ataque cuerpo a cuerpo adicional como acción adicional. Al terminar la Furia sufres un nivel de Agotamiento.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Frenesí", "description": "En Furia, un ataque cuerpo a cuerpo extra como acción adicional; al terminar, un nivel de Agotamiento." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "thief",
+    "name": "Ladrón",
+    "classId": "rogue",
+    "source": "srd_2024",
+    "description": "Perfeccionas habilidades de sigilo y latrocinio, con reflejos y agilidad que superan a otros pícaros.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Manos Rápidas",
+        "description": "Puedes usar la acción adicional que te da Astucia para hacer una prueba de Juego de Manos, usar Herramientas de Ladrón o realizar la acción de Usar un Objeto.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Manos Rápidas", "description": "Usa Astucia para Juego de Manos, Herramientas de Ladrón o Usar un Objeto como acción adicional." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Trabajo en las Alturas",
+        "description": "Trepar ya no te cuesta movimiento extra y, al saltar con carrerilla, la distancia aumenta.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Trabajo en las Alturas", "description": "Trepar no cuesta movimiento adicional; mayor distancia de salto con carrerilla." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "open-hand",
+    "name": "Guerrero de la Mano Abierta",
+    "classId": "monk",
+    "source": "srd_2024",
+    "description": "Maestro del combate sin armas, capaz de manipular la energía del cuerpo del enemigo con cada golpe.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Técnica de la Mano Abierta",
+        "description": "Cuando impactas con un ataque de Golpe Marcial puedes imponer un efecto: derribar, empujar 15 pies o impedir reacciones hasta el final de tu próximo turno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Técnica de la Mano Abierta", "description": "Tras un Golpe Marcial: derriba, empuja 15 pies o niega reacciones al objetivo." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "evoker",
+    "name": "Escuela de Evocación",
+    "classId": "wizard",
+    "source": "srd_2024",
+    "description": "Esculpes la magia elemental cruda: fuego, frío y relámpago obedecen tu voluntad sin dañar a tus aliados.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Potenciar Truco",
+        "description": "Cuando un truco tuyo falla contra una criatura, esta igual recibe daño reducido; y añades tu característica de conjuro al daño de tus trucos de evocación.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Potenciar Truco", "description": "Tus trucos de daño hacen daño mínimo al fallar y suman tu característica de conjuro." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Esculpir Conjuros",
+        "description": "Al lanzar un conjuro de evocación puedes proteger a algunos aliados en el área: superan la salvación automáticamente y no reciben daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Esculpir Conjuros", "description": "Excluye a aliados del área de tus conjuros de evocación: no reciben daño." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "life-domain",
+    "name": "Dominio de la Vida",
+    "classId": "cleric",
+    "source": "srd_2024",
+    "description": "Canalizas la energía positiva que sostiene toda la vida, sobresaliendo en curación y protección.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Competencia con Armadura Pesada",
+        "description": "Ganas competencia con armadura pesada.",
+        "effects": [
+          { "type": "armorProficiency", "category": "heavy" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Discípulo de la Vida",
+        "description": "Tus conjuros de curación son más potentes: al restaurar puntos de golpe con un conjuro de nivel 1 o superior, la criatura recupera 2 PG adicionales más el nivel del conjuro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Discípulo de la Vida", "description": "Tus conjuros de curación añaden 2 + nivel del conjuro en PG." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "circle-land",
+    "name": "Círculo de la Tierra",
+    "classId": "druid",
+    "source": "srd_2024",
+    "description": "Druidas guardianes de bosques, desiertos y otros parajes, con magia ligada a su entorno.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Conjuros de Círculo",
+        "description": "Tu conexión con la tierra te otorga conjuros preparados adicionales según el terreno elegido (árido, polar, templado o tropical).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros de Círculo", "description": "Conjuros preparados extra según el terreno de tu Círculo." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Recuperación Natural",
+        "description": "Durante un descanso corto puedes recuperar espacios de conjuro cuya suma de niveles no supere la mitad de tu nivel de Druida.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Recuperación Natural", "description": "En descanso corto, recuperas espacios de conjuro hasta la mitad de tu nivel." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "college-lore",
+    "name": "Colegio del Saber",
+    "classId": "bard",
+    "source": "srd_2024",
+    "description": "Bardos que acumulan conocimiento de todas las fuentes y usan su ingenio para socavar a los poderosos.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Competencias Adicionales",
+        "description": "Ganas competencia con tres habilidades a tu elección.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Competencias Adicionales", "description": "Competencia con tres habilidades a tu elección." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Palabras Cortantes",
+        "description": "Como reacción, gastas un uso de Inspiración Bárdica para restar el dado a la tirada de ataque, prueba o daño de una criatura.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Palabras Cortantes", "description": "Reacción: gasta Inspiración Bárdica para restar el dado a un ataque/prueba/daño enemigo." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "draconic-sorcery",
+    "name": "Hechicería Dracónica",
+    "classId": "sorcerer",
+    "source": "srd_2024",
+    "description": "Tu magia brota de un linaje dracónico, endureciendo tu cuerpo y ligándote a un tipo de daño elemental.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Resistencia Dracónica",
+        "description": "Tu naturaleza dracónica endurece tu cuerpo: ganas 1 punto de golpe adicional por cada nivel de Hechicero y, sin armadura, tu CA base es 13 + tu modificador de Destreza.",
+        "effects": [
+          { "type": "bonusMaxHpPerLevel", "perLevel": 1 },
+          { "type": "passiveTrait", "name": "Resistencia Dracónica (CA)", "description": "Sin armadura, tu CA base es 13 + modificador de Destreza." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Afinidad Dracónica",
+        "description": "Eliges un tipo de dragón; los conjuros que infligen su tipo de daño ganan bonos y aprendes a hablar Dracónico.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Afinidad Dracónica", "description": "Bono al daño de tu tipo elemental dracónico; hablas Dracónico." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fiend-patron",
+    "name": "Patrón Diabólico",
+    "classId": "warlock",
+    "source": "srd_2024",
+    "description": "Sellaste un pacto con un ser de los Planos Inferiores, obteniendo poder a cambio de servicio.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Bendición del Oscuro",
+        "description": "Cuando reduces a un enemigo a 0 puntos de golpe, ganas puntos de golpe temporales iguales a tu modificador de Carisma más tu nivel de Brujo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Bendición del Oscuro", "description": "Al matar a un enemigo, ganas PG temporales = CAR + nivel de Brujo." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "oath-devotion",
+    "name": "Juramento de Devoción",
+    "classId": "paladin",
+    "source": "srd_2024",
+    "description": "El paladín ideal, ligado a los más altos ideales de justicia, virtud y orden.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Arma Sagrada",
+        "description": "Como acción, imbuyes un arma con energía sagrada: durante 10 minutos sumas tu modificador de Carisma a las tiradas de ataque con ella y emite luz.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arma Sagrada", "description": "Suma tu CAR al ataque con un arma imbuida durante 10 minutos." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Juramento",
+        "description": "Tienes siempre preparados ciertos conjuros ligados a tu juramento (Protección contra el Bien y el Mal, Santuario, etc.).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a tu juramento." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "hunter",
+    "name": "Cazador",
+    "classId": "ranger",
+    "source": "srd_2024",
+    "description": "Aceptas tu papel como baluarte contra los monstruos que amenazan a los pueblos de la naturaleza.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Presa del Cazador",
+        "description": "Ganas una de dos opciones de combate: Asesino de Colosos (daño extra una vez por turno a criaturas por debajo de su máximo de PG) o Horda Rompedora (un ataque cuerpo a cuerpo puede alcanzar a un segundo enemigo cercano).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presa del Cazador", "description": "Asesino de Colosos (daño extra) u Horda Rompedora (golpea a un segundo enemigo)." }
+        ]
+      }
+    ]
+  }
+]

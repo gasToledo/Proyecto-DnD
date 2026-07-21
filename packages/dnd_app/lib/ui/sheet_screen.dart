@@ -224,8 +224,10 @@ class _SheetScreenState extends State<SheetScreen> {
     final hasPortrait = portrait != null && File(portrait).existsSync();
     final race = repo.race(_c.raceId)?.name ?? _c.raceId;
     final klass = repo.characterClass(_c.classId)?.name ?? _c.classId;
+    final sub = _c.subclassId == null ? null : repo.subclass(_c.subclassId!)?.name;
+    final klassLine = sub == null ? klass : '$klass ($sub)';
     final bg = repo.background(_c.backgroundId)?.name ?? '';
-    final subtitle = [race, klass, if (bg.isNotEmpty) bg].join(' · ');
+    final subtitle = [race, klassLine, if (bg.isNotEmpty) bg].join(' · ');
 
     return PageBody(
       children: [

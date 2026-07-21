@@ -41,13 +41,22 @@ void main() {
   });
 
   group('Carga y consulta de subclases', () {
-    test('cada clase tiene al menos una subclase y todas apuntan a su clase', () {
+    test('cada clase tiene 4 subclases y todas apuntan a su clase', () {
       for (final classId in repo.classes.keys) {
         final subs = repo.subclassesForClass(classId);
-        expect(subs, isNotEmpty, reason: '$classId no tiene subclases');
+        expect(subs.length, 4, reason: '$classId debería tener 4 subclases');
         for (final s in subs) {
           expect(s.classId, classId);
         }
+      }
+    });
+
+    test('todos los rasgos de subclase empiezan en el subclassLevel de su clase', () {
+      for (final s in repo.subclasses.values) {
+        final klass = repo.characterClass(s.classId)!;
+        final minLevel = s.features.map((f) => f.level).reduce((a, b) => a < b ? a : b);
+        expect(minLevel, greaterThanOrEqualTo(klass.subclassLevel),
+            reason: '${s.id} tiene rasgos antes del nivel de subclase');
       }
     });
 
@@ -97,6 +106,39 @@ void main() {
     test('Dominio de la Vida concede competencia con armadura pesada', () {
       final s = compiler.compile(_char(
           classId: 'cleric', level: 3, hp: [8, 5, 5], subclassId: 'life-domain'));
+      expect(s.armorProficiencies, contains('heavy'));
+    });
+
+    test('el Caballero Arcano se vuelve semi-lanzador a nivel 3', () {
+      final base = compiler.compile(_char(classId: 'fighter', level: 3, hp: [10, 6, 6]));
+      expect(base.spellcasting, isNull);
+      final ek = compiler.compile(_char(
+          classId: 'fighter', level: 3, hp: [10, 6, 6], subclassId: 'eldritch-knight'));
+      expect(ek.spellcasting, isNotNull);
+      expect(ek.spellcasting!.progression, CasterProgression.third);
+      expect(ek.spellcasting!.spellList, 'wizard');
+    });
+
+    test('el Acechador de la Penumbra otorga visión en la oscuridad 90', () {
+      final s = compiler.compile(_char(
+          classId: 'ranger', level: 3, hp: [10, 6, 6], subclassId: 'gloom-stalker'));
+      expect(s.darkvision, 90);
+    });
+
+    test('el Colegio del Valor da armadura media y Ataque Adicional a nivel 6', () {
+      final l3 = compiler.compile(_char(
+          classId: 'bard', level: 3, hp: [8, 5, 5], subclassId: 'college-valor'));
+      expect(l3.armorProficiencies, contains('medium'));
+      expect(l3.attacksPerAction, 1);
+      final l6 = compiler.compile(_char(
+          classId: 'bard', level: 6, hp: [8, 5, 5, 5, 5, 5], subclassId: 'college-valor'));
+      expect(l6.attacksPerAction, 2);
+    });
+
+    test('el Dominio de la Guerra concede competencia con armas marciales', () {
+      final s = compiler.compile(_char(
+          classId: 'cleric', level: 3, hp: [8, 5, 5], subclassId: 'war-domain'));
+      expect(s.weaponProficiencies, contains('martial'));
       expect(s.armorProficiencies, contains('heavy'));
     });
   });

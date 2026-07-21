@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
+import '../ui/spell_edit_screen.dart';
 import 'level_up_summary_screen.dart';
 
 enum _HpMethod { average, roll }
@@ -72,7 +73,14 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     return m;
   }
 
-  void _confirm() {
+  // Conjuros re-elegidos en este nivel (null = sin cambios respecto al actual).
+  List<String>? _newCantrips;
+  List<String>? _newSpells;
+
+  /// Construye el personaje tal como quedará tras confirmar (nivel, ASI/dote,
+  /// PG y conjuros re-preparados). Se usa para confirmar y para previsualizar
+  /// el lanzamiento al nuevo nivel.
+  Character _buildUpdated() {
     final c = widget.character;
     final asiChoices = List<AsiChoice>.of(c.asiChoices);
     final featIds = List<String>.of(c.featIds);
@@ -86,12 +94,19 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       }
     }
 
-    final updated = c.copyWith(
+    return c.copyWith(
       level: _newLevel,
       hpPerLevel: [...c.hpPerLevel, _hpGain],
       asiChoices: asiChoices,
       featIds: featIds,
+      cantripIds: _newCantrips,
+      spellIds: _newSpells,
     );
+  }
+
+  void _confirm() {
+    final c = widget.character;
+    final updated = _buildUpdated();
 
     final compiler = CharacterCompiler(widget.repo);
     final before = compiler.compile(c);
@@ -112,6 +127,73 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           level: _newLevel,
           diff: diffSheets(before, after),
           newFeatures: _klass?.featuresAt(_newLevel) ?? const [],
+        ),
+      ),
+    );
+  }
+
+  /// Sección de conjuros del nivel nuevo (solo para lanzadores): muestra los
+  /// espacios y cupos al nuevo nivel, marca los niveles de espacio recién
+  /// abiertos y permite preparar/aprender conjuros sin salir de la subida.
+  Widget _buildSpellSection() {
+    final compiler = CharacterCompiler(widget.repo);
+    final after = compiler.compile(_buildUpdated()).spellcasting;
+    if (after == null) return const SizedBox.shrink();
+    final before = compiler.compile(widget.character).spellcasting;
+    final beforeLevels = before?.slotsByLevel.keys.toSet() ?? const <int>{};
+
+    final slots = after.slotsByLevel.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final prepared = _newCantrips != null || _newSpells != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Eyebrow('Conjuros a nivel $_newLevel'),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            for (final e in slots)
+              _SlotBadge(
+                level: e.key,
+                count: e.value,
+                isNew: !beforeLevels.contains(e.key),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          [
+            'Preparás ${after.preparedCount} conjuros',
+            if (after.cantripsKnown > 0) '${after.cantripsKnown} trucos',
+          ].join(' · '),
+          style: TextStyle(color: muted, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () => _openSpellPrep(after),
+          icon: Icon(prepared ? Icons.check : Icons.auto_stories, size: 18),
+          label: Text(prepared ? 'Conjuros actualizados' : 'Preparar conjuros'),
+        ),
+      ],
+    );
+  }
+
+  void _openSpellPrep(Spellcasting sc) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SpellEditScreen(
+          character: _buildUpdated(),
+          repo: widget.repo,
+          spellcasting: sc,
+          onSave: (cantrips, spells) => setState(() {
+            _newCantrips = cantrips;
+            _newSpells = spells;
+          }),
         ),
       ),
     );
@@ -191,6 +273,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
                 ),
             ]),
           ],
+          _buildSpellSection(),
         ],
       ),
       bottomNavigationBar: SafeArea(
@@ -311,5 +394,43 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       ),
     );
   }
+}
 
+/// Insignia de espacios de conjuro de un nivel. Resalta en oro si el nivel se
+/// abrió recién en esta subida.
+class _SlotBadge extends StatelessWidget {
+  final int level;
+  final int count;
+  final bool isNew;
+  const _SlotBadge(
+      {required this.level, required this.count, required this.isNew});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isNew ? pal.goldSoft : pal.plaque,
+        border: Border.all(color: isNew ? pal.gold : pal.hairline),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Nv $level  ×$count',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isNew ? pal.gold : null)),
+          if (isNew) ...[
+            const SizedBox(width: 5),
+            Text('nuevo',
+                style: TextStyle(
+                    fontSize: 10, letterSpacing: 0.5, color: pal.gold)),
+          ],
+        ],
+      ),
+    );
+  }
 }

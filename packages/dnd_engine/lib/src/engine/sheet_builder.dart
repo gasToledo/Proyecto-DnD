@@ -20,6 +20,9 @@ class SheetBuilder {
   /// Característica que suma a la CA por Defensa sin Armadura (null = ninguna).
   Ability? unarmoredDefenseAbility;
 
+  /// Si la Defensa sin Armadura se conserva con escudo (Bárbaro sí, Monje no).
+  bool unarmoredDefenseAllowShield = false;
+
   /// Rasgo de lanzamiento de conjuros activo (null = no lanza).
   SpellcastingEffect? spellcasting;
 
@@ -91,8 +94,9 @@ class SheetBuilder {
         bonusMaxHpPerLevel += perLevel;
       case ArmorClassBonusEffect(:final amount):
         acBonus += amount;
-      case UnarmoredDefenseEffect(:final ability):
+      case UnarmoredDefenseEffect(:final ability, :final allowShield):
         unarmoredDefenseAbility = ability;
+        unarmoredDefenseAllowShield = allowShield;
       case SpellcastingEffect():
         // El último rasgo de lanzamiento gana (una clase por ahora).
         spellcasting = e;

@@ -62,6 +62,7 @@ sealed class Effect {
       'armorClassBonus' => ArmorClassBonusEffect(json['amount'] as int),
       'unarmoredDefense' => UnarmoredDefenseEffect(
           Ability.fromKey(json['ability'] as String),
+          allowShield: json['allowShield'] as bool? ?? false,
         ),
       'spellcasting' => SpellcastingEffect(
           ability: Ability.fromKey(json['ability'] as String),
@@ -245,12 +246,19 @@ class ArmorClassBonusEffect extends Effect {
 /// Defensa sin Armadura: cuando no se lleva armadura, la CA base pasa a ser
 /// 10 + mod. de Destreza + mod. de [ability]. El Bárbaro usa Constitución y el
 /// Monje Sabiduría. Si hay armadura equipada, este efecto se ignora.
+///
+/// [allowShield]: el Bárbaro conserva la Defensa sin Armadura con escudo; el
+/// Monje la pierde si empuña un escudo (regla 2024).
 class UnarmoredDefenseEffect extends Effect {
   final Ability ability;
-  const UnarmoredDefenseEffect(this.ability);
+  final bool allowShield;
+  const UnarmoredDefenseEffect(this.ability, {this.allowShield = false});
   @override
-  Map<String, dynamic> toJson() =>
-      {'type': 'unarmoredDefense', 'ability': ability.name};
+  Map<String, dynamic> toJson() => {
+        'type': 'unarmoredDefense',
+        'ability': ability.name,
+        'allowShield': allowShield,
+      };
 }
 
 /// Concede lanzamiento de conjuros: característica de lanzamiento, progresión de

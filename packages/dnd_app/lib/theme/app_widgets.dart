@@ -324,6 +324,126 @@ class DenseRows extends StatelessWidget {
   }
 }
 
+/// Multiselección de opciones con tope, mediante chips. Compartida por el
+/// wizard de creación (habilidades, conjuros) y el editor de conjuros.
+///
+/// [disabled] marca opciones no seleccionables (p.ej. una habilidad ya tomada
+/// por otro origen). Al alcanzar [max], las no seleccionadas quedan deshabilitadas.
+class CappedChipSelect extends StatelessWidget {
+  final Map<String, String> options; // id -> etiqueta
+  final Set<String> selected;
+  final int max;
+  final VoidCallback onChanged;
+  final Set<String> disabled;
+  const CappedChipSelect({
+    super.key,
+    required this.options,
+    required this.selected,
+    required this.max,
+    required this.onChanged,
+    this.disabled = const {},
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.entries.map((e) {
+        final isSel = selected.contains(e.key);
+        final blocked =
+            (disabled.contains(e.key) || selected.length >= max) && !isSel;
+        return FilterChip(
+          label: Text(e.value),
+          selected: isSel,
+          onSelected: blocked
+              ? null
+              : (v) {
+                  if (v) {
+                    if (selected.length >= max) return;
+                    selected.add(e.key);
+                  } else {
+                    selected.remove(e.key);
+                  }
+                  onChanged();
+                },
+        );
+      }).toList(),
+    );
+  }
+}
+
+/// Tira de "pips" que muestra usos restantes sobre un máximo (recursos de clase,
+/// espacios de conjuro). Los llenos van en oro; los gastados, atenuados.
+class UsagePips extends StatelessWidget {
+  final int max;
+  final int filled;
+  final IconData filledIcon;
+  final IconData emptyIcon;
+  final double size;
+  const UsagePips({
+    super.key,
+    required this.max,
+    required this.filled,
+    required this.filledIcon,
+    required this.emptyIcon,
+    this.size = 18,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Wrap(
+      children: List.generate(
+        max,
+        (i) => Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: Icon(
+            i < filled ? filledIcon : emptyIcon,
+            size: size,
+            color: i < filled ? pal.gold : pal.textMuted,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Par de botones para gastar (–) y restaurar (+) un uso. `onSpend`/`onRecover`
+/// nulos deshabilitan el botón correspondiente.
+class SpendRecoverButtons extends StatelessWidget {
+  final VoidCallback? onSpend;
+  final VoidCallback? onRecover;
+  final String spendTooltip;
+  final String recoverTooltip;
+  const SpendRecoverButtons({
+    super.key,
+    required this.onSpend,
+    required this.onRecover,
+    this.spendTooltip = 'Usar',
+    this.recoverTooltip = 'Restaurar',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: spendTooltip,
+          onPressed: onSpend,
+          icon: const Icon(Icons.remove_circle_outline),
+        ),
+        IconButton(
+          tooltip: recoverTooltip,
+          onPressed: onRecover,
+          icon: const Icon(Icons.add_circle_outline),
+        ),
+      ],
+    );
+  }
+}
+
 /// Pill dorada suave.
 class GoldPill extends StatelessWidget {
   final String text;

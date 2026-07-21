@@ -14,6 +14,7 @@
     ],
     "subclassLevel": 3,
     "asiLevels": [4, 6, 8, 12, 14, 16, 19],
+    "grantsFightingStyle": true,
     "features": [
       {
         "level": 1,
@@ -99,7 +100,7 @@
         "name": "Defensa sin Armadura",
         "description": "Sin armadura, tu CA es 10 + mod. de Destreza + mod. de Constitución. Puedes usar escudo.",
         "effects": [
-          { "type": "unarmoredDefense", "ability": "constitution" }
+          { "type": "unarmoredDefense", "ability": "constitution", "allowShield": true }
         ]
       },
       {

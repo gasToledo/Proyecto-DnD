@@ -8,6 +8,7 @@ Character _char({
   required List<int> hp,
   Map<Ability, int>? scores,
   String? armorId,
+  bool shield = false,
   List<String> weapons = const [],
 }) =>
     Character(
@@ -28,6 +29,7 @@ Character _char({
           },
       hpPerLevel: hp,
       equippedArmorId: armorId,
+      shieldEquipped: shield,
       equippedWeaponIds: weapons,
     );
 
@@ -57,6 +59,13 @@ void main() {
           classId: 'barbarian', level: 1, hp: [12], armorId: 'chain-shirt'));
       // Camisa de malla: 13 + min(DES, 2) = 15
       expect(s.armorClass, 15);
+    });
+
+    test('conserva la Defensa sin Armadura con escudo (a diferencia del Monje)', () {
+      final s = compiler.compile(
+          _char(classId: 'barbarian', level: 1, hp: [12], shield: true));
+      // 10 + DES(2) + CON(2) + escudo(2) = 16
+      expect(s.armorClass, 16);
     });
 
     test('Furia escala: 2 usos a nivel 1, 4 a nivel 6', () {
@@ -148,6 +157,24 @@ void main() {
       final s =
           compiler.compile(_char(classId: 'monk', level: 5, hp: [8, 5, 5, 5, 5]));
       expect(s.attacksPerAction, 2);
+    });
+
+    test('con escudo pierde la Defensa sin Armadura (regla 2024)', () {
+      final scores = {
+        Ability.strength: 12,
+        Ability.dexterity: 16,
+        Ability.constitution: 12,
+        Ability.intelligence: 10,
+        Ability.wisdom: 18,
+        Ability.charisma: 10,
+      };
+      final sinEscudo =
+          compiler.compile(_char(classId: 'monk', level: 2, hp: [8, 5], scores: scores));
+      expect(sinEscudo.armorClass, 17); // 10 + DES(3) + SAB(4)
+      final conEscudo = compiler.compile(
+          _char(classId: 'monk', level: 2, hp: [8, 5], scores: scores, shield: true));
+      // Anulada por el escudo: 10 + DES(3) + escudo(2), sin SAB.
+      expect(conEscudo.armorClass, 15);
     });
   });
 }

@@ -76,23 +76,34 @@ class CreationDraft {
     return slots;
   }
 
-  /// Si la clase concede una elección de Estilo de Combate (hoy: Guerrero).
-  bool get grantsFightingStyle {
-    final k = klass;
-    if (k == null) return false;
-    return k.features
-        .any((f) => f.name.toLowerCase().contains('estilo de combate'));
-  }
+  /// Si la clase concede una elección de Estilo de Combate (dato de la clase).
+  bool get grantsFightingStyle => klass?.grantsFightingStyle ?? false;
 
   /// Si la clase elegida lanza conjuros (tiene un SpellcastingEffect a nivel 1).
   bool get isCaster => klass?.featuresUpTo(1).any(
           (f) => f.effects.any((e) => e is SpellcastingEffect)) ??
       false;
 
+  Spellcasting? _scCache;
+  String? _scSig;
+
   /// Bloque de lanzamiento derivado de las elecciones actuales (para saber
-  /// cupos de trucos/preparados y CD en el paso de conjuros).
-  Spellcasting? get spellcasting =>
-      isCaster ? CharacterCompiler(repo).compile(build()).spellcasting : null;
+  /// cupos de trucos/preparados y CD en el paso de conjuros). Se memoiza según
+  /// las entradas que lo afectan (clase, características, trasfondo/dote): elegir
+  /// trucos/conjuros no cambia el bloque, así que no recompila la ficha.
+  Spellcasting? get spellcasting {
+    if (!isCaster) return null;
+    final sig = [
+      classId, raceId, backgroundId, raceFeatId,
+      spreadMode.name, spreadPlusTwo?.name, spreadPlusOne?.name,
+      for (final a in Ability.values) assignedScores[a] ?? 10,
+    ].join('|');
+    if (sig != _scSig) {
+      _scCache = CharacterCompiler(repo).compile(build()).spellcasting;
+      _scSig = sig;
+    }
+    return _scCache;
+  }
 
   int get hitDie => klass?.hitDie ?? 10;
 

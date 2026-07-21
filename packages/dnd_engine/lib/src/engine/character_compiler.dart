@@ -80,7 +80,7 @@ class CharacterCompiler {
         builder.bonusMaxHpFlat +
         builder.bonusMaxHpPerLevel * c.level;
 
-    final ac = _armorClass(c, builder, dexMod);
+    final ac = _armorClass(c, builder, mods);
 
     final passivePerception = 10 +
         wisMod +
@@ -136,11 +136,22 @@ class CharacterCompiler {
     final sc = b.spellcasting;
     if (sc == null || sc.progression == CasterProgression.none) return null;
     final abilityMod = mods[sc.ability]!;
-    // Nº de conjuros preparables: aproximación (nivel + mod, mínimo 1). Las
-    // cifras exactas 2024 son una tabla por clase, a afinar al autorear cada una.
+
+    // Nivel de lanzador efectivo: los semi-lanzadores preparan según la mitad
+    // de su nivel (2024). Sigue siendo una aproximación de la tabla por clase.
+    final casterLevel = sc.progression == CasterProgression.half
+        ? (level / 2).ceil()
+        : level;
     final prepared = sc.preparation == SpellPreparation.prepared
-        ? max(1, level + abilityMod)
+        ? max(1, casterLevel + abilityMod)
         : 0;
+
+    // Trucos conocidos: base de la clase + 1 a niveles 4 y 10 (2024). Las clases
+    // sin trucos (Paladín/Explorador) no ganan ninguno.
+    final cantrips = sc.cantripsKnown == 0
+        ? 0
+        : sc.cantripsKnown + (level >= 4 ? 1 : 0) + (level >= 10 ? 1 : 0);
+
     return Spellcasting(
       ability: sc.ability,
       progression: sc.progression,
@@ -148,13 +159,14 @@ class CharacterCompiler {
       spellList: sc.spellList,
       saveDc: 8 + profBonus + abilityMod,
       attackBonus: profBonus + abilityMod,
-      cantripsKnown: sc.cantripsKnown,
+      cantripsKnown: cantrips,
       preparedCount: prepared,
       slotsByLevel: spellSlotsFor(sc.progression, level),
     );
   }
 
-  int _armorClass(Character c, SheetBuilder b, int dexMod) {
+  int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {
+    final dexMod = mods[Ability.dexterity]!;
     var ac = 10 + dexMod; // Sin armadura.
     final armor = c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
     if (armor != null && !armor.isShield) {
@@ -164,8 +176,12 @@ class CharacterCompiler {
       }
     } else if (b.unarmoredDefenseAbility != null) {
       // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
-      final mod = abilityModifier(b.finalScore(b.unarmoredDefenseAbility!));
-      ac = 10 + dexMod + mod;
+      // El Monje la pierde si empuña un escudo; el Bárbaro la conserva.
+      final voidedByShield =
+          c.shieldEquipped && !b.unarmoredDefenseAllowShield;
+      if (!voidedByShield) {
+        ac = 10 + dexMod + mods[b.unarmoredDefenseAbility!]!;
+      }
     }
     if (c.shieldEquipped) ac += 2;
     ac += b.acBonus;

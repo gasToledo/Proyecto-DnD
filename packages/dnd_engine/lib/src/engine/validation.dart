@@ -171,6 +171,15 @@ class CharacterValidator {
       }
     }
 
+    for (final r in sheet.resources) {
+      if (r.max <= 0) {
+        w.add(ValidationWarning(
+          'resource_zero_max',
+          'El recurso "${r.name}" tiene 0 usos: revisá su definición (falta "max"?).',
+        ));
+      }
+    }
+
     _validateSpells(c, sheet, w);
 
     final chosenFeatIds = <String?>[

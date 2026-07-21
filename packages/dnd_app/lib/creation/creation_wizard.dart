@@ -163,7 +163,7 @@ class _ClassStep extends StatelessWidget {
           ],
           const SizedBox(height: 20),
           Eyebrow('Habilidades de clase (elige ${klass.skillChoiceCount})'),
-          _MultiSelect(
+          CappedChipSelect(
             options: {for (final s in klass.skillChoiceFrom) s: titleCase(s)},
             selected: draft.classSkills,
             max: klass.skillChoiceCount,
@@ -224,7 +224,7 @@ class _SpeciesStep extends StatelessWidget {
           if (race.skillChoiceCount > 0) ...[
             const SizedBox(height: 16),
             Eyebrow('Habilidad de especie (elige ${race.skillChoiceCount})'),
-            _MultiSelect(
+            CappedChipSelect(
               options: {
                 for (final s in (race.skillChoiceFrom.isEmpty
                     ? _allSkills
@@ -555,7 +555,7 @@ class _SpellsStep extends StatelessWidget {
         if (sc.cantripsKnown > 0) ...[
           const SizedBox(height: 20),
           Eyebrow('Trucos (elige ${sc.cantripsKnown})'),
-          _MultiSelect(
+          CappedChipSelect(
             options: {for (final s in cantrips) s.id: s.name},
             selected: draft.cantrips,
             max: sc.cantripsKnown,
@@ -569,7 +569,7 @@ class _SpellsStep extends StatelessWidget {
         Text('Podés preparar conjuros de hasta nivel $maxLevel.',
             style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 6),
-        _MultiSelect(
+        CappedChipSelect(
           options: {
             for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'
           },
@@ -691,54 +691,6 @@ class _SingleSelect extends StatelessWidget {
               onSelected: (_) => onSelect(e.key),
             )),
       ],
-    );
-  }
-}
-
-/// Multiselección con tope, mediante chips.
-class _MultiSelect extends StatelessWidget {
-  final Map<String, String> options;
-  final Set<String> selected;
-  final int max;
-  final VoidCallback onChanged;
-
-  /// Opciones ya tomadas en otro grupo (p.ej. una habilidad elegida como
-  /// competencia de clase no puede volver a elegirse como de especie). Se
-  /// muestran deshabilitadas para evitar competencias duplicadas.
-  final Set<String> disabled;
-
-  const _MultiSelect({
-    required this.options,
-    required this.selected,
-    required this.max,
-    required this.onChanged,
-    this.disabled = const {},
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: options.entries.map((e) {
-        final isSel = selected.contains(e.key);
-        final isBlocked = disabled.contains(e.key) && !isSel;
-        return FilterChip(
-          label: Text(e.value),
-          selected: isSel,
-          onSelected: isBlocked
-              ? null
-              : (v) {
-                  if (v) {
-                    if (selected.length >= max) return;
-                    selected.add(e.key);
-                  } else {
-                    selected.remove(e.key);
-                  }
-                  onChanged();
-                },
-        );
-      }).toList(),
     );
   }
 }

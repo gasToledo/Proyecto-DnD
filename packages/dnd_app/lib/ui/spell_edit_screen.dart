@@ -48,11 +48,11 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
           if (_sc.cantripsKnown > 0) ...[
             Eyebrow('Trucos (${_cantrips.length}/${_sc.cantripsKnown})'),
             const SizedBox(height: 6),
-            _chips(
-              options: cantrips,
+            CappedChipSelect(
+              options: {for (final s in cantrips) s.id: s.name},
               selected: _cantrips,
               max: _sc.cantripsKnown,
-              label: (s) => s.name,
+              onChanged: () => setState(() {}),
             ),
             const SizedBox(height: 20),
           ],
@@ -62,11 +62,13 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
           Text('Hasta nivel $_maxSlotLevel.',
               style: Theme.of(context).textTheme.bodySmall),
           const SizedBox(height: 6),
-          _chips(
-            options: leveled,
+          CappedChipSelect(
+            options: {
+              for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'
+            },
             selected: _spells,
             max: _prepared ? _sc.preparedCount : 9999,
-            label: (s) => '${s.name} (Nv ${s.level})',
+            onChanged: () => setState(() {}),
           ),
         ],
       ),
@@ -86,32 +88,4 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
     );
   }
 
-  Widget _chips({
-    required List<Spell> options,
-    required Set<String> selected,
-    required int max,
-    required String Function(Spell) label,
-  }) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: options.map((s) {
-        final isSel = selected.contains(s.id);
-        final full = selected.length >= max;
-        return FilterChip(
-          label: Text(label(s)),
-          selected: isSel,
-          onSelected: (!isSel && full)
-              ? null
-              : (v) => setState(() {
-                    if (v) {
-                      selected.add(s.id);
-                    } else {
-                      selected.remove(s.id);
-                    }
-                  }),
-        );
-      }).toList(),
-    );
-  }
 }

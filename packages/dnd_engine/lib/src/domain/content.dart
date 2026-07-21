@@ -112,6 +112,10 @@ class CharacterClass {
   /// Niveles de Mejora de Característica (ASI). El Guerrero suma extras (6 y 14).
   final List<int> asiLevels;
 
+  /// Si la clase concede una elección de Estilo de Combate (Guerrero; en el
+  /// futuro Paladín/Explorador con su propia integración).
+  final bool grantsFightingStyle;
+
   final List<ClassFeature> features;
 
   const CharacterClass({
@@ -126,6 +130,7 @@ class CharacterClass {
     this.skillChoiceFrom = const [],
     this.subclassLevel = 3,
     this.asiLevels = const [4, 8, 12, 16, 19],
+    this.grantsFightingStyle = false,
     this.features = const [],
   });
 
@@ -160,6 +165,7 @@ class CharacterClass {
         subclassLevel: j['subclassLevel'] as int? ?? 3,
         asiLevels: (j['asiLevels'] as List?)?.map((e) => e as int).toList() ??
             const [4, 8, 12, 16, 19],
+        grantsFightingStyle: j['grantsFightingStyle'] as bool? ?? false,
         features: (j['features'] as List? ?? const [])
             .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
             .toList(),

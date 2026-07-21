@@ -91,7 +91,20 @@ class _SheetScreenState extends State<SheetScreen> {
 
   ContentRepository get repo => widget.repo;
   CharactersController get ctrl => widget.controller;
-  ComputedSheet get sheet => CharacterCompiler(repo).compile(_c);
+
+  // La ficha compilada depende solo de los datos de construcción, no del estado
+  // de combate (que se muta in situ conservando el mismo objeto _c). Se cachea
+  // por identidad de _c: las ediciones de equipo/nivel producen un _c nuevo vía
+  // copyWith e invalidan la caché, evitando recompilar varias veces por build.
+  Character? _sheetFor;
+  ComputedSheet? _sheetCache;
+  ComputedSheet get sheet {
+    if (!identical(_sheetFor, _c)) {
+      _sheetCache = CharacterCompiler(repo).compile(_c);
+      _sheetFor = _c;
+    }
+    return _sheetCache!;
+  }
 
   final _amountCtrl = TextEditingController();
   // Controlador propio de las notas: sobrevive los cambios de tab y evita el
@@ -627,7 +640,6 @@ class _SheetScreenState extends State<SheetScreen> {
   }
 
   Widget _resourceRow(CharacterResource r) {
-    final pal = context.palette;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final used = _c.combat.resourceUsage[r.id] ?? 0;
     final hasInfo = r.description.isNotEmpty;
@@ -659,41 +671,27 @@ class _SheetScreenState extends State<SheetScreen> {
                       ],
                     ),
                     const SizedBox(height: 5),
-                    Row(
-                      children: List.generate(
-                          r.max,
-                          (i) => Padding(
-                                padding: const EdgeInsets.only(right: 4),
-                                child: Icon(
-                                  i < r.max - used
-                                      ? Icons.bolt
-                                      : Icons.bolt_outlined,
-                                  size: 18,
-                                  color:
-                                      i < r.max - used ? pal.gold : pal.textMuted,
-                                ),
-                              )),
+                    UsagePips(
+                      max: r.max,
+                      filled: r.max - used,
+                      filledIcon: Icons.bolt,
+                      emptyIcon: Icons.bolt_outlined,
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          IconButton(
-            tooltip: 'Usar',
-            onPressed: used >= r.max
+          SpendRecoverButtons(
+            spendTooltip: 'Usar',
+            onSpend: used >= r.max
                 ? null
                 : () => _mutateCombat(
                     () => _c.combat.resourceUsage[r.id] = used + 1),
-            icon: const Icon(Icons.remove_circle_outline),
-          ),
-          IconButton(
-            tooltip: 'Restaurar',
-            onPressed: used <= 0
+            onRecover: used <= 0
                 ? null
                 : () => _mutateCombat(
                     () => _c.combat.resourceUsage[r.id] = used - 1),
-            icon: const Icon(Icons.add_circle_outline),
           ),
         ],
       ),
@@ -725,12 +723,13 @@ class _SheetScreenState extends State<SheetScreen> {
     );
   }
 
-  void _showInfoDialog(String title, String description) {
+  /// Diálogo de información reutilizable (título + contenido desplazable + Cerrar).
+  void _infoDialog(String title, Widget content) {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(title),
-        content: Text(description),
+        content: SingleChildScrollView(child: content),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -740,6 +739,9 @@ class _SheetScreenState extends State<SheetScreen> {
       ),
     );
   }
+
+  void _showInfoDialog(String title, String description) =>
+      _infoDialog(title, Text(description));
 
   // ------------------------------------------------------------- Conjuros
 
@@ -876,7 +878,7 @@ class _SheetScreenState extends State<SheetScreen> {
     final combat = _c.combat;
     final max = sc.slotsByLevel[level] ?? 0;
     final used = combat.spellSlotsUsed[level] ?? 0;
-    final remaining = max - used;
+    final remaining = CombatOps.spellSlotsRemaining(combat, sc, level);
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
       child: Row(
@@ -887,37 +889,27 @@ class _SheetScreenState extends State<SheetScreen> {
                 style: const TextStyle(fontWeight: FontWeight.w500)),
           ),
           Expanded(
-            child: Wrap(
-              children: List.generate(
-                max,
-                (i) => Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: Icon(
-                    i < remaining ? Icons.circle : Icons.circle_outlined,
-                    size: 16,
-                    color: i < remaining ? pal.gold : pal.textMuted,
-                  ),
-                ),
-              ),
+            child: UsagePips(
+              max: max,
+              filled: remaining,
+              filledIcon: Icons.circle,
+              emptyIcon: Icons.circle_outlined,
+              size: 16,
             ),
           ),
           Text('$remaining/$max',
               style: TextStyle(color: pal.textMuted, fontSize: 12)),
-          IconButton(
-            tooltip: 'Gastar espacio',
-            onPressed: remaining <= 0
+          SpendRecoverButtons(
+            spendTooltip: 'Gastar espacio',
+            recoverTooltip: 'Recuperar espacio',
+            onSpend: remaining <= 0
                 ? null
                 : () => _mutateCombat(
                     () => CombatOps.spendSpellSlot(combat, sc, level)),
-            icon: const Icon(Icons.remove_circle_outline),
-          ),
-          IconButton(
-            tooltip: 'Recuperar espacio',
-            onPressed: used <= 0
+            onRecover: used <= 0
                 ? null
-                : () =>
-                    _mutateCombat(() => CombatOps.recoverSpellSlot(combat, level)),
-            icon: const Icon(Icons.add_circle_outline),
+                : () => _mutateCombat(
+                    () => CombatOps.recoverSpellSlot(combat, level)),
           ),
         ],
       ),
@@ -984,33 +976,22 @@ class _SheetScreenState extends State<SheetScreen> {
   }
 
   void _showSpellDialog(Spell s) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(s.name),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${s.isCantrip ? "Truco" : "Nivel ${s.level}"} · ${s.school}',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
-              const SizedBox(height: 10),
-              _spellMeta('Lanzamiento', s.castingTime),
-              _spellMeta('Alcance', s.range),
-              _spellMeta('Componentes', s.components),
-              _spellMeta('Duración', s.duration),
-              const SizedBox(height: 10),
-              Text(s.description),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
-          ),
+    _infoDialog(
+      s.name,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('${s.isCantrip ? "Truco" : "Nivel ${s.level}"} · ${s.school}',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          const SizedBox(height: 10),
+          _spellMeta('Lanzamiento', s.castingTime),
+          _spellMeta('Alcance', s.range),
+          _spellMeta('Componentes', s.components),
+          _spellMeta('Duración', s.duration),
+          const SizedBox(height: 10),
+          Text(s.description),
         ],
       ),
     );

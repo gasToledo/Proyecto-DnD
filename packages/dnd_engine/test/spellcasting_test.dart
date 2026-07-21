@@ -120,8 +120,19 @@ void main() {
       expect(sc.saveDc, 14); // 8 + prof(3) + INT(+3)
       expect(sc.attackBonus, 6); // prof(3) + INT(+3)
       expect(sc.slotsByLevel, {1: 4, 2: 3, 3: 2});
-      expect(sc.cantripsKnown, 3);
+      expect(sc.cantripsKnown, 4); // base 3 + 1 (nivel >= 4)
       expect(sc.preparedCount, 8); // nivel(5) + INT(+3)
+    });
+
+    test('los trucos escalan: base a nivel 1, +1 a nivel 4 y a nivel 10', () {
+      int cantrips(int level) => compiler
+          .compile(_caster(level: level, hp: List.filled(level, 4)))
+          .spellcasting!
+          .cantripsKnown;
+      expect(cantrips(1), 3);
+      expect(cantrips(3), 3);
+      expect(cantrips(4), 4);
+      expect(cantrips(10), 5);
     });
 
     test('un no-lanzador no tiene bloque de lanzamiento', () {
@@ -295,6 +306,19 @@ void main() {
       ]) {
         expect(repo.spellsForList(id), isNotEmpty, reason: id);
       }
+    });
+
+    test('preparables: semi-lanzador usa medio nivel; completo usa nivel entero', () {
+      // Puntuaciones 14 → mod +2 en la aptitud de lanzamiento.
+      // Clérigo (completo) nivel 6: 6 + 2 = 8.
+      expect(compiler.compile(mk('cleric', 6)).spellcasting!.preparedCount, 8);
+      // Paladín (semi) nivel 6: ceil(6/2) + 2 = 5, no 8.
+      expect(compiler.compile(mk('paladin', 6)).spellcasting!.preparedCount, 5);
+    });
+
+    test('semi-lanzadores no ganan trucos aunque suban de nivel', () {
+      expect(compiler.compile(mk('paladin', 10)).spellcasting!.cantripsKnown, 0);
+      expect(compiler.compile(mk('ranger', 10)).spellcasting!.cantripsKnown, 0);
     });
   });
 }

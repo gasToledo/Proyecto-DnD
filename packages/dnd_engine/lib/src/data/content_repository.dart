@@ -8,6 +8,7 @@ import '../domain/content.dart';
 class ContentRepository {
   final Map<String, Race> races;
   final Map<String, CharacterClass> classes;
+  final Map<String, Subclass> subclasses;
   final Map<String, Background> backgrounds;
   final Map<String, Feat> feats;
   final Map<String, Weapon> weapons;
@@ -17,6 +18,7 @@ class ContentRepository {
   ContentRepository({
     Map<String, Race>? races,
     Map<String, CharacterClass>? classes,
+    Map<String, Subclass>? subclasses,
     Map<String, Background>? backgrounds,
     Map<String, Feat>? feats,
     Map<String, Weapon>? weapons,
@@ -24,6 +26,7 @@ class ContentRepository {
     Map<String, Spell>? spells,
   })  : races = races ?? {},
         classes = classes ?? {},
+        subclasses = subclasses ?? {},
         backgrounds = backgrounds ?? {},
         feats = feats ?? {},
         weapons = weapons ?? {},
@@ -32,11 +35,17 @@ class ContentRepository {
 
   Race? race(String id) => races[id];
   CharacterClass? characterClass(String id) => classes[id];
+  Subclass? subclass(String id) => subclasses[id];
   Background? background(String id) => backgrounds[id];
   Feat? feat(String id) => feats[id];
   Weapon? weapon(String id) => weapons[id];
   Armor? armorPiece(String id) => armor[id];
   Spell? spell(String id) => spells[id];
+
+  /// Subclases que pertenecen a una clase (id de clase), ordenadas por nombre.
+  List<Subclass> subclassesForClass(String classId) =>
+      subclasses.values.where((s) => s.classId == classId).toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
 
   /// Conjuros de la lista de una clase (id de clase), ordenados por nivel y nombre.
   List<Spell> spellsForList(String classId) {
@@ -51,6 +60,7 @@ class ContentRepository {
   void addAll(ContentRepository other) {
     races.addAll(other.races);
     classes.addAll(other.classes);
+    subclasses.addAll(other.subclasses);
     backgrounds.addAll(other.backgrounds);
     feats.addAll(other.feats);
     weapons.addAll(other.weapons);
@@ -66,6 +76,7 @@ class ContentRepository {
   factory ContentRepository.fromJsonPacks({
     List<Map<String, dynamic>> races = const [],
     List<Map<String, dynamic>> classes = const [],
+    List<Map<String, dynamic>> subclasses = const [],
     List<Map<String, dynamic>> backgrounds = const [],
     List<Map<String, dynamic>> feats = const [],
     List<Map<String, dynamic>> weapons = const [],
@@ -76,6 +87,9 @@ class ContentRepository {
       races: {for (final j in races) j['id'] as String: Race.fromJson(j)},
       classes: {
         for (final j in classes) j['id'] as String: CharacterClass.fromJson(j)
+      },
+      subclasses: {
+        for (final j in subclasses) j['id'] as String: Subclass.fromJson(j)
       },
       backgrounds: {
         for (final j in backgrounds) j['id'] as String: Background.fromJson(j)
@@ -101,6 +115,7 @@ class ContentRepository {
     return ContentRepository.fromJsonPacks(
       races: await read('races.json'),
       classes: await read('classes.json'),
+      subclasses: await read('subclasses.json'),
       backgrounds: await read('backgrounds.json'),
       feats: await read('feats.json'),
       weapons: await read('weapons.json'),

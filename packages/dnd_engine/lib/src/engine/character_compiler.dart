@@ -45,6 +45,14 @@ class CharacterCompiler {
       builder.armorProficiencies.addAll(klass.armorProficiencies);
       builder.weaponProficiencies.addAll(klass.weaponProficiencies);
     }
+
+    // Rasgos de subclase (si se eligió y pertenece a esta clase), por nivel.
+    final subclass = c.subclassId == null ? null : repo.subclass(c.subclassId!);
+    if (subclass != null && subclass.classId == c.classId) {
+      for (final f in subclass.featuresUpTo(c.level)) {
+        builder.applyAll(f.effects);
+      }
+    }
     if (background != null) {
       builder.applyAll(background.effects);
       builder.skillProficiencies.addAll(background.skillProficiencies);

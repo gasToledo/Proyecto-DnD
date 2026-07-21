@@ -87,6 +87,13 @@ class ClassFeature {
     this.effects = const [],
   });
 
+  Map<String, dynamic> toJson() => {
+        'level': level,
+        'name': name,
+        'description': description,
+        'effects': effects.map((e) => e.toJson()).toList(),
+      };
+
   factory ClassFeature.fromJson(Map<String, dynamic> j) => ClassFeature(
         level: j['level'] as int,
         name: j['name'] as String,
@@ -166,6 +173,56 @@ class CharacterClass {
         asiLevels: (j['asiLevels'] as List?)?.map((e) => e as int).toList() ??
             const [4, 8, 12, 16, 19],
         grantsFightingStyle: j['grantsFightingStyle'] as bool? ?? false,
+        features: (j['features'] as List? ?? const [])
+            .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+/// Subclase (Camino Primario, Escuela Arcana, Dominio, etc.). Pertenece a una
+/// clase (`classId`) y aporta rasgos por nivel igual que la clase base. Se
+/// elige al `subclassLevel` de la clase (2024: nivel 3 en todas). Oficial y
+/// homebrew comparten este modelo.
+class Subclass {
+  final String id;
+  final String name;
+  final String classId;
+  final ContentSource source;
+  final String description;
+  final List<ClassFeature> features;
+
+  const Subclass({
+    required this.id,
+    required this.name,
+    required this.classId,
+    required this.source,
+    this.description = '',
+    this.features = const [],
+  });
+
+  /// Rasgos de subclase activos hasta [level] inclusive.
+  List<ClassFeature> featuresUpTo(int level) =>
+      features.where((f) => f.level <= level).toList();
+
+  /// Rasgos de subclase ganados exactamente al alcanzar [level].
+  List<ClassFeature> featuresAt(int level) =>
+      features.where((f) => f.level == level).toList();
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'classId': classId,
+        'source': source.toJson(),
+        'description': description,
+        'features': features.map((f) => f.toJson()).toList(),
+      };
+
+  factory Subclass.fromJson(Map<String, dynamic> j) => Subclass(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        classId: j['classId'] as String,
+        source: ContentSource.fromJson(j['source'] as String?),
+        description: j['description'] as String? ?? '',
         features: (j['features'] as List? ?? const [])
             .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
             .toList(),

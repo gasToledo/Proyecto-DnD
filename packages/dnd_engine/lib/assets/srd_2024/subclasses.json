@@ -515,7 +515,7 @@
         "description": "Ganas competencia con armadura media, escudos y armas marciales.",
         "effects": [
           { "type": "armorProficiency", "category": "medium" },
-          { "type": "armorProficiency", "category": "shields" },
+          { "type": "armorProficiency", "category": "shield" },
           { "type": "weaponProficiency", "category": "martial" }
         ]
       },

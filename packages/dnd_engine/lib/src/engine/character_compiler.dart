@@ -145,20 +145,31 @@ class CharacterCompiler {
     if (sc == null || sc.progression == CasterProgression.none) return null;
     final abilityMod = mods[sc.ability]!;
 
-    // Nivel de lanzador efectivo: los semi-lanzadores preparan según la mitad
-    // de su nivel (2024). Sigue siendo una aproximación de la tabla por clase.
-    final casterLevel = sc.progression == CasterProgression.half
-        ? (level / 2).ceil()
-        : level;
+    // Nivel de lanzador efectivo según la progresión: los semi-lanzadores
+    // preparan según la mitad de su nivel y los de un tercio (subclases como el
+    // Caballero/Pícaro Arcano) según un tercio (2024). Sigue siendo una
+    // aproximación de la tabla por clase.
+    final casterLevel = switch (sc.progression) {
+      CasterProgression.half => (level / 2).ceil(),
+      CasterProgression.third => (level / 3).ceil(),
+      _ => level,
+    };
     final prepared = sc.preparation == SpellPreparation.prepared
         ? max(1, casterLevel + abilityMod)
         : 0;
 
-    // Trucos conocidos: base de la clase + 1 a niveles 4 y 10 (2024). Las clases
-    // sin trucos (Paladín/Explorador) no ganan ninguno.
-    final cantrips = sc.cantripsKnown == 0
-        ? 0
-        : sc.cantripsKnown + (level >= 4 ? 1 : 0) + (level >= 10 ? 1 : 0);
+    // Trucos conocidos: base de la clase + escalado por nivel. Los lanzadores
+    // completos ganan +1 a niveles 4 y 10; los de un tercio solo a nivel 10
+    // (2024). Las clases sin trucos (Paladín/Explorador) no ganan ninguno.
+    final int cantripBonus;
+    if (sc.cantripsKnown == 0) {
+      cantripBonus = 0;
+    } else if (sc.progression == CasterProgression.third) {
+      cantripBonus = level >= 10 ? 1 : 0;
+    } else {
+      cantripBonus = (level >= 4 ? 1 : 0) + (level >= 10 ? 1 : 0);
+    }
+    final cantrips = sc.cantripsKnown + cantripBonus;
 
     return Spellcasting(
       ability: sc.ability,

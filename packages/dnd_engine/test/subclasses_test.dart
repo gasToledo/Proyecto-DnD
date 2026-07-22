@@ -119,6 +119,31 @@ void main() {
       expect(ek.spellcasting!.spellList, 'wizard');
     });
 
+    test('el de un tercio cuenta preparados por tercio de nivel, no por nivel', () {
+      // INT por defecto = 12 (+1). Caballero Arcano nivel 3: ceil(3/3)+1 = 2,
+      // no nivel(3)+1 = 4.
+      final l3 = compiler.compile(_char(
+          classId: 'fighter', level: 3, hp: [10, 6, 6], subclassId: 'eldritch-knight'));
+      expect(l3.spellcasting!.preparedCount, 2);
+      // Nivel 10: ceil(10/3)+1 = 5.
+      final l10 = compiler.compile(_char(
+          classId: 'fighter', level: 10, hp: List.filled(10, 6),
+          subclassId: 'eldritch-knight'));
+      expect(l10.spellcasting!.preparedCount, 5);
+    });
+
+    test('el de un tercio solo gana +1 truco a nivel 10, no a nivel 4', () {
+      // Pícaro Arcano: base 3 trucos.
+      final l4 = compiler.compile(_char(
+          classId: 'rogue', level: 4, hp: List.filled(4, 6),
+          subclassId: 'arcane-trickster'));
+      expect(l4.spellcasting!.cantripsKnown, 3); // sin +1 antes de nivel 10
+      final l10 = compiler.compile(_char(
+          classId: 'rogue', level: 10, hp: List.filled(10, 6),
+          subclassId: 'arcane-trickster'));
+      expect(l10.spellcasting!.cantripsKnown, 4); // base 3 + 1 a nivel 10
+    });
+
     test('el Acechador de la Penumbra otorga visión en la oscuridad 90', () {
       final s = compiler.compile(_char(
           classId: 'ranger', level: 3, hp: [10, 6, 6], subclassId: 'gloom-stalker'));
@@ -140,6 +165,14 @@ void main() {
           classId: 'cleric', level: 3, hp: [8, 5, 5], subclassId: 'war-domain'));
       expect(s.weaponProficiencies, contains('martial'));
       expect(s.armorProficiencies, contains('heavy'));
+    });
+
+    test('la competencia de escudo usa la misma categoría que la armadura', () {
+      final fighter = compiler.compile(_char(classId: 'fighter', level: 1, hp: [10]));
+      final shield = repo.armorPiece('shield')!;
+      // El Guerrero es competente con escudos y la categoría coincide (antes:
+      // "shields" en la clase vs "shield" en la armadura).
+      expect(fighter.armorProficiencies, contains(shield.category));
     });
   });
 

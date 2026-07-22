@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.dndsheets" "\0"
-            VALUE "FileDescription", "dnd_app" "\0"
+            VALUE "FileDescription", "Fichas D&D 5e" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "dnd_app" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.dndsheets. All rights reserved." "\0"
             VALUE "OriginalFilename", "dnd_app.exe" "\0"
-            VALUE "ProductName", "dnd_app" "\0"
+            VALUE "ProductName", "Fichas D&D 5e" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

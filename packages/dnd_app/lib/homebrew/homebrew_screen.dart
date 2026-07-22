@@ -2,6 +2,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../data/homebrew_store.dart';
+import '../theme/app_widgets.dart';
 import 'effect_editor.dart';
 
 const _skills = [
@@ -30,10 +31,21 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
   ContentRepository get repo => widget.repo;
   HomebrewStore get store => widget.store;
 
+  /// Ejecuta una escritura en disco del store homebrew; si falla (permisos,
+  /// disco lleno) lo muestra en vez de dejar la excepción sin capturar.
+  Future<void> _persist(Future<void> Function() write) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await write();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Contenido homebrew'),
@@ -45,6 +57,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
               Tab(text: 'Dotes'),
               Tab(text: 'Razas'),
               Tab(text: 'Trasfondos'),
+              Tab(text: 'Conjuros'),
             ],
           ),
         ),
@@ -55,6 +68,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
             _featsTab(),
             _racesTab(),
             _backgroundsTab(),
+            _spellsTab(),
           ],
         ),
       ),
@@ -66,36 +80,53 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     required VoidCallback onAdd,
     required List<Widget> items,
   }) {
-    return ListView(
-      padding: const EdgeInsets.all(12),
+    return PageBody(
       children: [
         FilledButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add),
           label: Text(addLabel),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         if (items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(child: Text('Todavía no agregaste nada aquí.')),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: Text('Todavía no agregaste nada aquí.',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            ),
           )
         else
-          ...items,
+          DenseRows(children: items),
       ],
     );
   }
 
   Widget _tile(String title, String subtitle,
       {required VoidCallback onEdit, required VoidCallback onDelete}) {
-    return Card(
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(subtitle),
-        onTap: onEdit,
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline),
-          onPressed: onDelete,
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return InkWell(
+      onTap: onEdit,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(fontSize: 13, color: muted)),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              onPressed: onDelete,
+            ),
+          ],
         ),
       ),
     );
@@ -117,7 +148,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final w = await Navigator.of(context).push<Weapon>(
         MaterialPageRoute(builder: (_) => WeaponForm(initial: initial)));
     if (w == null) return;
-    await store.saveWeapon(w);
+    await _persist(() => store.saveWeapon(w));
     repo.weapons[w.id] = w;
     setState(() {});
   }
@@ -138,7 +169,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final a = await Navigator.of(context).push<Armor>(
         MaterialPageRoute(builder: (_) => ArmorForm(initial: initial)));
     if (a == null) return;
-    await store.saveArmor(a);
+    await _persist(() => store.saveArmor(a));
     repo.armor[a.id] = a;
     setState(() {});
   }
@@ -159,7 +190,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final f = await Navigator.of(context)
         .push<Feat>(MaterialPageRoute(builder: (_) => FeatForm(initial: initial)));
     if (f == null) return;
-    await store.saveFeat(f);
+    await _persist(() => store.saveFeat(f));
     repo.feats[f.id] = f;
     setState(() {});
   }
@@ -180,7 +211,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final r = await Navigator.of(context)
         .push<Race>(MaterialPageRoute(builder: (_) => RaceForm(initial: initial)));
     if (r == null) return;
-    await store.saveRace(r);
+    await _persist(() => store.saveRace(r));
     repo.races[r.id] = r;
     setState(() {});
   }
@@ -201,14 +232,42 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final b = await Navigator.of(context).push<Background>(MaterialPageRoute(
         builder: (_) => BackgroundForm(initial: initial, repo: repo)));
     if (b == null) return;
-    await store.saveBackground(b);
+    await _persist(() => store.saveBackground(b));
     repo.backgrounds[b.id] = b;
+    setState(() {});
+  }
+
+  // ---------------------------------------------------------- Conjuros
+  Widget _spellsTab() => _list(
+        addLabel: 'Agregar conjuro',
+        onAdd: () => _editSpell(),
+        items: (store.spells.values.toList()
+              ..sort((a, b) => a.level != b.level
+                  ? a.level.compareTo(b.level)
+                  : a.name.compareTo(b.name)))
+            .map((s) => _tile(
+                s.name,
+                '${s.isCantrip ? "Truco" : "Nivel ${s.level}"}'
+                    '${s.school.isEmpty ? "" : " · ${s.school}"}'
+                    '${s.classes.isEmpty ? "" : " · ${s.classes.join(", ")}"}',
+                onEdit: () => _editSpell(s),
+                onDelete: () => _delete(() => store.deleteSpell(s.id),
+                    () => repo.spells.remove(s.id))))
+            .toList(),
+      );
+
+  Future<void> _editSpell([Spell? initial]) async {
+    final s = await Navigator.of(context)
+        .push<Spell>(MaterialPageRoute(builder: (_) => SpellForm(initial: initial)));
+    if (s == null) return;
+    await _persist(() => store.saveSpell(s));
+    repo.spells[s.id] = s;
     setState(() {});
   }
 
   Future<void> _delete(
       Future<void> Function() fromStore, VoidCallback fromRepo) async {
-    await fromStore();
+    await _persist(fromStore);
     fromRepo();
     setState(() {});
   }
@@ -249,7 +308,7 @@ class _WeaponFormState extends State<WeaponForm> {
         _text(_versatile, 'Dado versátil (opcional, p.ej. 1d10)'),
         _text(_mastery, 'Maestría (opcional, p.ej. sap)'),
         const SizedBox(height: 8),
-        const Text('Propiedades'),
+        const Eyebrow('Propiedades'),
         Wrap(
           spacing: 6,
           children: _weaponProps
@@ -364,7 +423,7 @@ class _FeatFormState extends State<FeatForm> {
         _categoryDropdown(['origin', 'general', 'fighting-style'], _category,
             (v) => setState(() => _category = v)),
         const SizedBox(height: 12),
-        const Text('Efectos'),
+        const Eyebrow('Efectos'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
       ],
     );
@@ -408,7 +467,7 @@ class _RaceFormState extends State<RaceForm> {
         _text(_speed, 'Velocidad (ft)', number: true),
         _text(_skillCount, 'Habilidades a elegir', number: true),
         const SizedBox(height: 12),
-        const Text('Rasgos (efectos)'),
+        const Eyebrow('Rasgos (efectos)'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
       ],
     );
@@ -453,7 +512,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
       children: [
         _text(_name, 'Nombre', onChanged: () => setState(() {})),
         const SizedBox(height: 8),
-        const Text('Características (elegí 3)'),
+        const Eyebrow('Características (elegí 3)'),
         Wrap(
           spacing: 6,
           children: Ability.values
@@ -471,7 +530,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
               .toList(),
         ),
         const SizedBox(height: 8),
-        const Text('Competencias de habilidad'),
+        const Eyebrow('Competencias de habilidad'),
         Wrap(
           spacing: 6,
           children: _skills
@@ -497,7 +556,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
           onChanged: (v) => setState(() => _originFeatId = v),
         ),
         const SizedBox(height: 12),
-        const Text('Efectos adicionales'),
+        const Eyebrow('Efectos adicionales'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
       ],
     );
@@ -522,6 +581,115 @@ class _BackgroundFormState extends State<BackgroundForm> {
   }
 }
 
+class SpellForm extends StatefulWidget {
+  final Spell? initial;
+  const SpellForm({super.key, this.initial});
+  @override
+  State<SpellForm> createState() => _SpellFormState();
+}
+
+/// Clases lanzadoras a las que se puede asignar un conjuro (id → etiqueta).
+const _spellClasses = {
+  'wizard': 'Mago',
+  'sorcerer': 'Hechicero',
+  'cleric': 'Clérigo',
+  'druid': 'Druida',
+  'bard': 'Bardo',
+  'warlock': 'Brujo',
+  'paladin': 'Paladín',
+  'ranger': 'Explorador',
+};
+
+class _SpellFormState extends State<SpellForm> {
+  late final _name = TextEditingController(text: widget.initial?.name ?? '');
+  late final _level = TextEditingController(text: '${widget.initial?.level ?? 0}');
+  late final _school =
+      TextEditingController(text: widget.initial?.school ?? '');
+  late final _castingTime =
+      TextEditingController(text: widget.initial?.castingTime ?? '1 acción');
+  late final _range = TextEditingController(text: widget.initial?.range ?? '');
+  late final _components =
+      TextEditingController(text: widget.initial?.components ?? 'V, S');
+  late final _duration =
+      TextEditingController(text: widget.initial?.duration ?? 'Instantánea');
+  late final _description =
+      TextEditingController(text: widget.initial?.description ?? '');
+  late bool _concentration = widget.initial?.concentration ?? false;
+  late bool _ritual = widget.initial?.ritual ?? false;
+  late final Set<String> _classes = {...?widget.initial?.classes};
+
+  @override
+  Widget build(BuildContext context) {
+    return _FormScaffold(
+      title: 'Conjuro',
+      onSave: _name.text.trim().isEmpty ? null : _save,
+      children: [
+        _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _text(_level, 'Nivel (0 = truco)', number: true),
+        _text(_school, 'Escuela (p.ej. Evocación)'),
+        _text(_castingTime, 'Tiempo de lanzamiento'),
+        _text(_range, 'Alcance'),
+        _text(_components, 'Componentes (p.ej. V, S, M)'),
+        _text(_duration, 'Duración'),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Concentración'),
+          value: _concentration,
+          onChanged: (v) => setState(() => _concentration = v),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Ritual'),
+          value: _ritual,
+          onChanged: (v) => setState(() => _ritual = v),
+        ),
+        const SizedBox(height: 8),
+        const Eyebrow('Listas de clase'),
+        Wrap(
+          spacing: 6,
+          children: _spellClasses.entries
+              .map((e) => FilterChip(
+                    label: Text(e.value),
+                    selected: _classes.contains(e.key),
+                    onSelected: (v) => setState(
+                        () => v ? _classes.add(e.key) : _classes.remove(e.key)),
+                  ))
+              .toList(),
+        ),
+        const SizedBox(height: 12),
+        const Eyebrow('Descripción'),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: TextField(
+            controller: _description,
+            minLines: 3,
+            maxLines: null,
+            decoration: const InputDecoration(border: OutlineInputBorder()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _save() {
+    Navigator.of(context).pop(Spell(
+      id: widget.initial?.id ?? homebrewId(_name.text),
+      name: _name.text.trim(),
+      source: ContentSource.homebrew,
+      level: int.tryParse(_level.text.trim())?.clamp(0, 9) ?? 0,
+      school: _school.text.trim(),
+      castingTime: _castingTime.text.trim(),
+      range: _range.text.trim(),
+      components: _components.text.trim(),
+      duration: _duration.text.trim(),
+      concentration: _concentration,
+      ritual: _ritual,
+      description: _description.text.trim(),
+      classes: _classes.toList(),
+    ));
+  }
+}
+
 // ---------------------------------------------------------- Helpers de form
 
 class _FormScaffold extends StatelessWidget {
@@ -535,7 +703,7 @@ class _FormScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: ListView(padding: const EdgeInsets.all(16), children: children),
+      body: PageBody(children: children),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),

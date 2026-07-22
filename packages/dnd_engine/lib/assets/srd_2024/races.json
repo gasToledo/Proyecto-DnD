@@ -101,5 +101,163 @@
         "description": "Cuentas como un tamaño más grande al determinar tu capacidad de carga y lo que puedes empujar, arrastrar o levantar."
       }
     ]
+  },
+  {
+    "id": "elf",
+    "name": "Elfo",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 30,
+    "skillChoiceCount": 1,
+    "skillChoiceFrom": ["insight", "perception", "survival"],
+    "effects": [
+      { "type": "darkvision", "range": 60 },
+      {
+        "type": "passiveTrait",
+        "name": "Ascendencia Feérica",
+        "description": "Tienes ventaja en las salvaciones para evitar o terminar el estado hechizado."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Sentidos Agudos",
+        "description": "Ganas competencia en una habilidad a elegir entre Perspicacia, Percepción o Supervivencia."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Trance",
+        "description": "No necesitas dormir y la magia no puede dormirte. Descansas en un trance meditativo de 4 horas para obtener los beneficios de un descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Linaje Élfico",
+        "description": "Eliges un linaje (Alto Elfo, Elfo del Bosque o Elfo Oscuro) que otorga un truco y beneficios que mejoran a niveles 3 y 5."
+      }
+    ]
+  },
+  {
+    "id": "dragonborn",
+    "name": "Draconato",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 30,
+    "effects": [
+      { "type": "darkvision", "range": 60 },
+      {
+        "type": "passiveTrait",
+        "name": "Ascendencia Dracónica",
+        "description": "Eliges un tipo de dragón; determina el tipo de daño de tu Arma de Aliento y tu Resistencia al Daño."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Arma de Aliento",
+        "description": "Al atacar, puedes exhalar daño en un cono de 15 pies o línea de 30 pies (salvación de DES). El daño escala con el nivel. Usos iguales a tu bonif. de competencia por descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistencia al Daño",
+        "description": "Tienes resistencia al tipo de daño determinado por tu Ascendencia Dracónica."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Vuelo Dracónico (nivel 5)",
+        "description": "A partir del nivel 5, como acción adicional obtienes velocidad de vuelo igual a tu velocidad terrestre durante 10 minutos. Una vez por descanso largo."
+      }
+    ]
+  },
+  {
+    "id": "gnome",
+    "name": "Gnomo",
+    "source": "srd_2024",
+    "size": "Pequeño",
+    "speed": 30,
+    "effects": [
+      { "type": "darkvision", "range": 60 },
+      {
+        "type": "passiveTrait",
+        "name": "Astucia Gnoma",
+        "description": "Tienes ventaja en las salvaciones de Inteligencia, Sabiduría y Carisma."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Linaje Gnomo",
+        "description": "Eliges un linaje (Gnomo del Bosque o Gnomo de las Rocas) que otorga un truco o competencias adicionales."
+      }
+    ]
+  },
+  {
+    "id": "tiefling",
+    "name": "Tiflin",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 30,
+    "effects": [
+      { "type": "darkvision", "range": 60 },
+      {
+        "type": "passiveTrait",
+        "name": "Presencia de Otro Mundo",
+        "description": "Conoces el truco Taumaturgia. A niveles 3 y 5 aprendes conjuros adicionales según tu Legado Diabólico."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Legado Diabólico",
+        "description": "Eliges un legado (Abisal, Ctónico o Infernal) que determina tu resistencia al daño y los conjuros que aprendes."
+      }
+    ]
+  },
+  {
+    "id": "goliath",
+    "name": "Goliat",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 35,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Ascendencia de Gigante",
+        "description": "Eliges un beneficio sobrenatural asociado a un tipo de gigante (Nube, Fuego, Escarcha, Colina, Piedra o Tormenta). Usos iguales a tu bonif. de competencia por descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Complexión Poderosa",
+        "description": "Cuentas como un tamaño más grande al determinar tu capacidad de carga y lo que puedes empujar, arrastrar o levantar."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Forma Grande (nivel 5)",
+        "description": "A partir del nivel 5, como acción adicional puedes agrandarte a tamaño Grande durante 10 minutos si hay espacio. Una vez por descanso largo."
+      }
+    ]
+  },
+  {
+    "id": "aasimar",
+    "name": "Aasimar",
+    "source": "srd_2024",
+    "size": "Mediano",
+    "speed": 30,
+    "effects": [
+      { "type": "darkvision", "range": 60 },
+      { "type": "resistance", "damageType": "necrotic" },
+      { "type": "resistance", "damageType": "radiant" },
+      {
+        "type": "passiveTrait",
+        "name": "Resistencia Celestial",
+        "description": "Tienes resistencia al daño necrótico y radiante."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Manos Sanadoras",
+        "description": "Como acción, tocas a una criatura y le restauras PG iguales a tu bonif. de competencia por tu nivel de personaje en dados. Una vez por descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Portador de Luz",
+        "description": "Conoces el truco Luz."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Revelación Celestial (nivel 3)",
+        "description": "A partir del nivel 3, como acción adicional te transformas revelando tu naturaleza celestial (Necrótico, Radiante o Vuelo). Una vez por descanso largo."
+      }
+    ]
   }
 ]

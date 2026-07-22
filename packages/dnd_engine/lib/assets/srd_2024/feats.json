@@ -5,7 +5,11 @@
     "source": "srd_2024",
     "category": "origin",
     "effects": [
-      { "type": "passiveTrait", "name": "Atacante Salvaje", "description": "Una vez por turno, al impactar con un arma, puedes volver a tirar el daño y quedarte con el mejor resultado." }
+      {
+        "type": "passiveTrait",
+        "name": "Atacante Salvaje",
+        "description": "Una vez por turno, al impactar con un arma, puedes volver a tirar el daño y quedarte con el mejor resultado."
+      }
     ]
   },
   {
@@ -14,7 +18,10 @@
     "source": "srd_2024",
     "category": "origin",
     "effects": [
-      { "type": "bonusMaxHpPerLevel", "perLevel": 2 }
+      {
+        "type": "bonusMaxHpPerLevel",
+        "perLevel": 2
+      }
     ]
   },
   {
@@ -23,7 +30,11 @@
     "source": "srd_2024",
     "category": "origin",
     "effects": [
-      { "type": "passiveTrait", "name": "Hábil", "description": "Ganas competencia en 3 habilidades o herramientas a tu elección." }
+      {
+        "type": "passiveTrait",
+        "name": "Hábil",
+        "description": "Ganas competencia en 3 habilidades o herramientas a tu elección."
+      }
     ]
   },
   {
@@ -32,7 +43,11 @@
     "source": "srd_2024",
     "category": "origin",
     "effects": [
-      { "type": "passiveTrait", "name": "Alerta", "description": "Sumas tu bonif. de competencia a la iniciativa. Puedes intercambiar tu iniciativa con la de un aliado consentidor." }
+      {
+        "type": "passiveTrait",
+        "name": "Alerta",
+        "description": "Sumas tu bonif. de competencia a la iniciativa. Puedes intercambiar tu iniciativa con la de un aliado consentidor."
+      }
     ]
   },
   {
@@ -41,7 +56,50 @@
     "source": "srd_2024",
     "category": "origin",
     "effects": [
-      { "type": "passiveTrait", "name": "Afortunado", "description": "Tienes puntos de suerte iguales a tu bonif. de competencia. Puedes gastarlos para obtener ventaja en una tirada de d20 o imponer desventaja en un ataque contra ti." }
+      {
+        "type": "passiveTrait",
+        "name": "Afortunado",
+        "description": "Tienes puntos de suerte iguales a tu bonif. de competencia. Puedes gastarlos para obtener ventaja en una tirada de d20 o imponer desventaja en un ataque contra ti."
+      }
+    ]
+  },
+  {
+    "id": "crafter",
+    "name": "Artesano",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Artesano",
+        "description": "Ganas competencia con tres herramientas de artesano a tu elección, obtienes 20% de descuento al comprar objetos no mágicos y puedes fabricar más rápido durante un descanso."
+      }
+    ]
+  },
+  {
+    "id": "healer",
+    "name": "Sanador",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Sanador",
+        "description": "Con un kit de sanador, como acción puedes gastar un uso para restaurar 1d6 + bonif. de competencia PG a una criatura (más dados según el nivel del objetivo). También puedes estabilizar y curar 1 PG a una criatura a 0 PG."
+      }
+    ]
+  },
+  {
+    "id": "musician",
+    "name": "Músico",
+    "source": "srd_2024",
+    "category": "origin",
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Músico",
+        "description": "Ganas competencia con tres instrumentos musicales. Tras un descanso, puedes tocar para otorgar Inspiración Heroica a aliados (hasta tu bonif. de competencia)."
+      }
     ]
   },
   {
@@ -50,7 +108,10 @@
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
-      { "type": "armorClassBonus", "amount": 1 }
+      {
+        "type": "armorClassBonus",
+        "amount": 1
+      }
     ]
   },
   {
@@ -59,7 +120,11 @@
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
-      { "type": "passiveTrait", "name": "Duelo", "description": "+2 al daño con un arma cuerpo a cuerpo a una mano y sin otra arma." }
+      {
+        "type": "passiveTrait",
+        "name": "Duelo",
+        "description": "+2 al daño con un arma cuerpo a cuerpo a una mano y sin otra arma."
+      }
     ]
   },
   {
@@ -68,7 +133,11 @@
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
-      { "type": "passiveTrait", "name": "Arquería", "description": "+2 a las tiradas de ataque con armas a distancia." }
+      {
+        "type": "passiveTrait",
+        "name": "Arquería",
+        "description": "+2 a las tiradas de ataque con armas a distancia."
+      }
     ]
   },
   {
@@ -77,7 +146,11 @@
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
-      { "type": "passiveTrait", "name": "Arma Grande", "description": "Al tirar daño con un arma cuerpo a cuerpo a dos manos, puedes volver a tirar los 1 y 2, usando el nuevo resultado." }
+      {
+        "type": "passiveTrait",
+        "name": "Arma Grande",
+        "description": "Al tirar daño con un arma cuerpo a cuerpo a dos manos, puedes volver a tirar los 1 y 2, usando el nuevo resultado."
+      }
     ]
   },
   {
@@ -86,8 +159,16 @@
     "source": "srd_2024",
     "category": "general",
     "effects": [
-      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
-      { "type": "passiveTrait", "name": "Maestro de Armas Grandes", "description": "Al reducir a 0 PG o impactar con crítico con un arma cuerpo a cuerpo pesada, puedes hacer un ataque adicional como acción adicional. Tus ataques con arma pesada suman tu bonif. de competencia al daño." }
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Maestro de Armas Grandes",
+        "description": "Al reducir a 0 PG o impactar con crítico con un arma cuerpo a cuerpo pesada, puedes hacer un ataque adicional como acción adicional. Tus ataques con arma pesada suman tu bonif. de competencia al daño."
+      }
     ]
   },
   {
@@ -96,8 +177,16 @@
     "source": "srd_2024",
     "category": "general",
     "effects": [
-      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
-      { "type": "passiveTrait", "name": "Tirador de Élite", "description": "Ignoras cobertura media/tres cuartos y la desventaja a largo alcance. Puedes restar el bonif. de competencia al ataque para sumarlo al daño con armas a distancia." }
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tirador de Élite",
+        "description": "Ignoras cobertura media/tres cuartos y la desventaja a largo alcance. Puedes restar el bonif. de competencia al ataque para sumarlo al daño con armas a distancia."
+      }
     ]
   },
   {
@@ -106,9 +195,995 @@
     "source": "srd_2024",
     "category": "general",
     "effects": [
-      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "savingThrowProficiency", "ability": "wisdom" },
-      { "type": "passiveTrait", "name": "Resistente (Sabiduría)", "description": "Ganas competencia en salvaciones de Sabiduría." }
+      {
+        "type": "abilityScoreBonus",
+        "ability": "wisdom",
+        "amount": 1
+      },
+      {
+        "type": "savingThrowProficiency",
+        "ability": "wisdom"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistente (Sabiduría)",
+        "description": "Ganas competencia en salvaciones de Sabiduría."
+      }
     ]
+  },
+  {
+    "id": "actor",
+    "name": "Actor",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "charisma",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Actor",
+        "description": "Ventaja en Engaño y Actuación al hacerte pasar por otro; puedes imitar voces y sonidos."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "athlete",
+    "name": "Atleta",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Atleta",
+        "description": "Levantarte cuesta solo 5 pies de movimiento; trepas sin coste extra y saltas con menos carrerilla. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "charger",
+    "name": "Embestidor",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Embestidor",
+        "description": "Si te mueves al menos 10 pies en línea recta antes de atacar, ganas daño o empuje adicional. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "chef",
+    "name": "Cocinero",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "wisdom",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Cocinero",
+        "description": "Cocinas comida que restaura PG extra tras un descanso corto y golosinas que dan PG temporales. (+1 a CON o SAB)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "crusher",
+    "name": "Triturador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "constitution",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Triturador",
+        "description": "Al dañar con contundente puedes empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo. (+1 a FUE o CON)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "crossbow-expert",
+    "name": "Experto con Ballesta",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Experto con Ballesta",
+        "description": "Ignoras la propiedad de recarga; no tienes desventaja al disparar con enemigos adyacentes."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "defensive-duelist",
+    "name": "Duelista Defensivo",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Duelista Defensivo",
+        "description": "Con un arma sutil, como reacción sumas tu bono de competencia a la CA contra un ataque cuerpo a cuerpo."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "dual-wielder",
+    "name": "Ambidiestro",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Ambidiestro",
+        "description": "Combates con dos armas incluso no ligeras, ganas +1 a la CA con dos armas y desenvainas más rápido. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "durable",
+    "name": "Resistente Físico",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "constitution",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistente Físico",
+        "description": "Al gastar dados de golpe recuperas más PG y te estabilizas mejor."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "elemental-adept",
+    "name": "Adepto Elemental",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Adepto Elemental",
+        "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "fey-touched",
+    "name": "Tocado por lo Feérico",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "wisdom",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tocado por lo Feérico",
+        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo. (+1 a INT, SAB o CAR)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "grappler",
+    "name": "Luchador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Luchador",
+        "description": "Ventaja al atacar a criaturas apresadas por ti y puedes moverte arrastrándolas. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "heavily-armored",
+    "name": "Fuertemente Acorazado",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "armorProficiency",
+        "category": "heavy"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Fuertemente Acorazado",
+        "description": "Ganas competencia con armadura pesada."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "heavy-armor-master",
+    "name": "Maestro de Armadura Pesada",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "constitution",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Maestro de Armadura Pesada",
+        "description": "Con armadura pesada reduces el daño no mágico contundente, perforante y cortante. (+1 a FUE o CON)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "inspiring-leader",
+    "name": "Líder Inspirador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "charisma",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Líder Inspirador",
+        "description": "Tras un descanso, una arenga da PG temporales a ti y a aliados cercanos. (+1 a SAB o CAR)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "keen-mind",
+    "name": "Mente Aguda",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "intelligence",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Mente Aguda",
+        "description": "Siempre sabes dónde está el norte y cuántas horas faltan para el amanecer o anochecer; recuerdas lo vivido en el último mes."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "lightly-armored",
+    "name": "Ligeramente Acorazado",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "armorProficiency",
+        "category": "light"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Ligeramente Acorazado",
+        "description": "Ganas competencia con armadura ligera. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "mage-slayer",
+    "name": "Cazamagos",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Cazamagos",
+        "description": "Cuando una criatura cercana lanza un conjuro, puedes reaccionar atacándola; tienes ventaja en salvaciones contra sus conjuros."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "magic-initiate-wizard",
+    "name": "Iniciado en la Magia (Mago)",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Iniciado en la Magia (Mago)",
+        "description": "Aprendes 2 trucos y un conjuro de nivel 1 de la lista de Mago (INT); el conjuro se lanza gratis una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "magic-initiate-cleric",
+    "name": "Iniciado en la Magia (Clérigo)",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Iniciado en la Magia (Clérigo)",
+        "description": "Aprendes 2 trucos y un conjuro de nivel 1 de la lista de Clérigo (SAB); el conjuro se lanza gratis una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "medium-armor-master",
+    "name": "Maestro de Armadura Media",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Maestro de Armadura Media",
+        "description": "Con armadura media no tienes desventaja en Sigilo y sumas hasta +3 de DES a la CA. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "mobile",
+    "name": "Ágil",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "speedBonus",
+        "feet": 10
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Ágil",
+        "description": "El terreno difícil no te frena al Correr; tras atacar cuerpo a cuerpo a una criatura, no provocas ataques de oportunidad de ella."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "moderately-armored",
+    "name": "Moderadamente Acorazado",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "armorProficiency",
+        "category": "medium"
+      },
+      {
+        "type": "armorProficiency",
+        "category": "shield"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Moderadamente Acorazado",
+        "description": "Ganas competencia con armadura media y escudos. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "mounted-combatant",
+    "name": "Combatiente Montado",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Combatiente Montado",
+        "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "observant",
+    "name": "Observador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "wisdom",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Observador",
+        "description": "Sumas +5 a tu Percepción e Investigación pasivas y puedes leer los labios."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "piercer",
+    "name": "Perforador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Perforador",
+        "description": "Una vez por turno puedes volver a tirar un dado de daño perforante; en un crítico perforante sumas un dado extra. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "poisoner",
+    "name": "Envenenador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Envenenador",
+        "description": "Aplicas veneno potente como acción adicional; tus venenos ignoran la resistencia al veneno."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "polearm-master",
+    "name": "Maestro de Armas de Asta",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Maestro de Armas de Asta",
+        "description": "Con un arma de asta ganas un ataque adicional con el extremo romo y provocas ataques de oportunidad cuando los enemigos entran en tu alcance."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "resilient-constitution",
+    "name": "Resistente (Constitución)",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "constitution",
+        "amount": 1
+      },
+      {
+        "type": "savingThrowProficiency",
+        "ability": "constitution"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistente (Constitución)",
+        "description": "Ganas competencia en salvaciones de Constitución (clave para mantener concentración)."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "resilient-dexterity",
+    "name": "Resistente (Destreza)",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "savingThrowProficiency",
+        "ability": "dexterity"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistente (Destreza)",
+        "description": "Ganas competencia en salvaciones de Destreza."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "ritual-caster",
+    "name": "Lanzador de Rituales",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Lanzador de Rituales",
+        "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "sentinel",
+    "name": "Centinela",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Centinela",
+        "description": "Tus ataques de oportunidad reducen a 0 la velocidad del objetivo; puedes reaccionar atacando a quien golpee a un aliado cercano."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "shadow-touched",
+    "name": "Tocado por la Sombra",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "charisma",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tocado por la Sombra",
+        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo. (+1 a INT, SAB o CAR)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "shield-master",
+    "name": "Maestro del Escudo",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Maestro del Escudo",
+        "description": "Puedes empujar con el escudo como acción adicional y usarlo para reforzar tus salvaciones de Destreza."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "skill-expert",
+    "name": "Experto en Habilidades",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "intelligence",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Experto en Habilidades",
+        "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "skulker",
+    "name": "Acechador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Acechador",
+        "description": "Puedes esconderte estando levemente oscurecido; fallar un ataque a distancia no revela tu posición."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "slasher",
+    "name": "Tajador",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tajador",
+        "description": "Al dañar con cortante reduces la velocidad del objetivo; en un crítico cortante le impones desventaja a sus ataques. (+1 a FUE o DES)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "speedy",
+    "name": "Veloz",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "speedBonus",
+        "feet": 10
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Veloz",
+        "description": "Correr ignora el terreno difícil y no provocas ataques de oportunidad al Correr. (+1 a DES o CON)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "spell-sniper",
+    "name": "Francotirador Mágico",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Francotirador Mágico",
+        "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "telekinetic",
+    "name": "Telequinético",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "intelligence",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Telequinético",
+        "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "telepathic",
+    "name": "Telépata",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "wisdom",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Telépata",
+        "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)"
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "war-caster",
+    "name": "Lanzador de Guerra",
+    "source": "srd_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Lanzador de Guerra",
+        "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad."
+      }
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
   }
 ]

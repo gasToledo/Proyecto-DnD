@@ -5,6 +5,7 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/spell_slots.dart';
 import 'sheet_builder.dart';
 
 /// Toma un [Character] con elecciones resueltas + el [ContentRepository] y
@@ -19,9 +20,12 @@ class CharacterCompiler {
     final klass = repo.characterClass(c.classId);
     final background = repo.background(c.backgroundId);
 
-    final builder = SheetBuilder(baseScores: {
-      for (final a in Ability.values) a: c.assignedScores[a] ?? 10,
-    });
+    final builder = SheetBuilder(
+      baseScores: {
+        for (final a in Ability.values) a: c.assignedScores[a] ?? 10,
+      },
+      level: c.level,
+    );
 
     if (race != null) builder.speed = race.speed;
 
@@ -40,6 +44,14 @@ class CharacterCompiler {
       builder.saveProficiencies.addAll(klass.savingThrows);
       builder.armorProficiencies.addAll(klass.armorProficiencies);
       builder.weaponProficiencies.addAll(klass.weaponProficiencies);
+    }
+
+    // Rasgos de subclase (si se eligió y pertenece a esta clase), por nivel.
+    final subclass = c.subclassId == null ? null : repo.subclass(c.subclassId!);
+    if (subclass != null && subclass.classId == c.classId) {
+      for (final f in subclass.featuresUpTo(c.level)) {
+        builder.applyAll(f.effects);
+      }
     }
     if (background != null) {
       builder.applyAll(background.effects);
@@ -76,7 +88,8 @@ class CharacterCompiler {
         builder.bonusMaxHpFlat +
         builder.bonusMaxHpPerLevel * c.level;
 
-    final ac = _armorClass(c, builder, dexMod);
+    final ac = _armorClass(c, builder, mods);
+    final speed = _speed(c, builder);
 
     final passivePerception = 10 +
         wisMod +
@@ -91,6 +104,8 @@ class CharacterCompiler {
       attacks.add(_attack(c, w, mods, profBonus, builder));
     }
 
+    final spellcasting = _spellcasting(builder, c.level, mods, profBonus);
+
     return ComputedSheet(
       level: c.level,
       proficiencyBonus: profBonus,
@@ -104,7 +119,7 @@ class CharacterCompiler {
       maxHp: maxHp,
       hitDie: klass?.hitDie ?? 8,
       armorClass: ac,
-      speed: builder.speed,
+      speed: speed,
       initiative: dexMod,
       passivePerception: passivePerception,
       darkvision: builder.darkvision,
@@ -115,16 +130,88 @@ class CharacterCompiler {
       attacks: attacks,
       passives: builder.passives,
       resources: builder.resources,
+      spellcasting: spellcasting,
     );
   }
 
-  int _armorClass(Character c, SheetBuilder b, int dexMod) {
+  /// Deriva el bloque de lanzamiento a partir del rasgo de lanzamiento activo.
+  /// Sin multiclase, el nivel de lanzador == nivel de personaje.
+  Spellcasting? _spellcasting(
+    SheetBuilder b,
+    int level,
+    Map<Ability, int> mods,
+    int profBonus,
+  ) {
+    final sc = b.spellcasting;
+    if (sc == null || sc.progression == CasterProgression.none) return null;
+    final abilityMod = mods[sc.ability]!;
+
+    // Conjuros preparados: columna fija por clase/progresión (2024), sin
+    // depender del modificador de característica (a diferencia de 2014).
+    final prepared = sc.preparation == SpellPreparation.prepared
+        ? preparedSpellsFor(sc.progression, level, sc.spellList)
+        : 0;
+
+    // Trucos conocidos: base de la clase + escalado por nivel. Los lanzadores
+    // completos ganan +1 a niveles 4 y 10; los de un tercio solo a nivel 10
+    // (2024). Las clases sin trucos (Paladín/Explorador) no ganan ninguno.
+    final int cantripBonus;
+    if (sc.cantripsKnown == 0) {
+      cantripBonus = 0;
+    } else if (sc.progression == CasterProgression.third) {
+      cantripBonus = level >= 10 ? 1 : 0;
+    } else {
+      cantripBonus = (level >= 4 ? 1 : 0) + (level >= 10 ? 1 : 0);
+    }
+    final cantrips = sc.cantripsKnown + cantripBonus;
+
+    return Spellcasting(
+      ability: sc.ability,
+      progression: sc.progression,
+      preparation: sc.preparation,
+      spellList: sc.spellList,
+      saveDc: 8 + profBonus + abilityMod,
+      attackBonus: profBonus + abilityMod,
+      cantripsKnown: cantrips,
+      preparedCount: prepared,
+      slotsByLevel: spellSlotsFor(sc.progression, level),
+    );
+  }
+
+  /// Velocidad final: base + bonos incondicionales (raza) + Movimiento sin
+  /// Armadura, este último solo si no se lleva armadura (para el Monje, tampoco
+  /// escudo; para el Bárbaro, solo lo anula la armadura pesada).
+  int _speed(Character c, SheetBuilder b) {
+    var speed = b.speed;
+    if (b.unarmoredMovementBonus != 0) {
+      final armor =
+          c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
+      var voided = false;
+      if (armor != null && !armor.isShield) {
+        voided = b.unarmoredMovementHeavyOnly ? armor.category == 'heavy' : true;
+      }
+      if (c.shieldEquipped && !b.unarmoredMovementAllowShield) voided = true;
+      if (!voided) speed += b.unarmoredMovementBonus;
+    }
+    return speed;
+  }
+
+  int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {
+    final dexMod = mods[Ability.dexterity]!;
     var ac = 10 + dexMod; // Sin armadura.
     final armor = c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
     if (armor != null && !armor.isShield) {
       ac = armor.baseAc;
       if (armor.addDexMod) {
         ac += armor.maxDexBonus == null ? dexMod : min(dexMod, armor.maxDexBonus!);
+      }
+    } else if (b.unarmoredDefenseAbility != null) {
+      // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
+      // El Monje la pierde si empuña un escudo; el Bárbaro la conserva.
+      final voidedByShield =
+          c.shieldEquipped && !b.unarmoredDefenseAllowShield;
+      if (!voidedByShield) {
+        ac = 10 + dexMod + mods[b.unarmoredDefenseAbility!]!;
       }
     }
     if (c.shieldEquipped) ac += 2;

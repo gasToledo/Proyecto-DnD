@@ -1,0 +1,2140 @@
+[
+  {
+    "id": "champion",
+    "name": "Campeón",
+    "classId": "fighter",
+    "source": "srd_2024",
+    "description": "Un guerrero que confía en la fuerza y destreza puras, llevando sus capacidades marciales a la perfección.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Crítico Mejorado",
+        "description": "Tus ataques con arma obtienen un impacto crítico con una tirada de 19 o 20.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Crítico Mejorado", "description": "Obtienes un crítico con arma al sacar 19 o 20 en el dado de ataque." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Atleta Notable",
+        "description": "Sumas la mitad de tu bono de competencia a las pruebas de Fuerza, Destreza o Constitución en las que no seas competente.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Atleta Notable", "description": "Sumas medio bono de competencia a pruebas de FUE/DES/CON sin competencia; mayor distancia de salto." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Estilo de Combate Adicional",
+        "description": "Adoptas un segundo Estilo de Combate como dote.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Estilo de Combate Adicional", "description": "Ganas una segunda dote de Estilo de Combate." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Guerrero Heroico",
+        "description": "Al inicio de tu turno en combate ganas Ventaja Heroica (Inspiración) si no la tienes ya.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Guerrero Heroico", "description": "En combate, al empezar tu turno ganas Inspiración si no la tenías." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Crítico Superior",
+        "description": "Tus ataques con arma obtienen un impacto crítico con una tirada de 18-20.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Crítico Superior", "description": "Obtienes un crítico con arma al sacar 18, 19 o 20." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Superviviente",
+        "description": "Al inicio de cada uno de tus turnos recuperas puntos de golpe si te queda menos de la mitad, y tienes ventaja en salvaciones de muerte.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Superviviente", "description": "Regeneras PG al empezar tu turno si estás por debajo de la mitad; ventaja en salvaciones de muerte." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "battle-master",
+    "name": "Maestro de Batalla",
+    "classId": "fighter",
+    "source": "srd_2024",
+    "description": "Un guerrero que estudia el combate como un arte marcial, empleando maniobras tácticas para dominar el campo de batalla.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Superioridad en Combate",
+        "description": "Aprendes maniobras alimentadas por dados de superioridad (d8). Empiezas con 4 dados que recuperas en un descanso corto o largo.",
+        "effects": [
+          { "type": "resource", "id": "superiority_dice", "name": "Dados de Superioridad", "max": 4, "recharge": "short", "description": "Gastas un dado de superioridad (d8) para ejecutar una maniobra: Ataque de Finta, Barrido, Desarmar, Maniobra Defensiva, etc." },
+          { "type": "passiveTrait", "name": "Maniobras", "description": "Conoces 3 maniobras a elección (Ataque de Precisión, Empujón, Provocar, etc.)." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Estudiante de la Guerra",
+        "description": "Ganas competencia con un tipo de herramientas de artesano y con una habilidad a tu elección.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Estudiante de la Guerra", "description": "Competencia con unas herramientas de artesano y una habilidad a elección." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conoce a tu Enemigo",
+        "description": "Como acción adicional gastas un dado de superioridad para estudiar a una criatura y descubrir si es tu igual, superior o inferior en fuerza.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conoce a tu Enemigo", "description": "Gasta un dado de superioridad para conocer las capacidades relativas de un enemigo." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Superioridad en Combate Mejorada",
+        "description": "Tus dados de superioridad se convierten en d10.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Superioridad Mejorada (d10)", "description": "Tus dados de superioridad ahora son d10." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Implacable",
+        "description": "Si tiras iniciativa sin dados de superioridad, recuperas uno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Implacable", "description": "Al entrar en combate sin dados de superioridad, recuperas uno." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Superioridad en Combate Superior",
+        "description": "Tus dados de superioridad se convierten en d12.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Superioridad Superior (d12)", "description": "Tus dados de superioridad ahora son d12." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "eldritch-knight",
+    "name": "Caballero Arcano",
+    "classId": "fighter",
+    "source": "srd_2024",
+    "description": "Combina la maestría marcial con el estudio de la magia arcana, sobre todo de las escuelas de abjuración y evocación.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Aprendes a lanzar conjuros de Mago usando Inteligencia (semi-lanzador, un tercio de la progresión).",
+        "effects": [
+          { "type": "spellcasting", "ability": "intelligence", "progression": "third", "preparation": "prepared", "spellList": "wizard", "cantripsKnown": 2 }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Vínculo de Guerra",
+        "description": "Puedes vincularte con hasta dos armas; invocas un arma vinculada a tu mano como acción adicional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Vínculo de Guerra", "description": "Invoca un arma vinculada a tu mano; no puedes ser desarmado de ella." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Magia de Guerra",
+        "description": "Cuando lanzas un truco puedes hacer un ataque con arma como acción adicional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Magia de Guerra", "description": "Tras lanzar un truco, un ataque con arma como acción adicional." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Golpe Arcano",
+        "description": "Cuando impactas con un arma puedes desviar tu magia para imponer desventaja a la próxima salvación del objetivo contra tus conjuros.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Arcano", "description": "Un impacto con arma impone desventaja a la próxima salvación del objetivo contra tus conjuros." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Carga Arcana",
+        "description": "Al usar Oleada de Acción puedes teletransportarte hasta 30 pies.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Carga Arcana", "description": "Con Oleada de Acción, te teletransportas hasta 30 pies." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Magia de Guerra Mejorada",
+        "description": "Cuando lanzas un conjuro puedes hacer un ataque con arma como acción adicional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Magia de Guerra Mejorada", "description": "Tras lanzar cualquier conjuro, un ataque con arma como acción adicional." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "psi-warrior",
+    "name": "Guerrero Psiónico",
+    "classId": "fighter",
+    "source": "srd_2024",
+    "description": "Canaliza energía psiónica para potenciar sus golpes, mover objetos con la mente y protegerse con barreras telequinéticas.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Poder Psiónico",
+        "description": "Ganas dados psiónicos (d6) que alimentan Golpe Telequinético, Movimiento Telequinético y Escudo Protector.",
+        "effects": [
+          { "type": "resource", "id": "psionic_energy", "name": "Energía Psiónica", "max": 4, "recharge": "short", "description": "Dados de energía psiónica (d6) para Golpe Telequinético (daño de fuerza), mover objetos/criaturas o reducir daño a un aliado." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Adepto Telequinético",
+        "description": "Puedes empuñar un arma de fuerza telequinética y agarrar criaturas a distancia con tu mente.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Adepto Telequinético", "description": "Arma de fuerza telequinética (bonus) y presa telequinética a distancia." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Mente Protegida",
+        "description": "Ganas resistencia al daño psíquico y puedes gastar un dado psiónico para tener ventaja en una salvación de Inteligencia, Sabiduría o Carisma.",
+        "effects": [
+          { "type": "resistance", "damageType": "psychic" },
+          { "type": "passiveTrait", "name": "Mente Protegida", "description": "Gasta un dado psiónico para ventaja en salvaciones mentales." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Baluarte de Fuerza",
+        "description": "Como acción adicional gastas un dado psiónico para dar a ti y aliados cercanos protección contra daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Baluarte de Fuerza", "description": "Otorga PG temporales protectores a ti y aliados cercanos." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Maestro Telequinético",
+        "description": "Puedes lanzar Mano Poderosa de Presa a voluntad sin concentración ni componentes.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Maestro Telequinético", "description": "Lanzas Mano Poderosa de Presa a voluntad y actúas con ella en tu turno." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "berserker",
+    "name": "Camino del Berserker",
+    "classId": "barbarian",
+    "source": "srd_2024",
+    "description": "Un canal de furia pura y sanguinaria: cuanto más lucha el berserker, más peligroso se vuelve.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Frenesí",
+        "description": "En Furia, al realizar la acción de Ataque puedes hacer un ataque cuerpo a cuerpo adicional como acción adicional; ganas daño extra según tu Furia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Frenesí", "description": "En Furia, un ataque cuerpo a cuerpo extra como acción adicional con daño adicional." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Furia Irracional",
+        "description": "No puedes ser hechizado ni asustado mientras estés en Furia; si lo estabas, el efecto se suspende.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia Irracional", "description": "En Furia no puedes ser hechizado ni asustado." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Represalia",
+        "description": "Cuando una criatura a 5 pies te inflige daño puedes usar tu reacción para hacerle un ataque cuerpo a cuerpo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Represalia", "description": "Reacción: ataque cuerpo a cuerpo contra quien te dañe de cerca." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Presencia Intimidante",
+        "description": "Como acción, aterrorizas a una criatura cercana obligándola a una salvación de Sabiduría o quedar asustada.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presencia Intimidante", "description": "Asusta a una criatura cercana (salvación de Sabiduría)." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wild-heart",
+    "name": "Senda del Corazón Salvaje",
+    "classId": "barbarian",
+    "source": "srd_2024",
+    "description": "Bárbaros ligados a los espíritus animales, que canalizan aspectos de la bestia en su Furia.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Hablar con Animales / Furia de lo Salvaje",
+        "description": "Puedes comunicarte con bestias y, al entrar en Furia, invocas el poder de un espíritu animal (Oso, Águila o Lobo).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia de lo Salvaje", "description": "En Furia eliges un espíritu: Oso (resistencias amplias), Águila (Destrabarse/Correr bonus) o Lobo (aliados con ventaja al atacar cerca tuyo)." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Aspecto de lo Salvaje",
+        "description": "Ganas un beneficio permanente de un animal: Halcón (ver lejos), Pantera (trepar) o Salmón (nadar).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Aspecto de lo Salvaje", "description": "Beneficio permanente animal a elección (visión, trepar o nadar)." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Hablar con la Naturaleza",
+        "description": "Puedes lanzar Hablar con los Animales y Sentido de la Naturaleza como rituales.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Hablar con la Naturaleza", "description": "Lanzas Hablar con los Animales y Sentido de la Naturaleza como rituales." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Poder de lo Salvaje",
+        "description": "Los espíritus animales de tu Furia se potencian con efectos mejorados.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Poder de lo Salvaje", "description": "Versiones mejoradas de los espíritus Oso, Águila y Lobo." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "world-tree",
+    "name": "Senda del Árbol del Mundo",
+    "classId": "barbarian",
+    "source": "srd_2024",
+    "description": "Bárbaros ligados al Árbol del Mundo cósmico, que extraen vitalidad y usan sus raíces y ramas en combate.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Vitalidad del Árbol",
+        "description": "Al entrar en Furia ganas puntos de golpe temporales; tu velocidad no baja por terreno difícil.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Vitalidad del Árbol", "description": "PG temporales al entrar en Furia; ignoras terreno difícil por tu velocidad." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Ramas del Árbol",
+        "description": "Como reacción invocas ramas espectrales para frenar y reubicar a un enemigo cercano que veas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ramas del Árbol", "description": "Reacción: ramas espectrales reducen la velocidad de un enemigo a 0 y lo mueven hacia ti." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Raíces Batientes",
+        "description": "Tus armas cuerpo a cuerpo ganan alcance adicional gracias a raíces espectrales.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Raíces Batientes", "description": "+10 pies de alcance con ataques cuerpo a cuerpo." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Viaje por el Árbol",
+        "description": "En tu turno puedes teletransportarte y llevar aliados contigo a través del Árbol del Mundo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Viaje por el Árbol", "description": "Teletransporte de hasta 60 pies llevando aliados cercanos." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "zealot",
+    "name": "Senda del Fanático",
+    "classId": "barbarian",
+    "source": "srd_2024",
+    "description": "Guerreros divinos investidos de furia sagrada por un dios de la guerra o la sangre.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Furia Divina / Guerrero de los Dioses",
+        "description": "En Furia, tus ataques infligen daño necrótico o radiante extra; si mueres, es más fácil devolverte a la vida.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia Divina", "description": "Daño necrótico o radiante extra al impactar durante la Furia; conjuros de resurrección más fáciles sobre ti." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Foco Fanático",
+        "description": "Una vez por Furia, si fallas una salvación puedes repetirla.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Foco Fanático", "description": "Repites una salvación fallida una vez por Furia." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Presencia Fervorosa",
+        "description": "Como acción adicional inspiras a los aliados cercanos, dándoles ventaja en ataques y salvaciones un breve tiempo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presencia Fervorosa", "description": "Aliados cercanos ganan ventaja en ataques y salvaciones brevemente." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Furia de los Dioses",
+        "description": "Mientras estés en Furia puedes desatar un poder divino que te da resistencia y capacidad de revivir aliados caídos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia de los Dioses", "description": "Resistencia a todo el daño y revives brevemente a aliados a 0 PG." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "college-dance",
+    "name": "Colegio de la Danza",
+    "classId": "bard",
+    "source": "srd_2024",
+    "description": "Bardos cuya magia fluye del movimiento: esquivos, ágiles y letales con sus pies tanto como con su voz.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Juego de Pies Deslumbrante",
+        "description": "Sin armadura ni escudo, tu CA base es 10 + DES + CAR y puedes usar Destreza y tu dado de Inspiración en tus golpes sin arma.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Juego de Pies Deslumbrante", "description": "Sin armadura ni escudo: CA = 10 + DES + CAR; golpes sin arma usan DES y suman un dado de Inspiración Bárdica." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Movimiento Inspirador",
+        "description": "Cuando un aliado cercano usa tu Inspiración Bárdica, puede moverse sin provocar ataques de oportunidad.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Movimiento Inspirador", "description": "Aliado que usa tu Inspiración se mueve sin provocar ataques de oportunidad." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Evasión Conductora",
+        "description": "Cuando haces una salvación de Destreza por daño, tú y aliados cercanos evitáis o reducís el daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Evasión Conductora", "description": "Tú y aliados cercanos compartís tu evasión ante efectos de área." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "college-glamour",
+    "name": "Colegio del Glamour",
+    "classId": "bard",
+    "source": "srd_2024",
+    "description": "Bardos tocados por la magia feérica del Reino Feérico, capaces de encandilar y dominar mentes.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Manto de Inspiración",
+        "description": "Gastas Inspiración Bárdica para dar PG temporales a aliados cercanos y permitirles reaccionar moviéndose sin provocar ataques.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Manto de Inspiración", "description": "Gasta Inspiración: aliados ganan PG temporales y se reubican sin provocar ataques." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia Cautivadora",
+        "description": "Puedes lanzar Encantar Persona y Amistad más eficazmente y sin gastar espacio limitado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Magia Cautivadora", "description": "Lanzas conjuros de encanto de forma más difícil de resistir." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Manto de Majestad",
+        "description": "Como acción adicional adoptas un aura majestuosa que te permite dar órdenes hipnóticas cada turno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Manto de Majestad", "description": "Aura que te deja lanzar Orden sin gastar espacios durante un minuto." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Majestad Inquebrantable",
+        "description": "Ganas un aura que te hace difícil de atacar: quien falla una salvación de Carisma no puede atacarte.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Majestad Inquebrantable", "description": "Los enemigos que fallan una salvación de Carisma no pueden atacarte ese turno." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "college-lore",
+    "name": "Colegio del Saber",
+    "classId": "bard",
+    "source": "srd_2024",
+    "description": "Bardos que acumulan conocimiento de todas las fuentes y usan su ingenio para socavar a los poderosos.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Competencias Adicionales",
+        "description": "Ganas competencia con tres habilidades a tu elección.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Competencias Adicionales", "description": "Competencia con tres habilidades a tu elección." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Palabras Cortantes",
+        "description": "Como reacción gastas un uso de Inspiración Bárdica para restar el dado a la tirada de ataque, prueba o daño de una criatura.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Palabras Cortantes", "description": "Reacción: gasta Inspiración Bárdica para restar el dado a un ataque/prueba/daño enemigo." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Descubrimientos Mágicos",
+        "description": "Aprendes dos conjuros de cualquier clase que tienes siempre preparados.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Descubrimientos Mágicos", "description": "Dos conjuros de cualquier lista, siempre preparados." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Habilidad Inigualable",
+        "description": "Cuando fallas una prueba de característica puedes gastar Inspiración Bárdica para sumar el dado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Habilidad Inigualable", "description": "Gasta Inspiración Bárdica para sumar el dado a tus propias pruebas." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "college-valor",
+    "name": "Colegio del Valor",
+    "classId": "bard",
+    "source": "srd_2024",
+    "description": "Bardos escaldos que inspiran con relatos de héroes y luchan junto a ellos en primera línea.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Entrenamiento Marcial",
+        "description": "Ganas competencia con armadura media, escudos y armas marciales.",
+        "effects": [
+          { "type": "armorProficiency", "category": "medium" },
+          { "type": "armorProficiency", "category": "shield" },
+          { "type": "weaponProficiency", "category": "martial" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Inspiración de Combate",
+        "description": "Un aliado con tu Inspiración Bárdica puede sumar el dado a una tirada de daño o a su CA contra un ataque.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Inspiración de Combate", "description": "La Inspiración Bárdica puede sumarse al daño o a la CA del aliado." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces al realizar la acción de Ataque.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Magia de Batalla",
+        "description": "Cuando lanzas un conjuro con la acción mágica puedes hacer un ataque con arma como acción adicional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Magia de Batalla", "description": "Tras lanzar un conjuro, un ataque con arma como acción adicional." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "life-domain",
+    "name": "Dominio de la Vida",
+    "classId": "cleric",
+    "source": "srd_2024",
+    "description": "Canalizas la energía positiva que sostiene toda la vida, sobresaliendo en curación y protección.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Competencia con Armadura Pesada",
+        "description": "Ganas competencia con armadura pesada.",
+        "effects": [
+          { "type": "armorProficiency", "category": "heavy" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Discípulo de la Vida",
+        "description": "Al restaurar puntos de golpe con un conjuro de nivel 1+, la criatura recupera 2 PG adicionales más el nivel del conjuro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Discípulo de la Vida", "description": "Tus conjuros de curación añaden 2 + nivel del conjuro en PG." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Preservar la Vida",
+        "description": "Gastas Canalizar Divinidad para repartir puntos de golpe curativos entre criaturas cercanas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Preservar la Vida", "description": "Reparte PG curativos (5 × nivel de Clérigo) entre criaturas cercanas hasta la mitad de su máximo." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Sanador Bendito",
+        "description": "Cuando curas a otra criatura con un conjuro, también recuperas puntos de golpe.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Sanador Bendito", "description": "Al curar a otro con un conjuro, recuperas 2 + nivel del conjuro en PG." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Curación Suprema",
+        "description": "Cuando lanzas un conjuro de curación con dados, usas el máximo de cada dado en lugar de tirar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Curación Suprema", "description": "Tus conjuros de curación restauran el máximo posible sin tirar dados." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "light-domain",
+    "name": "Dominio de la Luz",
+    "classId": "cleric",
+    "source": "srd_2024",
+    "description": "Sacerdotes de dioses del sol y la luz, que blanden fuego y resplandor contra las tinieblas.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Destello Protector",
+        "description": "Conoces el truco Luz y, como reacción, impones desventaja a un atacante iluminándolo con un destello.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Destello Protector", "description": "Reacción: impones desventaja al ataque de una criatura que puedas ver. Usos = mod. de Sabiduría." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Resplandor del Alba",
+        "description": "Gastas Canalizar Divinidad para emitir luz solar que disipa oscuridad mágica e inflige daño radiante alrededor.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Resplandor del Alba", "description": "Daño radiante (2d10 + nivel) a enemigos cercanos y disipa oscuridad mágica." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Destello Protector Mejorado",
+        "description": "Puedes usar Destello Protector para proteger también a otras criaturas cercanas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Destello Protector Mejorado", "description": "Usas Destello Protector cuando atacan a una criatura a 30 pies de ti." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Corona de Luz",
+        "description": "Como acción emites un aura de luz que da desventaja a los conjuros de los enemigos que abarca.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Corona de Luz", "description": "Aura de luz: enemigos afectados tienen desventaja en sus salvaciones contra tus conjuros de daño radiante/fuego." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "trickery-domain",
+    "name": "Dominio del Engaño",
+    "classId": "cleric",
+    "source": "srd_2024",
+    "description": "Sacerdotes de dioses del caos, las travesuras y el engaño, maestros de las ilusiones y el sigilo.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Bendición del Embaucador",
+        "description": "Como acción tocas a una criatura y le das ventaja en pruebas de Sigilo un tiempo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Bendición del Embaucador", "description": "Otorgas ventaja en pruebas de Sigilo a una criatura durante 1 hora." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Invocar Duplicidad",
+        "description": "Gastas Canalizar Divinidad para crear una ilusión perfecta de ti mismo que puedes mover y usar para engañar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Invocar Duplicidad", "description": "Creas una duplicación ilusoria móvil; te da ventaja al atacar cerca de ella." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Transposición del Embaucador",
+        "description": "Como acción adicional puedes intercambiar tu posición con tu duplicado ilusorio.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Transposición del Embaucador", "description": "Intercambias tu lugar con tu duplicado como acción adicional." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Duplicidad Mejorada",
+        "description": "Tu Invocar Duplicidad puede crear varios duplicados a la vez.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Duplicidad Mejorada", "description": "Creas hasta cuatro duplicados ilusorios simultáneos." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "war-domain",
+    "name": "Dominio de la Guerra",
+    "classId": "cleric",
+    "source": "srd_2024",
+    "description": "Sacerdotes marciales de dioses de la batalla, que combaten en la vanguardia con arma y bendición divina.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Competencias de Guerra",
+        "description": "Ganas competencia con armas marciales y armadura pesada.",
+        "effects": [
+          { "type": "weaponProficiency", "category": "martial" },
+          { "type": "armorProficiency", "category": "heavy" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Sacerdote de Guerra",
+        "description": "Cuando realizas la acción de Ataque puedes hacer un ataque con arma adicional como acción adicional un número de veces por descanso.",
+        "effects": [
+          { "type": "resource", "id": "war_priest", "name": "Sacerdote de Guerra", "max": 2, "recharge": "long", "description": "Ataque con arma adicional como acción adicional; usos = mod. de Sabiduría, recuperados en descanso largo." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Golpe Guiado",
+        "description": "Gastas Canalizar Divinidad para sumar +10 a una tirada de ataque tuya.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Guiado", "description": "+10 a una tirada de ataque gastando Canalizar Divinidad." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Bendición del Dios de la Guerra",
+        "description": "Como reacción gastas Canalizar Divinidad para dar +10 al ataque de un aliado cercano.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Bendición del Dios de la Guerra", "description": "Reacción: +10 al ataque de un aliado cercano." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Avatar de la Batalla",
+        "description": "Ganas resistencia al daño contundente, perforante y cortante de armas no mágicas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Avatar de la Batalla", "description": "Resistencia al daño de armas no mágicas (contundente, perforante y cortante)." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "circle-land",
+    "name": "Círculo de la Tierra",
+    "classId": "druid",
+    "source": "srd_2024",
+    "description": "Druidas guardianes de bosques, desiertos y otros parajes, con magia ligada a su entorno.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Conjuros de Círculo",
+        "description": "Tu conexión con la tierra te otorga conjuros preparados adicionales según el terreno elegido.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros de Círculo", "description": "Conjuros preparados extra según el terreno (árido, polar, templado o tropical)." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Auxilio de la Tierra",
+        "description": "Gastas Forma Salvaje para crear un estallido de energía natural que cura o daña en un área.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Auxilio de la Tierra", "description": "Gasta Forma Salvaje: área de 10 pies que cura a un aliado o daña a un enemigo." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Recuperación Natural",
+        "description": "En un descanso corto recuperas espacios de conjuro hasta la mitad de tu nivel de Druida.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Recuperación Natural", "description": "Descanso corto: recuperas espacios de conjuro y siempre tienes preparados tus conjuros de círculo." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Salvaguarda de la Naturaleza",
+        "description": "Eres inmune a ser envenenado y enfermado, y ganas resistencia a un tipo de daño según tu terreno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Salvaguarda de la Naturaleza", "description": "Inmune a veneno y enfermedad; resistencia al daño elemental de tu terreno." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Santuario de la Naturaleza",
+        "description": "Las bestias y plantas dudan al atacarte; deben superar una salvación para hacerlo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Santuario de la Naturaleza", "description": "Bestias y plantas deben superar una salvación de Sabiduría para atacarte." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "circle-moon",
+    "name": "Círculo de la Luna",
+    "classId": "druid",
+    "source": "srd_2024",
+    "description": "Druidas feroces que dominan la Forma Salvaje como arma, transformándose en bestias poderosas.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Formas de Círculo",
+        "description": "Puedes usar Forma Salvaje como acción adicional y adoptar bestias más poderosas; en forma de bestia ganas PG temporales.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Formas de Círculo", "description": "Formas de bestia de mayor Desafío y con PG temporales al transformarte." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Formas de Círculo Mejoradas",
+        "description": "Tus ataques en Forma Salvaje cuentan como mágicos y puedes reforzar tu CA con Sabiduría.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Formas de Círculo Mejoradas", "description": "Ataques mágicos en forma de bestia; sumas tu mod. de Sabiduría a la CA de la forma." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Paso de Luz Lunar",
+        "description": "En Forma Salvaje puedes teletransportarte una corta distancia como acción adicional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Paso de Luz Lunar", "description": "Teletransporte de 30 pies como acción adicional en forma de bestia." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Forma Lunar",
+        "description": "Tus ataques de bestia infligen daño radiante extra y puedes canalizar conjuros de curación en forma de bestia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Forma Lunar", "description": "Daño radiante extra en forma de bestia y curación mientras estás transformado." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "circle-sea",
+    "name": "Círculo del Mar",
+    "classId": "druid",
+    "source": "srd_2024",
+    "description": "Druidas ligados a los océanos y tormentas, que desatan el poder del mar sobre sus enemigos.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Ira del Mar",
+        "description": "Gastas Forma Salvaje para invocar un aura tormentosa que empuja y daña a los enemigos que la tocan.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ira del Mar", "description": "Aura de tormenta: daño frío/relámpago y empuje a enemigos cercanos." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Afinidad Acuática",
+        "description": "Ganas velocidad de nado, respiración acuática y resistencia al daño de frío.",
+        "effects": [
+          { "type": "resistance", "damageType": "cold" },
+          { "type": "passiveTrait", "name": "Afinidad Acuática", "description": "Velocidad de nado y respiración bajo el agua." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Nacido de la Tormenta",
+        "description": "Mientras tu Ira del Mar esté activa ganas velocidad de vuelo y resistencia adicional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Nacido de la Tormenta", "description": "Velocidad de vuelo y resistencia a relámpago con la Ira del Mar activa." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Don Oceánico",
+        "description": "Puedes proteger a un aliado con una envoltura de agua que absorbe daño y le da beneficios.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Oceánico", "description": "Envuelves a un aliado en agua protectora: resistencia y movimiento mejorado." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "circle-stars",
+    "name": "Círculo de las Estrellas",
+    "classId": "druid",
+    "source": "srd_2024",
+    "description": "Druidas que estudiaron la sabiduría de las constelaciones y canalizan su poder en una Forma Estelar.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Mapa Estelar / Forma Estelar",
+        "description": "Portas un mapa estelar y puedes gastar Forma Salvaje para adoptar una Forma Estelar (Arquero, Cáliz o Dragón).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Forma Estelar", "description": "Adoptas una constelación: Arquero (ataque radiante), Cáliz (curación) o Dragón (concentración y salvaciones)." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Presagio Cósmico",
+        "description": "Tras un descanso largo tiras un dado que te da una reacción beneficiosa (maldición o bendición) reutilizable.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presagio Cósmico", "description": "Reacción según un dado diario: reduces daño recibido o aumentas daño infligido." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Constelaciones Parpadeantes",
+        "description": "Tus Formas Estelares se potencian con efectos mejorados.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Constelaciones Parpadeantes", "description": "Versiones mejoradas de Arquero, Cáliz y Dragón." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Lleno de Estrellas",
+        "description": "En Forma Estelar te vuelves parcialmente constelación: ganas resistencia a varios tipos de daño y puedes flotar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Lleno de Estrellas", "description": "En Forma Estelar: resistencia a contundente, perforante y cortante, y flotación." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "open-hand",
+    "name": "Guerrero de la Mano Abierta",
+    "classId": "monk",
+    "source": "srd_2024",
+    "description": "Maestro del combate sin armas, capaz de manipular la energía del cuerpo del enemigo con cada golpe.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Técnica de la Mano Abierta",
+        "description": "Cuando impactas con un Golpe Marcial puedes derribar, empujar 15 pies o negar reacciones al objetivo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Técnica de la Mano Abierta", "description": "Tras un Golpe Marcial: derriba, empuja 15 pies o niega reacciones al objetivo." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Totalidad del Cuerpo",
+        "description": "Como acción adicional gastas Puntos de Enfoque para curarte una cantidad considerable de PG.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Totalidad del Cuerpo", "description": "Gasta Enfoque para curarte (dados según tu nivel de Monje) como acción adicional." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Paso Veloz",
+        "description": "Puedes gastar Puntos de Enfoque para lanzar Paso Brumoso sin componentes.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Paso Veloz", "description": "Gasta Enfoque para teletransportarte (Paso Brumoso) como acción adicional." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Palma Temblorosa",
+        "description": "Golpeas a una criatura con una vibración letal que puedes detonar más tarde para infligir enorme daño necrótico.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Palma Temblorosa", "description": "Implantas vibraciones letales; al detonarlas, gran daño necrótico (salvación de Constitución)." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "warrior-elements",
+    "name": "Guerrero de los Elementos",
+    "classId": "monk",
+    "source": "srd_2024",
+    "description": "Monjes que canalizan el poder elemental a través de su ki, extendiendo su alcance y desatando estallidos.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Sintonía Elemental",
+        "description": "Gastas Puntos de Enfoque para infundir tus golpes con un elemento, ganando alcance y daño elemental.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Sintonía Elemental", "description": "Tus Golpes Sin Arma ganan +5 pies de alcance y pueden infligir daño elemental; puedes empujar o tirar de objetivos." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Estallido Elemental",
+        "description": "Gastas Puntos de Enfoque para lanzar una explosión elemental a distancia contra varios enemigos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Estallido Elemental", "description": "Estallido elemental a 20 pies: daño de área (salvación de Destreza)." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Zancada de los Elementos",
+        "description": "Ganas velocidad de vuelo y de nado mientras canalizas tu sintonía elemental.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Zancada de los Elementos", "description": "Velocidad de vuelo y de nado con tu sintonía activa." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Epítome Elemental",
+        "description": "Ganas resistencia a un tipo de daño elemental, más velocidad y daño elemental reforzado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Epítome Elemental", "description": "Resistencia elemental, velocidad extra y daño adicional al impactar." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "warrior-mercy",
+    "name": "Guerrero de la Misericordia",
+    "classId": "monk",
+    "source": "srd_2024",
+    "description": "Monjes médicos que manipulan la fuerza vital para sanar a los aliados o acelerar la muerte de sus enemigos.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Mano de Sanación / Mano de Daño",
+        "description": "Gastas Puntos de Enfoque para curar a una criatura o para infligir daño necrótico extra al golpear.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Manos de Misericordia", "description": "Gasta Enfoque para curar PG (Mano de Sanación) o añadir daño necrótico a un golpe (Mano de Daño)." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Toque del Médico",
+        "description": "Tu Mano de Sanación también quita una condición y tu Mano de Daño puede envenenar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Toque del Médico", "description": "Curas y eliminas una condición; o dañas y envenenas al objetivo." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Ráfaga de Sanación y Daño",
+        "description": "Cuando usas Ráfaga de Golpes puedes aplicar Mano de Sanación o Mano de Daño gratis.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ráfaga de Sanación y Daño", "description": "Aplicas Mano de Sanación o de Daño sin coste al usar Ráfaga de Golpes." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Mano de la Misericordia Suprema",
+        "description": "Una vez por descanso largo puedes devolver la vida a una criatura recién fallecida.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Misericordia Suprema", "description": "Revives a una criatura muerta hace poco gastando Puntos de Enfoque." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "warrior-shadow",
+    "name": "Guerrero de la Sombra",
+    "classId": "monk",
+    "source": "srd_2024",
+    "description": "Monjes ninja que emplean la magia de las sombras para el sigilo, el engaño y las emboscadas.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Artes de la Sombra",
+        "description": "Ganas visión en la oscuridad y el truco Ilusión Menor; puedes gastar Enfoque para crear zonas de oscuridad y otros efectos.",
+        "effects": [
+          { "type": "darkvision", "range": 60 },
+          { "type": "passiveTrait", "name": "Artes de la Sombra", "description": "Conoces Ilusión Menor; gastas Enfoque para lanzar Oscuridad, Oscurovisión, Silencio o Pasos sin Rastro." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Paso de las Sombras",
+        "description": "En penumbra u oscuridad puedes teletransportarte hasta 60 pies como acción adicional y ganar ventaja en tu próximo ataque.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Paso de las Sombras", "description": "Teletransporte de 60 pies entre sombras; ventaja en el ataque siguiente." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Paso de las Sombras Mejorado",
+        "description": "Tu Paso de las Sombras se potencia y puede aturdir brevemente a quien golpees al aparecer.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Paso de las Sombras Mejorado", "description": "Tras teletransportarte, tu ataque puede imponer una condición al objetivo." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Manto de Sombras",
+        "description": "En penumbra u oscuridad puedes volverte invisible como acción.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Manto de Sombras", "description": "Te vuelves invisible mientras permanezcas en penumbra u oscuridad." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "oath-devotion",
+    "name": "Juramento de Devoción",
+    "classId": "paladin",
+    "source": "srd_2024",
+    "description": "El paladín ideal, ligado a los más altos ideales de justicia, virtud y orden.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Arma Sagrada",
+        "description": "Imbuyes un arma con energía sagrada: durante 10 minutos sumas tu Carisma a las tiradas de ataque con ella y emite luz.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arma Sagrada", "description": "Suma tu mod. de Carisma al ataque con un arma imbuida durante 10 minutos." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Juramento",
+        "description": "Tienes siempre preparados conjuros ligados a tu juramento (Protección contra el Bien y el Mal, Santuario, etc.).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a la Devoción." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Aura de Devoción",
+        "description": "Tú y los aliados cercanos no podéis ser hechizados.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Aura de Devoción", "description": "Inmunidad a estar hechizado para ti y aliados en tu aura." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Castigo de Protección",
+        "description": "Cuando una criatura cercana es atacada puedes usar tu reacción para estorbar el ataque con energía radiante.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Castigo de Protección", "description": "Reacción: impones desventaja a un ataque contra un aliado cercano." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Nimbo Sagrado",
+        "description": "Como acción emanas luz solar que daña a los enemigos y te da ventaja contra sus conjuros.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Nimbo Sagrado", "description": "Aura de luz solar: daño radiante a enemigos y ventaja en salvaciones contra sus conjuros." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "oath-ancients",
+    "name": "Juramento de los Antiguos",
+    "classId": "paladin",
+    "source": "srd_2024",
+    "description": "Paladines de la luz y la vida, campeones de la naturaleza y la alegría contra las tinieblas.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Ira de la Naturaleza",
+        "description": "Invocas enredaderas espectrales que apresan a una criatura cercana.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ira de la Naturaleza", "description": "Enredaderas espectrales apresan a una criatura (salvación de Fuerza o Destreza)." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Juramento",
+        "description": "Tienes siempre preparados conjuros de naturaleza y protección.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a los Antiguos." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Aura de Protección",
+        "description": "Tú y aliados cercanos tenéis resistencia al daño de conjuros.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Aura de Protección", "description": "Resistencia al daño de conjuros para ti y aliados en tu aura." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Centinela Imperecedero",
+        "description": "Cuando bajas a 0 PG sin morir, caes a 1 PG en su lugar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Centinela Imperecedero", "description": "Al bajar a 0 PG quedas en 1 (una vez por descanso largo)." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Campeón Anciano",
+        "description": "Adoptas una forma radiante que regenera PG y potencia tus conjuros y castigos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Campeón Anciano", "description": "Te regeneras cada turno y tus enemigos tienen desventaja contra tus conjuros y castigos." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "oath-glory",
+    "name": "Juramento de Gloria",
+    "classId": "paladin",
+    "source": "srd_2024",
+    "description": "Paladines que buscan la grandeza heroica, entrenados como atletas legendarios para lograr grandes hazañas.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Atleta Inigualable / Castigo Inspirador",
+        "description": "Ganas ventaja en pruebas de Fuerza y Destreza, y puedes repartir PG temporales tras un Castigo Divino.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Gloria del Campeón", "description": "Atleta Inigualable: ventaja en Atletismo/Acrobacias y mayor salto. Castigo Inspirador: reparte PG temporales tras un Castigo Divino." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Juramento",
+        "description": "Tienes siempre preparados conjuros de velocidad y heroísmo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a la Gloria." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Aura de Prontitud",
+        "description": "Tú y aliados cercanos ganáis velocidad de movimiento adicional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Aura de Prontitud", "description": "+10 pies de velocidad para ti y aliados en tu aura." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Defensa Gloriosa",
+        "description": "Como reacción puedes aumentar la CA de una criatura ante un ataque y contraatacar si falla.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Defensa Gloriosa", "description": "Reacción: +bono de CA a un aliado atacado y contraataque si el ataque falla." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Leyenda Viviente",
+        "description": "Te vuelves un ícono de inspiración: ganas carisma sobrehumano, repites ataques fallidos y esquivas golpes.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Leyenda Viviente", "description": "Ventaja en Carisma, repites un ataque fallido por turno y niegas un ataque como reacción." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "oath-vengeance",
+    "name": "Juramento de Venganza",
+    "classId": "paladin",
+    "source": "srd_2024",
+    "description": "Paladines sombríos que persiguen a los malhechores sin descanso, sacrificando la pureza por la justicia.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Canalizar Divinidad: Voto de Enemistad",
+        "description": "Marcas a una criatura como enemiga jurada, ganando ventaja en tus ataques contra ella un tiempo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Voto de Enemistad", "description": "Ventaja en tus ataques contra una criatura marcada durante 1 minuto." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Juramento",
+        "description": "Tienes siempre preparados conjuros de caza y castigo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a la Venganza." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Vengador Implacable",
+        "description": "Cuando un ataque de oportunidad tuyo impacta, puedes moverte sin provocar ataques.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Vengador Implacable", "description": "Tras impactar con un ataque de oportunidad, te reubicas sin provocar ataques." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Alma de Venganza",
+        "description": "Contra tu enemigo del Voto de Enemistad puedes reaccionar atacando cuando te ataca.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Alma de Venganza", "description": "Reacción: ataque contra tu enemigo jurado cuando él ataca." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Ángel Vengador",
+        "description": "Adoptas una forma alada aterradora con velocidad de vuelo y aura de miedo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ángel Vengador", "description": "Velocidad de vuelo y aura que asusta a los enemigos cercanos." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "hunter",
+    "name": "Cazador",
+    "classId": "ranger",
+    "source": "srd_2024",
+    "description": "Aceptas tu papel como baluarte contra los monstruos que amenazan a los pueblos de la naturaleza.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Presa del Cazador",
+        "description": "Ganas Asesino de Colosos (daño extra a heridos) u Horda Rompedora (golpeas a un segundo enemigo cercano).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presa del Cazador", "description": "Asesino de Colosos (daño extra una vez por turno) u Horda Rompedora (golpe a un segundo enemigo)." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Tácticas Defensivas",
+        "description": "Eliges una defensa: Escapar de la Horda, Voluntad de Acero o Esquiva Multiataque.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Tácticas Defensivas", "description": "Defensa a elección: menos ataques de oportunidad, ventaja contra el miedo o resistencia a multiataques." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Presa del Cazador Superior",
+        "description": "Tu Presa del Cazador se potencia y puede alcanzar a más enemigos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presa Superior", "description": "Tu daño extra o rebote de ataque afecta a objetivos adicionales." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Defensa del Cazador Superior",
+        "description": "Cuando recibes daño puedes usar tu reacción para reducirlo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Defensa Superior", "description": "Reacción: reduces el daño de un ataque contra ti." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "beast-master",
+    "name": "Amo de las Bestias",
+    "classId": "ranger",
+    "source": "srd_2024",
+    "description": "Explorador que forma un vínculo primario con una bestia compañera que lucha a su lado.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Compañero Primario",
+        "description": "Invocas un espíritu bestial (de tierra, mar o aire) que combate contigo y actúa a tu orden.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Compañero Primario", "description": "Una bestia compañera (Feroz de Tierra, Mar o Aire) que ataca y se mueve con tu comando." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Entrenamiento Excepcional",
+        "description": "Tu bestia puede Destrabarse, Correr o Esquivar como acción adicional y sus ataques son mágicos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Entrenamiento Excepcional", "description": "La bestia obtiene acciones adicionales y sus ataques cuentan como mágicos." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Furia Bestial",
+        "description": "Tu compañero puede atacar dos veces cuando le ordenas atacar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia Bestial", "description": "La bestia hace dos ataques al recibir la orden de atacar." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Compartir Conjuros",
+        "description": "Cuando lanzas un conjuro que te afecta a ti, también puede afectar a tu bestia si está cerca.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Compartir Conjuros", "description": "Tus conjuros de un solo objetivo pueden extenderse a tu compañero cercano." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fey-wanderer",
+    "name": "Errante Feérico",
+    "classId": "ranger",
+    "source": "srd_2024",
+    "description": "Explorador tocado por la magia del Reino Feérico, con un aura encantadora y golpes que siembran temor.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Golpes Terribles / Glamour de Otro Mundo",
+        "description": "Tus ataques infligen daño psíquico extra y sumas tu Sabiduría a una habilidad social.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Errante Feérico", "description": "Daño psíquico extra una vez por turno; sumas tu mod. de Sabiduría a Persuasión, Engaño o Intimidación." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Giro Cautivador",
+        "description": "Cuando superas una salvación contra ser hechizado puedes desviar el efecto a otra criatura.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Giro Cautivador", "description": "Reaccionas a un encantamiento fallido del enemigo hechizando a otra criatura." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Refuerzos Feéricos",
+        "description": "Puedes lanzar Invocar Feérico sin concentración una vez por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Refuerzos Feéricos", "description": "Invocas un espíritu feérico sin concentración una vez por descanso largo." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Errante Brumoso",
+        "description": "Puedes teletransportarte una corta distancia como acción adicional varias veces por descanso.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Errante Brumoso", "description": "Teletransporte de 30 pies como acción adicional; usos = mod. de Sabiduría." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gloom-stalker",
+    "name": "Acechador de la Penumbra",
+    "classId": "ranger",
+    "source": "srd_2024",
+    "description": "Explorador de las tinieblas y el Underdark, maestro de la emboscada que ataca antes de ser visto.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Emboscador Temible / Vista Umbral",
+        "description": "En el primer turno del combate ganas velocidad y un ataque extra; ves en la oscuridad y eres invisible a la visión en la oscuridad.",
+        "effects": [
+          { "type": "darkvision", "range": 90 },
+          { "type": "passiveTrait", "name": "Emboscador Temible", "description": "Primer turno: +velocidad, un ataque adicional con daño extra. Vista Umbral: eres invisible para criaturas que dependen de la visión en la oscuridad." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Mente de Hierro",
+        "description": "Ganas competencia con salvaciones de Sabiduría (o de Inteligencia/Carisma si ya la tienes).",
+        "effects": [
+          { "type": "savingThrowProficiency", "ability": "wisdom" }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Ráfaga del Acechador",
+        "description": "Cuando fallas un ataque puedes usar tu magia sombría para hacer otro ataque.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ráfaga del Acechador", "description": "Tras fallar un ataque, un ataque adicional con daño psíquico." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Esquiva Sombría",
+        "description": "Cuando un enemigo te ataca puedes usar tu reacción para imponerle desventaja y volverte invisible brevemente.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Esquiva Sombría", "description": "Reacción: desventaja al atacante y te vuelves brevemente difícil de ver." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "thief",
+    "name": "Ladrón",
+    "classId": "rogue",
+    "source": "srd_2024",
+    "description": "Perfeccionas habilidades de sigilo y latrocinio, con reflejos y agilidad que superan a otros pícaros.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Manos Rápidas",
+        "description": "Puedes usar tu acción adicional de Astucia para Juego de Manos, Herramientas de Ladrón o Usar un Objeto.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Manos Rápidas", "description": "Usa Astucia para Juego de Manos, Herramientas de Ladrón o Usar un Objeto como acción adicional." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Trabajo en las Alturas",
+        "description": "Trepar no cuesta movimiento extra y saltas más lejos con carrerilla.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Trabajo en las Alturas", "description": "Trepar no cuesta movimiento adicional; mayor distancia de salto." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Sigilo Supremo",
+        "description": "Tienes ventaja en pruebas de Sigilo si te mueves como mucho a la mitad de tu velocidad.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Sigilo Supremo", "description": "Ventaja en Sigilo al moverte lento." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Usar Dispositivo Mágico",
+        "description": "Puedes usar objetos mágicos aunque no cumplas los requisitos de clase, y sacar más carga de ellos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Usar Dispositivo Mágico", "description": "Ignoras requisitos de clase/nivel en objetos mágicos y aprovechas mejor sus cargas." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Reflejos del Ladrón",
+        "description": "En el primer asalto de combate puedes tomar dos turnos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Reflejos del Ladrón", "description": "Dos turnos en el primer asalto (una iniciativa normal y otra a -10)." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "arcane-trickster",
+    "name": "Pícaro Arcano",
+    "classId": "rogue",
+    "source": "srd_2024",
+    "description": "Pícaro que mezcla el latrocinio con magia de encantamiento e ilusión para engañar y robar.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Aprendes a lanzar conjuros de Mago usando Inteligencia (semi-lanzador, un tercio de la progresión).",
+        "effects": [
+          { "type": "spellcasting", "ability": "intelligence", "progression": "third", "preparation": "prepared", "spellList": "wizard", "cantripsKnown": 3 }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Prestidigitación de Mano Mágica",
+        "description": "Tu Mano Mágica es invisible y puede hacer travesuras: robar, plantar objetos o abrir cerraduras a distancia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Prestidigitación de Mano Mágica", "description": "Mano Mágica invisible que roba, planta objetos y manipula cerraduras/trampas a distancia." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Emboscada Mágica",
+        "description": "Si estás escondido al lanzar un conjuro, el objetivo tiene desventaja en la salvación.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Emboscada Mágica", "description": "Desde el sigilo, tus conjuros imponen desventaja en la salvación." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Embaucador Versátil",
+        "description": "Usas tu Mano Mágica para distraer y ganar ventaja en tus ataques contra un enemigo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Embaucador Versátil", "description": "Distraes con la Mano Mágica para tener ventaja al atacar a un objetivo." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Ladrón de Conjuros",
+        "description": "Cuando una criatura te lanza un conjuro puedes robar su conocimiento y usarlo tú.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ladrón de Conjuros", "description": "Reaccionas a un conjuro enemigo negándolo y aprendiéndolo temporalmente." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "assassin",
+    "name": "Asesino",
+    "classId": "rogue",
+    "source": "srd_2024",
+    "description": "Pícaro especializado en la infiltración, el disfraz y el golpe mortal por sorpresa.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Herramientas del Asesino",
+        "description": "Ganas competencia con el kit de disfraz y el kit de envenenador.",
+        "effects": [
+          { "type": "toolProficiency", "tool": "disguise-kit" },
+          { "type": "toolProficiency", "tool": "poisoner-kit" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Asesinar",
+        "description": "Tienes ventaja contra criaturas que aún no actuaron y golpeas con daño extra a los sorprendidos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Asesinar", "description": "Ventaja contra objetivos que no actuaron; daño adicional contra criaturas sorprendidas." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Experto en Infiltración",
+        "description": "Puedes crear identidades falsas convincentes y duraderas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Experto en Infiltración", "description": "Estableces identidades falsas creíbles con historial y documentos." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Envenenar Armas",
+        "description": "Aplicas venenos con más eficacia y tus armas envenenadas debilitan a los objetivos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Envenenar Armas", "description": "Tus venenos son más difíciles de resistir y aplican desventaja." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Golpe Mortal",
+        "description": "Cuando impactas con Ataque Furtivo a un objetivo sorprendido, duplicas el daño si falla una salvación.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Mortal", "description": "Objetivo sorprendido: duplica el daño del ataque si falla una salvación de Constitución." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "soulknife",
+    "name": "Cuchilla del Alma",
+    "classId": "rogue",
+    "source": "srd_2024",
+    "description": "Pícaro psiónico que manifiesta hojas de energía mental y usa poderes psíquicos para el sigilo y el engaño.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Poder Psiónico / Hojas Psíquicas",
+        "description": "Manifiestas hojas de energía mental como armas y ganas dados psiónicos para potenciar tus habilidades.",
+        "effects": [
+          { "type": "resource", "id": "psionic_energy", "name": "Energía Psiónica", "max": 4, "recharge": "short", "description": "Dados psiónicos (d6) para sumar a pruebas (Impulso Psíquico) o teletransportarte (Salto de Sombra)." },
+          { "type": "passiveTrait", "name": "Hojas Psíquicas", "description": "Manifiestas hojas psíquicas (finura, arrojadizas) que infligen daño psíquico." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Hojas del Alma",
+        "description": "Puedes gastar dados psiónicos para volver a tirar un ataque fallido o teletransportarte junto a tu hoja arrojada.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Hojas del Alma", "description": "Repites un ataque con hoja psíquica y te teletransportas al lanzarla." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Velo Psíquico",
+        "description": "Puedes volverte invisible un tiempo mediante ilusión psíquica.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Velo Psíquico", "description": "Te vuelves invisible durante 1 hora una vez por descanso." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Desgarrar la Mente",
+        "description": "Cuando infliges daño con tu hoja psíquica puedes gastar dados psiónicos para aturdir a la criatura.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Desgarrar la Mente", "description": "Gasta dados psiónicos para aturdir a un objetivo golpeado por tu hoja." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "draconic-sorcery",
+    "name": "Hechicería Dracónica",
+    "classId": "sorcerer",
+    "source": "srd_2024",
+    "description": "Tu magia brota de un linaje dracónico, endureciendo tu cuerpo y ligándote a un tipo de daño elemental.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Resistencia Dracónica",
+        "description": "Ganas 1 punto de golpe adicional por cada nivel de Hechicero y, sin armadura, tu CA base es 13 + tu Destreza.",
+        "effects": [
+          { "type": "bonusMaxHpPerLevel", "perLevel": 1 },
+          { "type": "passiveTrait", "name": "Resistencia Dracónica (CA)", "description": "Sin armadura, tu CA base es 13 + modificador de Destreza." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Afinidad Dracónica",
+        "description": "Eliges un tipo de dragón; hablas Dracónico y los conjuros de su tipo de daño ganan bonos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Afinidad Dracónica", "description": "Sumas tu mod. de Carisma al daño de tu tipo elemental dracónico; hablas Dracónico." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Afinidad Elemental",
+        "description": "Cuando lanzas un conjuro de tu tipo de daño dracónico puedes ganar resistencia temporal a ese daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Afinidad Elemental", "description": "Al lanzar un conjuro de tu daño dracónico, ganas resistencia a ese tipo un tiempo." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Alas de Dragón",
+        "description": "Como acción adicional te crecen alas dracónicas que te dan velocidad de vuelo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Alas de Dragón", "description": "Alas que otorgan velocidad de vuelo igual a tu velocidad terrestre." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Presencia Dracónica",
+        "description": "Gastas Puntos de Hechicería para proyectar un aura de asombro o miedo dracónico.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presencia Dracónica", "description": "Aura que asusta o fascina a las criaturas cercanas (salvación de Sabiduría)." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "aberrant-sorcery",
+    "name": "Hechicería de Mente Aberrante",
+    "classId": "sorcerer",
+    "source": "srd_2024",
+    "description": "Tu poder nace de una influencia psiónica alienígena, otorgándote telepatía y magia mental.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Habla Psiónica / Conjuros Psiónicos",
+        "description": "Ganas telepatía y conjuros psiónicos siempre preparados que puedes lanzar con Puntos de Hechicería.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Mente Aberrante", "description": "Telepatía a corta distancia y conjuros psiónicos preparados que puedes canjear por Puntos de Hechicería." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Hechicería Psiónica / Defensas Psíquicas",
+        "description": "Lanzas tus conjuros psiónicos sin componentes y ganas resistencia al daño psíquico y contra encantamientos.",
+        "effects": [
+          { "type": "resistance", "damageType": "psychic" },
+          { "type": "passiveTrait", "name": "Defensas Psíquicas", "description": "Ventaja contra ser hechizado o asustado; lanzas conjuros psiónicos de forma sutil." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Revelación en la Carne",
+        "description": "Gastas Puntos de Hechicería para mutar tu cuerpo, ganando vuelo, visión o nado sobrenaturales.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Revelación en la Carne", "description": "Mutaciones temporales: vuelo, visión en la oscuridad, respiración acuática o cuerpo maleable." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Implosión Deformante",
+        "description": "Como acción desatas una onda telequinética que atrae y daña a las criaturas cercanas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Implosión Deformante", "description": "Teletransporte con onda de daño de fuerza que arrastra a los enemigos." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "clockwork-sorcery",
+    "name": "Hechicería del Orden Cósmico",
+    "classId": "sorcerer",
+    "source": "srd_2024",
+    "description": "Tu magia proviene de los planos del orden y la ley, permitiéndote imponer equilibrio y previsibilidad.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Restaurar el Equilibrio / Conjuros del Orden",
+        "description": "Como reacción anulas ventaja o desventaja en una tirada cercana; ganas conjuros del orden siempre preparados.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Restaurar el Equilibrio", "description": "Reacción: cancelas ventaja o desventaja en una tirada de una criatura cercana." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Bastión de Ley",
+        "description": "Gastas Puntos de Hechicería para dar a una criatura un escudo de dados que absorbe daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Bastión de Ley", "description": "Otorgas dados de protección (d8) que reducen el daño recibido." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Trance del Orden",
+        "description": "Tus tiradas de ataque y salvaciones no pueden verse afectadas por desventaja.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Trance del Orden", "description": "Tratas tiradas bajas de ataque/salvación como si sacaras al menos 10." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Cabalgata del Reloj",
+        "description": "Invocas espíritus mecánicos que reparan aliados y desmantelan conjuros en un área.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Cabalgata del Reloj", "description": "Área que cura aliados y disipa efectos mágicos de bajo nivel." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wild-magic-sorcery",
+    "name": "Hechicería de Magia Salvaje",
+    "classId": "sorcerer",
+    "source": "srd_2024",
+    "description": "Tu magia es caótica e impredecible, ligada a las fuerzas salvajes del multiverso.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Oleada de Magia Salvaje / Marea del Caos",
+        "description": "Tus conjuros pueden desencadenar efectos aleatorios; puedes ganar ventaja a cambio de provocar el caos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Magia Salvaje", "description": "Al lanzar conjuros puedes tirar en la tabla de Oleada de Magia Salvaje; Marea del Caos te da ventaja una vez por descanso." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Doblar la Suerte",
+        "description": "Gastas Puntos de Hechicería para sumar o restar un dado a la tirada de cualquier criatura.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Doblar la Suerte", "description": "Gasta Puntos de Hechicería para modificar (2d4) una tirada de ataque, prueba o salvación." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Caos Controlado",
+        "description": "Cuando desencadenas una Oleada de Magia Salvaje puedes tirar dos veces y elegir el resultado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Caos Controlado", "description": "Tiras dos veces en la tabla de Magia Salvaje y eliges el efecto." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Oleada Domada",
+        "description": "Puedes provocar deliberadamente un efecto de Oleada de Magia Salvaje a tu elección.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Oleada Domada", "description": "Eliges el resultado de una Oleada de Magia Salvaje en lugar de tirarlo." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "fiend-patron",
+    "name": "Patrón Diabólico",
+    "classId": "warlock",
+    "source": "srd_2024",
+    "description": "Sellaste un pacto con un ser de los Planos Inferiores, obteniendo poder a cambio de servicio.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Bendición del Oscuro",
+        "description": "Cuando reduces a un enemigo a 0 PG ganas puntos de golpe temporales iguales a tu Carisma más tu nivel de Brujo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Bendición del Oscuro", "description": "Al matar a un enemigo, ganas PG temporales = CAR + nivel de Brujo." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Suerte del Oscuro",
+        "description": "Puedes sumar 1d10 a una prueba de característica o salvación una vez por descanso corto.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Suerte del Oscuro", "description": "Sumas 1d10 a una prueba o salvación (una vez por descanso corto)." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Resiliencia Diabólica",
+        "description": "Eliges una resistencia a daño que cambias tras cada descanso.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Resiliencia Diabólica", "description": "Resistencia a un tipo de daño no mágico a tu elección, reelegible tras un descanso." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Arrojar a Través del Infierno",
+        "description": "Cuando impactas a una criatura puedes desterrarla brevemente a los Planos Inferiores, infligiéndole daño psíquico.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arrojar a Través del Infierno", "description": "Envías a un objetivo golpeado por los Planos Inferiores: gran daño psíquico al volver." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "archfey-patron",
+    "name": "Patrón Feérico",
+    "classId": "warlock",
+    "source": "srd_2024",
+    "description": "Tu pacto es con un señor o señora del Reino Feérico, maestro del encantamiento y la ilusión.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Pasos del Feérico",
+        "description": "Puedes teletransportarte como acción adicional y aplicar un efecto feérico (miedo o encanto) al llegar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pasos del Feérico", "description": "Teletransporte de 10 pies como acción adicional; asusta o encanta a criaturas cercanas al destino." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Escape Brumoso",
+        "description": "Cuando recibes daño puedes volverte invisible y teletransportarte como reacción.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Escape Brumoso", "description": "Reacción al recibir daño: te teletransportas y quedas invisible brevemente." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Defensas Cautivadoras",
+        "description": "Eres inmune a estar hechizado y puedes desviar los encantamientos hacia tus atacantes.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Defensas Cautivadoras", "description": "Inmune a ser hechizado; puedes redirigir un encantamiento al lanzador." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Magia Embrujadora",
+        "description": "Cuando lanzas un conjuro de encantamiento o ilusión de cierto nivel puedes hacerlo sin gastar espacio ocasionalmente.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Magia Embrujadora", "description": "Lanzas un conjuro de encanto/ilusión y, como acción adicional, teletransportas a un enemigo afectado." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "celestial-patron",
+    "name": "Patrón Celestial",
+    "classId": "warlock",
+    "source": "srd_2024",
+    "description": "Tu pacto es con un ser de los Planos Superiores, canalizando luz sanadora y fuego radiante.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Luz Sanadora",
+        "description": "Ganas un pozo de dados de curación (d6) que puedes repartir como acción adicional.",
+        "effects": [
+          { "type": "resource", "id": "healing_light", "name": "Luz Sanadora", "max": 2, "recharge": "long", "description": "Dados de curación (d6) que repartes como acción adicional; pozo = 1 + nivel de Brujo, se recarga en descanso largo." },
+          { "type": "passiveTrait", "name": "Trucos Adicionales", "description": "Conoces los trucos Luz y Llama Sagrada." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Alma Radiante",
+        "description": "Ganas resistencia al daño radiante y sumas tu Carisma al daño de un conjuro radiante o de fuego por turno.",
+        "effects": [
+          { "type": "resistance", "damageType": "radiant" },
+          { "type": "passiveTrait", "name": "Alma Radiante", "description": "Sumas tu mod. de Carisma al daño de un conjuro de fuego o radiante una vez por turno." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Resiliencia Celestial",
+        "description": "Ganas puntos de golpe temporales tras cada descanso que también repartes entre aliados.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Resiliencia Celestial", "description": "PG temporales para ti y varios aliados tras un descanso." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Venganza Abrasadora",
+        "description": "Cuando bajas a 0 PG puedes en su lugar volver con vida y quemar a los enemigos cercanos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Venganza Abrasadora", "description": "Al caer a 0 PG, revives con algunos PG e infliges daño radiante a los enemigos cercanos." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "great-old-one-patron",
+    "name": "Patrón del Gran Antiguo",
+    "classId": "warlock",
+    "source": "srd_2024",
+    "description": "Tu pacto es con una entidad cósmica e incognoscible, fuente de secretos y poder psíquico.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Mente Despierta / Conjuros Psíquicos",
+        "description": "Ganas telepatía y tus conjuros de encantamiento y adivinación infligen o usan daño psíquico de forma sutil.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Mente Despierta", "description": "Telepatía a distancia; conjuros de encanto/adivinación lanzados sin componente verbal, con daño psíquico." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Combatiente Clarividente",
+        "description": "Cuando atacas a una criatura con la que tienes contacto telepático, tienes ventaja y puedes aturdirla.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Combatiente Clarividente", "description": "Ventaja al atacar a una criatura en contacto telepático; puede quedar aturdida al golpearla." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Escudo Mental",
+        "description": "Ganas resistencia al daño psíquico y, cuando recibes daño, puedes lanzar pensamientos falsos.",
+        "effects": [
+          { "type": "resistance", "damageType": "psychic" },
+          { "type": "passiveTrait", "name": "Escudo Mental", "description": "No puedes ser leído contra tu voluntad; al morir puedes engañar a quien te lea la mente." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Crear Esclavo",
+        "description": "Puedes hechizar permanentemente a una criatura incapacitada, sometiéndola a tu voluntad.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Crear Esclavo", "description": "Sometes a una criatura incapacitada a tu control telepático a cualquier distancia." }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "evoker",
+    "name": "Escuela de Evocación",
+    "classId": "wizard",
+    "source": "srd_2024",
+    "description": "Esculpes la magia elemental cruda: fuego, frío y relámpago obedecen tu voluntad sin dañar a tus aliados.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Potenciar Truco",
+        "description": "Tus trucos de daño hacen daño reducido al fallar y suman tu característica de conjuro al daño de tus trucos de evocación.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Potenciar Truco", "description": "Tus trucos de daño hacen daño mínimo al fallar y suman tu característica de conjuro." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Esculpir Conjuros",
+        "description": "Al lanzar un conjuro de evocación puedes excluir a algunos aliados del área: superan la salvación y no reciben daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Esculpir Conjuros", "description": "Excluye a aliados del área de tus conjuros de evocación." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Adepto de la Evocación",
+        "description": "Preparas conjuros de evocación con más facilidad y lanzas tus evocaciones favoritas más rápido.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Adepto de la Evocación", "description": "Copiar y preparar conjuros de evocación cuesta menos tiempo y recursos." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Evocación Potenciada",
+        "description": "Sumas tu modificador de Inteligencia al daño de cualquier conjuro de evocación.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Evocación Potenciada", "description": "Sumas tu mod. de Inteligencia a una tirada de daño de tus conjuros de evocación." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Sobrecanalizar",
+        "description": "Puedes infligir daño máximo con un conjuro de daño de nivel bajo, a costa de sufrir daño tú mismo si abusas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Sobrecanalizar", "description": "Un conjuro de daño (nivel 1-5) inflige daño máximo; usarlo repetidamente te lastima." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "abjurer",
+    "name": "Escuela de Abjuración",
+    "classId": "wizard",
+    "source": "srd_2024",
+    "description": "Magos protectores especializados en escudos arcanos, disipación y anulación de magia hostil.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Pupilo Arcano",
+        "description": "Al lanzar un conjuro de abjuración creas un escudo de energía que absorbe daño por ti.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pupilo Arcano", "description": "Un pupilo mágico absorbe daño; se recarga al lanzar conjuros de abjuración." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Pupilo Proyectado",
+        "description": "Puedes usar tu Pupilo Arcano para proteger a una criatura cercana en vez de a ti.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pupilo Proyectado", "description": "Reaccionas para que tu pupilo absorba el daño de un aliado cercano." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Rompeconjuros",
+        "description": "Tienes siempre preparados Contrahechizo y Disipar Magia, y los lanzas de forma más eficiente.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Rompeconjuros", "description": "Contrahechizo y Disipar Magia siempre preparados y lanzados con ventaja de nivel." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Resistencia a Conjuros",
+        "description": "Tienes ventaja en las salvaciones contra conjuros y resistencia al daño de conjuros.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Resistencia a Conjuros", "description": "Ventaja en salvaciones contra conjuros y resistencia a su daño." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "diviner",
+    "name": "Escuela de Adivinación",
+    "classId": "wizard",
+    "source": "srd_2024",
+    "description": "Magos que atisban el pasado, el presente y el futuro, reescribiendo el destino con sus presagios.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Presagio",
+        "description": "Tras un descanso largo tiras dos d20 y guardas los resultados para reemplazar tiradas propias o ajenas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presagio", "description": "Reemplazas una tirada (tuya o de otro) por uno de dos d20 tirados al descansar." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Adivinación Experta",
+        "description": "Cuando lanzas un conjuro de adivinación de nivel 2+ recuperas un espacio de conjuro de menor nivel.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Adivinación Experta", "description": "Lanzar una adivinación de nivel 2+ te devuelve un espacio de menor nivel." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "El Tercer Ojo",
+        "description": "Como acción activas percepciones sobrenaturales: visión en la oscuridad, ver invisibles o leer cualquier idioma.",
+        "effects": [
+          { "type": "passiveTrait", "name": "El Tercer Ojo", "description": "Beneficio sensorial a elección: visión en la oscuridad, ver invisibilidad, leer idiomas o visión etérea." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Presagio Mayor",
+        "description": "Tu Presagio te da tres d20 en lugar de dos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Presagio Mayor", "description": "Tiras tres d20 de Presagio tras cada descanso largo." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "illusionist",
+    "name": "Escuela de Ilusión",
+    "classId": "wizard",
+    "source": "srd_2024",
+    "description": "Magos que tejen ilusiones tan convincentes que confunden los sentidos e incluso alteran la realidad.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Ilusiones Mejoradas",
+        "description": "Conoces Ilusión Menor con mejoras y puedes crear ilusiones más versátiles.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ilusiones Mejoradas", "description": "Ilusión Menor mejorada: creas sonido e imagen a la vez y la modificas a voluntad." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Criaturas Fantasmales",
+        "description": "Puedes hacer que tus ilusiones de criaturas parezcan reales al tacto y actúen.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Criaturas Fantasmales", "description": "Tus ilusiones de bestias pueden interactuar físicamente de forma limitada." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Yo Ilusorio",
+        "description": "Como reacción creas un duplicado ilusorio que hace fallar un ataque contra ti.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Yo Ilusorio", "description": "Reacción: un duplicado ilusorio provoca que un ataque contra ti falle." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Realidad Ilusoria",
+        "description": "Puedes volver real un objeto de una de tus ilusiones durante un breve tiempo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Realidad Ilusoria", "description": "Conviertes en real (1 minuto) un objeto inanimado de tu conjuro de ilusión." }
+        ]
+      }
+    ]
+  }
+]

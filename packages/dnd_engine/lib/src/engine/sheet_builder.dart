@@ -6,12 +6,31 @@ import '../domain/effects.dart';
 /// lo finaliza en un [ComputedSheet] inmutable.
 class SheetBuilder {
   final Map<Ability, int> baseScores;
+
+  /// Nivel de personaje, necesario para recursos que escalan (maxPerLevel).
+  final int level;
+
   final Map<Ability, int> abilityBonuses = {
     for (final a in Ability.values) a: 0,
   };
 
   int speed = 30;
   int? darkvision;
+
+  /// Característica que suma a la CA por Defensa sin Armadura (null = ninguna).
+  Ability? unarmoredDefenseAbility;
+
+  /// Si la Defensa sin Armadura se conserva con escudo (Bárbaro sí, Monje no).
+  bool unarmoredDefenseAllowShield = false;
+
+  /// Bono de velocidad por Movimiento sin Armadura (acumulado), y sus
+  /// condiciones. Solo se aplica si no se lleva armadura (ver condiciones).
+  int unarmoredMovementBonus = 0;
+  bool unarmoredMovementAllowShield = false;
+  bool unarmoredMovementHeavyOnly = false;
+
+  /// Rasgo de lanzamiento de conjuros activo (null = no lanza).
+  SpellcastingEffect? spellcasting;
 
   final Set<Ability> saveProficiencies = {};
   final Set<String> skillProficiencies = {};
@@ -30,7 +49,7 @@ class SheetBuilder {
   int bonusMaxHpPerLevel = 0;
   int acBonus = 0;
 
-  SheetBuilder({required this.baseScores});
+  SheetBuilder({required this.baseScores, this.level = 1});
 
   List<CharacterResource> get resources => _resources.values.toList();
 
@@ -81,12 +100,34 @@ class SheetBuilder {
         bonusMaxHpPerLevel += perLevel;
       case ArmorClassBonusEffect(:final amount):
         acBonus += amount;
-      case ResourceEffect(:final id, :final name, :final max, :final recharge):
+      case UnarmoredDefenseEffect(:final ability, :final allowShield):
+        unarmoredDefenseAbility = ability;
+        unarmoredDefenseAllowShield = allowShield;
+      case UnarmoredMovementEffect(
+          :final feet,
+          :final allowShield,
+          :final heavyArmorOnly
+        ):
+        unarmoredMovementBonus += feet;
+        unarmoredMovementAllowShield = allowShield;
+        unarmoredMovementHeavyOnly = heavyArmorOnly;
+      case SpellcastingEffect():
+        // El último rasgo de lanzamiento gana (una clase por ahora).
+        spellcasting = e;
+      case ResourceEffect(
+          :final id,
+          :final name,
+          :final max,
+          :final recharge,
+          :final description,
+          :final maxPerLevel
+        ):
         _resources[id] = CharacterResource(
           id: id,
           name: name,
-          max: max,
+          max: maxPerLevel ? level : max,
           recharge: recharge,
+          description: description,
         );
     }
   }

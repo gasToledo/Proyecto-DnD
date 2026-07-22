@@ -24,6 +24,10 @@ class CreationDraft {
   String? raceFeatId; // dote de origen de la especie (p.ej. Humano "Versátil")
   String? backgroundId;
 
+  // Conjuros elegidos (para clases lanzadoras).
+  final Set<String> cantrips = {};
+  final Set<String> spells = {};
+
   // Reparto de característica del trasfondo.
   AbilitySpreadMode spreadMode = AbilitySpreadMode.twoOne;
   Ability? spreadPlusTwo; // en modo +2/+1
@@ -45,6 +49,61 @@ class CreationDraft {
   Race? get race => raceId == null ? null : repo.race(raceId!);
   Background? get background =>
       backgroundId == null ? null : repo.background(backgroundId!);
+
+  /// Armas con las que la clase elegida es competente. La Maestría de Armas
+  /// 2024 solo puede aplicarse a estas.
+  List<Weapon> get proficientWeapons {
+    final k = klass;
+    if (k == null) return const [];
+    final profs = k.weaponProficiencies.toSet();
+    return repo.weapons.values
+        .where((w) => profs.contains(w.category) || profs.contains(w.id))
+        .toList();
+  }
+
+  /// Espacios de Maestría de Armas que otorga la clase a nivel 1 (Guerrero 3,
+  /// Bárbaro/Pícaro 2, Monje 0…). Se lee de los efectos de la clase, no se
+  /// hardcodea.
+  int get weaponMasterySlots {
+    final k = klass;
+    if (k == null) return 0;
+    var slots = 0;
+    for (final f in k.featuresUpTo(1)) {
+      for (final e in f.effects) {
+        if (e is WeaponMasterySlotsEffect && e.count > slots) slots = e.count;
+      }
+    }
+    return slots;
+  }
+
+  /// Si la clase concede una elección de Estilo de Combate (dato de la clase).
+  bool get grantsFightingStyle => klass?.grantsFightingStyle ?? false;
+
+  /// Si la clase elegida lanza conjuros (tiene un SpellcastingEffect a nivel 1).
+  bool get isCaster => klass?.featuresUpTo(1).any(
+          (f) => f.effects.any((e) => e is SpellcastingEffect)) ??
+      false;
+
+  Spellcasting? _scCache;
+  String? _scSig;
+
+  /// Bloque de lanzamiento derivado de las elecciones actuales (para saber
+  /// cupos de trucos/preparados y CD en el paso de conjuros). Se memoiza según
+  /// las entradas que lo afectan (clase, características, trasfondo/dote): elegir
+  /// trucos/conjuros no cambia el bloque, así que no recompila la ficha.
+  Spellcasting? get spellcasting {
+    if (!isCaster) return null;
+    final sig = [
+      classId, raceId, backgroundId, raceFeatId,
+      spreadMode.name, spreadPlusTwo?.name, spreadPlusOne?.name,
+      for (final a in Ability.values) assignedScores[a] ?? 10,
+    ].join('|');
+    if (sig != _scSig) {
+      _scCache = CharacterCompiler(repo).compile(build()).spellcasting;
+      _scSig = sig;
+    }
+    return _scCache;
+  }
 
   int get hitDie => klass?.hitDie ?? 10;
 
@@ -107,6 +166,8 @@ class CreationDraft {
       },
       backgroundAbilityBonuses: abilitySpread,
       chosenSkills: [...classSkills, ...raceSkills],
+      cantripIds: cantrips.toList(),
+      spellIds: spells.toList(),
       fightingStyleId: fightingStyleId,
       weaponMasteryChoices: List.of(weaponMasteries),
       featIds: [?raceFeatId],

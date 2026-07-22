@@ -1,0 +1,3198 @@
+[
+  {
+    "id": "druidcraft",
+    "name": "Artificio Druídico",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Efecto natural menor: predecir el clima, hacer florecer una planta, apagar o encender un fuego pequeño.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "vicious-mockery",
+    "name": "Burla Cruel",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "classes": [
+      "bard"
+    ],
+    "description": "Salvación de SAB o el objetivo recibe 1d6 psíquico y desventaja en su próximo ataque. Escala por nivel."
+  },
+  {
+    "id": "shocking-grasp",
+    "name": "Contacto Electrizante",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro cuerpo a cuerpo; 1d8 de relámpago y el objetivo no puede usar reacciones hasta su próximo turno. Ventaja si lleva metal.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "eldritch-blast",
+    "name": "Descarga Sobrenatural",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "warlock"
+    ],
+    "description": "Ataque de conjuro a distancia; 1d10 de daño de fuerza. Rayos adicionales a niveles 5, 11 y 17."
+  },
+  {
+    "id": "starry-wisp",
+    "name": "Destello Estelar",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro a distancia por 1d8 radiante; si impacta, el objetivo emite luz tenue y no puede beneficiarse de invisibilidad.",
+    "classes": [
+      "druid",
+      "bard"
+    ]
+  },
+  {
+    "id": "true-strike",
+    "name": "Golpe Certero",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Adivinación",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Realizas un ataque con arma imbuida de energía radiante, usando tu característica de conjuro para el ataque y el daño.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "guidance",
+    "name": "Guía",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Adivinación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "Concentración, hasta 1 minuto",
+    "concentration": true,
+    "classes": [
+      "cleric",
+      "druid"
+    ],
+    "description": "El objetivo suma 1d4 a una prueba de característica a su elección."
+  },
+  {
+    "id": "minor-illusion",
+    "name": "Ilusión Menor",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "S, M",
+    "duration": "1 minuto",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ],
+    "description": "Crea un sonido o una imagen de un objeto dentro del alcance."
+  },
+  {
+    "id": "sacred-flame",
+    "name": "Llama Sagrada",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "cleric"
+    ],
+    "description": "El objetivo hace salvación de DES o recibe 1d8 de daño radiante; ignora cobertura. Escala por nivel."
+  },
+  {
+    "id": "dancing-lights",
+    "name": "Luces Danzantes",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creas hasta cuatro luces flotantes que puedes mover con tu movimiento. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "light",
+    "name": "Luz",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, M",
+    "duration": "1 hora",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "bard"
+    ],
+    "description": "Un objeto emite luz brillante en 20 pies y tenue otros 20. Salvación de DES si es sobre una criatura."
+  },
+  {
+    "id": "mage-hand",
+    "name": "Mano de Mago",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ],
+    "description": "Crea una mano espectral que manipula objetos de hasta 10 libras a distancia."
+  },
+  {
+    "id": "message",
+    "name": "Mensaje",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "1 asalto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Susurras un mensaje a una criatura a distancia que solo ella oye y puede responder en un susurro.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "spare-the-dying",
+    "name": "Perdonar al Moribundo",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "15 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tocas a una criatura con 0 PG y la estabilizas. También afecta a muertos vivientes con salvación.",
+    "classes": [
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "shillelagh",
+    "name": "Porra Encantada",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "1 acción adicional",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Imbuyes un bastón o maza: usa tu característica de conjuro para atacar y su daño pasa a 1d8 de fuerza.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "prestidigitation",
+    "name": "Prestidigitación",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "10 pies",
+    "components": "V, S",
+    "duration": "Hasta 1 hora",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ],
+    "description": "Pequeños efectos mágicos menores: chispas, limpiar o ensuciar, sabores, etc."
+  },
+  {
+    "id": "produce-flame",
+    "name": "Producir Llama",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "Personal / 30 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una llama en tu mano ilumina y puede arrojarse como ataque de conjuro a distancia por 1d8 de fuego. Escala por nivel.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "ray-of-frost",
+    "name": "Rayo de Escarcha",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Ataque de conjuro a distancia; 1d8 de daño por frío y reduce la velocidad del objetivo 10 pies."
+  },
+  {
+    "id": "fire-bolt",
+    "name": "Rayo de Fuego",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Ataque de conjuro a distancia; 1d10 de daño por fuego. Escala a niveles 5, 11 y 17."
+  },
+  {
+    "id": "mending",
+    "name": "Reparar",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "1 minuto",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Reparas una rotura o rasgadura de un objeto (una cadena, dos mitades de una llave, una capa desgarrada).",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "druid",
+      "bard"
+    ]
+  },
+  {
+    "id": "resistance",
+    "name": "Resistencia",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo suma 1d4 a una tirada de salvación de su elección dentro del minuto. Concentración.",
+    "classes": [
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "poison-spray",
+    "name": "Rociada Venenosa",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Necromancia",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Lanzas un vaho tóxico; el objetivo hace salvación de CON o recibe 1d12 de veneno. Escala por nivel.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "warlock"
+    ]
+  },
+  {
+    "id": "acid-splash",
+    "name": "Salpicadura Ácida",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Arrojas una burbuja ácida; hasta dos criaturas cercanas hacen salvación de DES o reciben 1d6 de ácido. Escala por nivel.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "thaumaturgy",
+    "name": "Taumaturgia",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Manifiestas un signo menor de poder sobrenatural: voz atronadora, llamas parpadeantes, temblores leves, etc.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "chill-touch",
+    "name": "Toque Gélido",
+    "source": "srd_2024",
+    "level": 0,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Mano espectral; ataque de conjuro a distancia por 1d10 necrótico e impide que el objetivo recupere PG hasta tu próximo turno.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  {
+    "id": "goodberry",
+    "name": "Baya Nutritiva",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creas 10 bayas; cada una restaura 1 PG y alimenta a una criatura por un día. Duran 24 horas.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "bless",
+    "name": "Bendición",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "Concentración, hasta 1 minuto",
+    "concentration": true,
+    "classes": [
+      "cleric",
+      "paladin"
+    ],
+    "description": "Tres criaturas suman 1d4 a ataques y salvaciones (+1 objetivo por espacio superior)."
+  },
+  {
+    "id": "feather-fall",
+    "name": "Caída de Pluma",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Transmutación",
+    "castingTime": "1 reacción",
+    "range": "60 pies",
+    "components": "V, M",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Hasta cinco criaturas que caen descienden lentamente y no reciben daño por caída durante 1 minuto.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "comprehend-languages",
+    "name": "Comprender Idiomas",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Adivinación",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": true,
+    "description": "Entiendes el sentido literal de cualquier idioma hablado que oigas o texto que toques durante 1 hora.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "cure-wounds",
+    "name": "Curar Heridas",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "cleric",
+      "druid",
+      "bard",
+      "paladin",
+      "ranger"
+    ],
+    "description": "Restaura 2d8 + mod. de lanzamiento PG (+2d8 por espacio superior)."
+  },
+  {
+    "id": "detect-magic",
+    "name": "Detectar Magia",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Adivinación",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "Concentración, hasta 10 minutos",
+    "concentration": true,
+    "ritual": true,
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "druid",
+      "bard",
+      "paladin",
+      "ranger"
+    ],
+    "description": "Percibes la presencia de magia en 30 pies y su escuela. Ritual."
+  },
+  {
+    "id": "disguise-self",
+    "name": "Disfrazarse",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Cambias tu apariencia (ropa, rasgos, altura aparente) hasta 1 hora. El engaño se descubre con contacto o inspección atenta.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "charm-person",
+    "name": "Encantar Persona",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un humanoide que veas hace salvación de SAB o queda hechizado por ti, tratándote como conocido amistoso, hasta 1 hora.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "druid",
+      "warlock"
+    ]
+  },
+  {
+    "id": "entangle",
+    "name": "Enmarañar",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "90 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Enredaderas brotan en 20 pies; las criaturas hacen salvación de FUE o quedan apresadas. Concentración.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "shield",
+    "name": "Escudo",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "1 reacción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 asalto",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Como reacción, +5 a la CA hasta tu próximo turno y anulas Proyectil Mágico."
+  },
+  {
+    "id": "shield-of-faith",
+    "name": "Escudo de Fe",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "1 acción adicional",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un campo protege a una criatura, dándole +2 a la CA durante 10 minutos. Concentración.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "faerie-fire",
+    "name": "Fuego Feérico",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Concentración, hasta 1 minuto",
+    "concentration": true,
+    "classes": [
+      "druid",
+      "bard"
+    ],
+    "description": "Cubo de 20 pies; salvación de DES o los objetivos brillan y dan ventaja a los ataques contra ellos."
+  },
+  {
+    "id": "grease",
+    "name": "Grasa",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Cubres un cuadrado de 10 pies de grasa resbalosa; quien esté o entre hace salvación de DES o cae derribado.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "identify",
+    "name": "Identificar",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Adivinación",
+    "castingTime": "1 minuto",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": true,
+    "description": "Aprendes las propiedades mágicas de un objeto que tocas y si porta una maldición conocida.",
+    "classes": [
+      "wizard",
+      "bard"
+    ]
+  },
+  {
+    "id": "inflict-wounds",
+    "name": "Infligir Heridas",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Salvación de CON; en fallo, 2d10 de daño necrótico. Escala por nivel.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "burning-hands",
+    "name": "Manos Ardientes",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Cono de 15 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Cono de fuego; salvación de DES para mitad. 3d6 de daño (+1d6 por espacio superior)."
+  },
+  {
+    "id": "hunters-mark",
+    "name": "Marca del Cazador",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Adivinación",
+    "castingTime": "1 acción adicional",
+    "range": "90 pies",
+    "components": "V",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Marcas a una criatura; infliges 1d6 extra al golpearla con arma y tienes ventaja para rastrearla. Concentración.",
+    "classes": [
+      "ranger"
+    ]
+  },
+  {
+    "id": "fog-cloud",
+    "name": "Nube de Niebla",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creas una esfera de niebla de 20 pies que bloquea la visión (zona muy oscura). Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "thunderwave",
+    "name": "Onda Atronadora",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Personal (cubo 15 pies)",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Onda de fuerza en un cubo de 15 pies: 2d8 de trueno y empuje 10 pies (salvación de CON para mitad y no empuje). Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "druid"
+    ]
+  },
+  {
+    "id": "command",
+    "name": "Orden",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "1 asalto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Das una orden de una palabra; el objetivo hace salvación de SAB o la obedece en su próximo turno (acércate, suelta, huye, etc.).",
+    "classes": [
+      "cleric",
+      "paladin",
+      "bard"
+    ]
+  },
+  {
+    "id": "healing-word",
+    "name": "Palabra de Curación",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "1 acción adicional",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "classes": [
+      "cleric",
+      "druid",
+      "bard"
+    ],
+    "description": "Restaura 2d4 + mod. de lanzamiento PG a distancia (+2d4 por espacio superior)."
+  },
+  {
+    "id": "protection-from-evil-and-good",
+    "name": "Protección contra el Bien y el Mal",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo gana defensas contra aberraciones, celestiales, elementales, feéricos, infernales y muertos vivientes. Concentración.",
+    "classes": [
+      "cleric",
+      "paladin",
+      "wizard",
+      "warlock",
+      "druid"
+    ]
+  },
+  {
+    "id": "magic-missile",
+    "name": "Proyectil Mágico",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Tres dardos que impactan automáticamente por 1d4+1 de fuerza cada uno. +1 dardo por espacio superior."
+  },
+  {
+    "id": "guiding-bolt",
+    "name": "Rayo Guía",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "1 asalto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro a distancia por 4d6 radiante; el próximo ataque contra el objetivo tiene ventaja. Escala.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "expeditious-retreat",
+    "name": "Retirada Expeditiva",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Transmutación",
+    "castingTime": "1 acción adicional",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Como acción adicional inicial y en turnos siguientes, puedes Correr; ganas gran movilidad durante la concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  {
+    "id": "sanctuary",
+    "name": "Santuario",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "1 acción adicional",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Protege a una criatura: quien quiera atacarla debe superar una salvación de SAB o elegir otro objetivo.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "sleep",
+    "name": "Sopor",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Criaturas en un área hacen salvación de SAB o quedan somnolientas e incapacitadas; a 0 PG caen dormidas. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "longstrider",
+    "name": "Zancada Larga",
+    "source": "srd_2024",
+    "level": 1,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "La velocidad del objetivo aumenta 10 pies durante 1 hora.",
+    "classes": [
+      "wizard",
+      "bard",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "spiritual-weapon",
+    "name": "Arma Espiritual",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "1 acción adicional",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Concentración, hasta 1 minuto",
+    "concentration": true,
+    "classes": [
+      "cleric"
+    ],
+    "description": "Arma espectral que ataca por 1d8 + mod. de lanzamiento de daño de fuerza; la mueves como acción adicional."
+  },
+  {
+    "id": "aid",
+    "name": "Auxilio",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Hasta tres criaturas aumentan su PG máximo y actual en 5 durante 8 horas. Escala por nivel.",
+    "classes": [
+      "cleric",
+      "paladin",
+      "bard",
+      "ranger"
+    ]
+  },
+  {
+    "id": "heat-metal",
+    "name": "Calentar Metal",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Calientas al rojo un objeto metálico; quien lo porte recibe 2d8 de fuego y puede soltarlo. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "druid",
+      "bard"
+    ]
+  },
+  {
+    "id": "calm-emotions",
+    "name": "Calmar Emociones",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Criaturas en 20 pies hacen salvación de CAR o pierden hostilidad, o se les suprime el miedo/encanto. Concentración.",
+    "classes": [
+      "cleric",
+      "bard"
+    ]
+  },
+  {
+    "id": "blur",
+    "name": "Difuminar",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Tu silueta se vuelve borrosa; los ataques contra ti tienen desventaja (salvo que el atacante no dependa de la vista). Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "flaming-sphere",
+    "name": "Esfera Flamígera",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una esfera de fuego que mueves cada turno; inflige 2d6 de fuego a quien toque. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "hold-person",
+    "name": "Inmovilizar Persona",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "Concentración, hasta 1 minuto",
+    "concentration": true,
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "druid",
+      "bard",
+      "warlock"
+    ],
+    "description": "Un humanoide hace salvación de SAB o queda Paralizado; repite al final de cada turno."
+  },
+  {
+    "id": "invisibility",
+    "name": "Invisibilidad",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Concentración, hasta 1 hora",
+    "concentration": true,
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ],
+    "description": "El objetivo se vuelve invisible hasta que ataque o lance un conjuro. +1 objetivo por espacio superior."
+  },
+  {
+    "id": "levitate",
+    "name": "Levitar",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una criatura u objeto flota hasta 20 pies y permanece suspendido. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "darkness",
+    "name": "Oscuridad",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Oscuridad mágica llena una esfera de 15 pies que ni la visión en la oscuridad penetra. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  {
+    "id": "pass-without-trace",
+    "name": "Pasar sin Rastro",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Personal (9 m)",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Tú y tus aliados cercanos ganáis +10 a Sigilo y no dejáis rastro. Concentración.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "misty-step",
+    "name": "Paso Brumoso",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Conjuración",
+    "castingTime": "1 acción adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ],
+    "description": "Te teletransportas hasta 30 pies a un espacio libre que puedas ver."
+  },
+  {
+    "id": "prayer-of-healing",
+    "name": "Plegaria de Curación",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "10 minutos",
+    "range": "30 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Hasta seis criaturas recuperan 2d8 + tu característica de conjuro en PG. Escala.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "gust-of-wind",
+    "name": "Ráfaga de Viento",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Personal (línea 60 pies)",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una línea de viento de 60 pies empuja criaturas y dispersa gases. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "scorching-ray",
+    "name": "Rayo Abrasador",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Tres rayos; ataque de conjuro por cada uno, 2d6 de fuego. +1 rayo por espacio superior."
+  },
+  {
+    "id": "moonbeam",
+    "name": "Rayo de Luna",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un haz de luz plateada de 5 pies que reubicas cada turno; 2d10 radiante a quien entre o empiece dentro. Concentración. Escala.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "enhance-ability",
+    "name": "Realzar Característica",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo gana ventaja en pruebas de una característica (y beneficios extra según cuál) durante 1 hora. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "druid",
+      "bard"
+    ]
+  },
+  {
+    "id": "lesser-restoration",
+    "name": "Restauración Menor",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "cleric",
+      "druid",
+      "bard",
+      "paladin",
+      "ranger"
+    ],
+    "description": "Termina una enfermedad o un estado: cegado, ensordecido, paralizado o envenenado."
+  },
+  {
+    "id": "silence",
+    "name": "Silencio",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": true,
+    "description": "Una esfera de 20 pies queda en total silencio: nada de sonido entra o sale, impidiendo conjuros verbales. Concentración.",
+    "classes": [
+      "cleric",
+      "ranger",
+      "bard"
+    ]
+  },
+  {
+    "id": "web",
+    "name": "Telaraña",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Telarañas llenan un cubo de 20 pies (terreno difícil); quien entre hace salvación de DES o queda apresado. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "spider-climb",
+    "name": "Trepar como Arácnido",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo puede trepar por muros y techos con las manos libres. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock",
+      "druid"
+    ]
+  },
+  {
+    "id": "see-invisibility",
+    "name": "Ver lo Invisible",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Durante 1 hora ves criaturas y objetos invisibles y percibes el plano Etéreo.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "darkvision",
+    "name": "Visión en la Oscuridad",
+    "source": "srd_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "El objetivo ve en la oscuridad hasta 60 pies durante 8 horas.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "animate-dead",
+    "name": "Animar Muertos",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Nigromancia",
+    "castingTime": "1 minuto",
+    "range": "10 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Reanimas un esqueleto o zombi bajo tu control; puedes reafirmar y ampliar el control cada 24 h.",
+    "classes": [
+      "wizard",
+      "cleric"
+    ]
+  },
+  {
+    "id": "fireball",
+    "name": "Bola de Fuego",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ],
+    "description": "Esfera de 20 pies; salvación de DES para mitad. 8d6 de fuego (+1d6 por espacio superior)."
+  },
+  {
+    "id": "counterspell",
+    "name": "Contrahechizo",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Abjuración",
+    "castingTime": "1 reacción",
+    "range": "60 pies",
+    "components": "S",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ],
+    "description": "Como reacción, interrumpes el lanzamiento de un conjuro de otra criatura (con salvación si es de nivel alto)."
+  },
+  {
+    "id": "conjure-animals",
+    "name": "Convocar Animales",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocas espíritus con forma de bestia que combaten a tu lado durante la concentración.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "dispel-magic",
+    "name": "Disipar Magia",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "druid",
+      "bard",
+      "paladin",
+      "warlock"
+    ],
+    "description": "Termina conjuros de nivel 3 o inferior sobre un objetivo; niveles superiores requieren prueba de característica."
+  },
+  {
+    "id": "spirit-guardians",
+    "name": "Guardianes Espirituales",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "Personal (aura de 15 pies)",
+    "components": "V, S, M",
+    "duration": "Concentración, hasta 10 minutos",
+    "concentration": true,
+    "classes": [
+      "cleric"
+    ],
+    "description": "Espíritus protectores; los enemigos en el aura sufren 3d8 (salvación de SAB para mitad) y velocidad reducida."
+  },
+  {
+    "id": "major-image",
+    "name": "Imagen Mayor",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creas una ilusión con imagen, sonido, olor y temperatura que puedes mover y modificar. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "bestow-curse",
+    "name": "Imponer Maldición",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Maldices a una criatura (salvación de SAB) con un efecto debilitante a elección. Concentración.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "bard"
+    ]
+  },
+  {
+    "id": "call-lightning",
+    "name": "Invocar Relámpago",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una nube de tormenta; como acción llamas un rayo por 3d10 de relámpago (salvación de DES para mitad). Concentración. Escala.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "tongues",
+    "name": "Lenguas",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Adivinación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "El objetivo entiende cualquier idioma hablado y es entendido por quien tenga un idioma. Dura 1 hora.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "daylight",
+    "name": "Luz del Día",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una esfera de 60 pies de luz solar; disipa oscuridad mágica de menor nivel.",
+    "classes": [
+      "cleric",
+      "druid",
+      "sorcerer",
+      "paladin",
+      "ranger"
+    ]
+  },
+  {
+    "id": "fear",
+    "name": "Miedo",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "Personal (cono 30 pies)",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Criaturas en un cono de 30 pies hacen salvación de SAB o sueltan lo que llevan y huyen asustadas. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "stinking-cloud",
+    "name": "Nube Hedionda",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un gas nauseabundo en 20 pies; quien empiece su turno dentro hace salvación de CON o pierde su acción. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "mass-healing-word",
+    "name": "Palabra de Curación Masiva",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Abjuración",
+    "castingTime": "1 acción adicional",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Hasta seis criaturas recuperan 2d4 + tu característica de conjuro en PG. Escala.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "hypnotic-pattern",
+    "name": "Patrón Hipnótico",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un patrón de colores en 30 pies; las criaturas hacen salvación de SAB o quedan hechizadas e incapacitadas. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "haste",
+    "name": "Prisa",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo dobla su velocidad, gana +2 CA, ventaja en salvaciones de DES y una acción limitada extra. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "protection-from-energy",
+    "name": "Protección contra la Energía",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo gana resistencia a un tipo de daño elemental (ácido, frío, fuego, relámpago o trueno). Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "remove-curse",
+    "name": "Quitar Maldición",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Terminas todas las maldiciones sobre una criatura u objeto que toques.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "paladin",
+      "warlock"
+    ]
+  },
+  {
+    "id": "slow",
+    "name": "Ralentizar",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Hasta seis criaturas (salvación de SAB) reducen velocidad y CA, y actúan más lento. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "lightning-bolt",
+    "name": "Relámpago",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Personal (línea 100 pies)",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una línea de 100 pies: 8d6 de relámpago (salvación de DES para mitad). Escala por nivel.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "water-breathing",
+    "name": "Respirar bajo el Agua",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": true,
+    "description": "Hasta diez criaturas pueden respirar bajo el agua durante 24 horas.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "revivify",
+    "name": "Revivir",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "classes": [
+      "cleric",
+      "paladin",
+      "druid",
+      "ranger"
+    ],
+    "description": "Devuelve la vida a una criatura muerta hace menos de 1 minuto, con 1 PG. Requiere diamantes por 300 po."
+  },
+  {
+    "id": "vampiric-touch",
+    "name": "Toque Vampírico",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "Personal (toque)",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Ataque de conjuro cuerpo a cuerpo por 3d6 necrótico; recuperas la mitad en PG. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  {
+    "id": "sleet-storm",
+    "name": "Tormenta de Aguanieve",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Hielo y aguanieve cubren un cilindro: terreno difícil, visión bloqueada y salvaciones para no caer. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "fly",
+    "name": "Volar",
+    "source": "srd_2024",
+    "level": 3,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Concentración, hasta 10 minutos",
+    "concentration": true,
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ],
+    "description": "El objetivo gana velocidad de vuelo de 60 pies. +1 objetivo por espacio superior."
+  },
+  {
+    "id": "phantasmal-killer",
+    "name": "Asesino Fantasmal",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Manifiestas el peor miedo de una criatura; salvación de SAB o queda asustada y recibe 4d10 psíquico por turno. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "confusion",
+    "name": "Confusión",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Criaturas en 10 pies (salvación de SAB) actúan al azar cada turno. Concentración. Escala el área.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "bard"
+    ]
+  },
+  {
+    "id": "banishment",
+    "name": "Destierro",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo (salvación de CAR) es desterrado a un semiplano; si es de otro plano y dura el minuto, no regresa. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "cleric",
+      "paladin",
+      "warlock"
+    ]
+  },
+  {
+    "id": "fire-shield",
+    "name": "Escudo de Fuego",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un aura ígnea o gélida te da resistencia (fuego o frío) y daña a quien te golpee de cerca. Dura 10 minutos.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "greater-invisibility",
+    "name": "Invisibilidad Superior",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo es invisible aunque ataque o lance conjuros. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "freedom-of-movement",
+    "name": "Libertad de Movimiento",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "El objetivo ignora terreno difícil y no puede ser apresado ni paralizado; se libera de sujeciones. Dura 1 hora.",
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger",
+      "bard"
+    ]
+  },
+  {
+    "id": "blight",
+    "name": "Marchitar",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Drenas la fuerza vital de una criatura: 8d8 necrótico (salvación de CON para mitad); devastador contra plantas. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "warlock"
+    ]
+  },
+  {
+    "id": "polymorph",
+    "name": "Metamorfosis",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Transformas a una criatura en una bestia (salvación de SAB si es no dispuesta); usa las estadísticas de la bestia. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "bard"
+    ]
+  },
+  {
+    "id": "wall-of-fire",
+    "name": "Muro de Fuego",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Levantas un muro de llamas; 5d8 de fuego a quien lo cruce o termine cerca del lado ardiente. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "stoneskin",
+    "name": "Piel de Piedra",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "El objetivo gana resistencia al daño no mágico contundente, perforante y cortante. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "death-ward",
+    "name": "Protección contra la Muerte",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "La primera vez que el objetivo bajaría a 0 PG, queda en 1 en su lugar; también anula un efecto de muerte instantánea.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "dimension-door",
+    "name": "Puerta Dimensional",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "500 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Te teletransportas hasta 500 pies a un lugar que imagines, pudiendo llevar a una criatura contigo.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "ice-storm",
+    "name": "Tormenta de Hielo",
+    "source": "srd_2024",
+    "level": 4,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "300 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Granizo golpea un cilindro de 20 pies: daño contundente y de frío, y deja terreno difícil. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "animate-objects",
+    "name": "Animar Objetos",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Cobras vida hasta diez objetos que atacan a tu orden. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "flame-strike",
+    "name": "Columna de Fuego",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una columna de fuego divino en 10 pies: 4d6 de fuego + 4d6 radiante (salvación de DES para mitad). Escala.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "cone-of-cold",
+    "name": "Cono de Frío",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Personal (cono 60 pies)",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un cono de 60 pies: 8d8 de frío (salvación de CON para mitad). Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "mass-cure-wounds",
+    "name": "Curar Heridas Masiva",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Hasta seis criaturas en 30 pies recuperan 3d8 + tu característica de conjuro en PG. Escala.",
+    "classes": [
+      "cleric",
+      "druid",
+      "bard"
+    ]
+  },
+  {
+    "id": "dominate-person",
+    "name": "Dominar Persona",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un humanoide (salvación de SAB) queda hechizado y bajo tu control mental. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "scrying",
+    "name": "Escrutar",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Adivinación",
+    "castingTime": "10 minutos",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Observas y oyes a una criatura a cualquier distancia mediante un sensor invisible (salvación de SAB). Concentración.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "druid",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "hold-monster",
+    "name": "Inmovilizar Monstruo",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una criatura (salvación de SAB) queda paralizada; repite la salvación cada turno. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "raise-dead",
+    "name": "Levantar Muertos",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Nigromancia",
+    "castingTime": "1 hora",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Devuelves la vida a una criatura muerta hace menos de 10 días, con penalizadores temporales que se desvanecen.",
+    "classes": [
+      "cleric",
+      "paladin",
+      "bard"
+    ]
+  },
+  {
+    "id": "geas",
+    "name": "Mandato",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Encantamiento",
+    "castingTime": "1 minuto",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "30 días",
+    "concentration": false,
+    "ritual": false,
+    "description": "Impones una orden a una criatura por 30 días; si la desobedece sufre daño psíquico. Salvación de SAB.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "druid",
+      "bard",
+      "paladin"
+    ]
+  },
+  {
+    "id": "wall-of-force",
+    "name": "Muro de Fuerza",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un muro invisible de fuerza casi indestructible que nada físico atraviesa. Concentración.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "wall-of-stone",
+    "name": "Muro de Piedra",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creas un muro de piedra que puede sellar pasos o formar puentes; se vuelve permanente si te concentras 10 minutos.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "cloudkill",
+    "name": "Nube Mortal",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una niebla venenosa de 20 pies que se desplaza; 5d8 de veneno (salvación de CON para mitad). Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "insect-plague",
+    "name": "Plaga de Insectos",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "300 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una esfera de 20 pies de insectos: terreno difícil, visión reducida y 4d10 de perforante. Concentración. Escala.",
+    "classes": [
+      "cleric",
+      "druid",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "greater-restoration",
+    "name": "Restauración Mayor",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Quitas un nivel de agotamiento, o un efecto que reduce característica/PG máximo, o rompe un encanto o petrificación.",
+    "classes": [
+      "cleric",
+      "druid",
+      "bard",
+      "ranger"
+    ]
+  },
+  {
+    "id": "telekinesis",
+    "name": "Telequinesis",
+    "source": "srd_2024",
+    "level": 5,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Mueves criaturas u objetos con la mente (prueba enfrentada); manipulas a distancia. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "blade-barrier",
+    "name": "Barrera de Cuchillas",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "90 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un muro de hojas giratorias: cobertura y 6d10 de cortante a quien lo cruce (salvación de DES para mitad). Concentración.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "circle-of-death",
+    "name": "Círculo de la Muerte",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una onda de energía negativa en 60 pies: 8d6 necrótico (salvación de CON para mitad). Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  {
+    "id": "harm",
+    "name": "Dañar",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Infliges 14d6 necrótico (salvación de CON para mitad); reduce el PG máximo del objetivo hasta que sane.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "disintegrate",
+    "name": "Desintegrar",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un rayo verde; 10d6+40 de fuerza (salvación de DES). Si reduce a 0 PG, la criatura queda reducida a polvo. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "globe-of-invulnerability",
+    "name": "Globo de Invulnerabilidad",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Personal (esfera 10 pies)",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una barrera de 10 pies bloquea conjuros de nivel 5 o inferior lanzados desde fuera. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "eyebite",
+    "name": "Mal de Ojo",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Cada turno miras a una criatura (salvación de SAB) y la dejas dormida, asustada o enferma. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "sunbeam",
+    "name": "Rayo de Sol",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Personal (línea 60 pies)",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un haz de luz solar de 60 pies; 6d8 radiante y ciega (salvación de CON). Reutilizable cada turno. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "chain-lightning",
+    "name": "Relámpago en Cadena",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un rayo alcanza a un objetivo y salta a otros tres cercanos: 10d8 de relámpago (salvación de DES para mitad). Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "heal",
+    "name": "Sanar",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Restauras 70 PG a una criatura y le quitas ceguera, sordera y enfermedades. Escala.",
+    "classes": [
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "mass-suggestion",
+    "name": "Sugestión Masiva",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Hasta doce criaturas (salvación de SAB) obedecen una sugerencia razonable durante 24 horas.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "true-seeing",
+    "name": "Visión Verdadera",
+    "source": "srd_2024",
+    "level": 6,
+    "school": "Adivinación",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "El objetivo ve en la oscuridad, atraviesa ilusiones y ve criaturas/objetos invisibles y su forma real. Dura 1 hora.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "delayed-blast-fireball",
+    "name": "Bola de Fuego Retardada",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una esfera que acumula fuego cada turno; al detonar inflige hasta 12d6+ de fuego en 20 pies. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "plane-shift",
+    "name": "Cambio de Plano",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Transportas a un grupo (o destierras a un enemigo) a otro plano de existencia.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  {
+    "id": "finger-of-death",
+    "name": "Dedo de la Muerte",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Nigromancia",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "7d8+30 necrótico (salvación de CON para mitad); si mata a un humanoide, se alza como zombi bajo tu control.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "warlock"
+    ]
+  },
+  {
+    "id": "etherealness",
+    "name": "Etereidad",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Entras al plano Etéreo fronterizo, pudiendo moverte a través de la materia. Escala para llevar a otros.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "reverse-gravity",
+    "name": "Invertir Gravedad",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "100 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "En un cilindro, la gravedad se invierte: todo lo no anclado cae hacia arriba. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "forcecage",
+    "name": "Jaula de Fuerza",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "100 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una prisión de fuerza (jaula o caja) atrapa a las criaturas dentro; escapar exige teletransporte de alto nivel.",
+    "classes": [
+      "wizard",
+      "warlock",
+      "bard"
+    ]
+  },
+  {
+    "id": "regenerate",
+    "name": "Regeneración",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Transmutación",
+    "castingTime": "1 minuto",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "El objetivo recupera PG al instante y cada turno durante 1 hora, y le vuelven a crecer miembros perdidos.",
+    "classes": [
+      "cleric",
+      "druid",
+      "bard",
+      "ranger"
+    ]
+  },
+  {
+    "id": "resurrection",
+    "name": "Resurrección",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Nigromancia",
+    "castingTime": "1 hora",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Devuelves la vida a una criatura muerta hasta hace un siglo, sin penalizadores por muerte.",
+    "classes": [
+      "cleric",
+      "bard"
+    ]
+  },
+  {
+    "id": "prismatic-spray",
+    "name": "Rociada Prismática",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "Personal (cono 60 pies)",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ocho rayos de colores en un cono; cada criatura recibe efectos aleatorios (daño elemental, veneno, petrificación...).",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "teleport",
+    "name": "Teletransporte",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "10 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Te transportas junto con aliados a un destino conocido; la precisión depende de tu familiaridad con el lugar.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard"
+    ]
+  },
+  {
+    "id": "fire-storm",
+    "name": "Tormenta de Fuego",
+    "source": "srd_2024",
+    "level": 7,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Llamas rugientes en un área a elección: 7d10 de fuego (salvación de DES para mitad).",
+    "classes": [
+      "cleric",
+      "druid",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "antimagic-field",
+    "name": "Campo Antimagia",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Personal (esfera 10 pies)",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una esfera de 10 pies donde la magia queda suprimida: conjuros, objetos mágicos y efectos no funcionan. Concentración.",
+    "classes": [
+      "wizard",
+      "cleric"
+    ]
+  },
+  {
+    "id": "dominate-monster",
+    "name": "Dominar Monstruo",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Cualquier criatura (salvación de SAB) queda hechizada y bajo tu control. Concentración. Escala.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "sunburst",
+    "name": "Estallido Solar",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un fogonazo de luz solar en 60 pies: 12d6 radiante y ceguera (salvación de CON). Disipa oscuridad mágica.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "druid"
+    ]
+  },
+  {
+    "id": "animal-shapes",
+    "name": "Formas Animales",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "24 horas",
+    "concentration": true,
+    "ritual": false,
+    "description": "Transformas a varios aliados en bestias grandes durante 24 horas. Concentración.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "feeblemind",
+    "name": "Mente en Blanco",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "4d6 psíquico y, si falla la salvación de INT, reduce a 1 su Inteligencia y Carisma, incapaz de lanzar conjuros.",
+    "classes": [
+      "wizard",
+      "druid",
+      "warlock",
+      "bard"
+    ]
+  },
+  {
+    "id": "mind-blank",
+    "name": "Mente Vacía",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Durante 24 horas el objetivo es inmune al daño psíquico, la lectura mental, la adivinación y el encantamiento.",
+    "classes": [
+      "wizard",
+      "bard"
+    ]
+  },
+  {
+    "id": "incendiary-cloud",
+    "name": "Nube Incendiaria",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "150 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una nube de humo y brasas de 20 pies que se mueve: 10d8 de fuego a quien esté dentro. Concentración.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "power-word-stun",
+    "name": "Palabra de Poder: Aturdir",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Si el objetivo tiene 150 PG o menos, queda aturdido hasta superar una salvación de CON.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "earthquake",
+    "name": "Terremoto",
+    "source": "srd_2024",
+    "level": 8,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "500 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Sacudes el suelo en 100 pies: derribas criaturas, abres grietas y colapsas estructuras. Concentración.",
+    "classes": [
+      "cleric",
+      "druid",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "wish",
+    "name": "Deseo",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "El conjuro más poderoso: replica cualquier conjuro de nivel 8 o inferior, o altera la realidad con riesgo.",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "time-stop",
+    "name": "Detener el Tiempo",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Transmutación",
+    "castingTime": "1 acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Detienes el tiempo para todos menos tú, ganando 1d4+1 turnos de acción libre (se rompe si afectas a otros).",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "imprisonment",
+    "name": "Encarcelamiento",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Abjuración",
+    "castingTime": "1 minuto",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Aprisionas a una criatura (salvación de SAB) de forma casi permanente: sepultada, en éxtasis, encadenada u otra.",
+    "classes": [
+      "wizard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "meteor-swarm",
+    "name": "Enjambre de Meteoros",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Evocación",
+    "castingTime": "1 acción",
+    "range": "1 milla",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Meteoros caen en cuatro puntos: 20d6 de fuego + 20d6 contundente en cada uno (salvación de DES para mitad).",
+    "classes": [
+      "wizard",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "prismatic-wall",
+    "name": "Muro Prismático",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un muro de siete capas de colores, cada una con un efecto letal distinto que hay que superar por separado.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "power-word-kill",
+    "name": "Palabra de Poder: Matar",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Encantamiento",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Pronuncias una palabra de poder; si el objetivo tiene 100 PG o menos, muere al instante.",
+    "classes": [
+      "wizard",
+      "sorcerer",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "weird",
+    "name": "Pesadilla",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Ilusión",
+    "castingTime": "1 acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Manifiestas el peor miedo de varias criaturas en 30 pies; quedan asustadas y reciben 4d10 psíquico por turno. Concentración.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "gate",
+    "name": "Portal",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Conjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Abres un portal a otro plano y puedes atraer o enviar a una criatura específica a través de él. Concentración.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "foresight",
+    "name": "Presciencia",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Adivinación",
+    "castingTime": "1 minuto",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Durante 8 horas el objetivo no puede ser sorprendido, tiene ventaja en todo y los ataques contra él, desventaja.",
+    "classes": [
+      "wizard",
+      "druid",
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "astral-projection",
+    "name": "Proyección Astral",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Nigromancia",
+    "castingTime": "1 hora",
+    "range": "10 pies",
+    "components": "V, S, M",
+    "duration": "Especial",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tú y tus compañeros proyectáis vuestra forma astral para viajar por los planos exteriores.",
+    "classes": [
+      "wizard",
+      "cleric",
+      "warlock"
+    ]
+  },
+  {
+    "id": "true-resurrection",
+    "name": "Resurrección Verdadera",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Nigromancia",
+    "castingTime": "1 hora",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Devuelves la vida a una criatura muerta hasta hace 200 años, restaurando el cuerpo por completo.",
+    "classes": [
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "mass-heal",
+    "name": "Sanación Masiva",
+    "source": "srd_2024",
+    "level": 9,
+    "school": "Abjuración",
+    "castingTime": "1 acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Distribuyes hasta 700 PG de curación entre criaturas a la vista y les quitas condiciones.",
+    "classes": [
+      "cleric"
+    ]
+  }
+]

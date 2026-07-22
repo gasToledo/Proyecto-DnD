@@ -1,6 +1,8 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_widgets.dart';
+
 const _skills = [
   'acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception',
   'history', 'insight', 'intimidation', 'investigation', 'medicine',
@@ -45,21 +47,28 @@ class _EffectEditorState extends State<EffectEditor> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.effects.isEmpty)
-          const Text('Sin efectos.')
+          Text('Sin efectos.',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant))
         else
-          ...widget.effects.asMap().entries.map((entry) => Card(
-                child: ListTile(
-                  dense: true,
-                  title: Text(describeEffect(entry.value)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () {
-                      setState(() => widget.effects.removeAt(entry.key));
-                      widget.onChanged();
-                    },
-                  ),
+          DenseRows(children: [
+            for (final entry in widget.effects.asMap().entries)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(describeEffect(entry.value))),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      onPressed: () {
+                        setState(() => widget.effects.removeAt(entry.key));
+                        widget.onChanged();
+                      },
+                    ),
+                  ],
                 ),
-              )),
+              ),
+          ]),
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: _add,

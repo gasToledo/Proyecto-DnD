@@ -1,5 +1,6 @@
 import 'ability.dart';
 import 'effects.dart';
+import 'spell_slots.dart';
 
 /// Rasgo pasivo mostrado en la ficha.
 class PassiveTrait {
@@ -17,11 +18,13 @@ class CharacterResource {
   final String name;
   final int max;
   final RechargeOn recharge;
+  final String description;
   const CharacterResource({
     required this.id,
     required this.name,
     required this.max,
     required this.recharge,
+    this.description = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -29,6 +32,7 @@ class CharacterResource {
         'name': name,
         'max': max,
         'recharge': recharge.name,
+        'description': description,
       };
 }
 
@@ -64,6 +68,54 @@ class Attack {
       };
 }
 
+/// Bloque de lanzamiento de conjuros derivado. Presente solo si el personaje
+/// tiene una clase (o rasgo) lanzadora.
+class Spellcasting {
+  final Ability ability;
+  final CasterProgression progression;
+  final SpellPreparation preparation;
+  final String spellList;
+
+  /// CD de salvación = 8 + competencia + mod. de característica de lanzamiento.
+  final int saveDc;
+
+  /// Bono de ataque de conjuro = competencia + mod. de característica.
+  final int attackBonus;
+
+  final int cantripsKnown;
+
+  /// Conjuros que se pueden preparar (si [preparation] es prepared): nivel de
+  /// clase lanzadora + mod. de característica (mínimo 1).
+  final int preparedCount;
+
+  /// Espacios de conjuro por nivel (nivel de conjuro → cantidad).
+  final Map<int, int> slotsByLevel;
+
+  const Spellcasting({
+    required this.ability,
+    required this.progression,
+    required this.preparation,
+    required this.spellList,
+    required this.saveDc,
+    required this.attackBonus,
+    required this.cantripsKnown,
+    required this.preparedCount,
+    required this.slotsByLevel,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'ability': ability.name,
+        'progression': progression.toJson(),
+        'preparation': preparation.toJson(),
+        'spellList': spellList,
+        'saveDc': saveDc,
+        'attackBonus': attackBonus,
+        'cantripsKnown': cantripsKnown,
+        'preparedCount': preparedCount,
+        'slotsByLevel': {for (final e in slotsByLevel.entries) '${e.key}': e.value},
+      };
+}
+
 /// Resultado **derivado y de solo lectura** de compilar un personaje.
 /// La UI de la ficha lee de aquí; nunca recalcula a mano.
 class ComputedSheet {
@@ -95,6 +147,9 @@ class ComputedSheet {
   final List<PassiveTrait> passives;
   final List<CharacterResource> resources;
 
+  /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
+  final Spellcasting? spellcasting;
+
   const ComputedSheet({
     required this.level,
     required this.proficiencyBonus,
@@ -119,6 +174,7 @@ class ComputedSheet {
     required this.attacks,
     required this.passives,
     required this.resources,
+    this.spellcasting,
   });
 
   /// Tirada de salvación total para [a] (mod + competencia si aplica).

@@ -1,6 +1,9 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
+import '../ui/spell_edit_screen.dart';
 import 'level_up_summary_screen.dart';
 
 enum _HpMethod { average, roll }
@@ -34,6 +37,15 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   late final int _hitDie = _klass?.hitDie ?? 10;
   late final bool _isAsi = _klass?.isAsiLevel(_newLevel) ?? false;
 
+  /// Este nivel debe elegir subclase: se alcanza el nivel de subclase de la
+  /// clase y aún no hay una elegida.
+  late final bool _needsSubclass = _klass != null &&
+      widget.character.subclassId == null &&
+      _newLevel >= _klass.subclassLevel;
+  late final List<Subclass> _subclassOptions =
+      _needsSubclass ? widget.repo.subclassesForClass(widget.character.classId) : const [];
+  String? _subclassId;
+
   _HpMethod _hpMethod = _HpMethod.average;
   int? _rolledHp;
 
@@ -48,6 +60,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
   bool get _canConfirm {
     if (_hpMethod == _HpMethod.roll && _rolledHp == null) return false;
+    if (_needsSubclass && _subclassId == null) return false;
     if (_isAsi) {
       if (_asiKind == _AsiKind.improve) {
         if (_abilityA == null) return false;
@@ -70,7 +83,14 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     return m;
   }
 
-  void _confirm() {
+  // Conjuros re-elegidos en este nivel (null = sin cambios respecto al actual).
+  List<String>? _newCantrips;
+  List<String>? _newSpells;
+
+  /// Construye el personaje tal como quedará tras confirmar (nivel, ASI/dote,
+  /// PG y conjuros re-preparados). Se usa para confirmar y para previsualizar
+  /// el lanzamiento al nuevo nivel.
+  Character _buildUpdated() {
     final c = widget.character;
     final asiChoices = List<AsiChoice>.of(c.asiChoices);
     final featIds = List<String>.of(c.featIds);
@@ -78,18 +98,44 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     if (_isAsi) {
       if (_asiKind == _AsiKind.improve) {
         asiChoices.add(AsiChoice(level: _newLevel, abilityIncreases: _abilityIncreases));
-      } else {
+      } else if (_featId != null) {
+        // La dote solo se agrega si ya se eligió: `_buildUpdated` corre en cada
+        // build (previsualización de conjuros), incluso antes de elegir dote.
         asiChoices.add(AsiChoice(level: _newLevel, featId: _featId));
         featIds.add(_featId!);
       }
     }
 
-    final updated = c.copyWith(
+    return c.copyWith(
       level: _newLevel,
+      // Si se eligió subclase en esta subida se fija; si no, se conserva la
+      // actual (pasar null solo ocurre por debajo del nivel de subclase).
+      subclassId: _subclassId ?? c.subclassId,
       hpPerLevel: [...c.hpPerLevel, _hpGain],
       asiChoices: asiChoices,
       featIds: featIds,
+      cantripIds: _newCantrips,
+      spellIds: _newSpells,
     );
+  }
+
+  /// Rasgos ganados exactamente en el nuevo nivel: los de clase más, si hay
+  /// subclase (elegida ahora o antes), los de subclase.
+  List<ClassFeature> _gainedFeatures() {
+    final feats = <ClassFeature>[...?_klass?.featuresAt(_newLevel)];
+    final subId = _subclassId ?? widget.character.subclassId;
+    if (subId != null) {
+      final sub = widget.repo.subclass(subId);
+      if (sub != null && sub.classId == widget.character.classId) {
+        feats.addAll(sub.featuresAt(_newLevel));
+      }
+    }
+    return feats;
+  }
+
+  void _confirm() {
+    final c = widget.character;
+    final updated = _buildUpdated();
 
     final compiler = CharacterCompiler(widget.repo);
     final before = compiler.compile(c);
@@ -109,7 +155,137 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
         builder: (_) => LevelUpSummaryScreen(
           level: _newLevel,
           diff: diffSheets(before, after),
-          newFeatures: _klass?.featuresAt(_newLevel) ?? const [],
+          newFeatures: _gainedFeatures(),
+        ),
+      ),
+    );
+  }
+
+  /// Paso de elección de subclase (solo al alcanzar el nivel de subclase).
+  Widget _buildSubclassSection() {
+    if (!_needsSubclass) return const SizedBox.shrink();
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Eyebrow('Subclase (nivel $_newLevel)'),
+        const SizedBox(height: 8),
+        for (final s in _subclassOptions)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => setState(() => _subclassId = s.id),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _subclassId == s.id
+                      ? context.palette.goldSoft
+                      : context.palette.plaque,
+                  border: Border.all(
+                    color: _subclassId == s.id
+                        ? context.palette.gold
+                        : context.palette.hairline,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _subclassId == s.id
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      size: 20,
+                      color: _subclassId == s.id ? context.palette.gold : muted,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(s.name,
+                              style: const TextStyle(fontWeight: FontWeight.w600)),
+                          if (s.description.isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(s.description,
+                                style: TextStyle(fontSize: 13, color: muted)),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  /// Sección de conjuros del nivel nuevo (solo para lanzadores): muestra los
+  /// espacios y cupos al nuevo nivel, marca los niveles de espacio recién
+  /// abiertos y permite preparar/aprender conjuros sin salir de la subida.
+  Widget _buildSpellSection() {
+    final compiler = CharacterCompiler(widget.repo);
+    final after = compiler.compile(_buildUpdated()).spellcasting;
+    if (after == null) return const SizedBox.shrink();
+    final before = compiler.compile(widget.character).spellcasting;
+    final beforeLevels = before?.slotsByLevel.keys.toSet() ?? const <int>{};
+
+    final slots = after.slotsByLevel.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final prepared = _newCantrips != null || _newSpells != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Eyebrow('Conjuros a nivel $_newLevel'),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            for (final e in slots)
+              _SlotBadge(
+                level: e.key,
+                count: e.value,
+                isNew: !beforeLevels.contains(e.key),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          [
+            'Preparás ${after.preparedCount} conjuros',
+            if (after.cantripsKnown > 0) '${after.cantripsKnown} trucos',
+          ].join(' · '),
+          style: TextStyle(color: muted, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          onPressed: () => _openSpellPrep(after),
+          icon: Icon(prepared ? Icons.check : Icons.auto_stories, size: 18),
+          label: Text(prepared ? 'Conjuros actualizados' : 'Preparar conjuros'),
+        ),
+      ],
+    );
+  }
+
+  void _openSpellPrep(Spellcasting sc) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SpellEditScreen(
+          character: _buildUpdated(),
+          repo: widget.repo,
+          spellcasting: sc,
+          onSave: (cantrips, spells) => setState(() {
+            _newCantrips = cantrips;
+            _newSpells = spells;
+          }),
         ),
       ),
     );
@@ -117,13 +293,12 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final newFeatures = _klass?.featuresAt(_newLevel) ?? const [];
+    final newFeatures = _gainedFeatures();
     return Scaffold(
       appBar: AppBar(title: Text('Subir a nivel $_newLevel')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: PageBody(
         children: [
-          _label('Puntos de golpe (dado d$_hitDie)'),
+          Eyebrow('Puntos de golpe (dado d$_hitDie)'),
           SegmentedButton<_HpMethod>(
             segments: [
               ButtonSegment(
@@ -151,26 +326,47 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
                   const SizedBox(width: 12),
                   if (_rolledHp != null)
                     Text('Resultado: $_rolledHp',
-                        style: Theme.of(context).textTheme.titleMedium),
+                        style: TextStyle(
+                            fontFamily: 'Georgia',
+                            fontSize: 18,
+                            color: context.palette.gold)),
                 ],
               ),
             ),
           const SizedBox(height: 8),
           Text('PG ganados: +$_hpGain (más tu mod. de CON)',
-              style: Theme.of(context).textTheme.bodyMedium),
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
           const SizedBox(height: 24),
+          _buildSubclassSection(),
           if (_isAsi) _buildAsi() else const SizedBox.shrink(),
           if (newFeatures.isNotEmpty) ...[
             const SizedBox(height: 8),
-            _label('Rasgos ganados a nivel $_newLevel'),
-            ...newFeatures.map((f) => Card(
-                  child: ListTile(
-                    dense: true,
-                    title: Text(f.name),
-                    subtitle: f.description.isEmpty ? null : Text(f.description),
+            Eyebrow('Rasgos ganados a nivel $_newLevel'),
+            DenseRows(children: [
+              for (final f in newFeatures)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(f.name,
+                          style: const TextStyle(fontWeight: FontWeight.w500)),
+                      if (f.description.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(f.description,
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant)),
+                      ],
+                    ],
                   ),
-                )),
+                ),
+            ]),
           ],
+          _buildSpellSection(),
         ],
       ),
       bottomNavigationBar: SafeArea(
@@ -190,7 +386,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label('Mejora de característica (nivel $_newLevel)'),
+        Eyebrow('Mejora de característica (nivel $_newLevel)'),
         SegmentedButton<_AsiKind>(
           segments: const [
             ButtonSegment(
@@ -254,8 +450,17 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   }
 
   Widget _buildFeatPicker() {
-    final feats =
-        widget.repo.feats.values.where((f) => f.category == 'general').toList();
+    // No se puede repetir una dote ya tomada salvo que sea repetible (2024).
+    final taken = widget.character.featIds.toSet();
+    final feats = widget.repo.feats.values
+        .where((f) => f.category == 'general')
+        .where((f) => f.repeatable || !taken.contains(f.id))
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+    if (feats.isEmpty) {
+      return Text('No quedan dotes disponibles.',
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant));
+    }
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -291,9 +496,43 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       ),
     );
   }
+}
 
-  Widget _label(String t) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(t, style: Theme.of(context).textTheme.titleMedium),
-      );
+/// Insignia de espacios de conjuro de un nivel. Resalta en oro si el nivel se
+/// abrió recién en esta subida.
+class _SlotBadge extends StatelessWidget {
+  final int level;
+  final int count;
+  final bool isNew;
+  const _SlotBadge(
+      {required this.level, required this.count, required this.isNew});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isNew ? pal.goldSoft : pal.plaque,
+        border: Border.all(color: isNew ? pal.gold : pal.hairline),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Nv $level  ×$count',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isNew ? pal.gold : null)),
+          if (isNew) ...[
+            const SizedBox(width: 5),
+            Text('nuevo',
+                style: TextStyle(
+                    fontSize: 10, letterSpacing: 0.5, color: pal.gold)),
+          ],
+        ],
+      ),
+    );
+  }
 }

@@ -1,6 +1,8 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+import '../theme/app_widgets.dart';
 import 'creation_draft.dart';
 
 /// Habilidades 2024 (para elecciones "de cualquier lista").
@@ -32,14 +34,17 @@ class _CreationWizardState extends State<CreationWizard> {
   late final CreationDraft d = CreationDraft(widget.repo);
   int _step = 0;
 
-  static const _titles = [
-    'Clase',
-    'Especie',
-    'Trasfondo',
-    'Características',
-    'Equipo',
-    'Nombre',
-  ];
+  /// Los pasos son dinámicos: el de "Conjuros" solo aparece para clases
+  /// lanzadoras, tras asignar características (necesita el mod. de aptitud).
+  List<String> get _titles => [
+        'Clase',
+        'Especie',
+        'Trasfondo',
+        'Características',
+        if (d.isCaster) 'Conjuros',
+        'Equipo',
+        'Nombre',
+      ];
 
   void _next() {
     if (_step < _titles.length - 1) {
@@ -70,9 +75,14 @@ class _CreationWizardState extends State<CreationWizard> {
           child: LinearProgressIndicator(value: (_step + 1) / _titles.length),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: _buildStep(),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            child: _buildStep(),
+          ),
+        ),
       ),
       bottomNavigationBar: _NavBar(
         step: _step,
@@ -83,16 +93,20 @@ class _CreationWizardState extends State<CreationWizard> {
     );
   }
 
-  Widget _buildStep() => switch (_step) {
-        0 => _ClassStep(draft: d, onChanged: _refresh),
-        1 => _SpeciesStep(draft: d, onChanged: _refresh),
-        2 => _BackgroundStep(draft: d, onChanged: _refresh),
-        3 => _ScoresStep(draft: d, onChanged: _refresh),
-        4 => _EquipmentStep(draft: d, onChanged: _refresh),
+  Widget _buildStep() => switch (_titles[_step]) {
+        'Clase' => _ClassStep(draft: d, onChanged: _refresh),
+        'Especie' => _SpeciesStep(draft: d, onChanged: _refresh),
+        'Trasfondo' => _BackgroundStep(draft: d, onChanged: _refresh),
+        'Características' => _ScoresStep(draft: d, onChanged: _refresh),
+        'Conjuros' => _SpellsStep(draft: d, onChanged: _refresh),
+        'Equipo' => _EquipmentStep(draft: d, onChanged: _refresh),
         _ => _NameStep(draft: d, repo: widget.repo, onChanged: _refresh),
       };
 
-  void _refresh() => setState(() {});
+  void _refresh() => setState(() {
+        // Cambiar de clase puede agregar/quitar el paso de Conjuros: reajusta.
+        if (_step >= _titles.length) _step = _titles.length - 1;
+      });
 }
 
 // ----------------------------------------------------------------------------
@@ -110,12 +124,12 @@ class _ClassStep extends StatelessWidget {
     final klass = draft.klass;
     final styles =
         repo.feats.values.where((f) => f.category == 'fighting-style').toList();
-    final masteryWeapons = repo.weapons.values.toList();
-    final slots = 3; // Guerrero 2024
+    final masteryWeapons = draft.proficientWeapons;
+    final slots = draft.weaponMasterySlots;
 
     return ListView(
       children: [
-        _SectionLabel('Clase'),
+        Eyebrow('Clase'),
         Wrap(
           spacing: 8,
           children: repo.classes.values
@@ -124,38 +138,54 @@ class _ClassStep extends StatelessWidget {
                     selected: draft.classId == c.id,
                     onSelected: (_) {
                       draft.classId = c.id;
+                      draft.classSkills.clear();
+                      draft.weaponMasteries.clear();
+                      draft.fightingStyleId = null;
+                      draft.cantrips.clear();
+                      draft.spells.clear();
                       onChanged();
                     },
                   ))
               .toList(),
         ),
         if (klass != null) ...[
+          if (draft.grantsFightingStyle) ...[
+            const SizedBox(height: 20),
+            Eyebrow('Estilo de combate'),
+            _SingleSelect(
+              options: {for (final f in styles) f.id: f.name},
+              selected: draft.fightingStyleId,
+              onSelect: (id) {
+                draft.fightingStyleId = id;
+                onChanged();
+              },
+            ),
+          ],
           const SizedBox(height: 20),
-          _SectionLabel('Estilo de combate'),
-          _SingleSelect(
-            options: {for (final f in styles) f.id: f.name},
-            selected: draft.fightingStyleId,
-            onSelect: (id) {
-              draft.fightingStyleId = id;
-              onChanged();
-            },
-          ),
-          const SizedBox(height: 20),
-          _SectionLabel('Habilidades de clase (elige 2)'),
-          _MultiSelect(
+          Eyebrow('Habilidades de clase (elige ${klass.skillChoiceCount})'),
+          CappedChipSelect(
             options: {for (final s in klass.skillChoiceFrom) s: titleCase(s)},
             selected: draft.classSkills,
             max: klass.skillChoiceCount,
+            disabled: {
+              ...draft.raceSkills,
+              ...?draft.background?.skillProficiencies,
+            },
             onChanged: onChanged,
           ),
-          const SizedBox(height: 20),
-          _SectionLabel('Maestría de armas (elige $slots)'),
-          _MultiSelectList(
-            options: {for (final w in masteryWeapons) w.id: w.name},
-            selected: draft.weaponMasteries,
-            max: slots,
-            onChanged: onChanged,
-          ),
+          if (slots > 0) ...[
+            const SizedBox(height: 20),
+            Eyebrow('Maestría de armas (elige $slots)'),
+            Text('Solo armas con las que ${klass.name} es competente.',
+                style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 6),
+            _WeaponChecklist(
+              weapons: masteryWeapons,
+              selected: draft.weaponMasteries,
+              max: slots,
+              onChanged: onChanged,
+            ),
+          ],
         ],
       ],
     );
@@ -177,7 +207,7 @@ class _SpeciesStep extends StatelessWidget {
 
     return ListView(
       children: [
-        _SectionLabel('Especie'),
+        Eyebrow('Especie'),
         _SingleSelect(
           options: {for (final r in repo.races.values) r.id: r.name},
           selected: draft.raceId,
@@ -193,8 +223,8 @@ class _SpeciesStep extends StatelessWidget {
           _TraitList(effects: race.effects),
           if (race.skillChoiceCount > 0) ...[
             const SizedBox(height: 16),
-            _SectionLabel('Habilidad de especie (elige ${race.skillChoiceCount})'),
-            _MultiSelect(
+            Eyebrow('Habilidad de especie (elige ${race.skillChoiceCount})'),
+            CappedChipSelect(
               options: {
                 for (final s in (race.skillChoiceFrom.isEmpty
                     ? _allSkills
@@ -203,12 +233,16 @@ class _SpeciesStep extends StatelessWidget {
               },
               selected: draft.raceSkills,
               max: race.skillChoiceCount,
+              disabled: {
+                ...draft.classSkills,
+                ...?draft.background?.skillProficiencies,
+              },
               onChanged: onChanged,
             ),
           ],
           if (grantsFeat) ...[
             const SizedBox(height: 16),
-            _SectionLabel('Dote de origen (especie)'),
+            Eyebrow('Dote de origen (especie)'),
             _SingleSelect(
               options: {for (final f in originFeats) f.id: f.name},
               selected: draft.raceFeatId,
@@ -236,7 +270,7 @@ class _BackgroundStep extends StatelessWidget {
 
     return ListView(
       children: [
-        _SectionLabel('Trasfondo'),
+        Eyebrow('Trasfondo'),
         _SingleSelect(
           options: {for (final b in repo.backgrounds.values) b.id: b.name},
           selected: draft.backgroundId,
@@ -254,7 +288,7 @@ class _BackgroundStep extends StatelessWidget {
             Text('Dote de origen: '
                 '${repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!}'),
           const SizedBox(height: 20),
-          _SectionLabel('Aumento de característica (2024)'),
+          Eyebrow('Aumento de característica (2024)'),
           SegmentedButton<AbilitySpreadMode>(
             segments: const [
               ButtonSegment(value: AbilitySpreadMode.twoOne, label: Text('+2 / +1')),
@@ -356,7 +390,7 @@ class _ScoresStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        _SectionLabel('Método'),
+        Eyebrow('Método'),
         SegmentedButton<ScoreMethod>(
           segments: const [
             ButtonSegment(
@@ -430,7 +464,7 @@ class _ScoreRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           if (spread > 0)
-            Text('+$spread', style: const TextStyle(color: Colors.greenAccent)),
+            Text('+$spread', style: TextStyle(color: context.palette.gold)),
           SizedBox(
             width: 56,
             child: Text(assigned == null ? '' : '= $finalScore',
@@ -456,10 +490,15 @@ class _EquipmentStep extends StatelessWidget {
 
     return ListView(
       children: [
-        _SectionLabel('Armadura'),
+        Eyebrow('Armadura'),
         _SingleSelect(
           options: {for (final a in armors) a.id: '${a.name} (CA ${a.baseAc})'},
           selected: draft.equippedArmorId,
+          noneLabel: 'Sin armadura',
+          onNone: () {
+            draft.equippedArmorId = null;
+            onChanged();
+          },
           onSelect: (id) {
             draft.equippedArmorId = id;
             onChanged();
@@ -474,14 +513,69 @@ class _EquipmentStep extends StatelessWidget {
           },
         ),
         const SizedBox(height: 12),
-        _SectionLabel('Arma equipada'),
-        _SingleSelect(
-          options: {for (final w in weapons) w.id: '${w.name} (${w.damageDice})'},
+        Eyebrow('Arma equipada'),
+        _WeaponSelect(
+          weapons: weapons,
           selected: draft.weaponId,
           onSelect: (id) {
             draft.weaponId = id;
             onChanged();
           },
+        ),
+      ],
+    );
+  }
+}
+
+class _SpellsStep extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _SpellsStep({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final sc = draft.spellcasting;
+    if (sc == null) {
+      return const Center(child: Text('Esta clase no lanza conjuros.'));
+    }
+    final all = draft.repo.spellsForList(sc.spellList);
+    final maxLevel = sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
+    final cantrips = all.where((s) => s.isCantrip).toList();
+    final leveled =
+        all.where((s) => !s.isCantrip && s.level <= maxLevel).toList();
+    final prepared = sc.preparation == SpellPreparation.prepared;
+
+    return ListView(
+      children: [
+        Text(
+          'CD de salvación ${sc.saveDc} · Ataque de conjuro '
+          '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus} (${sc.ability.abbr})',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        if (sc.cantripsKnown > 0) ...[
+          const SizedBox(height: 20),
+          Eyebrow('Trucos (elige ${sc.cantripsKnown})'),
+          CappedChipSelect(
+            options: {for (final s in cantrips) s.id: s.name},
+            selected: draft.cantrips,
+            max: sc.cantripsKnown,
+            onChanged: onChanged,
+          ),
+        ],
+        const SizedBox(height: 20),
+        Eyebrow(prepared
+            ? 'Conjuros preparados (elige ${sc.preparedCount})'
+            : 'Conjuros conocidos'),
+        Text('Podés preparar conjuros de hasta nivel $maxLevel.',
+            style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 6),
+        CappedChipSelect(
+          options: {
+            for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'
+          },
+          selected: draft.spells,
+          max: prepared ? sc.preparedCount : 999,
+          onChanged: onChanged,
         ),
       ],
     );
@@ -530,7 +624,7 @@ class _NameStepState extends State<_NameStep> {
           },
         ),
         const SizedBox(height: 20),
-        _SectionLabel('Resumen'),
+        Eyebrow('Resumen'),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -563,51 +657,20 @@ class _NameStepState extends State<_NameStep> {
 // Widgets reutilizables
 // ----------------------------------------------------------------------------
 
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  const _SectionLabel(this.text);
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(text, style: Theme.of(context).textTheme.titleMedium),
-      );
-}
-
-/// Selección única mediante chips.
+/// Selección única mediante chips. Si se pasa [noneLabel] + [onNone], se
+/// muestra un chip inicial que representa "ninguno" (selección = null).
 class _SingleSelect extends StatelessWidget {
   final Map<String, String> options; // id -> label
   final String? selected;
   final ValueChanged<String> onSelect;
-  const _SingleSelect(
-      {required this.options, required this.selected, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: options.entries
-          .map((e) => ChoiceChip(
-                label: Text(e.value),
-                selected: selected == e.key,
-                onSelected: (_) => onSelect(e.key),
-              ))
-          .toList(),
-    );
-  }
-}
-
-/// Multiselección con tope, mediante chips.
-class _MultiSelect extends StatelessWidget {
-  final Map<String, String> options;
-  final Set<String> selected;
-  final int max;
-  final VoidCallback onChanged;
-  const _MultiSelect({
+  final String? noneLabel;
+  final VoidCallback? onNone;
+  const _SingleSelect({
     required this.options,
     required this.selected,
-    required this.max,
-    required this.onChanged,
+    required this.onSelect,
+    this.noneLabel,
+    this.onNone,
   });
 
   @override
@@ -615,59 +678,205 @@ class _MultiSelect extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: options.entries.map((e) {
-        final isSel = selected.contains(e.key);
-        return FilterChip(
-          label: Text(e.value),
-          selected: isSel,
-          onSelected: (v) {
-            if (v) {
-              if (selected.length >= max) return;
-              selected.add(e.key);
-            } else {
-              selected.remove(e.key);
-            }
-            onChanged();
-          },
-        );
-      }).toList(),
+      children: [
+        if (noneLabel != null && onNone != null)
+          ChoiceChip(
+            label: Text(noneLabel!),
+            selected: selected == null,
+            onSelected: (_) => onNone!(),
+          ),
+        ...options.entries.map((e) => ChoiceChip(
+              label: Text(e.value),
+              selected: selected == e.key,
+              onSelected: (_) => onSelect(e.key),
+            )),
+      ],
     );
   }
 }
 
-/// Multiselección con tope, mediante lista (para listas largas como armas).
-class _MultiSelectList extends StatelessWidget {
-  final Map<String, String> options;
+/// Etiqueta en español de la categoría de arma.
+String _weaponCategoryLabel(String category) =>
+    category == 'simple' ? 'Simples' : 'Marciales';
+
+/// Subtítulo con daño y (si aplica) la propiedad de maestría del arma.
+String _weaponSubtitle(Weapon w) {
+  final dmg = '${w.damageDice} ${titleCase(w.damageType)}';
+  return w.mastery == null ? dmg : '$dmg · Maestría: ${titleCase(w.mastery!)}';
+}
+
+/// Encabezado de grupo (Simples / Marciales) dentro de un picker de armas.
+Widget _weaponGroupHeader(BuildContext context, String label) => Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 2),
+      child: Text(label.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              letterSpacing: 1,
+              color: Theme.of(context).colorScheme.onSurfaceVariant)),
+    );
+
+/// Multiselección de armas con tope, búsqueda y agrupación por categoría.
+/// Usada para elegir Maestrías de Armas sobre la lista ya filtrada por
+/// competencia.
+class _WeaponChecklist extends StatefulWidget {
+  final List<Weapon> weapons;
   final List<String> selected;
   final int max;
   final VoidCallback onChanged;
-  const _MultiSelectList({
-    required this.options,
+  const _WeaponChecklist({
+    required this.weapons,
     required this.selected,
     required this.max,
     required this.onChanged,
   });
 
   @override
+  State<_WeaponChecklist> createState() => _WeaponChecklistState();
+}
+
+class _WeaponChecklistState extends State<_WeaponChecklist> {
+  String _query = '';
+
+  @override
   Widget build(BuildContext context) {
+    final q = _query.trim().toLowerCase();
+    final matches = widget.weapons
+        .where((w) => q.isEmpty || w.name.toLowerCase().contains(q))
+        .toList();
+    final simple = matches.where((w) => w.category == 'simple').toList();
+    final martial = matches.where((w) => w.category == 'martial').toList();
+    final full = widget.selected.length >= widget.max;
+
     return Column(
-      children: options.entries.map((e) {
-        final isSel = selected.contains(e.key);
-        return CheckboxListTile(
-          dense: true,
-          title: Text(e.value),
-          value: isSel,
-          onChanged: (v) {
-            if (v == true) {
-              if (selected.length >= max) return;
-              selected.add(e.key);
-            } else {
-              selected.remove(e.key);
-            }
-            onChanged();
-          },
-        );
-      }).toList(),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _WeaponSearchField(onChanged: (v) => setState(() => _query = v)),
+        for (final group in [
+          ('simple', simple),
+          ('martial', martial),
+        ])
+          if (group.$2.isNotEmpty) ...[
+            _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
+            ...group.$2.map((w) {
+              final isSel = widget.selected.contains(w.id);
+              return CheckboxListTile(
+                dense: true,
+                value: isSel,
+                title: Text(w.name),
+                subtitle: Text(_weaponSubtitle(w)),
+                onChanged: (isSel || !full)
+                    ? (v) {
+                        if (v == true) {
+                          if (!widget.selected.contains(w.id)) {
+                            widget.selected.add(w.id);
+                          }
+                        } else {
+                          widget.selected.remove(w.id);
+                        }
+                        widget.onChanged();
+                        setState(() {});
+                      }
+                    : null,
+              );
+            }),
+          ],
+        if (matches.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text('Sin coincidencias.',
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
+      ],
+    );
+  }
+}
+
+/// Selección única de arma con búsqueda y agrupación por categoría. Incluye una
+/// opción "Sin arma (puños)" que representa la ausencia de arma (selección null).
+class _WeaponSelect extends StatefulWidget {
+  final List<Weapon> weapons;
+  final String? selected;
+  final ValueChanged<String?> onSelect;
+  const _WeaponSelect({
+    required this.weapons,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  State<_WeaponSelect> createState() => _WeaponSelectState();
+}
+
+class _WeaponSelectState extends State<_WeaponSelect> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _query.trim().toLowerCase();
+    final matches = widget.weapons
+        .where((w) => q.isEmpty || w.name.toLowerCase().contains(q))
+        .toList();
+    final simple = matches.where((w) => w.category == 'simple').toList();
+    final martial = matches.where((w) => w.category == 'martial').toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _WeaponSearchField(onChanged: (v) => setState(() => _query = v)),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: ChoiceChip(
+              label: const Text('Sin arma (puños)'),
+              selected: widget.selected == null,
+              onSelected: (_) => widget.onSelect(null),
+            ),
+          ),
+        ),
+        for (final group in [
+          ('simple', simple),
+          ('martial', martial),
+        ])
+          if (group.$2.isNotEmpty) ...[
+            _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: group.$2
+                  .map((w) => ChoiceChip(
+                        label: Text('${w.name} (${w.damageDice})'),
+                        selected: widget.selected == w.id,
+                        onSelected: (_) => widget.onSelect(w.id),
+                      ))
+                  .toList(),
+            ),
+          ],
+        if (matches.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Text('Sin coincidencias.',
+                style: Theme.of(context).textTheme.bodySmall),
+          ),
+      ],
+    );
+  }
+}
+
+/// Campo de búsqueda compacto compartido por los pickers de armas.
+class _WeaponSearchField extends StatelessWidget {
+  final ValueChanged<String> onChanged;
+  const _WeaponSearchField({required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        isDense: true,
+        prefixIcon: Icon(Icons.search, size: 20),
+        hintText: 'Buscar arma…',
+        border: OutlineInputBorder(),
+      ),
+      onChanged: onChanged,
     );
   }
 }

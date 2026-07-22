@@ -133,11 +133,17 @@ class _PortraitScreenState extends State<PortraitScreen> {
   }
 
   Future<void> _use(Uint8List bytes) async {
-    final path = await savePortrait(
-      portraitsRoot: fichasDir('portraits'),
-      characterId: widget.character.id,
-      bytes: bytes,
-    );
+    final String path;
+    try {
+      path = await savePortrait(
+        portraitsRoot: fichasDir('portraits'),
+        characterId: widget.character.id,
+        bytes: bytes,
+      );
+    } catch (e) {
+      _fail('No se pudo guardar el retrato: $e');
+      return;
+    }
     final updated = widget.character.copyWith(
       portraitPaths: [path, ...widget.character.portraitPaths],
     );

@@ -1,4 +1,5 @@
 import 'ability.dart';
+import 'spell_slots.dart';
 
 /// Tipo de descanso que recarga un recurso.
 enum RechargeOn { shortRest, longRest, none }
@@ -59,11 +60,29 @@ sealed class Effect {
       'bonusMaxHpPerLevel' =>
         BonusMaxHpPerLevelEffect(json['perLevel'] as int),
       'armorClassBonus' => ArmorClassBonusEffect(json['amount'] as int),
+      'unarmoredDefense' => UnarmoredDefenseEffect(
+          Ability.fromKey(json['ability'] as String),
+          allowShield: json['allowShield'] as bool? ?? false,
+        ),
+      'unarmoredMovement' => UnarmoredMovementEffect(
+          json['feet'] as int,
+          allowShield: json['allowShield'] as bool? ?? false,
+          heavyArmorOnly: json['heavyArmorOnly'] as bool? ?? false,
+        ),
+      'spellcasting' => SpellcastingEffect(
+          ability: Ability.fromKey(json['ability'] as String),
+          progression: CasterProgression.fromJson(json['progression'] as String?),
+          preparation: SpellPreparation.fromJson(json['preparation'] as String?),
+          spellList: json['spellList'] as String,
+          cantripsKnown: json['cantripsKnown'] as int? ?? 0,
+        ),
       'resource' => ResourceEffect(
           id: json['id'] as String,
           name: json['name'] as String,
-          max: json['max'] as int,
+          max: json['max'] as int? ?? 0,
           recharge: _rechargeFromJson(json['recharge'] as String?),
+          description: json['description'] as String? ?? '',
+          maxPerLevel: json['maxPerLevel'] as bool? ?? false,
         ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
@@ -123,7 +142,7 @@ class SavingThrowProficiencyEffect extends Effect {
       {'type': 'savingThrowProficiency', 'ability': ability.name};
 }
 
-/// Competencia con armadura: 'light' | 'medium' | 'heavy' | 'shields'.
+/// Competencia con armadura: 'light' | 'medium' | 'heavy' | 'shield'.
 class ArmorProficiencyEffect extends Effect {
   final String category;
   const ArmorProficiencyEffect(this.category);
@@ -229,17 +248,104 @@ class ArmorClassBonusEffect extends Effect {
       {'type': 'armorClassBonus', 'amount': amount};
 }
 
+/// Defensa sin Armadura: cuando no se lleva armadura, la CA base pasa a ser
+/// 10 + mod. de Destreza + mod. de [ability]. El Bárbaro usa Constitución y el
+/// Monje Sabiduría. Si hay armadura equipada, este efecto se ignora.
+///
+/// [allowShield]: el Bárbaro conserva la Defensa sin Armadura con escudo; el
+/// Monje la pierde si empuña un escudo (regla 2024).
+class UnarmoredDefenseEffect extends Effect {
+  final Ability ability;
+  final bool allowShield;
+  const UnarmoredDefenseEffect(this.ability, {this.allowShield = false});
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'unarmoredDefense',
+        'ability': ability.name,
+        'allowShield': allowShield,
+      };
+}
+
+/// Movimiento sin Armadura: aumenta la velocidad en [feet] pies, pero **solo
+/// mientras no se lleve armadura** (el Monje también lo pierde con escudo). Se
+/// acumula con otros del mismo tipo (Monje: +10/+15/+20 por nivel).
+///
+/// [allowShield]: si un escudo no anula el bono (Bárbaro sí lo permite; Monje no).
+/// [heavyArmorOnly]: si solo la armadura **pesada** lo anula (Movimiento Rápido
+/// del Bárbaro), en vez de cualquier armadura (Monje).
+class UnarmoredMovementEffect extends Effect {
+  final int feet;
+  final bool allowShield;
+  final bool heavyArmorOnly;
+  const UnarmoredMovementEffect(
+    this.feet, {
+    this.allowShield = false,
+    this.heavyArmorOnly = false,
+  });
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'unarmoredMovement',
+        'feet': feet,
+        'allowShield': allowShield,
+        'heavyArmorOnly': heavyArmorOnly,
+      };
+}
+
+/// Concede lanzamiento de conjuros: característica de lanzamiento, progresión de
+/// espacios, forma de obtención (preparados/conocidos) y de qué lista de clase
+/// se nutre. La CD y el bono de ataque de conjuro se derivan en la ficha.
+class SpellcastingEffect extends Effect {
+  final Ability ability;
+  final CasterProgression progression;
+  final SpellPreparation preparation;
+
+  /// Id de la lista de conjuros de la que se nutre (p.ej. 'wizard').
+  final String spellList;
+
+  /// Trucos conocidos a nivel 1 (por simplicidad, valor base; el escalado por
+  /// nivel puede refinarse luego con efectos gated).
+  final int cantripsKnown;
+
+  const SpellcastingEffect({
+    required this.ability,
+    required this.progression,
+    required this.preparation,
+    required this.spellList,
+    this.cantripsKnown = 0,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'spellcasting',
+        'ability': ability.name,
+        'progression': progression.toJson(),
+        'preparation': preparation.toJson(),
+        'spellList': spellList,
+        'cantripsKnown': cantripsKnown,
+      };
+}
+
 /// Plantilla de un recurso consumible (Segundo Aliento, Oleada de Acción).
+///
+/// El máximo puede ser fijo ([max]) o escalar con el nivel de personaje
+/// ([maxPerLevel] = true, p.ej. Puntos de Enfoque del Monje = nivel de Monje).
+/// Para recursos con tramos por nivel (p.ej. Furia del Bárbaro: 2/3/4/5/6) se
+/// declaran varios ResourceEffect con el mismo [id] a distintos niveles: el de
+/// mayor nivel aplicable sobrescribe a los previos.
 class ResourceEffect extends Effect {
   final String id;
   final String name;
   final int max;
   final RechargeOn recharge;
+  final String description;
+  final bool maxPerLevel;
   const ResourceEffect({
     required this.id,
     required this.name,
     required this.max,
     required this.recharge,
+    this.description = '',
+    this.maxPerLevel = false,
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -248,5 +354,7 @@ class ResourceEffect extends Effect {
         'name': name,
         'max': max,
         'recharge': _rechargeToJson(recharge),
+        'description': description,
+        'maxPerLevel': maxPerLevel,
       };
 }

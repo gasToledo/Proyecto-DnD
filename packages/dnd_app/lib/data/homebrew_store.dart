@@ -15,6 +15,7 @@ class HomebrewStore {
   final Map<String, Feat> feats = {};
   final Map<String, Race> races = {};
   final Map<String, Background> backgrounds = {};
+  final Map<String, Spell> spells = {};
 
   String _path(String file) => p.join(fichasDir('homebrew'), file);
 
@@ -54,6 +55,9 @@ class HomebrewStore {
     for (final j in await _readList('backgrounds.json')) {
       backgrounds[j['id'] as String] = Background.fromJson(j);
     }
+    for (final j in await _readList('spells.json')) {
+      spells[j['id'] as String] = Spell.fromJson(j);
+    }
   }
 
   /// Copia del contenido homebrew como repositorio, para fusionar con el oficial.
@@ -63,6 +67,7 @@ class HomebrewStore {
         feats: Map.of(feats),
         races: Map.of(races),
         backgrounds: Map.of(backgrounds),
+        spells: Map.of(spells),
       );
 
   Future<void> saveWeapon(Weapon w) async {
@@ -115,6 +120,16 @@ class HomebrewStore {
     backgrounds.remove(id);
     await _writeList(
         'backgrounds.json', backgrounds.values.map((e) => e.toJson()));
+  }
+
+  Future<void> saveSpell(Spell s) async {
+    spells[s.id] = s;
+    await _writeList('spells.json', spells.values.map((e) => e.toJson()));
+  }
+
+  Future<void> deleteSpell(String id) async {
+    spells.remove(id);
+    await _writeList('spells.json', spells.values.map((e) => e.toJson()));
   }
 }
 

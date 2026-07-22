@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/effects.dart';
+import '../domain/spell_slots.dart';
 import 'dice.dart';
 
 /// Operaciones de partida sobre el [CombatState]. Lógica pura y testeable;
@@ -39,16 +41,25 @@ class CombatOps {
     c.tempHp = max(0, max(c.tempHp, value));
   }
 
-  /// Descanso corto: recupera los recursos que recargan en descanso corto.
-  static void shortRest(CombatState c, List<CharacterResource> resources) {
+  /// Descanso corto: recupera los recursos que recargan en descanso corto. Si el
+  /// personaje usa Magia de Pacto (Brujo), también recupera sus espacios.
+  static void shortRest(
+    CombatState c,
+    List<CharacterResource> resources, {
+    Spellcasting? spellcasting,
+  }) {
     for (final r in resources) {
       if (r.recharge == RechargeOn.shortRest) c.resourceUsage[r.id] = 0;
+    }
+    if (spellcasting?.progression == CasterProgression.pact) {
+      c.spellSlotsUsed.clear();
     }
   }
 
   /// Descanso largo: PG al máximo, se limpian PG temporales y salvaciones de
-  /// muerte, baja 1 el agotamiento, se recupera la mitad de los dados de golpe
-  /// y se recargan todos los recursos.
+  /// muerte, baja 1 el agotamiento, se recupera la mitad de los dados de golpe,
+  /// se recargan todos los recursos, se recuperan los espacios de conjuro y
+  /// termina la concentración.
   static void longRest(
     CombatState c,
     int maxHp,
@@ -64,6 +75,40 @@ class CombatOps {
     for (final r in resources) {
       c.resourceUsage[r.id] = 0;
     }
+    c.spellSlotsUsed.clear();
+    c.concentratingOn = null;
+  }
+
+  /// Gasta un espacio de conjuro del [slotLevel] indicado. Devuelve false si no
+  /// quedan espacios disponibles de ese nivel.
+  static bool spendSpellSlot(CombatState c, Spellcasting sc, int slotLevel) {
+    final available = sc.slotsByLevel[slotLevel] ?? 0;
+    final used = c.spellSlotsUsed[slotLevel] ?? 0;
+    if (used >= available) return false;
+    c.spellSlotsUsed[slotLevel] = used + 1;
+    return true;
+  }
+
+  /// Recupera manualmente un espacio de conjuro del [slotLevel] indicado.
+  static void recoverSpellSlot(CombatState c, int slotLevel) {
+    final used = c.spellSlotsUsed[slotLevel] ?? 0;
+    if (used > 0) c.spellSlotsUsed[slotLevel] = used - 1;
+  }
+
+  /// Espacios de conjuro disponibles (no gastados) del [slotLevel] indicado.
+  static int spellSlotsRemaining(CombatState c, Spellcasting sc, int slotLevel) {
+    final available = sc.slotsByLevel[slotLevel] ?? 0;
+    return max(0, available - (c.spellSlotsUsed[slotLevel] ?? 0));
+  }
+
+  /// Inicia (o reemplaza) la concentración en un conjuro.
+  static void startConcentration(CombatState c, String spell) {
+    c.concentratingOn = spell;
+  }
+
+  /// Termina la concentración actual.
+  static void endConcentration(CombatState c) {
+    c.concentratingOn = null;
   }
 
   /// Gasta un dado de golpe para curarse (tirada + mod. de CON). Devuelve los
@@ -76,19 +121,11 @@ class CombatOps {
   }) {
     if (c.hitDiceUsed >= hitDiceMax) return 0;
     final roll = (dice ?? Dice()).rollHitDie(sheet.hitDie);
-    final heal = max(0, roll + _conMod(sheet));
+    final conMod = sheet.abilityModifiers[Ability.constitution] ?? 0;
+    final heal = max(0, roll + conMod);
     c.hitDiceUsed += 1;
     applyHealing(c, sheet.maxHp, heal);
     return heal;
-  }
-
-  static int _conMod(ComputedSheet sheet) {
-    // El mod. de CON está en abilityModifiers; se accede por la característica.
-    // Import evitado: se recompone desde el mapa por abreviatura.
-    for (final e in sheet.abilityModifiers.entries) {
-      if (e.key.abbr == 'CON') return e.value;
-    }
-    return 0;
   }
 
   /// Marca una salvación de muerte (éxito o fallo). Devuelve un resultado:

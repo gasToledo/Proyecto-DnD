@@ -1,5 +1,6 @@
 import 'ability.dart';
 import 'effects.dart';
+import 'spell_slots.dart';
 
 /// Origen del contenido. Oficial y homebrew comparten estructura; solo cambia
 /// esta etiqueta (y de qué edición proviene lo oficial).
@@ -86,6 +87,13 @@ class ClassFeature {
     this.effects = const [],
   });
 
+  Map<String, dynamic> toJson() => {
+        'level': level,
+        'name': name,
+        'description': description,
+        'effects': effects.map((e) => e.toJson()).toList(),
+      };
+
   factory ClassFeature.fromJson(Map<String, dynamic> j) => ClassFeature(
         level: j['level'] as int,
         name: j['name'] as String,
@@ -111,6 +119,10 @@ class CharacterClass {
   /// Niveles de Mejora de Característica (ASI). El Guerrero suma extras (6 y 14).
   final List<int> asiLevels;
 
+  /// Si la clase concede una elección de Estilo de Combate (Guerrero; en el
+  /// futuro Paladín/Explorador con su propia integración).
+  final bool grantsFightingStyle;
+
   final List<ClassFeature> features;
 
   const CharacterClass({
@@ -125,6 +137,7 @@ class CharacterClass {
     this.skillChoiceFrom = const [],
     this.subclassLevel = 3,
     this.asiLevels = const [4, 8, 12, 16, 19],
+    this.grantsFightingStyle = false,
     this.features = const [],
   });
 
@@ -159,6 +172,57 @@ class CharacterClass {
         subclassLevel: j['subclassLevel'] as int? ?? 3,
         asiLevels: (j['asiLevels'] as List?)?.map((e) => e as int).toList() ??
             const [4, 8, 12, 16, 19],
+        grantsFightingStyle: j['grantsFightingStyle'] as bool? ?? false,
+        features: (j['features'] as List? ?? const [])
+            .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+/// Subclase (Camino Primario, Escuela Arcana, Dominio, etc.). Pertenece a una
+/// clase (`classId`) y aporta rasgos por nivel igual que la clase base. Se
+/// elige al `subclassLevel` de la clase (2024: nivel 3 en todas). Oficial y
+/// homebrew comparten este modelo.
+class Subclass {
+  final String id;
+  final String name;
+  final String classId;
+  final ContentSource source;
+  final String description;
+  final List<ClassFeature> features;
+
+  const Subclass({
+    required this.id,
+    required this.name,
+    required this.classId,
+    required this.source,
+    this.description = '',
+    this.features = const [],
+  });
+
+  /// Rasgos de subclase activos hasta [level] inclusive.
+  List<ClassFeature> featuresUpTo(int level) =>
+      features.where((f) => f.level <= level).toList();
+
+  /// Rasgos de subclase ganados exactamente al alcanzar [level].
+  List<ClassFeature> featuresAt(int level) =>
+      features.where((f) => f.level == level).toList();
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'classId': classId,
+        'source': source.toJson(),
+        'description': description,
+        'features': features.map((f) => f.toJson()).toList(),
+      };
+
+  factory Subclass.fromJson(Map<String, dynamic> j) => Subclass(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        classId: j['classId'] as String,
+        source: ContentSource.fromJson(j['source'] as String?),
+        description: j['description'] as String? ?? '',
         features: (j['features'] as List? ?? const [])
             .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
             .toList(),
@@ -219,6 +283,49 @@ class Background {
       );
 }
 
+/// Prerrequisitos de una dote (p.ej. Forcejeador exige Fuerza 13, Iniciado
+/// Mágico exige ser competente con conjuros). Todos los campos son opcionales
+/// y se combinan con Y lógico; ausentes = sin restricción de ese tipo.
+class FeatPrerequisite {
+  /// Puntuación mínima requerida por característica.
+  final Map<Ability, int> minAbilityScores;
+
+  /// Competencia requerida (id o categoría de arma/armadura/herramienta),
+  /// o 'spellcasting' para exigir alguna competencia de lanzamiento.
+  final String? requiredProficiency;
+
+  final int? minLevel;
+
+  const FeatPrerequisite({
+    this.minAbilityScores = const {},
+    this.requiredProficiency,
+    this.minLevel,
+  });
+
+  bool get isEmpty =>
+      minAbilityScores.isEmpty && requiredProficiency == null && minLevel == null;
+
+  Map<String, dynamic> toJson() => {
+        'minAbilityScores': _abilityMapToJson(minAbilityScores),
+        'requiredProficiency': requiredProficiency,
+        'minLevel': minLevel,
+      };
+
+  factory FeatPrerequisite.fromJson(Map<String, dynamic> j) => FeatPrerequisite(
+        minAbilityScores: _abilityMapFromJson(j['minAbilityScores']),
+        requiredProficiency: j['requiredProficiency'] as String?,
+        minLevel: j['minLevel'] as int?,
+      );
+}
+
+Map<String, int> _abilityMapToJson(Map<Ability, int> m) =>
+    {for (final e in m.entries) e.key.name: e.value};
+
+Map<Ability, int> _abilityMapFromJson(dynamic j) => {
+      for (final e in (j as Map? ?? const {}).entries)
+        Ability.fromKey(e.key as String): e.value as int,
+    };
+
 /// Dote. `category`: 'origin' | 'general' | 'fighting-style'.
 class Feat {
   final String id;
@@ -227,6 +334,7 @@ class Feat {
   final String category;
   final bool repeatable;
   final List<Effect> effects;
+  final FeatPrerequisite? prerequisite;
 
   const Feat({
     required this.id,
@@ -235,6 +343,7 @@ class Feat {
     this.category = 'general',
     this.repeatable = false,
     this.effects = const [],
+    this.prerequisite,
   });
 
   Map<String, dynamic> toJson() => {
@@ -244,6 +353,7 @@ class Feat {
         'category': category,
         'repeatable': repeatable,
         'effects': effects.map((e) => e.toJson()).toList(),
+        'prerequisite': prerequisite?.toJson(),
       };
 
   factory Feat.fromJson(Map<String, dynamic> j) => Feat(
@@ -253,6 +363,10 @@ class Feat {
         category: j['category'] as String? ?? 'general',
         repeatable: j['repeatable'] as bool? ?? false,
         effects: Effect.listFromJson(j['effects']),
+        prerequisite: j['prerequisite'] == null
+            ? null
+            : FeatPrerequisite.fromJson(
+                (j['prerequisite'] as Map).cast<String, dynamic>()),
       );
 }
 
@@ -317,6 +431,77 @@ class Weapon {
             .toList(),
         versatileDice: j['versatileDice'] as String?,
         mastery: j['mastery'] as String?,
+      );
+}
+
+/// Conjuro. Es contenido como cualquier otro: oficial y homebrew comparten
+/// este modelo. `level` 0 = truco (cantrip). `classes` lista los ids de clase
+/// cuya lista lo incluye (p.ej. ['wizard', 'sorcerer']).
+class Spell {
+  final String id;
+  final String name;
+  final ContentSource source;
+  final int level;
+  final String school;
+  final String castingTime;
+  final String range;
+  final String components;
+  final String duration;
+  final bool concentration;
+  final bool ritual;
+  final String description;
+  final List<String> classes;
+
+  const Spell({
+    required this.id,
+    required this.name,
+    required this.source,
+    required this.level,
+    this.school = '',
+    this.castingTime = '1 acción',
+    this.range = '',
+    this.components = '',
+    this.duration = '',
+    this.concentration = false,
+    this.ritual = false,
+    this.description = '',
+    this.classes = const [],
+  });
+
+  bool get isCantrip => level == 0;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'source': source.toJson(),
+        'level': level,
+        'school': school,
+        'castingTime': castingTime,
+        'range': range,
+        'components': components,
+        'duration': duration,
+        'concentration': concentration,
+        'ritual': ritual,
+        'description': description,
+        'classes': classes,
+      };
+
+  factory Spell.fromJson(Map<String, dynamic> j) => Spell(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        source: ContentSource.fromJson(j['source'] as String?),
+        level: j['level'] as int,
+        school: j['school'] as String? ?? '',
+        castingTime: j['castingTime'] as String? ?? '1 acción',
+        range: j['range'] as String? ?? '',
+        components: j['components'] as String? ?? '',
+        duration: j['duration'] as String? ?? '',
+        concentration: j['concentration'] as bool? ?? false,
+        ritual: j['ritual'] as bool? ?? false,
+        description: j['description'] as String? ?? '',
+        classes: (j['classes'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
       );
 }
 

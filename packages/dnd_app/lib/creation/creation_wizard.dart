@@ -132,6 +132,7 @@ class _ClassStep extends StatelessWidget {
         Eyebrow('Clase'),
         Wrap(
           spacing: 8,
+          runSpacing: 8,
           children: repo.classes.values
               .map((c) => ChoiceChip(
                     label: Text(c.name),
@@ -164,7 +165,12 @@ class _ClassStep extends StatelessWidget {
           const SizedBox(height: 20),
           Eyebrow('Habilidades de clase (elige ${klass.skillChoiceCount})'),
           CappedChipSelect(
-            options: {for (final s in klass.skillChoiceFrom) s: titleCase(s)},
+            options: {
+              for (final s in (klass.skillChoiceFrom.isEmpty
+                  ? _allSkills
+                  : klass.skillChoiceFrom))
+                s: titleCase(s)
+            },
             selected: draft.classSkills,
             max: klass.skillChoiceCount,
             disabled: {

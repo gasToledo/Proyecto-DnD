@@ -24,6 +24,38 @@ class PageBody extends StatelessWidget {
       );
 }
 
+/// Diálogo para renombrar un personaje. Devuelve el nombre nuevo (recortado) o
+/// null si se canceló o quedó vacío. Compartido entre la ficha y el dashboard.
+Future<String?> showRenameDialog(BuildContext context, String current) async {
+  final ctrl = TextEditingController(text: current);
+  final result = await showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Editar nombre'),
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(
+          labelText: 'Nombre del personaje',
+          border: OutlineInputBorder(),
+        ),
+        onSubmitted: (v) => Navigator.pop(ctx, v),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+        FilledButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text),
+            child: const Text('Guardar')),
+      ],
+    ),
+  );
+  ctrl.dispose();
+  final trimmed = result?.trim() ?? '';
+  return trimmed.isEmpty ? null : trimmed;
+}
+
 /// Rótulo tipo "eyebrow": mayúsculas, espaciado, apagado.
 class Eyebrow extends StatelessWidget {
   final String text;

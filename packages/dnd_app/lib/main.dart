@@ -228,6 +228,7 @@ class DashboardScreen extends StatelessWidget {
                 itemBuilder: (context, i) =>
                     _CharacterCard(character: characters[i], repo: repo,
                         onTap: () => _openSheet(context, characters[i]),
+                        onRename: () => _renameCharacter(context, characters[i]),
                         onExport: () => _exportCharacter(context, characters[i]),
                         onDelete: () => _confirmDelete(context, characters[i])),
               ),
@@ -241,6 +242,12 @@ class DashboardScreen extends StatelessWidget {
         label: const Text('Crear personaje'),
       ),
     );
+  }
+
+  Future<void> _renameCharacter(BuildContext context, Character c) async {
+    final newName = await showRenameDialog(context, c.name);
+    if (newName == null || newName == c.name) return;
+    controller.replace(c.copyWith(name: newName));
   }
 
   Future<void> _confirmDelete(BuildContext context, Character c) async {
@@ -330,12 +337,14 @@ class _CharacterCard extends StatelessWidget {
   final Character character;
   final ContentRepository repo;
   final VoidCallback onTap;
+  final VoidCallback onRename;
   final VoidCallback onExport;
   final VoidCallback onDelete;
   const _CharacterCard({
     required this.character,
     required this.repo,
     required this.onTap,
+    required this.onRename,
     required this.onExport,
     required this.onDelete,
   });
@@ -393,10 +402,12 @@ class _CharacterCard extends StatelessWidget {
               PopupMenuButton<String>(
                 icon: Icon(Icons.more_vert, color: muted),
                 onSelected: (v) {
+                  if (v == 'rename') onRename();
                   if (v == 'delete') onDelete();
                   if (v == 'export') onExport();
                 },
                 itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'rename', child: Text('Renombrar')),
                   PopupMenuItem(value: 'export', child: Text('Exportar')),
                   PopupMenuItem(value: 'delete', child: Text('Eliminar')),
                 ],

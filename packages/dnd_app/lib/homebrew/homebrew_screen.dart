@@ -2,7 +2,9 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../data/homebrew_store.dart';
+import '../data/transfer_service.dart';
 import '../theme/app_widgets.dart';
+import '../ui/import_dialog.dart';
 import 'effect_editor.dart';
 
 const _skills = [
@@ -42,6 +44,48 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     }
   }
 
+  Future<void> _exportHomebrew() async {
+    final content = store.exportContent();
+    final total = content.values.fold<int>(0, (s, l) => s + l.length);
+    if (total == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No hay contenido homebrew para exportar.')));
+      return;
+    }
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final path = await TransferService().exportHomebrew(content);
+      messenger.showSnackBar(SnackBar(
+          content: Text('Homebrew exportado ($total) en:\n$path'),
+          duration: const Duration(seconds: 4)));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Error al exportar: $e')));
+    }
+  }
+
+  Future<void> _importHomebrew() async {
+    final transfer = TransferService();
+    final path = await showDialog<String>(
+      context: context,
+      builder: (_) => ImportDialog(transfer: transfer),
+    );
+    if (path == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final content = await transfer.importHomebrewFromFile(path);
+      final count = await store.importContent(content);
+      // Fusiona lo importado en el repo compartido, así queda disponible de
+      // inmediato en el wizard y las fichas (igual que al guardar un ítem).
+      repo.addAll(store.toRepository());
+      if (!mounted) return;
+      setState(() {});
+      messenger.showSnackBar(
+          SnackBar(content: Text('Importadas $count entradas de homebrew.')));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Error al importar: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -49,6 +93,18 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Contenido homebrew'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.upload_file),
+              tooltip: 'Exportar homebrew',
+              onPressed: _exportHomebrew,
+            ),
+            IconButton(
+              icon: const Icon(Icons.download),
+              tooltip: 'Importar homebrew',
+              onPressed: _importHomebrew,
+            ),
+          ],
           bottom: const TabBar(
             isScrollable: true,
             tabs: [

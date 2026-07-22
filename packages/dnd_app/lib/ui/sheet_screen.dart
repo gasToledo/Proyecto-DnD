@@ -130,6 +130,12 @@ class _SheetScreenState extends State<SheetScreen> {
     ctrl.replace(next);
   }
 
+  Future<void> _editName() async {
+    final newName = await showRenameDialog(context, _c.name);
+    if (newName == null || newName == _c.name) return;
+    _replace(_c.copyWith(name: newName));
+  }
+
   void _openLevelUp() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -250,8 +256,24 @@ class _SheetScreenState extends State<SheetScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_c.name,
-                      style: Theme.of(context).textTheme.headlineSmall),
+                  InkWell(
+                    onTap: _editName,
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(_c.name,
+                                style: Theme.of(context).textTheme.headlineSmall),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(Icons.edit_outlined, size: 16, color: muted),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(subtitle, style: TextStyle(color: muted)),
                 ],
@@ -363,11 +385,15 @@ class _SheetScreenState extends State<SheetScreen> {
     return Row(children: [
       for (var i = 0; i < a.length; i++) ...[
         Expanded(
-          child: AbilityPlaque(
-            abbr: a[i].abbr,
-            score: s.abilityScores[a[i]]!,
-            modifier: s.abilityModifiers[a[i]]!,
-            saveProficient: s.savingThrowProficiencies.contains(a[i]),
+          child: Tooltip(
+            message: '${a[i].label}\n${a[i].description}',
+            waitDuration: const Duration(milliseconds: 400),
+            child: AbilityPlaque(
+              abbr: a[i].abbr,
+              score: s.abilityScores[a[i]]!,
+              modifier: s.abilityModifiers[a[i]]!,
+              saveProficient: s.savingThrowProficiencies.contains(a[i]),
+            ),
           ),
         ),
         if (i < a.length - 1) const SizedBox(width: 8),

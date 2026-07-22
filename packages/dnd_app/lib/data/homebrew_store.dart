@@ -60,6 +60,58 @@ class HomebrewStore {
     }
   }
 
+  /// Todo el contenido homebrew serializado a listas JSON por tipo, para
+  /// exportarlo. Las claves coinciden con los nombres de archivo del store.
+  Map<String, List<Map<String, dynamic>>> exportContent() => {
+        'weapons': weapons.values.map((e) => e.toJson()).toList(),
+        'armor': armor.values.map((e) => e.toJson()).toList(),
+        'feats': feats.values.map((e) => e.toJson()).toList(),
+        'races': races.values.map((e) => e.toJson()).toList(),
+        'backgrounds': backgrounds.values.map((e) => e.toJson()).toList(),
+        'spells': spells.values.map((e) => e.toJson()).toList(),
+      };
+
+  /// Importa contenido homebrew (mismo formato que [exportContent]) fusionándolo
+  /// por id: una entrada con id existente se sobrescribe. Persiste cada tipo una
+  /// sola vez. Devuelve la cantidad total de entradas importadas.
+  Future<int> importContent(Map<String, List<Map<String, dynamic>>> content) async {
+    var count = 0;
+    List<Map<String, dynamic>> list(String k) => content[k] ?? const [];
+
+    for (final j in list('weapons')) {
+      weapons[j['id'] as String] = Weapon.fromJson(j);
+      count++;
+    }
+    for (final j in list('armor')) {
+      armor[j['id'] as String] = Armor.fromJson(j);
+      count++;
+    }
+    for (final j in list('feats')) {
+      feats[j['id'] as String] = Feat.fromJson(j);
+      count++;
+    }
+    for (final j in list('races')) {
+      races[j['id'] as String] = Race.fromJson(j);
+      count++;
+    }
+    for (final j in list('backgrounds')) {
+      backgrounds[j['id'] as String] = Background.fromJson(j);
+      count++;
+    }
+    for (final j in list('spells')) {
+      spells[j['id'] as String] = Spell.fromJson(j);
+      count++;
+    }
+
+    await _writeList('weapons.json', weapons.values.map((e) => e.toJson()));
+    await _writeList('armor.json', armor.values.map((e) => e.toJson()));
+    await _writeList('feats.json', feats.values.map((e) => e.toJson()));
+    await _writeList('races.json', races.values.map((e) => e.toJson()));
+    await _writeList('backgrounds.json', backgrounds.values.map((e) => e.toJson()));
+    await _writeList('spells.json', spells.values.map((e) => e.toJson()));
+    return count;
+  }
+
   /// Copia del contenido homebrew como repositorio, para fusionar con el oficial.
   ContentRepository toRepository() => ContentRepository(
         weapons: Map.of(weapons),

@@ -17,6 +17,32 @@ enum Ability {
         Ability.charisma => 'CHA',
       };
 
+  /// Nombre en español de la característica (para la UI).
+  String get label => switch (this) {
+        Ability.strength => 'Fuerza',
+        Ability.dexterity => 'Destreza',
+        Ability.constitution => 'Constitución',
+        Ability.intelligence => 'Inteligencia',
+        Ability.wisdom => 'Sabiduría',
+        Ability.charisma => 'Carisma',
+      };
+
+  /// Descripción corta de qué mide la característica (para tooltips y ayuda).
+  String get description => switch (this) {
+        Ability.strength =>
+          'Potencia física. Pruebas de Atletismo, cargar peso y el daño de la mayoría de armas cuerpo a cuerpo.',
+        Ability.dexterity =>
+          'Agilidad y reflejos. CA sin armadura pesada, iniciativa, Sigilo y Acrobacias, y los ataques a distancia y con armas sutiles.',
+        Ability.constitution =>
+          'Salud y aguante. Determina tus puntos de golpe y las salvaciones para mantener la concentración.',
+        Ability.intelligence =>
+          'Razonamiento y memoria. Arcanos, Historia e Investigación; es la característica de lanzamiento del Mago.',
+        Ability.wisdom =>
+          'Percepción e intuición. Percepción, Perspicacia y Supervivencia; lanzamiento del Clérigo, el Druida y el Explorador.',
+        Ability.charisma =>
+          'Fuerza de personalidad. Persuasión, Engaño e Intimidación; lanzamiento del Bardo, el Hechicero, el Brujo y el Paladín.',
+      };
+
   /// Resuelve una característica desde su nombre de enum ("strength") o su
   /// abreviatura ("STR"), sin distinguir mayúsculas.
   static Ability fromKey(String key) {

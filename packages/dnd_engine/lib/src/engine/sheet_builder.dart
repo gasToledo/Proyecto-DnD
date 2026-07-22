@@ -23,6 +23,12 @@ class SheetBuilder {
   /// Si la Defensa sin Armadura se conserva con escudo (Bárbaro sí, Monje no).
   bool unarmoredDefenseAllowShield = false;
 
+  /// Bono de velocidad por Movimiento sin Armadura (acumulado), y sus
+  /// condiciones. Solo se aplica si no se lleva armadura (ver condiciones).
+  int unarmoredMovementBonus = 0;
+  bool unarmoredMovementAllowShield = false;
+  bool unarmoredMovementHeavyOnly = false;
+
   /// Rasgo de lanzamiento de conjuros activo (null = no lanza).
   SpellcastingEffect? spellcasting;
 
@@ -97,6 +103,14 @@ class SheetBuilder {
       case UnarmoredDefenseEffect(:final ability, :final allowShield):
         unarmoredDefenseAbility = ability;
         unarmoredDefenseAllowShield = allowShield;
+      case UnarmoredMovementEffect(
+          :final feet,
+          :final allowShield,
+          :final heavyArmorOnly
+        ):
+        unarmoredMovementBonus += feet;
+        unarmoredMovementAllowShield = allowShield;
+        unarmoredMovementHeavyOnly = heavyArmorOnly;
       case SpellcastingEffect():
         // El último rasgo de lanzamiento gana (una clase por ahora).
         spellcasting = e;

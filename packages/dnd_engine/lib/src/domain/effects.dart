@@ -64,6 +64,11 @@ sealed class Effect {
           Ability.fromKey(json['ability'] as String),
           allowShield: json['allowShield'] as bool? ?? false,
         ),
+      'unarmoredMovement' => UnarmoredMovementEffect(
+          json['feet'] as int,
+          allowShield: json['allowShield'] as bool? ?? false,
+          heavyArmorOnly: json['heavyArmorOnly'] as bool? ?? false,
+        ),
       'spellcasting' => SpellcastingEffect(
           ability: Ability.fromKey(json['ability'] as String),
           progression: CasterProgression.fromJson(json['progression'] as String?),
@@ -258,6 +263,31 @@ class UnarmoredDefenseEffect extends Effect {
         'type': 'unarmoredDefense',
         'ability': ability.name,
         'allowShield': allowShield,
+      };
+}
+
+/// Movimiento sin Armadura: aumenta la velocidad en [feet] pies, pero **solo
+/// mientras no se lleve armadura** (el Monje también lo pierde con escudo). Se
+/// acumula con otros del mismo tipo (Monje: +10/+15/+20 por nivel).
+///
+/// [allowShield]: si un escudo no anula el bono (Bárbaro sí lo permite; Monje no).
+/// [heavyArmorOnly]: si solo la armadura **pesada** lo anula (Movimiento Rápido
+/// del Bárbaro), en vez de cualquier armadura (Monje).
+class UnarmoredMovementEffect extends Effect {
+  final int feet;
+  final bool allowShield;
+  final bool heavyArmorOnly;
+  const UnarmoredMovementEffect(
+    this.feet, {
+    this.allowShield = false,
+    this.heavyArmorOnly = false,
+  });
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'unarmoredMovement',
+        'feet': feet,
+        'allowShield': allowShield,
+        'heavyArmorOnly': heavyArmorOnly,
       };
 }
 

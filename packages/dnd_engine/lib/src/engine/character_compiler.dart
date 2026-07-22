@@ -89,6 +89,7 @@ class CharacterCompiler {
         builder.bonusMaxHpPerLevel * c.level;
 
     final ac = _armorClass(c, builder, mods);
+    final speed = _speed(c, builder);
 
     final passivePerception = 10 +
         wisMod +
@@ -118,7 +119,7 @@ class CharacterCompiler {
       maxHp: maxHp,
       hitDie: klass?.hitDie ?? 8,
       armorClass: ac,
-      speed: builder.speed,
+      speed: speed,
       initiative: dexMod,
       passivePerception: passivePerception,
       darkvision: builder.darkvision,
@@ -175,6 +176,24 @@ class CharacterCompiler {
       preparedCount: prepared,
       slotsByLevel: spellSlotsFor(sc.progression, level),
     );
+  }
+
+  /// Velocidad final: base + bonos incondicionales (raza) + Movimiento sin
+  /// Armadura, este último solo si no se lleva armadura (para el Monje, tampoco
+  /// escudo; para el Bárbaro, solo lo anula la armadura pesada).
+  int _speed(Character c, SheetBuilder b) {
+    var speed = b.speed;
+    if (b.unarmoredMovementBonus != 0) {
+      final armor =
+          c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
+      var voided = false;
+      if (armor != null && !armor.isShield) {
+        voided = b.unarmoredMovementHeavyOnly ? armor.category == 'heavy' : true;
+      }
+      if (c.shieldEquipped && !b.unarmoredMovementAllowShield) voided = true;
+      if (!voided) speed += b.unarmoredMovementBonus;
+    }
+    return speed;
   }
 
   int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {

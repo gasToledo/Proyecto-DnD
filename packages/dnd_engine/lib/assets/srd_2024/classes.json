@@ -156,7 +156,8 @@
         "name": "Movimiento Rápido",
         "description": "Tu velocidad aumenta en 10 pies mientras no lleves armadura pesada.",
         "effects": [
-          { "type": "speedBonus", "feet": 10 }
+          { "type": "unarmoredMovement", "feet": 10, "allowShield": true, "heavyArmorOnly": true },
+          { "type": "passiveTrait", "name": "Movimiento Rápido", "description": "Tu velocidad aumenta +10 pies mientras no lleves armadura pesada." }
         ]
       },
       {
@@ -336,7 +337,8 @@
         "name": "Movimiento sin Armadura",
         "description": "Tu velocidad aumenta mientras no lleves armadura ni escudo (+10 pies, más a niveles superiores).",
         "effects": [
-          { "type": "speedBonus", "feet": 10 }
+          { "type": "unarmoredMovement", "feet": 10 },
+          { "type": "passiveTrait", "name": "Movimiento sin Armadura", "description": "Mientras no lleves armadura ni escudo, tu velocidad aumenta (+10 pies a nivel 2, +15 a nivel 6, +20 a nivel 10)." }
         ]
       },
       {
@@ -376,7 +378,7 @@
         "name": "Movimiento sin Armadura (mejora)",
         "description": "El bono de velocidad sin armadura aumenta a +15 pies.",
         "effects": [
-          { "type": "speedBonus", "feet": 5 }
+          { "type": "unarmoredMovement", "feet": 5 }
         ]
       },
       {
@@ -400,7 +402,7 @@
         "name": "Movimiento sin Armadura (mejora)",
         "description": "El bono de velocidad sin armadura aumenta a +20 pies.",
         "effects": [
-          { "type": "speedBonus", "feet": 5 }
+          { "type": "unarmoredMovement", "feet": 5 }
         ]
       }
     ]

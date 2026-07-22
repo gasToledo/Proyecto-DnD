@@ -142,6 +142,53 @@ const List<(int count, int slotLevel)> _pactTable = [
   (4, 5),
 ];
 
+// --- Conjuros preparados (tablas fijas del PHB 2024) ---
+//
+// A diferencia de 2014, la cantidad de conjuros preparados NO depende del
+// modificador de característica: es una columna fija por clase que escala con el
+// nivel. Índice = nivel de personaje (1..20); el 0 es relleno.
+
+/// Lanzadores completos con progresión estándar (Mago, Clérigo, Druida, Bardo).
+const List<int> _preparedFull = [
+  0, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 18, 19, 21, 22, 23, 24, 25,
+];
+
+/// Hechicero: arranca más bajo (2/4) y luego converge con los completos.
+const List<int> _preparedSorcerer = [
+  0, 2, 4, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 18, 19, 21, 22, 23, 24, 25,
+];
+
+/// Semi-lanzadores (Paladín, Explorador).
+const List<int> _preparedHalf = [
+  0, 2, 3, 4, 5, 6, 6, 7, 7, 9, 9, 10, 10, 11, 11, 12, 12, 14, 14, 15, 15,
+];
+
+/// Magia de Pacto (Brujo).
+const List<int> _preparedPact = [
+  0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
+];
+
+/// Un tercio (subclases: Caballero Arcano, Pícaro Arcano). Empiezan a nivel 3.
+const List<int> _preparedThird = [
+  0, 0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13,
+];
+
+/// Conjuros preparados para una [progression] a [level], según las tablas fijas
+/// de 2024. [spellList] distingue al Hechicero (progresión propia) del resto de
+/// lanzadores completos.
+int preparedSpellsFor(CasterProgression progression, int level, String spellList) {
+  final lv = level.clamp(0, 20);
+  final table = switch (progression) {
+    CasterProgression.none => const [0],
+    CasterProgression.half => _preparedHalf,
+    CasterProgression.third => _preparedThird,
+    CasterProgression.pact => _preparedPact,
+    CasterProgression.full =>
+      spellList == 'sorcerer' ? _preparedSorcerer : _preparedFull,
+  };
+  return lv < table.length ? table[lv] : table.last;
+}
+
 /// Espacios de conjuro disponibles para una [progression] a [level].
 ///
 /// Devuelve un mapa **nivel de conjuro → cantidad** (solo entradas > 0). Para

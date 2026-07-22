@@ -145,17 +145,10 @@ class CharacterCompiler {
     if (sc == null || sc.progression == CasterProgression.none) return null;
     final abilityMod = mods[sc.ability]!;
 
-    // Nivel de lanzador efectivo según la progresión: los semi-lanzadores
-    // preparan según la mitad de su nivel y los de un tercio (subclases como el
-    // Caballero/Pícaro Arcano) según un tercio (2024). Sigue siendo una
-    // aproximación de la tabla por clase.
-    final casterLevel = switch (sc.progression) {
-      CasterProgression.half => (level / 2).ceil(),
-      CasterProgression.third => (level / 3).ceil(),
-      _ => level,
-    };
+    // Conjuros preparados: columna fija por clase/progresión (2024), sin
+    // depender del modificador de característica (a diferencia de 2014).
     final prepared = sc.preparation == SpellPreparation.prepared
-        ? max(1, casterLevel + abilityMod)
+        ? preparedSpellsFor(sc.progression, level, sc.spellList)
         : 0;
 
     // Trucos conocidos: base de la clase + escalado por nivel. Los lanzadores

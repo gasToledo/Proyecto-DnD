@@ -119,17 +119,15 @@ void main() {
       expect(ek.spellcasting!.spellList, 'wizard');
     });
 
-    test('el de un tercio cuenta preparados por tercio de nivel, no por nivel', () {
-      // INT por defecto = 12 (+1). Caballero Arcano nivel 3: ceil(3/3)+1 = 2,
-      // no nivel(3)+1 = 4.
+    test('el de un tercio usa la tabla fija 2024, no el modificador', () {
+      // Tabla de un tercio (Caballero/Pícaro Arcano): nivel 3 = 3, nivel 10 = 7.
       final l3 = compiler.compile(_char(
           classId: 'fighter', level: 3, hp: [10, 6, 6], subclassId: 'eldritch-knight'));
-      expect(l3.spellcasting!.preparedCount, 2);
-      // Nivel 10: ceil(10/3)+1 = 5.
+      expect(l3.spellcasting!.preparedCount, 3);
       final l10 = compiler.compile(_char(
           classId: 'fighter', level: 10, hp: List.filled(10, 6),
           subclassId: 'eldritch-knight'));
-      expect(l10.spellcasting!.preparedCount, 5);
+      expect(l10.spellcasting!.preparedCount, 7);
     });
 
     test('el de un tercio solo gana +1 truco a nivel 10, no a nivel 4', () {

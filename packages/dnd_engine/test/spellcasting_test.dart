@@ -121,7 +121,7 @@ void main() {
       expect(sc.attackBonus, 6); // prof(3) + INT(+3)
       expect(sc.slotsByLevel, {1: 4, 2: 3, 3: 2});
       expect(sc.cantripsKnown, 4); // base 3 + 1 (nivel >= 4)
-      expect(sc.preparedCount, 8); // nivel(5) + INT(+3)
+      expect(sc.preparedCount, 9); // tabla fija de lanzador completo, nivel 5
     });
 
     test('los trucos escalan: base a nivel 1, +1 a nivel 4 y a nivel 10', () {
@@ -308,12 +308,18 @@ void main() {
       }
     });
 
-    test('preparables: semi-lanzador usa medio nivel; completo usa nivel entero', () {
-      // Puntuaciones 14 → mod +2 en la aptitud de lanzamiento.
-      // Clérigo (completo) nivel 6: 6 + 2 = 8.
-      expect(compiler.compile(mk('cleric', 6)).spellcasting!.preparedCount, 8);
-      // Paladín (semi) nivel 6: ceil(6/2) + 2 = 5, no 8.
-      expect(compiler.compile(mk('paladin', 6)).spellcasting!.preparedCount, 5);
+    test('preparables: columna fija por clase 2024, sin depender del mod.', () {
+      // Tablas fijas 2024, independientes del modificador de característica.
+      // Clérigo (completo) nivel 6 = 10.
+      expect(compiler.compile(mk('cleric', 6)).spellcasting!.preparedCount, 10);
+      // Paladín (semi) nivel 6 = 6.
+      expect(compiler.compile(mk('paladin', 6)).spellcasting!.preparedCount, 6);
+      // Hechicero (completo, tabla propia) nivel 6 = 10; nivel 1 = 2.
+      expect(compiler.compile(mk('sorcerer', 6)).spellcasting!.preparedCount, 10);
+      expect(compiler.compile(mk('sorcerer', 1)).spellcasting!.preparedCount, 2);
+      // Mago nivel 1 = 4, nivel 2 = 5 (independiente del mod. de INT).
+      expect(compiler.compile(mk('wizard', 1)).spellcasting!.preparedCount, 4);
+      expect(compiler.compile(mk('wizard', 2)).spellcasting!.preparedCount, 5);
     });
 
     test('semi-lanzadores no ganan trucos aunque suban de nivel', () {

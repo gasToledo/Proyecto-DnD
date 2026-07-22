@@ -18,11 +18,56 @@ void main() {
   const validWeaponCategories = {'simple', 'martial'};
   const validArmorCategories = {'light', 'medium', 'heavy', 'shield'};
 
+  const casterClasses = {
+    'wizard', 'sorcerer', 'bard', 'warlock', 'cleric', 'druid', 'paladin', 'ranger',
+  };
+
   test('el catálogo se cargó con volumen razonable', () {
     expect(repo.weapons.length, greaterThanOrEqualTo(30));
     expect(repo.armor.length, greaterThanOrEqualTo(12));
     expect(repo.races.length, greaterThanOrEqualTo(10));
     expect(repo.backgrounds.length, greaterThanOrEqualTo(12));
+    expect(repo.spells.length, greaterThanOrEqualTo(150));
+    expect(repo.feats.length, greaterThanOrEqualTo(50));
+  });
+
+  test('los conjuros cubren los niveles 0 a 9', () {
+    final levels = repo.spells.values.map((s) => s.level).toSet();
+    for (var l = 0; l <= 9; l++) {
+      expect(levels, contains(l), reason: 'falta al menos un conjuro de nivel $l');
+    }
+  });
+
+  test('cada conjuro tiene nivel válido y clases lanzadoras conocidas', () {
+    for (final s in repo.spells.values) {
+      expect(s.level, inInclusiveRange(0, 9), reason: '${s.id}: nivel inválido');
+      expect(s.classes, isNotEmpty, reason: '${s.id}: sin clases');
+      for (final c in s.classes) {
+        expect(casterClasses, contains(c),
+            reason: '${s.id}: clase lanzadora desconocida "$c"');
+      }
+    }
+  });
+
+  test('cada dote general con prerrequisito de competencia lo referencia bien', () {
+    const knownProfs = {
+      'light', 'medium', 'heavy', 'shield', 'simple', 'martial', 'spellcasting',
+    };
+    for (final f in repo.feats.values) {
+      final prof = f.prerequisite?.requiredProficiency;
+      if (prof == null) continue;
+      expect(knownProfs, contains(prof),
+          reason: '${f.id}: prerrequisito de competencia desconocido "$prof"');
+    }
+  });
+
+  test('todas las dotes hacen round-trip por JSON (efectos y prerrequisitos)', () {
+    for (final f in repo.feats.values) {
+      final r = Feat.fromJson(f.toJson());
+      expect(r.id, f.id);
+      expect(r.effects.length, f.effects.length,
+          reason: '${f.id}: se perdieron efectos en el round-trip');
+    }
   });
 
   test('cada arma tiene categoría y maestría válidas', () {

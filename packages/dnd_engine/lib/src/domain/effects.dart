@@ -137,7 +137,7 @@ class SavingThrowProficiencyEffect extends Effect {
       {'type': 'savingThrowProficiency', 'ability': ability.name};
 }
 
-/// Competencia con armadura: 'light' | 'medium' | 'heavy' | 'shields'.
+/// Competencia con armadura: 'light' | 'medium' | 'heavy' | 'shield'.
 class ArmorProficiencyEffect extends Effect {
   final String category;
   const ArmorProficiencyEffect(this.category);

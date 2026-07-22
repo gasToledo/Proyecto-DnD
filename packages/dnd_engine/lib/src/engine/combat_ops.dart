@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/effects.dart';
@@ -120,19 +121,11 @@ class CombatOps {
   }) {
     if (c.hitDiceUsed >= hitDiceMax) return 0;
     final roll = (dice ?? Dice()).rollHitDie(sheet.hitDie);
-    final heal = max(0, roll + _conMod(sheet));
+    final conMod = sheet.abilityModifiers[Ability.constitution] ?? 0;
+    final heal = max(0, roll + conMod);
     c.hitDiceUsed += 1;
     applyHealing(c, sheet.maxHp, heal);
     return heal;
-  }
-
-  static int _conMod(ComputedSheet sheet) {
-    // El mod. de CON está en abilityModifiers; se accede por la característica.
-    // Import evitado: se recompone desde el mapa por abreviatura.
-    for (final e in sheet.abilityModifiers.entries) {
-      if (e.key.abbr == 'CON') return e.value;
-    }
-    return 0;
   }
 
   /// Marca una salvación de muerte (éxito o fallo). Devuelve un resultado:

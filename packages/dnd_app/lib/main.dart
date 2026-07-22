@@ -53,8 +53,34 @@ class _Bootstrap extends StatefulWidget {
   State<_Bootstrap> createState() => _BootstrapState();
 }
 
-class _BootstrapState extends State<_Bootstrap> {
+class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
   late final Future<_AppData> _future = _init();
+  _AppData? _data;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Al pasar a segundo plano/minimizar/cerrar, vacía los guardados con debounce
+  /// pendientes para no perder hasta 400 ms del último cambio. En escritorio sin
+  /// plugins es la mejor red disponible (no se puede interceptar el cierre de
+  /// ventana); cubre minimizar y la mayoría de los cierres ordenados.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _data?.controller.flush();
+    }
+  }
 
   Future<_AppData> _init() async {
     final repo = await AssetContentLoader.loadOfficial();
@@ -69,7 +95,9 @@ class _BootstrapState extends State<_Bootstrap> {
     if (controller.characters.isEmpty) {
       controller.add(demoSagan());
     }
-    return _AppData(repo, controller, homebrew);
+    final data = _AppData(repo, controller, homebrew);
+    _data = data;
+    return data;
   }
 
   @override

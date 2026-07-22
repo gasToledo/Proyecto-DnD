@@ -83,6 +83,17 @@ void main() {
       expect(s.speed, 40); // 30 + 10
       expect(s.weaponMasterySlots, 2);
     });
+
+    test('Movimiento Rápido: solo la armadura pesada lo anula', () {
+      Character bar({String? armorId, bool shield = false}) => _char(
+          classId: 'barbarian', level: 5, hp: [12, 7, 7, 7, 7],
+          armorId: armorId, shield: shield);
+      // Media conservada; escudo no lo anula (a diferencia del Monje).
+      expect(compiler.compile(bar(armorId: 'chain-shirt')).speed, 40);
+      expect(compiler.compile(bar(shield: true)).speed, 40);
+      // Pesada sí lo anula.
+      expect(compiler.compile(bar(armorId: 'chain-mail')).speed, 30);
+    });
   });
 
   group('Pícaro', () {
@@ -151,6 +162,20 @@ void main() {
       final l6 = compiler
           .compile(_char(classId: 'monk', level: 6, hp: [8, 5, 5, 5, 5, 5]));
       expect(l6.speed, 45); // 30 + 10 + 5
+    });
+
+    test('Movimiento sin Armadura aparece como rasgo pasivo', () {
+      final l2 = compiler.compile(_char(classId: 'monk', level: 2, hp: [8, 5]));
+      expect(l2.passives.map((p) => p.name), contains('Movimiento sin Armadura'));
+    });
+
+    test('con armadura o escudo el Monje pierde el bono de velocidad', () {
+      final conArmadura = compiler.compile(_char(
+          classId: 'monk', level: 2, hp: [8, 5], armorId: 'chain-shirt'));
+      expect(conArmadura.speed, 30); // media anula el bono en el Monje
+      final conEscudo = compiler
+          .compile(_char(classId: 'monk', level: 2, hp: [8, 5], shield: true));
+      expect(conEscudo.speed, 30); // el escudo también lo anula
     });
 
     test('nivel 5: Ataque Adicional', () {

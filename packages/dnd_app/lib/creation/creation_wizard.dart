@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
+import '../theme/class_visuals.dart';
 import 'creation_draft.dart';
 
 /// Habilidades 2024 (para elecciones "de cualquier lista").
@@ -135,6 +136,8 @@ class _ClassStep extends StatelessWidget {
           runSpacing: 8,
           children: repo.classes.values
               .map((c) => ChoiceChip(
+                    avatar: Icon(classIcon(c),
+                        size: 18, color: classAccent(c, context.palette.gold)),
                     label: Text(c.name),
                     selected: draft.classId == c.id,
                     onSelected: (_) {

@@ -144,6 +144,100 @@ class CreationDraft {
     return remaining..sort((x, y) => y.compareTo(x));
   }
 
+  /// Asigna [v] a la característica [a]. Si [v] ya está tomada por otra y no
+  /// queda una copia libre en el pool, **intercambia**: la otra recibe el valor
+  /// que tenía [a] (o queda sin asignar si [a] no tenía). Así se puede reordenar
+  /// libremente aunque estén las 6 asignadas.
+  void assignScore(Ability a, int v) {
+    if (availableFor(a).contains(v)) {
+      assignedScores[a] = v;
+      return;
+    }
+    final previous = assignedScores[a];
+    Ability? holder;
+    for (final e in assignedScores.entries) {
+      if (e.key != a && e.value == v) {
+        holder = e.key;
+        break;
+      }
+    }
+    assignedScores[a] = v;
+    if (holder != null) {
+      if (previous != null) {
+        assignedScores[holder] = previous;
+      } else {
+        assignedScores.remove(holder);
+      }
+    }
+  }
+
+  /// Borra todas las asignaciones (conserva método y pool). Escape para
+  /// reordenar de cero.
+  void clearScores() => assignedScores.clear();
+
+  /// Elecciones obligatorias que faltan en [stepTitle]. Lista vacía = el paso
+  /// está completo y se puede avanzar. La UI la usa para bloquear "Siguiente" y
+  /// explicar qué falta.
+  List<String> pendingFor(String stepTitle) {
+    switch (stepTitle) {
+      case 'Clase':
+        final k = klass;
+        if (k == null) return const ['Elegí una clase.'];
+        final out = <String>[];
+        if (grantsFightingStyle && fightingStyleId == null) {
+          out.add('Elegí un estilo de combate.');
+        }
+        if (classSkills.length < k.skillChoiceCount) {
+          out.add('Habilidades de clase: ${classSkills.length}/'
+              '${k.skillChoiceCount}.');
+        }
+        final slots = weaponMasterySlots;
+        if (slots > 0 && weaponMasteries.length < slots) {
+          out.add('Maestría de armas: ${weaponMasteries.length}/$slots.');
+        }
+        return out;
+      case 'Especie':
+        final r = race;
+        if (r == null) return const ['Elegí una especie.'];
+        final out = <String>[];
+        if (r.skillChoiceCount > 0 && raceSkills.length < r.skillChoiceCount) {
+          out.add('Habilidades de especie: ${raceSkills.length}/'
+              '${r.skillChoiceCount}.');
+        }
+        final grantsFeat = r.effects.any((e) => e is GrantFeatEffect);
+        if (grantsFeat && raceFeatId == null) {
+          out.add('Elegí una dote de origen.');
+        }
+        return out;
+      case 'Trasfondo':
+        if (background == null) return const ['Elegí un trasfondo.'];
+        if (spreadMode == AbilitySpreadMode.twoOne &&
+            (spreadPlusTwo == null || spreadPlusOne == null)) {
+          return const ['Asigná el +2 y el +1 de característica.'];
+        }
+        return const [];
+      case 'Características':
+        if (!allScoresAssigned) {
+          final n = Ability.values.where(assignedScores.containsKey).length;
+          return ['Asigná las 6 características ($n/6).'];
+        }
+        return const [];
+      case 'Conjuros':
+        final sc = spellcasting;
+        if (sc == null) return const [];
+        final out = <String>[];
+        if (cantrips.length < sc.cantripsKnown) {
+          out.add('Trucos: ${cantrips.length}/${sc.cantripsKnown}.');
+        }
+        if (spells.length < sc.preparedCount) {
+          out.add('Conjuros: ${spells.length}/${sc.preparedCount}.');
+        }
+        return out;
+      default: // Equipo, Nombre: sin elecciones obligatorias.
+        return const [];
+    }
+  }
+
   /// Puntuación final de una característica (asignada + reparto de trasfondo),
   /// para previsualizar en vivo durante la asignación.
   int previewScore(Ability a) =>

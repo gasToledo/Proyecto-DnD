@@ -13,6 +13,7 @@ import 'demo/demo_characters.dart';
 import 'homebrew/homebrew_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_widgets.dart';
+import 'theme/class_visuals.dart';
 import 'ui/import_dialog.dart';
 import 'ui/settings_dialog.dart';
 import 'ui/sheet_screen.dart';
@@ -354,7 +355,9 @@ class _CharacterCard extends StatelessWidget {
     final c = character;
     final pal = context.palette;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    final klass = repo.characterClass(c.classId)?.name ?? c.classId;
+    final klassObj = repo.characterClass(c.classId);
+    final klass = klassObj?.name ?? c.classId;
+    final accent = classAccent(klassObj, pal.gold);
     final race = repo.race(c.raceId)?.name ?? c.raceId;
     final portrait = c.portraitPaths.isNotEmpty ? c.portraitPaths.first : null;
     final hasPortrait = portrait != null && File(portrait).existsSync();
@@ -380,8 +383,15 @@ class _CharacterCard extends StatelessWidget {
                     Text(c.name,
                         style: const TextStyle(
                             fontWeight: FontWeight.w500, fontSize: 16)),
-                    const SizedBox(height: 2),
-                    Text('$race $klass', style: TextStyle(color: muted, fontSize: 13)),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Icon(classIcon(klassObj), size: 15, color: accent),
+                        const SizedBox(width: 5),
+                        Text('$race $klass',
+                            style: TextStyle(color: muted, fontSize: 13)),
+                      ],
+                    ),
                   ],
                 ),
               ),

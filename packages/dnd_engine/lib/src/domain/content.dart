@@ -123,6 +123,14 @@ class CharacterClass {
   /// futuro Paladín/Explorador con su propia integración).
   final bool grantsFightingStyle;
 
+  /// Color de acento de la clase, en hex ("#RRGGBB"), para la personalización
+  /// visual. Null = sin acento propio (la UI usa el color por defecto).
+  final String? accentColor;
+
+  /// Identificador del ícono de la clase (mapeado a un ícono de Material en la
+  /// app, p.ej. "shield" → Icons.shield). Null = ícono genérico.
+  final String? iconId;
+
   final List<ClassFeature> features;
 
   const CharacterClass({
@@ -138,6 +146,8 @@ class CharacterClass {
     this.subclassLevel = 3,
     this.asiLevels = const [4, 8, 12, 16, 19],
     this.grantsFightingStyle = false,
+    this.accentColor,
+    this.iconId,
     this.features = const [],
   });
 
@@ -173,6 +183,8 @@ class CharacterClass {
         asiLevels: (j['asiLevels'] as List?)?.map((e) => e as int).toList() ??
             const [4, 8, 12, 16, 19],
         grantsFightingStyle: j['grantsFightingStyle'] as bool? ?? false,
+        accentColor: j['accentColor'] as String?,
+        iconId: j['iconId'] as String?,
         features: (j['features'] as List? ?? const [])
             .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
             .toList(),

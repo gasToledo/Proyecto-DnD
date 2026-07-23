@@ -8,6 +8,7 @@ import '../data/characters_controller.dart';
 import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
+import '../theme/class_visuals.dart';
 import 'portrait_screen.dart';
 import 'spell_edit_screen.dart';
 
@@ -229,7 +230,9 @@ class _SheetScreenState extends State<SheetScreen> {
     final portrait = _c.portraitPaths.isNotEmpty ? _c.portraitPaths.first : null;
     final hasPortrait = portrait != null && File(portrait).existsSync();
     final race = repo.race(_c.raceId)?.name ?? _c.raceId;
-    final klass = repo.characterClass(_c.classId)?.name ?? _c.classId;
+    final klassObj = repo.characterClass(_c.classId);
+    final klass = klassObj?.name ?? _c.classId;
+    final accent = classAccent(klassObj, pal.gold);
     final sub = _c.subclassId == null ? null : repo.subclass(_c.subclassId!)?.name;
     final klassLine = sub == null ? klass : '$klass ($sub)';
     final bg = repo.background(_c.backgroundId)?.name ?? '';
@@ -274,8 +277,16 @@ class _SheetScreenState extends State<SheetScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(color: muted)),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Icon(classIcon(klassObj), size: 16, color: accent),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(subtitle, style: TextStyle(color: muted)),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

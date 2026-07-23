@@ -105,22 +105,28 @@ class StatPlaque extends StatelessWidget {
   final String value;
   final Color? valueColor;
   final Widget? footer;
+
+  /// Variante compacta, para tarjetas densas (las cajas VEL/INIC del dashboard).
+  final bool dense;
   const StatPlaque({
     super.key,
     required this.label,
     required this.value,
     this.valueColor,
     this.footer,
+    this.dense = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+      padding: dense
+          ? const EdgeInsets.symmetric(horizontal: 8, vertical: 6)
+          : const EdgeInsets.fromLTRB(12, 11, 12, 11),
       decoration: BoxDecoration(
         color: p.plaque,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(dense ? 9 : 12),
         border: Border.all(color: p.hairline),
       ),
       child: Column(
@@ -129,19 +135,19 @@ class StatPlaque extends StatelessWidget {
           Text(label.toUpperCase(),
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 10,
-                  letterSpacing: 1.2,
+                  fontSize: dense ? 8.5 : 10,
+                  letterSpacing: dense ? 0.5 : 1.2,
                   color: p.textMuted)),
-          const SizedBox(height: 6),
+          SizedBox(height: dense ? 2 : 6),
           Text(value,
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: 24,
+                fontSize: dense ? 16 : 24,
                 height: 1,
                 fontFeatures: const [FontFeature.tabularFigures()],
                 color: valueColor ?? p.gold,
               )),
-          if (footer != null) ...[const SizedBox(height: 8), footer!],
+          if (footer != null) ...[SizedBox(height: dense ? 4 : 8), footer!],
         ],
       ),
     );

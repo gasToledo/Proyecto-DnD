@@ -1,12 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 
-/// Las 18 habilidades de 2024.
-const allSkills2024 = [
-  'acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception',
-  'history', 'insight', 'intimidation', 'investigation', 'medicine',
-  'nature', 'perception', 'performance', 'persuasion', 'religion',
-  'sleight-of-hand', 'stealth', 'survival',
-];
+/// Las 18 habilidades de 2024, tomadas del catálogo del motor.
+final allSkills2024 = Skill.allIds;
 
 /// Opciones reales de una elección de habilidad: una lista vacía significa
 /// "cualquiera de las 18" (p.ej. el Bardo en 2024), no "ninguna". Es el único

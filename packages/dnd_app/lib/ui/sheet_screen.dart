@@ -322,7 +322,7 @@ class _SheetScreenState extends State<SheetScreen> {
         ],
         if (s.skillProficiencies.isNotEmpty) ...[
           const Eyebrow('Competencias'),
-          _chips(s.skillProficiencies.map(_title).toList()),
+          _chips(s.skillProficiencies.map(Skill.labelFor).toList()),
         ],
         if (warnings.isNotEmpty) ...[
           const SizedBox(height: 20),

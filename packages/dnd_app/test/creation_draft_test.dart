@@ -167,5 +167,24 @@ void main() {
       expect(d.pendingFor('Equipo'), isEmpty);
       expect(d.pendingFor('Nombre'), isEmpty);
     });
+
+    test('el cupo de habilidades no bloquea si quedan menos opciones elegibles',
+        () {
+      final d = newDraft(); // Guerrero: elige 2 de 9 opciones
+      final fighter = repo.characterClass('fighter')!;
+      final from = fighter.skillChoiceFrom;
+      expect(fighter.skillChoiceCount, 2);
+      // Otro origen ya tomó todas las opciones de clase menos una: queda 1 < 2.
+      d.raceSkills.addAll(from.take(from.length - 1));
+      // Completar lo demás del paso para aislar el gate de habilidades.
+      d.fightingStyleId = 'fs-defense';
+      d.weaponMasteries.addAll(
+          d.proficientWeapons.take(d.weaponMasterySlots).map((w) => w.id));
+      // Con 0/2 elegidas pero solo 1 elegible, todavía debe pedir esa 1.
+      expect(d.pendingFor('Clase'), isNotEmpty);
+      // Elegida la única disponible, el gate se satisface (no exige el 2.º).
+      d.classSkills.add(from.last);
+      expect(d.pendingFor('Clase'), isEmpty);
+    });
   });
 }

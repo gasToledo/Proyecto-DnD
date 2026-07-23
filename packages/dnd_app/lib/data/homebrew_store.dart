@@ -71,6 +71,29 @@ class HomebrewStore {
         'spells': spells.values.map((e) => e.toJson()).toList(),
       };
 
+  /// Cuántas entradas de [content] tienen un id que **ya existe** en el store
+  /// (es decir, que un [importContent] sobrescribiría). Cero = import puramente
+  /// aditivo. La UI lo usa para pedir confirmación antes de pisar homebrew.
+  int countCollisions(Map<String, List<Map<String, dynamic>>> content) {
+    final existingIds = <String, Set<String>>{
+      'weapons': weapons.keys.toSet(),
+      'armor': armor.keys.toSet(),
+      'feats': feats.keys.toSet(),
+      'races': races.keys.toSet(),
+      'backgrounds': backgrounds.keys.toSet(),
+      'spells': spells.keys.toSet(),
+    };
+    var n = 0;
+    for (final entry in content.entries) {
+      final ids = existingIds[entry.key];
+      if (ids == null) continue;
+      for (final j in entry.value) {
+        if (ids.contains(j['id'] as String?)) n++;
+      }
+    }
+    return n;
+  }
+
   /// Importa contenido homebrew (mismo formato que [exportContent]) fusionándolo
   /// por id: una entrada con id existente se sobrescribe. Persiste cada tipo una
   /// sola vez. Devuelve la cantidad total de entradas importadas.

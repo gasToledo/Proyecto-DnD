@@ -58,4 +58,33 @@ void main() {
     final next = find.widgetWithText(FilledButton, 'Siguiente');
     expect(tester.widget<FilledButton>(next).onPressed, isNull);
   });
+
+  testWidgets('la lista de maestrías scrollea sola, no estira el paso',
+      (tester) async {
+    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(MaterialApp(
+      theme: AppTheme.dark,
+      home: CreationWizard(repo: repo, onCreate: (_) {}),
+    ));
+    await tester.pumpAndSettle();
+
+    // Raza -> Clase (Guerrero es la clase por defecto y pide 3 maestrías).
+    await tester.tap(find.text('Humano'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
+    await tester.pumpAndSettle();
+
+    final list = find.descendant(
+        of: find.byType(Scrollbar), matching: find.byType(ListView));
+    expect(list, findsOneWidget, reason: 'el checklist debe tener scroll propio');
+    expect(tester.getSize(list).height, lessThanOrEqualTo(300.0));
+
+    // Y hay más contenido del que entra: la lista realmente scrollea.
+    final position = tester.widget<ListView>(list).controller!.position;
+    expect(position.maxScrollExtent, greaterThan(0.0));
+    expect(tester.takeException(), isNull);
+  });
 }

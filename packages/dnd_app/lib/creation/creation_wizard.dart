@@ -1000,13 +1000,22 @@ class _ScoreCard extends StatelessWidget {
           DropdownButtonFormField<int>(
             initialValue: assigned,
             isExpanded: true,
-            hint: const Text('Elegir valor'),
+            isDense: true,
+            // Por defecto Flutter fuerza 48 px por ítem: con 6 valores el menú
+            // tapaba media pantalla. En null cada ítem se ajusta a su contenido.
+            itemHeight: null,
+            menuMaxHeight: 260,
+            borderRadius: BorderRadius.circular(10),
+            hint: Text('Elegir valor',
+                style: TextStyle(fontSize: 13, color: pal.textMuted)),
+            style: TextStyle(fontSize: 14, color: scheme.onSurface),
+            icon: Icon(Icons.expand_more, size: 18, color: pal.textMuted),
             decoration: InputDecoration(
               isDense: true,
               filled: true,
               fillColor: pal.plaque,
               contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
+                  const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(color: pal.hairline),
@@ -1017,7 +1026,13 @@ class _ScoreCard extends StatelessWidget {
               ),
             ),
             items: items
-                .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
+                .map((v) => DropdownMenuItem(
+                      value: v,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                        child: Text('$v', style: const TextStyle(fontSize: 14)),
+                      ),
+                    ))
                 .toList(),
             onChanged: (v) {
               if (v == null) return;
@@ -1587,6 +1602,13 @@ class _WeaponChecklist extends StatefulWidget {
 
 class _WeaponChecklistState extends State<_WeaponChecklist> {
   String _query = '';
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1602,41 +1624,60 @@ class _WeaponChecklistState extends State<_WeaponChecklist> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _WeaponSearchField(onChanged: (v) => setState(() => _query = v)),
-        for (final group in [
-          ('simple', simple),
-          ('martial', martial),
-        ])
-          if (group.$2.isNotEmpty) ...[
-            _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
-            ...group.$2.map((w) {
-              final isSel = widget.selected.contains(w.id);
-              return CheckboxListTile(
-                dense: true,
-                value: isSel,
-                title: Text(w.name),
-                subtitle: Text(_weaponSubtitle(w)),
-                onChanged: (isSel || !full)
-                    ? (v) {
-                        if (v == true) {
-                          if (!widget.selected.contains(w.id)) {
-                            widget.selected.add(w.id);
-                          }
-                        } else {
-                          widget.selected.remove(w.id);
-                        }
-                        widget.onChanged();
-                        setState(() {});
-                      }
-                    : null,
-              );
-            }),
-          ],
-        if (matches.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text('Sin coincidencias.',
-                style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 8),
+        // La lista scrollea sola: sin esto el catálogo entero estiraba la
+        // página y la rueda del mouse movía todo el paso.
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 300),
+          child: Scrollbar(
+            controller: _scroll,
+            thumbVisibility: true,
+            child: ListView(
+              controller: _scroll,
+              primary: false,
+              shrinkWrap: true,
+              padding: const EdgeInsets.only(right: 12),
+              children: [
+                for (final group in [
+                  ('simple', simple),
+                  ('martial', martial),
+                ])
+                  if (group.$2.isNotEmpty) ...[
+                    _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
+                    ...group.$2.map((w) {
+                      final isSel = widget.selected.contains(w.id);
+                      return CheckboxListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        value: isSel,
+                        title: Text(w.name),
+                        subtitle: Text(_weaponSubtitle(w)),
+                        onChanged: (isSel || !full)
+                            ? (v) {
+                                if (v == true) {
+                                  if (!widget.selected.contains(w.id)) {
+                                    widget.selected.add(w.id);
+                                  }
+                                } else {
+                                  widget.selected.remove(w.id);
+                                }
+                                widget.onChanged();
+                                setState(() {});
+                              }
+                            : null,
+                      );
+                    }),
+                  ],
+                if (matches.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Sin coincidencias.',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ),
+              ],
+            ),
           ),
+        ),
       ],
     );
   }

@@ -73,6 +73,30 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final messenger = ScaffoldMessenger.of(context);
     try {
       final content = await transfer.importHomebrewFromFile(path);
+      if (!mounted) return;
+      // No pisar homebrew existente sin avisar: si hay ids en colisión, pedir
+      // confirmación antes de sobrescribir.
+      final collisions = store.countCollisions(content);
+      if (collisions > 0) {
+        final overwrite = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Sobrescribir homebrew'),
+            content: Text('$collisions entrada(s) del pack comparten id con '
+                'contenido que ya tenés. Al importar se reemplazarán. '
+                '¿Continuar?'),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancelar')),
+              FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Sobrescribir')),
+            ],
+          ),
+        );
+        if (overwrite != true || !mounted) return;
+      }
       final count = await store.importContent(content);
       // Fusiona lo importado en el repo compartido, así queda disponible de
       // inmediato en el wizard y las fichas (igual que al guardar un ítem).

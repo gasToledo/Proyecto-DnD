@@ -175,9 +175,19 @@ class CreationDraft {
   /// reordenar de cero.
   void clearScores() => assignedScores.clear();
 
+  /// Cuántas habilidades de [from] siguen elegibles tras excluir las ya tomadas
+  /// en otro origen ([disabled]). Una lista vacía significa "cualquiera de las
+  /// 18": nunca es el cuello de botella, así que devolvemos un tope alto.
+  int _selectableSkills(List<String> from, Set<String> disabled) =>
+      from.isEmpty ? 999 : from.toSet().difference(disabled).length;
+
   /// Elecciones obligatorias que faltan en [stepTitle]. Lista vacía = el paso
   /// está completo y se puede avanzar. La UI la usa para bloquear "Siguiente" y
   /// explicar qué falta.
+  ///
+  /// El requerido de habilidades se acota a lo realmente elegible: si otro
+  /// origen ya tomó opciones y quedan menos que el cupo, se exige solo lo
+  /// posible (así el gate nunca deja al usuario sin salida).
   List<String> pendingFor(String stepTitle) {
     switch (stepTitle) {
       case 'Clase':
@@ -187,7 +197,11 @@ class CreationDraft {
         if (grantsFightingStyle && fightingStyleId == null) {
           out.add('Elegí un estilo de combate.');
         }
-        if (classSkills.length < k.skillChoiceCount) {
+        final selectable = _selectableSkills(k.skillChoiceFrom,
+            {...raceSkills, ...?background?.skillProficiencies});
+        final need =
+            k.skillChoiceCount < selectable ? k.skillChoiceCount : selectable;
+        if (classSkills.length < need) {
           out.add('Habilidades de clase: ${classSkills.length}/'
               '${k.skillChoiceCount}.');
         }
@@ -200,7 +214,11 @@ class CreationDraft {
         final r = race;
         if (r == null) return const ['Elegí una especie.'];
         final out = <String>[];
-        if (r.skillChoiceCount > 0 && raceSkills.length < r.skillChoiceCount) {
+        final selectable = _selectableSkills(r.skillChoiceFrom,
+            {...classSkills, ...?background?.skillProficiencies});
+        final need =
+            r.skillChoiceCount < selectable ? r.skillChoiceCount : selectable;
+        if (need > 0 && raceSkills.length < need) {
           out.add('Habilidades de especie: ${raceSkills.length}/'
               '${r.skillChoiceCount}.');
         }

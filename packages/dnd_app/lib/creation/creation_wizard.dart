@@ -90,6 +90,7 @@ class _CreationWizardState extends State<CreationWizard> {
         total: _titles.length,
         onBack: _step == 0 ? null : _back,
         onNext: _next,
+        pending: d.pendingFor(_titles[_step]),
       ),
     );
   }
@@ -412,18 +413,33 @@ class _ScoresStep extends StatelessWidget {
             onChanged();
           },
         ),
-        if (draft.scoreMethod == ScoreMethod.roll4d6)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                draft.applyScoreMethod(ScoreMethod.roll4d6);
-                onChanged();
-              },
-              icon: const Icon(Icons.casino),
-              label: const Text('Volver a tirar'),
-            ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (draft.scoreMethod == ScoreMethod.roll4d6)
+                OutlinedButton.icon(
+                  onPressed: () {
+                    draft.applyScoreMethod(ScoreMethod.roll4d6);
+                    onChanged();
+                  },
+                  icon: const Icon(Icons.casino),
+                  label: const Text('Volver a tirar'),
+                ),
+              if (draft.assignedScores.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () {
+                    draft.clearScores();
+                    onChanged();
+                  },
+                  icon: const Icon(Icons.restart_alt),
+                  label: const Text('Limpiar asignación'),
+                ),
+            ],
           ),
+        ),
         const SizedBox(height: 8),
         Text('Pool: ${draft.pool.join(", ")}',
             style: Theme.of(context).textTheme.bodySmall),
@@ -443,9 +459,11 @@ class _ScoreRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final available = draft.availableFor(ability);
     final assigned = draft.assignedScores[ability];
-    final items = <int>{?assigned, ...available}.toList()
+    // Se ofrecen todos los valores del pool: elegir uno ya tomado por otra
+    // característica las intercambia (draft.assignScore), así siempre se puede
+    // reordenar aunque estén las 6 asignadas.
+    final items = draft.pool.toSet().toList()
       ..sort((a, b) => b.compareTo(a));
     final spread = draft.abilitySpread[ability] ?? 0;
     final finalScore = (assigned ?? 0) + spread;
@@ -466,7 +484,7 @@ class _ScoreRow extends StatelessWidget {
                   .toList(),
               onChanged: (v) {
                 if (v == null) return;
-                draft.assignedScores[ability] = v;
+                draft.assignScore(ability, v);
                 onChanged();
               },
             ),
@@ -908,28 +926,56 @@ class _NavBar extends StatelessWidget {
   final int total;
   final VoidCallback? onBack;
   final VoidCallback onNext;
+
+  /// Elecciones que faltan en el paso actual. No vacío = "Siguiente" bloqueado.
+  final List<String> pending;
   const _NavBar({
     required this.step,
     required this.total,
     required this.onBack,
     required this.onNext,
+    required this.pending,
   });
 
   @override
   Widget build(BuildContext context) {
     final isLast = step == total - 1;
+    final blocked = pending.isNotEmpty;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (onBack != null)
-              OutlinedButton(onPressed: onBack, child: const Text('Atrás')),
-            const Spacer(),
-            FilledButton.icon(
-              onPressed: onNext,
-              icon: Icon(isLast ? Icons.check : Icons.arrow_forward),
-              label: Text(isLast ? 'Crear personaje' : 'Siguiente'),
+            if (blocked)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 16, color: context.palette.gold),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Falta: ${pending.join('  ·  ')}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Row(
+              children: [
+                if (onBack != null)
+                  OutlinedButton(onPressed: onBack, child: const Text('Atrás')),
+                const Spacer(),
+                FilledButton.icon(
+                  onPressed: blocked ? null : onNext,
+                  icon: Icon(isLast ? Icons.check : Icons.arrow_forward),
+                  label: Text(isLast ? 'Crear personaje' : 'Siguiente'),
+                ),
+              ],
             ),
           ],
         ),

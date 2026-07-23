@@ -1,13 +1,16 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
-/// Personalización visual por clase: color de acento + ícono. Los datos viven en
-/// `classes.json` (`accentColor` / `iconId`); acá se traducen a tipos de Flutter.
+/// Personalización visual del contenido: color de acento (clases) e íconos
+/// (clases, especies y trasfondos). Los datos viven en los JSON del pack
+/// (`accentColor` / `iconId`); acá se traducen a tipos de Flutter, así el
+/// homebrew los aprovecha igual que el contenido oficial.
 ///
 /// Los íconos se mapean desde un id de texto a un [IconData] **const** de
 /// Material: nunca se construye un IconData desde un codepoint variable (eso
 /// rompería el tree-shaking de íconos en `flutter build`).
-const Map<String, IconData> _classIcons = {
+const Map<String, IconData> _icons = {
+  // Clases.
   'shield': Icons.shield,
   'rage': Icons.local_fire_department,
   'dagger': Icons.theater_comedy,
@@ -20,11 +23,48 @@ const Map<String, IconData> _classIcons = {
   'eye': Icons.remove_red_eye,
   'oath': Icons.verified_user,
   'bow': Icons.gps_fixed,
+  // Especies.
+  'person': Icons.person,
+  'terrain': Icons.terrain,
+  'child_care': Icons.child_care,
+  'fitness_center': Icons.fitness_center,
+  'park': Icons.park,
+  'local_fire_department': Icons.local_fire_department,
+  'science': Icons.science,
+  'whatshot': Icons.whatshot,
+  'landscape': Icons.landscape,
+  'auto_awesome': Icons.auto_awesome,
+  // Trasfondos.
+  'military_tech': Icons.military_tech,
+  'security': Icons.security,
+  'explore': Icons.explore,
+  'handyman': Icons.handyman,
+  'theater_comedy': Icons.theater_comedy,
+  'lock_open': Icons.lock_open,
+  'music_note': Icons.music_note,
+  'agriculture': Icons.agriculture,
+  'self_improvement': Icons.self_improvement,
+  'storefront': Icons.storefront,
+  'diamond': Icons.diamond,
+  'history_edu': Icons.history_edu,
 };
+
+/// Ícono declarado por un contenido, o [fallback] si no lo declara o el id no
+/// está en el registro.
+IconData iconFor(String? iconId, {IconData fallback = Icons.circle_outlined}) =>
+    _icons[iconId] ?? fallback;
 
 /// Ícono de la clase (o uno genérico si no declara/reconoce el id).
 IconData classIcon(CharacterClass? klass) =>
-    _classIcons[klass?.iconId] ?? Icons.person_outline;
+    iconFor(klass?.iconId, fallback: Icons.person_outline);
+
+/// Ícono de la especie.
+IconData raceIcon(Race? race) => iconFor(race?.iconId, fallback: Icons.groups);
+
+/// Ícono del trasfondo. El fallback es a propósito uno que no está en el
+/// registro, para que "sin ícono" se distinga de cualquier ícono real.
+IconData backgroundIcon(Background? bg) =>
+    iconFor(bg?.iconId, fallback: Icons.badge_outlined);
 
 /// Color de acento de la clase, parseado de su hex `#RRGGBB`. Devuelve
 /// [fallback] si la clase no declara color o el hex es inválido.

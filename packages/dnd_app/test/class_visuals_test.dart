@@ -35,4 +35,25 @@ void main() {
           reason: '${klass.id}: iconId "${klass.iconId}" no está en el mapa');
     }
   });
+
+  test('cada especie y trasfondo declara ícono reconocido y tagline', () async {
+    final repo = await ContentRepository.loadFromDirectory(
+        '../dnd_engine/lib/assets/srd_2024');
+
+    for (final race in repo.races.values) {
+      expect(race.iconId, isNotNull, reason: '${race.id} sin iconId');
+      expect(raceIcon(race), isNot(Icons.groups),
+          reason: '${race.id}: iconId "${race.iconId}" no está en el mapa');
+      expect(race.tagline, isNotNull, reason: '${race.id} sin tagline');
+      expect(race.tagline, isNotEmpty);
+    }
+
+    for (final bg in repo.backgrounds.values) {
+      expect(bg.iconId, isNotNull, reason: '${bg.id} sin iconId');
+      expect(backgroundIcon(bg), isNot(Icons.badge_outlined),
+          reason: '${bg.id}: iconId "${bg.iconId}" no está en el mapa');
+      expect(bg.tagline, isNotNull, reason: '${bg.id} sin tagline');
+      expect(bg.tagline, isNotEmpty);
+    }
+  });
 }

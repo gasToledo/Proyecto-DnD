@@ -354,6 +354,101 @@ class _CreationWizardState extends State<CreationWizard> {
 // Pasos
 // ----------------------------------------------------------------------------
 
+/// Tarjeta de elección: ícono en recuadro, nombre y línea de sabor. Es el
+/// patrón compartido por los pasos de Especie, Clase y Trasfondo.
+class _ChoiceCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Color accent;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ChoiceCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.accent,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: 228,
+      child: Material(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(13),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(13),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(
+                  color: selected ? accent : pal.hairline, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: selected ? accent : pal.goldSoft,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(icon,
+                      size: 22,
+                      color: selected ? scheme.onPrimary : accent),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontFamily: 'Georgia',
+                              fontSize: 16,
+                              color: scheme.onSurface)),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(subtitle!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 11.5,
+                                height: 1.25,
+                                color: scheme.onSurfaceVariant)),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Grilla fluida de [_ChoiceCard].
+class _ChoiceGrid extends StatelessWidget {
+  final List<Widget> children;
+  const _ChoiceGrid({required this.children});
+  @override
+  Widget build(BuildContext context) =>
+      Wrap(spacing: 12, runSpacing: 12, children: children);
+}
+
 /// Paso 1 · Especie. Elección + rasgos de la especie elegida. Las habilidades y
 /// la dote de origen se eligen más adelante, en Aptitudes.
 class _RaceStep extends StatelessWidget {
@@ -363,22 +458,30 @@ class _RaceStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = draft.repo;
+    final pal = context.palette;
     final race = draft.race;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Eyebrow('Especie'),
-        const SizedBox(height: 8),
-        _SingleSelect(
-          options: {for (final r in repo.races.values) r.id: r.name},
-          selected: draft.raceId,
-          onSelect: (id) {
-            draft.raceId = id;
-            draft.raceSkills.clear();
-            draft.raceFeatId = null;
-            onChanged();
-          },
+        const SizedBox(height: 10),
+        _ChoiceGrid(
+          children: [
+            for (final r in draft.repo.races.values)
+              _ChoiceCard(
+                icon: raceIcon(r),
+                title: r.name,
+                subtitle: r.tagline,
+                accent: pal.gold,
+                selected: draft.raceId == r.id,
+                onTap: () {
+                  draft.raceId = r.id;
+                  draft.raceSkills.clear();
+                  draft.raceFeatId = null;
+                  onChanged();
+                },
+              ),
+          ],
         ),
         if (race != null) ...[
           const SizedBox(height: 18),
@@ -387,6 +490,8 @@ class _RaceStep extends StatelessWidget {
             facts: [
               ('Tamaño', race.size),
               ('Velocidad', '${race.speed} ft'),
+              if (race.skillChoiceCount > 0)
+                ('Habilidades', '${race.skillChoiceCount} a elegir'),
             ],
             child: _TraitList(effects: race.effects),
           ),
@@ -415,27 +520,28 @@ class _ClassStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Eyebrow('Clase'),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: repo.classes.values
-              .map((c) => ChoiceChip(
-                    avatar: Icon(classIcon(c),
-                        size: 18, color: classAccent(c, context.palette.gold)),
-                    label: Text(c.name),
-                    selected: draft.classId == c.id,
-                    onSelected: (_) {
-                      draft.classId = c.id;
-                      draft.classSkills.clear();
-                      draft.weaponMasteries.clear();
-                      draft.fightingStyleId = null;
-                      draft.cantrips.clear();
-                      draft.spells.clear();
-                      onChanged();
-                    },
-                  ))
-              .toList(),
+        const SizedBox(height: 10),
+        _ChoiceGrid(
+          children: [
+            for (final c in repo.classes.values)
+              _ChoiceCard(
+                icon: classIcon(c),
+                title: c.name,
+                subtitle: 'd${c.hitDie} · '
+                    '${c.savingThrows.map((a) => a.abbr).join(" / ")}',
+                accent: classAccent(c, context.palette.gold),
+                selected: draft.classId == c.id,
+                onTap: () {
+                  draft.classId = c.id;
+                  draft.classSkills.clear();
+                  draft.weaponMasteries.clear();
+                  draft.fightingStyleId = null;
+                  draft.cantrips.clear();
+                  draft.spells.clear();
+                  onChanged();
+                },
+              ),
+          ],
         ),
         if (klass != null) ...[
           const SizedBox(height: 18),
@@ -498,16 +604,24 @@ class _BackgroundStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Eyebrow('Trasfondo'),
-        const SizedBox(height: 8),
-        _SingleSelect(
-          options: {for (final b in repo.backgrounds.values) b.id: b.name},
-          selected: draft.backgroundId,
-          onSelect: (id) {
-            draft.backgroundId = id;
-            draft.spreadPlusTwo = null;
-            draft.spreadPlusOne = null;
-            onChanged();
-          },
+        const SizedBox(height: 10),
+        _ChoiceGrid(
+          children: [
+            for (final b in repo.backgrounds.values)
+              _ChoiceCard(
+                icon: backgroundIcon(b),
+                title: b.name,
+                subtitle: b.tagline,
+                accent: context.palette.gold,
+                selected: draft.backgroundId == b.id,
+                onTap: () {
+                  draft.backgroundId = b.id;
+                  draft.spreadPlusTwo = null;
+                  draft.spreadPlusOne = null;
+                  onChanged();
+                },
+              ),
+          ],
         ),
         if (bg != null) ...[
           const SizedBox(height: 18),

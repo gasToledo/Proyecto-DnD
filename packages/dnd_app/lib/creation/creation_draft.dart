@@ -1,10 +1,40 @@
 import 'package:dnd_engine/dnd_engine.dart';
 
+/// Las 18 habilidades de 2024.
+const allSkills2024 = [
+  'acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception',
+  'history', 'insight', 'intimidation', 'investigation', 'medicine',
+  'nature', 'perception', 'performance', 'persuasion', 'religion',
+  'sleight-of-hand', 'stealth', 'survival',
+];
+
+/// Opciones reales de una elección de habilidad: una lista vacía significa
+/// "cualquiera de las 18" (p.ej. el Bardo en 2024), no "ninguna". Es el único
+/// lugar donde vive esa regla: los pickers y el gating la comparten.
+List<String> skillOptions(List<String> from) =>
+    from.isEmpty ? allSkills2024 : from;
+
 /// Modo de reparto del aumento de característica del trasfondo 2024.
 enum AbilitySpreadMode { twoOne, oneOneOne }
 
 /// Método de puntuación de características (brief §3.A.4).
 enum ScoreMethod { standardArray, roll4d6 }
+
+/// Pasos del wizard de creación, en orden. Fijos (ya no dependen de si la clase
+/// lanza conjuros: los conjuros viven dentro de [equipo]).
+enum CreationStep {
+  raza('Raza'),
+  clase('Clase'),
+  trasfondo('Trasfondo'),
+  puntuaciones('Puntuaciones'),
+  aptitudes('Aptitudes'),
+  equipo('Equipo'),
+  detalles('Detalles'),
+  resumen('Resumen');
+
+  const CreationStep(this.label);
+  final String label;
+}
 
 /// Estado mutable del wizard de creación. Acumula las elecciones y sabe
 /// construir un [Character] con todo resuelto. La UI solo lee/escribe esto.
@@ -44,6 +74,10 @@ class CreationDraft {
   String? weaponId;
 
   String name = '';
+
+  // Detalles de sabor.
+  CharacterAlignment? alignment;
+  String personalityTrait = '';
 
   CharacterClass? get klass => repo.characterClass(classId);
   Race? get race => raceId == null ? null : repo.race(raceId!);
@@ -176,71 +210,83 @@ class CreationDraft {
   void clearScores() => assignedScores.clear();
 
   /// Cuántas habilidades de [from] siguen elegibles tras excluir las ya tomadas
-  /// en otro origen ([disabled]). Una lista vacía significa "cualquiera de las
-  /// 18": nunca es el cuello de botella, así que devolvemos un tope alto.
+  /// en otro origen ([disabled]).
   int _selectableSkills(List<String> from, Set<String> disabled) =>
-      from.isEmpty ? 999 : from.toSet().difference(disabled).length;
+      skillOptions(from).toSet().difference(disabled).length;
 
-  /// Elecciones obligatorias que faltan en [stepTitle]. Lista vacía = el paso
-  /// está completo y se puede avanzar. La UI la usa para bloquear "Siguiente" y
-  /// explicar qué falta.
+  /// Elecciones obligatorias que faltan en [step]. Lista vacía = el paso está
+  /// completo y se puede avanzar. La UI la usa para bloquear "Siguiente",
+  /// explicar qué falta y decidir a qué pasos se puede saltar desde el stepper.
   ///
   /// El requerido de habilidades se acota a lo realmente elegible: si otro
   /// origen ya tomó opciones y quedan menos que el cupo, se exige solo lo
   /// posible (así el gate nunca deja al usuario sin salida).
-  List<String> pendingFor(String stepTitle) {
-    switch (stepTitle) {
-      case 'Clase':
+  List<String> pendingFor(CreationStep step) {
+    switch (step) {
+      case CreationStep.raza:
+        return race == null ? const ['Elegí una especie.'] : const [];
+
+      case CreationStep.clase:
         final k = klass;
         if (k == null) return const ['Elegí una clase.'];
         final out = <String>[];
         if (grantsFightingStyle && fightingStyleId == null) {
           out.add('Elegí un estilo de combate.');
         }
-        final selectable = _selectableSkills(k.skillChoiceFrom,
-            {...raceSkills, ...?background?.skillProficiencies});
-        final need =
-            k.skillChoiceCount < selectable ? k.skillChoiceCount : selectable;
-        if (classSkills.length < need) {
-          out.add('Habilidades de clase: ${classSkills.length}/'
-              '${k.skillChoiceCount}.');
-        }
         final slots = weaponMasterySlots;
         if (slots > 0 && weaponMasteries.length < slots) {
           out.add('Maestría de armas: ${weaponMasteries.length}/$slots.');
         }
         return out;
-      case 'Especie':
-        final r = race;
-        if (r == null) return const ['Elegí una especie.'];
-        final out = <String>[];
-        final selectable = _selectableSkills(r.skillChoiceFrom,
-            {...classSkills, ...?background?.skillProficiencies});
-        final need =
-            r.skillChoiceCount < selectable ? r.skillChoiceCount : selectable;
-        if (need > 0 && raceSkills.length < need) {
-          out.add('Habilidades de especie: ${raceSkills.length}/'
-              '${r.skillChoiceCount}.');
-        }
-        final grantsFeat = r.effects.any((e) => e is GrantFeatEffect);
-        if (grantsFeat && raceFeatId == null) {
-          out.add('Elegí una dote de origen.');
-        }
-        return out;
-      case 'Trasfondo':
+
+      case CreationStep.trasfondo:
         if (background == null) return const ['Elegí un trasfondo.'];
         if (spreadMode == AbilitySpreadMode.twoOne &&
             (spreadPlusTwo == null || spreadPlusOne == null)) {
           return const ['Asigná el +2 y el +1 de característica.'];
         }
         return const [];
-      case 'Características':
+
+      case CreationStep.puntuaciones:
         if (!allScoresAssigned) {
           final n = Ability.values.where(assignedScores.containsKey).length;
           return ['Asigná las 6 características ($n/6).'];
         }
         return const [];
-      case 'Conjuros':
+
+      case CreationStep.aptitudes:
+        final out = <String>[];
+        final k = klass;
+        if (k != null) {
+          final selectable = _selectableSkills(k.skillChoiceFrom,
+              {...raceSkills, ...?background?.skillProficiencies});
+          final need =
+              k.skillChoiceCount < selectable ? k.skillChoiceCount : selectable;
+          if (classSkills.length < need) {
+            out.add('Habilidades de clase: ${classSkills.length}/'
+                '${k.skillChoiceCount}.');
+          }
+        }
+        final r = race;
+        if (r != null) {
+          final selectable = _selectableSkills(r.skillChoiceFrom,
+              {...classSkills, ...?background?.skillProficiencies});
+          final need =
+              r.skillChoiceCount < selectable ? r.skillChoiceCount : selectable;
+          if (need > 0 && raceSkills.length < need) {
+            out.add('Habilidades de especie: ${raceSkills.length}/'
+                '${r.skillChoiceCount}.');
+          }
+          final grantsFeat = r.effects.any((e) => e is GrantFeatEffect);
+          if (grantsFeat && raceFeatId == null) {
+            out.add('Elegí una dote de origen.');
+          }
+        }
+        return out;
+
+      case CreationStep.equipo:
+        // El equipo no obliga (sin arma = puños, sin armadura es válido); los
+        // conjuros sí, para las clases lanzadoras.
         final sc = spellcasting;
         if (sc == null) return const [];
         final out = <String>[];
@@ -251,9 +297,30 @@ class CreationDraft {
           out.add('Conjuros: ${spells.length}/${sc.preparedCount}.');
         }
         return out;
-      default: // Equipo, Nombre: sin elecciones obligatorias.
+
+      case CreationStep.detalles:
+      case CreationStep.resumen:
         return const [];
     }
+  }
+
+  /// Primer paso incompleto (o el último si está todo listo). El wizard lo usa
+  /// para no dejar al usuario varado en un paso que dejó de ser alcanzable.
+  CreationStep get firstIncompleteStep {
+    for (final s in CreationStep.values) {
+      if (pendingFor(s).isNotEmpty) return s;
+    }
+    return CreationStep.values.last;
+  }
+
+  /// Se puede entrar a [step] solo si todos los anteriores están completos.
+  /// Así el stepper sirve para volver, pero nunca para saltear validaciones.
+  bool canGoTo(CreationStep step) {
+    for (final s in CreationStep.values) {
+      if (s.index >= step.index) break;
+      if (pendingFor(s).isNotEmpty) return false;
+    }
+    return true;
   }
 
   /// Puntuación final de una característica (asignada + reparto de trasfondo),
@@ -287,6 +354,8 @@ class CreationDraft {
       equippedArmorId: equippedArmorId,
       shieldEquipped: shieldEquipped,
       equippedWeaponIds: [?weaponId],
+      alignment: alignment,
+      personalityTrait: personalityTrait.trim(),
     );
   }
 }

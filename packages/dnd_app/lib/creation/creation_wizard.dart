@@ -6,14 +6,6 @@ import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
 import 'creation_draft.dart';
 
-/// Habilidades 2024 (para elecciones "de cualquier lista").
-const _allSkills = [
-  'acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception',
-  'history', 'insight', 'intimidation', 'investigation', 'medicine',
-  'nature', 'perception', 'performance', 'persuasion', 'religion',
-  'sleight-of-hand', 'stealth', 'survival',
-];
-
 String titleCase(String s) => s.isEmpty
     ? s
     : s
@@ -21,7 +13,23 @@ String titleCase(String s) => s.isEmpty
         .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
         .join(' ');
 
-/// Wizard de creación de personaje marcial (reglas 2024).
+/// Ícono de cada paso en el stepper.
+const _stepIcons = {
+  CreationStep.raza: Icons.groups,
+  CreationStep.clase: Icons.military_tech,
+  CreationStep.trasfondo: Icons.history_edu,
+  CreationStep.puntuaciones: Icons.tune,
+  CreationStep.aptitudes: Icons.checklist,
+  CreationStep.equipo: Icons.backpack,
+  CreationStep.detalles: Icons.edit_note,
+  CreationStep.resumen: Icons.verified,
+};
+
+/// Ancho a partir del cual se muestra el panel lateral de progreso.
+const _kWideBreakpoint = 900.0;
+
+/// Wizard de creación (reglas 2024). Ocho pasos fijos con stepper: se puede
+/// volver a cualquier paso ya completo, pero nunca saltear uno pendiente.
 class CreationWizard extends StatefulWidget {
   final ContentRepository repo;
   final void Function(Character) onCreate;
@@ -33,29 +41,25 @@ class CreationWizard extends StatefulWidget {
 
 class _CreationWizardState extends State<CreationWizard> {
   late final CreationDraft d = CreationDraft(widget.repo);
-  int _step = 0;
+  CreationStep _step = CreationStep.raza;
 
-  /// Los pasos son dinámicos: el de "Conjuros" solo aparece para clases
-  /// lanzadoras, tras asignar características (necesita el mod. de aptitud).
-  List<String> get _titles => [
-        'Clase',
-        'Especie',
-        'Trasfondo',
-        'Características',
-        if (d.isCaster) 'Conjuros',
-        'Equipo',
-        'Nombre',
-      ];
+  static const _steps = CreationStep.values;
+  bool get _isLast => _step == _steps.last;
 
   void _next() {
-    if (_step < _titles.length - 1) {
-      setState(() => _step++);
-    } else {
+    if (_isLast) {
       _finish();
+      return;
     }
+    setState(() => _step = _steps[_step.index + 1]);
   }
 
-  void _back() => setState(() => _step--);
+  void _back() => setState(() => _step = _steps[_step.index - 1]);
+
+  void _goTo(CreationStep s) {
+    if (!d.canGoTo(s)) return;
+    setState(() => _step = s);
+  }
 
   void _finish() {
     final character = d.build();
@@ -66,55 +70,334 @@ class _CreationWizardState extends State<CreationWizard> {
     Navigator.of(context).pop();
   }
 
+  /// Un cambio puede volver inalcanzable el paso actual (p.ej. cambiar de clase
+  /// borra las maestrías ya elegidas): en ese caso se retrocede al primero que
+  /// quedó pendiente en vez de dejar al usuario varado.
+  void _refresh() => setState(() {
+        if (!d.canGoTo(_step)) _step = d.firstIncompleteStep;
+      });
+
   @override
   Widget build(BuildContext context) {
+    final pending = d.pendingFor(_step);
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Crear personaje · ${_titles[_step]}'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(value: (_step + 1) / _titles.length),
-        ),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            child: _buildStep(),
-          ),
-        ),
-      ),
-      bottomNavigationBar: _NavBar(
-        step: _step,
-        total: _titles.length,
-        onBack: _step == 0 ? null : _back,
-        onNext: _next,
-        pending: d.pendingFor(_titles[_step]),
+      body: LayoutBuilder(
+        builder: (context, box) {
+          final wide = box.maxWidth >= _kWideBreakpoint;
+          final main = Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _headerAndStepper(context, wide),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(wide ? 40 : 20, 14, wide ? 40 : 20, 8),
+                  child: _buildStep(),
+                ),
+              ),
+              _footer(context, pending),
+            ],
+          );
+          if (!wide) return SafeArea(child: main);
+          return SafeArea(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [_progressPanel(context), Expanded(child: main)],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStep() => switch (_titles[_step]) {
-        'Clase' => _ClassStep(draft: d, onChanged: _refresh),
-        'Especie' => _SpeciesStep(draft: d, onChanged: _refresh),
-        'Trasfondo' => _BackgroundStep(draft: d, onChanged: _refresh),
-        'Características' => _ScoresStep(draft: d, onChanged: _refresh),
-        'Conjuros' => _SpellsStep(draft: d, onChanged: _refresh),
-        'Equipo' => _EquipmentStep(draft: d, onChanged: _refresh),
-        _ => _NameStep(draft: d, repo: widget.repo, onChanged: _refresh),
-      };
+  // --------------------------------------------------------------------------
+  // Shell
+  // --------------------------------------------------------------------------
 
-  void _refresh() => setState(() {
-        // Cambiar de clase puede agregar/quitar el paso de Conjuros: reajusta.
-        if (_step >= _titles.length) _step = _titles.length - 1;
-      });
+  Widget _progressPanel(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 236,
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(right: BorderSide(color: pal.hairline)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 2, 8, 20),
+            child: Row(
+              children: [
+                Transform.rotate(
+                  angle: 0.785398,
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                        color: pal.gold,
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(children: [
+                      const TextSpan(text: 'Fichas\n'),
+                      TextSpan(
+                          text: 'D&D 5e', style: TextStyle(color: pal.gold)),
+                    ]),
+                    style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 17,
+                        height: 1.1,
+                        color: scheme.onSurface),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
+            decoration: BoxDecoration(
+              color: pal.plaque,
+              border: Border.all(color: pal.hairline),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Eyebrow('Progreso'),
+                const SizedBox(height: 8),
+                ThinBar(
+                  ratio: (_step.index + 1) / _steps.length,
+                  color: pal.gold,
+                  track: scheme.surface,
+                ),
+                const SizedBox(height: 9),
+                Text('Paso ${_step.index + 1} de ${_steps.length}',
+                    style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 13,
+                        color: scheme.onSurface)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerAndStepper(BuildContext context, bool wide) {
+    final scheme = Theme.of(context).colorScheme;
+    final pal = context.palette;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(wide ? 40 : 20, 22, wide ? 40 : 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text('Crear personaje',
+                    style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 26,
+                        color: scheme.onSurface)),
+              ),
+              IconButton(
+                tooltip: 'Cancelar',
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.close, size: 20),
+                style: IconButton.styleFrom(
+                  side: BorderSide(color: pal.hairline),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          _stepper(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepper(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final children = <Widget>[];
+    for (final s in _steps) {
+      final active = s == _step;
+      final done = s.index < _step.index && d.pendingFor(s).isEmpty;
+      final reachable = d.canGoTo(s);
+      final ring = active || done ? pal.gold : pal.hairline;
+      final fill = active
+          ? pal.gold
+          : done
+              ? pal.goldSoft
+              : scheme.surface;
+      final fg = active
+          ? scheme.onPrimary
+          : done
+              ? pal.gold
+              : pal.textMuted;
+      children.add(
+        Tooltip(
+          message: reachable ? s.label : 'Completá los pasos anteriores',
+          child: InkWell(
+            onTap: reachable ? () => _goTo(s) : null,
+            borderRadius: BorderRadius.circular(10),
+            child: SizedBox(
+              width: 88,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: fill,
+                      border: Border.all(color: ring, width: 2),
+                    ),
+                    child: Icon(_stepIcons[s], size: 22, color: fg),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(s.label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: .4,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                        color: active
+                            ? pal.gold
+                            : done
+                                ? scheme.onSurfaceVariant
+                                : pal.textMuted,
+                      )),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      if (s != _steps.last) {
+        children.add(Expanded(
+          child: Container(
+            height: 2,
+            margin: const EdgeInsets.only(bottom: 22),
+            color: s.index < _step.index ? pal.gold : pal.hairline,
+          ),
+        ));
+      }
+    }
+    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+  }
+
+  Widget _footer(BuildContext context, List<String> pending) {
+    final pal = context.palette;
+    final blocked = pending.isNotEmpty;
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: pal.hairline)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      child: Row(
+        children: [
+          if (_step != _steps.first)
+            OutlinedButton.icon(
+              onPressed: _back,
+              icon: const Icon(Icons.arrow_back, size: 18),
+              label: const Text('Atrás'),
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              blocked ? 'Falta: ${pending.join('  ·  ')}' : '',
+              textAlign: TextAlign.end,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+          const SizedBox(width: 12),
+          FilledButton.icon(
+            onPressed: blocked ? null : _next,
+            icon: Icon(_isLast ? Icons.check : Icons.arrow_forward, size: 20),
+            label: Text(_isLast ? 'Crear personaje' : 'Siguiente'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep() => switch (_step) {
+        CreationStep.raza => _RaceStep(draft: d, onChanged: _refresh),
+        CreationStep.clase => _ClassStep(draft: d, onChanged: _refresh),
+        CreationStep.trasfondo => _BackgroundStep(draft: d, onChanged: _refresh),
+        CreationStep.puntuaciones => _ScoresStep(draft: d, onChanged: _refresh),
+        CreationStep.aptitudes => _AptitudesStep(draft: d, onChanged: _refresh),
+        CreationStep.equipo => _EquipmentStep(draft: d, onChanged: _refresh),
+        CreationStep.detalles => _DetailsStep(draft: d, onChanged: _refresh),
+        CreationStep.resumen =>
+          _SummaryStep(draft: d, repo: widget.repo, onChanged: _refresh),
+      };
 }
 
 // ----------------------------------------------------------------------------
 // Pasos
 // ----------------------------------------------------------------------------
 
+/// Paso 1 · Especie. Elección + rasgos de la especie elegida. Las habilidades y
+/// la dote de origen se eligen más adelante, en Aptitudes.
+class _RaceStep extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _RaceStep({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = draft.repo;
+    final race = draft.race;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('Especie'),
+        const SizedBox(height: 8),
+        _SingleSelect(
+          options: {for (final r in repo.races.values) r.id: r.name},
+          selected: draft.raceId,
+          onSelect: (id) {
+            draft.raceId = id;
+            draft.raceSkills.clear();
+            draft.raceFeatId = null;
+            onChanged();
+          },
+        ),
+        if (race != null) ...[
+          const SizedBox(height: 18),
+          _DetailPanel(
+            title: race.name,
+            facts: [
+              ('Tamaño', race.size),
+              ('Velocidad', '${race.speed} ft'),
+            ],
+            child: _TraitList(effects: race.effects),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Paso 2 · Clase. Grilla de clases y, debajo, el panel de detalle con lo que
+/// esa clase exige a nivel 1 (estilo de combate, maestrías de arma).
 class _ClassStep extends StatelessWidget {
   final CreationDraft draft;
   final VoidCallback onChanged;
@@ -126,12 +409,13 @@ class _ClassStep extends StatelessWidget {
     final klass = draft.klass;
     final styles =
         repo.feats.values.where((f) => f.category == 'fighting-style').toList();
-    final masteryWeapons = draft.proficientWeapons;
     final slots = draft.weaponMasterySlots;
 
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Eyebrow('Clase'),
+        const Eyebrow('Clase'),
+        const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -154,120 +438,52 @@ class _ClassStep extends StatelessWidget {
               .toList(),
         ),
         if (klass != null) ...[
-          if (draft.grantsFightingStyle) ...[
-            const SizedBox(height: 20),
-            Eyebrow('Estilo de combate'),
-            _SingleSelect(
-              options: {for (final f in styles) f.id: f.name},
-              selected: draft.fightingStyleId,
-              onSelect: (id) {
-                draft.fightingStyleId = id;
-                onChanged();
-              },
+          const SizedBox(height: 18),
+          _DetailPanel(
+            title: klass.name,
+            facts: [
+              ('Dado de golpe', 'd${klass.hitDie}'),
+              ('Salvaciones', klass.savingThrows.map((a) => a.abbr).join(' · ')),
+            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (draft.grantsFightingStyle) ...[
+                  const Eyebrow('Estilo de combate'),
+                  const SizedBox(height: 8),
+                  _SingleSelect(
+                    options: {for (final f in styles) f.id: f.name},
+                    selected: draft.fightingStyleId,
+                    onSelect: (id) {
+                      draft.fightingStyleId = id;
+                      onChanged();
+                    },
+                  ),
+                ],
+                if (slots > 0) ...[
+                  const SizedBox(height: 18),
+                  Eyebrow('Maestría de armas (elige $slots)'),
+                  Text('Solo armas con las que ${klass.name} es competente.',
+                      style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 6),
+                  _WeaponChecklist(
+                    weapons: draft.proficientWeapons,
+                    selected: draft.weaponMasteries,
+                    max: slots,
+                    onChanged: onChanged,
+                  ),
+                ],
+              ],
             ),
-          ],
-          const SizedBox(height: 20),
-          Eyebrow('Habilidades de clase (elige ${klass.skillChoiceCount})'),
-          CappedChipSelect(
-            options: {
-              for (final s in (klass.skillChoiceFrom.isEmpty
-                  ? _allSkills
-                  : klass.skillChoiceFrom))
-                s: titleCase(s)
-            },
-            selected: draft.classSkills,
-            max: klass.skillChoiceCount,
-            disabled: {
-              ...draft.raceSkills,
-              ...?draft.background?.skillProficiencies,
-            },
-            onChanged: onChanged,
           ),
-          if (slots > 0) ...[
-            const SizedBox(height: 20),
-            Eyebrow('Maestría de armas (elige $slots)'),
-            Text('Solo armas con las que ${klass.name} es competente.',
-                style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 6),
-            _WeaponChecklist(
-              weapons: masteryWeapons,
-              selected: draft.weaponMasteries,
-              max: slots,
-              onChanged: onChanged,
-            ),
-          ],
         ],
       ],
     );
   }
 }
 
-class _SpeciesStep extends StatelessWidget {
-  final CreationDraft draft;
-  final VoidCallback onChanged;
-  const _SpeciesStep({required this.draft, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final repo = draft.repo;
-    final race = draft.race;
-    final grantsFeat = race?.effects.any((e) => e is GrantFeatEffect) ?? false;
-    final originFeats =
-        repo.feats.values.where((f) => f.category == 'origin').toList();
-
-    return ListView(
-      children: [
-        Eyebrow('Especie'),
-        _SingleSelect(
-          options: {for (final r in repo.races.values) r.id: r.name},
-          selected: draft.raceId,
-          onSelect: (id) {
-            draft.raceId = id;
-            draft.raceSkills.clear();
-            draft.raceFeatId = null;
-            onChanged();
-          },
-        ),
-        if (race != null) ...[
-          const SizedBox(height: 12),
-          _TraitList(effects: race.effects),
-          if (race.skillChoiceCount > 0) ...[
-            const SizedBox(height: 16),
-            Eyebrow('Habilidad de especie (elige ${race.skillChoiceCount})'),
-            CappedChipSelect(
-              options: {
-                for (final s in (race.skillChoiceFrom.isEmpty
-                    ? _allSkills
-                    : race.skillChoiceFrom))
-                  s: titleCase(s)
-              },
-              selected: draft.raceSkills,
-              max: race.skillChoiceCount,
-              disabled: {
-                ...draft.classSkills,
-                ...?draft.background?.skillProficiencies,
-              },
-              onChanged: onChanged,
-            ),
-          ],
-          if (grantsFeat) ...[
-            const SizedBox(height: 16),
-            Eyebrow('Dote de origen (especie)'),
-            _SingleSelect(
-              options: {for (final f in originFeats) f.id: f.name},
-              selected: draft.raceFeatId,
-              onSelect: (id) {
-                draft.raceFeatId = id;
-                onChanged();
-              },
-            ),
-          ],
-        ],
-      ],
-    );
-  }
-}
-
+/// Paso 3 · Trasfondo. Incluye el aumento de característica 2024, que en estas
+/// reglas viene del trasfondo (no de la especie).
 class _BackgroundStep extends StatelessWidget {
   final CreationDraft draft;
   final VoidCallback onChanged;
@@ -278,9 +494,11 @@ class _BackgroundStep extends StatelessWidget {
     final repo = draft.repo;
     final bg = draft.background;
 
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Eyebrow('Trasfondo'),
+        const Eyebrow('Trasfondo'),
+        const SizedBox(height: 8),
         _SingleSelect(
           options: {for (final b in repo.backgrounds.values) b.id: b.name},
           selected: draft.backgroundId,
@@ -292,31 +510,45 @@ class _BackgroundStep extends StatelessWidget {
           },
         ),
         if (bg != null) ...[
-          const SizedBox(height: 12),
-          Text('Competencias: ${bg.skillProficiencies.map(titleCase).join(", ")}'),
-          if (bg.originFeatId != null)
-            Text('Dote de origen: '
-                '${repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!}'),
-          const SizedBox(height: 20),
-          Eyebrow('Aumento de característica (2024)'),
-          SegmentedButton<AbilitySpreadMode>(
-            segments: const [
-              ButtonSegment(value: AbilitySpreadMode.twoOne, label: Text('+2 / +1')),
-              ButtonSegment(
-                  value: AbilitySpreadMode.oneOneOne, label: Text('+1 / +1 / +1')),
+          const SizedBox(height: 18),
+          _DetailPanel(
+            title: bg.name,
+            facts: [
+              ('Competencias',
+                  bg.skillProficiencies.map(titleCase).join(', ')),
+              if (bg.originFeatId != null)
+                ('Dote de origen',
+                    repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!),
             ],
-            selected: {draft.spreadMode},
-            onSelectionChanged: (s) {
-              draft.spreadMode = s.first;
-              onChanged();
-            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Eyebrow('Aumento de característica (2024)'),
+                const SizedBox(height: 8),
+                SegmentedButton<AbilitySpreadMode>(
+                  segments: const [
+                    ButtonSegment(
+                        value: AbilitySpreadMode.twoOne, label: Text('+2 / +1')),
+                    ButtonSegment(
+                        value: AbilitySpreadMode.oneOneOne,
+                        label: Text('+1 / +1 / +1')),
+                  ],
+                  selected: {draft.spreadMode},
+                  onSelectionChanged: (s) {
+                    draft.spreadMode = s.first;
+                    onChanged();
+                  },
+                ),
+                const SizedBox(height: 12),
+                if (draft.spreadMode == AbilitySpreadMode.twoOne)
+                  _TwoOnePicker(draft: draft, onChanged: onChanged)
+                else
+                  Text(
+                      'Cada una de ${bg.abilityOptions.map((a) => a.abbr).join(", ")} '
+                      'recibe +1.'),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          if (draft.spreadMode == AbilitySpreadMode.twoOne)
-            _TwoOnePicker(draft: draft, onChanged: onChanged)
-          else
-            Text('Cada una de ${bg.abilityOptions.map((a) => a.abbr).join(", ")} '
-                'recibe +1.'),
         ],
       ],
     );
@@ -376,7 +608,8 @@ class _AbilityDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
-      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      decoration:
+          InputDecoration(labelText: label, border: const OutlineInputBorder()),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Ability>(
           isExpanded: true,
@@ -391,6 +624,7 @@ class _AbilityDropdown extends StatelessWidget {
   }
 }
 
+/// Paso 4 · Puntuaciones.
 class _ScoresStep extends StatelessWidget {
   final CreationDraft draft;
   final VoidCallback onChanged;
@@ -398,9 +632,11 @@ class _ScoresStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Eyebrow('Método'),
+        const Eyebrow('Método'),
+        const SizedBox(height: 8),
         SegmentedButton<ScoreMethod>(
           segments: const [
             ButtonSegment(
@@ -413,38 +649,41 @@ class _ScoresStep extends StatelessWidget {
             onChanged();
           },
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (draft.scoreMethod == ScoreMethod.roll4d6)
-                OutlinedButton.icon(
-                  onPressed: () {
-                    draft.applyScoreMethod(ScoreMethod.roll4d6);
-                    onChanged();
-                  },
-                  icon: const Icon(Icons.casino),
-                  label: const Text('Volver a tirar'),
-                ),
-              if (draft.assignedScores.isNotEmpty)
-                TextButton.icon(
-                  onPressed: () {
-                    draft.clearScores();
-                    onChanged();
-                  },
-                  icon: const Icon(Icons.restart_alt),
-                  label: const Text('Limpiar asignación'),
-                ),
-            ],
+        if (draft.scoreMethod == ScoreMethod.roll4d6 ||
+            draft.assignedScores.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (draft.scoreMethod == ScoreMethod.roll4d6)
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      draft.applyScoreMethod(ScoreMethod.roll4d6);
+                      onChanged();
+                    },
+                    icon: const Icon(Icons.casino),
+                    label: const Text('Volver a tirar'),
+                  ),
+                if (draft.assignedScores.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () {
+                      draft.clearScores();
+                      onChanged();
+                    },
+                    icon: const Icon(Icons.restart_alt),
+                    label: const Text('Limpiar asignación'),
+                  ),
+              ],
+            ),
           ),
-        ),
         const SizedBox(height: 8),
         Text('Pool: ${draft.pool.join(", ")}',
             style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 12),
-        ...Ability.values.map((a) => _ScoreRow(draft: draft, ability: a, onChanged: onChanged)),
+        ...Ability.values.map(
+            (a) => _ScoreRow(draft: draft, ability: a, onChanged: onChanged)),
       ],
     );
   }
@@ -463,17 +702,18 @@ class _ScoreRow extends StatelessWidget {
     // Se ofrecen todos los valores del pool: elegir uno ya tomado por otra
     // característica las intercambia (draft.assignScore), así siempre se puede
     // reordenar aunque estén las 6 asignadas.
-    final items = draft.pool.toSet().toList()
-      ..sort((a, b) => b.compareTo(a));
+    final items = draft.pool.toSet().toList()..sort((a, b) => b.compareTo(a));
     final spread = draft.abilitySpread[ability] ?? 0;
-    final finalScore = (assigned ?? 0) + spread;
+    final finalScore = draft.previewScore(ability);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(width: 44, child: Text(ability.abbr,
-              style: Theme.of(context).textTheme.titleMedium)),
+          SizedBox(
+              width: 44,
+              child: Text(ability.abbr,
+                  style: Theme.of(context).textTheme.titleMedium)),
           Expanded(
             child: DropdownButton<int>(
               isExpanded: true,
@@ -504,6 +744,93 @@ class _ScoreRow extends StatelessWidget {
   }
 }
 
+/// Paso 5 · Aptitudes: las competencias que se eligen (de clase y de especie) y
+/// la dote de origen que concede la especie. En 2024 no hay dotes libres a
+/// nivel 1: las que hay vienen del origen.
+class _AptitudesStep extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _AptitudesStep({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = draft.repo;
+    final klass = draft.klass;
+    final race = draft.race;
+    final bg = draft.background;
+    final grantsFeat = race?.effects.any((e) => e is GrantFeatEffect) ?? false;
+    final originFeats =
+        repo.feats.values.where((f) => f.category == 'origin').toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (bg != null && bg.skillProficiencies.isNotEmpty) ...[
+          const Eyebrow('Ya otorgadas por el trasfondo'),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final s in bg.skillProficiencies) GoldPill(titleCase(s)),
+            ],
+          ),
+          const SizedBox(height: 20),
+        ],
+        if (klass != null) ...[
+          Eyebrow('Habilidades de clase (elige ${klass.skillChoiceCount})'),
+          const SizedBox(height: 8),
+          CappedChipSelect(
+            options: {
+              for (final s in skillOptions(klass.skillChoiceFrom))
+                s: titleCase(s)
+            },
+            selected: draft.classSkills,
+            max: klass.skillChoiceCount,
+            disabled: {
+              ...draft.raceSkills,
+              ...?bg?.skillProficiencies,
+            },
+            onChanged: onChanged,
+          ),
+        ],
+        if (race != null && race.skillChoiceCount > 0) ...[
+          const SizedBox(height: 20),
+          Eyebrow('Habilidad de especie (elige ${race.skillChoiceCount})'),
+          const SizedBox(height: 8),
+          CappedChipSelect(
+            options: {
+              for (final s in skillOptions(race.skillChoiceFrom))
+                s: titleCase(s)
+            },
+            selected: draft.raceSkills,
+            max: race.skillChoiceCount,
+            disabled: {
+              ...draft.classSkills,
+              ...?bg?.skillProficiencies,
+            },
+            onChanged: onChanged,
+          ),
+        ],
+        if (grantsFeat) ...[
+          const SizedBox(height: 20),
+          const Eyebrow('Dote de origen (especie)'),
+          const SizedBox(height: 8),
+          _SingleSelect(
+            options: {for (final f in originFeats) f.id: f.name},
+            selected: draft.raceFeatId,
+            onSelect: (id) {
+              draft.raceFeatId = id;
+              onChanged();
+            },
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Paso 6 · Equipo (y conjuros, para las clases lanzadoras).
 class _EquipmentStep extends StatelessWidget {
   final CreationDraft draft;
   final VoidCallback onChanged;
@@ -513,11 +840,12 @@ class _EquipmentStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final repo = draft.repo;
     final armors = repo.armor.values.where((a) => !a.isShield).toList();
-    final weapons = repo.weapons.values.toList();
 
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Eyebrow('Armadura'),
+        const Eyebrow('Armadura'),
+        const SizedBox(height: 8),
         _SingleSelect(
           options: {for (final a in armors) a.id: '${a.name} (CA ${a.baseAc})'},
           selected: draft.equippedArmorId,
@@ -532,6 +860,7 @@ class _EquipmentStep extends StatelessWidget {
           },
         ),
         SwitchListTile(
+          contentPadding: EdgeInsets.zero,
           title: const Text('Escudo (+2 CA)'),
           value: draft.shieldEquipped,
           onChanged: (v) {
@@ -540,31 +869,34 @@ class _EquipmentStep extends StatelessWidget {
           },
         ),
         const SizedBox(height: 12),
-        Eyebrow('Arma equipada'),
+        const Eyebrow('Arma equipada'),
+        const SizedBox(height: 8),
         _WeaponSelect(
-          weapons: weapons,
+          weapons: repo.weapons.values.toList(),
           selected: draft.weaponId,
           onSelect: (id) {
             draft.weaponId = id;
             onChanged();
           },
         ),
+        if (draft.isCaster) ...[
+          const SectionRule(),
+          _SpellsSection(draft: draft, onChanged: onChanged),
+        ],
       ],
     );
   }
 }
 
-class _SpellsStep extends StatelessWidget {
+class _SpellsSection extends StatelessWidget {
   final CreationDraft draft;
   final VoidCallback onChanged;
-  const _SpellsStep({required this.draft, required this.onChanged});
+  const _SpellsSection({required this.draft, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     final sc = draft.spellcasting;
-    if (sc == null) {
-      return const Center(child: Text('Esta clase no lanza conjuros.'));
-    }
+    if (sc == null) return const SizedBox.shrink();
     final all = draft.repo.spellsForList(sc.spellList);
     final maxLevel = sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
     final cantrips = all.where((s) => s.isCantrip).toList();
@@ -572,7 +904,8 @@ class _SpellsStep extends StatelessWidget {
         all.where((s) => !s.isCantrip && s.level <= maxLevel).toList();
     final prepared = sc.preparation == SpellPreparation.prepared;
 
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'CD de salvación ${sc.saveDc} · Ataque de conjuro '
@@ -582,6 +915,7 @@ class _SpellsStep extends StatelessWidget {
         if (sc.cantripsKnown > 0) ...[
           const SizedBox(height: 20),
           Eyebrow('Trucos (elige ${sc.cantripsKnown})'),
+          const SizedBox(height: 8),
           CappedChipSelect(
             options: {for (final s in cantrips) s.id: s.name},
             selected: draft.cantrips,
@@ -597,9 +931,7 @@ class _SpellsStep extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall),
         const SizedBox(height: 6),
         CappedChipSelect(
-          options: {
-            for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'
-          },
+          options: {for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'},
           selected: draft.spells,
           max: prepared ? sc.preparedCount : 999,
           onChanged: onChanged,
@@ -609,40 +941,40 @@ class _SpellsStep extends StatelessWidget {
   }
 }
 
-class _NameStep extends StatefulWidget {
+/// Paso 7 · Detalles: nombre y sabor (alineamiento y rasgo de personalidad).
+class _DetailsStep extends StatefulWidget {
   final CreationDraft draft;
-  final ContentRepository repo;
   final VoidCallback onChanged;
-  const _NameStep(
-      {required this.draft, required this.repo, required this.onChanged});
+  const _DetailsStep({required this.draft, required this.onChanged});
 
   @override
-  State<_NameStep> createState() => _NameStepState();
+  State<_DetailsStep> createState() => _DetailsStepState();
 }
 
-class _NameStepState extends State<_NameStep> {
-  late final _controller = TextEditingController(text: widget.draft.name);
+class _DetailsStepState extends State<_DetailsStep> {
+  late final _name = TextEditingController(text: widget.draft.name);
+  late final _trait = TextEditingController(text: widget.draft.personalityTrait);
 
   @override
   void dispose() {
-    _controller.dispose();
+    _name.dispose();
+    _trait.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final d = widget.draft;
-    // Previsualización con lo elegido hasta ahora.
-    final preview = CharacterCompiler(widget.repo).compile(d.build());
-    final race = d.race?.name ?? '—';
-    final klass = d.klass?.name ?? '—';
-
-    return ListView(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Eyebrow('Nombre'),
+        const SizedBox(height: 8),
         TextField(
-          controller: _controller,
+          controller: _name,
+          textCapitalization: TextCapitalization.words,
           decoration: const InputDecoration(
-            labelText: 'Nombre del personaje',
+            hintText: 'Nombre del personaje',
             border: OutlineInputBorder(),
           ),
           onChanged: (v) {
@@ -650,35 +982,226 @@ class _NameStepState extends State<_NameStep> {
             widget.onChanged();
           },
         ),
-        const SizedBox(height: 20),
-        Eyebrow('Resumen'),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('$race $klass · Nivel 1',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Wrap(spacing: 16, runSpacing: 4, children: [
-                  Text('PG ${preview.maxHp}'),
-                  Text('CA ${preview.armorClass}'),
-                  Text('Vel ${preview.speed} ft'),
-                  Text('Perc. Pas ${preview.passivePerception}'),
-                ]),
-                const SizedBox(height: 8),
-                Text(Ability.values
-                    .map((a) => '${a.abbr} ${preview.abilityScores[a]}')
-                    .join('   ')),
-              ],
+        const SizedBox(height: 24),
+        const Eyebrow('Alineamiento'),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ChoiceChip(
+              label: const Text('Sin definir'),
+              selected: d.alignment == null,
+              onSelected: (_) {
+                setState(() => d.alignment = null);
+                widget.onChanged();
+              },
             ),
+            for (final a in CharacterAlignment.values)
+              ChoiceChip(
+                label: Text(a.label),
+                selected: d.alignment == a,
+                onSelected: (_) {
+                  setState(() => d.alignment = a);
+                  widget.onChanged();
+                },
+              ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        const Eyebrow('Rasgo de personalidad'),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _trait,
+          maxLines: 2,
+          decoration: const InputDecoration(
+            hintText: 'Una línea que lo defina. Ej: "Nunca deja una deuda sin pagar."',
+            border: OutlineInputBorder(),
           ),
+          onChanged: (v) {
+            d.personalityTrait = v;
+            widget.onChanged();
+          },
         ),
       ],
     );
   }
 }
+
+/// Paso 8 · Resumen: la ficha ya compilada, antes de confirmar.
+class _SummaryStep extends StatelessWidget {
+  final CreationDraft draft;
+  final ContentRepository repo;
+  final VoidCallback onChanged;
+  const _SummaryStep(
+      {required this.draft, required this.repo, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final character = draft.build();
+    final s = CharacterCompiler(repo).compile(character);
+    final race = draft.race?.name ?? '—';
+    final klass = draft.klass?.name ?? '—';
+    final bg = draft.background?.name ?? '—';
+    final skills = [...draft.classSkills, ...draft.raceSkills];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Medallion(fallback: character.name.characters.first, size: 64),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(character.name,
+                      style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 26,
+                          color: scheme.onSurface)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(classIcon(draft.klass),
+                          size: 16,
+                          color: classAccent(draft.klass, pal.gold)),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text('$race · $klass · $bg · Nivel 1',
+                            style:
+                                TextStyle(color: scheme.onSurfaceVariant)),
+                      ),
+                    ],
+                  ),
+                  if (draft.alignment != null) ...[
+                    const SizedBox(height: 6),
+                    GoldPill(draft.alignment!.label),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SectionRule(),
+        Row(
+          children: [
+            Expanded(
+                child: StatPlaque(
+                    label: 'PG', value: '${s.maxHp}', valueColor: pal.crimson)),
+            const SizedBox(width: 10),
+            Expanded(child: StatPlaque(label: 'CA', value: '${s.armorClass}')),
+            const SizedBox(width: 10),
+            Expanded(
+                child: StatPlaque(label: 'Velocidad', value: '${s.speed}')),
+            const SizedBox(width: 10),
+            Expanded(
+                child: StatPlaque(
+                    label: 'Perc. pasiva', value: '${s.passivePerception}')),
+          ],
+        ),
+        const SizedBox(height: 20),
+        const Eyebrow('Características'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            for (final a in Ability.values) ...[
+              Expanded(
+                child: AbilityPlaque(
+                  abbr: a.abbr,
+                  score: s.abilityScores[a]!,
+                  modifier: s.abilityModifiers[a]!,
+                  saveProficient: s.savingThrowProficiencies.contains(a),
+                ),
+              ),
+              if (a != Ability.values.last) const SizedBox(width: 8),
+            ],
+          ],
+        ),
+        if (skills.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          const Eyebrow('Competencias elegidas'),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [for (final sk in skills) GoldPill(titleCase(sk))],
+          ),
+        ],
+        if (draft.personalityTrait.trim().isNotEmpty) ...[
+          const SizedBox(height: 20),
+          const Eyebrow('Rasgo de personalidad'),
+          const SizedBox(height: 6),
+          Text(draft.personalityTrait.trim(),
+              style: TextStyle(color: scheme.onSurfaceVariant)),
+        ],
+      ],
+    );
+  }
+}
+
+/// Panel de detalle de una elección: título, datos duros y contenido libre.
+class _DetailPanel extends StatelessWidget {
+  final String title;
+  final List<(String, String)> facts;
+  final Widget child;
+  const _DetailPanel(
+      {required this.title, required this.facts, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: pal.plaque,
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 19,
+                  color: scheme.onSurface)),
+          if (facts.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 18,
+              runSpacing: 6,
+              children: [
+                for (final (label, value) in facts)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('${label.toUpperCase()}  ',
+                          style: TextStyle(
+                              fontSize: 10,
+                              letterSpacing: 1,
+                              color: pal.textMuted)),
+                      Text(value,
+                          style: TextStyle(
+                              fontSize: 13, color: scheme.onSurface)),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
 
 // ----------------------------------------------------------------------------
 // Widgets reutilizables
@@ -920,66 +1443,4 @@ class _TraitList extends StatelessWidget {
         style: Theme.of(context).textTheme.bodySmall);
   }
 }
-
-class _NavBar extends StatelessWidget {
-  final int step;
-  final int total;
-  final VoidCallback? onBack;
-  final VoidCallback onNext;
-
-  /// Elecciones que faltan en el paso actual. No vacío = "Siguiente" bloqueado.
-  final List<String> pending;
-  const _NavBar({
-    required this.step,
-    required this.total,
-    required this.onBack,
-    required this.onNext,
-    required this.pending,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isLast = step == total - 1;
-    final blocked = pending.isNotEmpty;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (blocked)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline,
-                        size: 16, color: context.palette.gold),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'Falta: ${pending.join('  ·  ')}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            Row(
-              children: [
-                if (onBack != null)
-                  OutlinedButton(onPressed: onBack, child: const Text('Atrás')),
-                const Spacer(),
-                FilledButton.icon(
-                  onPressed: blocked ? null : onNext,
-                  icon: Icon(isLast ? Icons.check : Icons.arrow_forward),
-                  label: Text(isLast ? 'Crear personaje' : 'Siguiente'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+

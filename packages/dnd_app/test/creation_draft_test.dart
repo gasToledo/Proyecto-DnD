@@ -120,33 +120,46 @@ void main() {
   });
 
   // --- Gating por paso -----------------------------------------------------
+
+  /// Completa el paso de Clase (Guerrero: estilo de combate + 3 maestrías).
+  void completeClase(CreationDraft d) {
+    d.fightingStyleId = 'fs-defense';
+    d.weaponMasteries.addAll(
+        d.proficientWeapons.take(d.weaponMasterySlots).map((w) => w.id));
+  }
+
   group('pendingFor', () {
-    test('Características bloquea hasta asignar las 6', () {
+    test('Puntuaciones bloquea hasta asignar las 6', () {
       final d = newDraft();
-      expect(d.pendingFor('Características'), isNotEmpty);
+      expect(d.pendingFor(CreationStep.puntuaciones), isNotEmpty);
       const order = [15, 14, 13, 12, 10, 8];
       for (var i = 0; i < Ability.values.length; i++) {
         d.assignScore(Ability.values[i], order[i]);
       }
-      expect(d.pendingFor('Características'), isEmpty);
+      expect(d.pendingFor(CreationStep.puntuaciones), isEmpty);
     });
 
-    test('Clase (Guerrero) exige estilo, habilidades y maestrías', () {
-      final d = newDraft(); // classId = fighter por defecto
-      expect(d.pendingFor('Clase'), isNotEmpty);
-      d.fightingStyleId = 'fs-defense';
-      d.classSkills.addAll(['perception', 'survival']);
-      final slots = d.weaponMasterySlots;
-      d.weaponMasteries
-          .addAll(d.proficientWeapons.take(slots).map((w) => w.id));
-      expect(d.pendingFor('Clase'), isEmpty);
-    });
-
-    test('Especie exige elección y sus habilidades', () {
+    test('Raza solo exige elegir especie', () {
       final d = newDraft();
-      expect(d.pendingFor('Especie'), isNotEmpty);
+      expect(d.pendingFor(CreationStep.raza), isNotEmpty);
+      d.raceId = repo.races.values.first.id;
+      expect(d.pendingFor(CreationStep.raza), isEmpty);
+    });
+
+    test('Clase (Guerrero) exige estilo de combate y maestrías', () {
+      final d = newDraft(); // classId = fighter por defecto
+      expect(d.pendingFor(CreationStep.clase), isNotEmpty);
+      completeClase(d);
+      expect(d.pendingFor(CreationStep.clase), isEmpty);
+    });
+
+    test('Aptitudes exige las habilidades y la dote de origen', () {
+      final d = newDraft();
       final race = repo.races.values.first;
       d.raceId = race.id;
+      // Guerrero elige 2 habilidades de clase: el paso arranca pendiente.
+      expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
+      d.classSkills.addAll(['perception', 'survival']);
       // Algunas especies eligen "de cualquier lista" (skillChoiceFrom vacío).
       final pickable = race.skillChoiceFrom.isEmpty
           ? const ['acrobatics', 'arcana', 'athletics']
@@ -155,17 +168,18 @@ void main() {
         d.raceSkills.add(s);
       }
       if (race.effects.any((e) => e is GrantFeatEffect)) {
-        expect(d.pendingFor('Especie'), isNotEmpty);
+        expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
         d.raceFeatId =
             repo.feats.values.firstWhere((f) => f.category == 'origin').id;
       }
-      expect(d.pendingFor('Especie'), isEmpty);
+      expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
     });
 
-    test('Equipo y Nombre nunca bloquean', () {
-      final d = newDraft();
-      expect(d.pendingFor('Equipo'), isEmpty);
-      expect(d.pendingFor('Nombre'), isEmpty);
+    test('Equipo (clase no lanzadora), Detalles y Resumen nunca bloquean', () {
+      final d = newDraft(); // Guerrero: no lanza conjuros
+      expect(d.pendingFor(CreationStep.equipo), isEmpty);
+      expect(d.pendingFor(CreationStep.detalles), isEmpty);
+      expect(d.pendingFor(CreationStep.resumen), isEmpty);
     });
 
     test('el cupo de habilidades no bloquea si quedan menos opciones elegibles',
@@ -176,15 +190,34 @@ void main() {
       expect(fighter.skillChoiceCount, 2);
       // Otro origen ya tomó todas las opciones de clase menos una: queda 1 < 2.
       d.raceSkills.addAll(from.take(from.length - 1));
-      // Completar lo demás del paso para aislar el gate de habilidades.
-      d.fightingStyleId = 'fs-defense';
-      d.weaponMasteries.addAll(
-          d.proficientWeapons.take(d.weaponMasterySlots).map((w) => w.id));
       // Con 0/2 elegidas pero solo 1 elegible, todavía debe pedir esa 1.
-      expect(d.pendingFor('Clase'), isNotEmpty);
+      expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
       // Elegida la única disponible, el gate se satisface (no exige el 2.º).
       d.classSkills.add(from.last);
-      expect(d.pendingFor('Clase'), isEmpty);
+      expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
+    });
+  });
+
+  // --- Navegación del stepper ----------------------------------------------
+  group('canGoTo / firstIncompleteStep', () {
+    test('no se puede saltar a un paso con pendientes atrás', () {
+      final d = newDraft();
+      expect(d.canGoTo(CreationStep.raza), isTrue, reason: 'el primero siempre');
+      expect(d.canGoTo(CreationStep.clase), isFalse,
+          reason: 'falta elegir especie');
+      expect(d.firstIncompleteStep, CreationStep.raza);
+    });
+
+    test('completar habilita el siguiente, y volver atrás sigue permitido', () {
+      final d = newDraft();
+      d.raceId = repo.races.values.first.id;
+      expect(d.canGoTo(CreationStep.clase), isTrue);
+      expect(d.canGoTo(CreationStep.trasfondo), isFalse,
+          reason: 'Clase aún pide estilo y maestrías');
+      completeClase(d);
+      expect(d.canGoTo(CreationStep.trasfondo), isTrue);
+      expect(d.canGoTo(CreationStep.raza), isTrue, reason: 'volver siempre');
+      expect(d.firstIncompleteStep, CreationStep.trasfondo);
     });
   });
 }

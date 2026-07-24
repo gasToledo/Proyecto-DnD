@@ -345,8 +345,7 @@ class _CreationWizardState extends State<CreationWizard> {
         CreationStep.aptitudes => _AptitudesStep(draft: d, onChanged: _refresh),
         CreationStep.equipo => _EquipmentStep(draft: d, onChanged: _refresh),
         CreationStep.detalles => _DetailsStep(draft: d, onChanged: _refresh),
-        CreationStep.resumen =>
-          _SummaryStep(draft: d, repo: widget.repo, onChanged: _refresh),
+        CreationStep.resumen => _SummaryStep(draft: d, repo: widget.repo),
       };
 }
 
@@ -1895,13 +1894,60 @@ class _DetailsStepState extends State<_DetailsStep> {
   }
 }
 
+/// Pastilla de resumen: texto sobre placa, con ícono opcional.
+class _SummaryPill extends StatelessWidget {
+  final String text;
+  final IconData? icon;
+  const _SummaryPill(this.text, {this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
+      decoration: BoxDecoration(
+        color: pal.plaque,
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: pal.gold),
+            const SizedBox(width: 6),
+          ],
+          Text(text,
+              style:
+                  TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rótulo de bloque dentro de la tarjeta de resumen.
+class _SummaryLabel extends StatelessWidget {
+  final String text;
+  const _SummaryLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Text(text.toUpperCase(),
+            style: TextStyle(
+                fontSize: 10,
+                letterSpacing: 1,
+                color: context.palette.textMuted)),
+      );
+}
+
 /// Paso 8 · Resumen: la ficha ya compilada, antes de confirmar.
 class _SummaryStep extends StatelessWidget {
   final CreationDraft draft;
   final ContentRepository repo;
-  final VoidCallback onChanged;
-  const _SummaryStep(
-      {required this.draft, required this.repo, required this.onChanged});
+  const _SummaryStep({required this.draft, required this.repo});
 
   @override
   Widget build(BuildContext context) {
@@ -1909,109 +1955,225 @@ class _SummaryStep extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final character = draft.build();
     final s = CharacterCompiler(repo).compile(character);
+
     final race = draft.race?.name ?? '—';
     final klass = draft.klass?.name ?? '—';
     final bg = draft.background?.name ?? '—';
     final skills = [...draft.classSkills, ...draft.raceSkills];
 
+    final equipment = <String>[
+      draft.equippedArmorId == null
+          ? 'Sin armadura'
+          : repo.armor[draft.equippedArmorId]?.name ?? draft.equippedArmorId!,
+      if (draft.shieldEquipped) 'Escudo',
+      draft.weaponId == null
+          ? 'Sin arma (puños)'
+          : repo.weapons[draft.weaponId]?.name ?? draft.weaponId!,
+    ];
+
+    final feats = <String>[
+      for (final id in character.featIds) repo.feat(id)?.name ?? id,
+      if (draft.background?.originFeatId case final id?)
+        repo.feat(id)?.name ?? id,
+    ];
+
+    final spells = <String>[
+      for (final id in draft.cantrips) repo.spell(id)?.name ?? id,
+      for (final id in draft.spells) repo.spell(id)?.name ?? id,
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            ClassMedallion(
-                klass: draft.klass,
-                fallback: character.name.characters.first,
-                size: 64),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(character.name,
-                      style: TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 26,
-                          color: scheme.onSurface)),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(classIcon(draft.klass),
-                          size: 16,
-                          color: classAccent(draft.klass, pal.gold)),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text('$race · $klass · $bg · Nivel 1',
-                            style:
-                                TextStyle(color: scheme.onSurfaceVariant)),
+        const _SectionHeader(title: 'Revisá y confirmá'),
+        const SizedBox(height: 14),
+        Container(
+          decoration: BoxDecoration(
+            color: scheme.surface,
+            border: Border.all(color: pal.hairline),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Banda de identidad.
+              Container(
+                color: pal.plaque,
+                padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
+                child: Row(
+                  children: [
+                    ClassMedallion(
+                      klass: draft.klass,
+                      fallback: character.name.characters.first,
+                      size: 82,
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(character.name,
+                              style: TextStyle(
+                                  fontFamily: 'Georgia',
+                                  fontSize: 30,
+                                  height: 1.05,
+                                  color: scheme.onSurface)),
+                          const SizedBox(height: 4),
+                          Text('$race · $klass · $bg · Nivel 1',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: scheme.onSurfaceVariant)),
+                          if (draft.alignment != null) ...[
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: GoldPill(draft.alignment!.label),
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
-                  ),
-                  if (draft.alignment != null) ...[
-                    const SizedBox(height: 6),
-                    GoldPill(draft.alignment!.label),
+                    ),
                   ],
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SectionRule(),
-        Row(
-          children: [
-            Expanded(
-                child: StatPlaque(
-                    label: 'PG', value: '${s.maxHp}', valueColor: pal.crimson)),
-            const SizedBox(width: 10),
-            Expanded(child: StatPlaque(label: 'CA', value: '${s.armorClass}')),
-            const SizedBox(width: 10),
-            Expanded(
-                child: StatPlaque(label: 'Velocidad', value: '${s.speed}')),
-            const SizedBox(width: 10),
-            Expanded(
-                child: StatPlaque(
-                    label: 'Perc. pasiva', value: '${s.passivePerception}')),
-          ],
-        ),
-        const SizedBox(height: 20),
-        const Eyebrow('Características'),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            for (final a in Ability.values) ...[
-              Expanded(
-                child: AbilityPlaque(
-                  abbr: a.abbr,
-                  score: s.abilityScores[a]!,
-                  modifier: s.abilityModifiers[a]!,
-                  saveProficient: s.savingThrowProficiencies.contains(a),
                 ),
               ),
-              if (a != Ability.values.last) const SizedBox(width: 8),
+              Container(height: 1, color: pal.hairline),
+              // Cuerpo.
+              Padding(
+                padding: const EdgeInsets.fromLTRB(26, 22, 26, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const _SummaryLabel('Puntuaciones'),
+                    Row(
+                      children: [
+                        for (final a in Ability.values) ...[
+                          Expanded(
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 11),
+                              decoration: BoxDecoration(
+                                color: pal.plaque,
+                                border: Border.all(color: pal.hairline),
+                                borderRadius: BorderRadius.circular(11),
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(a.abbr,
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 1,
+                                          color: pal.textMuted)),
+                                  const SizedBox(height: 3),
+                                  Text('${s.abilityScores[a]}',
+                                      style: TextStyle(
+                                          fontFamily: 'Georgia',
+                                          fontSize: 24,
+                                          height: 1,
+                                          color: scheme.onSurface)),
+                                  const SizedBox(height: 2),
+                                  Text(_signedMod(s.abilityModifiers[a]!),
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: pal.crimson)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (a != Ability.values.last)
+                            const SizedBox(width: 10),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 22),
+                    const _SummaryLabel('En combate'),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: StatPlaque(
+                                label: 'PG',
+                                value: '${s.maxHp}',
+                                valueColor: pal.crimson)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                            child: StatPlaque(
+                                label: 'CA', value: '${s.armorClass}')),
+                        const SizedBox(width: 10),
+                        Expanded(
+                            child: StatPlaque(
+                                label: 'Velocidad', value: '${s.speed}')),
+                        const SizedBox(width: 10),
+                        Expanded(
+                            child: StatPlaque(
+                                label: 'Iniciativa',
+                                value: _signedMod(s.initiative))),
+                      ],
+                    ),
+                    if (skills.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      const _SummaryLabel('Competencias'),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final sk in skills)
+                            _SummaryPill(Skill.labelFor(sk)),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 22),
+                    const _SummaryLabel('Equipo'),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final e in equipment)
+                          _SummaryPill(e, icon: Icons.backpack),
+                      ],
+                    ),
+                    if (spells.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      const _SummaryLabel('Conjuros'),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final sp in spells)
+                            _SummaryPill(sp, icon: Icons.auto_fix_high),
+                        ],
+                      ),
+                    ],
+                    if (feats.isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      const _SummaryLabel('Dotes'),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final f in feats)
+                            _SummaryPill(f, icon: Icons.workspace_premium),
+                        ],
+                      ),
+                    ],
+                    if (draft.personalityTrait.trim().isNotEmpty) ...[
+                      const SizedBox(height: 22),
+                      const _SummaryLabel('Rasgo de personalidad'),
+                      Text(draft.personalityTrait.trim(),
+                          style: TextStyle(color: scheme.onSurfaceVariant)),
+                    ],
+                  ],
+                ),
+              ),
             ],
-          ],
-        ),
-        if (skills.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          const Eyebrow('Competencias elegidas'),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [for (final sk in skills) GoldPill(Skill.labelFor(sk))],
           ),
-        ],
-        if (draft.personalityTrait.trim().isNotEmpty) ...[
-          const SizedBox(height: 20),
-          const Eyebrow('Rasgo de personalidad'),
-          const SizedBox(height: 6),
-          Text(draft.personalityTrait.trim(),
-              style: TextStyle(color: scheme.onSurfaceVariant)),
-        ],
+        ),
       ],
     );
   }
 }
+
 
 /// Panel de detalle de una elección: título, datos duros y contenido libre.
 class _DetailPanel extends StatelessWidget {

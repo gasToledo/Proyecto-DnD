@@ -248,7 +248,8 @@ class _SheetScreenState extends State<SheetScreen> {
                 cursor: hasPortrait
                     ? SystemMouseCursors.click
                     : SystemMouseCursors.basic,
-                child: Medallion(
+                child: ClassMedallion(
+                  klass: klassObj,
                   image: hasPortrait ? FileImage(File(portrait)) : null,
                   fallback: _c.name.characters.first,
                 ),
@@ -322,7 +323,7 @@ class _SheetScreenState extends State<SheetScreen> {
         ],
         if (s.skillProficiencies.isNotEmpty) ...[
           const Eyebrow('Competencias'),
-          _chips(s.skillProficiencies.map(_title).toList()),
+          _chips(s.skillProficiencies.map(Skill.labelFor).toList()),
         ],
         if (warnings.isNotEmpty) ...[
           const SizedBox(height: 20),

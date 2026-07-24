@@ -1,4 +1,5 @@
 import 'ability.dart';
+import 'alignment.dart';
 
 Map<String, int> _abilityMapToJson(Map<Ability, int> m) =>
     {for (final e in m.entries) e.key.name: e.value};
@@ -213,6 +214,12 @@ class Character {
   /// Notas libres del jugador (autoguardadas).
   String notes;
 
+  /// Alineamiento (sabor, opcional). No afecta ninguna regla.
+  final CharacterAlignment? alignment;
+
+  /// Rasgo de personalidad en una línea (sabor, opcional).
+  final String personalityTrait;
+
   final TableConfig tableConfig;
   final CombatState combat;
 
@@ -241,6 +248,8 @@ class Character {
     this.weaponTwoHanded = const {},
     this.portraitPaths = const [],
     this.notes = '',
+    this.alignment,
+    this.personalityTrait = '',
     this.tableConfig = const TableConfig(),
     CombatState? combat,
   }) : combat = combat ?? CombatState();
@@ -272,6 +281,8 @@ class Character {
         'weaponTwoHanded': weaponTwoHanded,
         'portraitPaths': portraitPaths,
         'notes': notes,
+        'alignment': alignment?.toJson(),
+        'personalityTrait': personalityTrait,
         'tableConfig': tableConfig.toJson(),
         'combat': combat.toJson(),
       };
@@ -325,6 +336,8 @@ class Character {
             .map((e) => e as String)
             .toList(),
         notes: j['notes'] as String? ?? '',
+        alignment: CharacterAlignment.fromJson(j['alignment'] as String?),
+        personalityTrait: j['personalityTrait'] as String? ?? '',
         tableConfig: TableConfig.fromJson(
             (j['tableConfig'] as Map?)?.cast<String, dynamic>() ?? const {}),
         combat: CombatState.fromJson(
@@ -349,6 +362,8 @@ class Character {
     Map<String, bool>? weaponTwoHanded,
     List<String>? portraitPaths,
     String? notes,
+    Object? alignment = _unset,
+    String? personalityTrait,
     CombatState? combat,
   }) {
     return Character(
@@ -381,6 +396,11 @@ class Character {
       weaponTwoHanded: weaponTwoHanded ?? this.weaponTwoHanded,
       portraitPaths: portraitPaths ?? this.portraitPaths,
       notes: notes ?? this.notes,
+      // Centinela: pasar `alignment: null` sí lo limpia.
+      alignment: identical(alignment, _unset)
+          ? this.alignment
+          : alignment as CharacterAlignment?,
+      personalityTrait: personalityTrait ?? this.personalityTrait,
       tableConfig: tableConfig,
       combat: combat ?? this.combat,
     );

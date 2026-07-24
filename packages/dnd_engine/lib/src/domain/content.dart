@@ -37,6 +37,13 @@ class Race {
   final int skillChoiceCount;
   final List<String> skillChoiceFrom;
 
+  /// Identificador del ícono (mapeado a un ícono de Material en la app).
+  /// Null = ícono genérico.
+  final String? iconId;
+
+  /// Línea de sabor para las tarjetas de selección. Null = sin tagline.
+  final String? tagline;
+
   const Race({
     required this.id,
     required this.name,
@@ -46,6 +53,8 @@ class Race {
     this.effects = const [],
     this.skillChoiceCount = 0,
     this.skillChoiceFrom = const [],
+    this.iconId,
+    this.tagline,
   });
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +65,8 @@ class Race {
         'speed': speed,
         'skillChoiceCount': skillChoiceCount,
         'skillChoiceFrom': skillChoiceFrom,
+        'iconId': iconId,
+        'tagline': tagline,
         'effects': effects.map((e) => e.toJson()).toList(),
       };
 
@@ -70,6 +81,8 @@ class Race {
         skillChoiceFrom: (j['skillChoiceFrom'] as List? ?? const [])
             .map((e) => e as String)
             .toList(),
+        iconId: j['iconId'] as String?,
+        tagline: j['tagline'] as String?,
       );
 }
 
@@ -255,6 +268,12 @@ class Background {
   final String? originFeatId;
   final List<Effect> effects;
 
+  /// Identificador del ícono (mapeado a un ícono de Material en la app).
+  final String? iconId;
+
+  /// Línea de sabor para las tarjetas de selección.
+  final String? tagline;
+
   const Background({
     required this.id,
     required this.name,
@@ -264,6 +283,8 @@ class Background {
     this.toolProficiencies = const [],
     this.originFeatId,
     this.effects = const [],
+    this.iconId,
+    this.tagline,
   });
 
   Map<String, dynamic> toJson() => {
@@ -274,6 +295,8 @@ class Background {
         'skillProficiencies': skillProficiencies,
         'toolProficiencies': toolProficiencies,
         'originFeatId': originFeatId,
+        'iconId': iconId,
+        'tagline': tagline,
         'effects': effects.map((e) => e.toJson()).toList(),
       };
 
@@ -292,6 +315,8 @@ class Background {
             .toList(),
         originFeatId: j['originFeatId'] as String?,
         effects: Effect.listFromJson(j['effects']),
+        iconId: j['iconId'] as String?,
+        tagline: j['tagline'] as String?,
       );
 }
 

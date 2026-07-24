@@ -3,6 +3,8 @@
     "id": "human",
     "name": "Humano",
     "source": "srd_2024",
+    "iconId": "person",
+    "tagline": "Ambiciosos y adaptables",
     "size": "Mediano",
     "speed": 30,
     "skillChoiceCount": 1,
@@ -25,6 +27,8 @@
     "id": "dwarf",
     "name": "Enano",
     "source": "srd_2024",
+    "iconId": "terrain",
+    "tagline": "Recios como la piedra",
     "size": "Mediano",
     "speed": 30,
     "effects": [
@@ -52,6 +56,8 @@
     "id": "halfling",
     "name": "Mediano",
     "source": "srd_2024",
+    "iconId": "child_care",
+    "tagline": "Pequeños, afables y afortunados",
     "size": "Pequeño",
     "speed": 30,
     "effects": [
@@ -81,6 +87,8 @@
     "id": "orc",
     "name": "Orco",
     "source": "srd_2024",
+    "iconId": "fitness_center",
+    "tagline": "Empuje incansable",
     "size": "Mediano",
     "speed": 30,
     "effects": [
@@ -106,6 +114,8 @@
     "id": "elf",
     "name": "Elfo",
     "source": "srd_2024",
+    "iconId": "park",
+    "tagline": "Gráciles y de sentidos agudos",
     "size": "Mediano",
     "speed": 30,
     "skillChoiceCount": 1,
@@ -138,6 +148,8 @@
     "id": "dragonborn",
     "name": "Draconato",
     "source": "srd_2024",
+    "iconId": "local_fire_department",
+    "tagline": "Herencia de dragón",
     "size": "Mediano",
     "speed": 30,
     "effects": [
@@ -168,6 +180,8 @@
     "id": "gnome",
     "name": "Gnomo",
     "source": "srd_2024",
+    "iconId": "science",
+    "tagline": "Curiosos e ingeniosos",
     "size": "Pequeño",
     "speed": 30,
     "effects": [
@@ -188,6 +202,8 @@
     "id": "tiefling",
     "name": "Tiflin",
     "source": "srd_2024",
+    "iconId": "whatshot",
+    "tagline": "Marcados por un legado de otro plano",
     "size": "Mediano",
     "speed": 30,
     "effects": [
@@ -208,6 +224,8 @@
     "id": "goliath",
     "name": "Goliat",
     "source": "srd_2024",
+    "iconId": "landscape",
+    "tagline": "Sangre de gigante",
     "size": "Mediano",
     "speed": 35,
     "effects": [
@@ -232,6 +250,8 @@
     "id": "aasimar",
     "name": "Aasimar",
     "source": "srd_2024",
+    "iconId": "auto_awesome",
+    "tagline": "Tocados por la luz celestial",
     "size": "Mediano",
     "speed": 30,
     "effects": [

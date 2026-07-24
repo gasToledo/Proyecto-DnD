@@ -166,6 +166,10 @@ class Character {
 
   /// Subclase elegida (id), o null si aún no se eligió (nivel < subclassLevel).
   final String? subclassId;
+
+  /// Linaje de especie elegido (Linaje Élfico, Ascendencia Dracónica…).
+  /// Null si la especie no exige uno o si todavía no se eligió.
+  final String? lineageId;
   int level;
 
   /// Puntuaciones asignadas por el método elegido (4d6 o array), antes de
@@ -231,6 +235,7 @@ class Character {
     required this.classId,
     required this.backgroundId,
     this.subclassId,
+    this.lineageId,
     this.level = 1,
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
@@ -263,6 +268,7 @@ class Character {
         'classId': classId,
         'backgroundId': backgroundId,
         'subclassId': subclassId,
+        'lineageId': lineageId,
         'level': level,
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses':
@@ -298,6 +304,7 @@ class Character {
         classId: j['classId'] as String,
         backgroundId: j['backgroundId'] as String,
         subclassId: j['subclassId'] as String?,
+        lineageId: j['lineageId'] as String?,
         level: j['level'] as int? ?? 1,
         assignedScores: _abilityMapFromJson(j['assignedScores']),
         backgroundAbilityBonuses:
@@ -350,6 +357,7 @@ class Character {
     String? name,
     CharacterStatus? status,
     Object? subclassId = _unset,
+    Object? lineageId = _unset,
     int? level,
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
@@ -376,6 +384,9 @@ class Character {
       subclassId: identical(subclassId, _unset)
           ? this.subclassId
           : subclassId as String?,
+      lineageId: identical(lineageId, _unset)
+          ? this.lineageId
+          : lineageId as String?,
       level: level ?? this.level,
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,

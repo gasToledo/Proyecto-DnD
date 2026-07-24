@@ -19,6 +19,7 @@ class AssetContentLoader {
       races: await _load('races.json'),
       classes: await _load('classes.json'),
       subclasses: await _load('subclasses.json'),
+      lineages: await _load('lineages.json'),
       backgrounds: await _load('backgrounds.json'),
       feats: await _load('feats.json'),
       weapons: await _load('weapons.json'),

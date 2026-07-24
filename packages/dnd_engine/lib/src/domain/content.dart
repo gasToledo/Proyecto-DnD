@@ -1,6 +1,5 @@
 import 'ability.dart';
 import 'effects.dart';
-import 'spell_slots.dart';
 
 /// Origen del contenido. Oficial y homebrew comparten estructura; solo cambia
 /// esta etiqueta (y de qué edición proviene lo oficial).
@@ -246,6 +245,59 @@ class Subclass {
         id: j['id'] as String,
         name: j['name'] as String,
         classId: j['classId'] as String,
+        source: ContentSource.fromJson(j['source'] as String?),
+        description: j['description'] as String? ?? '',
+        features: (j['features'] as List? ?? const [])
+            .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
+}
+
+/// Linaje de especie (Linaje Élfico, Ascendencia Dracónica, Legado Diabólico,
+/// Ascendencia de Gigante…). Es el equivalente de [Subclass] para las especies:
+/// pertenece a una especie (`raceId`) y aporta rasgos por nivel.
+///
+/// En 2024 no hay "subrazas": cada especie que lo requiere ofrece una elección
+/// interna que se hace al crear el personaje y que puede seguir dando
+/// beneficios a niveles superiores. Oficial y homebrew comparten este modelo.
+class Lineage {
+  final String id;
+  final String name;
+  final String raceId;
+  final ContentSource source;
+  final String description;
+  final List<ClassFeature> features;
+
+  const Lineage({
+    required this.id,
+    required this.name,
+    required this.raceId,
+    required this.source,
+    this.description = '',
+    this.features = const [],
+  });
+
+  /// Rasgos activos hasta [level] inclusive.
+  List<ClassFeature> featuresUpTo(int level) =>
+      features.where((f) => f.level <= level).toList();
+
+  /// Rasgos ganados exactamente al alcanzar [level].
+  List<ClassFeature> featuresAt(int level) =>
+      features.where((f) => f.level == level).toList();
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'raceId': raceId,
+        'source': source.toJson(),
+        'description': description,
+        'features': features.map((f) => f.toJson()).toList(),
+      };
+
+  factory Lineage.fromJson(Map<String, dynamic> j) => Lineage(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        raceId: j['raceId'] as String,
         source: ContentSource.fromJson(j['source'] as String?),
         description: j['description'] as String? ?? '',
         features: (j['features'] as List? ?? const [])

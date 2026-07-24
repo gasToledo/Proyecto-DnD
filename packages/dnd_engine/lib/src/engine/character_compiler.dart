@@ -37,6 +37,16 @@ class CharacterCompiler {
 
     // Efectos de raza, clase (por nivel), trasfondo y dotes.
     if (race != null) builder.applyAll(race.effects);
+
+    // Rasgos del linaje de especie (si se eligió y pertenece a esta especie),
+    // por nivel: igual que las subclases, pueden crecer con el personaje.
+    final lineage = c.lineageId == null ? null : repo.lineage(c.lineageId!);
+    if (lineage != null && lineage.raceId == c.raceId) {
+      for (final f in lineage.featuresUpTo(c.level)) {
+        builder.applyAll(f.effects);
+      }
+    }
+
     if (klass != null) {
       for (final f in klass.featuresUpTo(c.level)) {
         builder.applyAll(f.effects);

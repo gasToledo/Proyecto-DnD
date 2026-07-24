@@ -26,6 +26,7 @@ flutter:
     - packages/dnd_engine/assets/srd_2024/races.json
     - packages/dnd_engine/assets/srd_2024/classes.json
     - packages/dnd_engine/assets/srd_2024/subclasses.json
+    - packages/dnd_engine/assets/srd_2024/lineages.json
     - packages/dnd_engine/assets/srd_2024/backgrounds.json
     - packages/dnd_engine/assets/srd_2024/feats.json
     - packages/dnd_engine/assets/srd_2024/weapons.json

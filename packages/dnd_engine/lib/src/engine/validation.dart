@@ -33,6 +33,32 @@ class CharacterValidator {
     final race = repo.race(c.raceId);
     if (race == null) {
       w.add(ValidationWarning('missing_race', 'Raza "${c.raceId}" no encontrada.'));
+    } else {
+      // Linaje de especie: obligatorio si la especie ofrece alguno. Sin él, los
+      // rasgos que dependen de la elección (resistencias, trucos) no se aplican.
+      final options = repo.lineagesForRace(c.raceId);
+      final lineageId = c.lineageId;
+      if (lineageId == null) {
+        if (options.isNotEmpty) {
+          w.add(ValidationWarning(
+            'lineage_pending',
+            'Falta elegir el linaje de ${race.name} '
+                '(${options.map((l) => l.name).join(", ")}).',
+          ));
+        }
+      } else {
+        final lineage = repo.lineage(lineageId);
+        if (lineage == null) {
+          w.add(ValidationWarning(
+              'lineage_missing', 'Linaje "$lineageId" no encontrado.'));
+        } else if (lineage.raceId != c.raceId) {
+          w.add(ValidationWarning(
+            'lineage_wrong_race',
+            'El linaje "${lineage.name}" pertenece a ${lineage.raceId}, '
+                'no a ${c.raceId}.',
+          ));
+        }
+      }
     }
     final klass = repo.characterClass(c.classId);
     if (klass == null) {

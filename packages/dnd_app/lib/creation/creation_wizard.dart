@@ -1058,10 +1058,9 @@ String _signedMod(int v) => v >= 0 ? '+$v' : '$v';
 /// Encabezado de sección con rombo dorado y contador a la derecha.
 class _SectionHeader extends StatelessWidget {
   final String title;
-  final IconData counterIcon;
-  final String counter;
-  const _SectionHeader(
-      {required this.title, required this.counterIcon, required this.counter});
+  final IconData? counterIcon;
+  final String? counter;
+  const _SectionHeader({required this.title, this.counterIcon, this.counter});
 
   @override
   Widget build(BuildContext context) {
@@ -1075,26 +1074,27 @@ class _SectionHeader extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(child: Eyebrow(title)),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          decoration: BoxDecoration(
-            color: scheme.surface,
-            border: Border.all(color: pal.hairline),
-            borderRadius: BorderRadius.circular(20),
+        if (counter != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              border: Border.all(color: pal.hairline),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(counterIcon ?? Icons.task_alt, size: 16, color: pal.gold),
+                const SizedBox(width: 8),
+                Text(counter!,
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: scheme.onSurfaceVariant)),
+              ],
+            ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(counterIcon, size: 16, color: pal.gold),
-              const SizedBox(width: 8),
-              Text(counter,
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: scheme.onSurfaceVariant)),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -1430,6 +1430,14 @@ class _FeatCard extends StatelessWidget {
   }
 }
 
+/// Etiqueta en español de la categoría de armadura.
+String _armorCategoryLabel(String c) => switch (c) {
+      'light' => 'Ligera',
+      'medium' => 'Media',
+      'heavy' => 'Pesada',
+      _ => 'Escudo',
+    };
+
 /// Paso 6 · Equipo (y conjuros, para las clases lanzadoras).
 class _EquipmentStep extends StatelessWidget {
   final CreationDraft draft;
@@ -1438,39 +1446,62 @@ class _EquipmentStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pal = context.palette;
     final repo = draft.repo;
     final armors = repo.armor.values.where((a) => !a.isShield).toList();
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Eyebrow('Armadura'),
-        const SizedBox(height: 8),
-        _SingleSelect(
-          options: {for (final a in armors) a.id: '${a.name} (CA ${a.baseAc})'},
-          selected: draft.equippedArmorId,
-          noneLabel: 'Sin armadura',
-          onNone: () {
-            draft.equippedArmorId = null;
-            onChanged();
-          },
-          onSelect: (id) {
-            draft.equippedArmorId = id;
-            onChanged();
-          },
-        ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Escudo (+2 CA)'),
-          value: draft.shieldEquipped,
-          onChanged: (v) {
-            draft.shieldEquipped = v;
-            onChanged();
-          },
-        ),
+        const _SectionHeader(title: 'Armadura'),
         const SizedBox(height: 12),
-        const Eyebrow('Arma equipada'),
-        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, box) {
+            final cols = (box.maxWidth / 236).floor().clamp(1, 4);
+            final w = (box.maxWidth - 12 * (cols - 1)) / cols;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                SizedBox(
+                  width: w,
+                  child: _ChoiceCard(
+                    icon: Icons.no_accounts,
+                    title: 'Sin armadura',
+                    subtitle: 'CA 10 + DES',
+                    accent: pal.gold,
+                    selected: draft.equippedArmorId == null,
+                    onTap: () {
+                      draft.equippedArmorId = null;
+                      onChanged();
+                    },
+                  ),
+                ),
+                for (final a in armors)
+                  SizedBox(
+                    width: w,
+                    child: _ChoiceCard(
+                      icon: Icons.shield_moon,
+                      title: a.name,
+                      subtitle: 'CA ${a.baseAc} · '
+                          '${_armorCategoryLabel(a.category)}',
+                      accent: pal.gold,
+                      selected: draft.equippedArmorId == a.id,
+                      onTap: () {
+                        draft.equippedArmorId = a.id;
+                        onChanged();
+                      },
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 14),
+        _ShieldToggle(draft: draft, onChanged: onChanged),
+        const SizedBox(height: 26),
+        const _SectionHeader(title: 'Arma equipada'),
+        const SizedBox(height: 12),
         _WeaponSelect(
           weapons: repo.weapons.values.toList(),
           selected: draft.weaponId,
@@ -1479,11 +1510,106 @@ class _EquipmentStep extends StatelessWidget {
             onChanged();
           },
         ),
-        if (draft.isCaster) ...[
-          const SectionRule(),
-          _SpellsSection(draft: draft, onChanged: onChanged),
-        ],
+        const SizedBox(height: 26),
+        const _SectionHeader(title: 'Conjuros'),
+        const SizedBox(height: 12),
+        if (draft.isCaster)
+          _SpellsSection(draft: draft, onChanged: onChanged)
+        else
+          const _NoSpellsNotice(),
       ],
+    );
+  }
+}
+
+/// Escudo: es una elección aparte de la armadura (suma +2 CA).
+class _ShieldToggle extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _ShieldToggle({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final on = draft.shieldEquipped;
+    return Material(
+      color: on ? pal.goldSoft : scheme.surface,
+      borderRadius: BorderRadius.circular(13),
+      child: InkWell(
+        onTap: () {
+          draft.shieldEquipped = !on;
+          onChanged();
+        },
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(color: on ? pal.gold : pal.hairline),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.shield, size: 20, color: on ? pal.gold : pal.textMuted),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('Escudo (+2 CA)',
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: on ? pal.gold : scheme.onSurface)),
+              ),
+              Switch(
+                value: on,
+                onChanged: (v) {
+                  draft.shieldEquipped = v;
+                  onChanged();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Cartel para clases que no lanzan conjuros.
+class _NoSpellsNotice extends StatelessWidget {
+  const _NoSpellsNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.block, size: 30, color: pal.textMuted),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Tu clase no lanza conjuros',
+                    style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 16,
+                        color: scheme.onSurface)),
+                const SizedBox(height: 3),
+                Text('Confiás en el acero y la maña. Seguí al próximo paso.',
+                    style: TextStyle(
+                        fontSize: 13, color: scheme.onSurfaceVariant)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1513,29 +1639,141 @@ class _SpellsSection extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         if (sc.cantripsKnown > 0) ...[
-          const SizedBox(height: 20),
-          Eyebrow('Trucos (elige ${sc.cantripsKnown})'),
-          const SizedBox(height: 8),
-          CappedChipSelect(
-            options: {for (final s in cantrips) s.id: s.name},
+          const SizedBox(height: 18),
+          _SpellGroupHeader(
+              title: 'Trucos',
+              count: draft.cantrips.length,
+              cap: sc.cantripsKnown),
+          const SizedBox(height: 10),
+          _SpellChips(
+            spells: cantrips,
             selected: draft.cantrips,
             max: sc.cantripsKnown,
+            icon: Icons.auto_fix_high,
             onChanged: onChanged,
           ),
         ],
         const SizedBox(height: 20),
-        Eyebrow(prepared
-            ? 'Conjuros preparados (elige ${sc.preparedCount})'
-            : 'Conjuros conocidos'),
+        _SpellGroupHeader(
+          title: prepared ? 'Conjuros preparados' : 'Conjuros conocidos',
+          count: draft.spells.length,
+          cap: prepared ? sc.preparedCount : null,
+        ),
         Text('Podés preparar conjuros de hasta nivel $maxLevel.',
             style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 6),
-        CappedChipSelect(
-          options: {for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'},
+        const SizedBox(height: 10),
+        _SpellChips(
+          spells: leveled,
           selected: draft.spells,
           max: prepared ? sc.preparedCount : 999,
+          icon: Icons.auto_stories,
+          showLevel: true,
           onChanged: onChanged,
         ),
+      ],
+    );
+  }
+}
+
+/// Título de un grupo de conjuros con su contador.
+class _SpellGroupHeader extends StatelessWidget {
+  final String title;
+  final int count;
+  final int? cap;
+  const _SpellGroupHeader(
+      {required this.title, required this.count, required this.cap});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Text(title,
+            style: TextStyle(
+                fontFamily: 'Georgia', fontSize: 15, color: scheme.onSurface)),
+        const SizedBox(width: 10),
+        Text(cap == null ? '$count' : '$count / $cap',
+            style: TextStyle(fontSize: 12, color: context.palette.textMuted)),
+      ],
+    );
+  }
+}
+
+/// Conjuros como chips seleccionables, con tope.
+class _SpellChips extends StatelessWidget {
+  final List<Spell> spells;
+  final Set<String> selected;
+  final int max;
+  final IconData icon;
+  final bool showLevel;
+  final VoidCallback onChanged;
+  const _SpellChips({
+    required this.spells,
+    required this.selected,
+    required this.max,
+    required this.icon,
+    required this.onChanged,
+    this.showLevel = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final full = selected.length >= max;
+    return Wrap(
+      spacing: 9,
+      runSpacing: 9,
+      children: [
+        for (final s in spells)
+          Builder(builder: (context) {
+            final on = selected.contains(s.id);
+            final enabled = on || !full;
+            return Material(
+              color: on ? pal.goldSoft : scheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              child: InkWell(
+                onTap: enabled
+                    ? () {
+                        if (!selected.remove(s.id)) selected.add(s.id);
+                        onChanged();
+                      }
+                    : null,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: on ? pal.gold : pal.hairline),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon,
+                          size: 16,
+                          color: on
+                              ? pal.gold
+                              : enabled
+                                  ? scheme.onSurfaceVariant
+                                  : pal.textMuted),
+                      const SizedBox(width: 7),
+                      Text(showLevel ? '${s.name} (Nv ${s.level})' : s.name,
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: on
+                                  ? pal.gold
+                                  : enabled
+                                      ? scheme.onSurface
+                                      : pal.textMuted)),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
       ],
     );
   }
@@ -1819,14 +2057,10 @@ class _SingleSelect extends StatelessWidget {
   final Map<String, String> options; // id -> label
   final String? selected;
   final ValueChanged<String> onSelect;
-  final String? noneLabel;
-  final VoidCallback? onNone;
   const _SingleSelect({
     required this.options,
     required this.selected,
     required this.onSelect,
-    this.noneLabel,
-    this.onNone,
   });
 
   @override
@@ -1835,17 +2069,12 @@ class _SingleSelect extends StatelessWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        if (noneLabel != null && onNone != null)
+        for (final e in options.entries)
           ChoiceChip(
-            label: Text(noneLabel!),
-            selected: selected == null,
-            onSelected: (_) => onNone!(),
+            label: Text(e.value),
+            selected: selected == e.key,
+            onSelected: (_) => onSelect(e.key),
           ),
-        ...options.entries.map((e) => ChoiceChip(
-              label: Text(e.value),
-              selected: selected == e.key,
-              onSelected: (_) => onSelect(e.key),
-            )),
       ],
     );
   }
@@ -1990,6 +2219,13 @@ class _WeaponSelect extends StatefulWidget {
 
 class _WeaponSelectState extends State<_WeaponSelect> {
   String _query = '';
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2015,30 +2251,48 @@ class _WeaponSelectState extends State<_WeaponSelect> {
             ),
           ),
         ),
-        for (final group in [
-          ('simple', simple),
-          ('martial', martial),
-        ])
-          if (group.$2.isNotEmpty) ...[
-            _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: group.$2
-                  .map((w) => ChoiceChip(
-                        label: Text('${w.name} (${w.damageDice})'),
-                        selected: widget.selected == w.id,
-                        onSelected: (_) => widget.onSelect(w.id),
-                      ))
-                  .toList(),
+        const SizedBox(height: 8),
+        // Igual que el checklist de maestrías: el catálogo entero estiraba el
+        // paso, así que scrollea solo.
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 300),
+          child: Scrollbar(
+            controller: _scroll,
+            thumbVisibility: true,
+            child: ListView(
+              controller: _scroll,
+              primary: false,
+              shrinkWrap: true,
+              padding: const EdgeInsets.only(right: 12),
+              children: [
+                for (final group in [
+                  ('simple', simple),
+                  ('martial', martial),
+                ])
+                  if (group.$2.isNotEmpty) ...[
+                    _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: group.$2
+                          .map((w) => ChoiceChip(
+                                label: Text('${w.name} (${w.damageDice})'),
+                                selected: widget.selected == w.id,
+                                onSelected: (_) => widget.onSelect(w.id),
+                              ))
+                          .toList(),
+                    ),
+                  ],
+                if (matches.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text('Sin coincidencias.',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ),
+              ],
             ),
-          ],
-        if (matches.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text('Sin coincidencias.',
-                style: Theme.of(context).textTheme.bodySmall),
           ),
+        ),
       ],
     );
   }

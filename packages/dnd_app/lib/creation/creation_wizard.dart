@@ -1803,11 +1803,40 @@ class _DetailsStepState extends State<_DetailsStep> {
   @override
   Widget build(BuildContext context) {
     final d = widget.draft;
+    final scheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Eyebrow('Nombre'),
-        const SizedBox(height: 8),
+        const _SectionHeader(title: 'Emblema'),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            ClassMedallion(
+                klass: d.klass,
+                fallback: d.name.trim().isEmpty
+                    ? '?'
+                    : d.name.trim().characters.first,
+                size: 72),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                      'Hasta que le pongas un retrato, tu personaje usa el '
+                      'emblema de ${d.klass?.name ?? "su clase"}.',
+                      style: TextStyle(color: scheme.onSurfaceVariant)),
+                  const SizedBox(height: 4),
+                  Text('Podés generar o elegir un retrato después, desde la ficha.',
+                      style: Theme.of(context).textTheme.bodySmall),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 26),
+        const _SectionHeader(title: 'Nombre'),
+        const SizedBox(height: 12),
         TextField(
           controller: _name,
           textCapitalization: TextCapitalization.words,
@@ -1821,8 +1850,8 @@ class _DetailsStepState extends State<_DetailsStep> {
           },
         ),
         const SizedBox(height: 24),
-        const Eyebrow('Alineamiento'),
-        const SizedBox(height: 8),
+        const _SectionHeader(title: 'Alineamiento'),
+        const SizedBox(height: 12),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -1846,9 +1875,9 @@ class _DetailsStepState extends State<_DetailsStep> {
               ),
           ],
         ),
-        const SizedBox(height: 24),
-        const Eyebrow('Rasgo de personalidad'),
-        const SizedBox(height: 8),
+        const SizedBox(height: 26),
+        const _SectionHeader(title: 'Rasgo de personalidad'),
+        const SizedBox(height: 12),
         TextField(
           controller: _trait,
           maxLines: 2,
@@ -1890,7 +1919,10 @@ class _SummaryStep extends StatelessWidget {
       children: [
         Row(
           children: [
-            Medallion(fallback: character.name.characters.first, size: 64),
+            ClassMedallion(
+                klass: draft.klass,
+                fallback: character.name.characters.first,
+                size: 64),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

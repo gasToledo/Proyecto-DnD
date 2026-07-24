@@ -310,19 +310,36 @@ class Medallion extends StatelessWidget {
   final ImageProvider? image;
   final String fallback;
   final double size;
-  const Medallion(
-      {super.key, this.image, required this.fallback, this.size = 74});
+
+  /// Emblema para cuando no hay retrato: un ícono sobre un degradado de
+  /// [emblemColor]. Si no se pasa, se cae a la inicial de [fallback].
+  final IconData? emblemIcon;
+  final Color? emblemColor;
+
+  const Medallion({
+    super.key,
+    this.image,
+    required this.fallback,
+    this.size = 74,
+    this.emblemIcon,
+    this.emblemColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final hasEmblem = image == null && emblemIcon != null;
+    final accent = emblemColor ?? p.gold;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: p.plaque,
-        border: Border.all(color: p.gold, width: 2),
+        color: hasEmblem ? null : p.plaque,
+        gradient: hasEmblem
+            ? RadialGradient(colors: [accent.withAlpha(70), p.plaque])
+            : null,
+        border: Border.all(color: hasEmblem ? accent : p.gold, width: 2),
         image: image == null
             ? null
             : DecorationImage(image: image!, fit: BoxFit.cover),
@@ -330,9 +347,13 @@ class Medallion extends StatelessWidget {
       alignment: Alignment.center,
       child: image != null
           ? null
-          : Text(fallback,
-              style: TextStyle(
-                  fontFamily: 'Georgia', fontSize: size * .42, color: p.gold)),
+          : hasEmblem
+              ? Icon(emblemIcon, size: size * .48, color: accent)
+              : Text(fallback,
+                  style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: size * .42,
+                      color: p.gold)),
     );
   }
 }

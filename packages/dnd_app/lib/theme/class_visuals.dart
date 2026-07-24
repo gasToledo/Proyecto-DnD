@@ -1,6 +1,9 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import 'app_theme.dart';
+import 'app_widgets.dart';
+
 /// Personalización visual del contenido: color de acento (clases) e íconos
 /// (clases, especies y trasfondos). Los datos viven en los JSON del pack
 /// (`accentColor` / `iconId`); acá se traducen a tipos de Flutter, así el
@@ -65,6 +68,35 @@ IconData raceIcon(Race? race) => iconFor(race?.iconId, fallback: Icons.groups);
 /// registro, para que "sin ícono" se distinga de cualquier ícono real.
 IconData backgroundIcon(Background? bg) =>
     iconFor(bg?.iconId, fallback: Icons.badge_outlined);
+
+/// Medallón de un personaje: el retrato si lo hay y, si no, el **emblema de su
+/// clase** (su ícono sobre su color de acento). Sin clase conocida cae a la
+/// inicial del nombre, como antes.
+class ClassMedallion extends StatelessWidget {
+  final CharacterClass? klass;
+  final ImageProvider? image;
+  final String fallback;
+  final double size;
+  const ClassMedallion({
+    super.key,
+    required this.klass,
+    required this.fallback,
+    this.image,
+    this.size = 74,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final gold = context.palette.gold;
+    return Medallion(
+      image: image,
+      fallback: fallback,
+      size: size,
+      emblemIcon: klass == null ? null : classIcon(klass),
+      emblemColor: klass == null ? null : classAccent(klass, gold),
+    );
+  }
+}
 
 /// Color de acento de la clase, parseado de su hex `#RRGGBB`. Devuelve
 /// [fallback] si la clase no declara color o el hex es inválido.

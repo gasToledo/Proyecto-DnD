@@ -248,7 +248,8 @@ class _SheetScreenState extends State<SheetScreen> {
                 cursor: hasPortrait
                     ? SystemMouseCursors.click
                     : SystemMouseCursors.basic,
-                child: Medallion(
+                child: ClassMedallion(
+                  klass: klassObj,
                   image: hasPortrait ? FileImage(File(portrait)) : null,
                   fallback: _c.name.characters.first,
                 ),

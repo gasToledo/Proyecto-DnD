@@ -659,7 +659,8 @@ class _CharacterCardState extends State<_CharacterCard> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Medallion(
+                      ClassMedallion(
+                        klass: klassObj,
                         image:
                             hasPortrait ? FileImage(File(portrait)) : null,
                         fallback: c.name.characters.first,

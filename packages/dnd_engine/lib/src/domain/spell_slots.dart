@@ -27,6 +27,25 @@ enum CasterProgression {
 }
 
 /// Cómo obtiene sus conjuros la clase.
+/// Cómo se puede lanzar un conjuro concedido por un rasgo (linaje, dote…),
+/// aparte de la magia de clase.
+enum InnateSpellUse {
+  /// A voluntad, sin límite. Es el caso de los trucos.
+  atWill,
+
+  /// Gratis una vez por descanso largo; además se puede lanzar gastando un
+  /// espacio de conjuro, si el personaje tiene.
+  oncePerLongRest;
+
+  String toJson() => switch (this) {
+        InnateSpellUse.atWill => 'atWill',
+        InnateSpellUse.oncePerLongRest => 'oncePerLongRest',
+      };
+
+  static InnateSpellUse fromJson(String? v) =>
+      v == 'oncePerLongRest' ? InnateSpellUse.oncePerLongRest : InnateSpellUse.atWill;
+}
+
 enum SpellPreparation {
   /// Prepara conjuros de toda la lista de clase tras un descanso (Clérigo, Druida, Mago…).
   prepared,

@@ -5,6 +5,7 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/effects.dart';
 import '../domain/spell_slots.dart';
 import 'sheet_builder.dart';
 
@@ -115,6 +116,7 @@ class CharacterCompiler {
     }
 
     final spellcasting = _spellcasting(builder, c.level, mods, profBonus);
+    final innate = _resolveInnate(builder, mods, profBonus);
 
     return ComputedSheet(
       level: c.level,
@@ -139,9 +141,47 @@ class CharacterCompiler {
       attacksPerAction: attacksPerAction,
       attacks: attacks,
       passives: builder.passives,
-      resources: builder.resources,
+      resources: [...builder.resources, ...innate.resources],
+      innateSpells: innate.spells,
       spellcasting: spellcasting,
     );
+  }
+
+  /// Resuelve los conjuros concedidos por rasgos contra el repositorio y, para
+  /// los de uso gratuito, crea el recurso que registra ese uso por descanso
+  /// largo (así la ficha lo muestra y lo gasta como cualquier otro).
+  _InnateResult _resolveInnate(
+    SheetBuilder builder,
+    Map<Ability, int> mods,
+    int proficiencyBonus,
+  ) {
+    final spells = <InnateSpell>[];
+    final resources = <CharacterResource>[];
+    for (final g in builder.grantedSpells) {
+      final spell = repo.spell(g.spellId);
+      if (spell == null) continue; // contenido incompleto: se ignora
+      final mod = mods[g.ability] ?? 0;
+      spells.add(InnateSpell(
+        spellId: spell.id,
+        name: spell.name,
+        level: spell.level,
+        ability: g.ability,
+        use: g.use,
+        saveDc: 8 + proficiencyBonus + mod,
+        attackBonus: proficiencyBonus + mod,
+      ));
+      if (g.use == InnateSpellUse.oncePerLongRest) {
+        resources.add(CharacterResource(
+          id: 'innate-${spell.id}',
+          name: spell.name,
+          max: 1,
+          recharge: RechargeOn.longRest,
+          description: 'Lanzarlo sin gastar espacio de conjuro. '
+              'También podés lanzarlo gastando un espacio.',
+        ));
+      }
+    }
+    return _InnateResult(spells, resources);
   }
 
   /// Deriva el bloque de lanzamiento a partir del rasgo de lanzamiento activo.
@@ -272,4 +312,11 @@ class CharacterCompiler {
     if (mod == 0) return dice;
     return mod > 0 ? '$dice + $mod' : '$dice - ${mod.abs()}';
   }
+}
+
+/// Par de listas que sale de resolver los conjuros concedidos por rasgos.
+class _InnateResult {
+  final List<InnateSpell> spells;
+  final List<CharacterResource> resources;
+  const _InnateResult(this.spells, this.resources);
 }

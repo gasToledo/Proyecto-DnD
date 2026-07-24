@@ -41,6 +41,10 @@ class SheetBuilder {
   final Set<String> immunities = {};
 
   final List<PassiveTrait> passives = [];
+  /// Conjuros concedidos por rasgos, sin resolver (el compilador los cruza con
+  /// el repositorio para armar los [InnateSpell]).
+  final List<GrantSpellEffect> grantedSpells = [];
+
   final Map<String, CharacterResource> _resources = {};
 
   int weaponMasterySlots = 0;
@@ -90,6 +94,10 @@ class SheetBuilder {
         // La dote concreta ya está resuelta en Character.featIds y sus efectos
         // se aplican por separado; este efecto solo informa al wizard.
         break;
+      case GrantSpellEffect():
+        // Se guarda crudo: resolver nombre y nivel del conjuro necesita el
+        // repositorio, que vive en el compilador.
+        grantedSpells.add(e);
       case WeaponMasterySlotsEffect(:final count):
         if (count > weaponMasterySlots) weaponMasterySlots = count;
       case ExtraAttackEffect(:final extra):

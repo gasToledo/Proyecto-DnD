@@ -208,10 +208,11 @@
     "speed": 30,
     "effects": [
       { "type": "darkvision", "range": 60 },
+      { "type": "grantSpell", "spellId": "thaumaturgy", "ability": "charisma", "use": "atWill" },
       {
         "type": "passiveTrait",
         "name": "Presencia de Otro Mundo",
-        "description": "Conoces el truco Taumaturgia. A niveles 3 y 5 aprendes conjuros adicionales según tu Legado Diabólico."
+        "description": "Conoces el truco Taumaturgia. Tu legado diabólico añade más conjuros a niveles 3 y 5."
       },
       {
         "type": "passiveTrait",

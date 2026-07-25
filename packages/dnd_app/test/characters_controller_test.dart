@@ -63,10 +63,12 @@ void main() {
 
     ctrl.add(demoSagan());
     expect(store.saveCount, 0, reason: 'no guarda inmediatamente');
+    expect(ctrl.saveState, CharacterSaveState.saving);
 
     await Future.delayed(const Duration(milliseconds: 600));
     expect(store.saveCount, 1);
     expect(store.saved.containsKey('sagan'), isTrue);
+    expect(ctrl.saveState, CharacterSaveState.saved);
   });
 
   test('ediciones rápidas se agrupan en un solo guardado (debounce)', () async {
@@ -126,6 +128,7 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 600));
       expect(ctrl.lastSaveError, isA<FileSystemException>());
       expect(ctrl.isSaving, isFalse);
+      expect(ctrl.saveState, CharacterSaveState.error);
     },
   );
 

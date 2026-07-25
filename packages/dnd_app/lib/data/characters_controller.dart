@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'character_store.dart';
 import 'data_recovery.dart';
 
+enum CharacterSaveState { saved, saving, error }
+
 /// Fuente de verdad en memoria de los personajes, respaldada por
 /// [CharacterStore]. Notifica a la UI y persiste con **debounce** ante cada
 /// cambio relevante (brief §3.C.4 / §8).
@@ -23,6 +25,11 @@ class CharactersController extends ChangeNotifier {
   List<DataRecoveryIssue> get recoveryIssues => store.recoveryIssues;
   Object? get lastSaveError => _lastSaveError;
   bool get isSaving => _debouncers.isNotEmpty || _saveQueues.isNotEmpty;
+  CharacterSaveState get saveState => isSaving
+      ? CharacterSaveState.saving
+      : _lastSaveError != null
+      ? CharacterSaveState.error
+      : CharacterSaveState.saved;
 
   Future<void> load() async {
     final loaded = await store.loadAll();
@@ -34,14 +41,14 @@ class CharactersController extends ChangeNotifier {
 
   void add(Character c) {
     characters.add(c);
-    notifyListeners();
     _scheduleSave(c);
+    notifyListeners();
   }
 
   /// Registra un cambio in situ (p.ej. edición de combate) → notifica + guarda.
   void touch(Character c) {
-    notifyListeners();
     _scheduleSave(c);
+    notifyListeners();
   }
 
   /// Reemplaza un personaje por su copia editada (equipo, nivel, etc.).
@@ -52,8 +59,8 @@ class CharactersController extends ChangeNotifier {
     } else {
       characters.add(c);
     }
-    notifyListeners();
     _scheduleSave(c);
+    notifyListeners();
   }
 
   /// Importa personajes. Si un id ya existe, se le asigna uno nuevo (no

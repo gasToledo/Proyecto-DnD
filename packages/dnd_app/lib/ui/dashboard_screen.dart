@@ -401,6 +401,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             spacing: 10,
             runSpacing: 10,
             children: [
+              _SaveStatusIndicator(controller: controller),
               SizedBox(width: 230, height: 40, child: _searchField(pal)),
               _sortButton(context),
               SizedBox(
@@ -792,6 +793,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ) ??
         false;
+  }
+}
+
+class _SaveStatusIndicator extends StatelessWidget {
+  final CharactersController controller;
+
+  const _SaveStatusIndicator({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final state = controller.saveState;
+    final (icon, label, color) = switch (state) {
+      CharacterSaveState.saving => (Icons.sync, 'Guardando…', pal.gold),
+      CharacterSaveState.error => (
+        Icons.error_outline,
+        'Error al guardar',
+        Theme.of(context).colorScheme.error,
+      ),
+      CharacterSaveState.saved => (
+        Icons.cloud_done_outlined,
+        'Guardado',
+        Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    };
+
+    return Semantics(
+      label: 'Estado del guardado: $label',
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 180),
+        child: Container(
+          key: ValueKey(state),
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
+          decoration: BoxDecoration(
+            color: pal.plaque,
+            border: Border.all(color: pal.hairline),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 17, color: color),
+              const SizedBox(width: 7),
+              Text(label, style: TextStyle(fontSize: 12, color: color)),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

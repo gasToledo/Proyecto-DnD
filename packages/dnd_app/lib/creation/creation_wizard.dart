@@ -9,9 +9,9 @@ import 'creation_draft.dart';
 String titleCase(String s) => s.isEmpty
     ? s
     : s
-        .split(RegExp(r'[-_ ]'))
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+          .split(RegExp(r'[-_ ]'))
+          .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+          .join(' ');
 
 /// Ícono de cada paso en el stepper.
 const _stepIcons = {
@@ -42,6 +42,9 @@ class CreationWizard extends StatefulWidget {
 class _CreationWizardState extends State<CreationWizard> {
   late final CreationDraft d = CreationDraft(widget.repo);
   CreationStep _step = CreationStep.raza;
+  bool _hasProgress = false;
+  bool _allowPop = false;
+  bool _confirmingClose = false;
 
   static const _steps = CreationStep.values;
   bool get _isLast => _step == _steps.last;
@@ -67,44 +70,99 @@ class _CreationWizardState extends State<CreationWizard> {
     final sheet = CharacterCompiler(widget.repo).compile(character);
     character.combat.currentHp = sheet.maxHp;
     widget.onCreate(character);
-    Navigator.of(context).pop();
+    _closeWithoutPrompt();
   }
 
   /// Un cambio puede volver inalcanzable el paso actual (p.ej. cambiar de clase
   /// borra las maestrías ya elegidas): en ese caso se retrocede al primero que
   /// quedó pendiente en vez de dejar al usuario varado.
   void _refresh() => setState(() {
-        if (!d.canGoTo(_step)) _step = d.firstIncompleteStep;
-      });
+    _hasProgress = true;
+    if (!d.canGoTo(_step)) _step = d.firstIncompleteStep;
+  });
+
+  Future<void> _requestClose() async {
+    if (!_hasProgress) {
+      _closeWithoutPrompt();
+      return;
+    }
+    if (_confirmingClose) return;
+    _confirmingClose = true;
+    final discard =
+        await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('¿Descartar este personaje?'),
+            content: const Text(
+              'Las elecciones realizadas en el asistente se perderán.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Seguir creando'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Descartar'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    _confirmingClose = false;
+    if (discard && mounted) _closeWithoutPrompt();
+  }
+
+  void _closeWithoutPrompt() {
+    if (!mounted) return;
+    setState(() => _allowPop = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context).pop();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final pending = d.pendingFor(_step);
-    return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, box) {
-          final wide = box.maxWidth >= _kWideBreakpoint;
-          final main = Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _headerAndStepper(context, wide),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(wide ? 40 : 20, 14, wide ? 40 : 20, 8),
-                  child: _buildStep(),
-                ),
-              ),
-              _footer(context, pending),
-            ],
-          );
-          if (!wide) return SafeArea(child: main);
-          return SafeArea(
-            child: Row(
+    return PopScope(
+      canPop: _allowPop || !_hasProgress,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _requestClose();
+      },
+      child: Scaffold(
+        body: LayoutBuilder(
+          builder: (context, box) {
+            final wide = box.maxWidth >= _kWideBreakpoint;
+            final main = Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [_progressPanel(context), Expanded(child: main)],
-            ),
-          );
-        },
+              children: [
+                _headerAndStepper(context, wide),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      wide ? 40 : 20,
+                      14,
+                      wide ? 40 : 20,
+                      8,
+                    ),
+                    child: _buildStep(),
+                  ),
+                ),
+                _footer(context, pending),
+              ],
+            );
+            if (!wide) return SafeArea(child: main);
+            return SafeArea(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _progressPanel(context),
+                  Expanded(child: main),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -136,23 +194,29 @@ class _CreationWizardState extends State<CreationWizard> {
                     width: 26,
                     height: 26,
                     decoration: BoxDecoration(
-                        color: pal.gold,
-                        borderRadius: BorderRadius.circular(5)),
+                      color: pal.gold,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text.rich(
-                    TextSpan(children: [
-                      const TextSpan(text: 'Fichas\n'),
-                      TextSpan(
-                          text: 'D&D 5e', style: TextStyle(color: pal.gold)),
-                    ]),
+                    TextSpan(
+                      children: [
+                        const TextSpan(text: 'Fichas\n'),
+                        TextSpan(
+                          text: 'D&D 5e',
+                          style: TextStyle(color: pal.gold),
+                        ),
+                      ],
+                    ),
                     style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 17,
-                        height: 1.1,
-                        color: scheme.onSurface),
+                      fontFamily: 'Georgia',
+                      fontSize: 17,
+                      height: 1.1,
+                      color: scheme.onSurface,
+                    ),
                   ),
                 ),
               ],
@@ -177,11 +241,14 @@ class _CreationWizardState extends State<CreationWizard> {
                   track: scheme.surface,
                 ),
                 const SizedBox(height: 9),
-                Text('Paso ${_step.index + 1} de ${_steps.length}',
-                    style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 13,
-                        color: scheme.onSurface)),
+                Text(
+                  'Paso ${_step.index + 1} de ${_steps.length}',
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 13,
+                    color: scheme.onSurface,
+                  ),
+                ),
               ],
             ),
           ),
@@ -201,20 +268,24 @@ class _CreationWizardState extends State<CreationWizard> {
           Row(
             children: [
               Expanded(
-                child: Text('Crear personaje',
-                    style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 26,
-                        color: scheme.onSurface)),
+                child: Text(
+                  'Crear personaje',
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 26,
+                    color: scheme.onSurface,
+                  ),
+                ),
               ),
               IconButton(
                 tooltip: 'Cancelar',
-                onPressed: () => Navigator.of(context).maybePop(),
+                onPressed: _requestClose,
                 icon: const Icon(Icons.close, size: 20),
                 style: IconButton.styleFrom(
                   side: BorderSide(color: pal.hairline),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ],
@@ -238,13 +309,13 @@ class _CreationWizardState extends State<CreationWizard> {
       final fill = active
           ? pal.gold
           : done
-              ? pal.goldSoft
-              : scheme.surface;
+          ? pal.goldSoft
+          : scheme.surface;
       final fg = active
           ? scheme.onPrimary
           : done
-              ? pal.gold
-              : pal.textMuted;
+          ? pal.gold
+          : pal.textMuted;
       children.add(
         Tooltip(
           message: reachable ? s.label : 'Completá los pasos anteriores',
@@ -267,19 +338,21 @@ class _CreationWizardState extends State<CreationWizard> {
                     child: Icon(_stepIcons[s], size: 22, color: fg),
                   ),
                   const SizedBox(height: 7),
-                  Text(s.label.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 10,
-                        letterSpacing: .4,
-                        fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                        color: active
-                            ? pal.gold
-                            : done
-                                ? scheme.onSurfaceVariant
-                                : pal.textMuted,
-                      )),
+                  Text(
+                    s.label.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      letterSpacing: .4,
+                      fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                      color: active
+                          ? pal.gold
+                          : done
+                          ? scheme.onSurfaceVariant
+                          : pal.textMuted,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -287,16 +360,21 @@ class _CreationWizardState extends State<CreationWizard> {
         ),
       );
       if (s != _steps.last) {
-        children.add(Expanded(
-          child: Container(
-            height: 2,
-            margin: const EdgeInsets.only(bottom: 22),
-            color: s.index < _step.index ? pal.gold : pal.hairline,
+        children.add(
+          Expanded(
+            child: Container(
+              height: 2,
+              margin: const EdgeInsets.only(bottom: 22),
+              color: s.index < _step.index ? pal.gold : pal.hairline,
+            ),
           ),
-        ));
+        );
       }
     }
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    );
   }
 
   Widget _footer(BuildContext context, List<String> pending) {
@@ -338,15 +416,15 @@ class _CreationWizardState extends State<CreationWizard> {
   }
 
   Widget _buildStep() => switch (_step) {
-        CreationStep.raza => _RaceStep(draft: d, onChanged: _refresh),
-        CreationStep.clase => _ClassStep(draft: d, onChanged: _refresh),
-        CreationStep.trasfondo => _BackgroundStep(draft: d, onChanged: _refresh),
-        CreationStep.puntuaciones => _ScoresStep(draft: d, onChanged: _refresh),
-        CreationStep.aptitudes => _AptitudesStep(draft: d, onChanged: _refresh),
-        CreationStep.equipo => _EquipmentStep(draft: d, onChanged: _refresh),
-        CreationStep.detalles => _DetailsStep(draft: d, onChanged: _refresh),
-        CreationStep.resumen => _SummaryStep(draft: d, repo: widget.repo),
-      };
+    CreationStep.raza => _RaceStep(draft: d, onChanged: _refresh),
+    CreationStep.clase => _ClassStep(draft: d, onChanged: _refresh),
+    CreationStep.trasfondo => _BackgroundStep(draft: d, onChanged: _refresh),
+    CreationStep.puntuaciones => _ScoresStep(draft: d, onChanged: _refresh),
+    CreationStep.aptitudes => _AptitudesStep(draft: d, onChanged: _refresh),
+    CreationStep.equipo => _EquipmentStep(draft: d, onChanged: _refresh),
+    CreationStep.detalles => _DetailsStep(draft: d, onChanged: _refresh),
+    CreationStep.resumen => _SummaryStep(draft: d, repo: widget.repo),
+  };
 }
 
 // ----------------------------------------------------------------------------
@@ -389,7 +467,9 @@ class _ChoiceCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),
               border: Border.all(
-                  color: selected ? accent : pal.hairline, width: 1.5),
+                color: selected ? accent : pal.hairline,
+                width: 1.5,
+              ),
             ),
             child: Row(
               children: [
@@ -400,9 +480,11 @@ class _ChoiceCard extends StatelessWidget {
                     color: selected ? accent : pal.goldSoft,
                     borderRadius: BorderRadius.circular(11),
                   ),
-                  child: Icon(icon,
-                      size: 22,
-                      color: selected ? scheme.onPrimary : accent),
+                  child: Icon(
+                    icon,
+                    size: 22,
+                    color: selected ? scheme.onPrimary : accent,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -410,22 +492,28 @@ class _ChoiceCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontFamily: 'Georgia',
-                              fontSize: 16,
-                              color: scheme.onSurface)),
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 16,
+                          color: scheme.onSurface,
+                        ),
+                      ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 2),
-                        Text(subtitle!,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 11.5,
-                                height: 1.25,
-                                color: scheme.onSurfaceVariant)),
+                        Text(
+                          subtitle!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            height: 1.25,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ],
                   ),
@@ -511,8 +599,9 @@ class _ClassStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final repo = draft.repo;
     final klass = draft.klass;
-    final styles =
-        repo.feats.values.where((f) => f.category == 'fighting-style').toList();
+    final styles = repo.feats.values
+        .where((f) => f.category == 'fighting-style')
+        .toList();
     final slots = draft.weaponMasterySlots;
 
     return Column(
@@ -526,7 +615,8 @@ class _ClassStep extends StatelessWidget {
               _ChoiceCard(
                 icon: classIcon(c),
                 title: c.name,
-                subtitle: 'd${c.hitDie} · '
+                subtitle:
+                    'd${c.hitDie} · '
                     '${c.savingThrows.map((a) => a.abbr).join(" / ")}',
                 accent: classAccent(c, context.palette.gold),
                 selected: draft.classId == c.id,
@@ -548,7 +638,10 @@ class _ClassStep extends StatelessWidget {
             title: klass.name,
             facts: [
               ('Dado de golpe', 'd${klass.hitDie}'),
-              ('Salvaciones', klass.savingThrows.map((a) => a.abbr).join(' · ')),
+              (
+                'Salvaciones',
+                klass.savingThrows.map((a) => a.abbr).join(' · '),
+              ),
             ],
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,8 +661,10 @@ class _ClassStep extends StatelessWidget {
                 if (slots > 0) ...[
                   const SizedBox(height: 18),
                   Eyebrow('Maestría de armas (elige $slots)'),
-                  Text('Solo armas con las que ${klass.name} es competente.',
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    'Solo armas con las que ${klass.name} es competente.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                   const SizedBox(height: 6),
                   _WeaponChecklist(
                     weapons: draft.proficientWeapons,
@@ -627,11 +722,15 @@ class _BackgroundStep extends StatelessWidget {
           _DetailPanel(
             title: bg.name,
             facts: [
-              ('Competencias',
-                  bg.skillProficiencies.map(Skill.labelFor).join(', ')),
+              (
+                'Competencias',
+                bg.skillProficiencies.map(Skill.labelFor).join(', '),
+              ),
               if (bg.originFeatId != null)
-                ('Dote de origen',
-                    repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!),
+                (
+                  'Dote de origen',
+                  repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!,
+                ),
             ],
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,10 +740,13 @@ class _BackgroundStep extends StatelessWidget {
                 SegmentedButton<AbilitySpreadMode>(
                   segments: const [
                     ButtonSegment(
-                        value: AbilitySpreadMode.twoOne, label: Text('+2 / +1')),
+                      value: AbilitySpreadMode.twoOne,
+                      label: Text('+2 / +1'),
+                    ),
                     ButtonSegment(
-                        value: AbilitySpreadMode.oneOneOne,
-                        label: Text('+1 / +1 / +1')),
+                      value: AbilitySpreadMode.oneOneOne,
+                      label: Text('+1 / +1 / +1'),
+                    ),
                   ],
                   selected: {draft.spreadMode},
                   onSelectionChanged: (s) {
@@ -657,8 +759,9 @@ class _BackgroundStep extends StatelessWidget {
                   _TwoOnePicker(draft: draft, onChanged: onChanged)
                 else
                   Text(
-                      'Cada una de ${bg.abilityOptions.map((a) => a.abbr).join(", ")} '
-                      'recibe +1.'),
+                    'Cada una de ${bg.abilityOptions.map((a) => a.abbr).join(", ")} '
+                    'recibe +1.',
+                  ),
               ],
             ),
           ),
@@ -721,8 +824,10 @@ class _AbilityDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
-      decoration:
-          InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Ability>(
           isExpanded: true,
@@ -783,8 +888,8 @@ class _ScoresStep extends StatelessWidget {
             final cols = box.maxWidth >= 780
                 ? 3
                 : box.maxWidth >= 520
-                    ? 2
-                    : 1;
+                ? 2
+                : 1;
             final w = (box.maxWidth - 14 * (cols - 1)) / cols;
             return Wrap(
               spacing: 14,
@@ -794,7 +899,10 @@ class _ScoresStep extends StatelessWidget {
                   SizedBox(
                     width: w,
                     child: _ScoreCard(
-                        draft: draft, ability: a, onChanged: onChanged),
+                      draft: draft,
+                      ability: a,
+                      onChanged: onChanged,
+                    ),
                   ),
               ],
             );
@@ -841,22 +949,25 @@ class _MethodTab extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(11),
-            border:
-                Border.all(color: selected ? pal.gold : pal.hairline),
+            border: Border.all(color: selected ? pal.gold : pal.hairline),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon,
-                  size: 19,
-                  color: selected ? pal.gold : scheme.onSurfaceVariant),
+              Icon(
+                icon,
+                size: 19,
+                color: selected ? pal.gold : scheme.onSurfaceVariant,
+              ),
               const SizedBox(width: 8),
-              Text(label,
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontWeight:
-                          selected ? FontWeight.w600 : FontWeight.normal,
-                      color: selected ? pal.gold : scheme.onSurfaceVariant)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                  color: selected ? pal.gold : scheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ),
         ),
@@ -870,8 +981,11 @@ class _PoolBar extends StatelessWidget {
   final CreationDraft draft;
   final List<int> unassigned;
   final VoidCallback onChanged;
-  const _PoolBar(
-      {required this.draft, required this.unassigned, required this.onChanged});
+  const _PoolBar({
+    required this.draft,
+    required this.unassigned,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -889,14 +1003,19 @@ class _PoolBar extends StatelessWidget {
         spacing: 12,
         runSpacing: 10,
         children: [
-          Text('Valores sin asignar',
-              style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 15,
-                  color: scheme.onSurface)),
+          Text(
+            'Valores sin asignar',
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              fontSize: 15,
+              color: scheme.onSurface,
+            ),
+          ),
           if (unassigned.isEmpty)
-            Text('Ninguno: ya están las 6.',
-                style: TextStyle(fontSize: 12, color: pal.textMuted))
+            Text(
+              'Ninguno: ya están las 6.',
+              style: TextStyle(fontSize: 12, color: pal.textMuted),
+            )
           else
             Wrap(
               spacing: 6,
@@ -933,8 +1052,11 @@ class _ScoreCard extends StatelessWidget {
   final CreationDraft draft;
   final Ability ability;
   final VoidCallback onChanged;
-  const _ScoreCard(
-      {required this.draft, required this.ability, required this.onChanged});
+  const _ScoreCard({
+    required this.draft,
+    required this.ability,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -967,34 +1089,45 @@ class _ScoreCard extends StatelessWidget {
                 child: Tooltip(
                   message: '${ability.label}\n${ability.description}',
                   waitDuration: const Duration(milliseconds: 400),
-                  child: Text(ability.abbr,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.5,
-                          color: scheme.onSurfaceVariant)),
+                  child: Text(
+                    ability.abbr,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
               ),
               if (spread > 0)
-                Text('+$spread',
-                    style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: pal.gold)),
+                Text(
+                  '+$spread',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: pal.gold,
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(assigned == null ? '—' : '$total',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 40,
-                  height: 1,
-                  color: assigned == null ? pal.textMuted : scheme.onSurface)),
+          Text(
+            assigned == null ? '—' : '$total',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              fontSize: 40,
+              height: 1,
+              color: assigned == null ? pal.textMuted : scheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 3),
-          Text(assigned == null ? 'sin asignar' : 'base $assigned',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11, color: pal.textMuted)),
+          Text(
+            assigned == null ? 'sin asignar' : 'base $assigned',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: pal.textMuted),
+          ),
           const SizedBox(height: 10),
           DropdownButtonFormField<int>(
             initialValue: assigned,
@@ -1005,16 +1138,20 @@ class _ScoreCard extends StatelessWidget {
             itemHeight: null,
             menuMaxHeight: 260,
             borderRadius: BorderRadius.circular(10),
-            hint: Text('Elegir valor',
-                style: TextStyle(fontSize: 13, color: pal.textMuted)),
+            hint: Text(
+              'Elegir valor',
+              style: TextStyle(fontSize: 13, color: pal.textMuted),
+            ),
             style: TextStyle(fontSize: 14, color: scheme.onSurface),
             icon: Icon(Icons.expand_more, size: 18, color: pal.textMuted),
             decoration: InputDecoration(
               isDense: true,
               filled: true,
               fillColor: pal.plaque,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 11,
+                vertical: 9,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(color: pal.hairline),
@@ -1025,13 +1162,15 @@ class _ScoreCard extends StatelessWidget {
               ),
             ),
             items: items
-                .map((v) => DropdownMenuItem(
-                      value: v,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 7),
-                        child: Text('$v', style: const TextStyle(fontSize: 14)),
-                      ),
-                    ))
+                .map(
+                  (v) => DropdownMenuItem(
+                    value: v,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      child: Text('$v', style: const TextStyle(fontSize: 14)),
+                    ),
+                  ),
+                )
                 .toList(),
             onChanged: (v) {
               if (v == null) return;
@@ -1040,12 +1179,15 @@ class _ScoreCard extends StatelessWidget {
             },
           ),
           const SizedBox(height: 10),
-          Text(assigned == null ? 'MOD —' : 'MOD ${_signedMod(mod)}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: assigned == null ? pal.textMuted : pal.crimson)),
+          Text(
+            assigned == null ? 'MOD —' : 'MOD ${_signedMod(mod)}',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: assigned == null ? pal.textMuted : pal.crimson,
+            ),
+          ),
         ],
       ),
     );
@@ -1086,11 +1228,14 @@ class _SectionHeader extends StatelessWidget {
               children: [
                 Icon(counterIcon ?? Icons.task_alt, size: 16, color: pal.gold),
                 const SizedBox(width: 8),
-                Text(counter!,
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: scheme.onSurfaceVariant)),
+                Text(
+                  counter!,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1122,10 +1267,10 @@ class _SkillCard extends StatelessWidget {
     final fg = locked
         ? pal.gold
         : selected
-            ? pal.gold
-            : enabled
-                ? scheme.onSurface
-                : pal.textMuted;
+        ? pal.gold
+        : enabled
+        ? scheme.onSurface
+        : pal.textMuted;
 
     return Material(
       color: on ? pal.goldSoft : scheme.surface,
@@ -1146,18 +1291,23 @@ class _SkillCard extends StatelessWidget {
                 const SizedBox(width: 6),
               ],
               Expanded(
-                child: Text(Skill.labelFor(skillId),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13, color: fg)),
+                child: Text(
+                  Skill.labelFor(skillId),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 13, color: fg),
+                ),
               ),
               const SizedBox(width: 6),
-              Text(skill?.ability.abbr ?? '',
-                  style: TextStyle(
-                      fontSize: 9.5,
-                      letterSpacing: .5,
-                      fontWeight: FontWeight.w600,
-                      color: pal.textMuted)),
+              Text(
+                skill?.ability.abbr ?? '',
+                style: TextStyle(
+                  fontSize: 9.5,
+                  letterSpacing: .5,
+                  fontWeight: FontWeight.w600,
+                  color: pal.textMuted,
+                ),
+              ),
             ],
           ),
         ),
@@ -1199,8 +1349,7 @@ class _SkillPicker extends StatelessWidget {
                   skillId: id,
                   selected: selected.contains(id),
                   locked: locked.contains(id),
-                  onTap: locked.contains(id) ||
-                          (full && !selected.contains(id))
+                  onTap: locked.contains(id) || (full && !selected.contains(id))
                       ? null
                       : () {
                           if (!selected.remove(id)) selected.add(id);
@@ -1232,8 +1381,9 @@ class _AptitudesStep extends StatelessWidget {
     final bg = draft.background;
     final granted = {...?bg?.skillProficiencies};
     final grantsFeat = race?.effects.any((e) => e is GrantFeatEffect) ?? false;
-    final originFeats =
-        repo.feats.values.where((f) => f.category == 'origin').toList();
+    final originFeats = repo.feats.values
+        .where((f) => f.category == 'origin')
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1247,8 +1397,10 @@ class _AptitudesStep extends StatelessWidget {
           ),
           if (granted.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text('Estas ya te las da el trasfondo:',
-                style: Theme.of(context).textTheme.bodySmall),
+            Text(
+              'Estas ya te las da el trasfondo:',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
             const SizedBox(height: 8),
             _SkillPicker(
               options: granted.toList(),
@@ -1260,9 +1412,9 @@ class _AptitudesStep extends StatelessWidget {
           ],
           const SizedBox(height: 12),
           _SkillPicker(
-            options: skillOptions(klass.skillChoiceFrom)
-                .where((s) => !granted.contains(s))
-                .toList(),
+            options: skillOptions(
+              klass.skillChoiceFrom,
+            ).where((s) => !granted.contains(s)).toList(),
             selected: draft.classSkills,
             locked: draft.raceSkills,
             max: klass.skillChoiceCount,
@@ -1279,9 +1431,9 @@ class _AptitudesStep extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _SkillPicker(
-            options: skillOptions(race.skillChoiceFrom)
-                .where((s) => !granted.contains(s))
-                .toList(),
+            options: skillOptions(
+              race.skillChoiceFrom,
+            ).where((s) => !granted.contains(s)).toList(),
             selected: draft.raceSkills,
             locked: draft.classSkills,
             max: race.skillChoiceCount,
@@ -1297,9 +1449,10 @@ class _AptitudesStep extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-              'En 2024 las dotes de nivel 1 vienen del origen: '
-              '${race!.name} te concede una a elección.',
-              style: Theme.of(context).textTheme.bodySmall),
+            'En 2024 las dotes de nivel 1 vienen del origen: '
+            '${race!.name} te concede una a elección.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 12),
           LayoutBuilder(
             builder: (context, box) {
@@ -1316,8 +1469,9 @@ class _AptitudesStep extends StatelessWidget {
                         feat: f,
                         selected: draft.raceFeatId == f.id,
                         onTap: () {
-                          draft.raceFeatId =
-                              draft.raceFeatId == f.id ? null : f.id;
+                          draft.raceFeatId = draft.raceFeatId == f.id
+                              ? null
+                              : f.id;
                           onChanged();
                         },
                       ),
@@ -1350,8 +1504,11 @@ class _FeatCard extends StatelessWidget {
   final Feat feat;
   final bool selected;
   final VoidCallback onTap;
-  const _FeatCard(
-      {required this.feat, required this.selected, required this.onTap});
+  const _FeatCard({
+    required this.feat,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1368,7 +1525,9 @@ class _FeatCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(13),
             border: Border.all(
-                color: selected ? pal.gold : pal.hairline, width: 1.5),
+              color: selected ? pal.gold : pal.hairline,
+              width: 1.5,
+            ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1380,9 +1539,11 @@ class _FeatCard extends StatelessWidget {
                   color: selected ? pal.gold : pal.goldSoft,
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(Icons.workspace_premium,
-                    size: 22,
-                    color: selected ? scheme.onPrimary : pal.gold),
+                child: Icon(
+                  Icons.workspace_premium,
+                  size: 22,
+                  color: selected ? scheme.onPrimary : pal.gold,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1390,20 +1551,26 @@ class _FeatCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(feat.name,
-                        style: TextStyle(
-                            fontFamily: 'Georgia',
-                            fontSize: 16,
-                            color: scheme.onSurface)),
+                    Text(
+                      feat.name,
+                      style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 16,
+                        color: scheme.onSurface,
+                      ),
+                    ),
                     if (_featSummary(feat).isNotEmpty) ...[
                       const SizedBox(height: 5),
-                      Text(_featSummary(feat),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 12.5,
-                              height: 1.4,
-                              color: scheme.onSurfaceVariant)),
+                      Text(
+                        _featSummary(feat),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          height: 1.4,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -1431,11 +1598,11 @@ class _FeatCard extends StatelessWidget {
 
 /// Etiqueta en español de la categoría de armadura.
 String _armorCategoryLabel(String c) => switch (c) {
-      'light' => 'Ligera',
-      'medium' => 'Media',
-      'heavy' => 'Pesada',
-      _ => 'Escudo',
-    };
+  'light' => 'Ligera',
+  'medium' => 'Media',
+  'heavy' => 'Pesada',
+  _ => 'Escudo',
+};
 
 /// Paso 6 · Equipo (y conjuros, para las clases lanzadoras).
 class _EquipmentStep extends StatelessWidget {
@@ -1482,7 +1649,8 @@ class _EquipmentStep extends StatelessWidget {
                     child: _ChoiceCard(
                       icon: Icons.shield_moon,
                       title: a.name,
-                      subtitle: 'CA ${a.baseAc} · '
+                      subtitle:
+                          'CA ${a.baseAc} · '
                           '${_armorCategoryLabel(a.category)}',
                       accent: pal.gold,
                       selected: draft.equippedArmorId == a.id,
@@ -1549,13 +1717,20 @@ class _ShieldToggle extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(Icons.shield, size: 20, color: on ? pal.gold : pal.textMuted),
+              Icon(
+                Icons.shield,
+                size: 20,
+                color: on ? pal.gold : pal.textMuted,
+              ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text('Escudo (+2 CA)',
-                    style: TextStyle(
-                        fontSize: 14,
-                        color: on ? pal.gold : scheme.onSurface)),
+                child: Text(
+                  'Escudo (+2 CA)',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: on ? pal.gold : scheme.onSurface,
+                  ),
+                ),
               ),
               Switch(
                 value: on,
@@ -1595,15 +1770,22 @@ class _NoSpellsNotice extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Tu clase no lanza conjuros',
-                    style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 16,
-                        color: scheme.onSurface)),
+                Text(
+                  'Tu clase no lanza conjuros',
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 16,
+                    color: scheme.onSurface,
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text('Confiás en el acero y la maña. Seguí al próximo paso.',
-                    style: TextStyle(
-                        fontSize: 13, color: scheme.onSurfaceVariant)),
+                Text(
+                  'Confiás en el acero y la maña. Seguí al próximo paso.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1625,8 +1807,9 @@ class _SpellsSection extends StatelessWidget {
     final all = draft.repo.spellsForList(sc.spellList);
     final maxLevel = sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
     final cantrips = all.where((s) => s.isCantrip).toList();
-    final leveled =
-        all.where((s) => !s.isCantrip && s.level <= maxLevel).toList();
+    final leveled = all
+        .where((s) => !s.isCantrip && s.level <= maxLevel)
+        .toList();
     final prepared = sc.preparation == SpellPreparation.prepared;
 
     return Column(
@@ -1640,9 +1823,10 @@ class _SpellsSection extends StatelessWidget {
         if (sc.cantripsKnown > 0) ...[
           const SizedBox(height: 18),
           _SpellGroupHeader(
-              title: 'Trucos',
-              count: draft.cantrips.length,
-              cap: sc.cantripsKnown),
+            title: 'Trucos',
+            count: draft.cantrips.length,
+            cap: sc.cantripsKnown,
+          ),
           const SizedBox(height: 10),
           _SpellChips(
             spells: cantrips,
@@ -1658,8 +1842,10 @@ class _SpellsSection extends StatelessWidget {
           count: draft.spells.length,
           cap: prepared ? sc.preparedCount : null,
         ),
-        Text('Podés preparar conjuros de hasta nivel $maxLevel.',
-            style: Theme.of(context).textTheme.bodySmall),
+        Text(
+          'Podés preparar conjuros de hasta nivel $maxLevel.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
         const SizedBox(height: 10),
         _SpellChips(
           spells: leveled,
@@ -1679,8 +1865,11 @@ class _SpellGroupHeader extends StatelessWidget {
   final String title;
   final int count;
   final int? cap;
-  const _SpellGroupHeader(
-      {required this.title, required this.count, required this.cap});
+  const _SpellGroupHeader({
+    required this.title,
+    required this.count,
+    required this.cap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1689,12 +1878,19 @@ class _SpellGroupHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Text(title,
-            style: TextStyle(
-                fontFamily: 'Georgia', fontSize: 15, color: scheme.onSurface)),
+        Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 15,
+            color: scheme.onSurface,
+          ),
+        ),
         const SizedBox(width: 10),
-        Text(cap == null ? '$count' : '$count / $cap',
-            style: TextStyle(fontSize: 12, color: context.palette.textMuted)),
+        Text(
+          cap == null ? '$count' : '$count / $cap',
+          style: TextStyle(fontSize: 12, color: context.palette.textMuted),
+        ),
       ],
     );
   }
@@ -1727,52 +1923,61 @@ class _SpellChips extends StatelessWidget {
       runSpacing: 9,
       children: [
         for (final s in spells)
-          Builder(builder: (context) {
-            final on = selected.contains(s.id);
-            final enabled = on || !full;
-            return Material(
-              color: on ? pal.goldSoft : scheme.surface,
-              borderRadius: BorderRadius.circular(20),
-              child: InkWell(
-                onTap: enabled
-                    ? () {
-                        if (!selected.remove(s.id)) selected.add(s.id);
-                        onChanged();
-                      }
-                    : null,
+          Builder(
+            builder: (context) {
+              final on = selected.contains(s.id);
+              final enabled = on || !full;
+              return Material(
+                color: on ? pal.goldSoft : scheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: on ? pal.gold : pal.hairline),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon,
+                child: InkWell(
+                  onTap: enabled
+                      ? () {
+                          if (!selected.remove(s.id)) selected.add(s.id);
+                          onChanged();
+                        }
+                      : null,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 13,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: on ? pal.gold : pal.hairline),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          icon,
                           size: 16,
                           color: on
                               ? pal.gold
                               : enabled
-                                  ? scheme.onSurfaceVariant
-                                  : pal.textMuted),
-                      const SizedBox(width: 7),
-                      Text(showLevel ? '${s.name} (Nv ${s.level})' : s.name,
+                              ? scheme.onSurfaceVariant
+                              : pal.textMuted,
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          showLevel ? '${s.name} (Nv ${s.level})' : s.name,
                           style: TextStyle(
-                              fontSize: 13,
-                              color: on
-                                  ? pal.gold
-                                  : enabled
-                                      ? scheme.onSurface
-                                      : pal.textMuted)),
-                    ],
+                            fontSize: 13,
+                            color: on
+                                ? pal.gold
+                                : enabled
+                                ? scheme.onSurface
+                                : pal.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
       ],
     );
   }
@@ -1790,7 +1995,9 @@ class _DetailsStep extends StatefulWidget {
 
 class _DetailsStepState extends State<_DetailsStep> {
   late final _name = TextEditingController(text: widget.draft.name);
-  late final _trait = TextEditingController(text: widget.draft.personalityTrait);
+  late final _trait = TextEditingController(
+    text: widget.draft.personalityTrait,
+  );
 
   @override
   void dispose() {
@@ -1811,23 +2018,27 @@ class _DetailsStepState extends State<_DetailsStep> {
         Row(
           children: [
             ClassMedallion(
-                klass: d.klass,
-                fallback: d.name.trim().isEmpty
-                    ? '?'
-                    : d.name.trim().characters.first,
-                size: 72),
+              klass: d.klass,
+              fallback: d.name.trim().isEmpty
+                  ? '?'
+                  : d.name.trim().characters.first,
+              size: 72,
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                      'Hasta que le pongas un retrato, tu personaje usa el '
-                      'emblema de ${d.klass?.name ?? "su clase"}.',
-                      style: TextStyle(color: scheme.onSurfaceVariant)),
+                    'Hasta que le pongas un retrato, tu personaje usa el '
+                    'emblema de ${d.klass?.name ?? "su clase"}.',
+                    style: TextStyle(color: scheme.onSurfaceVariant),
+                  ),
                   const SizedBox(height: 4),
-                  Text('Podés generar o elegir un retrato después, desde la ficha.',
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    'Podés generar o elegir un retrato después, desde la ficha.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),
@@ -1881,7 +2092,8 @@ class _DetailsStepState extends State<_DetailsStep> {
           controller: _trait,
           maxLines: 2,
           decoration: const InputDecoration(
-            hintText: 'Una línea que lo defina. Ej: "Nunca deja una deuda sin pagar."',
+            hintText:
+                'Una línea que lo defina. Ej: "Nunca deja una deuda sin pagar."',
             border: OutlineInputBorder(),
           ),
           onChanged: (v) {
@@ -1918,9 +2130,10 @@ class _SummaryPill extends StatelessWidget {
             Icon(icon, size: 14, color: pal.gold),
             const SizedBox(width: 6),
           ],
-          Text(text,
-              style:
-                  TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant)),
+          Text(
+            text,
+            style: TextStyle(fontSize: 12.5, color: scheme.onSurfaceVariant),
+          ),
         ],
       ),
     );
@@ -1934,13 +2147,16 @@ class _SummaryLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(text.toUpperCase(),
-            style: TextStyle(
-                fontSize: 10,
-                letterSpacing: 1,
-                color: context.palette.textMuted)),
-      );
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Text(
+      text.toUpperCase(),
+      style: TextStyle(
+        fontSize: 10,
+        letterSpacing: 1,
+        color: context.palette.textMuted,
+      ),
+    ),
+  );
 }
 
 /// Paso 8 · Resumen: la ficha ya compilada, antes de confirmar.
@@ -2013,17 +2229,23 @@ class _SummaryStep extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(character.name,
-                              style: TextStyle(
-                                  fontFamily: 'Georgia',
-                                  fontSize: 30,
-                                  height: 1.05,
-                                  color: scheme.onSurface)),
+                          Text(
+                            character.name,
+                            style: TextStyle(
+                              fontFamily: 'Georgia',
+                              fontSize: 30,
+                              height: 1.05,
+                              color: scheme.onSurface,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text('$race · $klass · $bg · Nivel 1',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: scheme.onSurfaceVariant)),
+                          Text(
+                            '$race · $klass · $bg · Nivel 1',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
                           if (draft.alignment != null) ...[
                             const SizedBox(height: 8),
                             Align(
@@ -2050,8 +2272,7 @@ class _SummaryStep extends StatelessWidget {
                         for (final a in Ability.values) ...[
                           Expanded(
                             child: Container(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 11),
+                              padding: const EdgeInsets.symmetric(vertical: 11),
                               decoration: BoxDecoration(
                                 color: pal.plaque,
                                 border: Border.all(color: pal.hairline),
@@ -2059,25 +2280,34 @@ class _SummaryStep extends StatelessWidget {
                               ),
                               child: Column(
                                 children: [
-                                  Text(a.abbr,
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 1,
-                                          color: pal.textMuted)),
+                                  Text(
+                                    a.abbr,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1,
+                                      color: pal.textMuted,
+                                    ),
+                                  ),
                                   const SizedBox(height: 3),
-                                  Text('${s.abilityScores[a]}',
-                                      style: TextStyle(
-                                          fontFamily: 'Georgia',
-                                          fontSize: 24,
-                                          height: 1,
-                                          color: scheme.onSurface)),
+                                  Text(
+                                    '${s.abilityScores[a]}',
+                                    style: TextStyle(
+                                      fontFamily: 'Georgia',
+                                      fontSize: 24,
+                                      height: 1,
+                                      color: scheme.onSurface,
+                                    ),
+                                  ),
                                   const SizedBox(height: 2),
-                                  Text(_signedMod(s.abilityModifiers[a]!),
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: pal.crimson)),
+                                  Text(
+                                    _signedMod(s.abilityModifiers[a]!),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: pal.crimson,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -2092,23 +2322,33 @@ class _SummaryStep extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                            child: StatPlaque(
-                                label: 'PG',
-                                value: '${s.maxHp}',
-                                valueColor: pal.crimson)),
+                          child: StatPlaque(
+                            label: 'PG',
+                            value: '${s.maxHp}',
+                            valueColor: pal.crimson,
+                          ),
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
-                            child: StatPlaque(
-                                label: 'CA', value: '${s.armorClass}')),
+                          child: StatPlaque(
+                            label: 'CA',
+                            value: '${s.armorClass}',
+                          ),
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
-                            child: StatPlaque(
-                                label: 'Velocidad', value: '${s.speed}')),
+                          child: StatPlaque(
+                            label: 'Velocidad',
+                            value: '${s.speed}',
+                          ),
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
-                            child: StatPlaque(
-                                label: 'Iniciativa',
-                                value: _signedMod(s.initiative))),
+                          child: StatPlaque(
+                            label: 'Iniciativa',
+                            value: _signedMod(s.initiative),
+                          ),
+                        ),
                       ],
                     ),
                     if (skills.isNotEmpty) ...[
@@ -2160,8 +2400,10 @@ class _SummaryStep extends StatelessWidget {
                     if (draft.personalityTrait.trim().isNotEmpty) ...[
                       const SizedBox(height: 22),
                       const _SummaryLabel('Rasgo de personalidad'),
-                      Text(draft.personalityTrait.trim(),
-                          style: TextStyle(color: scheme.onSurfaceVariant)),
+                      Text(
+                        draft.personalityTrait.trim(),
+                        style: TextStyle(color: scheme.onSurfaceVariant),
+                      ),
                     ],
                   ],
                 ),
@@ -2174,14 +2416,16 @@ class _SummaryStep extends StatelessWidget {
   }
 }
 
-
 /// Panel de detalle de una elección: título, datos duros y contenido libre.
 class _DetailPanel extends StatelessWidget {
   final String title;
   final List<(String, String)> facts;
   final Widget child;
-  const _DetailPanel(
-      {required this.title, required this.facts, required this.child});
+  const _DetailPanel({
+    required this.title,
+    required this.facts,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -2203,34 +2447,44 @@ class _DetailPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
+            Text(
+              title,
               style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 19,
-                  color: scheme.onSurface)),
-          if (facts.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 18,
-              runSpacing: 6,
-              children: [
-                for (final (label, value) in facts)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('${label.toUpperCase()}  ',
-                          style: TextStyle(
-                              fontSize: 10,
-                              letterSpacing: 1,
-                              color: pal.textMuted)),
-                      Text(value,
-                          style: TextStyle(
-                              fontSize: 13, color: scheme.onSurface)),
-                    ],
-                  ),
-              ],
+                fontFamily: 'Georgia',
+                fontSize: 19,
+                color: scheme.onSurface,
+              ),
             ),
-          ],
+            if (facts.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 18,
+                runSpacing: 6,
+                children: [
+                  for (final (label, value) in facts)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${label.toUpperCase()}  ',
+                          style: TextStyle(
+                            fontSize: 10,
+                            letterSpacing: 1,
+                            color: pal.textMuted,
+                          ),
+                        ),
+                        Text(
+                          value,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 14),
             child,
           ],
@@ -2239,7 +2493,6 @@ class _DetailPanel extends StatelessWidget {
     );
   }
 }
-
 
 // ----------------------------------------------------------------------------
 // Widgets reutilizables
@@ -2286,12 +2539,15 @@ String _weaponSubtitle(Weapon w) {
 
 /// Encabezado de grupo (Simples / Marciales) dentro de un picker de armas.
 Widget _weaponGroupHeader(BuildContext context, String label) => Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 2),
-      child: Text(label.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              letterSpacing: 1,
-              color: Theme.of(context).colorScheme.onSurfaceVariant)),
-    );
+  padding: const EdgeInsets.only(top: 10, bottom: 2),
+  child: Text(
+    label.toUpperCase(),
+    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+      letterSpacing: 1,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    ),
+  ),
+);
 
 /// Multiselección de armas con tope, búsqueda y agrupación por categoría.
 /// Usada para elegir Maestrías de Armas sobre la lista ya filtrada por
@@ -2350,10 +2606,7 @@ class _WeaponChecklistState extends State<_WeaponChecklist> {
               shrinkWrap: true,
               padding: const EdgeInsets.only(right: 12),
               children: [
-                for (final group in [
-                  ('simple', simple),
-                  ('martial', martial),
-                ])
+                for (final group in [('simple', simple), ('martial', martial)])
                   if (group.$2.isNotEmpty) ...[
                     _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
                     ...group.$2.map((w) {
@@ -2383,8 +2636,10 @@ class _WeaponChecklistState extends State<_WeaponChecklist> {
                 if (matches.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Sin coincidencias.',
-                        style: Theme.of(context).textTheme.bodySmall),
+                    child: Text(
+                      'Sin coincidencias.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
               ],
             ),
@@ -2459,29 +2714,30 @@ class _WeaponSelectState extends State<_WeaponSelect> {
               shrinkWrap: true,
               padding: const EdgeInsets.only(right: 12),
               children: [
-                for (final group in [
-                  ('simple', simple),
-                  ('martial', martial),
-                ])
+                for (final group in [('simple', simple), ('martial', martial)])
                   if (group.$2.isNotEmpty) ...[
                     _weaponGroupHeader(context, _weaponCategoryLabel(group.$1)),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: group.$2
-                          .map((w) => ChoiceChip(
-                                label: Text('${w.name} (${w.damageDice})'),
-                                selected: widget.selected == w.id,
-                                onSelected: (_) => widget.onSelect(w.id),
-                              ))
+                          .map(
+                            (w) => ChoiceChip(
+                              label: Text('${w.name} (${w.damageDice})'),
+                              selected: widget.selected == w.id,
+                              onSelected: (_) => widget.onSelect(w.id),
+                            ),
+                          )
                           .toList(),
                     ),
                   ],
                 if (matches.isEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Sin coincidencias.',
-                        style: Theme.of(context).textTheme.bodySmall),
+                    child: Text(
+                      'Sin coincidencias.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
               ],
             ),
@@ -2516,11 +2772,14 @@ class _TraitList extends StatelessWidget {
   const _TraitList({required this.effects});
   @override
   Widget build(BuildContext context) {
-    final traits =
-        effects.whereType<PassiveTraitEffect>().map((e) => e.name).toList();
+    final traits = effects
+        .whereType<PassiveTraitEffect>()
+        .map((e) => e.name)
+        .toList();
     if (traits.isEmpty) return const SizedBox.shrink();
-    return Text('Rasgos: ${traits.join(", ")}',
-        style: Theme.of(context).textTheme.bodySmall);
+    return Text(
+      'Rasgos: ${traits.join(", ")}',
+      style: Theme.of(context).textTheme.bodySmall,
+    );
   }
 }
-

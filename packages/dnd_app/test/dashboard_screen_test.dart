@@ -98,6 +98,20 @@ void main() {
     expect(find.text('Sagan "The Red"'), findsOneWidget);
   });
 
+  testWidgets('muestra el estado real del guardado', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final ctrl = CharactersController(_FakeStore())..add(demoSagan());
+
+    await tester.pumpWidget(harness(ctrl));
+    expect(find.text('Guardando…'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+    expect(find.text('Guardado'), findsOneWidget);
+  });
+
   testWidgets('layout angosto: el panel se colapsa a Drawer', (tester) async {
     await pumpDashboard(tester, const Size(700, 800));
 

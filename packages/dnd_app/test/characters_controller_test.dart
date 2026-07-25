@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/data/character_store.dart';
 import 'package:dnd_app/data/characters_controller.dart';
+import 'package:dnd_app/data/data_recovery.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,6 +12,9 @@ import 'package:flutter_test/flutter_test.dart';
 class _FakeStore implements CharacterStore {
   final Map<String, Character> saved = {};
   int saveCount = 0;
+
+  @override
+  final List<DataRecoveryIssue> recoveryIssues = [];
 
   @override
   Future<List<Character>> loadAll() async => saved.values.toList();
@@ -24,6 +30,18 @@ class _FakeStore implements CharacterStore {
 
   @override
   Future<String> directoryPath() async => '/fake';
+}
+
+class _FailingStore extends _FakeStore {
+  @override
+  Future<void> save(Character c) async {
+    throw const FileSystemException('sin espacio');
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    throw const FileSystemException('sin permisos');
+  }
 }
 
 void main() {
@@ -51,8 +69,11 @@ void main() {
     }
     final before = store.saveCount;
     await Future.delayed(const Duration(milliseconds: 600));
-    expect(store.saveCount, before + 1,
-        reason: '5 cambios rápidos = 1 guardado');
+    expect(
+      store.saveCount,
+      before + 1,
+      reason: '5 cambios rápidos = 1 guardado',
+    );
     expect(store.saved['sagan']!.combat.currentHp, 6);
   });
 
@@ -70,5 +91,25 @@ void main() {
     await ctrl.load();
     expect(ctrl.characters, hasLength(1));
     expect(ctrl.characters.first.id, 'sagan');
+  });
+
+  test(
+    'un error de guardado queda expuesto sin excepción no controlada',
+    () async {
+      final ctrl = CharactersController(_FailingStore())..add(demoSagan());
+      await Future.delayed(const Duration(milliseconds: 600));
+      expect(ctrl.lastSaveError, isA<FileSystemException>());
+      expect(ctrl.isSaving, isFalse);
+    },
+  );
+
+  test('si borrar del disco falla conserva el personaje en memoria', () async {
+    final ctrl = CharactersController(_FailingStore())
+      ..characters.add(demoSagan());
+    await expectLater(
+      ctrl.remove(ctrl.characters.first),
+      throwsA(isA<FileSystemException>()),
+    );
+    expect(ctrl.characters, hasLength(1));
   });
 }

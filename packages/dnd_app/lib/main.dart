@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
@@ -70,6 +72,8 @@ class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    final controller = _data?.controller;
+    if (controller != null) unawaited(controller.flush());
     super.dispose();
   }
 
@@ -82,7 +86,8 @@ class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
     if (state == AppLifecycleState.hidden ||
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
-      _data?.controller.flush();
+      final controller = _data?.controller;
+      if (controller != null) unawaited(controller.flush());
     }
   }
 

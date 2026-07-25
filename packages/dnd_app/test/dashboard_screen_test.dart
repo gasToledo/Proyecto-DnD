@@ -1,6 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/data/character_store.dart';
 import 'package:dnd_app/data/characters_controller.dart';
+import 'package:dnd_app/data/data_recovery.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
@@ -11,6 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// Almacén en memoria: evita tocar el sistema de archivos en tests.
 class _FakeStore implements CharacterStore {
   final Map<String, Character> saved = {};
+  @override
+  final List<DataRecoveryIssue> recoveryIssues = [];
   @override
   Future<List<Character>> loadAll() async => saved.values.toList();
   @override
@@ -93,5 +96,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Homebrew'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('avisa dónde quedó un archivo apartado para recuperación',
+      (tester) async {
+    final store = _FakeStore()
+      ..recoveryIssues.add(const DataRecoveryIssue(
+        originalPath: r'C:\datos\roto.json',
+        recoveryPath: r'C:\datos\recovery\roto.json',
+        error: 'JSON inválido',
+      ));
+    final ctrl = CharactersController(store);
+
+    await tester.pumpWidget(harness(ctrl));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Archivos apartados para recuperación'), findsOneWidget);
+    expect(find.textContaining(r'C:\datos\recovery\roto.json'), findsOneWidget);
   });
 }

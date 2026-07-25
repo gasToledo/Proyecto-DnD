@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/data/character_store.dart';
 import 'package:dnd_app/data/characters_controller.dart';
+import 'package:dnd_app/data/data_recovery.dart';
 import 'package:dnd_app/data/transfer_service.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _FakeStore implements CharacterStore {
   final Map<String, Character> saved = {};
+  @override
+  final List<DataRecoveryIssue> recoveryIssues = [];
   @override
   Future<List<Character>> loadAll() async => saved.values.toList();
   @override
@@ -50,8 +53,18 @@ void main() {
     });
 
     test('rechaza un formato desconocido', () {
-      expect(() => TransferService.parseImport('{"type":"otra_cosa"}'),
-          throwsFormatException);
+      expect(
+        () => TransferService.parseImport('{"type":"otra_cosa"}'),
+        throwsFormatException,
+      );
+    });
+
+    test('rechaza ids que podrían escapar de la carpeta de datos', () {
+      final json = demoSagan().toJson()..['id'] = '../fuera';
+      expect(
+        () => TransferService.parseImport(jsonEncode(json)),
+        throwsFormatException,
+      );
     });
   });
 
@@ -69,10 +82,10 @@ void main() {
               'category': 'martial',
               'damageDice': '1d8',
               'damageType': 'cortante',
-            }
+            },
           ],
           'feats': [
-            {'id': 'hb-feat', 'name': 'Dote casera', 'source': 'homebrew'}
+            {'id': 'hb-feat', 'name': 'Dote casera', 'source': 'homebrew'},
           ],
         },
       });
@@ -87,8 +100,10 @@ void main() {
 
     test('rechaza un archivo que no es homebrew', () {
       final text = jsonEncode({'type': 'dnd_character', 'character': {}});
-      expect(() => TransferService.parseHomebrewImport(text),
-          throwsFormatException);
+      expect(
+        () => TransferService.parseHomebrewImport(text),
+        throwsFormatException,
+      );
     });
   });
 

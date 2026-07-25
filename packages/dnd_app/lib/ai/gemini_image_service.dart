@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
+import '../data/app_paths.dart';
+
 /// Error de generación con mensaje legible.
 class GeminiException implements Exception {
   final String message;
@@ -119,7 +121,9 @@ Future<String> savePortrait({
   required String characterId,
   required Uint8List bytes,
 }) async {
-  final dir = Directory(p.join(portraitsRoot, characterId));
+  final safeCharacterId =
+      requireSafePathSegment(characterId, label: 'id de personaje');
+  final dir = Directory(p.join(portraitsRoot, safeCharacterId));
   await dir.create(recursive: true);
   final file =
       File(p.join(dir.path, '${DateTime.now().microsecondsSinceEpoch}.png'));

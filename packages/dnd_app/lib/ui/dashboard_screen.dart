@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../creation/creation_wizard.dart';
 import '../data/characters_controller.dart';
+import '../data/data_recovery.dart';
 import '../data/homebrew_store.dart';
 import '../data/transfer_service.dart';
 import '../homebrew/homebrew_screen.dart';
@@ -55,15 +56,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
   _SortMode _sort = _SortMode.name;
+  Object? _shownSaveError;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_handleControllerState);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showRecoveryWarnings());
+  }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_handleControllerState);
     _searchCtrl.dispose();
     super.dispose();
   }
 
   ContentRepository get repo => widget.repo;
   CharactersController get controller => widget.controller;
+
+  void _handleControllerState() {
+    final error = controller.lastSaveError;
+    if (error == null || identical(error, _shownSaveError) || !mounted) return;
+    _shownSaveError = error;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('No se pudieron guardar los últimos cambios: $error'),
+        duration: const Duration(seconds: 6),
+      ));
+    });
+  }
+
+  Future<void> _showRecoveryWarnings() async {
+    if (!mounted) return;
+    final issues = <DataRecoveryIssue>[
+      ...controller.recoveryIssues,
+      ...widget.homebrew.recoveryIssues,
+    ];
+    if (issues.isEmpty) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Archivos apartados para recuperación'),
+        content: SizedBox(
+          width: 560,
+          child: SingleChildScrollView(
+            child: Text(
+              'La aplicación encontró ${issues.length} archivo(s) ilegible(s). '
+              'No fueron eliminados; se movieron para que puedas revisarlos:\n\n'
+              '${issues.map((e) => e.recoveryPath).join('\n')}',
+            ),
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Entendido'),
+          ),
+        ],
+      ),
+    );
+  }
 
   String _klassName(Character c) =>
       repo.characterClass(c.classId)?.name ?? c.classId;

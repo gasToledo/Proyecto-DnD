@@ -35,12 +35,14 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   /// Ejecuta una escritura en disco del store homebrew; si falla (permisos,
   /// disco lleno) lo muestra en vez de dejar la excepción sin capturar.
-  Future<void> _persist(Future<void> Function() write) async {
+  Future<bool> _persist(Future<void> Function() write) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await write();
+      return true;
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+      return false;
     }
   }
 
@@ -228,7 +230,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final w = await Navigator.of(context).push<Weapon>(
         MaterialPageRoute(builder: (_) => WeaponForm(initial: initial)));
     if (w == null) return;
-    await _persist(() => store.saveWeapon(w));
+    if (!await _persist(() => store.saveWeapon(w))) return;
     repo.weapons[w.id] = w;
     setState(() {});
   }
@@ -249,7 +251,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final a = await Navigator.of(context).push<Armor>(
         MaterialPageRoute(builder: (_) => ArmorForm(initial: initial)));
     if (a == null) return;
-    await _persist(() => store.saveArmor(a));
+    if (!await _persist(() => store.saveArmor(a))) return;
     repo.armor[a.id] = a;
     setState(() {});
   }
@@ -270,7 +272,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final f = await Navigator.of(context)
         .push<Feat>(MaterialPageRoute(builder: (_) => FeatForm(initial: initial)));
     if (f == null) return;
-    await _persist(() => store.saveFeat(f));
+    if (!await _persist(() => store.saveFeat(f))) return;
     repo.feats[f.id] = f;
     setState(() {});
   }
@@ -291,7 +293,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final r = await Navigator.of(context)
         .push<Race>(MaterialPageRoute(builder: (_) => RaceForm(initial: initial)));
     if (r == null) return;
-    await _persist(() => store.saveRace(r));
+    if (!await _persist(() => store.saveRace(r))) return;
     repo.races[r.id] = r;
     setState(() {});
   }
@@ -312,7 +314,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final b = await Navigator.of(context).push<Background>(MaterialPageRoute(
         builder: (_) => BackgroundForm(initial: initial, repo: repo)));
     if (b == null) return;
-    await _persist(() => store.saveBackground(b));
+    if (!await _persist(() => store.saveBackground(b))) return;
     repo.backgrounds[b.id] = b;
     setState(() {});
   }
@@ -340,14 +342,14 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final s = await Navigator.of(context)
         .push<Spell>(MaterialPageRoute(builder: (_) => SpellForm(initial: initial)));
     if (s == null) return;
-    await _persist(() => store.saveSpell(s));
+    if (!await _persist(() => store.saveSpell(s))) return;
     repo.spells[s.id] = s;
     setState(() {});
   }
 
   Future<void> _delete(
       Future<void> Function() fromStore, VoidCallback fromRepo) async {
-    await _persist(fromStore);
+    if (!await _persist(fromStore)) return;
     fromRepo();
     setState(() {});
   }

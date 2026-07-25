@@ -22,6 +22,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   String _providerId = 'pollinations';
   bool _obscure = true;
   bool _loaded = false;
+  String? _recoveredSettingsPath;
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
         _hfCtrl.text = s.huggingFaceToken;
         _hfModelCtrl.text = s.huggingFaceModel;
         _loaded = true;
+        _recoveredSettingsPath = _service.recoveryIssues.firstOrNull?.recoveryPath;
       });
     });
   }
@@ -48,14 +50,20 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   Future<void> _save() async {
     final model = _hfModelCtrl.text.trim();
-    await _service.save(AppSettings(
-      imageProvider: _providerId,
-      geminiApiKey: _geminiCtrl.text.trim(),
-      huggingFaceToken: _hfCtrl.text.trim(),
-      huggingFaceModel: model.isEmpty ? defaultHuggingFaceModel : model,
-    ));
-    if (!mounted) return;
-    Navigator.of(context).pop(true);
+    try {
+      await _service.save(AppSettings(
+        imageProvider: _providerId,
+        geminiApiKey: _geminiCtrl.text.trim(),
+        huggingFaceToken: _hfCtrl.text.trim(),
+        huggingFaceModel: model.isEmpty ? defaultHuggingFaceModel : model,
+      ));
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudieron guardar los ajustes: $error')));
+    }
   }
 
   @override
@@ -72,6 +80,15 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (_recoveredSettingsPath != null) ...[
+                    Text(
+                      'El archivo de ajustes era ilegible y fue apartado en:\n'
+                      '$_recoveredSettingsPath',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   const Text('Proveedor de retratos:'),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(

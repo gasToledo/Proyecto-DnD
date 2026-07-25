@@ -4,6 +4,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/foundation.dart';
 
 import 'character_store.dart';
+import 'data_recovery.dart';
 
 /// Fuente de verdad en memoria de los personajes, respaldada por
 /// [CharacterStore]. Notifica a la UI y persiste con **debounce** ante cada
@@ -12,9 +13,16 @@ class CharactersController extends ChangeNotifier {
   final CharacterStore store;
   final List<Character> characters = [];
   final Map<String, Timer> _debouncers = {};
+  final Map<String, Future<void>> _saveQueues = {};
   static const _debounce = Duration(milliseconds: 400);
+  Object? _lastSaveError;
+  bool _disposed = false;
 
   CharactersController(this.store);
+
+  List<DataRecoveryIssue> get recoveryIssues => store.recoveryIssues;
+  Object? get lastSaveError => _lastSaveError;
+  bool get isSaving => _debouncers.isNotEmpty || _saveQueues.isNotEmpty;
 
   Future<void> load() async {
     final loaded = await store.loadAll();
@@ -69,18 +77,41 @@ class CharactersController extends ChangeNotifier {
   }
 
   Future<void> remove(Character c) async {
-    characters.removeWhere((x) => x.id == c.id);
     _debouncers.remove(c.id)?.cancel();
-    notifyListeners();
+    await (_saveQueues[c.id] ?? Future<void>.value());
     await store.delete(c.id);
+    characters.removeWhere((x) => x.id == c.id);
+    notifyListeners();
   }
 
   void _scheduleSave(Character c) {
     _debouncers[c.id]?.cancel();
     _debouncers[c.id] = Timer(_debounce, () {
-      store.save(c);
       _debouncers.remove(c.id);
+      _enqueueSave(c);
+      notifyListeners();
     });
+  }
+
+  Future<void> _enqueueSave(Character c) {
+    final previous = _saveQueues[c.id] ?? Future<void>.value();
+    late final Future<void> queued;
+    queued = previous
+        .then((_) async {
+          await store.save(c);
+          _lastSaveError = null;
+        })
+        .catchError((Object error) {
+          _lastSaveError = error;
+        })
+        .whenComplete(() {
+          if (identical(_saveQueues[c.id], queued)) {
+            _saveQueues.remove(c.id);
+          }
+          if (!_disposed) notifyListeners();
+        });
+    _saveQueues[c.id] = queued;
+    return queued;
   }
 
   /// Fuerza el guardado inmediato de lo pendiente (p.ej. al cerrar la app).
@@ -90,14 +121,22 @@ class CharactersController extends ChangeNotifier {
     }
     _debouncers.clear();
     for (final c in characters) {
-      await store.save(c);
+      _enqueueSave(c);
     }
+    await Future.wait(_saveQueues.values.toList());
   }
 
   @override
   void dispose() {
+    _disposed = true;
     for (final t in _debouncers.values) {
       t.cancel();
+    }
+    // ChangeNotifier.dispose no puede esperar I/O. El ciclo de vida de la app
+    // llama flush antes; esta red adicional evita descartar cambios si otro
+    // consumidor desecha el controlador directamente.
+    for (final c in characters) {
+      _enqueueSave(c);
     }
     super.dispose();
   }

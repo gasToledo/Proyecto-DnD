@@ -38,8 +38,9 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
   Widget build(BuildContext context) {
     final all = widget.repo.spellsForList(_sc.spellList);
     final cantrips = all.where((s) => s.isCantrip).toList();
-    final leveled =
-        all.where((s) => !s.isCantrip && s.level <= _maxSlotLevel).toList();
+    final leveled = all
+        .where((s) => !s.isCantrip && s.level <= _maxSlotLevel)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Editar conjuros')),
@@ -56,15 +57,19 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
             ),
             const SizedBox(height: 20),
           ],
-          Eyebrow(_prepared
-              ? 'Conjuros preparados (${_spells.length}/${_sc.preparedCount})'
-              : 'Conjuros conocidos (${_spells.length})'),
-          Text('Hasta nivel $_maxSlotLevel.',
-              style: Theme.of(context).textTheme.bodySmall),
+          Eyebrow(
+            _prepared
+                ? 'Conjuros preparados (${_spells.length}/${_sc.preparedCount})'
+                : 'Conjuros conocidos (${_spells.length})',
+          ),
+          Text(
+            'Hasta nivel $_maxSlotLevel.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 6),
           CappedChipSelect(
             options: {
-              for (final s in leveled) s.id: '${s.name} (Nv ${s.level})'
+              for (final s in leveled) s.id: '${s.name} (Nv ${s.level})',
             },
             selected: _spells,
             max: _prepared ? _sc.preparedCount : 9999,
@@ -87,5 +92,4 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
       ),
     );
   }
-
 }

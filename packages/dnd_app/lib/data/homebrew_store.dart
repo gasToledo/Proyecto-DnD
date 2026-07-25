@@ -147,18 +147,24 @@ class HomebrewStore {
     }
 
     await writeJsonBatchAtomic({
-      File(_path('weapons.json')):
-          nextWeapons.values.map((e) => e.toJson()).toList(),
-      File(_path('armor.json')):
-          nextArmor.values.map((e) => e.toJson()).toList(),
-      File(_path('feats.json')):
-          nextFeats.values.map((e) => e.toJson()).toList(),
-      File(_path('races.json')):
-          nextRaces.values.map((e) => e.toJson()).toList(),
-      File(_path('backgrounds.json')):
-          nextBackgrounds.values.map((e) => e.toJson()).toList(),
-      File(_path('spells.json')):
-          nextSpells.values.map((e) => e.toJson()).toList(),
+      File(_path('weapons.json')): nextWeapons.values
+          .map((e) => e.toJson())
+          .toList(),
+      File(_path('armor.json')): nextArmor.values
+          .map((e) => e.toJson())
+          .toList(),
+      File(_path('feats.json')): nextFeats.values
+          .map((e) => e.toJson())
+          .toList(),
+      File(_path('races.json')): nextRaces.values
+          .map((e) => e.toJson())
+          .toList(),
+      File(_path('backgrounds.json')): nextBackgrounds.values
+          .map((e) => e.toJson())
+          .toList(),
+      File(_path('spells.json')): nextSpells.values
+          .map((e) => e.toJson())
+          .toList(),
     });
 
     weapons

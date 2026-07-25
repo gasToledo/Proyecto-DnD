@@ -47,15 +47,14 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? hairline,
     Color? goldSoft,
     Color? textMuted,
-  }) =>
-      AppPalette(
-        gold: gold ?? this.gold,
-        crimson: crimson ?? this.crimson,
-        plaque: plaque ?? this.plaque,
-        hairline: hairline ?? this.hairline,
-        goldSoft: goldSoft ?? this.goldSoft,
-        textMuted: textMuted ?? this.textMuted,
-      );
+  }) => AppPalette(
+    gold: gold ?? this.gold,
+    crimson: crimson ?? this.crimson,
+    plaque: plaque ?? this.plaque,
+    hairline: hairline ?? this.hairline,
+    goldSoft: goldSoft ?? this.goldSoft,
+    textMuted: textMuted ?? this.textMuted,
+  );
 
   @override
   AppPalette lerp(ThemeExtension<AppPalette>? other, double t) {
@@ -82,22 +81,22 @@ const _displayFont = 'Georgia';
 
 class AppTheme {
   static ThemeData get dark => _build(
-        brightness: Brightness.dark,
-        scaffold: const Color(0xFF151210),
-        surface: const Color(0xFF1E1915),
-        onSurface: const Color(0xFFEFE7DA),
-        onSurfaceVariant: const Color(0xFFA2937E),
-        palette: AppPalette.dark,
-      );
+    brightness: Brightness.dark,
+    scaffold: const Color(0xFF151210),
+    surface: const Color(0xFF1E1915),
+    onSurface: const Color(0xFFEFE7DA),
+    onSurfaceVariant: const Color(0xFFA2937E),
+    palette: AppPalette.dark,
+  );
 
   static ThemeData get light => _build(
-        brightness: Brightness.light,
-        scaffold: const Color(0xFFF3ECDD),
-        surface: const Color(0xFFFBF7EC),
-        onSurface: const Color(0xFF2A2118),
-        onSurfaceVariant: const Color(0xFF6E5F49),
-        palette: AppPalette.light,
-      );
+    brightness: Brightness.light,
+    scaffold: const Color(0xFFF3ECDD),
+    surface: const Color(0xFFFBF7EC),
+    onSurface: const Color(0xFF2A2118),
+    onSurfaceVariant: const Color(0xFF6E5F49),
+    palette: AppPalette.light,
+  );
 
   static ThemeData _build({
     required Brightness brightness,
@@ -127,15 +126,23 @@ class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: scaffold,
       extensions: [palette],
-      textTheme: base.textTheme.copyWith(
-        displaySmall: base.textTheme.displaySmall
-            ?.copyWith(fontFamily: _displayFont, color: onSurface),
-        headlineSmall: base.textTheme.headlineSmall
-            ?.copyWith(fontFamily: _displayFont, color: onSurface),
-        titleLarge: base.textTheme.titleLarge
-            ?.copyWith(fontFamily: _displayFont, color: onSurface),
-        titleMedium: base.textTheme.titleMedium?.copyWith(color: onSurface),
-      ).apply(bodyColor: onSurface, displayColor: onSurface),
+      textTheme: base.textTheme
+          .copyWith(
+            displaySmall: base.textTheme.displaySmall?.copyWith(
+              fontFamily: _displayFont,
+              color: onSurface,
+            ),
+            headlineSmall: base.textTheme.headlineSmall?.copyWith(
+              fontFamily: _displayFont,
+              color: onSurface,
+            ),
+            titleLarge: base.textTheme.titleLarge?.copyWith(
+              fontFamily: _displayFont,
+              color: onSurface,
+            ),
+            titleMedium: base.textTheme.titleMedium?.copyWith(color: onSurface),
+          )
+          .apply(bodyColor: onSurface, displayColor: onSurface),
       appBarTheme: AppBarTheme(
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
@@ -167,8 +174,9 @@ class AppTheme {
         backgroundColor: palette.plaque,
         side: BorderSide(color: palette.hairline),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: palette.hairline)),
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: palette.hairline),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(

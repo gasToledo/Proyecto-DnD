@@ -33,9 +33,13 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
   )..forward();
 
   late final Animation<double> _pop = CurvedAnimation(
-      parent: _ctrl, curve: const Interval(0.0, 0.6, curve: Curves.elasticOut));
+    parent: _ctrl,
+    curve: const Interval(0.0, 0.6, curve: Curves.elasticOut),
+  );
   late final Animation<double> _content = CurvedAnimation(
-      parent: _ctrl, curve: const Interval(0.45, 1.0, curve: Curves.easeOut));
+    parent: _ctrl,
+    curve: const Interval(0.45, 1.0, curve: Curves.easeOut),
+  );
 
   @override
   void dispose() {
@@ -53,13 +57,16 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final featureNames = newFeatures.map((f) => f.name).toSet();
     // Pasivas que no provienen de un rasgo de clase (p.ej. de una dote de ASI).
-    final featPassives =
-        diff.newPassives.where((p) => !featureNames.contains(p.name)).toList();
+    final featPassives = diff.newPassives
+        .where((p) => !featureNames.contains(p.name))
+        .toList();
 
     final quickChips = <Widget>[
       if (diff.proficiencyBonusChanged)
-        _StatChip('Competencia',
-            '+${diff.proficiencyBonusFrom} → +${diff.proficiencyBonusTo}'),
+        _StatChip(
+          'Competencia',
+          '+${diff.proficiencyBonusFrom} → +${diff.proficiencyBonusTo}',
+        ),
       if (diff.extraAttacksGained > 0)
         _StatChip('Ataques/acción', '+${diff.extraAttacksGained}'),
       if (diff.weaponMasterySlotsGained > 0)
@@ -84,86 +91,107 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-          // PG destacados.
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: pal.hairline),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.favorite, size: 34, color: pal.crimson),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('+${diff.hpGained} PG máximos',
-                        style: TextStyle(
-                            fontFamily: 'Georgia',
-                            fontSize: 24,
-                            color: pal.crimson)),
-                    const SizedBox(height: 2),
-                    Text('Tus PG actuales suben lo mismo.',
-                        style: TextStyle(fontSize: 13, color: muted)),
-                  ],
+                // PG destacados.
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: pal.hairline),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.favorite, size: 34, color: pal.crimson),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '+${diff.hpGained} PG máximos',
+                            style: TextStyle(
+                              fontFamily: 'Georgia',
+                              fontSize: 24,
+                              color: pal.crimson,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Tus PG actuales suben lo mismo.',
+                            style: TextStyle(fontSize: 13, color: muted),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-          if (quickChips.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Wrap(spacing: 10, runSpacing: 10, children: quickChips),
-          ],
-          if (diff.abilityChanges.isNotEmpty) ...[
-            const SizedBox(height: 22),
-            const Eyebrow('Características'),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: diff.abilityChanges.entries
-                  .map((e) => GoldPill('${e.key.abbr} ${_signed(e.value)}'))
-                  .toList(),
-            ),
-          ],
-          if (diff.newSkillProficiencies.isNotEmpty ||
-              diff.newSaveProficiencies.isNotEmpty) ...[
-            const SizedBox(height: 22),
-            const Eyebrow('Nuevas competencias'),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ...diff.newSaveProficiencies
-                    .map((a) => GoldPill('Salv. ${a.abbr}')),
-                ...diff.newSkillProficiencies.map((s) => GoldPill(_title2(s))),
-              ],
-            ),
-          ],
-          if (newFeatures.isNotEmpty) ...[
-            const SizedBox(height: 22),
-            const Eyebrow('Rasgos de clase ganados'),
-            DenseRows(children: [
-              for (final f in newFeatures) _featureRow(context, f.name, f.description),
-            ]),
-          ],
-          if (featPassives.isNotEmpty) ...[
-            const SizedBox(height: 22),
-            const Eyebrow('De tu dote'),
-            DenseRows(children: [
-              for (final p in featPassives) _featureRow(context, p.name, p.description),
-            ]),
-          ],
-          if (diff.newResources.isNotEmpty) ...[
-            const SizedBox(height: 22),
-            const Eyebrow('Recursos nuevos'),
-            DenseRows(children: [
-              for (final r in diff.newResources)
-                _featureRow(context, r.name,
-                    'Usos: ${r.max} · recarga: ${_recharge(r.recharge)}'),
-            ]),
-          ],
+                if (quickChips.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Wrap(spacing: 10, runSpacing: 10, children: quickChips),
+                ],
+                if (diff.abilityChanges.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const Eyebrow('Características'),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: diff.abilityChanges.entries
+                        .map(
+                          (e) => GoldPill('${e.key.abbr} ${_signed(e.value)}'),
+                        )
+                        .toList(),
+                  ),
+                ],
+                if (diff.newSkillProficiencies.isNotEmpty ||
+                    diff.newSaveProficiencies.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const Eyebrow('Nuevas competencias'),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ...diff.newSaveProficiencies.map(
+                        (a) => GoldPill('Salv. ${a.abbr}'),
+                      ),
+                      ...diff.newSkillProficiencies.map(
+                        (s) => GoldPill(_title2(s)),
+                      ),
+                    ],
+                  ),
+                ],
+                if (newFeatures.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const Eyebrow('Rasgos de clase ganados'),
+                  DenseRows(
+                    children: [
+                      for (final f in newFeatures)
+                        _featureRow(context, f.name, f.description),
+                    ],
+                  ),
+                ],
+                if (featPassives.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const Eyebrow('De tu dote'),
+                  DenseRows(
+                    children: [
+                      for (final p in featPassives)
+                        _featureRow(context, p.name, p.description),
+                    ],
+                  ),
+                ],
+                if (diff.newResources.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const Eyebrow('Recursos nuevos'),
+                  DenseRows(
+                    children: [
+                      for (final r in diff.newResources)
+                        _featureRow(
+                          context,
+                          r.name,
+                          'Usos: ${r.max} · recarga: ${_recharge(r.recharge)}',
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -209,21 +237,27 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: RadialGradient(colors: [pal.goldSoft, pal.plaque]),
+                    gradient: RadialGradient(
+                      colors: [pal.goldSoft, pal.plaque],
+                    ),
                     border: Border.all(color: pal.gold, width: 2),
                     boxShadow: [
                       BoxShadow(
-                          color: pal.gold.withAlpha(70),
-                          blurRadius: 26,
-                          spreadRadius: 1),
+                        color: pal.gold.withAlpha(70),
+                        blurRadius: 26,
+                        spreadRadius: 1,
+                      ),
                     ],
                   ),
-                  child: Text('$level',
-                      style: TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 46,
-                          height: 1,
-                          color: pal.gold)),
+                  child: Text(
+                    '$level',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 46,
+                      height: 1,
+                      color: pal.gold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -231,9 +265,10 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
         ),
         FadeTransition(
           opacity: _content,
-          child: Text('¡Subiste a nivel $level!',
-              style: TextStyle(
-                  fontSize: 15, letterSpacing: 0.3, color: muted)),
+          child: Text(
+            '¡Subiste a nivel $level!',
+            style: TextStyle(fontSize: 15, letterSpacing: 0.3, color: muted),
+          ),
         ),
       ],
     );
@@ -275,13 +310,23 @@ class _StatChip extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(value,
-              style: TextStyle(
-                  fontFamily: 'Georgia', fontSize: 18, color: pal.gold)),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              fontSize: 18,
+              color: pal.gold,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label.toUpperCase(),
-              style: TextStyle(
-                  fontSize: 10, letterSpacing: 1, color: pal.textMuted)),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 1,
+              color: pal.textMuted,
+            ),
+          ),
         ],
       ),
     );
@@ -333,14 +378,14 @@ class _BurstPainter extends CustomPainter {
 String _signed(int v) => v >= 0 ? '+$v' : '$v';
 
 String _recharge(RechargeOn r) => switch (r) {
-      RechargeOn.shortRest => 'descanso corto',
-      RechargeOn.longRest => 'descanso largo',
-      RechargeOn.none => '—',
-    };
+  RechargeOn.shortRest => 'descanso corto',
+  RechargeOn.longRest => 'descanso largo',
+  RechargeOn.none => '—',
+};
 
 String _title2(String s) => s.isEmpty
     ? s
     : s
-        .split(RegExp(r'[-_ ]'))
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+          .split(RegExp(r'[-_ ]'))
+          .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+          .join(' ');

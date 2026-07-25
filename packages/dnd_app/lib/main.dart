@@ -9,6 +9,7 @@ import 'data/characters_controller.dart';
 import 'data/homebrew_store.dart';
 import 'demo/demo_characters.dart';
 import 'theme/app_theme.dart';
+import 'theme/app_widgets.dart';
 import 'ui/dashboard_screen.dart';
 
 void main() {
@@ -28,8 +29,9 @@ class _DndAppState extends State<DndApp> {
   // el botón del panel lateral.
   ThemeMode _mode = ThemeMode.dark;
 
-  void _toggleTheme() => setState(() =>
-      _mode = _mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark);
+  void _toggleTheme() => setState(
+    () => _mode = _mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -60,13 +62,14 @@ class _Bootstrap extends StatefulWidget {
 }
 
 class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
-  late final Future<_AppData> _future = _init();
+  late Future<_AppData> _future;
   _AppData? _data;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _future = _init();
   }
 
   @override
@@ -109,6 +112,13 @@ class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
     return data;
   }
 
+  void _retry() {
+    setState(() {
+      _data = null;
+      _future = _init();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<_AppData>(
@@ -116,12 +126,40 @@ class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
       builder: (context, snap) {
         if (snap.hasError) {
           return Scaffold(
-            body: Center(child: Text('Error al iniciar:\n${snap.error}')),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 44,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('No se pudo iniciar la aplicación.'),
+                    const SizedBox(height: 8),
+                    SelectableText(
+                      '${snap.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: _retry,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Reintentar'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           );
         }
         if (!snap.hasData) {
           return const Scaffold(
-              body: Center(child: CircularProgressIndicator()));
+            body: Center(child: AppBusyLabel('Cargando datos…')),
+          );
         }
         return DashboardScreen(
           repo: snap.data!.repo,

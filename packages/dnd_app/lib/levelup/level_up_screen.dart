@@ -32,18 +32,22 @@ class LevelUpScreen extends StatefulWidget {
 }
 
 class _LevelUpScreenState extends State<LevelUpScreen> {
-  late final CharacterClass? _klass = widget.repo.characterClass(widget.character.classId);
+  late final CharacterClass? _klass = widget.repo.characterClass(
+    widget.character.classId,
+  );
   late final int _newLevel = widget.character.level + 1;
   late final int _hitDie = _klass?.hitDie ?? 10;
   late final bool _isAsi = _klass?.isAsiLevel(_newLevel) ?? false;
 
   /// Este nivel debe elegir subclase: se alcanza el nivel de subclase de la
   /// clase y aún no hay una elegida.
-  late final bool _needsSubclass = _klass != null &&
+  late final bool _needsSubclass =
+      _klass != null &&
       widget.character.subclassId == null &&
       _newLevel >= _klass.subclassLevel;
-  late final List<Subclass> _subclassOptions =
-      _needsSubclass ? widget.repo.subclassesForClass(widget.character.classId) : const [];
+  late final List<Subclass> _subclassOptions = _needsSubclass
+      ? widget.repo.subclassesForClass(widget.character.classId)
+      : const [];
   String? _subclassId;
 
   _HpMethod _hpMethod = _HpMethod.average;
@@ -55,8 +59,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   Ability? _abilityB;
   String? _featId;
 
-  int get _hpGain =>
-      _hpMethod == _HpMethod.average ? averageHitDie(_hitDie) : (_rolledHp ?? 0);
+  int get _hpGain => _hpMethod == _HpMethod.average
+      ? averageHitDie(_hitDie)
+      : (_rolledHp ?? 0);
 
   bool get _canConfirm {
     if (_hpMethod == _HpMethod.roll && _rolledHp == null) return false;
@@ -64,7 +69,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     if (_isAsi) {
       if (_asiKind == _AsiKind.improve) {
         if (_abilityA == null) return false;
-        if (_impMode == _ImproveMode.plusOneTwo && _abilityB == null) return false;
+        if (_impMode == _ImproveMode.plusOneTwo && _abilityB == null) {
+          return false;
+        }
       } else {
         if (_featId == null) return false;
       }
@@ -97,7 +104,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
     if (_isAsi) {
       if (_asiKind == _AsiKind.improve) {
-        asiChoices.add(AsiChoice(level: _newLevel, abilityIncreases: _abilityIncreases));
+        asiChoices.add(
+          AsiChoice(level: _newLevel, abilityIncreases: _abilityIncreases),
+        );
       } else if (_featId != null) {
         // La dote solo se agrega si ya se eligió: `_buildUpdated` corre en cada
         // build (previsualización de conjuros), incluso antes de elegir dote.
@@ -144,8 +153,10 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     // Sube los PG actuales por el incremento del máximo (se comparte el
     // CombatState por referencia vía copyWith).
     final delta = after.maxHp - before.maxHp;
-    updated.combat.currentHp =
-        (updated.combat.currentHp + delta).clamp(0, after.maxHp);
+    updated.combat.currentHp = (updated.combat.currentHp + delta).clamp(
+      0,
+      after.maxHp,
+    );
 
     widget.onDone(updated);
 
@@ -204,12 +215,16 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(s.name,
-                              style: const TextStyle(fontWeight: FontWeight.w600)),
+                          Text(
+                            s.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
                           if (s.description.isNotEmpty) ...[
                             const SizedBox(height: 3),
-                            Text(s.description,
-                                style: TextStyle(fontSize: 13, color: muted)),
+                            Text(
+                              s.description,
+                              style: TextStyle(fontSize: 13, color: muted),
+                            ),
                           ],
                         ],
                       ),
@@ -302,8 +317,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           SegmentedButton<_HpMethod>(
             segments: [
               ButtonSegment(
-                  value: _HpMethod.average,
-                  label: Text('Promedio (${averageHitDie(_hitDie)})')),
+                value: _HpMethod.average,
+                label: Text('Promedio (${averageHitDie(_hitDie)})'),
+              ),
               const ButtonSegment(value: _HpMethod.roll, label: Text('Tirar')),
             ],
             selected: {_hpMethod},
@@ -318,53 +334,69 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
               child: Row(
                 children: [
                   OutlinedButton.icon(
-                    onPressed: () => setState(
-                        () => _rolledHp = Dice().rollHitDie(_hitDie)),
+                    onPressed: () =>
+                        setState(() => _rolledHp = Dice().rollHitDie(_hitDie)),
                     icon: const Icon(Icons.casino),
                     label: const Text('Tirar dado'),
                   ),
                   const SizedBox(width: 12),
                   if (_rolledHp != null)
-                    Text('Resultado: $_rolledHp',
-                        style: TextStyle(
-                            fontFamily: 'Georgia',
-                            fontSize: 18,
-                            color: context.palette.gold)),
+                    Text(
+                      'Resultado: $_rolledHp',
+                      style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 18,
+                        color: context.palette.gold,
+                      ),
+                    ),
                 ],
               ),
             ),
           const SizedBox(height: 8),
-          Text('PG ganados: +$_hpGain (más tu mod. de CON)',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(
+            'PG ganados: +$_hpGain (más tu mod. de CON)',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 24),
           _buildSubclassSection(),
           if (_isAsi) _buildAsi() else const SizedBox.shrink(),
           if (newFeatures.isNotEmpty) ...[
             const SizedBox(height: 8),
             Eyebrow('Rasgos ganados a nivel $_newLevel'),
-            DenseRows(children: [
-              for (final f in newFeatures)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(f.name,
-                          style: const TextStyle(fontWeight: FontWeight.w500)),
-                      if (f.description.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(f.description,
+            DenseRows(
+              children: [
+                for (final f in newFeatures)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          f.name,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        if (f.description.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            f.description,
                             style: TextStyle(
-                                fontSize: 13,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant)),
+                              fontSize: 13,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-            ]),
+              ],
+            ),
           ],
           _buildSpellSection(),
         ],
@@ -390,7 +422,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
         SegmentedButton<_AsiKind>(
           segments: const [
             ButtonSegment(
-                value: _AsiKind.improve, label: Text('Mejorar características')),
+              value: _AsiKind.improve,
+              label: Text('Mejorar características'),
+            ),
             ButtonSegment(value: _AsiKind.feat, label: Text('Tomar dote')),
           ],
           selected: {_asiKind},
@@ -413,7 +447,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           segments: const [
             ButtonSegment(value: _ImproveMode.plusTwo, label: Text('+2 a una')),
             ButtonSegment(
-                value: _ImproveMode.plusOneTwo, label: Text('+1 a dos')),
+              value: _ImproveMode.plusOneTwo,
+              label: Text('+1 a dos'),
+            ),
           ],
           selected: {_impMode},
           onSelectionChanged: (s) => setState(() {
@@ -452,24 +488,29 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   Widget _buildFeatPicker() {
     // No se puede repetir una dote ya tomada salvo que sea repetible (2024).
     final taken = widget.character.featIds.toSet();
-    final feats = widget.repo.feats.values
-        .where((f) => f.category == 'general')
-        .where((f) => f.repeatable || !taken.contains(f.id))
-        .toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
+    final feats =
+        widget.repo.feats.values
+            .where((f) => f.category == 'general')
+            .where((f) => f.repeatable || !taken.contains(f.id))
+            .toList()
+          ..sort((a, b) => a.name.compareTo(b.name));
     if (feats.isEmpty) {
-      return Text('No quedan dotes disponibles.',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant));
+      return Text(
+        'No quedan dotes disponibles.',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      );
     }
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: feats
-          .map((f) => ChoiceChip(
-                label: Text(f.name),
-                selected: _featId == f.id,
-                onSelected: (_) => setState(() => _featId = f.id),
-              ))
+          .map(
+            (f) => ChoiceChip(
+              label: Text(f.name),
+              selected: _featId == f.id,
+              onSelected: (_) => setState(() => _featId = f.id),
+            ),
+          )
           .toList(),
     );
   }
@@ -483,7 +524,10 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     final options = Ability.values.where((a) => a != exclude).toList();
     return InputDecorator(
       decoration: InputDecoration(
-          labelText: label, border: const OutlineInputBorder(), isDense: true),
+        labelText: label,
+        border: const OutlineInputBorder(),
+        isDense: true,
+      ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<Ability>(
           isExpanded: true,
@@ -504,8 +548,11 @@ class _SlotBadge extends StatelessWidget {
   final int level;
   final int count;
   final bool isNew;
-  const _SlotBadge(
-      {required this.level, required this.count, required this.isNew});
+  const _SlotBadge({
+    required this.level,
+    required this.count,
+    required this.isNew,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -520,16 +567,24 @@ class _SlotBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Nv $level  ×$count',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isNew ? pal.gold : null)),
+          Text(
+            'Nv $level  ×$count',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: isNew ? pal.gold : null,
+            ),
+          ),
           if (isNew) ...[
             const SizedBox(width: 5),
-            Text('nuevo',
-                style: TextStyle(
-                    fontSize: 10, letterSpacing: 0.5, color: pal.gold)),
+            Text(
+              'nuevo',
+              style: TextStyle(
+                fontSize: 10,
+                letterSpacing: 0.5,
+                color: pal.gold,
+              ),
+            ),
           ],
         ],
       ),

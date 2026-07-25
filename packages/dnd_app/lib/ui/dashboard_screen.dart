@@ -60,6 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _query = '';
   _SortMode _sort = _SortMode.name;
   Object? _shownSaveError;
+  String? _activeOperation;
 
   @override
   void initState() {
@@ -86,11 +87,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _shownSaveError = error;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('No se pudieron guardar los últimos cambios: $error'),
-          duration: const Duration(seconds: 6),
-        ),
+      showAppMessage(
+        context,
+        'No se pudieron guardar los últimos cambios: $error',
+        tone: AppMessageTone.error,
       );
     });
   }
@@ -381,9 +381,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         spacing: 14,
         runSpacing: 12,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 6,
             children: [
               Text(
                 'Mis personajes',
@@ -393,7 +394,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   color: onSurface,
                 ),
               ),
-              const SizedBox(width: 12),
               GoldPill('$total'),
             ],
           ),
@@ -403,6 +403,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             runSpacing: 10,
             children: [
               _SaveStatusIndicator(controller: controller),
+              if (_activeOperation != null)
+                AppBusyLabel(_activeOperation!, indicatorSize: 16),
               SizedBox(width: 230, height: 40, child: _searchField(pal)),
               _sortButton(context),
               SizedBox(
@@ -496,25 +498,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _grid(List<Character> list) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(32, 14, 32, 32),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 420,
-        mainAxisExtent: 196,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-      ),
-      itemCount: list.length,
-      itemBuilder: (context, i) {
-        final c = list[i];
-        return _CharacterCard(
-          character: c,
-          sheet: CharacterCompiler(repo).compile(c),
-          repo: repo,
-          onTap: () => _openSheet(c),
-          onRename: () => _renameCharacter(c),
-          onExport: () => _exportCharacter(c),
-          onDelete: () => _confirmDelete(c),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 560;
+        final horizontalPadding = isCompact ? 16.0 : 32.0;
+        return GridView.builder(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            14,
+            horizontalPadding,
+            32,
+          ),
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: isCompact ? 560 : 420,
+            mainAxisExtent: 196,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: list.length,
+          itemBuilder: (context, i) {
+            final c = list[i];
+            return _CharacterCard(
+              character: c,
+              sheet: CharacterCompiler(repo).compile(c),
+              repo: repo,
+              onTap: () => _openSheet(c),
+              onRename: () => _renameCharacter(c),
+              onExport: () => _exportCharacter(c),
+              onDelete: () => _confirmDelete(c),
+            );
+          },
         );
       },
     );
@@ -629,18 +642,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _exportCharacter(Character c) async {
-    final messenger = ScaffoldMessenger.of(context);
+    if (!_startOperation('Exportando personaje…')) return;
     try {
       final path = await TransferService().exportCharacter(c);
       if (!mounted) return;
       _showExported('Personaje exportado', path);
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Error al exportar: $e')));
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo exportar el personaje: $e',
+          tone: AppMessageTone.error,
+        );
+      }
+    } finally {
+      _finishOperation();
     }
   }
 
   Future<void> _exportBackup() async {
-    final messenger = ScaffoldMessenger.of(context);
+    if (!_startOperation('Creando respaldo…')) return;
     try {
       final settings = await SettingsService().load();
       final path = await TransferService().exportBackup(
@@ -654,7 +675,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         path,
       );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Error al exportar: $e')));
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo crear el respaldo: $e',
+          tone: AppMessageTone.error,
+        );
+      }
+    } finally {
+      _finishOperation();
     }
   }
 
@@ -685,7 +714,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (_) => ImportDialog(transfer: transfer),
     );
     if (path == null || !mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
+    if (!_startOperation('Revisando respaldo…')) return;
     PreparedCharacterImport? prepared;
     var charactersSaved = false;
     try {
@@ -734,10 +763,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? ' También se restauraron $homebrewCount elemento(s) homebrew'
                 '${bundle.preferences == null ? '.' : ' y las preferencias.'}'
           : '';
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('Importados ${imported.length} personaje(s).$extra'),
-        ),
+      showAppMessage(
+        context,
+        'Importados ${imported.length} personaje(s).$extra',
+        tone: AppMessageTone.success,
       );
     } catch (e) {
       if (prepared != null && !charactersSaved) {
@@ -746,8 +775,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final prefix = charactersSaved
           ? 'Los personajes se importaron, pero falló el resto:'
           : 'Error al importar:';
-      messenger.showSnackBar(SnackBar(content: Text('$prefix $e')));
+      if (mounted) {
+        showAppMessage(context, '$prefix $e', tone: AppMessageTone.error);
+      }
+    } finally {
+      _finishOperation();
     }
+  }
+
+  bool _startOperation(String label) {
+    if (_activeOperation != null) {
+      showAppMessage(context, 'Ya hay una operación en curso.');
+      return false;
+    }
+    setState(() => _activeOperation = label);
+    return true;
+  }
+
+  void _finishOperation() {
+    if (mounted) setState(() => _activeOperation = null);
   }
 
   Future<bool?> _chooseRestoreScope(

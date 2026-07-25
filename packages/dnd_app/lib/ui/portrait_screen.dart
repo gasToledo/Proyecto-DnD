@@ -10,6 +10,7 @@ import '../ai/portrait_prompt.dart';
 import '../ai/portrait_provider.dart';
 import '../data/app_paths.dart';
 import '../data/settings_service.dart';
+import '../theme/app_widgets.dart';
 import 'settings_dialog.dart';
 
 /// Generador de retratos por IA (brief §3.B) con proveedor enchufable. Auto-
@@ -82,11 +83,11 @@ class _PortraitScreenState extends State<PortraitScreen> {
   String get _effectiveStyle => _customStyle ? _customStyleCtrl.text : _style;
 
   String get _prompt => buildPortraitPrompt(
-        character: widget.character,
-        repo: widget.repo,
-        style: _effectiveStyle,
-        extraText: _extraCtrl.text,
-      );
+    character: widget.character,
+    repo: widget.repo,
+    style: _effectiveStyle,
+    extraText: _extraCtrl.text,
+  );
 
   Future<void> _openSettings() async {
     final saved = await showDialog<bool>(
@@ -149,8 +150,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
     );
     widget.onUpdated(updated);
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Retrato guardado.')));
+    showAppMessage(context, 'Retrato guardado.', tone: AppMessageTone.success);
     Navigator.of(context).pop();
   }
 
@@ -168,36 +168,36 @@ class _PortraitScreenState extends State<PortraitScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AppBusyLabel('Cargando configuración…'))
           : _needsKey
-              ? _noKey()
-              : _form(),
+          ? _noKey()
+          : _form(),
     );
   }
 
   Widget _noKey() => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.key_off, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                'El proveedor "${_provider.name}" requiere una key. '
-                'Configurala en Ajustes, o elegí Pollinations (gratis, sin key).',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: _openSettings,
-                icon: const Icon(Icons.settings),
-                label: const Text('Abrir Ajustes'),
-              ),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.key_off, size: 48),
+          const SizedBox(height: 12),
+          Text(
+            'El proveedor "${_provider.name}" requiere una key. '
+            'Configurala en Ajustes, o elegí Pollinations (gratis, sin key).',
+            textAlign: TextAlign.center,
           ),
-        ),
-      );
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _openSettings,
+            icon: const Icon(Icons.settings),
+            label: const Text('Abrir Ajustes'),
+          ),
+        ],
+      ),
+    ),
+  );
 
   Widget _form() {
     return ListView(
@@ -206,8 +206,10 @@ class _PortraitScreenState extends State<PortraitScreen> {
         Row(
           children: [
             Expanded(
-              child: Text('Proveedor: ${_provider.name}',
-                  style: Theme.of(context).textTheme.bodyMedium),
+              child: Text(
+                'Proveedor: ${_provider.name}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
             TextButton(onPressed: _openSettings, child: const Text('Cambiar')),
           ],
@@ -219,14 +221,16 @@ class _PortraitScreenState extends State<PortraitScreen> {
           spacing: 8,
           runSpacing: 8,
           children: [
-            ...portraitStyles.map((s) => ChoiceChip(
-                  label: Text(s),
-                  selected: !_customStyle && _style == s,
-                  onSelected: (_) => setState(() {
-                    _customStyle = false;
-                    _style = s;
-                  }),
-                )),
+            ...portraitStyles.map(
+              (s) => ChoiceChip(
+                label: Text(s),
+                selected: !_customStyle && _style == s,
+                onSelected: (_) => setState(() {
+                  _customStyle = false;
+                  _style = s;
+                }),
+              ),
+            ),
             ChoiceChip(
               label: const Text('Personalizado'),
               selected: _customStyle,
@@ -288,7 +292,8 @@ class _PortraitScreenState extends State<PortraitScreen> {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2))
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
               : const Icon(Icons.auto_awesome),
           label: Text(_generating ? 'Generando…' : 'Generar'),
         ),
@@ -314,21 +319,29 @@ class _PortraitScreenState extends State<PortraitScreen> {
         ],
         if (_results.isNotEmpty) ...[
           const SizedBox(height: 16),
-          Text('Resultados (tocá para usar)',
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Resultados (tocá para usar)',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: _results
-                .map((bytes) => InkWell(
-                      onTap: () => _use(bytes),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.memory(bytes,
-                            width: 200, height: 200, fit: BoxFit.cover),
+                .map(
+                  (bytes) => InkWell(
+                    onTap: () => _use(bytes),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(
+                        bytes,
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
         ],

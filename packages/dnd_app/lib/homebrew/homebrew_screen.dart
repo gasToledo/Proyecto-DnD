@@ -8,14 +8,36 @@ import '../ui/import_dialog.dart';
 import 'effect_editor.dart';
 
 const _skills = [
-  'acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception',
-  'history', 'insight', 'intimidation', 'investigation', 'medicine',
-  'nature', 'perception', 'performance', 'persuasion', 'religion',
-  'sleight-of-hand', 'stealth', 'survival',
+  'acrobatics',
+  'animal-handling',
+  'arcana',
+  'athletics',
+  'deception',
+  'history',
+  'insight',
+  'intimidation',
+  'investigation',
+  'medicine',
+  'nature',
+  'perception',
+  'performance',
+  'persuasion',
+  'religion',
+  'sleight-of-hand',
+  'stealth',
+  'survival',
 ];
 const _weaponProps = [
-  'finesse', 'versatile', 'two-handed', 'light', 'heavy', 'thrown',
-  'ranged', 'ammunition', 'reach', 'loading',
+  'finesse',
+  'versatile',
+  'two-handed',
+  'light',
+  'heavy',
+  'thrown',
+  'ranged',
+  'ammunition',
+  'reach',
+  'loading',
 ];
 
 /// Editor de contenido homebrew. Lo creado se fusiona en el [ContentRepository]
@@ -36,12 +58,17 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
   /// Ejecuta una escritura en disco del store homebrew; si falla (permisos,
   /// disco lleno) lo muestra en vez de dejar la excepción sin capturar.
   Future<bool> _persist(Future<void> Function() write) async {
-    final messenger = ScaffoldMessenger.of(context);
     try {
       await write();
       return true;
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo guardar el contenido homebrew: $e',
+          tone: AppMessageTone.error,
+        );
+      }
       return false;
     }
   }
@@ -50,18 +77,27 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     final content = store.exportContent();
     final total = content.values.fold<int>(0, (s, l) => s + l.length);
     if (total == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No hay contenido homebrew para exportar.')));
+      showAppMessage(context, 'No hay contenido homebrew para exportar.');
       return;
     }
-    final messenger = ScaffoldMessenger.of(context);
     try {
       final path = await TransferService().exportHomebrew(content);
-      messenger.showSnackBar(SnackBar(
-          content: Text('Homebrew exportado ($total) en:\n$path'),
-          duration: const Duration(seconds: 4)));
+      if (mounted) {
+        showAppMessage(
+          context,
+          'Homebrew exportado ($total) en:\n$path',
+          tone: AppMessageTone.success,
+          duration: const Duration(seconds: 4),
+        );
+      }
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Error al exportar: $e')));
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo exportar el homebrew: $e',
+          tone: AppMessageTone.error,
+        );
+      }
     }
   }
 
@@ -72,7 +108,6 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       builder: (_) => ImportDialog(transfer: transfer),
     );
     if (path == null || !mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
     try {
       final content = await transfer.importHomebrewFromFile(path);
       if (!mounted) return;
@@ -84,16 +119,20 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Sobrescribir homebrew'),
-            content: Text('$collisions entrada(s) del pack comparten id con '
-                'contenido que ya tenés. Al importar se reemplazarán. '
-                '¿Continuar?'),
+            content: Text(
+              '$collisions entrada(s) del pack comparten id con '
+              'contenido que ya tenés. Al importar se reemplazarán. '
+              '¿Continuar?',
+            ),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Cancelar')),
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancelar'),
+              ),
               FilledButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Sobrescribir')),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Sobrescribir'),
+              ),
             ],
           ),
         );
@@ -105,10 +144,19 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       repo.addAll(store.toRepository());
       if (!mounted) return;
       setState(() {});
-      messenger.showSnackBar(
-          SnackBar(content: Text('Importadas $count entradas de homebrew.')));
+      showAppMessage(
+        context,
+        'Importadas $count entradas de homebrew.',
+        tone: AppMessageTone.success,
+      );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Error al importar: $e')));
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo importar el homebrew: $e',
+          tone: AppMessageTone.error,
+        );
+      }
     }
   }
 
@@ -174,9 +222,12 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
           Padding(
             padding: const EdgeInsets.all(24),
             child: Center(
-              child: Text('Todavía no agregaste nada aquí.',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              child: Text(
+                'Todavía no agregaste nada aquí.',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
           )
         else
@@ -185,8 +236,12 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     );
   }
 
-  Widget _tile(String title, String subtitle,
-      {required VoidCallback onEdit, required VoidCallback onDelete}) {
+  Widget _tile(
+    String title,
+    String subtitle, {
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
+  }) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return InkWell(
       onTap: onEdit,
@@ -198,7 +253,10 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  Text(
+                    title,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
                   const SizedBox(height: 2),
                   Text(subtitle, style: TextStyle(fontSize: 13, color: muted)),
                 ],
@@ -216,19 +274,27 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   // -------------------------------------------------------------- Armas
   Widget _weaponsTab() => _list(
-        addLabel: 'Agregar arma',
-        onAdd: () => _editWeapon(),
-        items: store.weapons.values
-            .map((w) => _tile(w.name, '${w.category} · ${w.damageDice} ${w.damageType}',
-                onEdit: () => _editWeapon(w),
-                onDelete: () => _delete(() => store.deleteWeapon(w.id),
-                    () => repo.weapons.remove(w.id))))
-            .toList(),
-      );
+    addLabel: 'Agregar arma',
+    onAdd: () => _editWeapon(),
+    items: store.weapons.values
+        .map(
+          (w) => _tile(
+            w.name,
+            '${w.category} · ${w.damageDice} ${w.damageType}',
+            onEdit: () => _editWeapon(w),
+            onDelete: () => _delete(
+              () => store.deleteWeapon(w.id),
+              () => repo.weapons.remove(w.id),
+            ),
+          ),
+        )
+        .toList(),
+  );
 
   Future<void> _editWeapon([Weapon? initial]) async {
     final w = await Navigator.of(context).push<Weapon>(
-        MaterialPageRoute(builder: (_) => WeaponForm(initial: initial)));
+      MaterialPageRoute(builder: (_) => WeaponForm(initial: initial)),
+    );
     if (w == null) return;
     if (!await _persist(() => store.saveWeapon(w))) return;
     repo.weapons[w.id] = w;
@@ -237,19 +303,27 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   // ---------------------------------------------------------- Armaduras
   Widget _armorTab() => _list(
-        addLabel: 'Agregar armadura',
-        onAdd: () => _editArmor(),
-        items: store.armor.values
-            .map((a) => _tile(a.name, '${a.category} · CA ${a.baseAc}',
-                onEdit: () => _editArmor(a),
-                onDelete: () => _delete(() => store.deleteArmor(a.id),
-                    () => repo.armor.remove(a.id))))
-            .toList(),
-      );
+    addLabel: 'Agregar armadura',
+    onAdd: () => _editArmor(),
+    items: store.armor.values
+        .map(
+          (a) => _tile(
+            a.name,
+            '${a.category} · CA ${a.baseAc}',
+            onEdit: () => _editArmor(a),
+            onDelete: () => _delete(
+              () => store.deleteArmor(a.id),
+              () => repo.armor.remove(a.id),
+            ),
+          ),
+        )
+        .toList(),
+  );
 
   Future<void> _editArmor([Armor? initial]) async {
     final a = await Navigator.of(context).push<Armor>(
-        MaterialPageRoute(builder: (_) => ArmorForm(initial: initial)));
+      MaterialPageRoute(builder: (_) => ArmorForm(initial: initial)),
+    );
     if (a == null) return;
     if (!await _persist(() => store.saveArmor(a))) return;
     repo.armor[a.id] = a;
@@ -258,19 +332,27 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   // --------------------------------------------------------------- Dotes
   Widget _featsTab() => _list(
-        addLabel: 'Agregar dote',
-        onAdd: () => _editFeat(),
-        items: store.feats.values
-            .map((f) => _tile(f.name, '${f.category} · ${f.effects.length} efecto(s)',
-                onEdit: () => _editFeat(f),
-                onDelete: () => _delete(() => store.deleteFeat(f.id),
-                    () => repo.feats.remove(f.id))))
-            .toList(),
-      );
+    addLabel: 'Agregar dote',
+    onAdd: () => _editFeat(),
+    items: store.feats.values
+        .map(
+          (f) => _tile(
+            f.name,
+            '${f.category} · ${f.effects.length} efecto(s)',
+            onEdit: () => _editFeat(f),
+            onDelete: () => _delete(
+              () => store.deleteFeat(f.id),
+              () => repo.feats.remove(f.id),
+            ),
+          ),
+        )
+        .toList(),
+  );
 
   Future<void> _editFeat([Feat? initial]) async {
-    final f = await Navigator.of(context)
-        .push<Feat>(MaterialPageRoute(builder: (_) => FeatForm(initial: initial)));
+    final f = await Navigator.of(
+      context,
+    ).push<Feat>(MaterialPageRoute(builder: (_) => FeatForm(initial: initial)));
     if (f == null) return;
     if (!await _persist(() => store.saveFeat(f))) return;
     repo.feats[f.id] = f;
@@ -279,19 +361,27 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   // --------------------------------------------------------------- Razas
   Widget _racesTab() => _list(
-        addLabel: 'Agregar raza',
-        onAdd: () => _editRace(),
-        items: store.races.values
-            .map((r) => _tile(r.name, '${r.size} · ${r.speed} ft · ${r.effects.length} rasgo(s)',
-                onEdit: () => _editRace(r),
-                onDelete: () => _delete(() => store.deleteRace(r.id),
-                    () => repo.races.remove(r.id))))
-            .toList(),
-      );
+    addLabel: 'Agregar raza',
+    onAdd: () => _editRace(),
+    items: store.races.values
+        .map(
+          (r) => _tile(
+            r.name,
+            '${r.size} · ${r.speed} ft · ${r.effects.length} rasgo(s)',
+            onEdit: () => _editRace(r),
+            onDelete: () => _delete(
+              () => store.deleteRace(r.id),
+              () => repo.races.remove(r.id),
+            ),
+          ),
+        )
+        .toList(),
+  );
 
   Future<void> _editRace([Race? initial]) async {
-    final r = await Navigator.of(context)
-        .push<Race>(MaterialPageRoute(builder: (_) => RaceForm(initial: initial)));
+    final r = await Navigator.of(
+      context,
+    ).push<Race>(MaterialPageRoute(builder: (_) => RaceForm(initial: initial)));
     if (r == null) return;
     if (!await _persist(() => store.saveRace(r))) return;
     repo.races[r.id] = r;
@@ -300,19 +390,29 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   // ---------------------------------------------------------- Trasfondos
   Widget _backgroundsTab() => _list(
-        addLabel: 'Agregar trasfondo',
-        onAdd: () => _editBackground(),
-        items: store.backgrounds.values
-            .map((b) => _tile(b.name, b.skillProficiencies.join(', '),
-                onEdit: () => _editBackground(b),
-                onDelete: () => _delete(() => store.deleteBackground(b.id),
-                    () => repo.backgrounds.remove(b.id))))
-            .toList(),
-      );
+    addLabel: 'Agregar trasfondo',
+    onAdd: () => _editBackground(),
+    items: store.backgrounds.values
+        .map(
+          (b) => _tile(
+            b.name,
+            b.skillProficiencies.join(', '),
+            onEdit: () => _editBackground(b),
+            onDelete: () => _delete(
+              () => store.deleteBackground(b.id),
+              () => repo.backgrounds.remove(b.id),
+            ),
+          ),
+        )
+        .toList(),
+  );
 
   Future<void> _editBackground([Background? initial]) async {
-    final b = await Navigator.of(context).push<Background>(MaterialPageRoute(
-        builder: (_) => BackgroundForm(initial: initial, repo: repo)));
+    final b = await Navigator.of(context).push<Background>(
+      MaterialPageRoute(
+        builder: (_) => BackgroundForm(initial: initial, repo: repo),
+      ),
+    );
     if (b == null) return;
     if (!await _persist(() => store.saveBackground(b))) return;
     repo.backgrounds[b.id] = b;
@@ -321,26 +421,34 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   // ---------------------------------------------------------- Conjuros
   Widget _spellsTab() => _list(
-        addLabel: 'Agregar conjuro',
-        onAdd: () => _editSpell(),
-        items: (store.spells.values.toList()
-              ..sort((a, b) => a.level != b.level
+    addLabel: 'Agregar conjuro',
+    onAdd: () => _editSpell(),
+    items:
+        (store.spells.values.toList()..sort(
+              (a, b) => a.level != b.level
                   ? a.level.compareTo(b.level)
-                  : a.name.compareTo(b.name)))
-            .map((s) => _tile(
+                  : a.name.compareTo(b.name),
+            ))
+            .map(
+              (s) => _tile(
                 s.name,
                 '${s.isCantrip ? "Truco" : "Nivel ${s.level}"}'
-                    '${s.school.isEmpty ? "" : " · ${s.school}"}'
-                    '${s.classes.isEmpty ? "" : " · ${s.classes.join(", ")}"}',
+                '${s.school.isEmpty ? "" : " · ${s.school}"}'
+                '${s.classes.isEmpty ? "" : " · ${s.classes.join(", ")}"}',
                 onEdit: () => _editSpell(s),
-                onDelete: () => _delete(() => store.deleteSpell(s.id),
-                    () => repo.spells.remove(s.id))))
+                onDelete: () => _delete(
+                  () => store.deleteSpell(s.id),
+                  () => repo.spells.remove(s.id),
+                ),
+              ),
+            )
             .toList(),
-      );
+  );
 
   Future<void> _editSpell([Spell? initial]) async {
-    final s = await Navigator.of(context)
-        .push<Spell>(MaterialPageRoute(builder: (_) => SpellForm(initial: initial)));
+    final s = await Navigator.of(context).push<Spell>(
+      MaterialPageRoute(builder: (_) => SpellForm(initial: initial)),
+    );
     if (s == null) return;
     if (!await _persist(() => store.saveSpell(s))) return;
     repo.spells[s.id] = s;
@@ -348,7 +456,9 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
   }
 
   Future<void> _delete(
-      Future<void> Function() fromStore, VoidCallback fromRepo) async {
+    Future<void> Function() fromStore,
+    VoidCallback fromRepo,
+  ) async {
     if (!await _persist(fromStore)) return;
     fromRepo();
     setState(() {});
@@ -366,13 +476,18 @@ class WeaponForm extends StatefulWidget {
 
 class _WeaponFormState extends State<WeaponForm> {
   late final _name = TextEditingController(text: widget.initial?.name ?? '');
-  late final _dice = TextEditingController(text: widget.initial?.damageDice ?? '1d6');
-  late final _type =
-      TextEditingController(text: widget.initial?.damageType ?? 'slashing');
-  late final _versatile =
-      TextEditingController(text: widget.initial?.versatileDice ?? '');
-  late final _mastery =
-      TextEditingController(text: widget.initial?.mastery ?? '');
+  late final _dice = TextEditingController(
+    text: widget.initial?.damageDice ?? '1d6',
+  );
+  late final _type = TextEditingController(
+    text: widget.initial?.damageType ?? 'slashing',
+  );
+  late final _versatile = TextEditingController(
+    text: widget.initial?.versatileDice ?? '',
+  );
+  late final _mastery = TextEditingController(
+    text: widget.initial?.mastery ?? '',
+  );
   late String _category = widget.initial?.category ?? 'simple';
   late final Set<String> _props = {...?widget.initial?.properties};
 
@@ -383,8 +498,11 @@ class _WeaponFormState extends State<WeaponForm> {
       onSave: _name.text.trim().isEmpty ? null : _save,
       children: [
         _text(_name, 'Nombre', onChanged: () => setState(() {})),
-        _categoryDropdown(['simple', 'martial'], _category,
-            (v) => setState(() => _category = v)),
+        _categoryDropdown(
+          ['simple', 'martial'],
+          _category,
+          (v) => setState(() => _category = v),
+        ),
         _text(_dice, 'Dado de daño (p.ej. 1d8)'),
         _text(_type, 'Tipo de daño (slashing/piercing/bludgeoning)'),
         _text(_versatile, 'Dado versátil (opcional, p.ej. 1d10)'),
@@ -394,12 +512,14 @@ class _WeaponFormState extends State<WeaponForm> {
         Wrap(
           spacing: 6,
           children: _weaponProps
-              .map((p) => FilterChip(
-                    label: Text(p),
-                    selected: _props.contains(p),
-                    onSelected: (v) => setState(
-                        () => v ? _props.add(p) : _props.remove(p)),
-                  ))
+              .map(
+                (p) => FilterChip(
+                  label: Text(p),
+                  selected: _props.contains(p),
+                  onSelected: (v) =>
+                      setState(() => v ? _props.add(p) : _props.remove(p)),
+                ),
+              )
               .toList(),
         ),
       ],
@@ -407,17 +527,21 @@ class _WeaponFormState extends State<WeaponForm> {
   }
 
   void _save() {
-    Navigator.of(context).pop(Weapon(
-      id: widget.initial?.id ?? homebrewId(_name.text),
-      name: _name.text.trim(),
-      source: ContentSource.homebrew,
-      category: _category,
-      damageDice: _dice.text.trim(),
-      damageType: _type.text.trim(),
-      properties: _props.toList(),
-      versatileDice: _versatile.text.trim().isEmpty ? null : _versatile.text.trim(),
-      mastery: _mastery.text.trim().isEmpty ? null : _mastery.text.trim(),
-    ));
+    Navigator.of(context).pop(
+      Weapon(
+        id: widget.initial?.id ?? homebrewId(_name.text),
+        name: _name.text.trim(),
+        source: ContentSource.homebrew,
+        category: _category,
+        damageDice: _dice.text.trim(),
+        damageType: _type.text.trim(),
+        properties: _props.toList(),
+        versatileDice: _versatile.text.trim().isEmpty
+            ? null
+            : _versatile.text.trim(),
+        mastery: _mastery.text.trim().isEmpty ? null : _mastery.text.trim(),
+      ),
+    );
   }
 }
 
@@ -430,12 +554,15 @@ class ArmorForm extends StatefulWidget {
 
 class _ArmorFormState extends State<ArmorForm> {
   late final _name = TextEditingController(text: widget.initial?.name ?? '');
-  late final _baseAc =
-      TextEditingController(text: '${widget.initial?.baseAc ?? 11}');
+  late final _baseAc = TextEditingController(
+    text: '${widget.initial?.baseAc ?? 11}',
+  );
   late final _maxDex = TextEditingController(
-      text: widget.initial?.maxDexBonus?.toString() ?? '');
+    text: widget.initial?.maxDexBonus?.toString() ?? '',
+  );
   late final _strReq = TextEditingController(
-      text: widget.initial?.strengthRequirement?.toString() ?? '');
+    text: widget.initial?.strengthRequirement?.toString() ?? '',
+  );
   late String _category = widget.initial?.category ?? 'light';
   late bool _addDex = widget.initial?.addDexMod ?? true;
   late bool _stealth = widget.initial?.stealthDisadvantage ?? false;
@@ -447,8 +574,11 @@ class _ArmorFormState extends State<ArmorForm> {
       onSave: _name.text.trim().isEmpty ? null : _save,
       children: [
         _text(_name, 'Nombre', onChanged: () => setState(() {})),
-        _categoryDropdown(['light', 'medium', 'heavy', 'shield'], _category,
-            (v) => setState(() => _category = v)),
+        _categoryDropdown(
+          ['light', 'medium', 'heavy', 'shield'],
+          _category,
+          (v) => setState(() => _category = v),
+        ),
         _text(_baseAc, 'CA base', number: true),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
@@ -469,17 +599,19 @@ class _ArmorFormState extends State<ArmorForm> {
   }
 
   void _save() {
-    Navigator.of(context).pop(Armor(
-      id: widget.initial?.id ?? homebrewId(_name.text),
-      name: _name.text.trim(),
-      source: ContentSource.homebrew,
-      category: _category,
-      baseAc: int.tryParse(_baseAc.text.trim()) ?? 10,
-      addDexMod: _addDex,
-      maxDexBonus: int.tryParse(_maxDex.text.trim()),
-      strengthRequirement: int.tryParse(_strReq.text.trim()),
-      stealthDisadvantage: _stealth,
-    ));
+    Navigator.of(context).pop(
+      Armor(
+        id: widget.initial?.id ?? homebrewId(_name.text),
+        name: _name.text.trim(),
+        source: ContentSource.homebrew,
+        category: _category,
+        baseAc: int.tryParse(_baseAc.text.trim()) ?? 10,
+        addDexMod: _addDex,
+        maxDexBonus: int.tryParse(_maxDex.text.trim()),
+        strengthRequirement: int.tryParse(_strReq.text.trim()),
+        stealthDisadvantage: _stealth,
+      ),
+    );
   }
 }
 
@@ -502,8 +634,11 @@ class _FeatFormState extends State<FeatForm> {
       onSave: _name.text.trim().isEmpty ? null : _save,
       children: [
         _text(_name, 'Nombre', onChanged: () => setState(() {})),
-        _categoryDropdown(['origin', 'general', 'fighting-style'], _category,
-            (v) => setState(() => _category = v)),
+        _categoryDropdown(
+          ['origin', 'general', 'fighting-style'],
+          _category,
+          (v) => setState(() => _category = v),
+        ),
         const SizedBox(height: 12),
         const Eyebrow('Efectos'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
@@ -512,13 +647,15 @@ class _FeatFormState extends State<FeatForm> {
   }
 
   void _save() {
-    Navigator.of(context).pop(Feat(
-      id: widget.initial?.id ?? homebrewId(_name.text),
-      name: _name.text.trim(),
-      source: ContentSource.homebrew,
-      category: _category,
-      effects: _effects,
-    ));
+    Navigator.of(context).pop(
+      Feat(
+        id: widget.initial?.id ?? homebrewId(_name.text),
+        name: _name.text.trim(),
+        source: ContentSource.homebrew,
+        category: _category,
+        effects: _effects,
+      ),
+    );
   }
 }
 
@@ -531,11 +668,15 @@ class RaceForm extends StatefulWidget {
 
 class _RaceFormState extends State<RaceForm> {
   late final _name = TextEditingController(text: widget.initial?.name ?? '');
-  late final _size =
-      TextEditingController(text: widget.initial?.size ?? 'Mediano');
-  late final _speed = TextEditingController(text: '${widget.initial?.speed ?? 30}');
-  late final _skillCount =
-      TextEditingController(text: '${widget.initial?.skillChoiceCount ?? 0}');
+  late final _size = TextEditingController(
+    text: widget.initial?.size ?? 'Mediano',
+  );
+  late final _speed = TextEditingController(
+    text: '${widget.initial?.speed ?? 30}',
+  );
+  late final _skillCount = TextEditingController(
+    text: '${widget.initial?.skillChoiceCount ?? 0}',
+  );
   late final List<Effect> _effects = [...?widget.initial?.effects];
 
   @override
@@ -556,15 +697,17 @@ class _RaceFormState extends State<RaceForm> {
   }
 
   void _save() {
-    Navigator.of(context).pop(Race(
-      id: widget.initial?.id ?? homebrewId(_name.text),
-      name: _name.text.trim(),
-      source: ContentSource.homebrew,
-      size: _size.text.trim(),
-      speed: int.tryParse(_speed.text.trim()) ?? 30,
-      skillChoiceCount: int.tryParse(_skillCount.text.trim()) ?? 0,
-      effects: _effects,
-    ));
+    Navigator.of(context).pop(
+      Race(
+        id: widget.initial?.id ?? homebrewId(_name.text),
+        name: _name.text.trim(),
+        source: ContentSource.homebrew,
+        size: _size.text.trim(),
+        speed: int.tryParse(_speed.text.trim()) ?? 30,
+        skillChoiceCount: int.tryParse(_skillCount.text.trim()) ?? 0,
+        effects: _effects,
+      ),
+    );
   }
 }
 
@@ -579,7 +722,8 @@ class BackgroundForm extends StatefulWidget {
 class _BackgroundFormState extends State<BackgroundForm> {
   late final _name = TextEditingController(text: widget.initial?.name ?? '');
   late final _tools = TextEditingController(
-      text: widget.initial?.toolProficiencies.join(', ') ?? '');
+    text: widget.initial?.toolProficiencies.join(', ') ?? '',
+  );
   late final Set<Ability> _abilities = {...?widget.initial?.abilityOptions};
   late final Set<String> _skills2 = {...?widget.initial?.skillProficiencies};
   late String? _originFeatId = widget.initial?.originFeatId;
@@ -598,17 +742,19 @@ class _BackgroundFormState extends State<BackgroundForm> {
         Wrap(
           spacing: 6,
           children: Ability.values
-              .map((a) => FilterChip(
-                    label: Text(a.abbr),
-                    selected: _abilities.contains(a),
-                    onSelected: (v) => setState(() {
-                      if (v && _abilities.length < 3) {
-                        _abilities.add(a);
-                      } else {
-                        _abilities.remove(a);
-                      }
-                    }),
-                  ))
+              .map(
+                (a) => FilterChip(
+                  label: Text(a.abbr),
+                  selected: _abilities.contains(a),
+                  onSelected: (v) => setState(() {
+                    if (v && _abilities.length < 3) {
+                      _abilities.add(a);
+                    } else {
+                      _abilities.remove(a);
+                    }
+                  }),
+                ),
+              )
               .toList(),
         ),
         const SizedBox(height: 8),
@@ -616,12 +762,14 @@ class _BackgroundFormState extends State<BackgroundForm> {
         Wrap(
           spacing: 6,
           children: _skills
-              .map((s) => FilterChip(
-                    label: Text(s),
-                    selected: _skills2.contains(s),
-                    onSelected: (v) => setState(
-                        () => v ? _skills2.add(s) : _skills2.remove(s)),
-                  ))
+              .map(
+                (s) => FilterChip(
+                  label: Text(s),
+                  selected: _skills2.contains(s),
+                  onSelected: (v) =>
+                      setState(() => v ? _skills2.add(s) : _skills2.remove(s)),
+                ),
+              )
               .toList(),
         ),
         _text(_tools, 'Herramientas (separadas por coma)'),
@@ -629,11 +777,14 @@ class _BackgroundFormState extends State<BackgroundForm> {
         DropdownButtonFormField<String?>(
           initialValue: _originFeatId,
           decoration: const InputDecoration(
-              labelText: 'Dote de origen', border: OutlineInputBorder()),
+            labelText: 'Dote de origen',
+            border: OutlineInputBorder(),
+          ),
           items: [
             const DropdownMenuItem(value: null, child: Text('(ninguna)')),
-            ...feats.map((f) =>
-                DropdownMenuItem(value: f.id, child: Text(f.name))),
+            ...feats.map(
+              (f) => DropdownMenuItem(value: f.id, child: Text(f.name)),
+            ),
           ],
           onChanged: (v) => setState(() => _originFeatId = v),
         ),
@@ -650,16 +801,18 @@ class _BackgroundFormState extends State<BackgroundForm> {
         .map((s) => s.trim())
         .where((s) => s.isNotEmpty)
         .toList();
-    Navigator.of(context).pop(Background(
-      id: widget.initial?.id ?? homebrewId(_name.text),
-      name: _name.text.trim(),
-      source: ContentSource.homebrew,
-      abilityOptions: _abilities.toList(),
-      skillProficiencies: _skills2.toList(),
-      toolProficiencies: tools,
-      originFeatId: _originFeatId,
-      effects: _effects,
-    ));
+    Navigator.of(context).pop(
+      Background(
+        id: widget.initial?.id ?? homebrewId(_name.text),
+        name: _name.text.trim(),
+        source: ContentSource.homebrew,
+        abilityOptions: _abilities.toList(),
+        skillProficiencies: _skills2.toList(),
+        toolProficiencies: tools,
+        originFeatId: _originFeatId,
+        effects: _effects,
+      ),
+    );
   }
 }
 
@@ -684,18 +837,25 @@ const _spellClasses = {
 
 class _SpellFormState extends State<SpellForm> {
   late final _name = TextEditingController(text: widget.initial?.name ?? '');
-  late final _level = TextEditingController(text: '${widget.initial?.level ?? 0}');
-  late final _school =
-      TextEditingController(text: widget.initial?.school ?? '');
-  late final _castingTime =
-      TextEditingController(text: widget.initial?.castingTime ?? '1 acción');
+  late final _level = TextEditingController(
+    text: '${widget.initial?.level ?? 0}',
+  );
+  late final _school = TextEditingController(
+    text: widget.initial?.school ?? '',
+  );
+  late final _castingTime = TextEditingController(
+    text: widget.initial?.castingTime ?? '1 acción',
+  );
   late final _range = TextEditingController(text: widget.initial?.range ?? '');
-  late final _components =
-      TextEditingController(text: widget.initial?.components ?? 'V, S');
-  late final _duration =
-      TextEditingController(text: widget.initial?.duration ?? 'Instantánea');
-  late final _description =
-      TextEditingController(text: widget.initial?.description ?? '');
+  late final _components = TextEditingController(
+    text: widget.initial?.components ?? 'V, S',
+  );
+  late final _duration = TextEditingController(
+    text: widget.initial?.duration ?? 'Instantánea',
+  );
+  late final _description = TextEditingController(
+    text: widget.initial?.description ?? '',
+  );
   late bool _concentration = widget.initial?.concentration ?? false;
   late bool _ritual = widget.initial?.ritual ?? false;
   late final Set<String> _classes = {...?widget.initial?.classes};
@@ -730,12 +890,15 @@ class _SpellFormState extends State<SpellForm> {
         Wrap(
           spacing: 6,
           children: _spellClasses.entries
-              .map((e) => FilterChip(
-                    label: Text(e.value),
-                    selected: _classes.contains(e.key),
-                    onSelected: (v) => setState(
-                        () => v ? _classes.add(e.key) : _classes.remove(e.key)),
-                  ))
+              .map(
+                (e) => FilterChip(
+                  label: Text(e.value),
+                  selected: _classes.contains(e.key),
+                  onSelected: (v) => setState(
+                    () => v ? _classes.add(e.key) : _classes.remove(e.key),
+                  ),
+                ),
+              )
               .toList(),
         ),
         const SizedBox(height: 12),
@@ -754,21 +917,23 @@ class _SpellFormState extends State<SpellForm> {
   }
 
   void _save() {
-    Navigator.of(context).pop(Spell(
-      id: widget.initial?.id ?? homebrewId(_name.text),
-      name: _name.text.trim(),
-      source: ContentSource.homebrew,
-      level: int.tryParse(_level.text.trim())?.clamp(0, 9) ?? 0,
-      school: _school.text.trim(),
-      castingTime: _castingTime.text.trim(),
-      range: _range.text.trim(),
-      components: _components.text.trim(),
-      duration: _duration.text.trim(),
-      concentration: _concentration,
-      ritual: _ritual,
-      description: _description.text.trim(),
-      classes: _classes.toList(),
-    ));
+    Navigator.of(context).pop(
+      Spell(
+        id: widget.initial?.id ?? homebrewId(_name.text),
+        name: _name.text.trim(),
+        source: ContentSource.homebrew,
+        level: int.tryParse(_level.text.trim())?.clamp(0, 9) ?? 0,
+        school: _school.text.trim(),
+        castingTime: _castingTime.text.trim(),
+        range: _range.text.trim(),
+        components: _components.text.trim(),
+        duration: _duration.text.trim(),
+        concentration: _concentration,
+        ritual: _ritual,
+        description: _description.text.trim(),
+        classes: _classes.toList(),
+      ),
+    );
   }
 }
 
@@ -778,8 +943,11 @@ class _FormScaffold extends StatelessWidget {
   final String title;
   final VoidCallback? onSave;
   final List<Widget> children;
-  const _FormScaffold(
-      {required this.title, required this.onSave, required this.children});
+  const _FormScaffold({
+    required this.title,
+    required this.onSave,
+    required this.children,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -800,30 +968,39 @@ class _FormScaffold extends StatelessWidget {
   }
 }
 
-Widget _text(TextEditingController c, String label,
-        {bool number = false, VoidCallback? onChanged}) =>
-    Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextField(
-        controller: c,
-        keyboardType: number ? TextInputType.number : null,
-        onChanged: onChanged == null ? null : (_) => onChanged(),
-        decoration:
-            InputDecoration(labelText: label, border: const OutlineInputBorder()),
-      ),
-    );
+Widget _text(
+  TextEditingController c,
+  String label, {
+  bool number = false,
+  VoidCallback? onChanged,
+}) => Padding(
+  padding: const EdgeInsets.symmetric(vertical: 6),
+  child: TextField(
+    controller: c,
+    keyboardType: number ? TextInputType.number : null,
+    onChanged: onChanged == null ? null : (_) => onChanged(),
+    decoration: InputDecoration(
+      labelText: label,
+      border: const OutlineInputBorder(),
+    ),
+  ),
+);
 
 Widget _categoryDropdown(
-        List<String> options, String value, ValueChanged<String> onChanged) =>
-    Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: DropdownButtonFormField<String>(
-        initialValue: value,
-        decoration: const InputDecoration(
-            labelText: 'Categoría', border: OutlineInputBorder()),
-        items: options
-            .map((o) => DropdownMenuItem(value: o, child: Text(o)))
-            .toList(),
-        onChanged: (v) => onChanged(v ?? value),
-      ),
-    );
+  List<String> options,
+  String value,
+  ValueChanged<String> onChanged,
+) => Padding(
+  padding: const EdgeInsets.symmetric(vertical: 6),
+  child: DropdownButtonFormField<String>(
+    initialValue: value,
+    decoration: const InputDecoration(
+      labelText: 'Categoría',
+      border: OutlineInputBorder(),
+    ),
+    items: options
+        .map((o) => DropdownMenuItem(value: o, child: Text(o)))
+        .toList(),
+    onChanged: (v) => onChanged(v ?? value),
+  ),
+);

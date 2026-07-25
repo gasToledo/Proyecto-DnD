@@ -104,7 +104,9 @@ Color classAccent(CharacterClass? klass, Color fallback) {
   final hex = klass?.accentColor;
   if (hex == null) return fallback;
   final cleaned = hex.replaceFirst('#', '').trim();
-  final value = int.tryParse(cleaned.length == 6 ? 'FF$cleaned' : cleaned,
-      radix: 16);
+  final value = int.tryParse(
+    cleaned.length == 6 ? 'FF$cleaned' : cleaned,
+    radix: 16,
+  );
   return value == null ? fallback : Color(value);
 }

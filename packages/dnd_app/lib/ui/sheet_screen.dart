@@ -21,53 +21,81 @@ class _ConditionInfo {
 }
 
 const _conditions = <String, _ConditionInfo>{
-  'blinded': _ConditionInfo('Cegado',
-      'No podés ver y fallás automáticamente cualquier prueba que requiera vista. '
-          'Los ataques contra vos tienen ventaja, y tus ataques tienen desventaja.'),
-  'charmed': _ConditionInfo('Hechizado',
-      'No podés atacar a quien te hechizó ni dirigirle habilidades u efectos '
-          'dañinos. Esa criatura tiene ventaja en pruebas sociales contra vos.'),
-  'deafened': _ConditionInfo('Ensordecido',
-      'No podés oír y fallás automáticamente cualquier prueba que requiera oído.'),
-  'frightened': _ConditionInfo('Asustado',
-      'Tenés desventaja en pruebas de característica y ataques mientras la '
-          'fuente de tu miedo esté a la vista. No podés acercarte voluntariamente a ella.'),
-  'grappled': _ConditionInfo('Agarrado',
-      'Tu velocidad se vuelve 0 y no podés beneficiarte de ningún bonus a la '
-          'velocidad. La condición termina si quien te agarra queda incapacitado.'),
-  'incapacitated': _ConditionInfo('Incapacitado',
-      'No podés realizar acciones ni reacciones. (En 2024 tampoco te movés ni hablás.)'),
-  'invisible': _ConditionInfo('Invisible',
-      'Sos imposible de ver sin magia o sentidos especiales. A efectos de '
-          'esconderte, se te considera fuertemente oscurecido. Tus ataques tienen '
-          'ventaja; los ataques contra vos tienen desventaja.'),
-  'paralyzed': _ConditionInfo('Paralizado',
-      'Estás incapacitado y no podés moverte ni hablar. Fallás automáticamente '
-          'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
-          'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.'),
-  'petrified': _ConditionInfo('Petrificado',
-      'Te transformás en sustancia sólida inanimada (junto a tu equipo). '
-          'Incapacitado, no podés moverte ni hablar, sos inconsciente de tu entorno. '
-          'Los ataques contra vos tienen ventaja, fallás salvaciones de Fuerza y '
-          'Destreza, tenés resistencia a todo el daño e inmunidad a veneno y enfermedad.'),
-  'poisoned': _ConditionInfo('Envenenado',
-      'Tenés desventaja en tiradas de ataque y en pruebas de característica.'),
-  'prone': _ConditionInfo('Derribado',
-      'Solo podés moverte arrastrándote (o levantarte). Tenés desventaja al '
-          'atacar. Los ataques cuerpo a cuerpo contra vos tienen ventaja; los '
-          'ataques a distancia contra vos tienen desventaja.'),
-  'restrained': _ConditionInfo('Apresado',
-      'Tu velocidad se vuelve 0. Los ataques contra vos tienen ventaja y tus '
-          'ataques tienen desventaja. Tenés desventaja en salvaciones de Destreza.'),
-  'stunned': _ConditionInfo('Aturdido',
-      'Estás incapacitado, no podés moverte y hablás solo entrecortadamente. '
-          'Fallás automáticamente las salvaciones de Fuerza y Destreza. Los '
-          'ataques contra vos tienen ventaja.'),
-  'unconscious': _ConditionInfo('Inconsciente',
-      'Estás incapacitado, no podés moverte ni hablar, y no sos consciente de tu '
-          'entorno. Soltás lo que sostenías y caés derribado. Fallás automáticamente '
-          'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
-          'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.'),
+  'blinded': _ConditionInfo(
+    'Cegado',
+    'No podés ver y fallás automáticamente cualquier prueba que requiera vista. '
+        'Los ataques contra vos tienen ventaja, y tus ataques tienen desventaja.',
+  ),
+  'charmed': _ConditionInfo(
+    'Hechizado',
+    'No podés atacar a quien te hechizó ni dirigirle habilidades u efectos '
+        'dañinos. Esa criatura tiene ventaja en pruebas sociales contra vos.',
+  ),
+  'deafened': _ConditionInfo(
+    'Ensordecido',
+    'No podés oír y fallás automáticamente cualquier prueba que requiera oído.',
+  ),
+  'frightened': _ConditionInfo(
+    'Asustado',
+    'Tenés desventaja en pruebas de característica y ataques mientras la '
+        'fuente de tu miedo esté a la vista. No podés acercarte voluntariamente a ella.',
+  ),
+  'grappled': _ConditionInfo(
+    'Agarrado',
+    'Tu velocidad se vuelve 0 y no podés beneficiarte de ningún bonus a la '
+        'velocidad. La condición termina si quien te agarra queda incapacitado.',
+  ),
+  'incapacitated': _ConditionInfo(
+    'Incapacitado',
+    'No podés realizar acciones ni reacciones. (En 2024 tampoco te movés ni hablás.)',
+  ),
+  'invisible': _ConditionInfo(
+    'Invisible',
+    'Sos imposible de ver sin magia o sentidos especiales. A efectos de '
+        'esconderte, se te considera fuertemente oscurecido. Tus ataques tienen '
+        'ventaja; los ataques contra vos tienen desventaja.',
+  ),
+  'paralyzed': _ConditionInfo(
+    'Paralizado',
+    'Estás incapacitado y no podés moverte ni hablar. Fallás automáticamente '
+        'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
+        'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.',
+  ),
+  'petrified': _ConditionInfo(
+    'Petrificado',
+    'Te transformás en sustancia sólida inanimada (junto a tu equipo). '
+        'Incapacitado, no podés moverte ni hablar, sos inconsciente de tu entorno. '
+        'Los ataques contra vos tienen ventaja, fallás salvaciones de Fuerza y '
+        'Destreza, tenés resistencia a todo el daño e inmunidad a veneno y enfermedad.',
+  ),
+  'poisoned': _ConditionInfo(
+    'Envenenado',
+    'Tenés desventaja en tiradas de ataque y en pruebas de característica.',
+  ),
+  'prone': _ConditionInfo(
+    'Derribado',
+    'Solo podés moverte arrastrándote (o levantarte). Tenés desventaja al '
+        'atacar. Los ataques cuerpo a cuerpo contra vos tienen ventaja; los '
+        'ataques a distancia contra vos tienen desventaja.',
+  ),
+  'restrained': _ConditionInfo(
+    'Apresado',
+    'Tu velocidad se vuelve 0. Los ataques contra vos tienen ventaja y tus '
+        'ataques tienen desventaja. Tenés desventaja en salvaciones de Destreza.',
+  ),
+  'stunned': _ConditionInfo(
+    'Aturdido',
+    'Estás incapacitado, no podés moverte y hablás solo entrecortadamente. '
+        'Fallás automáticamente las salvaciones de Fuerza y Destreza. Los '
+        'ataques contra vos tienen ventaja.',
+  ),
+  'unconscious': _ConditionInfo(
+    'Inconsciente',
+    'Estás incapacitado, no podés moverte ni hablar, y no sos consciente de tu '
+        'entorno. Soltás lo que sostenías y caés derribado. Fallás automáticamente '
+        'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
+        'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.',
+  ),
 };
 
 /// Ficha editable. Combate/Inventario/Notas modifican el personaje y disparan
@@ -140,11 +168,8 @@ class _SheetScreenState extends State<SheetScreen> {
   void _openLevelUp() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => LevelUpScreen(
-          character: _c,
-          repo: repo,
-          onDone: _replace,
-        ),
+        builder: (_) =>
+            LevelUpScreen(character: _c, repo: repo, onDone: _replace),
       ),
     );
   }
@@ -164,17 +189,14 @@ class _SheetScreenState extends State<SheetScreen> {
   void _openPortrait() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => PortraitScreen(
-          character: _c,
-          repo: repo,
-          onUpdated: _replace,
-        ),
+        builder: (_) =>
+            PortraitScreen(character: _c, repo: repo, onUpdated: _replace),
       ),
     );
   }
 
-  void _snack(String msg) => ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), duration: const Duration(seconds: 2)));
+  void _snack(String msg) =>
+      showAppMessage(context, msg, duration: const Duration(seconds: 2));
 
   @override
   Widget build(BuildContext context) {
@@ -227,13 +249,17 @@ class _SheetScreenState extends State<SheetScreen> {
     final pal = context.palette;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final warnings = CharacterValidator(repo).validate(_c);
-    final portrait = _c.portraitPaths.isNotEmpty ? _c.portraitPaths.first : null;
+    final portrait = _c.portraitPaths.isNotEmpty
+        ? _c.portraitPaths.first
+        : null;
     final hasPortrait = portrait != null && File(portrait).existsSync();
     final race = repo.race(_c.raceId)?.name ?? _c.raceId;
     final klassObj = repo.characterClass(_c.classId);
     final klass = klassObj?.name ?? _c.classId;
     final accent = classAccent(klassObj, pal.gold);
-    final sub = _c.subclassId == null ? null : repo.subclass(_c.subclassId!)?.name;
+    final sub = _c.subclassId == null
+        ? null
+        : repo.subclass(_c.subclassId!)?.name;
     final klassLine = sub == null ? klass : '$klass ($sub)';
     final bg = repo.background(_c.backgroundId)?.name ?? '';
     final subtitle = [race, klassLine, if (bg.isNotEmpty) bg].join(' · ');
@@ -269,8 +295,10 @@ class _SheetScreenState extends State<SheetScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Flexible(
-                            child: Text(_c.name,
-                                style: Theme.of(context).textTheme.headlineSmall),
+                            child: Text(
+                              _c.name,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
                           ),
                           const SizedBox(width: 6),
                           Icon(Icons.edit_outlined, size: 16, color: muted),
@@ -293,12 +321,15 @@ class _SheetScreenState extends State<SheetScreen> {
             ),
             Column(
               children: [
-                Text('${_c.level}',
-                    style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 28,
-                        height: 1,
-                        color: pal.gold)),
+                Text(
+                  '${_c.level}',
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 28,
+                    height: 1,
+                    color: pal.gold,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 const Eyebrow('Nivel'),
               ],
@@ -328,14 +359,16 @@ class _SheetScreenState extends State<SheetScreen> {
         if (warnings.isNotEmpty) ...[
           const SizedBox(height: 20),
           const Eyebrow('Advertencias'),
-          DenseRows(children: [
-            for (final w in warnings)
-              ListTile(
-                dense: true,
-                leading: Icon(Icons.warning_amber, color: pal.crimson),
-                title: Text(w.message),
-              ),
-          ]),
+          DenseRows(
+            children: [
+              for (final w in warnings)
+                ListTile(
+                  dense: true,
+                  leading: Icon(Icons.warning_amber, color: pal.crimson),
+                  title: Text(w.message),
+                ),
+            ],
+          ),
         ],
       ],
     );
@@ -350,24 +383,27 @@ class _SheetScreenState extends State<SheetScreen> {
       runSpacing: 10,
       alignment: WrapAlignment.center,
       children: [
-      box(StatPlaque(
-        label: 'Puntos de golpe',
-        value: '${c.currentHp}/${s.maxHp}',
-        valueColor: pal.crimson,
-        footer: ThinBar(
-          ratio: s.maxHp == 0 ? 0 : c.currentHp / s.maxHp,
-          color: pal.crimson,
-          track: pal.plaque,
+        box(
+          StatPlaque(
+            label: 'Puntos de golpe',
+            value: '${c.currentHp}/${s.maxHp}',
+            valueColor: pal.crimson,
+            footer: ThinBar(
+              ratio: s.maxHp == 0 ? 0 : c.currentHp / s.maxHp,
+              color: pal.crimson,
+              track: pal.plaque,
+            ),
+          ),
         ),
-      )),
-      box(_acPlaque(s.armorClass)),
-      box(StatPlaque(label: 'Velocidad', value: '${s.speed}')),
-      box(StatPlaque(label: 'Iniciativa', value: _signed(s.initiative))),
-      box(StatPlaque(label: 'Perc. pasiva', value: '${s.passivePerception}')),
-      box(StatPlaque(label: 'Competencia', value: '+${s.proficiencyBonus}')),
-      if (s.darkvision != null)
-        box(StatPlaque(label: 'Visión osc.', value: '${s.darkvision}')),
-    ]);
+        box(_acPlaque(s.armorClass)),
+        box(StatPlaque(label: 'Velocidad', value: '${s.speed}')),
+        box(StatPlaque(label: 'Iniciativa', value: _signed(s.initiative))),
+        box(StatPlaque(label: 'Perc. pasiva', value: '${s.passivePerception}')),
+        box(StatPlaque(label: 'Competencia', value: '+${s.proficiencyBonus}')),
+        if (s.darkvision != null)
+          box(StatPlaque(label: 'Visión osc.', value: '${s.darkvision}')),
+      ],
+    );
   }
 
   Widget _acPlaque(int ac) {
@@ -382,9 +418,14 @@ class _SheetScreenState extends State<SheetScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('ARMADURA',
-              style: TextStyle(
-                  fontSize: 10, letterSpacing: 1.2, color: pal.textMuted)),
+          Text(
+            'ARMADURA',
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 1.2,
+              color: pal.textMuted,
+            ),
+          ),
           const SizedBox(height: 6),
           ShieldBadge('$ac'),
         ],
@@ -394,54 +435,68 @@ class _SheetScreenState extends State<SheetScreen> {
 
   Widget _abilityRow(ComputedSheet s) {
     final a = Ability.values;
-    return Row(children: [
-      for (var i = 0; i < a.length; i++) ...[
-        Expanded(
-          child: Tooltip(
-            message: '${a[i].label}\n${a[i].description}',
-            waitDuration: const Duration(milliseconds: 400),
-            child: AbilityPlaque(
-              abbr: a[i].abbr,
-              score: s.abilityScores[a[i]]!,
-              modifier: s.abilityModifiers[a[i]]!,
-              saveProficient: s.savingThrowProficiencies.contains(a[i]),
+    return Row(
+      children: [
+        for (var i = 0; i < a.length; i++) ...[
+          Expanded(
+            child: Tooltip(
+              message: '${a[i].label}\n${a[i].description}',
+              waitDuration: const Duration(milliseconds: 400),
+              child: AbilityPlaque(
+                abbr: a[i].abbr,
+                score: s.abilityScores[a[i]]!,
+                modifier: s.abilityModifiers[a[i]]!,
+                saveProficient: s.savingThrowProficiencies.contains(a[i]),
+              ),
             ),
           ),
-        ),
-        if (i < a.length - 1) const SizedBox(width: 8),
+          if (i < a.length - 1) const SizedBox(width: 8),
+        ],
       ],
-    ]);
+    );
   }
 
   Widget _attackRow(Attack a) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(a.name, style: const TextStyle(fontWeight: FontWeight.w500)),
-              const SizedBox(height: 3),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text('${a.damage} ${_title(a.damageType)}',
-                      style: TextStyle(color: muted, fontSize: 13)),
-                  if (a.mastery != null)
-                    GoldPill('Maestría: ${_title(a.mastery!)}'),
-                ],
-              ),
-            ],
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  a.name,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 3),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      '${a.damage} ${_title(a.damageType)}',
+                      style: TextStyle(color: muted, fontSize: 13),
+                    ),
+                    if (a.mastery != null)
+                      GoldPill('Maestría: ${_title(a.mastery!)}'),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(_signed(a.attackBonus),
+          Text(
+            _signed(a.attackBonus),
             style: TextStyle(
-                fontFamily: 'Georgia', fontSize: 20, color: context.palette.gold)),
-      ]),
+              fontFamily: 'Georgia',
+              fontSize: 20,
+              color: context.palette.gold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -486,31 +541,39 @@ class _SheetScreenState extends State<SheetScreen> {
           style: TextStyle(fontSize: 13, color: muted),
         ),
         const SizedBox(height: 10),
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          OutlinedButton.icon(
-            onPressed: () => _shortRest(s),
-            icon: const Icon(Icons.local_cafe, size: 18),
-            label: const Text('Descanso corto'),
-          ),
-          FilledButton.icon(
-            onPressed: () => _longRest(s),
-            icon: const Icon(Icons.bedtime, size: 18),
-            label: const Text('Descanso largo'),
-          ),
-          OutlinedButton.icon(
-            onPressed: _c.combat.hitDiceUsed >= _c.level
-                ? null
-                : () {
-                    final healed =
-                        CombatOps.spendHitDie(_c.combat, s, _c.level);
-                    _mutateCombat(() {});
-                    _snack('Recuperaste $healed PG (dado de golpe)');
-                  },
-            icon: const Icon(Icons.casino, size: 18),
-            label: Text(
-                'Dado de golpe (${_c.level - _c.combat.hitDiceUsed}/${_c.level})'),
-          ),
-        ]),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            OutlinedButton.icon(
+              onPressed: () => _shortRest(s),
+              icon: const Icon(Icons.local_cafe, size: 18),
+              label: const Text('Descanso corto'),
+            ),
+            FilledButton.icon(
+              onPressed: () => _longRest(s),
+              icon: const Icon(Icons.bedtime, size: 18),
+              label: const Text('Descanso largo'),
+            ),
+            OutlinedButton.icon(
+              onPressed: _c.combat.hitDiceUsed >= _c.level
+                  ? null
+                  : () {
+                      final healed = CombatOps.spendHitDie(
+                        _c.combat,
+                        s,
+                        _c.level,
+                      );
+                      _mutateCombat(() {});
+                      _snack('Recuperaste $healed PG (dado de golpe)');
+                    },
+              icon: const Icon(Icons.casino, size: 18),
+              label: Text(
+                'Dado de golpe (${_c.level - _c.combat.hitDiceUsed}/${_c.level})',
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 22),
         if (s.resources.isNotEmpty) ...[
           const Eyebrow('Recursos'),
@@ -546,15 +609,23 @@ class _SheetScreenState extends State<SheetScreen> {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text('${combat.currentHp}',
-                  style: TextStyle(
-                      fontFamily: 'Georgia',
-                      fontSize: 40,
-                      height: 1,
-                      color: pal.crimson)),
-              Text(' / ${s.maxHp} PG',
-                  style: TextStyle(
-                      fontFamily: 'Georgia', fontSize: 18, color: muted)),
+              Text(
+                '${combat.currentHp}',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 40,
+                  height: 1,
+                  color: pal.crimson,
+                ),
+              ),
+              Text(
+                ' / ${s.maxHp} PG',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 18,
+                  color: muted,
+                ),
+              ),
               const Spacer(),
               if (combat.tempHp > 0) GoldPill('+${combat.tempHp} temp'),
             ],
@@ -579,18 +650,24 @@ class _SheetScreenState extends State<SheetScreen> {
         .where((r) => r.recharge == RechargeOn.shortRest)
         .map((r) => r.name)
         .toList();
-    _mutateCombat(() => CombatOps.shortRest(_c.combat, s.resources,
-        spellcasting: s.spellcasting));
+    _mutateCombat(
+      () => CombatOps.shortRest(
+        _c.combat,
+        s.resources,
+        spellcasting: s.spellcasting,
+      ),
+    );
     final msg = restored.isEmpty
         ? 'Descanso corto. No cura PG: gastá dados de golpe para curarte.'
         : 'Descanso corto: recuperaste ${restored.join(", ")}. '
-            'Para curarte, gastá dados de golpe.';
+              'Para curarte, gastá dados de golpe.';
     _snack(msg);
   }
 
   void _longRest(ComputedSheet s) {
     _mutateCombat(
-        () => CombatOps.longRest(_c.combat, s.maxHp, s.resources, _c.level));
+      () => CombatOps.longRest(_c.combat, s.maxHp, s.resources, _c.level),
+    );
     _snack('Descanso largo: PG al máximo y recursos recargados.');
   }
 
@@ -645,15 +722,16 @@ class _SheetScreenState extends State<SheetScreen> {
 
   Widget _deathSaves(CombatState combat) {
     Widget pips(int filled, Color color) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(
-              3,
-              (i) => Icon(
-                    i < filled ? Icons.circle : Icons.circle_outlined,
-                    color: color,
-                    size: 20,
-                  )),
-        );
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        3,
+        (i) => Icon(
+          i < filled ? Icons.circle : Icons.circle_outlined,
+          color: color,
+          size: 20,
+        ),
+      ),
+    );
     return Row(
       children: [
         pips(combat.deathSuccesses, context.palette.gold),
@@ -701,9 +779,10 @@ class _SheetScreenState extends State<SheetScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(r.name,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w500)),
+                        Text(
+                          r.name,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
                         if (hasInfo) ...[
                           const SizedBox(width: 5),
                           Icon(Icons.info_outline, size: 14, color: muted),
@@ -727,11 +806,13 @@ class _SheetScreenState extends State<SheetScreen> {
             onSpend: used >= r.max
                 ? null
                 : () => _mutateCombat(
-                    () => _c.combat.resourceUsage[r.id] = used + 1),
+                    () => _c.combat.resourceUsage[r.id] = used + 1,
+                  ),
             onRecover: used <= 0
                 ? null
                 : () => _mutateCombat(
-                    () => _c.combat.resourceUsage[r.id] = used - 1),
+                    () => _c.combat.resourceUsage[r.id] = used - 1,
+                  ),
           ),
         ],
       ),
@@ -791,17 +872,16 @@ class _SheetScreenState extends State<SheetScreen> {
     final pal = context.palette;
     final abbr = sc.ability.abbr;
 
-    final cantrips = _c.cantripIds
-        .map((id) => repo.spell(id))
-        .whereType<Spell>()
-        .toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
-    final spells = _c.spellIds
-        .map((id) => repo.spell(id))
-        .whereType<Spell>()
-        .toList()
-      ..sort((a, b) =>
-          a.level != b.level ? a.level.compareTo(b.level) : a.name.compareTo(b.name));
+    final cantrips =
+        _c.cantripIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
+          ..sort((a, b) => a.name.compareTo(b.name));
+    final spells =
+        _c.spellIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
+          ..sort(
+            (a, b) => a.level != b.level
+                ? a.level.compareTo(b.level)
+                : a.name.compareTo(b.name),
+          );
 
     final slotLevels = sc.slotsByLevel.keys.toList()..sort();
 
@@ -813,23 +893,31 @@ class _SheetScreenState extends State<SheetScreen> {
             TextButton.icon(
               onPressed: () => _openSpellEditor(sc),
               icon: const Icon(Icons.edit, size: 16),
-              label: Text(sc.preparation == SpellPreparation.prepared
-                  ? 'Preparar'
-                  : 'Editar'),
+              label: Text(
+                sc.preparation == SpellPreparation.prepared
+                    ? 'Preparar'
+                    : 'Editar',
+              ),
             ),
           ],
         ),
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: StatPlaque(label: 'CD SALV.', value: '${sc.saveDc}')),
+            Expanded(
+              child: StatPlaque(label: 'CD SALV.', value: '${sc.saveDc}'),
+            ),
             const SizedBox(width: 10),
             Expanded(
-                child: StatPlaque(
-                    label: 'ATAQUE',
-                    value: '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus}')),
+              child: StatPlaque(
+                label: 'ATAQUE',
+                value: '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus}',
+              ),
+            ),
             const SizedBox(width: 10),
-            Expanded(child: StatPlaque(label: 'APTITUD', value: abbr)),
+            Expanded(
+              child: StatPlaque(label: 'APTITUD', value: abbr),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -857,7 +945,8 @@ class _SheetScreenState extends State<SheetScreen> {
                 Icon(Icons.blur_on, size: 18, color: pal.gold),
                 const SizedBox(width: 8),
                 Expanded(
-                    child: Text('Concentrándote en ${combat.concentratingOn}')),
+                  child: Text('Concentrándote en ${combat.concentratingOn}'),
+                ),
                 TextButton(
                   onPressed: () =>
                       _mutateCombat(() => CombatOps.endConcentration(combat)),
@@ -871,9 +960,7 @@ class _SheetScreenState extends State<SheetScreen> {
         if (slotLevels.isNotEmpty) ...[
           const SizedBox(height: 20),
           const Eyebrow('Espacios de conjuro'),
-          DenseRows(children: [
-            for (final lv in slotLevels) _slotRow(sc, lv),
-          ]),
+          DenseRows(children: [for (final lv in slotLevels) _slotRow(sc, lv)]),
         ],
 
         if (cantrips.isNotEmpty) ...[
@@ -884,16 +971,20 @@ class _SheetScreenState extends State<SheetScreen> {
 
         if (spells.isNotEmpty) ...[
           const SizedBox(height: 20),
-          Eyebrow(sc.preparation == SpellPreparation.prepared
-              ? 'Conjuros preparados'
-              : 'Conjuros conocidos'),
+          Eyebrow(
+            sc.preparation == SpellPreparation.prepared
+                ? 'Conjuros preparados'
+                : 'Conjuros conocidos',
+          ),
           DenseRows(children: [for (final s in spells) _spellRow(s)]),
         ],
 
         if (cantrips.isEmpty && spells.isEmpty) ...[
           const SizedBox(height: 20),
-          Text('Todavía no elegiste conjuros. Editá al subir de nivel o al crear.',
-              style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            'Todavía no elegiste conjuros. Editá al subir de nivel o al crear.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ],
       ],
     );
@@ -906,8 +997,8 @@ class _SheetScreenState extends State<SheetScreen> {
           character: _c,
           repo: repo,
           spellcasting: sc,
-          onSave: (cantrips, spells) => _replace(
-              _c.copyWith(cantripIds: cantrips, spellIds: spells)),
+          onSave: (cantrips, spells) =>
+              _replace(_c.copyWith(cantripIds: cantrips, spellIds: spells)),
         ),
       ),
     );
@@ -925,8 +1016,10 @@ class _SheetScreenState extends State<SheetScreen> {
         children: [
           SizedBox(
             width: 78,
-            child: Text('Nivel $level',
-                style: const TextStyle(fontWeight: FontWeight.w500)),
+            child: Text(
+              'Nivel $level',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
           ),
           Expanded(
             child: UsagePips(
@@ -937,19 +1030,23 @@ class _SheetScreenState extends State<SheetScreen> {
               size: 16,
             ),
           ),
-          Text('$remaining/$max',
-              style: TextStyle(color: pal.textMuted, fontSize: 12)),
+          Text(
+            '$remaining/$max',
+            style: TextStyle(color: pal.textMuted, fontSize: 12),
+          ),
           SpendRecoverButtons(
             spendTooltip: 'Gastar espacio',
             recoverTooltip: 'Recuperar espacio',
             onSpend: remaining <= 0
                 ? null
                 : () => _mutateCombat(
-                    () => CombatOps.spendSpellSlot(combat, sc, level)),
+                    () => CombatOps.spendSpellSlot(combat, sc, level),
+                  ),
             onRecover: used <= 0
                 ? null
                 : () => _mutateCombat(
-                    () => CombatOps.recoverSpellSlot(combat, level)),
+                    () => CombatOps.recoverSpellSlot(combat, level),
+                  ),
           ),
         ],
       ),
@@ -976,9 +1073,12 @@ class _SheetScreenState extends State<SheetScreen> {
                         Row(
                           children: [
                             Flexible(
-                              child: Text(s.name,
-                                  style:
-                                      const TextStyle(fontWeight: FontWeight.w500)),
+                              child: Text(
+                                s.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
                             if (s.concentration) ...[
                               const SizedBox(width: 6),
@@ -986,8 +1086,10 @@ class _SheetScreenState extends State<SheetScreen> {
                             ],
                             if (s.ritual) ...[
                               const SizedBox(width: 4),
-                              Text('(R)',
-                                  style: TextStyle(fontSize: 11, color: muted)),
+                              Text(
+                                '(R)',
+                                style: TextStyle(fontSize: 11, color: muted),
+                              ),
                             ],
                           ],
                         ),
@@ -1007,7 +1109,8 @@ class _SheetScreenState extends State<SheetScreen> {
           if (s.concentration)
             TextButton(
               onPressed: () => _mutateCombat(
-                  () => CombatOps.startConcentration(_c.combat, s.name)),
+                () => CombatOps.startConcentration(_c.combat, s.name),
+              ),
               child: const Text('Concentrar'),
             ),
         ],
@@ -1022,9 +1125,12 @@ class _SheetScreenState extends State<SheetScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('${s.isCantrip ? "Truco" : "Nivel ${s.level}"} · ${s.school}',
-              style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(
+            '${s.isCantrip ? "Truco" : "Nivel ${s.level}"} · ${s.school}',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 10),
           _spellMeta('Lanzamiento', s.castingTime),
           _spellMeta('Alcance', s.range),
@@ -1045,8 +1151,9 @@ class _SheetScreenState extends State<SheetScreen> {
         TextSpan(
           children: [
             TextSpan(
-                text: '$label: ',
-                style: const TextStyle(fontWeight: FontWeight.w600)),
+              text: '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
             TextSpan(text: value),
           ],
         ),
@@ -1070,8 +1177,12 @@ class _SheetScreenState extends State<SheetScreen> {
           decoration: const InputDecoration(isDense: true),
           items: [
             const DropdownMenuItem(value: null, child: Text('Sin armadura')),
-            ...armors.map((a) => DropdownMenuItem(
-                value: a.id, child: Text('${a.name} (CA ${a.baseAc})'))),
+            ...armors.map(
+              (a) => DropdownMenuItem(
+                value: a.id,
+                child: Text('${a.name} (CA ${a.baseAc})'),
+              ),
+            ),
           ],
           onChanged: (v) => _replace(_c.copyWith(equippedArmorId: v)),
         ),
@@ -1084,16 +1195,26 @@ class _SheetScreenState extends State<SheetScreen> {
         const SizedBox(height: 16),
         const Eyebrow('Arma equipada'),
         DropdownButtonFormField<String?>(
-          key: ValueKey('weapon-'
-              '${_c.equippedWeaponIds.isEmpty ? null : _c.equippedWeaponIds.first}'),
-          initialValue:
-              _c.equippedWeaponIds.isEmpty ? null : _c.equippedWeaponIds.first,
+          key: ValueKey(
+            'weapon-'
+            '${_c.equippedWeaponIds.isEmpty ? null : _c.equippedWeaponIds.first}',
+          ),
+          initialValue: _c.equippedWeaponIds.isEmpty
+              ? null
+              : _c.equippedWeaponIds.first,
           isExpanded: true,
           decoration: const InputDecoration(isDense: true),
           items: [
-            const DropdownMenuItem(value: null, child: Text('Sin arma (puños)')),
-            ...weapons.map((w) => DropdownMenuItem(
-                value: w.id, child: Text('${w.name} (${w.damageDice})'))),
+            const DropdownMenuItem(
+              value: null,
+              child: Text('Sin arma (puños)'),
+            ),
+            ...weapons.map(
+              (w) => DropdownMenuItem(
+                value: w.id,
+                child: Text('${w.name} (${w.damageDice})'),
+              ),
+            ),
           ],
           onChanged: (v) => _replace(_c.copyWith(equippedWeaponIds: [?v])),
         ),
@@ -1107,8 +1228,9 @@ class _SheetScreenState extends State<SheetScreen> {
                 'La Clase de Armadura se recalcula automáticamente según la '
                 'armadura, el escudo y tu modificador de Destreza.',
                 style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -1147,7 +1269,8 @@ class _SheetScreenState extends State<SheetScreen> {
       : Wrap(
           spacing: 6,
           runSpacing: 6,
-          children: labels.map((l) => Chip(label: Text(l))).toList());
+          children: labels.map((l) => Chip(label: Text(l))).toList(),
+        );
 }
 
 // ---------------------------------------------------------------- Widgets
@@ -1162,8 +1285,7 @@ class _PortraitViewer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Shortcuts(
       shortcuts: {
-        LogicalKeySet(LogicalKeyboardKey.escape):
-            const _DismissViewerIntent(),
+        LogicalKeySet(LogicalKeyboardKey.escape): const _DismissViewerIntent(),
       },
       child: Actions(
         actions: {
@@ -1181,7 +1303,8 @@ class _PortraitViewer extends StatelessWidget {
                 children: [
                   Center(
                     child: GestureDetector(
-                      onTap: () {}, // absorbe el tap para no cerrar sobre la imagen
+                      onTap:
+                          () {}, // absorbe el tap para no cerrar sobre la imagen
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: InteractiveViewer(
@@ -1222,6 +1345,6 @@ String _signed(int v) => v >= 0 ? '+$v' : '$v';
 String _title(String s) => s.isEmpty
     ? s
     : s
-        .split(RegExp(r'[-_ ]'))
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+          .split(RegExp(r'[-_ ]'))
+          .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+          .join(' ');

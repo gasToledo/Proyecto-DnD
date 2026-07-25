@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 File _temporaryFor(File destination, String suffix) => File(
-      p.join(
-        destination.parent.path,
-        '.${p.basename(destination.path)}.$suffix.tmp',
-      ),
-    );
+  p.join(
+    destination.parent.path,
+    '.${p.basename(destination.path)}.$suffix.tmp',
+  ),
+);
 
 /// Escribe JSON mediante un archivo temporal ubicado junto al destino y un
 /// renombrado final. Así un cierre durante la escritura no deja JSON parcial.

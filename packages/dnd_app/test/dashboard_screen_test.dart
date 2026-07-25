@@ -162,6 +162,14 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('dashboard sigue usable en una ventana mínima', (tester) async {
+    await pumpDashboard(tester, const Size(480, 520));
+
+    expect(find.text('Fichas D&D 5e'), findsOneWidget);
+    expect(find.text('Sagan "The Red"'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('avisa dónde quedó un archivo apartado para recuperación', (
     tester,
   ) async {

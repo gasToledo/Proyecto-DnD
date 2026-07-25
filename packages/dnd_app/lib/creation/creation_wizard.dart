@@ -137,12 +137,10 @@ class _CreationWizardState extends State<CreationWizard> {
         final recoveryPath = store.recoveryIssues.first.recoveryPath;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'El borrador no se pudo leer y fue apartado en: $recoveryPath',
-              ),
-            ),
+          showAppMessage(
+            context,
+            'El borrador no se pudo leer y fue apartado en: $recoveryPath',
+            tone: AppMessageTone.error,
           );
         });
       }
@@ -207,8 +205,10 @@ class _CreationWizardState extends State<CreationWizard> {
         .then((_) => store.save(step: step, data: data))
         .catchError((Object error) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No se pudo guardar el borrador: $error')),
+          showAppMessage(
+            context,
+            'No se pudo guardar el borrador: $error',
+            tone: AppMessageTone.error,
           );
         });
   }
@@ -220,8 +220,10 @@ class _CreationWizardState extends State<CreationWizard> {
       await widget.draftStore?.clear();
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo limpiar el borrador: $error')),
+        showAppMessage(
+          context,
+          'No se pudo limpiar el borrador: $error',
+          tone: AppMessageTone.error,
         );
       }
     }

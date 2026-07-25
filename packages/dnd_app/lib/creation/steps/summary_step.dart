@@ -14,6 +14,8 @@ class _SummaryStep extends StatelessWidget {
     final s = CharacterCompiler(repo).compile(character);
 
     final race = draft.race?.name ?? '—';
+    final lineage = draft.lineage?.name;
+    final species = lineage == null ? race : '$race ($lineage)';
     final klass = draft.klass?.name ?? '—';
     final bg = draft.background?.name ?? '—';
     final skills = [...draft.classSkills, ...draft.raceSkills];
@@ -34,10 +36,11 @@ class _SummaryStep extends StatelessWidget {
         repo.feat(id)?.name ?? id,
     ];
 
-    final spells = <String>[
+    final spells = <String>{
+      for (final spell in s.innateSpells) spell.name,
       for (final id in draft.cantrips) repo.spell(id)?.name ?? id,
       for (final id in draft.spells) repo.spell(id)?.name ?? id,
-    ];
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -81,7 +84,7 @@ class _SummaryStep extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '$race · $klass · $bg · Nivel 1',
+                            '$species · $klass · $bg · Nivel 1',
                             style: TextStyle(
                               fontSize: 14,
                               color: scheme.onSurfaceVariant,

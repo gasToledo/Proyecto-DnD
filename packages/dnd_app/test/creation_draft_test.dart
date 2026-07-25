@@ -9,7 +9,8 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   test('un draft con las elecciones de Sagan compila correctamente', () {
@@ -55,16 +56,45 @@ void main() {
     expect(character.name, 'Sagan "The Red"');
   });
 
-  test('el reparto +1/+1/+1 aplica a las tres características del trasfondo', () {
+  test('un linaje válido se conserva y aporta sus rasgos al personaje', () {
     final d = CreationDraft(repo)
-      ..backgroundId = 'soldier'
-      ..spreadMode = AbilitySpreadMode.oneOneOne;
-    expect(d.abilitySpread, {
-      Ability.strength: 1,
-      Ability.dexterity: 1,
-      Ability.constitution: 1,
-    });
+      ..raceId = 'elf'
+      ..lineageId = 'elf-high';
+
+    final character = d.build();
+    final sheet = CharacterCompiler(repo).compile(character);
+
+    expect(character.lineageId, 'elf-high');
+    expect(
+      sheet.innateSpells.map((spell) => spell.name),
+      contains('Prestidigitación'),
+    );
   });
+
+  test('al restaurar descarta un linaje que pertenece a otra especie', () {
+    final restored = CreationDraft.fromJson(repo, {
+      'raceId': 'elf',
+      'lineageId': 'tiefling-infernal',
+    });
+
+    expect(restored.raceId, 'elf');
+    expect(restored.lineageId, isNull);
+    expect(restored.pendingFor(CreationStep.raza), isNotEmpty);
+  });
+
+  test(
+    'el reparto +1/+1/+1 aplica a las tres características del trasfondo',
+    () {
+      final d = CreationDraft(repo)
+        ..backgroundId = 'soldier'
+        ..spreadMode = AbilitySpreadMode.oneOneOne;
+      expect(d.abilitySpread, {
+        Ability.strength: 1,
+        Ability.dexterity: 1,
+        Ability.constitution: 1,
+      });
+    },
+  );
 
   // --- Reasignación de dados con intercambio -------------------------------
   CreationDraft newDraft() =>
@@ -125,7 +155,8 @@ void main() {
   void completeClase(CreationDraft d) {
     d.fightingStyleId = 'fs-defense';
     d.weaponMasteries.addAll(
-        d.proficientWeapons.take(d.weaponMasterySlots).map((w) => w.id));
+      d.proficientWeapons.take(d.weaponMasterySlots).map((w) => w.id),
+    );
   }
 
   group('pendingFor', () {
@@ -139,11 +170,31 @@ void main() {
       expect(d.pendingFor(CreationStep.puntuaciones), isEmpty);
     });
 
-    test('Raza solo exige elegir especie', () {
+    test('Raza sin linajes solo exige elegir especie', () {
       final d = newDraft();
       expect(d.pendingFor(CreationStep.raza), isNotEmpty);
-      d.raceId = repo.races.values.first.id;
+      d.raceId = 'human';
       expect(d.pendingFor(CreationStep.raza), isEmpty);
+    });
+
+    test('Elfo, Gnomo y Tiefling exigen elegir su linaje', () {
+      const cases = {
+        'elf': ('elf-high', 3),
+        'gnome': ('gnome-forest', 2),
+        'tiefling': ('tiefling-infernal', 3),
+      };
+
+      for (final entry in cases.entries) {
+        final d = newDraft()..raceId = entry.key;
+        expect(d.lineageOptions, hasLength(entry.value.$2));
+        expect(
+          d.pendingFor(CreationStep.raza),
+          contains('Elegí un linaje de especie.'),
+        );
+
+        d.lineageId = entry.value.$1;
+        expect(d.pendingFor(CreationStep.raza), isEmpty);
+      }
     });
 
     test('Clase (Guerrero) exige estilo de combate y maestrías', () {
@@ -169,8 +220,9 @@ void main() {
       }
       if (race.effects.any((e) => e is GrantFeatEffect)) {
         expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
-        d.raceFeatId =
-            repo.feats.values.firstWhere((f) => f.category == 'origin').id;
+        d.raceFeatId = repo.feats.values
+            .firstWhere((f) => f.category == 'origin')
+            .id;
       }
       expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
     });
@@ -182,29 +234,38 @@ void main() {
       expect(d.pendingFor(CreationStep.resumen), isEmpty);
     });
 
-    test('el cupo de habilidades no bloquea si quedan menos opciones elegibles',
-        () {
-      final d = newDraft(); // Guerrero: elige 2 de 9 opciones
-      final fighter = repo.characterClass('fighter')!;
-      final from = fighter.skillChoiceFrom;
-      expect(fighter.skillChoiceCount, 2);
-      // Otro origen ya tomó todas las opciones de clase menos una: queda 1 < 2.
-      d.raceSkills.addAll(from.take(from.length - 1));
-      // Con 0/2 elegidas pero solo 1 elegible, todavía debe pedir esa 1.
-      expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
-      // Elegida la única disponible, el gate se satisface (no exige el 2.º).
-      d.classSkills.add(from.last);
-      expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
-    });
+    test(
+      'el cupo de habilidades no bloquea si quedan menos opciones elegibles',
+      () {
+        final d = newDraft(); // Guerrero: elige 2 de 9 opciones
+        final fighter = repo.characterClass('fighter')!;
+        final from = fighter.skillChoiceFrom;
+        expect(fighter.skillChoiceCount, 2);
+        // Otro origen ya tomó todas las opciones de clase menos una: queda 1 < 2.
+        d.raceSkills.addAll(from.take(from.length - 1));
+        // Con 0/2 elegidas pero solo 1 elegible, todavía debe pedir esa 1.
+        expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
+        // Elegida la única disponible, el gate se satisface (no exige el 2.º).
+        d.classSkills.add(from.last);
+        expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
+      },
+    );
   });
 
   // --- Navegación del stepper ----------------------------------------------
   group('canGoTo / firstIncompleteStep', () {
     test('no se puede saltar a un paso con pendientes atrás', () {
       final d = newDraft();
-      expect(d.canGoTo(CreationStep.raza), isTrue, reason: 'el primero siempre');
-      expect(d.canGoTo(CreationStep.clase), isFalse,
-          reason: 'falta elegir especie');
+      expect(
+        d.canGoTo(CreationStep.raza),
+        isTrue,
+        reason: 'el primero siempre',
+      );
+      expect(
+        d.canGoTo(CreationStep.clase),
+        isFalse,
+        reason: 'falta elegir especie',
+      );
       expect(d.firstIncompleteStep, CreationStep.raza);
     });
 
@@ -212,8 +273,11 @@ void main() {
       final d = newDraft();
       d.raceId = repo.races.values.first.id;
       expect(d.canGoTo(CreationStep.clase), isTrue);
-      expect(d.canGoTo(CreationStep.trasfondo), isFalse,
-          reason: 'Clase aún pide estilo y maestrías');
+      expect(
+        d.canGoTo(CreationStep.trasfondo),
+        isFalse,
+        reason: 'Clase aún pide estilo y maestrías',
+      );
       completeClase(d);
       expect(d.canGoTo(CreationStep.trasfondo), isTrue);
       expect(d.canGoTo(CreationStep.raza), isTrue, reason: 'volver siempre');

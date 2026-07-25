@@ -28,7 +28,8 @@ void main() {
 
   test('guarda, recupera y limpia un borrador versionado', () async {
     final draft = CreationDraft(repo)
-      ..raceId = 'human'
+      ..raceId = 'elf'
+      ..lineageId = 'elf-high'
       ..backgroundId = 'soldier'
       ..name = 'Borrador'
       ..personalityTrait = 'Siempre alerta';
@@ -42,7 +43,8 @@ void main() {
     final restored = CreationDraft.fromJson(repo, snapshot!.data);
 
     expect(snapshot.step, CreationStep.detalles);
-    expect(restored.raceId, 'human');
+    expect(restored.raceId, 'elf');
+    expect(restored.lineageId, 'elf-high');
     expect(restored.backgroundId, 'soldier');
     expect(restored.name, 'Borrador');
     expect(restored.assignedScores, hasLength(6));

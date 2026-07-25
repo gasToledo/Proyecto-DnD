@@ -24,9 +24,12 @@ class _RaceStep extends StatelessWidget {
                 accent: pal.gold,
                 selected: draft.raceId == r.id,
                 onTap: () {
-                  draft.raceId = r.id;
-                  draft.raceSkills.clear();
-                  draft.raceFeatId = null;
+                  if (draft.raceId != r.id) {
+                    draft.raceId = r.id;
+                    draft.lineageId = null;
+                    draft.raceSkills.clear();
+                    draft.raceFeatId = null;
+                  }
                   onChanged();
                 },
               ),
@@ -42,7 +45,44 @@ class _RaceStep extends StatelessWidget {
               if (race.skillChoiceCount > 0)
                 ('Habilidades', '${race.skillChoiceCount} a elegir'),
             ],
-            child: _TraitList(effects: race.effects),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _TraitList(effects: race.effects),
+                if (draft.lineageOptions.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  const Eyebrow('Linaje de especie'),
+                  Text(
+                    'Esta especie requiere elegir un linaje.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  _SingleSelect(
+                    options: {
+                      for (final lineage in draft.lineageOptions)
+                        lineage.id: lineage.name,
+                    },
+                    selected: draft.lineageId,
+                    onSelect: (id) {
+                      draft.lineageId = id;
+                      onChanged();
+                    },
+                  ),
+                  if (draft.lineage case final lineage?) ...[
+                    const SizedBox(height: 12),
+                    Text(lineage.description),
+                    if (lineage.featuresUpTo(1).isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        'Nivel 1: '
+                        '${lineage.featuresUpTo(1).map((f) => f.name).join(", ")}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ],
+                ],
+              ],
+            ),
           ),
         ],
       ],

@@ -48,6 +48,13 @@ class CreationDraft {
     }
     final raceId = json['raceId'];
     if (raceId is String && repo.race(raceId) != null) draft.raceId = raceId;
+    final lineageId = json['lineageId'];
+    if (lineageId is String) {
+      final lineage = repo.lineage(lineageId);
+      if (lineage != null && lineage.raceId == draft.raceId) {
+        draft.lineageId = lineageId;
+      }
+    }
     final backgroundId = json['backgroundId'];
     if (backgroundId is String && repo.background(backgroundId) != null) {
       draft.backgroundId = backgroundId;
@@ -142,6 +149,7 @@ class CreationDraft {
 
   // Orígenes.
   String? raceId;
+  String? lineageId;
   final Set<String> raceSkills = {};
   String? raceFeatId; // dote de origen de la especie (p.ej. Humano "Versátil")
   String? backgroundId;
@@ -177,6 +185,7 @@ class CreationDraft {
     'classSkills': classSkills.toList(),
     'weaponMasteries': weaponMasteries,
     'raceId': raceId,
+    'lineageId': lineageId,
     'raceSkills': raceSkills.toList(),
     'raceFeatId': raceFeatId,
     'backgroundId': backgroundId,
@@ -200,6 +209,13 @@ class CreationDraft {
 
   CharacterClass? get klass => repo.characterClass(classId);
   Race? get race => raceId == null ? null : repo.race(raceId!);
+  List<Lineage> get lineageOptions =>
+      raceId == null ? const [] : repo.lineagesForRace(raceId!);
+  Lineage? get lineage {
+    final value = lineageId == null ? null : repo.lineage(lineageId!);
+    return value?.raceId == raceId ? value : null;
+  }
+
   Background? get background =>
       backgroundId == null ? null : repo.background(backgroundId!);
 
@@ -251,6 +267,7 @@ class CreationDraft {
     final sig = [
       classId,
       raceId,
+      lineageId,
       backgroundId,
       raceFeatId,
       spreadMode.name,
@@ -350,7 +367,11 @@ class CreationDraft {
   List<String> pendingFor(CreationStep step) {
     switch (step) {
       case CreationStep.raza:
-        return race == null ? const ['Elegí una especie.'] : const [];
+        if (race == null) return const ['Elegí una especie.'];
+        if (lineageOptions.isNotEmpty && lineage == null) {
+          return const ['Elegí un linaje de especie.'];
+        }
+        return const [];
 
       case CreationStep.clase:
         final k = klass;
@@ -473,6 +494,7 @@ class CreationDraft {
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       name: name.trim().isEmpty ? 'Sin nombre' : name.trim(),
       raceId: raceId ?? '',
+      lineageId: lineage?.id,
       classId: classId,
       backgroundId: backgroundId ?? '',
       level: 1,

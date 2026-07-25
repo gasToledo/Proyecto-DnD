@@ -137,7 +137,9 @@ void main() {
       expect(warnings.map((w) => w.code), contains('skill_choice_duplicate'));
     });
 
-    test('habilidad fuera de las listas de raza/clase advierte skill_choice_invalid', () {
+    test(
+        'habilidad fuera de las listas de raza/clase advierte skill_choice_invalid',
+        () {
       final c = _minimalCharacter(chosenSkills: ['athletics', 'medicine']);
       final warnings = CharacterValidator(repo).validate(c);
       expect(warnings.map((w) => w.code), contains('skill_choice_invalid'));
@@ -207,7 +209,56 @@ void main() {
         'asi_invalid_level',
         'feat_prerequisite',
       };
-      expect(warnings.map((w) => w.code).toSet().intersection(newCodes), isEmpty);
+      expect(
+          warnings.map((w) => w.code).toSet().intersection(newCodes), isEmpty);
+    });
+
+    test('Bardo acepta cualquier habilidad válida cuando su lista está vacía',
+        () {
+      final json = sagan().toJson()
+        ..['raceId'] = 'elf'
+        ..['lineageId'] = 'elf-drow'
+        ..['classId'] = 'bard'
+        ..['chosenSkills'] = const [
+          'persuasion',
+          'deception',
+          'insight',
+          'perception',
+        ];
+      final bard = Character.fromJson(json);
+
+      final warnings = CharacterValidator(repo).validate(bard);
+
+      expect(
+        warnings.map((warning) => warning.code),
+        isNot(contains('skill_choice_invalid')),
+      );
+      expect(
+        warnings.map((warning) => warning.code),
+        isNot(contains('skill_choice_count')),
+      );
+    });
+
+    test('Bardo sigue rechazando un identificador de habilidad desconocido',
+        () {
+      final json = sagan().toJson()
+        ..['raceId'] = 'elf'
+        ..['lineageId'] = 'elf-drow'
+        ..['classId'] = 'bard'
+        ..['chosenSkills'] = const [
+          'persuasion',
+          'deception',
+          'insight',
+          'not-a-skill',
+        ];
+      final bard = Character.fromJson(json);
+
+      final warnings = CharacterValidator(repo).validate(bard);
+
+      expect(
+        warnings.map((warning) => warning.code),
+        contains('skill_choice_invalid'),
+      );
     });
   });
 }

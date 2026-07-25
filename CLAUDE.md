@@ -1,73 +1,199 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guía técnica para trabajar con Claude Code u otros asistentes de desarrollo en
+este repositorio.
 
-## What this is
+## Producto
 
-App personal (offline-first) para crear y gestionar fichas de personaje de **D&D 5e, reglas 2024 (SRD 5.2)**. Monorepo con dos paquetes:
+Aplicación personal y offline-first para crear, administrar y usar fichas de
+personaje de **D&D 5e con reglas 2024 (SRD 5.2)**.
 
-- `packages/dnd_engine` — **Dart puro, sin Flutter**: motor de reglas dirigido por datos, modelos de contenido, compilador de ficha, validación, combate, dados. Es el núcleo y se testea aislado.
-- `packages/dnd_app` — app **Flutter** (hoy solo target **Windows desktop**): UI, persistencia, retratos IA, homebrew. Depende de `dnd_engine` por path.
+Es un monorepo con dos paquetes:
 
-El brief funcional está en `brief-app-dnd5e.md`.
+- `packages/dnd_engine`: motor de reglas en Dart puro, sin Flutter.
+- `packages/dnd_app`: aplicación Flutter. El producto distribuido actualmente
+  tiene como plataforma principal Windows.
+
+El brief funcional original está en `brief-app-dnd5e.md`. Algunas secciones de
+ese documento describen el alcance inicial; el código actual ya incluye clases
+lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
+
+## Estado actual
+
+- 12 clases y 48 subclases del PHB 2024.
+- 10 especies, 8 linajes, 12 trasfondos, 57 dotes y 177 conjuros.
+- Creación guiada, subida de nivel, combate, inventario, notas y retratos IA.
+- Persistencia atómica, recuperación de archivos dañados y migraciones
+  secuenciales de datos.
+- Exportación individual y respaldos ZIP completos.
+- Wizard de creación y ficha divididos en módulos durante la fase de
+  mantenibilidad actual.
+
+Limitaciones vigentes: cada personaje usa una sola clase; no hay sincronización
+en la nube ni Modo DM.
 
 ## Comandos
 
-Flutter está en `C:\dev\flutter\bin\flutter.bat` (y en el PATH de usuario); el SDK de Dart (winget) provee `dart`.
+Flutter está disponible en el `PATH` del usuario. Ejecutar cada grupo desde el
+paquete indicado.
 
-Motor (Dart puro):
+Motor:
+
 ```sh
 cd packages/dnd_engine
 dart pub get
-dart test                                   # todos
-dart test test/character_compiler_test.dart # un archivo
-dart test -n "Sagan nivel 1"                # por nombre
+dart format --output=none --set-exit-if-changed .
+dart analyze
+dart test
 ```
 
-App (Flutter):
+Pruebas puntuales del motor:
+
+```sh
+dart test test/character_compiler_test.dart
+dart test -n "Sagan nivel 1"
+```
+
+Aplicación:
+
 ```sh
 cd packages/dnd_app
 flutter pub get
-flutter analyze                 # debe quedar sin issues antes de commitear
-flutter test                    # todos; o: flutter test test/portrait_test.dart
-flutter run -d windows          # correr en escritorio
-flutter build windows --release # el acceso directo del Escritorio apunta al exe release; recompilar para actualizarlo
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter run -d windows
+flutter build windows --release
 ```
 
-## Gotchas del entorno (importantes)
+Antes de cerrar un cambio de código, como mínimo deben pasar el análisis y los
+tests del paquete afectado. Para cambios de UI, persistencia, dependencias o
+integración, también generar el build release de Windows.
 
-- **La ruta del proyecto NO puede contener `&`**: el build de Windows de Flutter rechaza rutas con caracteres inválidos (`'#!$^&*=|,;<>?`). La carpeta se renombró de "Proyecto D&D" a **"Proyecto DnD"** por esto. Los espacios sí están permitidos.
-- **Sin plugins nativos, a propósito**: usar plugins de Flutter (path_provider, file_picker, etc.) dispara el requisito de "Modo Desarrollador" de Windows (symlinks) y rompe `pub get`. En su lugar se usan solo paquetes Dart puros (`http`, `path`) y `dart:io` con variables de entorno (`%LOCALAPPDATA%`, `%USERPROFILE%`). Al portar a Android/iOS habrá que reintroducir path_provider detrás de las interfaces ya existentes.
-- **Construir rutas con `package:path` (`p.join`)**, nunca concatenando con `/`. Mezclar `\` y `/` rompe `explorer.exe` (abrir carpeta) en Windows.
-- La UI de escritorio **no se puede capturar** en este entorno. Verificar con: `flutter analyze` + `flutter build` + lanzar el exe (chequear que no crashea) + los tests del motor. Para lo visual, hace falta el ojo del usuario.
+## Arquitectura del motor
 
-## Arquitectura: motor dirigido por datos (lo central)
+El motor está dirigido por datos. La UI nunca debe duplicar reglas ni recalcular
+la ficha por su cuenta.
 
-Todo el diseño gira alrededor de esto. Entenderlo requiere leer `dnd_engine/lib/src/`.
+- `domain/effects.dart`: `Effect` es la unión sellada y serializable que
+  representa la consecuencia mecánica de un rasgo.
+- `domain/content.dart`: especies, clases, subclases, trasfondos, dotes, armas,
+  armaduras y conjuros son contenido.
+- `data/content_repository.dart`: reúne el contenido oficial y homebrew.
+- `engine/character_compiler.dart`: combina un `Character` con el repositorio y
+  produce una `ComputedSheet` inmutable.
+- `engine/sheet_builder.dart`: interpreta cada `Effect` mediante un `switch`
+  exhaustivo.
+- `engine/validation.dart`: genera advertencias no bloqueantes.
+- `engine/combat_ops.dart`: daño, curación, descansos, recursos, espacios de
+  conjuro y salvaciones de muerte.
+- `engine/sheet_diff.dart`: calcula los cambios mostrados al subir de nivel.
 
-- **`Effect`** (`domain/effects.dart`) es una **unión sellada, serializable a JSON**: la unidad atómica de "lo que un rasgo hace" (bonus a característica, visión en la oscuridad, resistencia, competencia, +CA, PG por nivel, recurso, rasgo pasivo, maestría de arma, etc.).
-- Las entidades de contenido — `Race`, `CharacterClass`, `Background`, `Feat`, `Weapon`, `Armor` (`domain/content.dart`) — son **datos** que declaran listas de `Effect`.
-- **`CharacterCompiler`** (`engine/character_compiler.dart`) toma un `Character` (con todas las elecciones ya resueltas) + el `ContentRepository` y produce una **`ComputedSheet`** inmutable (características finales, CA, PG, competencias, pasivas, ataques, recursos). La UI **lee de la `ComputedSheet`; nunca recalcula a mano**.
-- El compilador delega la semántica de cada efecto a `SheetBuilder.applyEffect` (`engine/sheet_builder.dart`), un `switch` **exhaustivo** sobre el sellado `Effect`. **Agregar una mecánica nueva = agregar una subclase de `Effect` y su caso en ese switch.** Agregar *contenido* (una raza, un arma) = solo datos/JSON, sin tocar código.
-- **Oficial y homebrew comparten exactamente los mismos modelos.** El homebrew es contenido con `source: homebrew` que se fusiona en el mismo `ContentRepository` (`repo.addAll`). Por eso lo que crea el usuario funciona igual que lo del SRD.
-- **Validación no bloqueante** (`engine/validation.dart`): produce advertencias, nunca impide una acción.
-- La **edición de reglas es un dato de configuración**, no está cableada (baseline 2024; se podría sumar un pack 2014).
+Agregar contenido normalmente significa agregar o modificar datos JSON. Agregar
+una mecánica nueva requiere un nuevo `Effect`, su serialización, el caso
+correspondiente en `SheetBuilder` y tests.
 
-Otras piezas puras del motor, todas testeadas: `combat_ops.dart` (daño/curación/descansos/salvaciones de muerte), `dice.dart` (4d6, array estándar, dado de golpe), `sheet_diff.dart` (diff antes/después para el resumen de subida de nivel).
+### Fuente de verdad
 
-### Character como fuente de verdad y formato de export
+`Character` es la fuente de verdad persistida y exportada. `ComputedSheet` es
+siempre derivada. `CombatState` contiene el estado mutable de la partida:
+puntos de golpe, condiciones, recursos consumidos y concentración.
 
-`Character` (`domain/character.dart`) es la fuente de verdad **y**, serializado, el formato de exportación. Su `CombatState` mutable (PG, condiciones, death saves, recursos usados) es estado de partida y vive aparte de las entradas de construcción. `copyWith` preserva el `CombatState` por referencia salvo que se pase uno nuevo — clave para editar equipo/nivel sin perder el estado de combate.
+`Character.copyWith` preserva `CombatState` por referencia salvo que se entregue
+uno nuevo. No romper esta propiedad al editar equipo, conjuros o nivel.
 
-## Arquitectura de la app (Flutter)
+## Arquitectura de la aplicación
 
-- **Contenido**: `AssetContentLoader` carga el pack oficial (`packages/dnd_engine/assets/srd_2024/*.json`, empaquetado como asset del paquete engine vía `rootBundle`) y `HomebrewStore` el homebrew; se fusionan al arrancar en `main.dart` (`_init`).
-- **Persistencia**: `CharacterStore` guarda un JSON por personaje en `~/FichasDnD/characters` (escritura atómica: temp + rename). `CharactersController` (ChangeNotifier) es la fuente de verdad en memoria y persiste con **debounce de 400 ms** ante cada cambio relevante (criterio del brief §8).
-- **Directorios de datos** (todos bajo `~/FichasDnD/`): `characters/`, `exports/`, `portraits/<charId>/`, `homebrew/`, `settings.json`. El helper es `data/app_paths.dart`.
-- **Export/import** (`data/transfer_service.dart`): JSON versionado con envoltorios `dnd_character` y `dnd_backup`. Import no destructivo (colisión de id → id nuevo). Parseo puro y testeable.
-- **Retratos IA** (`ai/`): `PortraitProvider` **enchufable**. Default **Pollinations** (gratis, sin key, secuencial + reintento ante 429). También Hugging Face (token, endpoint `router.huggingface.co/hf-inference/...`, modelo editable) y Gemini (billing). Las keys viajan por header, nunca en URL, y se guardan en settings.json.
-- **Tema** (`theme/`): `AppTheme` + `AppPalette` (ThemeExtension con oro/carmesí/tinta). **El oscuro es el tema por defecto y el prioritario** (`themeMode: ThemeMode.dark`) — el usuario siempre usa oscuro. Widgets temáticos reutilizables en `theme/app_widgets.dart`.
+### Inicio y contenido
 
-## Fuera de alcance (visión futura)
+`main.dart` carga el pack oficial mediante `AssetContentLoader`, incorpora el
+contenido de `HomebrewStore` al mismo `ContentRepository` y luego inicia
+`CharactersController`.
 
-Motor de hechizos (habilita clases mágicas y multiclase mágica), multiclase, sincronización en la nube y Modo DM están **fuera del MVP**. La arquitectura de `Effect`/contenido se diseñó para no bloquearlos. El MVP es **marcial** (Guerrero como caso validado; ver brief §10).
+El contenido oficial vive en
+`packages/dnd_engine/lib/assets/srd_2024/`. Su `manifest.json` declara la versión
+del formato y la edición de reglas.
+
+### UI
+
+- `creation/creation_wizard.dart`: estado y navegación del asistente.
+- `creation/steps/`: cada paso y sus widgets de selección.
+- `ui/sheet_screen.dart`: shell y estado de la ficha.
+- `ui/sheet/`: pestañas General, Combate, Conjuros, Inventario y Notas, más
+  widgets compartidos.
+- `levelup/`: flujo y resumen de subida de nivel.
+- `homebrew/`: catálogo, formularios y editor de efectos.
+- `theme/`: tema, paleta, visuales por clase y widgets reutilizables.
+
+Los archivos divididos con `part` forman una sola biblioteca y pueden acceder al
+estado privado de su pantalla. Mantener la lógica compartida en el archivo shell
+o en el módulo de widgets; no crear cálculos de reglas dentro de las pestañas.
+
+### Persistencia y ciclo de datos
+
+Los datos se guardan bajo `<perfil>/FichasDnD/`, usando `app_paths.dart` y
+`package:path`:
+
+- `characters/`: un JSON por personaje.
+- `homebrew/`: contenido creado por el usuario.
+- `portraits/<characterId>/`: retratos.
+- `exports/`: exportaciones y respaldos.
+- `recovery/`: archivos dañados apartados.
+- `recovery/migrations/`: copia exacta previa a cada migración.
+- `settings.json`: preferencias y configuración de retratos.
+
+Las escrituras importantes usan reemplazo atómico. `CharactersController`
+mantiene la fuente de verdad en memoria, guarda con debounce de 400 ms y hace
+`flush` cuando la aplicación pasa a segundo plano o se cierra ordenadamente.
+
+Personajes, ajustes, homebrew, borradores y paquetes declaran versión. Los datos
+históricos compatibles se migran de forma secuencial; una versión futura debe
+rechazarse sin modificar ni sobrescribir el archivo.
+
+Las importaciones se tratan como datos no confiables: validar versiones, tipos,
+identificadores y segmentos de ruta. Los respaldos ZIP no deben permitir que una
+ruta escape de `FichasDnD`.
+
+### Retratos IA
+
+`PortraitProvider` es intercambiable. Pollinations es la opción predeterminada
+sin clave; Hugging Face y Gemini usan claves configuradas por el usuario. Las
+credenciales se envían por encabezado, nunca en la URL, se guardan en
+`settings.json` y no se incluyen en los respaldos.
+
+## Restricciones del entorno Windows
+
+- La ruta del proyecto no puede contener `&`; Flutter rechaza ese carácter al
+  construir para Windows. El nombre correcto de la carpeta es `Proyecto DnD`.
+- Evitar plugins nativos de Flutter mientras el proyecto mantenga su estrategia
+  actual sin Modo Desarrollador de Windows. Antes de agregar una dependencia,
+  comprobar si introduce plugins o symlinks.
+- Construir rutas con `package:path` (`p.join`), nunca concatenando `/`.
+- No asumir que una comprobación visual queda cubierta por tests. Para cambios
+  visibles, validar análisis, tests y build, y describir qué necesita revisar
+  manualmente el usuario.
+
+## Criterios para cambios
+
+1. Leer el módulo afectado y sus tests antes de editar.
+2. Mantener reglas en `dnd_engine` y presentación/orquestación en `dnd_app`.
+3. Preservar compatibilidad de datos o agregar una migración versionada.
+4. Agregar una prueba de regresión para cada comportamiento corregido.
+5. No incluir credenciales, builds, datos personales ni contenido de
+   `~/FichasDnD/` en Git.
+6. Formatear, analizar y probar antes del commit.
+7. Mantener los commits acotados y actualizar este documento o el README cuando
+   cambien arquitectura, alcance, comandos o formatos.
+
+## Trabajo de mantenibilidad en curso
+
+La fase actual busca reducir pantallas monolíticas sin cambiar comportamiento:
+
+- Completado: pasos del wizard extraídos a `creation/steps/`.
+- Completado: pestañas de la ficha extraídas a `ui/sheet/`.
+- Próximos candidatos: `levelup/`, `dashboard_screen.dart` y
+  `homebrew_screen.dart`.
+
+Cada extracción debe conservar las pruebas existentes, sumar cobertura focalizada
+cuando falte y terminar con `flutter analyze`, `flutter test` y un build release
+de Windows.

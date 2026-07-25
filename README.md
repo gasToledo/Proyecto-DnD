@@ -1,96 +1,154 @@
 # Fichas D&D 5e
 
-App de escritorio para crear y llevar personajes de **D&D 5ª edición con las reglas de 2024 (SRD 5.2)**. Funciona sin conexión: armás el personaje con un asistente paso a paso y la ficha calcula sola la CA, los PG, los ataques, las competencias y los conjuros a medida que subís de nivel. Todo se guarda en tu disco, en `~/FichasDnD/`, sin cuentas ni servidores. Lo único que pide internet es la generación opcional de retratos.
+Aplicación de escritorio para crear y llevar personajes de **D&D 5.ª edición
+con las reglas de 2024 (SRD 5.2)**.
 
-El brief funcional está en [`brief-app-dnd5e.md`](brief-app-dnd5e.md). La guía de arquitectura para desarrollo asistido por IA, en [`CLAUDE.md`](CLAUDE.md).
+Funciona offline y sin cuentas: el asistente guía la creación, el motor calcula
+la ficha y todo se guarda en el equipo del usuario. Solo la generación opcional
+de retratos por IA necesita conexión.
 
-## Descargar (Windows)
+El [brief funcional](brief-app-dnd5e.md) conserva la visión original del
+producto. La [guía técnica](CLAUDE.md) documenta la arquitectura y las reglas
+para contribuir.
 
-La última versión compilada está en [**Releases**](https://github.com/gasToledo/Proyecto-DnD/releases/latest). Bajás el ZIP, lo extraés entero y corrés `dnd_app.exe`. Si Windows muestra el aviso de SmartScreen porque el ejecutable no está firmado, entrás por *Más información → Ejecutar de todas formas*. Si no abre, instalá el [Visual C++ Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe).
+## Descargar para Windows
 
-## Qué hace
+La última versión publicada está en
+[Releases](https://github.com/gasToledo/Proyecto-DnD/releases/latest).
 
-Las 12 clases del PHB 2024 están cargadas, cada una con sus 4 subclases, que elegís al nivel 3. El motor de hechizos está completo: CD de salvación, bono de ataque, espacios por nivel, preparar y aprender conjuros, gastar y recuperar espacios, y concentración. El catálogo trae 172 conjuros de niveles 0 a 9 y 45 dotes, más las razas, trasfondos, armas y armaduras del SRD.
+1. Descargá el ZIP y extraelo completo.
+2. Ejecutá `dnd_app.exe`.
+3. Si SmartScreen avisa que el ejecutable no está firmado, elegí
+   **Más información → Ejecutar de todas formas**.
+4. Si no abre, instalá
+   [Visual C++ Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 
-Lo que podés hacer con un personaje:
+## Funcionalidades
 
-- **Crearlo** con el asistente guiado, borrador recuperable y protección
-  contra salidas accidentales.
-- **Subir de nivel** a mano, eligiendo subclase, mejora de característica o dote, y re-preparando conjuros, con un resumen de lo ganado.
-- **Jugar la partida** desde la ficha: daño y curación, PG temporales, condiciones, descansos corto y largo, salvaciones de muerte, recursos de clase y maestría de armas.
-- **Generar un retrato** por IA (Pollinations gratis por defecto, o Hugging Face y Gemini con tu propia key).
-- **Crear homebrew** (razas, dotes, armas, armaduras) con el mismo modelo que el contenido oficial.
-- **Exportar e importar** fichas y respaldos ZIP con retratos, homebrew y
-  preferencias (sin credenciales), con revisión previa y compatibilidad con
-  JSON previos.
+- Creación guiada en ocho pasos, con borrador recuperable y protección ante
+  salidas accidentales.
+- 12 clases y 48 subclases del PHB 2024.
+- 10 especies, 8 linajes, 12 trasfondos, 57 dotes, 35 armas, 13 armaduras y
+  177 conjuros.
+- Subida de nivel con elección de subclase, mejora de característica o dote,
+  gestión de conjuros y resumen de cambios.
+- Ficha de juego con daño, curación, PG temporales, descansos, condiciones,
+  salvaciones de muerte, recursos, concentración y espacios de conjuro.
+- Inventario, notas, competencias, ataques y maestrías de armas.
+- Retratos generados por IA mediante Pollinations, Hugging Face o Gemini.
+- Homebrew para armas, armaduras, dotes, especies, trasfondos y conjuros.
+- Exportación individual e importación compatible con formatos anteriores.
+- Respaldo ZIP completo de personajes, retratos, homebrew y preferencias, sin
+  incluir credenciales.
 
-La ficha nunca recalcula a mano: lee de una hoja derivada que produce el motor. Si algo no cierra con las reglas, la app te avisa con una advertencia pero te deja seguir. El DM manda.
+La validación de reglas avisa cuando encuentra una inconsistencia, pero no
+bloquea la partida: el DM conserva la última palabra.
 
-## Cómo está hecho
+## Datos, privacidad y recuperación
 
-Es un monorepo con dos paquetes.
+No hay backend ni base de datos. La aplicación guarda sus archivos bajo
+`<perfil>/FichasDnD/`:
 
-**`packages/dnd_engine`** es el motor de reglas, en Dart puro, sin Flutter. Ahí viven los modelos de contenido, el compilador de ficha, la validación, el combate y los dados. Todo el diseño gira alrededor de una idea: un rasgo (una raza, una dote, un rasgo de clase, una subclase) es un dato que declara una lista de *efectos* serializables, y el compilador los interpreta para producir la ficha. Agregar contenido nuevo se hace escribiendo JSON, sin tocar el motor. Se testea aislado, sin levantar la app.
+```text
+FichasDnD/
+  characters/           personajes
+  homebrew/             contenido personalizado
+  portraits/            retratos por personaje
+  exports/              fichas y respaldos exportados
+  recovery/             archivos dañados apartados
+    migrations/         copias previas a migraciones automáticas
+  settings.json         preferencias locales
+```
 
-**`packages/dnd_app`** es la app Flutter, hoy con target de Windows escritorio. Trae la UI, la persistencia en archivos JSON, los retratos por IA y el editor de homebrew. Depende del motor por path, dentro del mismo repo.
+Cada personaje se escribe de forma atómica para reducir el riesgo de corrupción.
+Los cambios se guardan automáticamente y los pendientes se fuerzan al minimizar
+o cerrar la aplicación de forma ordenada.
 
-No hay backend ni base de datos. Cada personaje es un JSON en disco, con escritura atómica para no corromper nada ante un cierre inesperado. Tampoco usa plugins nativos de Flutter, a propósito, para no arrastrar el requisito de "Modo Desarrollador" de Windows. Las imágenes salen de Pollinations por defecto, gratis y sin key.
+Personajes, ajustes, homebrew, borradores y paquetes de contenido tienen formatos
+versionados. Los documentos históricos compatibles se migran al esquema actual
+y conservan una copia previa. Los documentos creados por una versión futura no
+se modifican ni se sobrescriben durante esa sesión.
 
-### Versionado de datos
+Las claves de servicios de retratos permanecen en la configuración local y se
+excluyen de los respaldos.
 
-Las fichas, los ajustes, Homebrew, los borradores y los paquetes de contenido
-declaran su versión. Al abrir un formato histórico compatible, la aplicación lo
-migra al esquema actual y conserva el documento anterior en
-`~/FichasDnD/recovery/migrations/`. Los formatos creados por una versión futura
-se informan al usuario, permanecen intactos y quedan protegidos contra
-sobrescrituras durante esa sesión.
+## Arquitectura
 
-## Alcance
+El repositorio contiene dos paquetes:
 
-Un personaje es de una sola clase. Todavía no hay multiclase. El contenido oficial del SRD 2024 viene precargado, y el homebrew usa exactamente el mismo modelo de datos, así que lo que creás corre por la misma maquinaria que lo oficial. La validación avisa pero nunca frena una acción. Quedan afuera por ahora, sin que la arquitectura los impida: multiclase, sincronización en la nube y un Modo DM.
+- `packages/dnd_engine`: motor de reglas en Dart puro. Define los modelos, los
+  efectos serializables, el contenido, el combate, la validación y el compilador
+  que produce una `ComputedSheet`.
+- `packages/dnd_app`: aplicación Flutter para Windows. Contiene la interfaz,
+  persistencia, importación y respaldos, retratos IA y editores de homebrew.
 
-## Comandos
+El motor está dirigido por datos: especies, clases, subclases, trasfondos, dotes
+y equipo declaran efectos que el compilador interpreta. El contenido oficial y
+el homebrew recorren la misma maquinaria. La UI consume la ficha calculada y no
+duplica las reglas.
 
-Necesitás el SDK de Dart (`dart`) y Flutter (`flutter`) en el `PATH`.
+El código actual también incorpora una fase de mantenibilidad: los ocho pasos
+del asistente viven en `creation/steps/` y las cinco pestañas de la ficha en
+`ui/sheet/`, con pruebas de regresión para preservar sus flujos.
 
-Motor (`packages/dnd_engine`, Dart puro):
+## Desarrollo
+
+Requiere Dart y Flutter disponibles en el `PATH`, además de las herramientas de
+compilación de Windows para Flutter Desktop.
+
+Motor:
 
 ```sh
 cd packages/dnd_engine
 dart pub get
-dart test                                    # todos los tests
-dart test test/character_compiler_test.dart  # un archivo puntual
-dart test -n "Sagan nivel 1"                 # por nombre de test
+dart analyze
+dart test
 ```
 
-App (`packages/dnd_app`, Flutter):
+Aplicación:
 
 ```sh
 cd packages/dnd_app
 flutter pub get
-flutter analyze                  # sin issues antes de commitear
+flutter analyze
 flutter test
-flutter run -d windows           # correr en escritorio
-flutter build windows --release  # build de release
+flutter run -d windows
+flutter build windows --release
 ```
 
-## Estructura
+Antes de enviar cambios, formateá el paquete afectado y verificá que el análisis,
+los tests y, para cambios de integración o UI, el build release terminen
+correctamente.
 
-```
-brief-app-dnd5e.md         # brief funcional completo
-CLAUDE.md                  # guía de arquitectura para desarrollo asistido
+## Estructura principal
+
+```text
+brief-app-dnd5e.md
+CLAUDE.md
 packages/
-  dnd_engine/              # motor de reglas (Dart puro)
-    lib/assets/srd_2024/    # contenido: clases, subclases, razas, trasfondos, dotes, conjuros, armas, armaduras
-    lib/src/domain/         # modelos: Ability, Effect, contenido, Character, ComputedSheet
-    lib/src/engine/         # SheetBuilder, CharacterCompiler, CharacterValidator, combate, dados
-    lib/src/data/           # ContentRepository (carga de packs de contenido)
-    test/                   # tests del motor
-  dnd_app/                 # app Flutter (Windows)
-    lib/                     # UI, persistencia, IA, homebrew, tema
-    test/                    # tests de la app
+  dnd_engine/
+    lib/assets/srd_2024/  contenido oficial
+    lib/src/domain/       modelos y efectos
+    lib/src/engine/       compilador, combate, dados y validación
+    lib/src/data/         repositorio de contenido
+    test/                 pruebas del motor
+  dnd_app/
+    lib/creation/         asistente y sus pasos
+    lib/data/             persistencia, migraciones, importación y respaldos
+    lib/homebrew/         catálogo y formularios de contenido propio
+    lib/levelup/          subida de nivel
+    lib/ui/               dashboard, ficha y pantallas auxiliares
+    lib/theme/            tema y componentes visuales
+    test/                 pruebas de la aplicación
 ```
+
+## Alcance actual
+
+Cada personaje usa una sola clase. Todavía no hay multiclase, sincronización en
+la nube ni Modo DM. La arquitectura dirigida por efectos y contenido permite
+sumar esas capacidades más adelante sin reescribir la ficha.
 
 ## Reglas y licencia
 
-Contenido de reglas basado en el **SRD 5.2** de D&D, © Wizards of the Coast, bajo licencia CC-BY-4.0. Proyecto personal, sin fines comerciales.
+Contenido de reglas basado en el **SRD 5.2** de D&D, © Wizards of the Coast,
+bajo licencia **CC BY 4.0**. Proyecto personal, sin fines comerciales.

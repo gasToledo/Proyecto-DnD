@@ -41,6 +41,7 @@ class SheetBuilder {
   final Set<String> immunities = {};
 
   final List<PassiveTrait> passives = [];
+
   /// Conjuros concedidos por rasgos, sin resolver (el compilador los cruza con
   /// el repositorio para armar los [InnateSpell]).
   final List<GrantSpellEffect> grantedSpells = [];
@@ -64,7 +65,7 @@ class SheetBuilder {
 
   /// Interpreta un efecto sobre este acumulador. Único lugar donde la semántica
   /// de cada tipo de efecto vive; agregar contenido no toca este switch.
-  void applyEffect(Effect e) {
+  void applyEffect(Effect e, {Ability? spellAbilityOverride}) {
     switch (e) {
       case AbilityScoreBonusEffect(:final ability, :final amount):
         addAbilityBonus(ability, amount);
@@ -73,7 +74,8 @@ class SheetBuilder {
       case SpeedBonusEffect(:final feet):
         speed += feet;
       case DarkvisionEffect(:final range):
-        darkvision = (darkvision == null || range > darkvision!) ? range : darkvision;
+        darkvision =
+            (darkvision == null || range > darkvision!) ? range : darkvision;
       case SkillProficiencyEffect(:final skill):
         skillProficiencies.add(skill);
       case SavingThrowProficiencyEffect(:final ability):
@@ -97,7 +99,15 @@ class SheetBuilder {
       case GrantSpellEffect():
         // Se guarda crudo: resolver nombre y nivel del conjuro necesita el
         // repositorio, que vive en el compilador.
-        grantedSpells.add(e);
+        grantedSpells.add(
+          spellAbilityOverride == null
+              ? e
+              : GrantSpellEffect(
+                  spellId: e.spellId,
+                  ability: spellAbilityOverride,
+                  use: e.use,
+                ),
+        );
       case WeaponMasterySlotsEffect(:final count):
         if (count > weaponMasterySlots) weaponMasterySlots = count;
       case ExtraAttackEffect(:final extra):
@@ -140,5 +150,12 @@ class SheetBuilder {
     }
   }
 
-  void applyAll(Iterable<Effect> effects) => effects.forEach(applyEffect);
+  void applyAll(
+    Iterable<Effect> effects, {
+    Ability? spellAbilityOverride,
+  }) {
+    for (final effect in effects) {
+      applyEffect(effect, spellAbilityOverride: spellAbilityOverride);
+    }
+  }
 }

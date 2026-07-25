@@ -35,15 +35,25 @@ enum InnateSpellUse {
 
   /// Gratis una vez por descanso largo; además se puede lanzar gastando un
   /// espacio de conjuro, si el personaje tiene.
-  oncePerLongRest;
+  oncePerLongRest,
+
+  /// Gratis una cantidad de veces igual al bono de competencia por descanso
+  /// largo; además se puede lanzar gastando un espacio de conjuro.
+  proficiencyBonusPerLongRest;
 
   String toJson() => switch (this) {
         InnateSpellUse.atWill => 'atWill',
         InnateSpellUse.oncePerLongRest => 'oncePerLongRest',
+        InnateSpellUse.proficiencyBonusPerLongRest =>
+          'proficiencyBonusPerLongRest',
       };
 
-  static InnateSpellUse fromJson(String? v) =>
-      v == 'oncePerLongRest' ? InnateSpellUse.oncePerLongRest : InnateSpellUse.atWill;
+  static InnateSpellUse fromJson(String? v) => switch (v) {
+        'oncePerLongRest' => InnateSpellUse.oncePerLongRest,
+        'proficiencyBonusPerLongRest' =>
+          InnateSpellUse.proficiencyBonusPerLongRest,
+        _ => InnateSpellUse.atWill,
+      };
 }
 
 enum SpellPreparation {

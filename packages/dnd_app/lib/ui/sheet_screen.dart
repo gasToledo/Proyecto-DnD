@@ -207,7 +207,8 @@ class _SheetScreenState extends State<SheetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasSpells = sheet.spellcasting != null;
+    final hasSpells =
+        sheet.spellcasting != null || sheet.innateSpells.isNotEmpty;
     return DefaultTabController(
       length: hasSpells ? 5 : 4,
       child: Scaffold(

@@ -1,0 +1,76 @@
+# Auditoría de reglas 2024
+
+## Fuente de verdad
+
+La referencia normativa y licenciable del proyecto es el **SRD 5.2.1 en
+español**, publicado por Wizards of the Coast bajo CC BY 4.0:
+
+- <https://media.dndbeyond.com/compendium-images/srd/5.2/SP_SRD_CC_v5.2.1.pdf>
+- <https://www.dndbeyond.com/srd>
+
+Las reglas gratuitas 2024 de D&D Beyond se usan como apoyo de consulta:
+
+- <https://www.dndbeyond.com/sources/dnd/br-2024/character-origins>
+
+El catálogo puede incluir contenido oficial del PHB 2024 que no pertenece al
+SRD. Ese contenido debe identificarse como `phb_2024`; no queda cubierto por la
+atribución CC del SRD.
+
+## Método
+
+Cada bloque se revisa en cuatro dimensiones:
+
+1. presencia y procedencia del contenido;
+2. valores y texto mecánico;
+3. elecciones que deben persistirse en el personaje;
+4. comportamiento derivado, recursos y presentación en la ficha.
+
+Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
+
+## Matriz
+
+| Bloque | Estado | Hallazgos y alcance |
+| --- | --- | --- |
+| Especies y linajes | en revisión | Primera pasada completa sobre Elfo, Gnomo y Tiefling. Falta auditar las elecciones internas de Dracónido y Goliat y la elección de tamaño. |
+| Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
+| Procedencia del catálogo | en revisión | El SRD contiene 9 especies. Aasimar es contenido PHB 2024 y se reclasificó como `phb_2024`. Falta clasificar el resto del catálogo ampliado, especialmente subclases, trasfondos, dotes y conjuros. |
+| Trasfondos | pendiente | Verificar competencias, herramientas, dotes de origen, equipo y tres características disponibles. |
+| Clases | pendiente | Verificar tablas 1–20, recursos, progresión de conjuros, competencias y elecciones por nivel. |
+| Subclases | pendiente | Separar la opción SRD de las opciones PHB y verificar niveles y rasgos. |
+| Dotes | pendiente | Verificar categoría, prerrequisitos, aumentos y efectos. |
+| Conjuros | pendiente | Verificar nombres SRD, nivel, escuela, listas, componentes, duración, ritual y concentración. |
+| Equipo | pendiente | Verificar precio, daño/CA, propiedades, maestrías y requisitos. |
+
+## Primera pasada: orígenes y magia innata
+
+### Verificado contra SRD 5.2.1
+
+- Elfo: tres linajes; los conjuros de nivel 3 y 5 tienen un uso gratuito por
+  descanso largo y admiten espacios apropiados.
+- Alto Elfo: Prestidigitación, Detectar Magia y Paso Brumoso. Queda pendiente
+  modelar el reemplazo del truco tras cada descanso largo.
+- Drow: visión en la oscuridad de 120 pies, Luces Danzantes, Fuego Feérico y
+  Oscuridad.
+- Elfo de los Bosques: velocidad de 35 pies, Artificio Druídico, Zancada
+  Prodigiosa y Pasar sin Rastro.
+- Gnomo de los Bosques: Ilusión Menor y Hablar con los Animales con usos
+  gratuitos iguales al bono de competencia por descanso largo.
+- Gnomo de las Rocas: Reparar, Prestidigitación y dispositivo mecánico.
+- Tiefling: tres legados, Taumaturgia compartiendo aptitud mágica, resistencias
+  y progresión de conjuros correctas.
+- Elfo, Gnomo y Tiefling eligen Inteligencia, Sabiduría o Carisma como aptitud
+  mágica de sus conjuros de especie o linaje.
+
+### Pendientes derivados
+
+- Elección Pequeño/Mediano para Humano y Tiefling.
+- Cambio de truco del Alto Elfo después de un descanso largo.
+- Lanzamiento explícito de conjuros innatos usando espacios desde la ficha.
+- Elecciones de ascendencia del Dracónido y del Goliat.
+
+## Criterio de cierre
+
+Un bloque pasa a `verificado` cuando sus datos tienen prueba de contenido, las
+elecciones necesarias sobreviven serialización y migración, el motor produce la
+ficha esperada y la aplicación expone el resultado sin depender de una clase
+lanzadora.

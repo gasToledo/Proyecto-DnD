@@ -6,7 +6,7 @@ este repositorio.
 ## Producto
 
 Aplicación personal y offline-first para crear, administrar y usar fichas de
-personaje de **D&D 5e con reglas 2024 (SRD 5.2)**.
+personaje de **D&D 5e con reglas 2024 (SRD 5.2.1)**.
 
 Es un monorepo con dos paquetes:
 
@@ -21,7 +21,8 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 ## Estado actual
 
 - 12 clases y 48 subclases del PHB 2024.
-- 10 especies, 8 linajes, 12 trasfondos, 57 dotes y 177 conjuros.
+- 9 especies del SRD más Aasimar del PHB 2024, 8 linajes, 12 trasfondos,
+  57 dotes y 177 conjuros.
 - Creación guiada, subida de nivel, combate, inventario, notas y retratos IA.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
   secuenciales de datos.
@@ -113,6 +114,11 @@ contenido de `HomebrewStore` al mismo `ContentRepository` y luego inicia
 El contenido oficial vive en
 `packages/dnd_engine/lib/assets/srd_2024/`. Su `manifest.json` declara la versión
 del formato y la edición de reglas.
+
+La fuente normativa, la separación entre contenido SRD y PHB y el avance de la
+comprobación están en `docs/auditoria-reglas-2024.md`. No etiquetar contenido
+PHB como `srd_2024`; el hecho de que una opción sea oficial no implica que esté
+incluida en el SRD ni cubierta por CC BY 4.0.
 
 ### UI
 

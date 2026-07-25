@@ -37,14 +37,22 @@ class CharacterCompiler {
     }
 
     // Efectos de raza, clase (por nivel), trasfondo y dotes.
-    if (race != null) builder.applyAll(race.effects);
+    if (race != null) {
+      builder.applyAll(
+        race.effects,
+        spellAbilityOverride: c.speciesSpellcastingAbility,
+      );
+    }
 
     // Rasgos del linaje de especie (si se eligió y pertenece a esta especie),
     // por nivel: igual que las subclases, pueden crecer con el personaje.
     final lineage = c.lineageId == null ? null : repo.lineage(c.lineageId!);
     if (lineage != null && lineage.raceId == c.raceId) {
       for (final f in lineage.featuresUpTo(c.level)) {
-        builder.applyAll(f.effects);
+        builder.applyAll(
+          f.effects,
+          spellAbilityOverride: c.speciesSpellcastingAbility,
+        );
       }
     }
 
@@ -170,11 +178,13 @@ class CharacterCompiler {
         saveDc: 8 + proficiencyBonus + mod,
         attackBonus: proficiencyBonus + mod,
       ));
-      if (g.use == InnateSpellUse.oncePerLongRest) {
+      if (g.use != InnateSpellUse.atWill) {
         resources.add(CharacterResource(
           id: 'innate-${spell.id}',
           name: spell.name,
-          max: 1,
+          max: g.use == InnateSpellUse.proficiencyBonusPerLongRest
+              ? proficiencyBonus
+              : 1,
           recharge: RechargeOn.longRest,
           description: 'Lanzarlo sin gastar espacio de conjuro. '
               'También podés lanzarlo gastando un espacio.',

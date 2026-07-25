@@ -59,12 +59,14 @@ void main() {
   test('un linaje válido se conserva y aporta sus rasgos al personaje', () {
     final d = CreationDraft(repo)
       ..raceId = 'elf'
-      ..lineageId = 'elf-high';
+      ..lineageId = 'elf-high'
+      ..speciesSpellcastingAbility = Ability.wisdom;
 
     final character = d.build();
     final sheet = CharacterCompiler(repo).compile(character);
 
     expect(character.lineageId, 'elf-high');
+    expect(character.speciesSpellcastingAbility, Ability.wisdom);
     expect(
       sheet.innateSpells.map((spell) => spell.name),
       contains('Prestidigitación'),
@@ -193,6 +195,11 @@ void main() {
         );
 
         d.lineageId = entry.value.$1;
+        expect(
+          d.pendingFor(CreationStep.raza),
+          contains('Elegí la aptitud mágica del linaje.'),
+        );
+        d.speciesSpellcastingAbility = Ability.charisma;
         expect(d.pendingFor(CreationStep.raza), isEmpty);
       }
     });

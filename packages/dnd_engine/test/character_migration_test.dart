@@ -52,8 +52,16 @@ void main() {
       () => Character.migrateJson(future),
       throwsA(
         isA<UnsupportedDataVersionException>()
-            .having((e) => e.found, 'versión encontrada', 3)
-            .having((e) => e.supported, 'versión soportada', 2),
+            .having(
+              (e) => e.found,
+              'versión encontrada',
+              Character.currentSchemaVersion + 1,
+            )
+            .having(
+              (e) => e.supported,
+              'versión soportada',
+              Character.currentSchemaVersion,
+            ),
       ),
     );
   });

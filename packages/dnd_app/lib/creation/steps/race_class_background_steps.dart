@@ -27,6 +27,7 @@ class _RaceStep extends StatelessWidget {
                   if (draft.raceId != r.id) {
                     draft.raceId = r.id;
                     draft.lineageId = null;
+                    draft.speciesSpellcastingAbility = null;
                     draft.raceSkills.clear();
                     draft.raceFeatId = null;
                   }
@@ -65,6 +66,7 @@ class _RaceStep extends StatelessWidget {
                     selected: draft.lineageId,
                     onSelect: (id) {
                       draft.lineageId = id;
+                      draft.speciesSpellcastingAbility = null;
                       onChanged();
                     },
                   ),
@@ -79,6 +81,27 @@ class _RaceStep extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
+                  ],
+                  if (draft.lineageUsesSpellcastingAbility) ...[
+                    const SizedBox(height: 14),
+                    _AbilityDropdown(
+                      label: 'Aptitud mágica',
+                      value: draft.speciesSpellcastingAbility,
+                      options: const [
+                        Ability.intelligence,
+                        Ability.wisdom,
+                        Ability.charisma,
+                      ],
+                      onChanged: (ability) {
+                        draft.speciesSpellcastingAbility = ability;
+                        onChanged();
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Se usa para la CD y los ataques de los conjuros del linaje.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ],
               ],

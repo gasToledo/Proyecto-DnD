@@ -17,6 +17,7 @@ void main() {
         classId: 'fighter',
         backgroundId: 'soldier',
         lineageId: lineageId,
+        speciesSpellcastingAbility: Ability.wisdom,
         level: level,
         assignedScores: {for (final a in Ability.values) a: 12},
         hpPerLevel: List.filled(level, 10),
@@ -62,7 +63,8 @@ void main() {
       'tiefling-chthonic': ('necrotic', 'chill-touch'),
     };
     cases.forEach((lineageId, expected) {
-      final s = CharacterCompiler(repo).compile(_pj('tiefling', lineageId, level: 1));
+      final s =
+          CharacterCompiler(repo).compile(_pj('tiefling', lineageId, level: 1));
       expect(s.resistances, contains(expected.$1), reason: lineageId);
       // El truco del legado + la Taumaturgia base del Tiflin.
       final ids = s.innateSpells.map((x) => x.spellId);
@@ -72,20 +74,34 @@ void main() {
     });
   });
 
-  test('el Drow tiene visión superior; el Elfo del Bosque, +velocidad', () {
-    final drow = CharacterCompiler(repo).compile(_pj('elf', 'elf-drow', level: 1));
+  test('el Drow tiene visión superior; el Elfo del Bosque, magia y velocidad',
+      () {
+    final drow =
+        CharacterCompiler(repo).compile(_pj('elf', 'elf-drow', level: 1));
     expect(drow.darkvision, 120);
-    final wood = CharacterCompiler(repo).compile(_pj('elf', 'elf-wood', level: 1));
+    final wood =
+        CharacterCompiler(repo).compile(_pj('elf', 'elf-wood', level: 1));
     expect(wood.speed, 35);
+    expect(wood.innateSpells.map((spell) => spell.spellId),
+        contains('druidcraft'));
+  });
+
+  test('Hablar con los Animales tiene usos iguales a competencia', () {
+    final forest =
+        CharacterCompiler(repo).compile(_pj('gnome', 'gnome-forest', level: 5));
+    final resource = forest.resources
+        .firstWhere((entry) => entry.id == 'innate-speak-with-animals');
+    expect(resource.max, 3);
   });
 
   test('los conjuros de nivel 3 y 5 aparecen al subir, con su recurso', () {
-    final low =
-        CharacterCompiler(repo).compile(_pj('tiefling', 'tiefling-infernal', level: 1));
-    expect(low.innateSpells.map((s) => s.spellId), isNot(contains('hellish-rebuke')));
+    final low = CharacterCompiler(repo)
+        .compile(_pj('tiefling', 'tiefling-infernal', level: 1));
+    expect(low.innateSpells.map((s) => s.spellId),
+        isNot(contains('hellish-rebuke')));
 
-    final high =
-        CharacterCompiler(repo).compile(_pj('tiefling', 'tiefling-infernal', level: 5));
+    final high = CharacterCompiler(repo)
+        .compile(_pj('tiefling', 'tiefling-infernal', level: 5));
     final ids = high.innateSpells.map((s) => s.spellId);
     expect(ids, containsAll(['fire-bolt', 'hellish-rebuke', 'darkness']));
     // Los dos conjuros con nivel traen su uso gratuito por descanso largo.

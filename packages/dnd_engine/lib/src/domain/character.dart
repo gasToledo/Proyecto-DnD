@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 2;
+  static const int currentSchemaVersion = 3;
 
   final String id;
   String name;
@@ -174,6 +174,10 @@ class Character {
   /// Linaje de especie elegido (Linaje Élfico, Ascendencia Dracónica…).
   /// Null si la especie no exige uno o si todavía no se eligió.
   final String? lineageId;
+
+  /// Aptitud mágica elegida para los conjuros concedidos por la especie o su
+  /// linaje. En 2024, Elfo, Gnomo y Tiefling eligen INT, SAB o CAR.
+  final Ability? speciesSpellcastingAbility;
   int level;
 
   /// Puntuaciones asignadas por el método elegido (4d6 o array), antes de
@@ -240,6 +244,7 @@ class Character {
     required this.backgroundId,
     this.subclassId,
     this.lineageId,
+    this.speciesSpellcastingAbility,
     this.level = 1,
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
@@ -273,6 +278,7 @@ class Character {
         'backgroundId': backgroundId,
         'subclassId': subclassId,
         'lineageId': lineageId,
+        'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
         'level': level,
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
@@ -333,6 +339,10 @@ class Character {
           migrated.putIfAbsent('combat', () => {});
           version = 2;
           migrated['schemaVersion'] = version;
+        case 2:
+          migrated.putIfAbsent('speciesSpellcastingAbility', () => null);
+          version = 3;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -352,6 +362,8 @@ class Character {
       backgroundId: j['backgroundId'] as String,
       subclassId: j['subclassId'] as String?,
       lineageId: j['lineageId'] as String?,
+      speciesSpellcastingAbility:
+          _abilityFromJson(j['speciesSpellcastingAbility']),
       level: j['level'] as int? ?? 1,
       assignedScores: _abilityMapFromJson(j['assignedScores']),
       backgroundAbilityBonuses:
@@ -404,6 +416,7 @@ class Character {
     CharacterStatus? status,
     Object? subclassId = _unset,
     Object? lineageId = _unset,
+    Object? speciesSpellcastingAbility = _unset,
     int? level,
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
@@ -432,6 +445,9 @@ class Character {
           : subclassId as String?,
       lineageId:
           identical(lineageId, _unset) ? this.lineageId : lineageId as String?,
+      speciesSpellcastingAbility: identical(speciesSpellcastingAbility, _unset)
+          ? this.speciesSpellcastingAbility
+          : speciesSpellcastingAbility as Ability?,
       level: level ?? this.level,
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,
@@ -461,4 +477,12 @@ class Character {
       combat: combat ?? this.combat,
     );
   }
+}
+
+Ability? _abilityFromJson(Object? value) {
+  if (value is! String) return null;
+  for (final ability in Ability.values) {
+    if (ability.name == value) return ability;
+  }
+  return null;
 }

@@ -3,6 +3,7 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/effects.dart';
 import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
 import 'character_compiler.dart';
@@ -58,6 +59,12 @@ class CharacterValidator {
             'lineage_wrong_race',
             'El linaje "${lineage.name}" pertenece a ${lineage.raceId}, '
                 'no a ${c.raceId}.',
+          ));
+        } else if (_lineageUsesSpellcasting(lineage) &&
+            c.speciesSpellcastingAbility == null) {
+          w.add(const ValidationWarning(
+            'species_spellcasting_ability_pending',
+            'Falta elegir la aptitud mágica del linaje (INT, SAB o CAR).',
           ));
         }
       }
@@ -260,6 +267,11 @@ class CharacterValidator {
 
     return w;
   }
+
+  bool _lineageUsesSpellcasting(Lineage lineage) => lineage.features.any(
+        (feature) =>
+            feature.effects.any((effect) => effect is GrantSpellEffect),
+      );
 
   /// Chequeos no bloqueantes sobre trucos y conjuros elegidos.
   void _validateSpells(

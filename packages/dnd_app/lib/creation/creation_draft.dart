@@ -55,6 +55,16 @@ class CreationDraft {
         draft.lineageId = lineageId;
       }
     }
+    final speciesSpellcastingAbility = _ability(
+      json['speciesSpellcastingAbility'],
+    );
+    if (const {
+      Ability.intelligence,
+      Ability.wisdom,
+      Ability.charisma,
+    }.contains(speciesSpellcastingAbility)) {
+      draft.speciesSpellcastingAbility = speciesSpellcastingAbility;
+    }
     final backgroundId = json['backgroundId'];
     if (backgroundId is String && repo.background(backgroundId) != null) {
       draft.backgroundId = backgroundId;
@@ -150,6 +160,7 @@ class CreationDraft {
   // Orígenes.
   String? raceId;
   String? lineageId;
+  Ability? speciesSpellcastingAbility;
   final Set<String> raceSkills = {};
   String? raceFeatId; // dote de origen de la especie (p.ej. Humano "Versátil")
   String? backgroundId;
@@ -186,6 +197,7 @@ class CreationDraft {
     'weaponMasteries': weaponMasteries,
     'raceId': raceId,
     'lineageId': lineageId,
+    'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
     'raceSkills': raceSkills.toList(),
     'raceFeatId': raceFeatId,
     'backgroundId': backgroundId,
@@ -215,6 +227,13 @@ class CreationDraft {
     final value = lineageId == null ? null : repo.lineage(lineageId!);
     return value?.raceId == raceId ? value : null;
   }
+
+  bool get lineageUsesSpellcastingAbility =>
+      lineage?.features.any(
+        (feature) =>
+            feature.effects.any((effect) => effect is GrantSpellEffect),
+      ) ??
+      false;
 
   Background? get background =>
       backgroundId == null ? null : repo.background(backgroundId!);
@@ -268,6 +287,7 @@ class CreationDraft {
       classId,
       raceId,
       lineageId,
+      speciesSpellcastingAbility?.name,
       backgroundId,
       raceFeatId,
       spreadMode.name,
@@ -370,6 +390,10 @@ class CreationDraft {
         if (race == null) return const ['Elegí una especie.'];
         if (lineageOptions.isNotEmpty && lineage == null) {
           return const ['Elegí un linaje de especie.'];
+        }
+        if (lineageUsesSpellcastingAbility &&
+            speciesSpellcastingAbility == null) {
+          return const ['Elegí la aptitud mágica del linaje.'];
         }
         return const [];
 
@@ -495,6 +519,7 @@ class CreationDraft {
       name: name.trim().isEmpty ? 'Sin nombre' : name.trim(),
       raceId: raceId ?? '',
       lineageId: lineage?.id,
+      speciesSpellcastingAbility: speciesSpellcastingAbility,
       classId: classId,
       backgroundId: backgroundId ?? '',
       level: 1,

@@ -111,6 +111,29 @@ void main() {
     expect(flat.innateSpells.single.saveDc, 10);
   });
 
+  test('la elección de especie reemplaza la aptitud heredada del contenido',
+      () {
+    final character = Character(
+      id: 'wis-tiefling',
+      name: 'Prueba',
+      raceId: 'tiefling',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      lineageId: 'tiefling-infernal',
+      speciesSpellcastingAbility: Ability.wisdom,
+      assignedScores: {
+        for (final ability in Ability.values)
+          ability: ability == Ability.wisdom ? 16 : 10,
+      },
+      hpPerLevel: const [10],
+    );
+
+    final spells = CharacterCompiler(_repo()).compile(character).innateSpells;
+    expect(spells, isNotEmpty);
+    expect(spells.every((spell) => spell.ability == Ability.wisdom), isTrue);
+    expect(spells.every((spell) => spell.saveDc == 13), isTrue);
+  });
+
   test('el conjuro de nivel 3 aparece al subir, con su uso gratuito', () {
     final low = CharacterCompiler(_repo()).compile(_tiefling());
     expect(low.innateSpells.map((s) => s.spellId), ['fire-bolt']);
@@ -138,7 +161,12 @@ void main() {
         {'id': 'tiefling', 'name': 'Tiflin', 'source': 'srd_2024'},
       ],
       classes: [
-        {'id': 'fighter', 'name': 'Guerrero', 'source': 'srd_2024', 'hitDie': 10},
+        {
+          'id': 'fighter',
+          'name': 'Guerrero',
+          'source': 'srd_2024',
+          'hitDie': 10
+        },
       ],
       backgrounds: [
         {'id': 'soldier', 'name': 'Soldado', 'source': 'srd_2024'},
@@ -179,6 +207,13 @@ void main() {
     expect(back.spellId, 'fire-bolt');
     expect(back.ability, Ability.charisma);
     expect(back.use, InnateSpellUse.oncePerLongRest);
+    final scaling = Effect.fromJson({
+      'type': 'grantSpell',
+      'spellId': 'fire-bolt',
+      'ability': 'wisdom',
+      'use': 'proficiencyBonusPerLongRest',
+    }) as GrantSpellEffect;
+    expect(scaling.use, InnateSpellUse.proficiencyBonusPerLongRest);
     // Por defecto, a voluntad.
     final plain = Effect.fromJson({
       'type': 'grantSpell',

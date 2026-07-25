@@ -4,7 +4,7 @@
     "name": "Elfo Oscuro (Drow)",
     "raceId": "elf",
     "source": "srd_2024",
-    "description": "Linaje de las profundidades. Visión superior en la oscuridad y magia de las sombras. (Lanza con Carisma).",
+    "description": "Linaje de las profundidades. Visión superior en la oscuridad y magia de las sombras. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,
@@ -56,7 +56,7 @@
     "name": "Alto Elfo",
     "raceId": "elf",
     "source": "srd_2024",
-    "description": "Linaje de tradición arcana. Conocés magia menor y puedes desplazarte con un parpadeo. (Lanza con Inteligencia).",
+    "description": "Linaje de tradición arcana. Conocés magia menor y podés desplazarte con un parpadeo. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,
@@ -104,7 +104,7 @@
     "name": "Elfo del Bosque",
     "raceId": "elf",
     "source": "srd_2024",
-    "description": "Linaje de los bosques. Más veloz y sigiloso. (Lanza con Sabiduría).",
+    "description": "Linaje de los bosques. Más veloz y con magia druídica. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,
@@ -114,6 +114,12 @@
           {
             "type": "setSpeed",
             "feet": 35
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "druidcraft",
+            "ability": "wisdom",
+            "use": "atWill"
           }
         ]
       },
@@ -150,7 +156,7 @@
     "name": "Gnomo del Bosque",
     "raceId": "gnome",
     "source": "srd_2024",
-    "description": "Linaje de la espesura. Ilusiones y trato con las bestias. (Lanza con Inteligencia).",
+    "description": "Linaje de la espesura. Ilusiones y trato con las bestias. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,
@@ -167,7 +173,7 @@
             "type": "grantSpell",
             "spellId": "speak-with-animals",
             "ability": "intelligence",
-            "use": "oncePerLongRest"
+            "use": "proficiencyBonusPerLongRest"
           }
         ]
       }
@@ -178,7 +184,7 @@
     "name": "Gnomo de las Rocas",
     "raceId": "gnome",
     "source": "srd_2024",
-    "description": "Linaje de artífices natos. Reparás y creás pequeñas maravillas. (Lanza con Inteligencia).",
+    "description": "Linaje de artífices natos. Reparás y creás pequeñas maravillas. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,
@@ -211,7 +217,7 @@
     "name": "Abisal",
     "raceId": "tiefling",
     "source": "srd_2024",
-    "description": "Legado Abisal. Resistencia a veneno y magia de tu estirpe. (Lanza con Carisma).",
+    "description": "Legado Abisal. Resistencia a veneno y magia de tu estirpe. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,
@@ -263,7 +269,7 @@
     "name": "Ctónico",
     "raceId": "tiefling",
     "source": "srd_2024",
-    "description": "Legado Ctónico. Resistencia a daño necrótico y magia de tu estirpe. (Lanza con Carisma).",
+    "description": "Legado Ctónico. Resistencia a daño necrótico y magia de tu estirpe. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,
@@ -315,7 +321,7 @@
     "name": "Infernal",
     "raceId": "tiefling",
     "source": "srd_2024",
-    "description": "Legado Infernal. Resistencia a fuego y magia de tu estirpe. (Lanza con Carisma).",
+    "description": "Legado Infernal. Resistencia a fuego y magia de tu estirpe. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
     "features": [
       {
         "level": 1,

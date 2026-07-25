@@ -89,6 +89,28 @@ void main() {
     expect(tester.widget<FilledButton>(next).onPressed, isNull);
   });
 
+  testWidgets('el stepper sigue usable en una ventana compacta', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(480, 520);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: CreationWizard(repo: repo, onCreate: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Crear personaje'), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsWidgets);
+    expect(find.text(CreationStep.raza.label.toUpperCase()), findsOneWidget);
+    expect(find.text(CreationStep.resumen.label.toUpperCase()), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('la lista de maestrías scrollea sola, no estira el paso', (
     tester,
   ) async {

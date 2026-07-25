@@ -445,13 +445,13 @@ class _CreationWizardState extends State<CreationWizard> {
             ],
           ),
           const SizedBox(height: 18),
-          _stepper(context),
+          _stepper(context, compact: !wide),
         ],
       ),
     );
   }
 
-  Widget _stepper(BuildContext context) {
+  Widget _stepper(BuildContext context, {required bool compact}) {
     final pal = context.palette;
     final scheme = Theme.of(context).colorScheme;
     final children = <Widget>[];
@@ -471,63 +471,78 @@ class _CreationWizardState extends State<CreationWizard> {
           ? pal.gold
           : pal.textMuted;
       children.add(
-        Tooltip(
-          message: reachable ? s.label : 'Completá los pasos anteriores',
-          child: InkWell(
-            onTap: reachable ? () => _goTo(s) : null,
-            borderRadius: BorderRadius.circular(10),
-            child: SizedBox(
-              width: 88,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: fill,
-                      border: Border.all(color: ring, width: 2),
+        Semantics(
+          selected: active,
+          button: true,
+          enabled: reachable,
+          label: '${s.label}, paso ${s.index + 1} de ${_steps.length}',
+          child: Tooltip(
+            message: reachable ? s.label : 'Completá los pasos anteriores',
+            child: InkWell(
+              onTap: reachable ? () => _goTo(s) : null,
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 88,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: fill,
+                        border: Border.all(color: ring, width: 2),
+                      ),
+                      child: Icon(_stepIcons[s], size: 22, color: fg),
                     ),
-                    child: Icon(_stepIcons[s], size: 22, color: fg),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    s.label.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 10,
-                      letterSpacing: .4,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                      color: active
-                          ? pal.gold
-                          : done
-                          ? scheme.onSurfaceVariant
-                          : pal.textMuted,
+                    const SizedBox(height: 7),
+                    Text(
+                      s.label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        letterSpacing: .4,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                        color: active
+                            ? pal.gold
+                            : done
+                            ? scheme.onSurfaceVariant
+                            : pal.textMuted,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       );
       if (s != _steps.last) {
+        final connector = Container(
+          height: 2,
+          margin: const EdgeInsets.only(bottom: 22),
+          color: s.index < _step.index ? pal.gold : pal.hairline,
+        );
         children.add(
-          Expanded(
-            child: Container(
-              height: 2,
-              margin: const EdgeInsets.only(bottom: 22),
-              color: s.index < _step.index ? pal.gold : pal.hairline,
-            ),
-          ),
+          compact
+              ? SizedBox(width: 20, child: connector)
+              : Expanded(child: connector),
         );
       }
     }
-    return Row(
+    final row = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: children,
+    );
+    if (!compact) return row;
+    return Semantics(
+      label: 'Progreso de creación',
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: row,
+      ),
     );
   }
 

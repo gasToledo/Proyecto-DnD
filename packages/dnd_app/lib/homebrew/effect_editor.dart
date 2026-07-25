@@ -182,6 +182,7 @@ class _AddEffectDialogState extends State<_AddEffectDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Agregar efecto'),
       content: SizedBox(
         width: 420,

@@ -103,23 +103,25 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
                     children: [
                       Icon(Icons.favorite, size: 34, color: pal.crimson),
                       const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '+${diff.hpGained} PG máximos',
-                            style: TextStyle(
-                              fontFamily: 'Georgia',
-                              fontSize: 24,
-                              color: pal.crimson,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '+${diff.hpGained} PG máximos',
+                              style: TextStyle(
+                                fontFamily: 'Georgia',
+                                fontSize: 24,
+                                color: pal.crimson,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Tus PG actuales suben lo mismo.',
-                            style: TextStyle(fontSize: 13, color: muted),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              'Tus PG actuales suben lo mismo.',
+                              style: TextStyle(fontSize: 13, color: muted),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

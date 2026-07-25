@@ -1,0 +1,308 @@
+part of '../creation_wizard.dart';
+
+class _RaceStep extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _RaceStep({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final race = draft.race;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('Especie'),
+        const SizedBox(height: 10),
+        _ChoiceGrid(
+          children: [
+            for (final r in draft.repo.races.values)
+              _ChoiceCard(
+                icon: raceIcon(r),
+                title: r.name,
+                subtitle: r.tagline,
+                accent: pal.gold,
+                selected: draft.raceId == r.id,
+                onTap: () {
+                  draft.raceId = r.id;
+                  draft.raceSkills.clear();
+                  draft.raceFeatId = null;
+                  onChanged();
+                },
+              ),
+          ],
+        ),
+        if (race != null) ...[
+          const SizedBox(height: 18),
+          _DetailPanel(
+            title: race.name,
+            facts: [
+              ('Tamaño', race.size),
+              ('Velocidad', '${race.speed} ft'),
+              if (race.skillChoiceCount > 0)
+                ('Habilidades', '${race.skillChoiceCount} a elegir'),
+            ],
+            child: _TraitList(effects: race.effects),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Paso 2 · Clase. Grilla de clases y, debajo, el panel de detalle con lo que
+/// esa clase exige a nivel 1 (estilo de combate, maestrías de arma).
+class _ClassStep extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _ClassStep({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = draft.repo;
+    final klass = draft.klass;
+    final styles = repo.feats.values
+        .where((f) => f.category == 'fighting-style')
+        .toList();
+    final slots = draft.weaponMasterySlots;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('Clase'),
+        const SizedBox(height: 10),
+        _ChoiceGrid(
+          children: [
+            for (final c in repo.classes.values)
+              _ChoiceCard(
+                icon: classIcon(c),
+                title: c.name,
+                subtitle:
+                    'd${c.hitDie} · '
+                    '${c.savingThrows.map((a) => a.abbr).join(" / ")}',
+                accent: classAccent(c, context.palette.gold),
+                selected: draft.classId == c.id,
+                onTap: () {
+                  draft.classId = c.id;
+                  draft.classSkills.clear();
+                  draft.weaponMasteries.clear();
+                  draft.fightingStyleId = null;
+                  draft.cantrips.clear();
+                  draft.spells.clear();
+                  onChanged();
+                },
+              ),
+          ],
+        ),
+        if (klass != null) ...[
+          const SizedBox(height: 18),
+          _DetailPanel(
+            title: klass.name,
+            facts: [
+              ('Dado de golpe', 'd${klass.hitDie}'),
+              (
+                'Salvaciones',
+                klass.savingThrows.map((a) => a.abbr).join(' · '),
+              ),
+            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (draft.grantsFightingStyle) ...[
+                  const Eyebrow('Estilo de combate'),
+                  const SizedBox(height: 8),
+                  _SingleSelect(
+                    options: {for (final f in styles) f.id: f.name},
+                    selected: draft.fightingStyleId,
+                    onSelect: (id) {
+                      draft.fightingStyleId = id;
+                      onChanged();
+                    },
+                  ),
+                ],
+                if (slots > 0) ...[
+                  const SizedBox(height: 18),
+                  Eyebrow('Maestría de armas (elige $slots)'),
+                  Text(
+                    'Solo armas con las que ${klass.name} es competente.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 6),
+                  _WeaponChecklist(
+                    weapons: draft.proficientWeapons,
+                    selected: draft.weaponMasteries,
+                    max: slots,
+                    onChanged: onChanged,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Paso 3 · Trasfondo. Incluye el aumento de característica 2024, que en estas
+/// reglas viene del trasfondo (no de la especie).
+class _BackgroundStep extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _BackgroundStep({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = draft.repo;
+    final bg = draft.background;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('Trasfondo'),
+        const SizedBox(height: 10),
+        _ChoiceGrid(
+          children: [
+            for (final b in repo.backgrounds.values)
+              _ChoiceCard(
+                icon: backgroundIcon(b),
+                title: b.name,
+                subtitle: b.tagline,
+                accent: context.palette.gold,
+                selected: draft.backgroundId == b.id,
+                onTap: () {
+                  draft.backgroundId = b.id;
+                  draft.spreadPlusTwo = null;
+                  draft.spreadPlusOne = null;
+                  onChanged();
+                },
+              ),
+          ],
+        ),
+        if (bg != null) ...[
+          const SizedBox(height: 18),
+          _DetailPanel(
+            title: bg.name,
+            facts: [
+              (
+                'Competencias',
+                bg.skillProficiencies.map(Skill.labelFor).join(', '),
+              ),
+              if (bg.originFeatId != null)
+                (
+                  'Dote de origen',
+                  repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!,
+                ),
+            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Eyebrow('Aumento de característica (2024)'),
+                const SizedBox(height: 8),
+                SegmentedButton<AbilitySpreadMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: AbilitySpreadMode.twoOne,
+                      label: Text('+2 / +1'),
+                    ),
+                    ButtonSegment(
+                      value: AbilitySpreadMode.oneOneOne,
+                      label: Text('+1 / +1 / +1'),
+                    ),
+                  ],
+                  selected: {draft.spreadMode},
+                  onSelectionChanged: (s) {
+                    draft.spreadMode = s.first;
+                    onChanged();
+                  },
+                ),
+                const SizedBox(height: 12),
+                if (draft.spreadMode == AbilitySpreadMode.twoOne)
+                  _TwoOnePicker(draft: draft, onChanged: onChanged)
+                else
+                  Text(
+                    'Cada una de ${bg.abilityOptions.map((a) => a.abbr).join(", ")} '
+                    'recibe +1.',
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _TwoOnePicker extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _TwoOnePicker({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final opts = draft.background?.abilityOptions ?? const [];
+    return Row(
+      children: [
+        Expanded(
+          child: _AbilityDropdown(
+            label: '+2',
+            value: draft.spreadPlusTwo,
+            options: opts,
+            onChanged: (a) {
+              draft.spreadPlusTwo = a;
+              onChanged();
+            },
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _AbilityDropdown(
+            label: '+1',
+            value: draft.spreadPlusOne,
+            options: opts.where((a) => a != draft.spreadPlusTwo).toList(),
+            onChanged: (a) {
+              draft.spreadPlusOne = a;
+              onChanged();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AbilityDropdown extends StatelessWidget {
+  final String label;
+  final Ability? value;
+  final List<Ability> options;
+  final ValueChanged<Ability?> onChanged;
+  const _AbilityDropdown({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Ability>(
+          isExpanded: true,
+          value: options.contains(value) ? value : null,
+          items: options
+              .map((a) => DropdownMenuItem(value: a, child: Text(a.abbr)))
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}
+
+/// Paso 4 · Puntuaciones: método, valores pendientes y una tarjeta por
+/// característica con el total, el aumento del trasfondo y el modificador.

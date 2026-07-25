@@ -26,7 +26,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   bool _obscure = true;
   bool _loaded = false;
   bool _saving = false;
-  String? _recoveredSettingsPath;
+  String? _settingsLoadWarning;
 
   @override
   void initState() {
@@ -39,8 +39,14 @@ class _SettingsDialogState extends State<SettingsDialog> {
         _hfCtrl.text = s.huggingFaceToken;
         _hfModelCtrl.text = s.huggingFaceModel;
         _loaded = true;
-        _recoveredSettingsPath =
-            _service.recoveryIssues.firstOrNull?.recoveryPath;
+        final issue = _service.recoveryIssues.firstOrNull;
+        _settingsLoadWarning = issue == null
+            ? null
+            : issue.wasMoved
+            ? 'El archivo de ajustes era ilegible y fue apartado en:\n'
+                  '${issue.recoveryPath}'
+            : '${issue.error}\nEl archivo se conservó sin modificaciones en:\n'
+                  '${issue.originalPath}';
       });
     });
   }
@@ -100,10 +106,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (_recoveredSettingsPath != null) ...[
+                      if (_settingsLoadWarning != null) ...[
                         Text(
-                          'El archivo de ajustes era ilegible y fue apartado en:\n'
-                          '$_recoveredSettingsPath',
+                          _settingsLoadWarning!,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.error,
                           ),

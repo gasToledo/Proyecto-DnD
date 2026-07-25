@@ -66,9 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     widget.controller.addListener(_handleControllerState);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _showRecoveryWarnings(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showDataNotices());
   }
 
   @override
@@ -95,35 +93,63 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  Future<void> _showRecoveryWarnings() async {
+  Future<void> _showDataNotices() async {
     if (!mounted) return;
     final issues = <DataRecoveryIssue>[
       ...controller.recoveryIssues,
       ...widget.homebrew.recoveryIssues,
     ];
-    if (issues.isEmpty) return;
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Archivos apartados para recuperación'),
-        content: SizedBox(
-          width: 560,
-          child: SingleChildScrollView(
-            child: Text(
-              'La aplicación encontró ${issues.length} archivo(s) ilegible(s). '
-              'No fueron eliminados; se movieron para que puedas revisarlos:\n\n'
-              '${issues.map((e) => e.recoveryPath).join('\n')}',
+    if (issues.isNotEmpty) {
+      final moved = issues.where((issue) => issue.wasMoved).toList();
+      final preserved = issues.where((issue) => !issue.wasMoved).toList();
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(
+            preserved.isEmpty
+                ? 'Archivos apartados para recuperación'
+                : 'Datos que requieren atención',
+          ),
+          content: SizedBox(
+            width: 560,
+            child: SingleChildScrollView(
+              child: Text(
+                [
+                  if (moved.isNotEmpty)
+                    'Se apartaron ${moved.length} archivo(s) ilegible(s) para '
+                        'que puedas revisarlos:\n'
+                        '${moved.map((e) => e.recoveryPath).join('\n')}',
+                  if (preserved.isNotEmpty)
+                    'No se modificaron ${preserved.length} archivo(s) que esta '
+                        'versión de la aplicación no puede abrir:\n'
+                        '${preserved.map((e) => '${e.originalPath}\n${e.error}').join('\n\n')}',
+                ].join('\n\n'),
+              ),
             ),
           ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Entendido'),
+            ),
+          ],
         ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Entendido'),
-          ),
-        ],
-      ),
-    );
+      );
+    }
+    if (!mounted) return;
+    final migrations = <DataMigrationBackup>[
+      ...controller.migrationBackups,
+      ...widget.homebrew.migrationBackups,
+    ];
+    if (migrations.isNotEmpty) {
+      showAppMessage(
+        context,
+        'Se actualizaron ${migrations.length} archivo(s) al formato actual. '
+        'Las copias anteriores quedaron en recovery/migrations.',
+        tone: AppMessageTone.success,
+        duration: const Duration(seconds: 5),
+      );
+    }
   }
 
   String _klassName(Character c) =>

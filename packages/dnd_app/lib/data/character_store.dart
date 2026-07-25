@@ -21,6 +21,8 @@ class CharacterStore {
   final String? _dataRoot;
   final String? _legacyDirectory;
   final List<DataRecoveryIssue> recoveryIssues = [];
+  final List<DataMigrationBackup> migrationBackups = [];
+  final Set<String> _protectedFuturePaths = {};
 
   CharacterStore({String? dataRoot, String? legacyDirectory})
     : _dataRoot = dataRoot,
@@ -70,18 +72,58 @@ class CharacterStore {
     final dir = await _ensureDir();
     final result = <Character>[];
     recoveryIssues.clear();
+    migrationBackups.clear();
+    _protectedFuturePaths.clear();
     await for (final entity in dir.list()) {
       if (entity is File && entity.path.endsWith('.json')) {
+        Map<String, dynamic> migrated;
+        Character character;
+        int originalVersion;
         try {
-          final json = jsonDecode(await entity.readAsString());
-          final character = Character.fromJson(json as Map<String, dynamic>);
+          final decoded = jsonDecode(await entity.readAsString());
+          final json = (decoded as Map).cast<String, dynamic>();
+          originalVersion = Character.schemaVersionOf(json);
+          migrated = Character.migrateJson(json);
+          character = Character.fromJson(migrated);
           requireSafePathSegment(character.id, label: 'id de personaje');
-          result.add(character);
+        } on UnsupportedDataVersionException catch (error) {
+          _protectedFuturePaths.add(entity.path);
+          recoveryIssues.add(
+            DataRecoveryIssue(
+              originalPath: entity.path,
+              recoveryPath: entity.path,
+              error: error.toString(),
+            ),
+          );
+          continue;
         } catch (error) {
           recoveryIssues.add(
             await recoverCorruptFile(entity, error, dataRoot: _dataRoot),
           );
+          continue;
         }
+
+        if (originalVersion < Character.currentSchemaVersion) {
+          try {
+            final backup = await backupBeforeMigration(
+              entity,
+              fromVersion: originalVersion,
+              toVersion: Character.currentSchemaVersion,
+              dataRoot: _dataRoot,
+            );
+            await writeJsonAtomic(entity, migrated);
+            migrationBackups.add(backup);
+          } catch (error) {
+            recoveryIssues.add(
+              DataRecoveryIssue(
+                originalPath: entity.path,
+                recoveryPath: entity.path,
+                error: 'No se pudo guardar la migración: $error',
+              ),
+            );
+          }
+        }
+        result.add(character);
       }
     }
     result.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -93,17 +135,31 @@ class CharacterStore {
   /// cierre inesperado (criterio de calidad del brief §8).
   Future<void> save(Character c) async {
     final dir = await _ensureDir();
-    await writeJsonAtomic(_fileFor(c.id, dir), c.toJson());
+    final file = _fileFor(c.id, dir);
+    _ensureWritable(file);
+    await writeJsonAtomic(file, c.toJson());
   }
 
   /// Guarda un conjunto completo como una sola operación lógica. Si falla una
   /// escritura, el helper revierte los archivos que ya hubiera reemplazado.
   Future<void> saveAll(Iterable<Character> characters) async {
     final dir = await _ensureDir();
-    await writeJsonBatchAtomic({
+    final documents = {
       for (final character in characters)
         _fileFor(character.id, dir): character.toJson(),
-    });
+    };
+    for (final file in documents.keys) {
+      _ensureWritable(file);
+    }
+    await writeJsonBatchAtomic(documents);
+  }
+
+  void _ensureWritable(File file) {
+    if (_protectedFuturePaths.contains(file.path)) {
+      throw StateError(
+        'No se sobrescribió ${file.path} porque usa una versión futura.',
+      );
+    }
   }
 
   Future<void> delete(String id) async {

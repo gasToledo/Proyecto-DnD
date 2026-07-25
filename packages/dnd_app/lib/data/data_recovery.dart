@@ -14,6 +14,52 @@ class DataRecoveryIssue {
     required this.recoveryPath,
     required this.error,
   });
+
+  bool get wasMoved => originalPath != recoveryPath;
+}
+
+class DataMigrationBackup {
+  final String originalPath;
+  final String backupPath;
+  final int fromVersion;
+  final int toVersion;
+
+  const DataMigrationBackup({
+    required this.originalPath,
+    required this.backupPath,
+    required this.fromVersion,
+    required this.toVersion,
+  });
+}
+
+/// Conserva el documento exacto anterior a una migración automática. La copia
+/// vive separada de los archivos corruptos porque sigue siendo válida para la
+/// versión de la aplicación que la creó.
+Future<DataMigrationBackup> backupBeforeMigration(
+  File source, {
+  required int fromVersion,
+  required int toVersion,
+  String? dataRoot,
+}) async {
+  final backupDir = Directory(
+    p.join(fichasDir('recovery', dataRoot), 'migrations'),
+  );
+  await backupDir.create(recursive: true);
+  final stamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+  final backup = File(
+    p.join(
+      backupDir.path,
+      '${p.basenameWithoutExtension(source.path)}-v$fromVersion-a-v$toVersion-'
+      '$stamp${p.extension(source.path)}',
+    ),
+  );
+  await source.copy(backup.path);
+  return DataMigrationBackup(
+    originalPath: source.path,
+    backupPath: backup.path,
+    fromVersion: fromVersion,
+    toVersion: toVersion,
+  );
 }
 
 /// Aparta un archivo ilegible sin borrarlo para que la aplicación pueda

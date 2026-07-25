@@ -2,6 +2,58 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../domain/content.dart';
+import '../domain/data_version.dart';
+
+class ContentPackManifest {
+  static const int currentFormatVersion = 1;
+  static const String type = 'dnd-content-pack';
+
+  final String id;
+  final String ruleset;
+  final int formatVersion;
+
+  const ContentPackManifest({
+    required this.id,
+    required this.ruleset,
+    required this.formatVersion,
+  });
+
+  factory ContentPackManifest.fromJson(Map<String, dynamic> json) {
+    if (json['type'] != type) {
+      throw const FormatException(
+        'El manifiesto no corresponde a un paquete de contenido D&D.',
+      );
+    }
+    final version = json['formatVersion'];
+    if (version is! int || version < 1) {
+      throw const FormatException(
+        'La versión del paquete debe ser un entero positivo.',
+      );
+    }
+    if (version > currentFormatVersion) {
+      throw UnsupportedDataVersionException(
+        dataType: 'paquete de contenido',
+        found: version,
+        supported: currentFormatVersion,
+      );
+    }
+    final id = json['id'];
+    final ruleset = json['ruleset'];
+    if (id is! String || id.trim().isEmpty) {
+      throw const FormatException('El paquete de contenido no tiene id.');
+    }
+    if (ruleset is! String || ruleset.trim().isEmpty) {
+      throw const FormatException(
+        'El paquete de contenido no declara su reglamento.',
+      );
+    }
+    return ContentPackManifest(
+      id: id,
+      ruleset: ruleset,
+      formatVersion: version,
+    );
+  }
+}
 
 /// Repositorio en memoria de todo el contenido disponible (oficial + homebrew),
 /// indexado por id. El compilador resuelve referencias contra esto.
@@ -59,7 +111,9 @@ class ContentRepository {
 
   /// Conjuros de la lista de una clase (id de clase), ordenados por nivel y nombre.
   List<Spell> spellsForList(String classId) {
-    final list = spells.values.where((s) => s.classes.contains(classId)).toList()
+    final list = spells.values
+        .where((s) => s.classes.contains(classId))
+        .toList()
       ..sort((a, b) => a.level != b.level
           ? a.level.compareTo(b.level)
           : a.name.compareTo(b.name));
@@ -126,6 +180,17 @@ class ContentRepository {
       if (!await f.exists()) return const [];
       return _list(jsonDecode(await f.readAsString()));
     }
+
+    final manifestFile = File('$dirPath/manifest.json');
+    if (!await manifestFile.exists()) {
+      throw const FormatException(
+        'El paquete de contenido no contiene manifest.json.',
+      );
+    }
+    ContentPackManifest.fromJson(
+      (jsonDecode(await manifestFile.readAsString()) as Map)
+          .cast<String, dynamic>(),
+    );
 
     return ContentRepository.fromJsonPacks(
       races: await read('races.json'),

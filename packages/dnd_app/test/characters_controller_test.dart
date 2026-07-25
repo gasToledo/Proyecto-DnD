@@ -15,6 +15,8 @@ class _FakeStore implements CharacterStore {
 
   @override
   final List<DataRecoveryIssue> recoveryIssues = [];
+  @override
+  final List<DataMigrationBackup> migrationBackups = [];
 
   @override
   Future<List<Character>> loadAll() async => saved.values.toList();

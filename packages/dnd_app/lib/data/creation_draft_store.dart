@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dnd_engine/dnd_engine.dart';
 import 'package:path/path.dart' as p;
 
 import '../creation/creation_draft.dart';
@@ -35,10 +36,23 @@ class CreationDraftStore {
     recoveryIssues.clear();
     if (!await _file.exists()) return null;
     try {
-      final decoded =
-          jsonDecode(await _file.readAsString()) as Map<String, dynamic>;
-      if (decoded['type'] != 'dnd_creation_draft' ||
-          decoded['formatVersion'] != formatVersion) {
+      final decoded = (jsonDecode(await _file.readAsString()) as Map)
+          .cast<String, dynamic>();
+      if (decoded['type'] != 'dnd_creation_draft') {
+        throw const FormatException('Formato de borrador no compatible.');
+      }
+      final version = decoded['formatVersion'];
+      if (version is! int || version < 1) {
+        throw const FormatException('Versión de borrador inválida.');
+      }
+      if (version > formatVersion) {
+        throw UnsupportedDataVersionException(
+          dataType: 'borrador',
+          found: version,
+          supported: formatVersion,
+        );
+      }
+      if (version != formatVersion) {
         throw const FormatException('Formato de borrador no compatible.');
       }
       final rawData = decoded['draft'];
@@ -58,6 +72,15 @@ class CreationDraftStore {
         savedAt: savedAt,
         data: rawData.cast<String, dynamic>(),
       );
+    } on UnsupportedDataVersionException catch (error) {
+      recoveryIssues.add(
+        DataRecoveryIssue(
+          originalPath: _file.path,
+          recoveryPath: _file.path,
+          error: error.toString(),
+        ),
+      );
+      return null;
     } catch (error) {
       if (await _file.exists()) {
         recoveryIssues.add(

@@ -77,6 +77,96 @@ void main() {
     expect(restored.huggingFaceToken, 'token-local');
   });
 
+  test('migra ajustes v1 al documento v2 y conserva una copia', () async {
+    final root = Directory(fichasDir(null, sandbox.path));
+    await root.create(recursive: true);
+    final file = File(p.join(root.path, 'settings.json'));
+    await file.writeAsString(
+      await File('test/fixtures/settings_v1.json').readAsString(),
+    );
+
+    final service = SettingsService(dataRoot: sandbox.path);
+    final settings = await service.load();
+
+    expect(settings.imageProvider, 'gemini');
+    expect(settings.geminiApiKey, 'clave-historica');
+    expect(service.migrationBackups, hasLength(1));
+    expect(
+      jsonDecode(await file.readAsString())['schemaVersion'],
+      AppSettings.currentSchemaVersion,
+    );
+    expect(
+      jsonDecode(
+        await File(service.migrationBackups.single.backupPath).readAsString(),
+      ),
+      isNot(contains('schemaVersion')),
+    );
+  });
+
+  test('migra Homebrew v1 al documento v2 y conserva una copia', () async {
+    final homebrewDir = Directory(
+      p.join(fichasDir(null, sandbox.path), 'homebrew'),
+    );
+    await homebrewDir.create(recursive: true);
+    final file = File(p.join(homebrewDir.path, 'weapons.json'));
+    await file.writeAsString(
+      await File('test/fixtures/homebrew_weapons_v1.json').readAsString(),
+    );
+
+    final store = HomebrewStore(dataRoot: sandbox.path);
+    await store.load();
+
+    expect(store.weapons, contains('espada-fixture'));
+    expect(store.migrationBackups, hasLength(1));
+    final migrated = jsonDecode(await file.readAsString());
+    expect(migrated['schemaVersion'], HomebrewStore.currentSchemaVersion);
+    expect(migrated['items'], hasLength(1));
+    expect(
+      jsonDecode(
+        await File(store.migrationBackups.single.backupPath).readAsString(),
+      ),
+      isA<List>(),
+    );
+  });
+
+  test('versiones futuras de ajustes y Homebrew quedan intactas', () async {
+    final root = Directory(fichasDir(null, sandbox.path));
+    final homebrewDir = Directory(p.join(root.path, 'homebrew'));
+    await homebrewDir.create(recursive: true);
+    final settingsFile = File(p.join(root.path, 'settings.json'));
+    final homebrewFile = File(p.join(homebrewDir.path, 'weapons.json'));
+    final futureSettings = jsonEncode({
+      'schemaVersion': AppSettings.currentSchemaVersion + 1,
+      'preferences': const {},
+      'credentials': const {},
+    });
+    final futureHomebrew = jsonEncode({
+      'schemaVersion': HomebrewStore.currentSchemaVersion + 1,
+      'items': const [],
+    });
+    await settingsFile.writeAsString(futureSettings);
+    await homebrewFile.writeAsString(futureHomebrew);
+
+    final settings = SettingsService(dataRoot: sandbox.path);
+    expect((await settings.load()).imageProvider, 'pollinations');
+    expect(settings.recoveryIssues, hasLength(1));
+    await expectLater(settings.save(AppSettings()), throwsA(isA<StateError>()));
+    expect(await settingsFile.readAsString(), futureSettings);
+
+    final homebrew = HomebrewStore(dataRoot: sandbox.path);
+    await homebrew.load();
+    expect(homebrew.weapons, isEmpty);
+    expect(homebrew.recoveryIssues, hasLength(1));
+    final repo = await ContentRepository.loadFromDirectory(
+      '../dnd_engine/lib/assets/srd_2024',
+    );
+    await expectLater(
+      homebrew.saveWeapon(repo.weapons.values.first),
+      throwsA(isA<StateError>()),
+    );
+    expect(await homebrewFile.readAsString(), futureHomebrew);
+  });
+
   test('la escritura atómica reemplaza JSON y no deja temporales', () async {
     final file = File(p.join(sandbox.path, 'value.json'));
     await writeJsonAtomic(file, {'value': 1});
@@ -127,6 +217,65 @@ void main() {
   });
 
   test(
+    'migra una ficha v1, conserva copia y persiste el esquema actual',
+    () async {
+      final characterDir = Directory(
+        p.join(fichasDir(null, sandbox.path), 'characters'),
+      );
+      await characterDir.create(recursive: true);
+      final legacy = demoSagan().toJson()..['schemaVersion'] = 1;
+      legacy.remove('status');
+      legacy.remove('tableConfig');
+      final file = File(p.join(characterDir.path, 'sagan.json'));
+      await file.writeAsString(jsonEncode(legacy));
+
+      final store = CharacterStore(dataRoot: sandbox.path);
+      final loaded = await store.loadAll();
+
+      expect(loaded.single.id, 'sagan');
+      expect(store.migrationBackups, hasLength(1));
+      final backup = store.migrationBackups.single;
+      expect(await File(backup.backupPath).exists(), isTrue);
+      expect(
+        jsonDecode(
+          await File(backup.backupPath).readAsString(),
+        )['schemaVersion'],
+        1,
+      );
+      expect(
+        jsonDecode(await file.readAsString())['schemaVersion'],
+        Character.currentSchemaVersion,
+      );
+    },
+  );
+
+  test(
+    'una ficha de versión futura se informa sin mover ni reescribir',
+    () async {
+      final characterDir = Directory(
+        p.join(fichasDir(null, sandbox.path), 'characters'),
+      );
+      await characterDir.create(recursive: true);
+      final future = demoSagan().toJson()
+        ..['schemaVersion'] = Character.currentSchemaVersion + 1;
+      final file = File(p.join(characterDir.path, 'sagan.json'));
+      final original = jsonEncode(future);
+      await file.writeAsString(original);
+
+      final store = CharacterStore(dataRoot: sandbox.path);
+
+      expect(await store.loadAll(), isEmpty);
+      expect(store.recoveryIssues, hasLength(1));
+      expect(store.recoveryIssues.single.recoveryPath, file.path);
+      expect(await file.exists(), isTrue);
+      expect(await file.readAsString(), original);
+      expect(store.migrationBackups, isEmpty);
+      await expectLater(store.save(demoSagan()), throwsA(isA<StateError>()));
+      expect(await file.readAsString(), original);
+    },
+  );
+
+  test(
     'ajustes y homebrew corruptos también se conservan para recuperación',
     () async {
       final root = Directory(fichasDir(null, sandbox.path));
@@ -150,6 +299,27 @@ void main() {
         await File(homebrew.recoveryIssues.single.recoveryPath).exists(),
         isTrue,
       );
+    },
+  );
+
+  test(
+    'Homebrew v1 inválido se aparta antes de persistir la migración',
+    () async {
+      final homebrewDir = Directory(
+        p.join(fichasDir(null, sandbox.path), 'homebrew'),
+      );
+      await homebrewDir.create(recursive: true);
+      final file = File(p.join(homebrewDir.path, 'weapons.json'));
+      await file.writeAsString('[{"id":"incompleta"}]');
+
+      final store = HomebrewStore(dataRoot: sandbox.path);
+      await store.load();
+
+      expect(store.weapons, isEmpty);
+      expect(store.migrationBackups, isEmpty);
+      expect(store.recoveryIssues, hasLength(1));
+      expect(store.recoveryIssues.single.wasMoved, isTrue);
+      expect(await file.exists(), isFalse);
     },
   );
 

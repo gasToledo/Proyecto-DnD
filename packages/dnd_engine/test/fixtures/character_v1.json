@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "fixture-v1",
+  "name": "Ficha histórica",
+  "raceId": "human",
+  "classId": "fighter",
+  "backgroundId": "soldier",
+  "level": 1,
+  "assignedScores": {
+    "strength": 15,
+    "dexterity": 14,
+    "constitution": 13,
+    "intelligence": 12,
+    "wisdom": 10,
+    "charisma": 8
+  },
+  "chosenSkills": ["athletics"],
+  "hpPerLevel": [10]
+}

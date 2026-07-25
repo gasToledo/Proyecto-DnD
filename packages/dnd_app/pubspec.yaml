@@ -24,6 +24,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - packages/dnd_engine/assets/srd_2024/manifest.json
     - packages/dnd_engine/assets/srd_2024/races.json
     - packages/dnd_engine/assets/srd_2024/classes.json
     - packages/dnd_engine/assets/srd_2024/subclasses.json

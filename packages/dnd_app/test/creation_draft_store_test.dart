@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dnd_app/creation/creation_draft.dart';
@@ -65,5 +66,26 @@ void main() {
       await File(store.recoveryIssues.single.recoveryPath).exists(),
       isTrue,
     );
+  });
+
+  test('conserva intacto un borrador de versión futura', () async {
+    final file = File(
+      p.join(fichasDir('drafts', sandbox.path), 'character-creation.json'),
+    );
+    await file.parent.create(recursive: true);
+    final original = jsonEncode({
+      'type': 'dnd_creation_draft',
+      'formatVersion': CreationDraftStore.formatVersion + 1,
+      'savedAt': DateTime(2026, 7, 24).toIso8601String(),
+      'step': CreationStep.raza.name,
+      'draft': const <String, dynamic>{},
+    });
+    await file.writeAsString(original);
+    final store = CreationDraftStore(dataRoot: sandbox.path);
+
+    expect(await store.load(), isNull);
+    expect(store.recoveryIssues, hasLength(1));
+    expect(store.recoveryIssues.single.wasMoved, isFalse);
+    expect(await file.readAsString(), original);
   });
 }

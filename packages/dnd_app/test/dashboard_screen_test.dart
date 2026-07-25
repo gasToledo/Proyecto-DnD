@@ -16,6 +16,8 @@ class _FakeStore implements CharacterStore {
   @override
   final List<DataRecoveryIssue> recoveryIssues = [];
   @override
+  final List<DataMigrationBackup> migrationBackups = [];
+  @override
   Future<List<Character>> loadAll() async => saved.values.toList();
   @override
   Future<void> save(Character c) async => saved[c.id] = c;
@@ -188,5 +190,45 @@ void main() {
 
     expect(find.text('Archivos apartados para recuperación'), findsOneWidget);
     expect(find.textContaining(r'C:\datos\recovery\roto.json'), findsOneWidget);
+  });
+
+  testWidgets('una versión futura se informa sin afirmar que fue movida', (
+    tester,
+  ) async {
+    final store = _FakeStore()
+      ..recoveryIssues.add(
+        const DataRecoveryIssue(
+          originalPath: r'C:\datos\futuro.json',
+          recoveryPath: r'C:\datos\futuro.json',
+          error: 'La versión 3 es más nueva.',
+        ),
+      );
+
+    await tester.pumpWidget(harness(CharactersController(store)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Datos que requieren atención'), findsOneWidget);
+    expect(find.textContaining('No se modificaron'), findsOneWidget);
+    expect(find.textContaining(r'C:\datos\futuro.json'), findsOneWidget);
+  });
+
+  testWidgets('confirma las migraciones automáticas y sus copias', (
+    tester,
+  ) async {
+    final store = _FakeStore()
+      ..migrationBackups.add(
+        const DataMigrationBackup(
+          originalPath: r'C:\datos\sagan.json',
+          backupPath: r'C:\datos\recovery\migrations\sagan-v1.json',
+          fromVersion: 1,
+          toVersion: 2,
+        ),
+      );
+
+    await tester.pumpWidget(harness(CharactersController(store)));
+    await tester.pump();
+
+    expect(find.textContaining('Se actualizaron 1 archivo'), findsOneWidget);
+    expect(find.textContaining('recovery/migrations'), findsOneWidget);
   });
 }

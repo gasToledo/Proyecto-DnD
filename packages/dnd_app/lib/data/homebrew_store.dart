@@ -12,6 +12,8 @@ import 'data_recovery.dart';
 /// trasfondos). Mismo esquema que el pack oficial: se guarda un archivo JSON
 /// por tipo en `~/FichasDnD/homebrew/` y se fusiona al [ContentRepository].
 class HomebrewStore {
+  static const int currentSchemaVersion = 2;
+
   final String? dataRoot;
   final Map<String, Weapon> weapons = {};
   final Map<String, Armor> armor = {};
@@ -20,53 +22,140 @@ class HomebrewStore {
   final Map<String, Background> backgrounds = {};
   final Map<String, Spell> spells = {};
   final List<DataRecoveryIssue> recoveryIssues = [];
+  final List<DataMigrationBackup> migrationBackups = [];
+  final Set<String> _protectedFutureFiles = {};
 
   HomebrewStore({this.dataRoot});
 
   String _path(String file) => p.join(fichasDir('homebrew', dataRoot), file);
 
-  Future<List<Map<String, dynamic>>> _readList(String file) async {
+  Future<List<Map<String, dynamic>>> _readList(
+    String file,
+    void Function(Map<String, dynamic>) validate,
+  ) async {
     final f = File(_path(file));
     if (!await f.exists()) return const [];
+    late int originalVersion;
+    late List<Map<String, dynamic>> items;
     try {
-      return (jsonDecode(await f.readAsString()) as List)
-          .map((e) => (e as Map).cast<String, dynamic>())
-          .toList();
+      final decoded = jsonDecode(await f.readAsString());
+      final List<dynamic> rawItems;
+      if (decoded is List) {
+        originalVersion = 1;
+        rawItems = decoded;
+      } else if (decoded is Map) {
+        final document = decoded.cast<String, dynamic>();
+        final version = document['schemaVersion'];
+        if (version is! int || version < 1) {
+          throw const FormatException(
+            'La versión de Homebrew debe ser un entero positivo.',
+          );
+        }
+        if (version > currentSchemaVersion) {
+          throw UnsupportedDataVersionException(
+            dataType: 'Homebrew',
+            found: version,
+            supported: currentSchemaVersion,
+          );
+        }
+        originalVersion = version;
+        final items = document['items'];
+        if (items is! List) {
+          throw const FormatException(
+            'El documento Homebrew no contiene una lista de elementos.',
+          );
+        }
+        rawItems = items;
+      } else {
+        throw const FormatException(
+          'El archivo Homebrew no contiene un documento válido.',
+        );
+      }
+
+      items = rawItems.map((e) => (e as Map).cast<String, dynamic>()).toList();
+      for (final item in items) {
+        validate(item);
+      }
+    } on UnsupportedDataVersionException catch (error) {
+      _protectedFutureFiles.add(file);
+      recoveryIssues.add(
+        DataRecoveryIssue(
+          originalPath: f.path,
+          recoveryPath: f.path,
+          error: error.toString(),
+        ),
+      );
+      return const [];
     } catch (error) {
       recoveryIssues.add(
         await recoverCorruptFile(f, error, dataRoot: dataRoot),
       );
       return const [];
     }
+
+    if (originalVersion < currentSchemaVersion) {
+      try {
+        final backup = await backupBeforeMigration(
+          f,
+          fromVersion: originalVersion,
+          toVersion: currentSchemaVersion,
+          dataRoot: dataRoot,
+        );
+        await writeJsonAtomic(f, _document(items));
+        migrationBackups.add(backup);
+      } catch (error) {
+        recoveryIssues.add(
+          DataRecoveryIssue(
+            originalPath: f.path,
+            recoveryPath: f.path,
+            error: 'No se pudo guardar la migración: $error',
+          ),
+        );
+      }
+    }
+    return items;
   }
 
   Future<void> _writeList(
     String file,
     Iterable<Map<String, dynamic>> items,
   ) async {
+    if (_protectedFutureFiles.contains(file) &&
+        await File(_path(file)).exists()) {
+      throw StateError(
+        'No se sobrescribió $file porque usa una versión futura.',
+      );
+    }
     final dir = Directory(fichasDir('homebrew', dataRoot));
     if (!await dir.exists()) await dir.create(recursive: true);
-    await writeJsonAtomic(File(_path(file)), items.toList());
+    await writeJsonAtomic(File(_path(file)), _document(items));
   }
+
+  Map<String, dynamic> _document(Iterable<Map<String, dynamic>> items) => {
+    'schemaVersion': currentSchemaVersion,
+    'items': items.toList(),
+  };
 
   Future<void> load() async {
     recoveryIssues.clear();
-    for (final j in await _readList('weapons.json')) {
+    migrationBackups.clear();
+    _protectedFutureFiles.clear();
+    for (final j in await _readList('weapons.json', Weapon.fromJson)) {
       weapons[j['id'] as String] = Weapon.fromJson(j);
     }
-    for (final j in await _readList('armor.json')) {
+    for (final j in await _readList('armor.json', Armor.fromJson)) {
       armor[j['id'] as String] = Armor.fromJson(j);
     }
-    for (final j in await _readList('feats.json')) {
+    for (final j in await _readList('feats.json', Feat.fromJson)) {
       feats[j['id'] as String] = Feat.fromJson(j);
     }
-    for (final j in await _readList('races.json')) {
+    for (final j in await _readList('races.json', Race.fromJson)) {
       races[j['id'] as String] = Race.fromJson(j);
     }
-    for (final j in await _readList('backgrounds.json')) {
+    for (final j in await _readList('backgrounds.json', Background.fromJson)) {
       backgrounds[j['id'] as String] = Background.fromJson(j);
     }
-    for (final j in await _readList('spells.json')) {
+    for (final j in await _readList('spells.json', Spell.fromJson)) {
       spells[j['id'] as String] = Spell.fromJson(j);
     }
   }
@@ -111,6 +200,11 @@ class HomebrewStore {
   Future<int> importContent(
     Map<String, List<Map<String, dynamic>>> content,
   ) async {
+    if (_protectedFutureFiles.isNotEmpty) {
+      throw StateError(
+        'No se importó Homebrew porque hay archivos de una versión futura.',
+      );
+    }
     var count = 0;
     List<Map<String, dynamic>> list(String k) => content[k] ?? const [];
 
@@ -147,24 +241,24 @@ class HomebrewStore {
     }
 
     await writeJsonBatchAtomic({
-      File(_path('weapons.json')): nextWeapons.values
-          .map((e) => e.toJson())
-          .toList(),
-      File(_path('armor.json')): nextArmor.values
-          .map((e) => e.toJson())
-          .toList(),
-      File(_path('feats.json')): nextFeats.values
-          .map((e) => e.toJson())
-          .toList(),
-      File(_path('races.json')): nextRaces.values
-          .map((e) => e.toJson())
-          .toList(),
-      File(_path('backgrounds.json')): nextBackgrounds.values
-          .map((e) => e.toJson())
-          .toList(),
-      File(_path('spells.json')): nextSpells.values
-          .map((e) => e.toJson())
-          .toList(),
+      File(_path('weapons.json')): _document(
+        nextWeapons.values.map((e) => e.toJson()),
+      ),
+      File(_path('armor.json')): _document(
+        nextArmor.values.map((e) => e.toJson()),
+      ),
+      File(_path('feats.json')): _document(
+        nextFeats.values.map((e) => e.toJson()),
+      ),
+      File(_path('races.json')): _document(
+        nextRaces.values.map((e) => e.toJson()),
+      ),
+      File(_path('backgrounds.json')): _document(
+        nextBackgrounds.values.map((e) => e.toJson()),
+      ),
+      File(_path('spells.json')): _document(
+        nextSpells.values.map((e) => e.toJson()),
+      ),
     });
 
     weapons

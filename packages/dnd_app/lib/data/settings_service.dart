@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dnd_engine/dnd_engine.dart';
 import 'package:path/path.dart' as p;
 
 import 'app_paths.dart';
@@ -16,6 +17,8 @@ const defaultHuggingFaceModel =
     'stabilityai/stable-diffusion-3-medium-diffusers';
 
 class AppSettings {
+  static const int currentSchemaVersion = 2;
+
   /// Proveedor de imágenes elegido: 'pollinations' | 'huggingface' | 'gemini'.
   String imageProvider;
   String geminiApiKey;
@@ -37,10 +40,15 @@ class AppSettings {
   };
 
   Map<String, dynamic> toJson() => {
-    'imageProvider': imageProvider,
-    'geminiApiKey': geminiApiKey,
-    'huggingFaceToken': huggingFaceToken,
-    'huggingFaceModel': huggingFaceModel,
+    'schemaVersion': currentSchemaVersion,
+    'preferences': {
+      'imageProvider': imageProvider,
+      'huggingFaceModel': huggingFaceModel,
+    },
+    'credentials': {
+      'geminiApiKey': geminiApiKey,
+      'huggingFaceToken': huggingFaceToken,
+    },
   };
 
   /// Preferencias aptas para un respaldo compartible. Las credenciales quedan
@@ -50,20 +58,74 @@ class AppSettings {
     'huggingFaceModel': huggingFaceModel,
   };
 
-  factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
-    imageProvider: j['imageProvider'] as String? ?? 'pollinations',
-    geminiApiKey: j['geminiApiKey'] as String? ?? '',
-    huggingFaceToken: j['huggingFaceToken'] as String? ?? '',
-    huggingFaceModel:
-        (j['huggingFaceModel'] as String?)?.trim().isNotEmpty == true
-        ? j['huggingFaceModel'] as String
-        : defaultHuggingFaceModel,
-  );
+  static int schemaVersionOf(Map<String, dynamic> json) {
+    final value = json['schemaVersion'] ?? 1;
+    if (value is! int || value < 1) {
+      throw const FormatException(
+        'La versión de los ajustes debe ser un entero positivo.',
+      );
+    }
+    return value;
+  }
+
+  static Map<String, dynamic> migrateJson(Map<String, dynamic> source) {
+    var migrated = Map<String, dynamic>.from(source);
+    var version = schemaVersionOf(migrated);
+    if (version > currentSchemaVersion) {
+      throw UnsupportedDataVersionException(
+        dataType: 'ajustes',
+        found: version,
+        supported: currentSchemaVersion,
+      );
+    }
+
+    while (version < currentSchemaVersion) {
+      switch (version) {
+        case 1:
+          migrated = {
+            'schemaVersion': 2,
+            'preferences': {
+              'imageProvider':
+                  migrated['imageProvider'] as String? ?? 'pollinations',
+              'huggingFaceModel':
+                  migrated['huggingFaceModel'] as String? ??
+                  defaultHuggingFaceModel,
+            },
+            'credentials': {
+              'geminiApiKey': migrated['geminiApiKey'] as String? ?? '',
+              'huggingFaceToken': migrated['huggingFaceToken'] as String? ?? '',
+            },
+          };
+          version = 2;
+      }
+    }
+    return migrated;
+  }
+
+  factory AppSettings.fromJson(Map<String, dynamic> source) {
+    final j = migrateJson(source);
+    final preferences =
+        (j['preferences'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final credentials =
+        (j['credentials'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return AppSettings(
+      imageProvider: preferences['imageProvider'] as String? ?? 'pollinations',
+      geminiApiKey: credentials['geminiApiKey'] as String? ?? '',
+      huggingFaceToken: credentials['huggingFaceToken'] as String? ?? '',
+      huggingFaceModel:
+          (preferences['huggingFaceModel'] as String?)?.trim().isNotEmpty ==
+              true
+          ? preferences['huggingFaceModel'] as String
+          : defaultHuggingFaceModel,
+    );
+  }
 }
 
 class SettingsService {
   final String? dataRoot;
   final List<DataRecoveryIssue> recoveryIssues = [];
+  final List<DataMigrationBackup> migrationBackups = [];
+  bool _protectFutureVersion = false;
 
   SettingsService({this.dataRoot});
 
@@ -71,12 +133,29 @@ class SettingsService {
 
   Future<AppSettings> load() async {
     recoveryIssues.clear();
+    migrationBackups.clear();
+    _protectFutureVersion = false;
     final f = _file;
+    if (!await f.exists()) return AppSettings();
+    Map<String, dynamic> migrated;
+    AppSettings settings;
+    int originalVersion;
     try {
-      if (!await f.exists()) return AppSettings();
-      return AppSettings.fromJson(
-        jsonDecode(await f.readAsString()) as Map<String, dynamic>,
+      final decoded = jsonDecode(await f.readAsString());
+      final json = (decoded as Map).cast<String, dynamic>();
+      originalVersion = AppSettings.schemaVersionOf(json);
+      migrated = AppSettings.migrateJson(json);
+      settings = AppSettings.fromJson(migrated);
+    } on UnsupportedDataVersionException catch (error) {
+      _protectFutureVersion = true;
+      recoveryIssues.add(
+        DataRecoveryIssue(
+          originalPath: f.path,
+          recoveryPath: f.path,
+          error: error.toString(),
+        ),
       );
+      return AppSettings();
     } catch (error) {
       if (await f.exists()) {
         recoveryIssues.add(
@@ -85,9 +164,36 @@ class SettingsService {
       }
       return AppSettings();
     }
+
+    if (originalVersion < AppSettings.currentSchemaVersion) {
+      try {
+        final backup = await backupBeforeMigration(
+          f,
+          fromVersion: originalVersion,
+          toVersion: AppSettings.currentSchemaVersion,
+          dataRoot: dataRoot,
+        );
+        await writeJsonAtomic(f, migrated, pretty: false);
+        migrationBackups.add(backup);
+      } catch (error) {
+        recoveryIssues.add(
+          DataRecoveryIssue(
+            originalPath: f.path,
+            recoveryPath: f.path,
+            error: 'No se pudo guardar la migración: $error',
+          ),
+        );
+      }
+    }
+    return settings;
   }
 
   Future<void> save(AppSettings settings) async {
+    if (_protectFutureVersion && await _file.exists()) {
+      throw StateError(
+        'No se sobrescribieron los ajustes porque usan una versión futura.',
+      );
+    }
     await writeJsonAtomic(_file, settings.toJson(), pretty: false);
   }
 

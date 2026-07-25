@@ -1,5 +1,6 @@
 import 'ability.dart';
 import 'alignment.dart';
+import 'data_version.dart';
 
 Map<String, int> _abilityMapToJson(Map<Ability, int> m) =>
     {for (final e in m.entries) e.key.name: e.value};
@@ -133,8 +134,9 @@ class CombatState {
         deathFailures: j['deathFailures'] as int? ?? 0,
         hitDiceUsed: j['hitDiceUsed'] as int? ?? 0,
         exhaustion: j['exhaustion'] as int? ?? 0,
-        conditions:
-            (j['conditions'] as List? ?? const []).map((e) => e as String).toSet(),
+        conditions: (j['conditions'] as List? ?? const [])
+            .map((e) => e as String)
+            .toSet(),
         resourceUsage: {
           for (final e in (j['resourceUsage'] as Map? ?? const {}).entries)
             e.key as String: e.value as int,
@@ -156,6 +158,8 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
+  static const int currentSchemaVersion = 2;
+
   final String id;
   String name;
   CharacterStatus status;
@@ -260,7 +264,7 @@ class Character {
   }) : combat = combat ?? CombatState();
 
   Map<String, dynamic> toJson() => {
-        'schemaVersion': 1,
+        'schemaVersion': currentSchemaVersion,
         'id': id,
         'name': name,
         'status': status.name,
@@ -271,8 +275,7 @@ class Character {
         'lineageId': lineageId,
         'level': level,
         'assignedScores': _abilityMapToJson(assignedScores),
-        'backgroundAbilityBonuses':
-            _abilityMapToJson(backgroundAbilityBonuses),
+        'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
         'chosenSkills': chosenSkills,
         'fightingStyleId': fightingStyleId,
         'weaponMasteryChoices': weaponMasteryChoices,
@@ -293,63 +296,106 @@ class Character {
         'combat': combat.toJson(),
       };
 
-  factory Character.fromJson(Map<String, dynamic> j) => Character(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        status: CharacterStatus.values.firstWhere(
-          (s) => s.name == (j['status'] as String?),
-          orElse: () => CharacterStatus.active,
-        ),
-        raceId: j['raceId'] as String,
-        classId: j['classId'] as String,
-        backgroundId: j['backgroundId'] as String,
-        subclassId: j['subclassId'] as String?,
-        lineageId: j['lineageId'] as String?,
-        level: j['level'] as int? ?? 1,
-        assignedScores: _abilityMapFromJson(j['assignedScores']),
-        backgroundAbilityBonuses:
-            _abilityMapFromJson(j['backgroundAbilityBonuses']),
-        chosenSkills: (j['chosenSkills'] as List? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        fightingStyleId: j['fightingStyleId'] as String?,
-        weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        cantripIds: (j['cantripIds'] as List? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        spellIds: (j['spellIds'] as List? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        featIds: (j['featIds'] as List? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        asiChoices: (j['asiChoices'] as List? ?? const [])
-            .map((e) => AsiChoice.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        hpPerLevel:
-            (j['hpPerLevel'] as List? ?? const []).map((e) => e as int).toList(),
-        equippedArmorId: j['equippedArmorId'] as String?,
-        shieldEquipped: j['shieldEquipped'] as bool? ?? false,
-        equippedWeaponIds: (j['equippedWeaponIds'] as List? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        weaponTwoHanded: {
-          for (final e in (j['weaponTwoHanded'] as Map? ?? const {}).entries)
-            e.key as String: e.value as bool,
-        },
-        portraitPaths: (j['portraitPaths'] as List? ?? const [])
-            .map((e) => e as String)
-            .toList(),
-        notes: j['notes'] as String? ?? '',
-        alignment: CharacterAlignment.fromJson(j['alignment'] as String?),
-        personalityTrait: j['personalityTrait'] as String? ?? '',
-        tableConfig: TableConfig.fromJson(
-            (j['tableConfig'] as Map?)?.cast<String, dynamic>() ?? const {}),
-        combat: CombatState.fromJson(
-            (j['combat'] as Map?)?.cast<String, dynamic>() ?? const {}),
+  static int schemaVersionOf(Map<String, dynamic> json) {
+    final value = json['schemaVersion'] ?? 1;
+    if (value is! int || value < 1) {
+      throw const FormatException(
+        'La versión de la ficha debe ser un entero positivo.',
       );
+    }
+    return value;
+  }
+
+  /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
+  /// entrada. Cada paso se conserva explícito para que las próximas versiones
+  /// puedan encadenarse sin saltos.
+  static Map<String, dynamic> migrateJson(Map<String, dynamic> source) {
+    final migrated = Map<String, dynamic>.from(source);
+    var version = schemaVersionOf(migrated);
+    if (version > currentSchemaVersion) {
+      throw UnsupportedDataVersionException(
+        dataType: 'ficha',
+        found: version,
+        supported: currentSchemaVersion,
+      );
+    }
+
+    while (version < currentSchemaVersion) {
+      switch (version) {
+        case 1:
+          migrated.putIfAbsent('status', () => CharacterStatus.active.name);
+          migrated.putIfAbsent('lineageId', () => null);
+          migrated.putIfAbsent('backgroundAbilityBonuses', () => {});
+          migrated.putIfAbsent('asiChoices', () => []);
+          migrated.putIfAbsent('alignment', () => null);
+          migrated.putIfAbsent('personalityTrait', () => '');
+          migrated.putIfAbsent('tableConfig', () => {});
+          migrated.putIfAbsent('combat', () => {});
+          version = 2;
+          migrated['schemaVersion'] = version;
+      }
+    }
+    return migrated;
+  }
+
+  factory Character.fromJson(Map<String, dynamic> source) {
+    final j = migrateJson(source);
+    return Character(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      status: CharacterStatus.values.firstWhere(
+        (s) => s.name == (j['status'] as String?),
+        orElse: () => CharacterStatus.active,
+      ),
+      raceId: j['raceId'] as String,
+      classId: j['classId'] as String,
+      backgroundId: j['backgroundId'] as String,
+      subclassId: j['subclassId'] as String?,
+      lineageId: j['lineageId'] as String?,
+      level: j['level'] as int? ?? 1,
+      assignedScores: _abilityMapFromJson(j['assignedScores']),
+      backgroundAbilityBonuses:
+          _abilityMapFromJson(j['backgroundAbilityBonuses']),
+      chosenSkills: (j['chosenSkills'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
+      fightingStyleId: j['fightingStyleId'] as String?,
+      weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
+      cantripIds: (j['cantripIds'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
+      spellIds:
+          (j['spellIds'] as List? ?? const []).map((e) => e as String).toList(),
+      featIds:
+          (j['featIds'] as List? ?? const []).map((e) => e as String).toList(),
+      asiChoices: (j['asiChoices'] as List? ?? const [])
+          .map((e) => AsiChoice.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      hpPerLevel:
+          (j['hpPerLevel'] as List? ?? const []).map((e) => e as int).toList(),
+      equippedArmorId: j['equippedArmorId'] as String?,
+      shieldEquipped: j['shieldEquipped'] as bool? ?? false,
+      equippedWeaponIds: (j['equippedWeaponIds'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
+      weaponTwoHanded: {
+        for (final e in (j['weaponTwoHanded'] as Map? ?? const {}).entries)
+          e.key as String: e.value as bool,
+      },
+      portraitPaths: (j['portraitPaths'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
+      notes: j['notes'] as String? ?? '',
+      alignment: CharacterAlignment.fromJson(j['alignment'] as String?),
+      personalityTrait: j['personalityTrait'] as String? ?? '',
+      tableConfig: TableConfig.fromJson(
+          (j['tableConfig'] as Map?)?.cast<String, dynamic>() ?? const {}),
+      combat: CombatState.fromJson(
+          (j['combat'] as Map?)?.cast<String, dynamic>() ?? const {}),
+    );
+  }
 
   /// Copia con overrides. Preserva el [CombatState] por referencia salvo que se
   /// pase uno nuevo. Útil para editar equipo/nivel sin perder estado de partida.
@@ -384,9 +430,8 @@ class Character {
       subclassId: identical(subclassId, _unset)
           ? this.subclassId
           : subclassId as String?,
-      lineageId: identical(lineageId, _unset)
-          ? this.lineageId
-          : lineageId as String?,
+      lineageId:
+          identical(lineageId, _unset) ? this.lineageId : lineageId as String?,
       level: level ?? this.level,
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,

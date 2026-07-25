@@ -1,0 +1,6 @@
+{
+  "imageProvider": "gemini",
+  "geminiApiKey": "clave-historica",
+  "huggingFaceToken": "token-historico",
+  "huggingFaceModel": "modelo/historico"
+}

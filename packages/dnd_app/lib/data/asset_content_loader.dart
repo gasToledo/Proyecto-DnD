@@ -15,6 +15,10 @@ class AssetContentLoader {
   }
 
   static Future<ContentRepository> loadOfficial() async {
+    final manifest = jsonDecode(
+      await rootBundle.loadString('$_base/manifest.json'),
+    );
+    ContentPackManifest.fromJson((manifest as Map).cast<String, dynamic>());
     return ContentRepository.fromJsonPacks(
       races: await _load('races.json'),
       classes: await _load('classes.json'),

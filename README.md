@@ -36,6 +36,15 @@ Es un monorepo con dos paquetes.
 
 No hay backend ni base de datos. Cada personaje es un JSON en disco, con escritura atómica para no corromper nada ante un cierre inesperado. Tampoco usa plugins nativos de Flutter, a propósito, para no arrastrar el requisito de "Modo Desarrollador" de Windows. Las imágenes salen de Pollinations por defecto, gratis y sin key.
 
+### Versionado de datos
+
+Las fichas, los ajustes, Homebrew, los borradores y los paquetes de contenido
+declaran su versión. Al abrir un formato histórico compatible, la aplicación lo
+migra al esquema actual y conserva el documento anterior en
+`~/FichasDnD/recovery/migrations/`. Los formatos creados por una versión futura
+se informan al usuario, permanecen intactos y quedan protegidos contra
+sobrescrituras durante esa sesión.
+
 ## Alcance
 
 Un personaje es de una sola clase. Todavía no hay multiclase. El contenido oficial del SRD 2024 viene precargado, y el homebrew usa exactamente el mismo modelo de datos, así que lo que creás corre por la misma maquinaria que lo oficial. La validación avisa pero nunca frena una acción. Quedan afuera por ahora, sin que la arquitectura los impida: multiclase, sincronización en la nube y un Modo DM.

@@ -38,6 +38,28 @@ class TransferService {
     return character;
   }
 
+  static void _requireCompatibleLegacyVersion(
+    Map<String, dynamic> document,
+    String dataType,
+  ) {
+    final version = document['formatVersion'] ?? 1;
+    if (version is! int || version < 1) {
+      throw FormatException(
+        'La versión de $dataType debe ser un entero positivo.',
+      );
+    }
+    if (version > formatVersion) {
+      throw UnsupportedDataVersionException(
+        dataType: dataType,
+        found: version,
+        supported: formatVersion,
+      );
+    }
+    if (version != formatVersion) {
+      throw FormatException('Versión de $dataType no compatible: $version.');
+    }
+  }
+
   /// Exporta un personaje. Devuelve la ruta del archivo escrito.
   Future<String> exportCharacter(Character c) async {
     final dir = await exportsDir();
@@ -103,6 +125,7 @@ class TransferService {
   ) {
     final data = jsonDecode(jsonText);
     if (data is Map<String, dynamic> && data['type'] == 'dnd_homebrew') {
+      _requireCompatibleLegacyVersion(data, 'exportación Homebrew');
       final content = (data['content'] as Map?)?.cast<String, dynamic>() ?? {};
       return {
         for (final key in const [
@@ -141,11 +164,13 @@ class TransferService {
     if (data is Map<String, dynamic>) {
       final type = data['type'];
       if (type == 'dnd_backup') {
+        _requireCompatibleLegacyVersion(data, 'respaldo JSON');
         return (data['characters'] as List)
             .map((e) => _characterFromJson((e as Map).cast<String, dynamic>()))
             .toList();
       }
       if (type == 'dnd_character') {
+        _requireCompatibleLegacyVersion(data, 'exportación de personaje');
         return [
           _characterFromJson(
             (data['character'] as Map).cast<String, dynamic>(),

@@ -23,6 +23,7 @@ class CharactersController extends ChangeNotifier {
   CharactersController(this.store);
 
   List<DataRecoveryIssue> get recoveryIssues => store.recoveryIssues;
+  List<DataMigrationBackup> get migrationBackups => store.migrationBackups;
   Object? get lastSaveError => _lastSaveError;
   bool get isSaving => _debouncers.isNotEmpty || _saveQueues.isNotEmpty;
   CharacterSaveState get saveState => isSaving

@@ -13,6 +13,8 @@ class _FakeStore implements CharacterStore {
   @override
   final List<DataRecoveryIssue> recoveryIssues = [];
   @override
+  final List<DataMigrationBackup> migrationBackups = [];
+  @override
   Future<List<Character>> loadAll() async => saved.values.toList();
   @override
   Future<void> save(Character c) async => saved[c.id] = c;
@@ -66,6 +68,19 @@ void main() {
       );
     });
 
+    test('rechaza envoltorios JSON de una versión futura', () {
+      final future = jsonEncode({
+        'type': 'dnd_character',
+        'formatVersion': TransferService.formatVersion + 1,
+        'character': demoSagan().toJson(),
+      });
+
+      expect(
+        () => TransferService.parseImport(future),
+        throwsA(isA<UnsupportedDataVersionException>()),
+      );
+    });
+
     test('rechaza ids que podrían escapar de la carpeta de datos', () {
       final json = demoSagan().toJson()..['id'] = '../fuera';
       expect(
@@ -110,6 +125,19 @@ void main() {
       expect(
         () => TransferService.parseHomebrewImport(text),
         throwsFormatException,
+      );
+    });
+
+    test('rechaza un pack homebrew de versión futura', () {
+      final text = jsonEncode({
+        'type': 'dnd_homebrew',
+        'formatVersion': TransferService.formatVersion + 1,
+        'content': const <String, dynamic>{},
+      });
+
+      expect(
+        () => TransferService.parseHomebrewImport(text),
+        throwsA(isA<UnsupportedDataVersionException>()),
       );
     });
   });

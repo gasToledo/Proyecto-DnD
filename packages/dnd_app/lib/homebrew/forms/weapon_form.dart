@@ -1,0 +1,79 @@
+part of '../homebrew_screen.dart';
+
+class WeaponForm extends StatefulWidget {
+  final Weapon? initial;
+  const WeaponForm({super.key, this.initial});
+  @override
+  State<WeaponForm> createState() => _WeaponFormState();
+}
+
+class _WeaponFormState extends State<WeaponForm> {
+  late final _name = TextEditingController(text: widget.initial?.name ?? '');
+  late final _dice = TextEditingController(
+    text: widget.initial?.damageDice ?? '1d6',
+  );
+  late final _type = TextEditingController(
+    text: widget.initial?.damageType ?? 'slashing',
+  );
+  late final _versatile = TextEditingController(
+    text: widget.initial?.versatileDice ?? '',
+  );
+  late final _mastery = TextEditingController(
+    text: widget.initial?.mastery ?? '',
+  );
+  late String _category = widget.initial?.category ?? 'simple';
+  late final Set<String> _props = {...?widget.initial?.properties};
+
+  @override
+  Widget build(BuildContext context) {
+    return _FormScaffold(
+      title: 'Arma',
+      onSave: _name.text.trim().isEmpty ? null : _save,
+      children: [
+        _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _categoryDropdown(
+          ['simple', 'martial'],
+          _category,
+          (v) => setState(() => _category = v),
+        ),
+        _text(_dice, 'Dado de daño (p.ej. 1d8)'),
+        _text(_type, 'Tipo de daño (slashing/piercing/bludgeoning)'),
+        _text(_versatile, 'Dado versátil (opcional, p.ej. 1d10)'),
+        _text(_mastery, 'Maestría (opcional, p.ej. sap)'),
+        const SizedBox(height: 8),
+        const Eyebrow('Propiedades'),
+        Wrap(
+          spacing: 6,
+          children: _weaponProps
+              .map(
+                (p) => FilterChip(
+                  label: Text(p),
+                  selected: _props.contains(p),
+                  onSelected: (v) =>
+                      setState(() => v ? _props.add(p) : _props.remove(p)),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  void _save() {
+    Navigator.of(context).pop(
+      Weapon(
+        id: widget.initial?.id ?? homebrewId(_name.text),
+        name: _name.text.trim(),
+        source: ContentSource.homebrew,
+        category: _category,
+        damageDice: _dice.text.trim(),
+        damageType: _type.text.trim(),
+        properties: _props.toList(),
+        versatileDice: _versatile.text.trim().isEmpty
+            ? null
+            : _versatile.text.trim(),
+        mastery: _mastery.text.trim().isEmpty ? null : _mastery.text.trim(),
+      ),
+    );
+  }
+}

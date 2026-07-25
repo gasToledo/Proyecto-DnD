@@ -121,8 +121,11 @@ del formato y la edición de reglas.
 - `ui/sheet_screen.dart`: shell y estado de la ficha.
 - `ui/sheet/`: pestañas General, Combate, Conjuros, Inventario y Notas, más
   widgets compartidos.
-- `levelup/`: flujo y resumen de subida de nivel.
-- `homebrew/`: catálogo, formularios y editor de efectos.
+- `ui/dashboard_screen.dart`: shell del dashboard; navegación, contenido,
+  acciones y tarjetas viven en `ui/dashboard/`.
+- `levelup/`: shell, secciones, widgets y resumen de subida de nivel.
+- `homebrew/homebrew_screen.dart`: shell del catálogo; pestañas y acciones en
+  `homebrew_tabs.dart`, formularios en `homebrew/forms/`.
 - `theme/`: tema, paleta, visuales por clase y widgets reutilizables.
 
 Los archivos divididos con `part` forman una sola biblioteca y pueden acceder al
@@ -185,15 +188,18 @@ credenciales se envían por encabezado, nunca en la URL, se guardan en
 7. Mantener los commits acotados y actualizar este documento o el README cuando
    cambien arquitectura, alcance, comandos o formatos.
 
-## Trabajo de mantenibilidad en curso
+## Modularización completada
 
-La fase actual busca reducir pantallas monolíticas sin cambiar comportamiento:
+La fase de mantenibilidad redujo las pantallas monolíticas sin cambiar su
+comportamiento:
 
-- Completado: pasos del wizard extraídos a `creation/steps/`.
-- Completado: pestañas de la ficha extraídas a `ui/sheet/`.
-- Próximos candidatos: `levelup/`, `dashboard_screen.dart` y
-  `homebrew_screen.dart`.
+- Pasos del wizard extraídos a `creation/steps/`.
+- Pestañas de la ficha extraídas a `ui/sheet/`.
+- Secciones y widgets de subida de nivel separados dentro de `levelup/`.
+- Navegación, contenido, acciones y tarjetas del dashboard en `ui/dashboard/`.
+- Pestañas y formularios de homebrew separados dentro de `homebrew/`.
 
-Cada extracción debe conservar las pruebas existentes, sumar cobertura focalizada
-cuando falte y terminar con `flutter analyze`, `flutter test` y un build release
-de Windows.
+Las extracciones conservan las pruebas existentes y agregan cobertura focalizada
+para la ficha y la navegación de homebrew. Futuras divisiones deben seguir el
+mismo criterio: estado en el shell, presentación agrupada por responsabilidad,
+sin cálculos de reglas en la UI y con análisis, tests y build release.

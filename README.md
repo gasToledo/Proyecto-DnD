@@ -88,8 +88,9 @@ el homebrew recorren la misma maquinaria. La UI consume la ficha calculada y no
 duplica las reglas.
 
 El código actual también incorpora una fase de mantenibilidad: los ocho pasos
-del asistente viven en `creation/steps/` y las cinco pestañas de la ficha en
-`ui/sheet/`, con pruebas de regresión para preservar sus flujos.
+del asistente, las cinco pestañas de la ficha, el flujo de subida de nivel, el
+dashboard y los formularios de homebrew están separados por responsabilidad,
+con pruebas de regresión para preservar sus flujos.
 
 ## Desarrollo
 
@@ -137,7 +138,7 @@ packages/
     lib/data/             persistencia, migraciones, importación y respaldos
     lib/homebrew/         catálogo y formularios de contenido propio
     lib/levelup/          subida de nivel
-    lib/ui/               dashboard, ficha y pantallas auxiliares
+    lib/ui/               dashboard, ficha y módulos de cada pantalla
     lib/theme/            tema y componentes visuales
     test/                 pruebas de la aplicación
 ```

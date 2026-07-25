@@ -96,6 +96,16 @@ class CharacterStore {
     await writeJsonAtomic(_fileFor(c.id, dir), c.toJson());
   }
 
+  /// Guarda un conjunto completo como una sola operación lógica. Si falla una
+  /// escritura, el helper revierte los archivos que ya hubiera reemplazado.
+  Future<void> saveAll(Iterable<Character> characters) async {
+    final dir = await _ensureDir();
+    await writeJsonBatchAtomic({
+      for (final character in characters)
+        _fileFor(character.id, dir): character.toJson(),
+    });
+  }
+
   Future<void> delete(String id) async {
     final dir = await _ensureDir();
     final f = _fileFor(id, dir);

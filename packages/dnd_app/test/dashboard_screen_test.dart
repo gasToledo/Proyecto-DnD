@@ -19,6 +19,13 @@ class _FakeStore implements CharacterStore {
   @override
   Future<void> save(Character c) async => saved[c.id] = c;
   @override
+  Future<void> saveAll(Iterable<Character> characters) async {
+    for (final character in characters) {
+      saved[character.id] = character;
+    }
+  }
+
+  @override
   Future<void> delete(String id) async => saved.remove(id);
   @override
   Future<String> directoryPath() async => '/fake';
@@ -29,18 +36,19 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   Widget harness(CharactersController ctrl) => MaterialApp(
-        theme: AppTheme.dark,
-        home: DashboardScreen(
-          repo: repo,
-          controller: ctrl,
-          homebrew: HomebrewStore(),
-          onToggleTheme: () {},
-        ),
-      );
+    theme: AppTheme.dark,
+    home: DashboardScreen(
+      repo: repo,
+      controller: ctrl,
+      homebrew: HomebrewStore(),
+      onToggleTheme: () {},
+    ),
+  );
 
   /// Monta el dashboard con un roster de prueba en un viewport dado y deja
   /// vencer el debounce de guardado (400 ms) para no dejar timers pendientes.
@@ -54,8 +62,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
   }
 
-  testWidgets('layout ancho: panel lateral + tarjeta con datos de combate',
-      (tester) async {
+  testWidgets('layout ancho: panel lateral + tarjeta con datos de combate', (
+    tester,
+  ) async {
     await pumpDashboard(tester, const Size(1280, 800));
 
     // Panel lateral presente con sus secciones.
@@ -79,8 +88,10 @@ void main() {
     await tester.enterText(find.byType(TextField), 'zzzz');
     await tester.pumpAndSettle();
     expect(find.text('Sagan "The Red"'), findsNothing);
-    expect(find.text('Ningún personaje coincide con la búsqueda.'),
-        findsOneWidget);
+    expect(
+      find.text('Ningún personaje coincide con la búsqueda.'),
+      findsOneWidget,
+    );
 
     await tester.enterText(find.byType(TextField), 'sagan');
     await tester.pumpAndSettle();
@@ -98,14 +109,17 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('avisa dónde quedó un archivo apartado para recuperación',
-      (tester) async {
+  testWidgets('avisa dónde quedó un archivo apartado para recuperación', (
+    tester,
+  ) async {
     final store = _FakeStore()
-      ..recoveryIssues.add(const DataRecoveryIssue(
-        originalPath: r'C:\datos\roto.json',
-        recoveryPath: r'C:\datos\recovery\roto.json',
-        error: 'JSON inválido',
-      ));
+      ..recoveryIssues.add(
+        const DataRecoveryIssue(
+          originalPath: r'C:\datos\roto.json',
+          recoveryPath: r'C:\datos\recovery\roto.json',
+          error: 'JSON inválido',
+        ),
+      );
     final ctrl = CharactersController(store);
 
     await tester.pumpWidget(harness(ctrl));

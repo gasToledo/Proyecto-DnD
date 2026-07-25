@@ -17,6 +17,13 @@ class _FakeStore implements CharacterStore {
   @override
   Future<void> save(Character c) async => saved[c.id] = c;
   @override
+  Future<void> saveAll(Iterable<Character> characters) async {
+    for (final character in characters) {
+      saved[character.id] = character;
+    }
+  }
+
+  @override
   Future<void> delete(String id) async => saved.remove(id);
   @override
   Future<String> directoryPath() async => '/fake';

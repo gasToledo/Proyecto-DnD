@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../data/transfer_service.dart';
 
-/// Diálogo de importación sin selector nativo: lista los .json de la carpeta de
-/// exportación y permite pegar una ruta arbitraria. Devuelve la ruta elegida.
+/// Diálogo de importación sin selector nativo: lista respaldos ZIP y JSON
+/// antiguos, y permite pegar una ruta arbitraria. Devuelve la ruta elegida.
 class ImportDialog extends StatefulWidget {
   final TransferService transfer;
   const ImportDialog({super.key, required this.transfer});
@@ -52,8 +52,10 @@ class _ImportDialogState extends State<ImportDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_dirPath != null)
-              Text('Archivos en $_dirPath',
-                  style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                'Archivos en $_dirPath',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
             const SizedBox(height: 8),
             SizedBox(
               height: 200,
@@ -61,12 +63,18 @@ class _ImportDialogState extends State<ImportDialog> {
                   ? const Center(child: Text('No hay archivos exportados aún.'))
                   : ListView(
                       children: _files
-                          .map((f) => ListTile(
-                                dense: true,
-                                leading: const Icon(Icons.description),
-                                title: Text(f.uri.pathSegments.last),
-                                onTap: () => Navigator.of(context).pop(f.path),
-                              ))
+                          .map(
+                            (f) => ListTile(
+                              dense: true,
+                              leading: Icon(
+                                f.path.toLowerCase().endsWith('.zip')
+                                    ? Icons.folder_zip
+                                    : Icons.description,
+                              ),
+                              title: Text(f.uri.pathSegments.last),
+                              onTap: () => Navigator.of(context).pop(f.path),
+                            ),
+                          )
                           .toList(),
                     ),
             ),

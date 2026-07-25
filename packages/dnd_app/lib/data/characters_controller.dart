@@ -57,23 +57,34 @@ class CharactersController extends ChangeNotifier {
   }
 
   /// Importa personajes. Si un id ya existe, se le asigna uno nuevo (no
-  /// sobrescribe datos existentes). Devuelve cuántos se importaron.
-  Future<int> importCharacters(List<Character> incoming) async {
+  /// sobrescribe datos existentes). Persiste el lote antes de cambiar la
+  /// memoria, para no mostrar personajes que no llegaron a guardarse.
+  Future<List<Character>> importCharactersDetailed(
+    List<Character> incoming,
+  ) async {
     final existingIds = characters.map((c) => c.id).toSet();
-    var count = 0;
+    final resolved = <Character>[];
     for (var i = 0; i < incoming.length; i++) {
       var c = incoming[i];
       if (existingIds.contains(c.id)) {
-        final newId = '${DateTime.now().microsecondsSinceEpoch}-$i';
+        var attempt = i;
+        late String newId;
+        do {
+          newId = '${DateTime.now().microsecondsSinceEpoch}-${attempt++}';
+        } while (existingIds.contains(newId));
         c = Character.fromJson(c.toJson()..['id'] = newId);
       }
       existingIds.add(c.id);
-      characters.add(c);
-      await store.save(c); // guardado inmediato al importar
-      count++;
+      resolved.add(c);
     }
+    await store.saveAll(resolved);
+    characters.addAll(resolved);
     notifyListeners();
-    return count;
+    return resolved;
+  }
+
+  Future<int> importCharacters(List<Character> incoming) async {
+    return (await importCharactersDetailed(incoming)).length;
   }
 
   Future<void> remove(Character c) async {

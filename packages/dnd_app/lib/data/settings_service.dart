@@ -43,6 +43,13 @@ class AppSettings {
     'huggingFaceModel': huggingFaceModel,
   };
 
+  /// Preferencias aptas para un respaldo compartible. Las credenciales quedan
+  /// siempre en el equipo de origen.
+  Map<String, dynamic> toPortableJson() => {
+    'imageProvider': imageProvider,
+    'huggingFaceModel': huggingFaceModel,
+  };
+
   factory AppSettings.fromJson(Map<String, dynamic> j) => AppSettings(
     imageProvider: j['imageProvider'] as String? ?? 'pollinations',
     geminiApiKey: j['geminiApiKey'] as String? ?? '',
@@ -82,5 +89,21 @@ class SettingsService {
 
   Future<void> save(AppSettings settings) async {
     await writeJsonAtomic(_file, settings.toJson(), pretty: false);
+  }
+
+  /// Aplica únicamente preferencias portables y conserva las credenciales
+  /// locales existentes.
+  Future<void> restorePortable(Map<String, dynamic> preferences) async {
+    final current = await load();
+    final provider = preferences['imageProvider'];
+    final model = preferences['huggingFaceModel'];
+    if (provider is String &&
+        const {'pollinations', 'huggingface', 'gemini'}.contains(provider)) {
+      current.imageProvider = provider;
+    }
+    if (model is String && model.trim().isNotEmpty) {
+      current.huggingFaceModel = model.trim();
+    }
+    await save(current);
   }
 }

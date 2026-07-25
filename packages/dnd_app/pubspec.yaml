@@ -14,6 +14,7 @@ dependencies:
   http: ^1.2.2
   dnd_engine:
     path: ../dnd_engine
+  archive: 4.0.9
 
 dev_dependencies:
   flutter_test:

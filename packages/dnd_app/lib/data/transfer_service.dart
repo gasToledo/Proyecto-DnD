@@ -6,14 +6,13 @@ import 'package:path/path.dart' as p;
 
 import 'app_paths.dart';
 import 'atomic_json_file.dart';
+import 'backup_bundle.dart';
 
-/// Exportación e importación de personajes en JSON versionado (brief §3.E).
+/// Exportación e importación en ZIP versionado, con lectura compatible de los
+/// JSON usados por las versiones anteriores.
 ///
 /// Sin plugins (evita el requisito de Modo Desarrollador de Windows): exporta a
 /// una carpeta visible del usuario y la importación lee archivos por ruta.
-/// Dos formatos, ambos con envoltorio versionado:
-///  - `dnd_character`: un solo personaje.
-///  - `dnd_backup`: todos los personajes (respaldo completo).
 class TransferService {
   static const int formatVersion = 1;
 
@@ -43,33 +42,35 @@ class TransferService {
   Future<String> exportCharacter(Character c) async {
     final dir = await exportsDir();
     final safeId = requireSafePathSegment(c.id, label: 'id de personaje');
-    final envelope = {
-      'type': 'dnd_character',
-      'formatVersion': formatVersion,
-      'exportedAt': DateTime.now().toIso8601String(),
-      'character': c.toJson(),
-    };
-    final file = File(p.join(dir.path, '${_safe(c.name)}-$safeId.json'));
-    await writeJsonAtomic(file, envelope);
+    final bytes = await BackupBundleCodec.encode(
+      scope: BackupScope.character,
+      characters: [c],
+    );
+    final file = File(p.join(dir.path, '${_safe(c.name)}-$safeId.zip'));
+    await writeBytesAtomic(file, bytes);
     return file.path;
   }
 
   /// Exporta un respaldo completo. Devuelve la ruta del archivo escrito.
-  Future<String> exportBackup(List<Character> all) async {
+  Future<String> exportBackup(
+    List<Character> all, {
+    Map<String, List<Map<String, dynamic>>>? homebrew,
+    Map<String, dynamic>? preferences,
+  }) async {
     final dir = await exportsDir();
-    final envelope = {
-      'type': 'dnd_backup',
-      'formatVersion': formatVersion,
-      'exportedAt': DateTime.now().toIso8601String(),
-      'characters': all.map((c) => c.toJson()).toList(),
-    };
+    final bytes = await BackupBundleCodec.encode(
+      scope: BackupScope.full,
+      characters: all,
+      homebrew: homebrew,
+      preferences: preferences,
+    );
     final stamp = DateTime.now()
         .toIso8601String()
         .replaceAll(':', '-')
         .split('.')
         .first;
-    final file = File(p.join(dir.path, 'backup-$stamp.json'));
-    await writeJsonAtomic(file, envelope);
+    final file = File(p.join(dir.path, 'backup-$stamp.zip'));
+    await writeBytesAtomic(file, bytes);
     return file.path;
   }
 
@@ -160,20 +161,90 @@ class TransferService {
   }
 
   Future<List<Character>> importFromFile(String path) async {
+    final bundle = await readBundleOrLegacy(path);
+    return bundle.characters.map((entry) => entry.character).toList();
+  }
+
+  Future<BackupBundle> readBundleOrLegacy(String path) async {
     final file = File(path.trim());
     if (!await file.exists()) {
       throw FileSystemException('El archivo no existe', path);
     }
-    return parseImport(await file.readAsString());
+    final bytes = await file.readAsBytes();
+    final isZip =
+        p.extension(file.path).toLowerCase() == '.zip' ||
+        (bytes.length >= 4 &&
+            bytes[0] == 0x50 &&
+            bytes[1] == 0x4b &&
+            bytes[2] == 0x03 &&
+            bytes[3] == 0x04);
+    if (isZip) return BackupBundleCodec.decode(bytes);
+    return BackupBundle.legacy(parseImport(utf8.decode(bytes)));
   }
 
-  /// Lista los archivos .json en la carpeta de exportación (para elegir al
-  /// importar sin selector nativo).
+  /// Materializa los retratos en rutas locales y evita sobrescribir ids.
+  Future<PreparedCharacterImport> prepareCharacterImport(
+    BackupBundle bundle,
+    Set<String> existingIds,
+  ) async {
+    final reservedIds = Set<String>.of(existingIds);
+    final prepared = <Character>[];
+    final createdDirectories = <Directory>[];
+    final portraitsRoot = Directory(fichasDir('portraits', dataRoot));
+
+    try {
+      for (var i = 0; i < bundle.characters.length; i++) {
+        final entry = bundle.characters[i];
+        var id = entry.character.id;
+        var target = Directory(p.join(portraitsRoot.path, id));
+        if (reservedIds.contains(id) || await target.exists()) {
+          do {
+            id = '${DateTime.now().microsecondsSinceEpoch}-$i';
+            target = Directory(p.join(portraitsRoot.path, id));
+          } while (reservedIds.contains(id) || await target.exists());
+        }
+        reservedIds.add(id);
+
+        final portraitPaths = <String>[];
+        if (entry.portraits.isNotEmpty) {
+          await target.create(recursive: true);
+          createdDirectories.add(target);
+          for (final portrait in entry.portraits) {
+            final name = requireSafePathSegment(
+              portrait.fileName,
+              label: 'nombre de retrato',
+            );
+            final destination = File(p.join(target.path, name));
+            await writeBytesAtomic(destination, portrait.bytes);
+            portraitPaths.add(destination.path);
+          }
+        }
+
+        var character = entry.character;
+        if (character.id != id) {
+          character = Character.fromJson(character.toJson()..['id'] = id);
+        }
+        prepared.add(character.copyWith(portraitPaths: portraitPaths));
+      }
+      return PreparedCharacterImport(
+        characters: prepared,
+        createdPortraitDirectories: createdDirectories,
+      );
+    } catch (_) {
+      await _deleteDirectories(createdDirectories);
+      rethrow;
+    }
+  }
+
+  /// Lista respaldos ZIP y exportaciones JSON antiguas.
   Future<List<File>> listExportFiles() async {
     final dir = await exportsDir();
     final files = <File>[];
     await for (final e in dir.list()) {
-      if (e is File && e.path.endsWith('.json')) files.add(e);
+      if (e is File) {
+        final extension = p.extension(e.path).toLowerCase();
+        if (extension == '.json' || extension == '.zip') files.add(e);
+      }
     }
     files.sort((a, b) => b.path.compareTo(a.path));
     return files;
@@ -184,6 +255,27 @@ class TransferService {
     final dir = await exportsDir();
     if (Platform.isWindows) {
       await Process.run('explorer', [dir.path]);
+    }
+  }
+}
+
+class PreparedCharacterImport {
+  final List<Character> characters;
+  final List<Directory> createdPortraitDirectories;
+
+  const PreparedCharacterImport({
+    required this.characters,
+    required this.createdPortraitDirectories,
+  });
+
+  Future<void> rollbackPortraits() =>
+      _deleteDirectories(createdPortraitDirectories);
+}
+
+Future<void> _deleteDirectories(List<Directory> directories) async {
+  for (final directory in directories.reversed) {
+    if (await directory.exists()) {
+      await directory.delete(recursive: true);
     }
   }
 }

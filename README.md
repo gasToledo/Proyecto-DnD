@@ -19,7 +19,8 @@ Lo que podés hacer con un personaje:
 - **Jugar la partida** desde la ficha: daño y curación, PG temporales, condiciones, descansos corto y largo, salvaciones de muerte, recursos de clase y maestría de armas.
 - **Generar un retrato** por IA (Pollinations gratis por defecto, o Hugging Face y Gemini con tu propia key).
 - **Crear homebrew** (razas, dotes, armas, armaduras) con el mismo modelo que el contenido oficial.
-- **Exportar e importar** fichas en JSON, o un respaldo completo.
+- **Exportar e importar** fichas y respaldos ZIP con retratos, homebrew y
+  preferencias (sin credenciales), manteniendo compatibilidad con JSON previos.
 
 La ficha nunca recalcula a mano: lee de una hoja derivada que produce el motor. Si algo no cierra con las reglas, la app te avisa con una advertencia pero te deja seguir. El DM manda.
 

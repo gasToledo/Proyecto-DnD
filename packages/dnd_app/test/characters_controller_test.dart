@@ -26,6 +26,13 @@ class _FakeStore implements CharacterStore {
   }
 
   @override
+  Future<void> saveAll(Iterable<Character> characters) async {
+    for (final character in characters) {
+      await save(character);
+    }
+  }
+
+  @override
   Future<void> delete(String id) async => saved.remove(id);
 
   @override
@@ -35,6 +42,11 @@ class _FakeStore implements CharacterStore {
 class _FailingStore extends _FakeStore {
   @override
   Future<void> save(Character c) async {
+    throw const FileSystemException('sin espacio');
+  }
+
+  @override
+  Future<void> saveAll(Iterable<Character> characters) async {
     throw const FileSystemException('sin espacio');
   }
 
@@ -91,6 +103,20 @@ void main() {
     await ctrl.load();
     expect(ctrl.characters, hasLength(1));
     expect(ctrl.characters.first.id, 'sagan');
+  });
+
+  test('una importación fallida no altera la memoria', () async {
+    final ctrl = CharactersController(_FailingStore())
+      ..characters.add(demoSagan());
+    final incoming = Character.fromJson(
+      demoSagan().toJson()..['id'] = 'otro-personaje',
+    );
+
+    await expectLater(
+      ctrl.importCharacters([incoming]),
+      throwsA(isA<FileSystemException>()),
+    );
+    expect(ctrl.characters.map((c) => c.id), ['sagan']);
   });
 
   test(

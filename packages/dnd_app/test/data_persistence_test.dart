@@ -52,6 +52,31 @@ void main() {
     expect(await Directory(p.join(root.path, 'exports')).exists(), isTrue);
   });
 
+  test('restaurar preferencias no reemplaza credenciales locales', () async {
+    final service = SettingsService(dataRoot: sandbox.path);
+    await service.save(
+      AppSettings(
+        imageProvider: 'gemini',
+        geminiApiKey: 'clave-local',
+        huggingFaceToken: 'token-local',
+        huggingFaceModel: 'modelo/anterior',
+      ),
+    );
+
+    await service.restorePortable({
+      'imageProvider': 'huggingface',
+      'huggingFaceModel': 'modelo/restaurado',
+      'geminiApiKey': 'clave-del-respaldo',
+      'huggingFaceToken': 'token-del-respaldo',
+    });
+    final restored = await service.load();
+
+    expect(restored.imageProvider, 'huggingface');
+    expect(restored.huggingFaceModel, 'modelo/restaurado');
+    expect(restored.geminiApiKey, 'clave-local');
+    expect(restored.huggingFaceToken, 'token-local');
+  });
+
   test('la escritura atómica reemplaza JSON y no deja temporales', () async {
     final file = File(p.join(sandbox.path, 'value.json'));
     await writeJsonAtomic(file, {'value': 1});
@@ -101,29 +126,32 @@ void main() {
     );
   });
 
-  test('ajustes y homebrew corruptos también se conservan para recuperación',
-      () async {
-    final root = Directory(fichasDir(null, sandbox.path));
-    await root.create(recursive: true);
-    await File(p.join(root.path, 'settings.json')).writeAsString('{roto');
-    final homebrewDir = Directory(p.join(root.path, 'homebrew'));
-    await homebrewDir.create(recursive: true);
-    await File(p.join(homebrewDir.path, 'weapons.json'))
-        .writeAsString('[roto');
+  test(
+    'ajustes y homebrew corruptos también se conservan para recuperación',
+    () async {
+      final root = Directory(fichasDir(null, sandbox.path));
+      await root.create(recursive: true);
+      await File(p.join(root.path, 'settings.json')).writeAsString('{roto');
+      final homebrewDir = Directory(p.join(root.path, 'homebrew'));
+      await homebrewDir.create(recursive: true);
+      await File(
+        p.join(homebrewDir.path, 'weapons.json'),
+      ).writeAsString('[roto');
 
-    final settings = SettingsService(dataRoot: sandbox.path);
-    expect((await settings.load()).imageProvider, 'pollinations');
-    expect(settings.recoveryIssues, hasLength(1));
+      final settings = SettingsService(dataRoot: sandbox.path);
+      expect((await settings.load()).imageProvider, 'pollinations');
+      expect(settings.recoveryIssues, hasLength(1));
 
-    final homebrew = HomebrewStore(dataRoot: sandbox.path);
-    await homebrew.load();
-    expect(homebrew.weapons, isEmpty);
-    expect(homebrew.recoveryIssues, hasLength(1));
-    expect(
-      await File(homebrew.recoveryIssues.single.recoveryPath).exists(),
-      isTrue,
-    );
-  });
+      final homebrew = HomebrewStore(dataRoot: sandbox.path);
+      await homebrew.load();
+      expect(homebrew.weapons, isEmpty);
+      expect(homebrew.recoveryIssues, hasLength(1));
+      expect(
+        await File(homebrew.recoveryIssues.single.recoveryPath).exists(),
+        isTrue,
+      );
+    },
+  );
 
   test(
     'migra personajes de la ubicación anterior sin borrar el original',

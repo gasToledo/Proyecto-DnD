@@ -4,9 +4,11 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../creation/creation_wizard.dart';
+import '../data/backup_bundle.dart';
 import '../data/characters_controller.dart';
 import '../data/data_recovery.dart';
 import '../data/homebrew_store.dart';
+import '../data/settings_service.dart';
 import '../data/transfer_service.dart';
 import '../homebrew/homebrew_screen.dart';
 import '../theme/app_theme.dart';
@@ -62,7 +64,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     widget.controller.addListener(_handleControllerState);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _showRecoveryWarnings());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _showRecoveryWarnings(),
+    );
   }
 
   @override
@@ -81,10 +85,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _shownSaveError = error;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('No se pudieron guardar los últimos cambios: $error'),
-        duration: const Duration(seconds: 6),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No se pudieron guardar los últimos cambios: $error'),
+          duration: const Duration(seconds: 6),
+        ),
+      );
     });
   }
 
@@ -134,7 +140,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
     switch (_sort) {
       case _SortMode.name:
-        list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        list.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
       case _SortMode.level:
         list.sort((a, b) => b.level.compareTo(a.level));
       case _SortMode.klass:
@@ -152,7 +160,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           return Scaffold(
             body: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [_sidebar(context), Expanded(child: _content(context))],
+              children: [
+                _sidebar(context),
+                Expanded(child: _content(context)),
+              ],
             ),
           );
         }
@@ -160,8 +171,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           appBar: AppBar(title: const Text('Fichas D&D 5e')),
           drawer: Drawer(
             child: SafeArea(
-              child: Builder(
-                  builder: (ctx) => _sidebar(ctx, inDrawer: true)),
+              child: Builder(builder: (ctx) => _sidebar(ctx, inDrawer: true)),
             ),
           ),
           body: _content(context),
@@ -211,38 +221,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text.rich(
-                    TextSpan(children: [
-                      const TextSpan(text: 'Fichas\n'),
-                      TextSpan(
-                          text: 'D&D 5e', style: TextStyle(color: pal.gold)),
-                    ]),
+                    TextSpan(
+                      children: [
+                        const TextSpan(text: 'Fichas\n'),
+                        TextSpan(
+                          text: 'D&D 5e',
+                          style: TextStyle(color: pal.gold),
+                        ),
+                      ],
+                    ),
                     style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 17,
-                        height: 1.1,
-                        color: onSurface),
+                      fontFamily: 'Georgia',
+                      fontSize: 17,
+                      height: 1.1,
+                      color: onSurface,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          _navItem(context,
-              icon: Icons.groups, label: 'Personajes', active: true),
-          _navItem(context,
-              icon: Icons.auto_fix_high,
-              label: 'Homebrew',
-              onTap: () => run(_openHomebrew)),
-          _navItem(context,
-              icon: Icons.import_export,
-              label: 'Importar / Exportar',
-              onTap: () => run(_transferDialog)),
-          _navItem(context,
-              icon: Icons.settings,
-              label: 'Ajustes',
-              onTap: () => run(() => showDialog<bool>(
-                    context: this.context,
-                    builder: (_) => const SettingsDialog(),
-                  ))),
+          _navItem(
+            context,
+            icon: Icons.groups,
+            label: 'Personajes',
+            active: true,
+          ),
+          _navItem(
+            context,
+            icon: Icons.auto_fix_high,
+            label: 'Homebrew',
+            onTap: () => run(_openHomebrew),
+          ),
+          _navItem(
+            context,
+            icon: Icons.import_export,
+            label: 'Importar / Exportar',
+            onTap: () => run(_transferDialog),
+          ),
+          _navItem(
+            context,
+            icon: Icons.settings,
+            label: 'Ajustes',
+            onTap: () => run(
+              () => showDialog<bool>(
+                context: this.context,
+                builder: (_) => const SettingsDialog(),
+              ),
+            ),
+          ),
           const Spacer(),
           OutlinedButton.icon(
             onPressed: widget.onToggleTheme,
@@ -259,14 +286,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _navItem(BuildContext context,
-      {required IconData icon,
-      required String label,
-      bool active = false,
-      VoidCallback? onTap}) {
+  Widget _navItem(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    bool active = false,
+    VoidCallback? onTap,
+  }) {
     final pal = context.palette;
-    final fg =
-        active ? pal.gold : Theme.of(context).colorScheme.onSurfaceVariant;
+    final fg = active
+        ? pal.gold
+        : Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.only(bottom: 3),
       child: Material(
@@ -283,12 +313,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Icon(icon, size: 20, color: fg),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(label,
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight:
-                              active ? FontWeight.w600 : FontWeight.normal,
-                          color: fg)),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+                      color: fg,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -313,16 +345,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             _header(context, all.length),
             const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32),
-                child: SectionRule()),
+              padding: EdgeInsets.symmetric(horizontal: 32),
+              child: SectionRule(),
+            ),
             Expanded(
               child: all.isEmpty
-                  ? _emptyState(context, Icons.shield_outlined,
-                      'Todavía no hay personajes.')
+                  ? _emptyState(
+                      context,
+                      Icons.shield_outlined,
+                      'Todavía no hay personajes.',
+                    )
                   : list.isEmpty
-                      ? _emptyState(context, Icons.search_off,
-                          'Ningún personaje coincide con la búsqueda.')
-                      : _grid(list),
+                  ? _emptyState(
+                      context,
+                      Icons.search_off,
+                      'Ningún personaje coincide con la búsqueda.',
+                    )
+                  : _grid(list),
             ),
           ],
         );
@@ -345,9 +384,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text('Mis personajes',
-                  style: TextStyle(
-                      fontFamily: 'Georgia', fontSize: 28, color: onSurface)),
+              Text(
+                'Mis personajes',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 28,
+                  color: onSurface,
+                ),
+              ),
               const SizedBox(width: 12),
               GoldPill('$total'),
             ],
@@ -376,9 +420,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _searchField(AppPalette pal) {
     OutlineInputBorder border(Color c) => OutlineInputBorder(
-          borderRadius: BorderRadius.circular(9),
-          borderSide: BorderSide(color: c),
-        );
+      borderRadius: BorderRadius.circular(9),
+      borderSide: BorderSide(color: c),
+    );
     return TextField(
       controller: _searchCtrl,
       onChanged: (v) => setState(() => _query = v),
@@ -390,7 +434,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         hintText: 'Buscar por nombre o clase…',
         hintStyle: TextStyle(fontSize: 13, color: pal.textMuted),
         prefixIcon: Icon(Icons.search, size: 19, color: pal.textMuted),
-        prefixIconConstraints: const BoxConstraints(minWidth: 38, minHeight: 38),
+        prefixIconConstraints: const BoxConstraints(
+          minWidth: 38,
+          minHeight: 38,
+        ),
         suffixIcon: _query.isEmpty
             ? null
             : IconButton(
@@ -431,10 +478,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(Icons.swap_vert, size: 18, color: pal.textMuted),
             const SizedBox(width: 7),
-            Text(_sort.label,
-                style: TextStyle(
-                    fontSize: 13,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
+            Text(
+              _sort.label,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(width: 4),
             Icon(Icons.expand_more, size: 18, color: pal.textMuted),
           ],
@@ -559,11 +609,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         content: const Text('Esta acción no se puede deshacer.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Eliminar')),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar'),
+          ),
         ],
       ),
     );
@@ -584,11 +636,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _exportBackup() async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final path = await TransferService().exportBackup(controller.characters);
+      final settings = await SettingsService().load();
+      final path = await TransferService().exportBackup(
+        controller.characters,
+        homebrew: widget.homebrew.exportContent(),
+        preferences: settings.toPortableJson(),
+      );
       if (!mounted) return;
       _showExported(
-          'Respaldo completo (${controller.characters.length} personajes)',
-          path);
+        'Respaldo completo (${controller.characters.length} personajes)',
+        path,
+      );
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Error al exportar: $e')));
     }
@@ -622,14 +680,118 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
     if (path == null || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
+    PreparedCharacterImport? prepared;
+    var charactersSaved = false;
     try {
-      final imported = await transfer.importFromFile(path);
-      final count = await controller.importCharacters(imported);
+      final bundle = await transfer.readBundleOrLegacy(path);
+      var restoreAll = false;
+      final hasAdditionalData =
+          bundle.homebrew != null || bundle.preferences != null;
+      if (hasAdditionalData) {
+        final choice = await _chooseRestoreScope(bundle);
+        if (choice == null || !mounted) return;
+        restoreAll = choice;
+      }
+
+      if (restoreAll && bundle.homebrew != null) {
+        final collisions = widget.homebrew.countCollisions(bundle.homebrew!);
+        if (collisions > 0) {
+          final confirmed = await _confirmHomebrewOverwrite(collisions);
+          if (!confirmed || !mounted) return;
+        }
+      }
+
+      prepared = await transfer.prepareCharacterImport(
+        bundle,
+        controller.characters.map((character) => character.id).toSet(),
+      );
+      final imported = await controller.importCharactersDetailed(
+        prepared.characters,
+      );
+      charactersSaved = true;
+
+      var homebrewCount = 0;
+      if (restoreAll && bundle.homebrew != null) {
+        homebrewCount = await widget.homebrew.importContent(bundle.homebrew!);
+        repo.addAll(widget.homebrew.toRepository());
+      }
+      if (restoreAll && bundle.preferences != null) {
+        await SettingsService().restorePortable(bundle.preferences!);
+      }
+
+      if (!mounted) return;
+      final extra = restoreAll
+          ? ' También se restauraron $homebrewCount elemento(s) homebrew'
+                '${bundle.preferences == null ? '.' : ' y las preferencias.'}'
+          : '';
       messenger.showSnackBar(
-          SnackBar(content: Text('Importados $count personaje(s).')));
+        SnackBar(
+          content: Text('Importados ${imported.length} personaje(s).$extra'),
+        ),
+      );
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Error al importar: $e')));
+      if (prepared != null && !charactersSaved) {
+        await prepared.rollbackPortraits();
+      }
+      final prefix = charactersSaved
+          ? 'Los personajes se importaron, pero falló el resto:'
+          : 'Error al importar:';
+      messenger.showSnackBar(SnackBar(content: Text('$prefix $e')));
     }
+  }
+
+  Future<bool?> _chooseRestoreScope(BackupBundle bundle) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Contenido del respaldo'),
+        content: Text(
+          'Incluye ${bundle.characters.length} personaje(s), '
+          '${bundle.portraitCount} retrato(s)'
+          '${bundle.homebrew == null ? '' : ' y contenido homebrew'}'
+          '${bundle.preferences == null ? '' : ' y preferencias'}.\n\n'
+          '¿Qué querés restaurar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Solo personajes'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Restaurar todo'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool> _confirmHomebrewOverwrite(int collisions) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Contenido homebrew existente'),
+            content: Text(
+              '$collisions elemento(s) tienen el mismo id y serán '
+              'reemplazados por la versión del respaldo.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Continuar'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }
 
@@ -694,9 +856,10 @@ class _CharacterCardState extends State<_CharacterCard> {
           boxShadow: _hover
               ? [
                   BoxShadow(
-                      color: Colors.black.withAlpha(70),
-                      blurRadius: 26,
-                      offset: const Offset(0, 10)),
+                    color: Colors.black.withAlpha(70),
+                    blurRadius: 26,
+                    offset: const Offset(0, 10),
+                  ),
                 ]
               : null,
         ),
@@ -715,8 +878,7 @@ class _CharacterCardState extends State<_CharacterCard> {
                     children: [
                       ClassMedallion(
                         klass: klassObj,
-                        image:
-                            hasPortrait ? FileImage(File(portrait)) : null,
+                        image: hasPortrait ? FileImage(File(portrait)) : null,
                         fallback: c.name.characters.first,
                         size: 56,
                       ),
@@ -726,25 +888,35 @@ class _CharacterCardState extends State<_CharacterCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(c.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontFamily: 'Georgia',
-                                    fontSize: 18,
-                                    color: scheme.onSurface)),
+                            Text(
+                              c.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: 'Georgia',
+                                fontSize: 18,
+                                color: scheme.onSurface,
+                              ),
+                            ),
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                Icon(classIcon(klassObj),
-                                    size: 14, color: accent),
+                                Icon(
+                                  classIcon(klassObj),
+                                  size: 14,
+                                  color: accent,
+                                ),
                                 const SizedBox(width: 5),
                                 Expanded(
-                                  child: Text('$race · $klass',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          fontSize: 12.5, color: muted)),
+                                  child: Text(
+                                    '$race · $klass',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      color: muted,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -761,11 +933,14 @@ class _CharacterCardState extends State<_CharacterCard> {
                         children: [
                           Medallion(fallback: '${c.level}', size: 40),
                           const SizedBox(height: 3),
-                          Text('NIVEL',
-                              style: TextStyle(
-                                  fontSize: 8.5,
-                                  letterSpacing: 1,
-                                  color: pal.textMuted)),
+                          Text(
+                            'NIVEL',
+                            style: TextStyle(
+                              fontSize: 8.5,
+                              letterSpacing: 1,
+                              color: pal.textMuted,
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(
@@ -781,11 +956,17 @@ class _CharacterCardState extends State<_CharacterCard> {
                           },
                           itemBuilder: (_) => const [
                             PopupMenuItem(
-                                value: 'rename', child: Text('Renombrar')),
+                              value: 'rename',
+                              child: Text('Renombrar'),
+                            ),
                             PopupMenuItem(
-                                value: 'export', child: Text('Exportar')),
+                              value: 'export',
+                              child: Text('Exportar'),
+                            ),
                             PopupMenuItem(
-                                value: 'delete', child: Text('Eliminar')),
+                              value: 'delete',
+                              child: Text('Eliminar'),
+                            ),
                           ],
                         ),
                       ),
@@ -809,21 +990,27 @@ class _CharacterCardState extends State<_CharacterCard> {
                                 // Rótulo flexible: con 3 columnas la tarjeta es
                                 // angosta y el valor nunca debe quedar tapado.
                                 Expanded(
-                                  child: Text('PG',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          fontSize: 9.5,
-                                          letterSpacing: 1,
-                                          color: pal.textMuted)),
+                                  child: Text(
+                                    'PG',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      letterSpacing: 1,
+                                      color: pal.textMuted,
+                                    ),
+                                  ),
                                 ),
                                 const SizedBox(width: 6),
-                                Text('$hp/${s.maxHp}',
-                                    style: TextStyle(
-                                        fontFamily: 'Georgia',
-                                        fontSize: 13,
-                                        height: 1,
-                                        color: pal.crimson)),
+                                Text(
+                                  '$hp/${s.maxHp}',
+                                  style: TextStyle(
+                                    fontFamily: 'Georgia',
+                                    fontSize: 13,
+                                    height: 1,
+                                    color: pal.crimson,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 5),
@@ -841,19 +1028,21 @@ class _CharacterCardState extends State<_CharacterCard> {
                       SizedBox(
                         width: 56,
                         child: StatPlaque(
-                            label: 'Vel',
-                            value: '${s.speed}',
-                            dense: true,
-                            valueColor: scheme.onSurface),
+                          label: 'Vel',
+                          value: '${s.speed}',
+                          dense: true,
+                          valueColor: scheme.onSurface,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       SizedBox(
                         width: 56,
                         child: StatPlaque(
-                            label: 'Inic',
-                            value: _signed(s.initiative),
-                            dense: true,
-                            valueColor: scheme.onSurface),
+                          label: 'Inic',
+                          value: _signed(s.initiative),
+                          dense: true,
+                          valueColor: scheme.onSurface,
+                        ),
                       ),
                     ],
                   ),

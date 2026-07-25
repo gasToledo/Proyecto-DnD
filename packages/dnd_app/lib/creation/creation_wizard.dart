@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../data/creation_draft_store.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
@@ -12,6 +15,13 @@ String titleCase(String s) => s.isEmpty
           .split(RegExp(r'[-_ ]'))
           .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
           .join(' ');
+
+String _draftDate(DateTime value) {
+  final local = value.toLocal();
+  String two(int number) => number.toString().padLeft(2, '0');
+  return '${two(local.day)}/${two(local.month)}/${local.year} '
+      '${two(local.hour)}:${two(local.minute)}';
+}
 
 /// Ícono de cada paso en el stepper.
 const _stepIcons = {
@@ -33,42 +43,74 @@ const _kWideBreakpoint = 900.0;
 class CreationWizard extends StatefulWidget {
   final ContentRepository repo;
   final void Function(Character) onCreate;
-  const CreationWizard({super.key, required this.repo, required this.onCreate});
+  final CreationDraftStore? draftStore;
+  const CreationWizard({
+    super.key,
+    required this.repo,
+    required this.onCreate,
+    this.draftStore,
+  });
 
   @override
   State<CreationWizard> createState() => _CreationWizardState();
 }
 
 class _CreationWizardState extends State<CreationWizard> {
-  late final CreationDraft d = CreationDraft(widget.repo);
+  late CreationDraft d;
   CreationStep _step = CreationStep.raza;
   bool _hasProgress = false;
   bool _allowPop = false;
   bool _confirmingClose = false;
+  bool _loadingDraft = false;
+  Timer? _draftDebounce;
+  Future<void> _draftWrites = Future<void>.value();
 
   static const _steps = CreationStep.values;
   bool get _isLast => _step == _steps.last;
 
+  @override
+  void initState() {
+    super.initState();
+    d = CreationDraft(widget.repo);
+    _loadingDraft = widget.draftStore != null;
+    if (_loadingDraft) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadDraft());
+    }
+  }
+
+  @override
+  void dispose() {
+    _draftDebounce?.cancel();
+    super.dispose();
+  }
+
   void _next() {
     if (_isLast) {
-      _finish();
+      unawaited(_finish());
       return;
     }
     setState(() => _step = _steps[_step.index + 1]);
+    _scheduleDraftSave();
   }
 
-  void _back() => setState(() => _step = _steps[_step.index - 1]);
+  void _back() {
+    setState(() => _step = _steps[_step.index - 1]);
+    _scheduleDraftSave();
+  }
 
   void _goTo(CreationStep s) {
     if (!d.canGoTo(s)) return;
     setState(() => _step = s);
+    _scheduleDraftSave();
   }
 
-  void _finish() {
+  Future<void> _finish() async {
     final character = d.build();
     // PG actuales al máximo al crear.
     final sheet = CharacterCompiler(widget.repo).compile(character);
     character.combat.currentHp = sheet.maxHp;
+    await _clearDraft();
+    if (!mounted) return;
     widget.onCreate(character);
     _closeWithoutPrompt();
   }
@@ -76,10 +118,114 @@ class _CreationWizardState extends State<CreationWizard> {
   /// Un cambio puede volver inalcanzable el paso actual (p.ej. cambiar de clase
   /// borra las maestrías ya elegidas): en ese caso se retrocede al primero que
   /// quedó pendiente en vez de dejar al usuario varado.
-  void _refresh() => setState(() {
-    _hasProgress = true;
-    if (!d.canGoTo(_step)) _step = d.firstIncompleteStep;
-  });
+  void _refresh() {
+    setState(() {
+      _hasProgress = true;
+      if (!d.canGoTo(_step)) _step = d.firstIncompleteStep;
+    });
+    _scheduleDraftSave();
+  }
+
+  Future<void> _loadDraft() async {
+    final store = widget.draftStore;
+    if (store == null) return;
+    final snapshot = await store.load();
+    if (!mounted) return;
+    if (snapshot == null) {
+      setState(() => _loadingDraft = false);
+      if (store.recoveryIssues.isNotEmpty) {
+        final recoveryPath = store.recoveryIssues.first.recoveryPath;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'El borrador no se pudo leer y fue apartado en: $recoveryPath',
+              ),
+            ),
+          );
+        });
+      }
+      return;
+    }
+    setState(() => _loadingDraft = false);
+
+    final resume =
+        await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Borrador encontrado'),
+            content: Text(
+              'Hay un personaje sin terminar, guardado el '
+              '${_draftDate(snapshot.savedAt)}. ¿Querés continuarlo?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Descartar borrador'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Continuar'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (!mounted) return;
+    if (resume) {
+      final restored = CreationDraft.fromJson(widget.repo, snapshot.data);
+      setState(() {
+        d = restored;
+        _step = restored.canGoTo(snapshot.step)
+            ? snapshot.step
+            : restored.firstIncompleteStep;
+        _hasProgress = true;
+      });
+    } else {
+      await store.clear();
+    }
+  }
+
+  void _scheduleDraftSave() {
+    final store = widget.draftStore;
+    if (store == null || !_hasProgress) return;
+    _draftDebounce?.cancel();
+    final step = _step;
+    final data = d.toJson();
+    _draftDebounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _enqueueDraftSave(step, data),
+    );
+  }
+
+  void _enqueueDraftSave(CreationStep step, Map<String, dynamic> data) {
+    final store = widget.draftStore;
+    if (store == null) return;
+    _draftWrites = _draftWrites
+        .then((_) => store.save(step: step, data: data))
+        .catchError((Object error) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('No se pudo guardar el borrador: $error')),
+          );
+        });
+  }
+
+  Future<void> _clearDraft() async {
+    _draftDebounce?.cancel();
+    await _draftWrites;
+    try {
+      await widget.draftStore?.clear();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo limpiar el borrador: $error')),
+        );
+      }
+    }
+  }
 
   Future<void> _requestClose() async {
     if (!_hasProgress) {
@@ -110,7 +256,10 @@ class _CreationWizardState extends State<CreationWizard> {
         ) ??
         false;
     _confirmingClose = false;
-    if (discard && mounted) _closeWithoutPrompt();
+    if (discard && mounted) {
+      await _clearDraft();
+      if (mounted) _closeWithoutPrompt();
+    }
   }
 
   void _closeWithoutPrompt() {
@@ -123,6 +272,9 @@ class _CreationWizardState extends State<CreationWizard> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loadingDraft) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final pending = d.pendingFor(_step);
     return PopScope(
       canPop: _allowPop || !_hasProgress,

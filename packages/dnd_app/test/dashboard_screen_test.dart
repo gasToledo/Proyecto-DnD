@@ -1,6 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/data/character_store.dart';
 import 'package:dnd_app/data/characters_controller.dart';
+import 'package:dnd_app/data/backup_bundle.dart';
 import 'package:dnd_app/data/data_recovery.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
@@ -110,6 +111,44 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump();
     expect(find.text('Guardado'), findsOneWidget);
+  });
+
+  testWidgets('la vista previa explica colisiones y contenido completo', (
+    tester,
+  ) async {
+    final bundle = BackupBundle(
+      formatVersion: 2,
+      scope: BackupScope.full,
+      characters: [BundleCharacter(character: demoSagan())],
+      homebrew: {
+        'weapons': [
+          {'id': 'hb-uno'},
+          {'id': 'hb-dos'},
+        ],
+      },
+      preferences: const {'imageProvider': 'pollinations'},
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: ImportPreviewDialog(
+            bundle: bundle,
+            characterCollisions: 1,
+            homebrewTotal: 2,
+            homebrewCollisions: 1,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Revisar importación'), findsOneWidget);
+    expect(find.textContaining('Sagan "The Red"'), findsOneWidget);
+    expect(find.textContaining('copias nuevas'), findsOneWidget);
+    expect(find.text('Homebrew: 2 elemento(s).'), findsOneWidget);
+    expect(find.textContaining('credenciales locales'), findsOneWidget);
+    expect(find.text('Solo personajes'), findsOneWidget);
+    expect(find.text('Restaurar todo'), findsOneWidget);
   });
 
   testWidgets('layout angosto: el panel se colapsa a Drawer', (tester) async {

@@ -14,13 +14,15 @@ Las 12 clases del PHB 2024 están cargadas, cada una con sus 4 subclases, que el
 
 Lo que podés hacer con un personaje:
 
-- **Crearlo** con el asistente guiado: especie, clase, trasfondo, características, equipo y, si lanza, conjuros.
+- **Crearlo** con el asistente guiado, borrador recuperable y protección
+  contra salidas accidentales.
 - **Subir de nivel** a mano, eligiendo subclase, mejora de característica o dote, y re-preparando conjuros, con un resumen de lo ganado.
 - **Jugar la partida** desde la ficha: daño y curación, PG temporales, condiciones, descansos corto y largo, salvaciones de muerte, recursos de clase y maestría de armas.
 - **Generar un retrato** por IA (Pollinations gratis por defecto, o Hugging Face y Gemini con tu propia key).
 - **Crear homebrew** (razas, dotes, armas, armaduras) con el mismo modelo que el contenido oficial.
 - **Exportar e importar** fichas y respaldos ZIP con retratos, homebrew y
-  preferencias (sin credenciales), manteniendo compatibilidad con JSON previos.
+  preferencias (sin credenciales), con revisión previa y compatibilidad con
+  JSON previos.
 
 La ficha nunca recalcula a mano: lee de una hoja derivada que produce el motor. Si algo no cierra con las reglas, la app te avisa con una advertencia pero te deja seguir. El DM manda.
 

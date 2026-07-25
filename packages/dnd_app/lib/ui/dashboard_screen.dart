@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../creation/creation_wizard.dart';
 import '../data/backup_bundle.dart';
 import '../data/characters_controller.dart';
+import '../data/creation_draft_store.dart';
 import '../data/data_recovery.dart';
 import '../data/homebrew_store.dart';
 import '../data/settings_service.dart';
@@ -540,7 +541,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _openWizard() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CreationWizard(repo: repo, onCreate: controller.add),
+        builder: (_) => CreationWizard(
+          repo: repo,
+          onCreate: controller.add,
+          draftStore: CreationDraftStore(),
+        ),
       ),
     );
   }
@@ -685,27 +690,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
     var charactersSaved = false;
     try {
       final bundle = await transfer.readBundleOrLegacy(path);
-      var restoreAll = false;
-      final hasAdditionalData =
-          bundle.homebrew != null || bundle.preferences != null;
-      if (hasAdditionalData) {
-        final choice = await _chooseRestoreScope(bundle);
-        if (choice == null || !mounted) return;
-        restoreAll = choice;
-      }
-
-      if (restoreAll && bundle.homebrew != null) {
-        final collisions = widget.homebrew.countCollisions(bundle.homebrew!);
-        if (collisions > 0) {
-          final confirmed = await _confirmHomebrewOverwrite(collisions);
-          if (!confirmed || !mounted) return;
-        }
-      }
-
-      prepared = await transfer.prepareCharacterImport(
+      final existingIds = controller.characters
+          .map((character) => character.id)
+          .toSet();
+      final characterCollisions = bundle.characters
+          .where((entry) => existingIds.contains(entry.character.id))
+          .length;
+      final homebrewTotal =
+          bundle.homebrew?.values.fold<int>(
+            0,
+            (total, entries) => total + entries.length,
+          ) ??
+          0;
+      final homebrewCollisions = bundle.homebrew == null
+          ? 0
+          : widget.homebrew.countCollisions(bundle.homebrew!);
+      final choice = await _chooseRestoreScope(
         bundle,
-        controller.characters.map((character) => character.id).toSet(),
+        characterCollisions: characterCollisions,
+        homebrewTotal: homebrewTotal,
+        homebrewCollisions: homebrewCollisions,
       );
+      if (choice == null || !mounted) return;
+      final restoreAll = choice;
+
+      prepared = await transfer.prepareCharacterImport(bundle, existingIds);
       final imported = await controller.importCharactersDetailed(
         prepared.characters,
       );
@@ -741,58 +750,120 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<bool?> _chooseRestoreScope(BackupBundle bundle) {
+  Future<bool?> _chooseRestoreScope(
+    BackupBundle bundle, {
+    required int characterCollisions,
+    required int homebrewTotal,
+    required int homebrewCollisions,
+  }) {
     return showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Contenido del respaldo'),
-        content: Text(
-          'Incluye ${bundle.characters.length} personaje(s), '
-          '${bundle.portraitCount} retrato(s)'
-          '${bundle.homebrew == null ? '' : ' y contenido homebrew'}'
-          '${bundle.preferences == null ? '' : ' y preferencias'}.\n\n'
-          '¿Qué querés restaurar?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Solo personajes'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Restaurar todo'),
-          ),
-        ],
+      builder: (_) => ImportPreviewDialog(
+        bundle: bundle,
+        characterCollisions: characterCollisions,
+        homebrewTotal: homebrewTotal,
+        homebrewCollisions: homebrewCollisions,
       ),
     );
   }
+}
 
-  Future<bool> _confirmHomebrewOverwrite(int collisions) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Contenido homebrew existente'),
-            content: Text(
-              '$collisions elemento(s) tienen el mismo id y serán '
-              'reemplazados por la versión del respaldo.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancelar'),
+class ImportPreviewDialog extends StatelessWidget {
+  final BackupBundle bundle;
+  final int characterCollisions;
+  final int homebrewTotal;
+  final int homebrewCollisions;
+
+  const ImportPreviewDialog({
+    super.key,
+    required this.bundle,
+    required this.characterCollisions,
+    required this.homebrewTotal,
+    required this.homebrewCollisions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasAdditionalData =
+        bundle.homebrew != null || bundle.preferences != null;
+    final names = bundle.characters
+        .take(6)
+        .map((entry) => '• ${entry.character.name}')
+        .join('\n');
+    final remaining = bundle.characters.length - 6;
+    return AlertDialog(
+      title: const Text('Revisar importación'),
+      content: SizedBox(
+        width: 520,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${bundle.characters.length} personaje(s) y '
+                '${bundle.portraitCount} retrato(s).',
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Continuar'),
+              if (names.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(names),
+                if (remaining > 0) Text('…y $remaining más.'),
+              ],
+              if (characterCollisions > 0) ...[
+                const SizedBox(height: 12),
+                Text(
+                  '$characterCollisions personaje(s) ya existen. Se '
+                  'importarán como copias nuevas; no se sobrescribirán.',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+              if (bundle.homebrew != null) ...[
+                const SizedBox(height: 16),
+                Text('Homebrew: $homebrewTotal elemento(s).'),
+                if (homebrewCollisions > 0)
+                  Text(
+                    '$homebrewCollisions elemento(s) existentes serán '
+                    'reemplazados al restaurar todo.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+              ],
+              if (bundle.preferences != null) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'Preferencias: proveedor y modelo de imágenes. '
+                  'Las credenciales locales se conservarán.',
+                ),
+              ],
+              const SizedBox(height: 18),
+              Text(
+                hasAdditionalData
+                    ? 'Elegí qué parte del respaldo querés restaurar.'
+                    : 'Confirmá para importar este contenido.',
               ),
             ],
           ),
-        ) ??
-        false;
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+        if (hasAdditionalData)
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Solo personajes'),
+          ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, hasAdditionalData),
+          child: Text(hasAdditionalData ? 'Restaurar todo' : 'Importar'),
+        ),
+      ],
+    );
   }
 }
 

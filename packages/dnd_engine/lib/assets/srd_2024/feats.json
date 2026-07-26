@@ -32,10 +32,11 @@
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Hábil",
-        "description": "Ganas competencia en 3 habilidades o herramientas a tu elección."
+        "name": "Habilidoso",
+        "description": "Ganás competencia en cualquier combinación de tres habilidades o herramientas a tu elección."
       }
-    ]
+    ],
+    "repeatable": true
   },
   {
     "id": "alert",
@@ -149,7 +150,7 @@
       {
         "type": "passiveTrait",
         "name": "Arma Grande",
-        "description": "Al tirar daño con un arma cuerpo a cuerpo a dos manos, puedes volver a tirar los 1 y 2, usando el nuevo resultado."
+        "description": "Al tirar daño con un arma cuerpo a cuerpo que empuñás con ambas manos, tratás cualquier 1 o 2 en los dados de daño como un 3. El arma debe tener la propiedad a dos manos o versátil."
       }
     ]
   },
@@ -169,7 +170,12 @@
         "name": "Maestro de Armas Grandes",
         "description": "Al reducir a 0 PG o impactar con crítico con un arma cuerpo a cuerpo pesada, puedes hacer un ataque adicional como acción adicional. Tus ataques con arma pesada suman tu bonif. de competencia al daño."
       }
-    ]
+    ],
+    "prerequisite": {
+      "minAbilityScores": { "strength": 13 },
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
   },
   {
     "id": "sharpshooter",
@@ -185,9 +191,14 @@
       {
         "type": "passiveTrait",
         "name": "Tirador de Élite",
-        "description": "Ignoras cobertura media/tres cuartos y la desventaja a largo alcance. Puedes restar el bonif. de competencia al ataque para sumarlo al daño con armas a distancia."
+        "description": "Ignorás la cobertura media y de tres cuartos, no tenés desventaja al disparar a largo alcance, y no tenés desventaja por atacar a distancia con un enemigo adyacente."
       }
-    ]
+    ],
+    "prerequisite": {
+      "minAbilityScores": { "dexterity": 13 },
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
   },
   {
     "id": "resilient-wisdom",
@@ -209,7 +220,12 @@
         "name": "Resistente (Sabiduría)",
         "description": "Ganas competencia en salvaciones de Sabiduría."
       }
-    ]
+    ],
+    "prerequisite": {
+      "minAbilityScores": {},
+      "requiredProficiency": null,
+      "minLevel": 4
+    }
   },
   {
     "id": "actor",
@@ -467,7 +483,7 @@
   },
   {
     "id": "grappler",
-    "name": "Luchador",
+    "name": "Apresador",
     "source": "srd_2024",
     "category": "general",
     "repeatable": false,
@@ -479,12 +495,12 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Luchador",
-        "description": "Ventaja al atacar a criaturas apresadas por ti y puedes moverte arrastrándolas. (+1 a FUE o DES)"
+        "name": "Apresador",
+        "description": "Al acertar con un ataque sin armas durante la acción de Atacar podés usar a la vez las opciones de daño y agarre (una vez por turno). Tenés ventaja al atacar a una criatura que estés agarrando y no gastás movimiento extra por arrastrarla si es de tu tamaño o menor. (+1 a FUE o DES)"
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
+      "minAbilityScores": { "strength": 13 },
       "requiredProficiency": null,
       "minLevel": 4
     }
@@ -640,39 +656,29 @@
     "id": "magic-initiate-wizard",
     "name": "Iniciado en la Magia (Mago)",
     "source": "srd_2024",
-    "category": "general",
-    "repeatable": false,
+    "category": "origin",
+    "repeatable": true,
     "effects": [
       {
         "type": "passiveTrait",
         "name": "Iniciado en la Magia (Mago)",
-        "description": "Aprendes 2 trucos y un conjuro de nivel 1 de la lista de Mago (INT); el conjuro se lanza gratis una vez por descanso largo."
+        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Mago. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios."
       }
-    ],
-    "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
-    }
+    ]
   },
   {
     "id": "magic-initiate-cleric",
     "name": "Iniciado en la Magia (Clérigo)",
     "source": "srd_2024",
-    "category": "general",
-    "repeatable": false,
+    "category": "origin",
+    "repeatable": true,
     "effects": [
       {
         "type": "passiveTrait",
         "name": "Iniciado en la Magia (Clérigo)",
-        "description": "Aprendes 2 trucos y un conjuro de nivel 1 de la lista de Clérigo (SAB); el conjuro se lanza gratis una vez por descanso largo."
+        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Clérigo. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios."
       }
-    ],
-    "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
-    }
+    ]
   },
   {
     "id": "medium-armor-master",
@@ -1039,7 +1045,7 @@
       {
         "type": "passiveTrait",
         "name": "Acechador",
-        "description": "Puedes esconderte estando levemente oscurecido; fallar un ataque a distancia no revela tu posición."
+        "description": "Ganás visión ciega hasta 10 pies. Además, tenés ventaja en las pruebas de Sigilo si te movés como mucho la mitad de tu velocidad en ese turno."
       }
     ],
     "prerequisite": {

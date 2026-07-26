@@ -100,4 +100,18 @@ void main() {
     expect(find.text('2 / 2 elegidas'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('ofrece Iniciado en la Magia como dote de origen del Humano', (
+    tester,
+  ) async {
+    // Contraparte de la regresión en la subida de nivel: al pasar de general a
+    // origin, la dote sale del picker de ASI y entra en el del Humano.
+    await gotoAptitudes(tester);
+
+    final card = find.text('Iniciado en la Magia (Mago)');
+    await tester.scrollUntilVisible(card, 200);
+    await tester.pumpAndSettle();
+    expect(card, findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

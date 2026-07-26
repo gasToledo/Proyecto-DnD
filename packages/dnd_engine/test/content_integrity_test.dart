@@ -84,6 +84,33 @@ void main() {
     }
   });
 
+  test('cada dote declara una categoría conocida', () {
+    const validCategories = {'origin', 'general', 'fighting-style'};
+    for (final f in repo.feats.values) {
+      expect(validCategories, contains(f.category),
+          reason: '${f.id}: categoría de dote desconocida "${f.category}"');
+    }
+  });
+
+  test('las dotes de origen no piden nivel ni dan característica', () {
+    // SRD 5.2.1: las dotes de origen se obtienen a nivel 1 por el trasfondo y
+    // no otorgan aumentos de característica. Iniciado en la Magia figuraba mal
+    // como general con nivel 4.
+    for (final f in repo.feats.values.where((f) => f.category == 'origin')) {
+      expect(f.prerequisite?.minLevel, isNull,
+          reason: '${f.id}: una dote de origen no puede exigir nivel');
+      expect(f.effects.whereType<AbilityScoreBonusEffect>(), isEmpty,
+          reason: '${f.id}: una dote de origen no otorga característica');
+    }
+  });
+
+  test('las dotes generales exigen nivel 4', () {
+    for (final f in repo.feats.values.where((f) => f.category == 'general')) {
+      expect(f.prerequisite?.minLevel, 4,
+          reason: '${f.id}: toda dote general requiere nivel 4 o más');
+    }
+  });
+
   test('todas las dotes hacen round-trip por JSON (efectos y prerrequisitos)',
       () {
     for (final f in repo.feats.values) {

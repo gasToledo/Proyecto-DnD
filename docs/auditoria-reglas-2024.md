@@ -37,7 +37,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Trasfondos | pendiente | Verificar competencias, herramientas, dotes de origen, equipo y tres características disponibles. |
 | Clases | pendiente | Verificar tablas 1–20, recursos, progresión de conjuros, competencias y elecciones por nivel. |
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6). Falta separar la opción SRD de las opciones PHB y verificar el resto de las 48. |
-| Dotes | pendiente | Verificar categoría, prerrequisitos, aumentos y efectos. |
+| Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. Prerrequisito real en Apresador, Maestro de Armas Grandes y Tirador de Élite. Falta el prerrequisito de las 40 generales restantes, la elección de característica (+1 a X o Y), Observador, y las dotes que el SRD no incluye. |
 | Conjuros | pendiente | Verificar nombres SRD, nivel, escuela, listas, componentes, duración, ritual y concentración. |
 | Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. Falta precio, peso y alcance, y las armas que el SRD lista y el catálogo no tiene. |
 

@@ -31,7 +31,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 | Bloque | Estado | Hallazgos y alcance |
 | --- | --- | --- |
-| Especies y linajes | en revisión | Primera pasada completa sobre Elfo, Gnomo y Tiefling. Falta auditar las elecciones internas de Dracónido y Goliat y la elección de tamaño. |
+| Especies y linajes | en revisión | Verificados contra el SRD el Enano (Afinidad con la Piedra), el Orco (sin Complexión Poderosa) y el Humano. Los tres legados del Tiflin y los linajes de Elfo y Gnomo coinciden exactamente. Falta la elección de tamaño de Humano y Tiflin, las elecciones internas de Dracónido y Goliat, y el cambio de truco del Alto Elfo. |
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | El SRD contiene 9 especies. Aasimar es contenido PHB 2024 y se reclasificó como `phb_2024`. Falta clasificar el resto del catálogo ampliado, especialmente subclases, trasfondos, dotes y conjuros. |
 | Trasfondos | pendiente | Verificar competencias, herramientas, dotes de origen, equipo y tres características disponibles. |

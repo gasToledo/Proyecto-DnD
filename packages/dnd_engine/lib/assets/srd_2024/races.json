@@ -12,8 +12,13 @@
     "effects": [
       {
         "type": "passiveTrait",
+        "name": "Diestro",
+        "description": "Ganás competencia en una habilidad a tu elección."
+      },
+      {
+        "type": "passiveTrait",
         "name": "Ingenioso",
-        "description": "Obtienes Inspiración Heroica cada vez que terminas un descanso largo."
+        "description": "Obtenés Inspiración Heroica cada vez que terminás un descanso largo."
       },
       {
         "type": "passiveTrait",
@@ -47,8 +52,8 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Sentir la Piedra",
-        "description": "Como acción adicional, obtienes sentido del temblor de 60 pies (solo superficie de piedra) hasta el fin de tu turno."
+        "name": "Afinidad con la Piedra",
+        "description": "Como acción adicional, ganas sentido del temblor con alcance de 60 pies durante 10 minutos. Debés estar sobre una superficie de piedra o en contacto con ella. Usos iguales a tu bonif. de competencia; se recuperan tras un descanso largo."
       }
     ]
   },
@@ -95,18 +100,13 @@
       { "type": "darkvision", "range": 120 },
       {
         "type": "passiveTrait",
-        "name": "Impulso de Adrenalina",
-        "description": "Como acción adicional, avanzas una distancia igual a tu velocidad y ganas PG temporales iguales a tu bonif. de competencia. Usos iguales a tu competencia por descanso corto o largo."
+        "name": "Descarga de Adrenalina",
+        "description": "Podés llevar a cabo la acción de Correr como acción adicional y ganás PG temporales iguales a tu bonif. de competencia. Usos iguales a tu bonif. de competencia; se recuperan tras un descanso corto o largo."
       },
       {
         "type": "passiveTrait",
-        "name": "Resistencia Implacable",
-        "description": "Cuando caerías a 0 PG sin morir, en su lugar caes a 1 PG. Una vez por descanso largo."
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Complexión Poderosa",
-        "description": "Cuentas como un tamaño más grande al determinar tu capacidad de carga y lo que puedes empujar, arrastrar o levantar."
+        "name": "Aguante Incansable",
+        "description": "Cuando tus PG se reducen a 0 pero no morís inmediatamente, podés recuperar 1 PG. Una vez por descanso largo."
       }
     ]
   },
@@ -267,7 +267,7 @@
       {
         "type": "passiveTrait",
         "name": "Manos Sanadoras",
-        "description": "Como acción, tocas a una criatura y le restauras PG iguales a tu bonif. de competencia por tu nivel de personaje en dados. Una vez por descanso largo."
+        "description": "Como acción, tocás a una criatura y tirás tantos d4 como tu bonif. de competencia: recupera esa cantidad de PG. Una vez por descanso largo."
       },
       {
         "type": "passiveTrait",

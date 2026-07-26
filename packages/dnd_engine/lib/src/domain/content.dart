@@ -387,8 +387,14 @@ class Background {
 /// Mágico exige ser competente con conjuros). Todos los campos son opcionales
 /// y se combinan con Y lógico; ausentes = sin restricción de ese tipo.
 class FeatPrerequisite {
-  /// Puntuación mínima requerida por característica.
+  /// Puntuación mínima requerida por característica. Se combinan con Y lógico:
+  /// hay que cumplirlas todas.
   final Map<Ability, int> minAbilityScores;
+
+  /// Puntuaciones mínimas de las que basta cumplir **una**. El PHB 2024 usa
+  /// mucho esta forma ("Fuerza o Destreza 13 o más"), que [minAbilityScores]
+  /// no puede expresar porque exige todas sus entradas.
+  final Map<Ability, int> anyAbilityScores;
 
   /// Competencia requerida (id o categoría de arma/armadura/herramienta),
   /// o 'spellcasting' para exigir alguna competencia de lanzamiento.
@@ -398,23 +404,27 @@ class FeatPrerequisite {
 
   const FeatPrerequisite({
     this.minAbilityScores = const {},
+    this.anyAbilityScores = const {},
     this.requiredProficiency,
     this.minLevel,
   });
 
   bool get isEmpty =>
       minAbilityScores.isEmpty &&
+      anyAbilityScores.isEmpty &&
       requiredProficiency == null &&
       minLevel == null;
 
   Map<String, dynamic> toJson() => {
         'minAbilityScores': _abilityMapToJson(minAbilityScores),
+        'anyAbilityScores': _abilityMapToJson(anyAbilityScores),
         'requiredProficiency': requiredProficiency,
         'minLevel': minLevel,
       };
 
   factory FeatPrerequisite.fromJson(Map<String, dynamic> j) => FeatPrerequisite(
         minAbilityScores: _abilityMapFromJson(j['minAbilityScores']),
+        anyAbilityScores: _abilityMapFromJson(j['anyAbilityScores']),
         requiredProficiency: j['requiredProficiency'] as String?,
         minLevel: j['minLevel'] as int?,
       );

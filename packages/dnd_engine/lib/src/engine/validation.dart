@@ -367,6 +367,12 @@ class CharacterValidator {
         return '${entry.key.abbr} ${entry.value}';
       }
     }
+    // Basta una: el PHB 2024 escribe "Fuerza o Destreza 13 o más".
+    final any = prereq.anyAbilityScores;
+    if (any.isNotEmpty &&
+        !any.entries.any((e) => sheet.abilityScores[e.key]! >= e.value)) {
+      return any.entries.map((e) => '${e.key.abbr} ${e.value}').join(' o ');
+    }
     final reqProf = prereq.requiredProficiency;
     if (reqProf != null) {
       final has = reqProf == 'spellcasting'

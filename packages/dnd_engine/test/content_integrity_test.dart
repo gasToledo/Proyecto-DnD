@@ -226,6 +226,41 @@ void main() {
     }
   });
 
+  test('los prerrequisitos de característica del PHB 2024 están cargados', () {
+    // Muestra de las tres formas que usa el capítulo 5: una sola característica,
+    // dos alternativas y tres alternativas. Antes todas estas dotes tenían el
+    // mapa vacío, así que la validación no podía detectar nada.
+    Map<Ability, int> and(String id) =>
+        repo.feats[id]!.prerequisite!.minAbilityScores;
+    Map<Ability, int> or(String id) =>
+        repo.feats[id]!.prerequisite!.anyAbilityScores;
+
+    expect(and('great-weapon-master'), {Ability.strength: 13});
+    expect(and('keen-mind'), {Ability.intelligence: 13});
+    expect(or('athlete'), {Ability.strength: 13, Ability.dexterity: 13});
+    expect(or('observant'), {Ability.intelligence: 13, Ability.wisdom: 13});
+    expect(or('speedy'), {Ability.dexterity: 13, Ability.constitution: 13});
+    expect(or('ritual-caster'), {
+      Ability.intelligence: 13,
+      Ability.wisdom: 13,
+      Ability.charisma: 13,
+    });
+    // Una alternativa nunca se guarda como exigencia conjunta.
+    for (final f in repo.feats.values) {
+      final p = f.prerequisite;
+      if (p == null) continue;
+      expect(p.minAbilityScores.length <= 1, isTrue,
+          reason: '${f.id}: dos exigencias conjuntas suelen ser una disyunción '
+              'mal cargada; usar anyAbilityScores');
+    }
+  });
+
+  test('toda dote general exige nivel 4', () {
+    for (final f in repo.feats.values.where((f) => f.category == 'general')) {
+      expect(f.prerequisite?.minLevel, 4, reason: f.id);
+    }
+  });
+
   test('las dotes de origen no piden nivel ni dan característica', () {
     // SRD 5.2.1: las dotes de origen se obtienen a nivel 1 por el trasfondo y
     // no otorgan aumentos de característica. Iniciado en la Magia figuraba mal

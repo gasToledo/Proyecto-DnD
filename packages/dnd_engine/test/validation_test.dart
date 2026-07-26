@@ -185,6 +185,36 @@ void main() {
       expect(warnings.map((w) => w.code), isNot(contains('feat_prerequisite')));
     });
 
+    test('prerrequisito disyuntivo: basta cumplir una de las dos', () {
+      // El PHB 2024 escribe "Fuerza o Destreza 13 o más"; con el mapa
+      // conjuntivo esto no se podía expresar sin exigir las dos.
+      Map<Ability, int> scores(int str, int dex) => {
+            Ability.strength: str,
+            Ability.dexterity: dex,
+            Ability.constitution: 10,
+            Ability.intelligence: 10,
+            Ability.wisdom: 10,
+            Ability.charisma: 10,
+          };
+      final repoAny = _minimalRepo(featOverrides: {
+        'prerequisite': {
+          'anyAbilityScores': {'strength': 13, 'dexterity': 13},
+        },
+      });
+      List<String> codesFor(int str, int dex) => CharacterValidator(repoAny)
+          .validate(_minimalCharacter(
+              featIds: ['test-feat'], assignedScores: scores(str, dex)))
+          .map((w) => w.code)
+          .toList();
+
+      expect(codesFor(13, 8), isNot(contains('feat_prerequisite')),
+          reason: 'alcanza con Fuerza');
+      expect(codesFor(8, 13), isNot(contains('feat_prerequisite')),
+          reason: 'alcanza con Destreza');
+      expect(codesFor(8, 8), contains('feat_prerequisite'),
+          reason: 'ninguna de las dos llega a 13');
+    });
+
     test('el motor sigue sin bloquear pese a las advertencias', () {
       final c = _minimalCharacter(chosenSkills: const []);
       expect(() => CharacterCompiler(repo).compile(c), returnsNormally);

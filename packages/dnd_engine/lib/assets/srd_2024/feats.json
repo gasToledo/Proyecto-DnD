@@ -172,9 +172,10 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": { "strength": 13 },
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "minAbilityScores": {
+        "strength": 13
+      }
     }
   },
   {
@@ -195,9 +196,10 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": { "dexterity": 13 },
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "minAbilityScores": {
+        "dexterity": 13
+      }
     }
   },
   {
@@ -222,8 +224,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -246,9 +246,10 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "minAbilityScores": {
+        "charisma": 13
+      }
     }
   },
   {
@@ -270,9 +271,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "strength": 13,
+        "dexterity": 13
+      }
     }
   },
   {
@@ -294,9 +297,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "strength": 13,
+        "dexterity": 13
+      }
     }
   },
   {
@@ -318,8 +323,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -342,8 +345,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -361,9 +362,10 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "minAbilityScores": {
+        "dexterity": 13
+      }
     }
   },
   {
@@ -385,9 +387,10 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "minAbilityScores": {
+        "dexterity": 13
+      }
     }
   },
   {
@@ -409,9 +412,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "strength": 13,
+        "dexterity": 13
+      }
     }
   },
   {
@@ -433,8 +438,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -452,9 +455,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "spellcasting"
     }
   },
   {
@@ -476,8 +478,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -500,9 +500,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": { "strength": 13 },
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "strength": 13,
+        "dexterity": 13
+      }
     }
   },
   {
@@ -528,9 +530,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "medium"
     }
   },
   {
@@ -552,9 +553,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "heavy"
     }
   },
   {
@@ -576,9 +576,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "wisdom": 13,
+        "charisma": 13
+      }
     }
   },
   {
@@ -600,9 +602,10 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "minAbilityScores": {
+        "intelligence": 13
+      }
     }
   },
   {
@@ -628,8 +631,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -647,8 +648,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -699,9 +698,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "medium"
     }
   },
   {
@@ -722,9 +720,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "dexterity": 13,
+        "constitution": 13
+      }
     }
   },
   {
@@ -754,9 +754,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "light"
     }
   },
   {
@@ -778,8 +777,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -802,9 +799,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "intelligence": 13,
+        "wisdom": 13
+      }
     }
   },
   {
@@ -826,8 +825,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -845,8 +842,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -864,9 +859,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "strength": 13,
+        "dexterity": 13
+      }
     }
   },
   {
@@ -892,8 +889,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -920,8 +915,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -939,9 +932,12 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "intelligence": 13,
+        "wisdom": 13,
+        "charisma": 13
+      }
     }
   },
   {
@@ -958,9 +954,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "strength": 13,
+        "dexterity": 13
+      }
     }
   },
   {
@@ -982,8 +980,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -1001,9 +997,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "shield"
     }
   },
   {
@@ -1025,8 +1020,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -1049,9 +1042,10 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "minAbilityScores": {
+        "dexterity": 13
+      }
     }
   },
   {
@@ -1073,8 +1067,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -1101,9 +1093,11 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "anyAbilityScores": {
+        "dexterity": 13,
+        "constitution": 13
+      }
     }
   },
   {
@@ -1120,9 +1114,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "spellcasting"
     }
   },
   {
@@ -1144,8 +1137,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -1168,8 +1159,6 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
       "minLevel": 4
     }
   },
@@ -1187,9 +1176,8 @@
       }
     ],
     "prerequisite": {
-      "minAbilityScores": {},
-      "requiredProficiency": null,
-      "minLevel": 4
+      "minLevel": 4,
+      "requiredProficiency": "spellcasting"
     }
   }
 ]

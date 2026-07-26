@@ -871,7 +871,7 @@
       },
       {
         "level": 2,
-        "name": "Fuente de Magia (Puntos de Hechicería)",
+        "name": "Fuente de Magia",
         "description": "Tienes Puntos de Hechicería iguales a tu nivel para crear espacios o alimentar Metamagia.",
         "effects": [
           { "type": "resource", "id": "sorcery_points", "name": "Puntos de Hechicería", "max": 0, "maxPerLevel": true, "recharge": "long", "description": "Puntos iguales a tu nivel de Hechicero. Convierten en espacios de conjuro y alimentan Metamagia. Se recuperan tras un descanso largo." }
@@ -882,7 +882,55 @@
         "name": "Metamagia",
         "description": "Aprendes opciones para modificar tus conjuros gastando Puntos de Hechicería.",
         "effects": [
-          { "type": "passiveTrait", "name": "Metamagia", "description": "Aprendes dos opciones de Metamagia (p.ej. Conjuro Acelerado, Conjuro Gemelo) que aplicas gastando Puntos de Hechicería." }
+          { "type": "passiveTrait", "name": "Metamagia", "description": "Aprendes dos opciones de Metamagia (p.ej. Conjuro Acelerado, Conjuro Gemelo) que aplicas gastando Puntos de Hechicería. Solo podés aplicar una por conjuro, salvo que la opción diga otra cosa, y al subir de nivel podés cambiar una por otra." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Recuperación Mágica",
+        "description": "Tras un descanso corto recuperás Puntos de Hechicería, una vez por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Recuperación Mágica", "description": "Tras finalizar un descanso corto, recuperás una cantidad de Puntos de Hechicería igual o inferior a la mitad de tu nivel de Hechicero (redondeando hacia abajo). Una vez usado, hay que esperar a un descanso largo." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Encarnación Mágica",
+        "description": "Activás Hechicería Innata gastando 2 Puntos, y aplicás dos Metamagias por conjuro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Encarnación Mágica", "description": "Si no te quedan usos de Hechicería Innata, podés activarla igual gastando 2 Puntos de Hechicería. Además, mientras esté activa podés usar hasta dos opciones de Metamagia en cada conjuro que lances." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Metamagia (dos opciones más)",
+        "description": "Aprendés otras dos opciones de Metamagia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Metamagia (dos opciones más)", "description": "Aprendés dos opciones de Metamagia adicionales de tu elección." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Metamagia (dos opciones más)",
+        "description": "Aprendés otras dos opciones de Metamagia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Metamagia (dos opciones más)", "description": "Aprendés dos opciones de Metamagia adicionales de tu elección." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Viaje Dimensional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Apoteosis Arcana",
+        "description": "Con Hechicería Innata activa, una Metamagia por turno te sale gratis.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Apoteosis Arcana", "description": "Mientras tengas activa la Hechicería Innata, podés usar una opción de Metamagia en cada uno de tus turnos sin gastar Puntos de Hechicería." }
         ]
       }
     ]
@@ -921,9 +969,65 @@
       {
         "level": 2,
         "name": "Astucia Mágica",
-        "description": "Tras un descanso corto puedes recuperar espacios de Magia de Pacto gastados.",
+        "description": "Con un rito de 1 minuto recuperás la mitad de tus espacios de Magia de Pacto, una vez por descanso largo.",
         "effects": [
-          { "type": "passiveTrait", "name": "Astucia Mágica", "description": "Como 1 minuto de concentración ritual, una vez por descanso largo, recuperas tus espacios de Magia de Pacto gastados." }
+          { "type": "passiveTrait", "name": "Astucia Mágica", "description": "Un rito esotérico de 1 minuto te devuelve una cantidad de espacios de Magia de Pacto gastados igual o inferior a la mitad de tu máximo (redondeando hacia arriba). Una vez usado, hay que esperar a un descanso largo." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Contactar Patrón",
+        "description": "Siempre tenés preparado Contactar con Otro Plano y lo lanzás gratis para hablar con tu patrón.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Contactar Patrón", "description": "Siempre tenés preparado Contactar con Otro Plano. Una vez por descanso largo podés lanzarlo sin gastar espacio para comunicarte con tu patrón, y superás automáticamente la salvación del conjuro." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Arcanum Místico (conjuro de nivel 6)",
+        "description": "Elegís un conjuro de Brujo de nivel 6 y lo lanzás gratis una vez por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arcanum Místico (conjuro de nivel 6)", "description": "Escogé un conjuro de Brujo de nivel 6 como arcanum. Podés lanzarlo una vez sin gastar espacio de conjuro y recuperás el uso tras un descanso largo. Al subir de nivel podés cambiarlo por otro del mismo nivel." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Arcanum Místico (conjuro de nivel 7)",
+        "description": "Sumás un conjuro de Brujo de nivel 7 con un uso gratuito por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arcanum Místico (conjuro de nivel 7)", "description": "Escogé un conjuro de Brujo de nivel 7 como arcanum, con un uso gratuito que recuperás tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Arcanum Místico (conjuro de nivel 8)",
+        "description": "Sumás un conjuro de Brujo de nivel 8 con un uso gratuito por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arcanum Místico (conjuro de nivel 8)", "description": "Escogé un conjuro de Brujo de nivel 8 como arcanum, con un uso gratuito que recuperás tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Arcanum Místico (conjuro de nivel 9)",
+        "description": "Sumás un conjuro de Brujo de nivel 9 con un uso gratuito por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arcanum Místico (conjuro de nivel 9)", "description": "Escogé un conjuro de Brujo de nivel 9 como arcanum, con un uso gratuito que recuperás tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Destino.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Maestro Sobrenatural",
+        "description": "Astucia Mágica pasa a devolverte todos los espacios de Magia de Pacto.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Maestro Sobrenatural", "description": "Cuando usás Astucia Mágica, recuperás todos los espacios de Magia de Pacto gastados en vez de la mitad." }
         ]
       }
     ]

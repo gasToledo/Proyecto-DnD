@@ -115,10 +115,17 @@ El contenido oficial vive en
 `packages/dnd_engine/lib/assets/srd_2024/`. Su `manifest.json` declara la versión
 del formato y la edición de reglas.
 
-La fuente normativa, la separación entre contenido SRD y PHB y el avance de la
-comprobación están en `docs/auditoria-reglas-2024.md`. No etiquetar contenido
-PHB como `srd_2024`; el hecho de que una opción sea oficial no implica que esté
-incluida en el SRD ni cubierta por CC BY 4.0.
+Hay dos referencias, que resuelven preguntas distintas. Las **reglas** las manda
+el **Manual del Jugador 2024**, que es con el que juega la mesa: si difiere del
+SRD, gana el PHB. La **licencia** la manda el **SRD 5.2.1**: solo lo que está
+ahí queda cubierto por CC BY 4.0.
+
+No etiquetar contenido PHB como `srd_2024`; el hecho de que una opción sea
+oficial no implica que esté incluida en el SRD. Que algo falte en el SRD tampoco
+es motivo para excluirlo del catálogo: es motivo para etiquetarlo `phb_2024`.
+
+El detalle y el avance de la comprobación están en
+`docs/auditoria-reglas-2024.md`.
 
 `ContentSource` distingue `srd_2024` de `phb_2024`, y `content_integrity_test`
 fija qué ids pertenecen al SRD. Un valor desconocido degrada a `homebrew` sin

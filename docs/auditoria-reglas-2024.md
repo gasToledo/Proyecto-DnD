@@ -2,24 +2,41 @@
 
 ## Fuente de verdad
 
-La referencia normativa y licenciable del proyecto es el **SRD 5.2.1 en
-español**, publicado por Wizards of the Coast bajo CC BY 4.0:
+Hay **dos referencias y no compiten**: resuelven preguntas distintas.
+
+### Reglas y contenido: Manual del Jugador 2024
+
+La mesa juega con el **Manual del Jugador 2024** y lo usa para crear personajes
+y resolver reglas. Es la referencia mecánica del proyecto: si el PHB y el SRD
+difieren en la redacción de un rasgo o en qué opciones existen, **gana el PHB**.
+
+### Licencia: SRD 5.2.1
+
+El **SRD 5.2.1 en español**, publicado por Wizards of the Coast bajo CC BY 4.0,
+define qué contenido es libremente distribuible:
 
 - <https://media.dndbeyond.com/compendium-images/srd/5.2/SP_SRD_CC_v5.2.1.pdf>
 - <https://www.dndbeyond.com/srd>
 
-Las reglas gratuitas 2024 de D&D Beyond se usan como apoyo de consulta:
+El SRD **no** limita qué puede tener el catálogo, solo cómo hay que etiquetarlo.
+El contenido oficial que no está en el SRD se marca `phb_2024` y no queda
+cubierto por la atribución CC.
 
-- <https://www.dndbeyond.com/sources/dnd/br-2024/character-origins>
+Que algo falte en el SRD no es motivo para excluirlo ni para dejarlo sin
+corregir: es motivo para etiquetarlo bien.
 
-El PDF del SRD está cargado como fuente en el notebook `Manual del experto D&D`
-de NotebookLM, que es contra lo que se citan las correcciones. El resto de las
-fuentes de ese notebook es material secundario (blogs, foros, D&D Beyond): sirve
+### Dónde consultarlas
+
+Ambos manuales están cargados como PDF en el notebook `Manual del experto D&D`
+de NotebookLM, y es contra ellos que se citan las correcciones. El notebook
+también tiene *Forge of the Artificer*, para el día que se sume el Artífice.
+
+El resto de sus fuentes es material secundario (blogs, foros, D&D Beyond): sirve
 para detectar restos de 2014, no para fijar valores numéricos.
 
-El catálogo puede incluir contenido oficial del PHB 2024 que no pertenece al
-SRD. Ese contenido debe identificarse como `phb_2024`; no queda cubierto por la
-atribución CC del SRD.
+Las reglas gratuitas 2024 de D&D Beyond quedan como apoyo de consulta:
+
+- <https://www.dndbeyond.com/sources/dnd/br-2024/character-origins>
 
 ## Método
 

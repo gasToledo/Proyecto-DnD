@@ -555,10 +555,10 @@
       },
       {
         "level": 2,
-        "name": "Erudito Académico",
+        "name": "Académico",
         "description": "Tu experiencia en un campo de estudio te da beneficios (subclase a nivel 3).",
         "effects": [
-          { "type": "passiveTrait", "name": "Erudito Académico", "description": "Ganas competencia (o Pericia) en una habilidad mental y beneficios menores según tu tradición arcana." }
+          { "type": "passiveTrait", "name": "Académico", "description": "Ganas competencia (o Pericia) en una habilidad mental y beneficios menores según tu tradición arcana." }
         ]
       },
       {
@@ -567,6 +567,38 @@
         "description": "Podés lanzar como ritual cualquier conjuro de Mago de tu libro marcado como ritual, sin tenerlo preparado.",
         "effects": [
           { "type": "passiveTrait", "name": "Adepto en Rituales", "description": "Podés lanzar de forma ritual cualquier conjuro de Mago que figure en tu libro y esté marcado como ritual. No hace falta tenerlo preparado, pero debés leerlo del libro." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Memorizar Conjuro",
+        "description": "Tras un descanso corto, cambiás un conjuro preparado por otro de tu libro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Memorizar Conjuro", "description": "Tras finalizar un descanso corto, podés estudiar tu libro y sustituir un conjuro de nivel 1 o superior que tengas preparado por otro de nivel 1 o superior del libro." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Maestría sobre Conjuros",
+        "description": "Lanzás a voluntad un conjuro de nivel 1 y otro de nivel 2 de tu libro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Maestría sobre Conjuros", "description": "Elegí un conjuro de nivel 1 y otro de nivel 2 de tu libro cuyo tiempo de lanzamiento sea una acción. Siempre los tenés preparados y podés lanzarlos a su nivel más bajo sin gastar espacio. Para subirlos de nivel sí gastás un espacio. Tras un descanso largo podés cambiarlos por otros del mismo nivel." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Recuerdo de Conjuros.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Conjuros Característicos",
+        "description": "Dos conjuros de nivel 3 siempre preparados, con un uso gratuito cada uno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjuros Característicos", "description": "Elegí dos conjuros de nivel 3 de tu libro. Siempre los tenés preparados y podés lanzar cada uno una vez a nivel 3 sin gastar espacio. El uso gratuito vuelve tras un descanso corto o largo." }
         ]
       }
     ]
@@ -734,10 +766,10 @@
       },
       {
         "level": 2,
-        "name": "Versatilidad",
-        "description": "Sumas la mitad de tu bonif. de competencia a pruebas de características en las que no seas competente.",
+        "name": "Aprendiz de Mucho",
+        "description": "Sumás la mitad de tu bonif. de competencia a pruebas con habilidades en las que no seas competente.",
         "effects": [
-          { "type": "passiveTrait", "name": "Versatilidad", "description": "Sumas la mitad de tu bonif. de competencia (redondeando hacia abajo) a cualquier prueba de característica que no incluya ya tu bonif. de competencia." }
+          { "type": "passiveTrait", "name": "Aprendiz de Mucho", "description": "Sumás la mitad de tu bonif. de competencia (redondeando hacia abajo) a cualquier prueba de característica que use una habilidad en la que no seas competente y que no incluya ya tu bonif. de competencia." }
         ]
       },
       {
@@ -746,6 +778,62 @@
         "description": "Duplicás tu bonif. de competencia en dos habilidades.",
         "effects": [
           { "type": "passiveTrait", "name": "Pericia", "description": "Elegí dos de tus competencias de habilidad; duplicás tu bonif. de competencia en ellas. Otras dos a nivel 9." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Fuente de Inspiración",
+        "description": "Recuperás toda la Inspiración Bárdica en descanso corto, y podés gastar un espacio para recuperar un uso.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Fuente de Inspiración", "description": "Recuperás todos los usos de Inspiración Bárdica tras un descanso corto o largo. Además, podés gastar un espacio de conjuro, sin que requiera acción, para recuperar un uso gastado." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Contraencantamiento",
+        "description": "Como reacción, repetís con ventaja una salvación fallida contra asustado o hechizado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Contraencantamiento", "description": "Si vos o una criatura a 30 pies o menos falla una salvación contra un efecto que aplique el estado de asustado o hechizado, podés usar tu reacción para que repita la tirada con ventaja." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Pericia (dos habilidades más)",
+        "description": "Ganás pericia en otras dos de tus competencias de habilidad.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pericia (dos habilidades más)", "description": "Elegí otras dos de tus competencias de habilidad; duplicás tu bonif. de competencia también en ellas." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Secretos Mágicos",
+        "description": "Podés preparar conjuros de las listas de Bardo, Clérigo, Druida y Mago.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Secretos Mágicos", "description": "Cada vez que suba tu cantidad de conjuros preparados, podés elegir los nuevos de las listas de Bardo, Clérigo, Druida o Mago. Cuentan como conjuros de Bardo para vos, y también podés sustituir preparados por conjuros de esas listas." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Inspiración Superior",
+        "description": "Al tirar iniciativa recuperás usos de Inspiración Bárdica hasta tener dos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Inspiración Superior", "description": "Cuando tirás iniciativa, si tenés menos de dos usos de Inspiración Bárdica, recuperás los gastados hasta llegar a dos." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Recuerdo de Conjuros.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Palabras de Creación",
+        "description": "Siempre tenés preparados Palabra de Poder: Sanar y Palabra de Poder: Matar, y alcanzan a dos criaturas.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Palabras de Creación", "description": "Dominás las palabras de la vida y de la muerte: siempre tenés preparados Palabra de Poder: Sanar y Palabra de Poder: Matar. Al lanzar cualquiera de los dos podés hacer objetivo a una segunda criatura que esté a 10 pies o menos de la primera." }
         ]
       }
     ]

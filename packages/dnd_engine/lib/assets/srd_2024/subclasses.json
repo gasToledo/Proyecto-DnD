@@ -224,7 +224,7 @@
 
   {
     "id": "berserker",
-    "name": "Camino del Berserker",
+    "name": "Senda del Berserker",
     "classId": "barbarian",
     "source": "srd_2024",
     "description": "Un canal de furia pura y sanguinaria: cuanto más lucha el berserker, más peligroso se vuelve.",
@@ -272,7 +272,7 @@
     "features": [
       {
         "level": 3,
-        "name": "Hablar con Animales / Furia de lo Salvaje",
+        "name": "Portavoz de los Animales / Furia de lo Salvaje",
         "description": "Puedes comunicarte con bestias y, al entrar en Furia, invocas el poder de un espíritu animal (Oso, Águila o Lobo).",
         "effects": [
           { "type": "passiveTrait", "name": "Furia de lo Salvaje", "description": "En Furia eliges un espíritu: Oso (resistencias amplias), Águila (Destrabarse/Correr bonus) o Lobo (aliados con ventaja al atacar cerca tuyo)." }
@@ -288,10 +288,10 @@
       },
       {
         "level": 10,
-        "name": "Hablar con la Naturaleza",
+        "name": "Hablante de la Naturaleza",
         "description": "Puedes lanzar Hablar con los Animales y Sentido de la Naturaleza como rituales.",
         "effects": [
-          { "type": "passiveTrait", "name": "Hablar con la Naturaleza", "description": "Lanzas Hablar con los Animales y Sentido de la Naturaleza como rituales." }
+          { "type": "passiveTrait", "name": "Hablante de la Naturaleza", "description": "Lanzas Hablar con los Animales y Sentido de la Naturaleza como rituales." }
         ]
       },
       {
@@ -329,18 +329,18 @@
       },
       {
         "level": 10,
-        "name": "Raíces Batientes",
+        "name": "Raíces Apaleadoras",
         "description": "Tus armas cuerpo a cuerpo ganan alcance adicional gracias a raíces espectrales.",
         "effects": [
-          { "type": "passiveTrait", "name": "Raíces Batientes", "description": "+10 pies de alcance con ataques cuerpo a cuerpo." }
+          { "type": "passiveTrait", "name": "Raíces Apaleadoras", "description": "+10 pies de alcance con ataques cuerpo a cuerpo." }
         ]
       },
       {
         "level": 14,
-        "name": "Viaje por el Árbol",
+        "name": "Viajar por el Árbol",
         "description": "En tu turno puedes teletransportarte y llevar aliados contigo a través del Árbol del Mundo.",
         "effects": [
-          { "type": "passiveTrait", "name": "Viaje por el Árbol", "description": "Teletransporte de hasta 60 pies llevando aliados cercanos." }
+          { "type": "passiveTrait", "name": "Viajar por el Árbol", "description": "Teletransporte de hasta 60 pies llevando aliados cercanos." }
         ]
       }
     ]
@@ -370,10 +370,10 @@
       },
       {
         "level": 10,
-        "name": "Presencia Fervorosa",
+        "name": "Presencia Ferviente",
         "description": "Como acción adicional inspiras a los aliados cercanos, dándoles ventaja en ataques y salvaciones un breve tiempo.",
         "effects": [
-          { "type": "passiveTrait", "name": "Presencia Fervorosa", "description": "Aliados cercanos ganan ventaja en ataques y salvaciones brevemente." }
+          { "type": "passiveTrait", "name": "Presencia Ferviente", "description": "Aliados cercanos ganan ventaja en ataques y salvaciones brevemente." }
         ]
       },
       {
@@ -463,7 +463,7 @@
   },
   {
     "id": "college-lore",
-    "name": "Colegio del Saber",
+    "name": "Colegio del Conocimiento",
     "classId": "bard",
     "source": "srd_2024",
     "description": "Bardos que acumulan conocimiento de todas las fuentes y usan su ingenio para socavar a los poderosos.",
@@ -521,10 +521,10 @@
       },
       {
         "level": 3,
-        "name": "Inspiración de Combate",
+        "name": "Inspiración en Combate",
         "description": "Un aliado con tu Inspiración Bárdica puede sumar el dado a una tirada de daño o a su CA contra un ataque.",
         "effects": [
-          { "type": "passiveTrait", "name": "Inspiración de Combate", "description": "La Inspiración Bárdica puede sumarse al daño o a la CA del aliado." }
+          { "type": "passiveTrait", "name": "Inspiración en Combate", "description": "La Inspiración Bárdica puede sumarse al daño o a la CA del aliado." }
         ]
       },
       {
@@ -1799,7 +1799,7 @@
 
   {
     "id": "fiend-patron",
-    "name": "Patrón Diabólico",
+    "name": "Patrón Infernal",
     "classId": "warlock",
     "source": "srd_2024",
     "description": "Sellaste un pacto con un ser de los Planos Inferiores, obteniendo poder a cambio de servicio.",
@@ -1924,7 +1924,7 @@
   },
   {
     "id": "great-old-one-patron",
-    "name": "Patrón del Gran Antiguo",
+    "name": "Patrón Primigenio",
     "classId": "warlock",
     "source": "phb_2024",
     "description": "Tu pacto es con una entidad cósmica e incognoscible, fuente de secretos y poder psíquico.",

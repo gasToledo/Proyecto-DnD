@@ -70,7 +70,9 @@ void main() {
         name: 'Fuerza homebrew',
         source: ContentSource.homebrew,
         category: 'general',
-        effects: [AbilityScoreBonusEffect(ability: Ability.strength, amount: 2)],
+        effects: [
+          AbilityScoreBonusEffect(ability: Ability.strength, amount: 2)
+        ],
       ),
     });
     final c = Character(

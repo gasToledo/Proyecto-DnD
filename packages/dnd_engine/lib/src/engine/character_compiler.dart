@@ -95,7 +95,9 @@ class CharacterCompiler {
 
     // --- Finalización a valores derivados ---
     final scores = {for (final a in Ability.values) a: builder.finalScore(a)};
-    final mods = {for (final a in Ability.values) a: abilityModifier(scores[a]!)};
+    final mods = {
+      for (final a in Ability.values) a: abilityModifier(scores[a]!)
+    };
     final profBonus = proficiencyBonusForLevel(c.level);
     final conMod = mods[Ability.constitution]!;
     final dexMod = mods[Ability.dexterity]!;
@@ -244,11 +246,13 @@ class CharacterCompiler {
   int _speed(Character c, SheetBuilder b) {
     var speed = b.speed;
     if (b.unarmoredMovementBonus != 0) {
-      final armor =
-          c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
+      final armor = c.equippedArmorId == null
+          ? null
+          : repo.armorPiece(c.equippedArmorId!);
       var voided = false;
       if (armor != null && !armor.isShield) {
-        voided = b.unarmoredMovementHeavyOnly ? armor.category == 'heavy' : true;
+        voided =
+            b.unarmoredMovementHeavyOnly ? armor.category == 'heavy' : true;
       }
       if (c.shieldEquipped && !b.unarmoredMovementAllowShield) voided = true;
       if (!voided) speed += b.unarmoredMovementBonus;
@@ -259,17 +263,19 @@ class CharacterCompiler {
   int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {
     final dexMod = mods[Ability.dexterity]!;
     var ac = 10 + dexMod; // Sin armadura.
-    final armor = c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
+    final armor =
+        c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
     if (armor != null && !armor.isShield) {
       ac = armor.baseAc;
       if (armor.addDexMod) {
-        ac += armor.maxDexBonus == null ? dexMod : min(dexMod, armor.maxDexBonus!);
+        ac += armor.maxDexBonus == null
+            ? dexMod
+            : min(dexMod, armor.maxDexBonus!);
       }
     } else if (b.unarmoredDefenseAbility != null) {
       // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
       // El Monje la pierde si empuña un escudo; el Bárbaro la conserva.
-      final voidedByShield =
-          c.shieldEquipped && !b.unarmoredDefenseAllowShield;
+      final voidedByShield = c.shieldEquipped && !b.unarmoredDefenseAllowShield;
       if (!voidedByShield) {
         ac = 10 + dexMod + mods[b.unarmoredDefenseAbility!]!;
       }

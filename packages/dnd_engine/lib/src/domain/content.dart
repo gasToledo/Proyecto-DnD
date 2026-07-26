@@ -392,7 +392,9 @@ class FeatPrerequisite {
   });
 
   bool get isEmpty =>
-      minAbilityScores.isEmpty && requiredProficiency == null && minLevel == null;
+      minAbilityScores.isEmpty &&
+      requiredProficiency == null &&
+      minLevel == null;
 
   Map<String, dynamic> toJson() => {
         'minAbilityScores': _abilityMapToJson(minAbilityScores),

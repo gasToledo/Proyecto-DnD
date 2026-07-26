@@ -73,10 +73,12 @@ void main() {
     });
 
     test('salvaciones de Guerrero', () {
-      expect(s.savingThrowProficiencies, containsAll([
-        Ability.strength,
-        Ability.constitution,
-      ]));
+      expect(
+          s.savingThrowProficiencies,
+          containsAll([
+            Ability.strength,
+            Ability.constitution,
+          ]));
     });
 
     test('Maestría de Armas: 3 espacios', () {
@@ -161,8 +163,8 @@ void main() {
       final b = compiler.compile(restored);
       expect(b.maxHp, a.maxHp);
       expect(b.armorClass, a.armorClass);
-      expect(b.abilityScores[Ability.strength],
-          a.abilityScores[Ability.strength]);
+      expect(
+          b.abilityScores[Ability.strength], a.abilityScores[Ability.strength]);
       expect(b.attacks.single.mastery, a.attacks.single.mastery);
     });
   });
@@ -172,7 +174,10 @@ void main() {
       // 4 maestrías elegidas cuando solo hay 3 espacios.
       final json = sagan().toJson();
       json['weaponMasteryChoices'] = [
-        'longsword', 'greatsword', 'dagger', 'shortbow'
+        'longsword',
+        'greatsword',
+        'dagger',
+        'shortbow'
       ];
       final over = Character.fromJson(json);
 

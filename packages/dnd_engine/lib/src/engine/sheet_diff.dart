@@ -40,7 +40,8 @@ class SheetDiff {
     required this.newDarkvision,
   });
 
-  bool get proficiencyBonusChanged => proficiencyBonusFrom != proficiencyBonusTo;
+  bool get proficiencyBonusChanged =>
+      proficiencyBonusFrom != proficiencyBonusTo;
 
   /// True si hay algo relevante que mostrar.
   bool get hasChanges =>
@@ -66,16 +67,18 @@ SheetDiff diffSheets(ComputedSheet before, ComputedSheet after) {
   }
 
   final beforePassiveNames = before.passives.map((p) => p.name).toSet();
-  final newPassives =
-      after.passives.where((p) => !beforePassiveNames.contains(p.name)).toList();
+  final newPassives = after.passives
+      .where((p) => !beforePassiveNames.contains(p.name))
+      .toList();
 
   final beforeResIds = before.resources.map((r) => r.id).toSet();
   final newResources =
       after.resources.where((r) => !beforeResIds.contains(r.id)).toList();
 
-  final newSkills =
-      after.skillProficiencies.difference(before.skillProficiencies).toList()
-        ..sort();
+  final newSkills = after.skillProficiencies
+      .difference(before.skillProficiencies)
+      .toList()
+    ..sort();
   final newSaves = after.savingThrowProficiencies
       .difference(before.savingThrowProficiencies)
       .toList();

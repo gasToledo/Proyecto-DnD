@@ -10,7 +10,8 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   /// Navega hasta Aptitudes con Humano + Mago + Soldado.
@@ -19,10 +20,12 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: CreationWizard(repo: repo, onCreate: (_) {}),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: CreationWizard(repo: repo, onCreate: (_) {}),
+      ),
+    );
     await tester.pumpAndSettle();
 
     Future<void> next() async {
@@ -61,8 +64,9 @@ void main() {
     await next();
   }
 
-  testWidgets('muestra las habilidades en español con su característica',
-      (tester) async {
+  testWidgets('muestra las habilidades en español con su característica', (
+    tester,
+  ) async {
     await gotoAptitudes(tester);
 
     expect(find.text('Competencias de clase'.toUpperCase()), findsOneWidget);

@@ -11,14 +11,20 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   Future<void> pump(WidgetTester tester, Widget child) => tester.pumpWidget(
-      MaterialApp(theme: AppTheme.dark, home: Scaffold(body: child)));
+    MaterialApp(
+      theme: AppTheme.dark,
+      home: Scaffold(body: child),
+    ),
+  );
 
-  testWidgets('sin retrato muestra el ícono de la clase, no la inicial',
-      (tester) async {
+  testWidgets('sin retrato muestra el ícono de la clase, no la inicial', (
+    tester,
+  ) async {
     final wizard = repo.characterClass('wizard')!;
     await pump(tester, ClassMedallion(klass: wizard, fallback: 'S'));
 
@@ -39,8 +45,9 @@ void main() {
     expect(find.text('S'), findsOneWidget);
   });
 
-  testWidgets('Medallion sin emblema sigue mostrando la inicial',
-      (tester) async {
+  testWidgets('Medallion sin emblema sigue mostrando la inicial', (
+    tester,
+  ) async {
     await pump(tester, const Medallion(fallback: 'B', size: 40));
     expect(find.text('B'), findsOneWidget);
   });

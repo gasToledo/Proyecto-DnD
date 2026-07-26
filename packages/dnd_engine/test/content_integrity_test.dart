@@ -13,13 +13,27 @@ void main() {
 
   // Las 8 propiedades de Maestría de Armas del PHB 2024.
   const validMasteries = {
-    'cleave', 'graze', 'nick', 'push', 'sap', 'slow', 'topple', 'vex',
+    'cleave',
+    'graze',
+    'nick',
+    'push',
+    'sap',
+    'slow',
+    'topple',
+    'vex',
   };
   const validWeaponCategories = {'simple', 'martial'};
   const validArmorCategories = {'light', 'medium', 'heavy', 'shield'};
 
   const casterClasses = {
-    'wizard', 'sorcerer', 'bard', 'warlock', 'cleric', 'druid', 'paladin', 'ranger',
+    'wizard',
+    'sorcerer',
+    'bard',
+    'warlock',
+    'cleric',
+    'druid',
+    'paladin',
+    'ranger',
   };
 
   test('el catálogo se cargó con volumen razonable', () {
@@ -34,13 +48,15 @@ void main() {
   test('los conjuros cubren los niveles 0 a 9', () {
     final levels = repo.spells.values.map((s) => s.level).toSet();
     for (var l = 0; l <= 9; l++) {
-      expect(levels, contains(l), reason: 'falta al menos un conjuro de nivel $l');
+      expect(levels, contains(l),
+          reason: 'falta al menos un conjuro de nivel $l');
     }
   });
 
   test('cada conjuro tiene nivel válido y clases lanzadoras conocidas', () {
     for (final s in repo.spells.values) {
-      expect(s.level, inInclusiveRange(0, 9), reason: '${s.id}: nivel inválido');
+      expect(s.level, inInclusiveRange(0, 9),
+          reason: '${s.id}: nivel inválido');
       expect(s.classes, isNotEmpty, reason: '${s.id}: sin clases');
       for (final c in s.classes) {
         expect(casterClasses, contains(c),
@@ -49,9 +65,16 @@ void main() {
     }
   });
 
-  test('cada dote general con prerrequisito de competencia lo referencia bien', () {
+  test('cada dote general con prerrequisito de competencia lo referencia bien',
+      () {
     const knownProfs = {
-      'light', 'medium', 'heavy', 'shield', 'simple', 'martial', 'spellcasting',
+      'light',
+      'medium',
+      'heavy',
+      'shield',
+      'simple',
+      'martial',
+      'spellcasting',
     };
     for (final f in repo.feats.values) {
       final prof = f.prerequisite?.requiredProficiency;
@@ -61,7 +84,8 @@ void main() {
     }
   });
 
-  test('todas las dotes hacen round-trip por JSON (efectos y prerrequisitos)', () {
+  test('todas las dotes hacen round-trip por JSON (efectos y prerrequisitos)',
+      () {
     for (final f in repo.feats.values) {
       final r = Feat.fromJson(f.toJson());
       expect(r.id, f.id);
@@ -108,7 +132,8 @@ void main() {
     }
   });
 
-  test('cada trasfondo ofrece exactamente 3 opciones de característica (2024)', () {
+  test('cada trasfondo ofrece exactamente 3 opciones de característica (2024)',
+      () {
     for (final b in repo.backgrounds.values) {
       expect(b.abilityOptions, hasLength(3),
           reason: '${b.id}: debería ofrecer 3 características');

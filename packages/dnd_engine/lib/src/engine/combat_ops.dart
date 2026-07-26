@@ -96,7 +96,8 @@ class CombatOps {
   }
 
   /// Espacios de conjuro disponibles (no gastados) del [slotLevel] indicado.
-  static int spellSlotsRemaining(CombatState c, Spellcasting sc, int slotLevel) {
+  static int spellSlotsRemaining(
+      CombatState c, Spellcasting sc, int slotLevel) {
     final available = sc.slotsByLevel[slotLevel] ?? 0;
     return max(0, available - (c.spellSlotsUsed[slotLevel] ?? 0));
   }

@@ -53,12 +53,10 @@ sealed class Effect {
           description: json['description'] as String? ?? '',
         ),
       'grantFeat' => GrantFeatEffect(featId: json['featId'] as String?),
-      'weaponMasterySlots' =>
-        WeaponMasterySlotsEffect(json['count'] as int),
+      'weaponMasterySlots' => WeaponMasterySlotsEffect(json['count'] as int),
       'extraAttack' => ExtraAttackEffect(json['extra'] as int),
       'bonusMaxHpFlat' => BonusMaxHpFlatEffect(json['amount'] as int),
-      'bonusMaxHpPerLevel' =>
-        BonusMaxHpPerLevelEffect(json['perLevel'] as int),
+      'bonusMaxHpPerLevel' => BonusMaxHpPerLevelEffect(json['perLevel'] as int),
       'armorClassBonus' => ArmorClassBonusEffect(json['amount'] as int),
       'unarmoredDefense' => UnarmoredDefenseEffect(
           Ability.fromKey(json['ability'] as String),
@@ -71,8 +69,10 @@ sealed class Effect {
         ),
       'spellcasting' => SpellcastingEffect(
           ability: Ability.fromKey(json['ability'] as String),
-          progression: CasterProgression.fromJson(json['progression'] as String?),
-          preparation: SpellPreparation.fromJson(json['preparation'] as String?),
+          progression:
+              CasterProgression.fromJson(json['progression'] as String?),
+          preparation:
+              SpellPreparation.fromJson(json['preparation'] as String?),
           spellList: json['spellList'] as String,
           cantripsKnown: json['cantripsKnown'] as int? ?? 0,
         ),
@@ -254,8 +254,7 @@ class BonusMaxHpFlatEffect extends Effect {
   final int amount;
   const BonusMaxHpFlatEffect(this.amount);
   @override
-  Map<String, dynamic> toJson() =>
-      {'type': 'bonusMaxHpFlat', 'amount': amount};
+  Map<String, dynamic> toJson() => {'type': 'bonusMaxHpFlat', 'amount': amount};
 }
 
 /// PG máximos adicionales por nivel de personaje (p.ej. dote Robustez).

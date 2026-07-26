@@ -13,7 +13,8 @@ void main() {
     late ContentRepository repo;
     setUpAll(() async {
       repo = await ContentRepository.loadFromDirectory(
-          '../dnd_engine/lib/assets/srd_2024');
+        '../dnd_engine/lib/assets/srd_2024',
+      );
     });
 
     test('auto-completa raza, clase, armadura, arma y estilo', () {
@@ -32,19 +33,24 @@ void main() {
   });
 
   group('Gemini request/response (puro)', () {
-    test('el cuerpo pide modalidad de imagen y sin referencia no incluye inlineData', () {
-      final body = GeminiImageService.buildRequestBody('un prompt');
-      final parts = (body['contents'] as List).first['parts'] as List;
-      expect(parts.first['text'], 'un prompt');
-      expect(parts.any((p) => (p as Map).containsKey('inlineData')), isFalse);
-      expect(body['generationConfig']['responseModalities'], ['IMAGE']);
-    });
+    test(
+      'el cuerpo pide modalidad de imagen y sin referencia no incluye inlineData',
+      () {
+        final body = GeminiImageService.buildRequestBody('un prompt');
+        final parts = (body['contents'] as List).first['parts'] as List;
+        expect(parts.first['text'], 'un prompt');
+        expect(parts.any((p) => (p as Map).containsKey('inlineData')), isFalse);
+        expect(body['generationConfig']['responseModalities'], ['IMAGE']);
+      },
+    );
 
     test('con referencia agrega inlineData en base64', () {
       final ref = Uint8List.fromList([1, 2, 3, 4]);
       final body = GeminiImageService.buildRequestBody('p', reference: ref);
       final parts = (body['contents'] as List).first['parts'] as List;
-      final inline = parts.firstWhere((p) => (p as Map).containsKey('inlineData'));
+      final inline = parts.firstWhere(
+        (p) => (p as Map).containsKey('inlineData'),
+      );
       expect(inline['inlineData']['data'], base64Encode(ref));
     });
 
@@ -55,11 +61,13 @@ void main() {
           {
             'content': {
               'parts': [
-                {'inlineData': {'mimeType': 'image/png', 'data': data}},
-              ]
-            }
-          }
-        ]
+                {
+                  'inlineData': {'mimeType': 'image/png', 'data': data},
+                },
+              ],
+            },
+          },
+        ],
       };
       final imgs = GeminiImageService.extractImages(resp);
       expect(imgs, hasLength(1));
@@ -67,7 +75,9 @@ void main() {
     });
 
     test('parseError extrae el mensaje de la API', () {
-      final body = jsonEncode({'error': {'message': 'clave inválida'}});
+      final body = jsonEncode({
+        'error': {'message': 'clave inválida'},
+      });
       expect(GeminiImageService.parseError(body, 400), 'clave inválida');
     });
   });
@@ -89,7 +99,9 @@ void main() {
     });
 
     test('Hugging Face arma el cuerpo con el prompt', () {
-      expect(HuggingFaceProvider.buildBody('un prompt'), {'inputs': 'un prompt'});
+      expect(HuggingFaceProvider.buildBody('un prompt'), {
+        'inputs': 'un prompt',
+      });
     });
 
     test('providerById cae en Pollinations ante id desconocido', () {

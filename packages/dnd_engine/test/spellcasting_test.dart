@@ -57,7 +57,8 @@ void main() {
     test('semi-lanzador (2024) lanza desde nivel 1 y escala más lento', () {
       expect(spellSlotsFor(CasterProgression.half, 1), {1: 2});
       expect(spellSlotsFor(CasterProgression.half, 5), {1: 4, 2: 2});
-      expect(spellSlotsFor(CasterProgression.half, 20), {1: 4, 2: 3, 3: 3, 4: 3, 5: 2});
+      expect(spellSlotsFor(CasterProgression.half, 20),
+          {1: 4, 2: 3, 3: 3, 4: 3, 5: 2});
     });
 
     test('un tercio empieza a nivel 3', () {
@@ -97,8 +98,13 @@ void main() {
 
     test('Spell round-trip', () {
       const s = Spell(
-        id: 'hb', name: 'Conjuro propio', source: ContentSource.homebrew,
-        level: 3, school: 'Evocación', concentration: true, ritual: false,
+        id: 'hb',
+        name: 'Conjuro propio',
+        source: ContentSource.homebrew,
+        level: 3,
+        school: 'Evocación',
+        concentration: true,
+        ritual: false,
         classes: ['wizard', 'sorcerer'],
       );
       final r = Spell.fromJson(s.toJson());
@@ -137,7 +143,11 @@ void main() {
 
     test('un no-lanzador no tiene bloque de lanzamiento', () {
       final noCaster = Character(
-        id: 'n', name: 'X', raceId: '', classId: 'nope', backgroundId: '',
+        id: 'n',
+        name: 'X',
+        raceId: '',
+        classId: 'nope',
+        backgroundId: '',
         assignedScores: {for (final a in Ability.values) a: 10},
         hpPerLevel: const [10],
       );
@@ -184,7 +194,8 @@ void main() {
   group('Selección de conjuros: round-trip y validación', () {
     late ContentRepository realRepo;
     setUpAll(() async {
-      realRepo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+      realRepo =
+          await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
       realRepo.classes['testmage'] = _mageClass();
     });
 
@@ -229,7 +240,8 @@ void main() {
       repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
     });
 
-    test('la lista del Mago incluye conjuros conocidos y ordenados por nivel', () {
+    test('la lista del Mago incluye conjuros conocidos y ordenados por nivel',
+        () {
       final wizard = repo.spellsForList('wizard');
       expect(wizard.map((s) => s.id), contains('fire-bolt'));
       expect(wizard.map((s) => s.id), contains('fireball'));
@@ -287,7 +299,8 @@ void main() {
       expect(sc.slotsByLevel, {2: 2});
     });
 
-    test('semi-lanzadores: espacios desde nivel 1 y Ataque Adicional a nivel 5', () {
+    test('semi-lanzadores: espacios desde nivel 1 y Ataque Adicional a nivel 5',
+        () {
       for (final id in ['paladin', 'ranger']) {
         final l1 = compiler.compile(mk(id, 1)).spellcasting!;
         expect(l1.progression, CasterProgression.half, reason: id);
@@ -301,8 +314,14 @@ void main() {
 
     test('cada clase lanzadora tiene conjuros en su lista', () {
       for (final id in [
-        'wizard', 'cleric', 'druid', 'bard', 'sorcerer', 'warlock',
-        'paladin', 'ranger'
+        'wizard',
+        'cleric',
+        'druid',
+        'bard',
+        'sorcerer',
+        'warlock',
+        'paladin',
+        'ranger'
       ]) {
         expect(repo.spellsForList(id), isNotEmpty, reason: id);
       }
@@ -315,15 +334,18 @@ void main() {
       // Paladín (semi) nivel 6 = 6.
       expect(compiler.compile(mk('paladin', 6)).spellcasting!.preparedCount, 6);
       // Hechicero (completo, tabla propia) nivel 6 = 10; nivel 1 = 2.
-      expect(compiler.compile(mk('sorcerer', 6)).spellcasting!.preparedCount, 10);
-      expect(compiler.compile(mk('sorcerer', 1)).spellcasting!.preparedCount, 2);
+      expect(
+          compiler.compile(mk('sorcerer', 6)).spellcasting!.preparedCount, 10);
+      expect(
+          compiler.compile(mk('sorcerer', 1)).spellcasting!.preparedCount, 2);
       // Mago nivel 1 = 4, nivel 2 = 5 (independiente del mod. de INT).
       expect(compiler.compile(mk('wizard', 1)).spellcasting!.preparedCount, 4);
       expect(compiler.compile(mk('wizard', 2)).spellcasting!.preparedCount, 5);
     });
 
     test('semi-lanzadores no ganan trucos aunque suban de nivel', () {
-      expect(compiler.compile(mk('paladin', 10)).spellcasting!.cantripsKnown, 0);
+      expect(
+          compiler.compile(mk('paladin', 10)).spellcasting!.cantripsKnown, 0);
       expect(compiler.compile(mk('ranger', 10)).spellcasting!.cantripsKnown, 0);
     });
   });

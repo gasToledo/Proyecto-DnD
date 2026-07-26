@@ -8,8 +8,7 @@ class PassiveTrait {
   final String description;
   const PassiveTrait(this.name, [this.description = '']);
 
-  Map<String, dynamic> toJson() =>
-      {'name': name, 'description': description};
+  Map<String, dynamic> toJson() => {'name': name, 'description': description};
 }
 
 /// Recurso consumible con su máximo y cómo se recarga.
@@ -152,7 +151,9 @@ class Spellcasting {
         'attackBonus': attackBonus,
         'cantripsKnown': cantripsKnown,
         'preparedCount': preparedCount,
-        'slotsByLevel': {for (final e in slotsByLevel.entries) '${e.key}': e.value},
+        'slotsByLevel': {
+          for (final e in slotsByLevel.entries) '${e.key}': e.value
+        },
       };
 }
 

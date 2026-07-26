@@ -919,10 +919,10 @@
       },
       {
         "level": 6,
-        "name": "Totalidad del Cuerpo",
+        "name": "Plenitud de Cuerpo",
         "description": "Como acción adicional gastas Puntos de Enfoque para curarte una cantidad considerable de PG.",
         "effects": [
-          { "type": "passiveTrait", "name": "Totalidad del Cuerpo", "description": "Gasta Enfoque para curarte (dados según tu nivel de Monje) como acción adicional." }
+          { "type": "passiveTrait", "name": "Plenitud de Cuerpo", "description": "Gasta Enfoque para curarte (dados según tu nivel de Monje) como acción adicional." }
         ]
       },
       {
@@ -935,10 +935,10 @@
       },
       {
         "level": 17,
-        "name": "Palma Temblorosa",
+        "name": "Palma Estremecedora",
         "description": "Golpeas a una criatura con una vibración letal que puedes detonar más tarde para infligir enorme daño necrótico.",
         "effects": [
-          { "type": "passiveTrait", "name": "Palma Temblorosa", "description": "Implantas vibraciones letales; al detonarlas, gran daño necrótico (salvación de Constitución)." }
+          { "type": "passiveTrait", "name": "Palma Estremecedora", "description": "Implantas vibraciones letales; al detonarlas, gran daño necrótico (salvación de Constitución)." }
         ]
       }
     ]
@@ -952,34 +952,34 @@
     "features": [
       {
         "level": 3,
-        "name": "Sintonía Elemental",
+        "name": "Armonía con los Elementos",
         "description": "Gastas Puntos de Enfoque para infundir tus golpes con un elemento, ganando alcance y daño elemental.",
         "effects": [
-          { "type": "passiveTrait", "name": "Sintonía Elemental", "description": "Tus Golpes Sin Arma ganan +5 pies de alcance y pueden infligir daño elemental; puedes empujar o tirar de objetivos." }
+          { "type": "passiveTrait", "name": "Armonía con los Elementos", "description": "Tus Golpes Sin Arma ganan +5 pies de alcance y pueden infligir daño elemental; puedes empujar o tirar de objetivos." }
         ]
       },
       {
         "level": 6,
-        "name": "Estallido Elemental",
+        "name": "Explosión Elemental",
         "description": "Gastas Puntos de Enfoque para lanzar una explosión elemental a distancia contra varios enemigos.",
         "effects": [
-          { "type": "passiveTrait", "name": "Estallido Elemental", "description": "Estallido elemental a 20 pies: daño de área (salvación de Destreza)." }
+          { "type": "passiveTrait", "name": "Explosión Elemental", "description": "Estallido elemental a 20 pies: daño de área (salvación de Destreza)." }
         ]
       },
       {
         "level": 11,
-        "name": "Zancada de los Elementos",
+        "name": "Paso de los Elementos",
         "description": "Ganas velocidad de vuelo y de nado mientras canalizas tu sintonía elemental.",
         "effects": [
-          { "type": "passiveTrait", "name": "Zancada de los Elementos", "description": "Velocidad de vuelo y de nado con tu sintonía activa." }
+          { "type": "passiveTrait", "name": "Paso de los Elementos", "description": "Velocidad de vuelo y de nado con tu sintonía activa." }
         ]
       },
       {
         "level": 17,
-        "name": "Epítome Elemental",
+        "name": "Paradigma Elemental",
         "description": "Ganas resistencia a un tipo de daño elemental, más velocidad y daño elemental reforzado.",
         "effects": [
-          { "type": "passiveTrait", "name": "Epítome Elemental", "description": "Resistencia elemental, velocidad extra y daño adicional al impactar." }
+          { "type": "passiveTrait", "name": "Paradigma Elemental", "description": "Resistencia elemental, velocidad extra y daño adicional al impactar." }
         ]
       }
     ]
@@ -993,7 +993,7 @@
     "features": [
       {
         "level": 3,
-        "name": "Mano de Sanación / Mano de Daño",
+        "name": "Mano de Curación / Mano de Aflicción",
         "description": "Gastas Puntos de Enfoque para curar a una criatura o para infligir daño necrótico extra al golpear.",
         "effects": [
           { "type": "passiveTrait", "name": "Manos de Misericordia", "description": "Gasta Enfoque para curar PG (Mano de Sanación) o añadir daño necrótico a un golpe (Mano de Daño)." }
@@ -1001,23 +1001,23 @@
       },
       {
         "level": 6,
-        "name": "Toque del Médico",
+        "name": "Toque de Galeno",
         "description": "Tu Mano de Sanación también quita una condición y tu Mano de Daño puede envenenar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Toque del Médico", "description": "Curas y eliminas una condición; o dañas y envenenas al objetivo." }
+          { "type": "passiveTrait", "name": "Toque de Galeno", "description": "Curas y eliminas una condición; o dañas y envenenas al objetivo." }
         ]
       },
       {
         "level": 11,
-        "name": "Ráfaga de Sanación y Daño",
+        "name": "Ráfaga de Curación y Aflicción",
         "description": "Cuando usas Ráfaga de Golpes puedes aplicar Mano de Sanación o Mano de Daño gratis.",
         "effects": [
-          { "type": "passiveTrait", "name": "Ráfaga de Sanación y Daño", "description": "Aplicas Mano de Sanación o de Daño sin coste al usar Ráfaga de Golpes." }
+          { "type": "passiveTrait", "name": "Ráfaga de Curación y Aflicción", "description": "Aplicas Mano de Sanación o de Daño sin coste al usar Ráfaga de Golpes." }
         ]
       },
       {
         "level": 17,
-        "name": "Mano de la Misericordia Suprema",
+        "name": "Mano de Misericordia Suprema",
         "description": "Una vez por descanso largo puedes devolver la vida a una criatura recién fallecida.",
         "effects": [
           { "type": "passiveTrait", "name": "Misericordia Suprema", "description": "Revives a una criatura muerta hace poco gastando Puntos de Enfoque." }
@@ -1034,35 +1034,35 @@
     "features": [
       {
         "level": 3,
-        "name": "Artes de la Sombra",
+        "name": "Artes Sombrías",
         "description": "Ganas visión en la oscuridad y el truco Ilusión Menor; puedes gastar Enfoque para crear zonas de oscuridad y otros efectos.",
         "effects": [
           { "type": "darkvision", "range": 60 },
-          { "type": "passiveTrait", "name": "Artes de la Sombra", "description": "Conoces Ilusión Menor; gastas Enfoque para lanzar Oscuridad, Oscurovisión, Silencio o Pasos sin Rastro." }
+          { "type": "passiveTrait", "name": "Artes Sombrías", "description": "Conoces Ilusión Menor; gastas Enfoque para lanzar Oscuridad, Oscurovisión, Silencio o Pasos sin Rastro." }
         ]
       },
       {
         "level": 6,
-        "name": "Paso de las Sombras",
+        "name": "Paso entre Sombras",
         "description": "En penumbra u oscuridad puedes teletransportarte hasta 60 pies como acción adicional y ganar ventaja en tu próximo ataque.",
         "effects": [
-          { "type": "passiveTrait", "name": "Paso de las Sombras", "description": "Teletransporte de 60 pies entre sombras; ventaja en el ataque siguiente." }
+          { "type": "passiveTrait", "name": "Paso entre Sombras", "description": "Teletransporte de 60 pies entre sombras; ventaja en el ataque siguiente." }
         ]
       },
       {
         "level": 11,
-        "name": "Paso de las Sombras Mejorado",
+        "name": "Paso entre Sombras Mejorado",
         "description": "Tu Paso de las Sombras se potencia y puede aturdir brevemente a quien golpees al aparecer.",
         "effects": [
-          { "type": "passiveTrait", "name": "Paso de las Sombras Mejorado", "description": "Tras teletransportarte, tu ataque puede imponer una condición al objetivo." }
+          { "type": "passiveTrait", "name": "Paso entre Sombras Mejorado", "description": "Tras teletransportarte, tu ataque puede imponer una condición al objetivo." }
         ]
       },
       {
         "level": 17,
-        "name": "Manto de Sombras",
+        "name": "Capa de Sombras",
         "description": "En penumbra u oscuridad puedes volverte invisible como acción.",
         "effects": [
-          { "type": "passiveTrait", "name": "Manto de Sombras", "description": "Te vuelves invisible mientras permanezcas en penumbra u oscuridad." }
+          { "type": "passiveTrait", "name": "Capa de Sombras", "description": "Te vuelves invisible mientras permanezcas en penumbra u oscuridad." }
         ]
       }
     ]
@@ -1482,7 +1482,7 @@
   },
   {
     "id": "arcane-trickster",
-    "name": "Pícaro Arcano",
+    "name": "Embaucador Arcano",
     "classId": "rogue",
     "source": "phb_2024",
     "description": "Pícaro que mezcla el latrocinio con magia de encantamiento e ilusión para engañar y robar.",
@@ -1581,7 +1581,7 @@
   },
   {
     "id": "soulknife",
-    "name": "Cuchilla del Alma",
+    "name": "Rebanaalmas",
     "classId": "rogue",
     "source": "phb_2024",
     "description": "Pícaro psiónico que manifiesta hojas de energía mental y usa poderes psíquicos para el sigilo y el engaño.",
@@ -1814,26 +1814,26 @@
       },
       {
         "level": 6,
-        "name": "Suerte del Oscuro",
+        "name": "La Suerte del Oscuro",
         "description": "Puedes sumar 1d10 a una prueba de característica o salvación una vez por descanso corto.",
         "effects": [
-          { "type": "passiveTrait", "name": "Suerte del Oscuro", "description": "Sumas 1d10 a una prueba o salvación (una vez por descanso corto)." }
+          { "type": "passiveTrait", "name": "La Suerte del Oscuro", "description": "Sumas 1d10 a una prueba o salvación (una vez por descanso corto)." }
         ]
       },
       {
         "level": 10,
-        "name": "Resiliencia Diabólica",
+        "name": "Resistencia Infernal",
         "description": "Eliges una resistencia a daño que cambias tras cada descanso.",
         "effects": [
-          { "type": "passiveTrait", "name": "Resiliencia Diabólica", "description": "Resistencia a un tipo de daño no mágico a tu elección, reelegible tras un descanso." }
+          { "type": "passiveTrait", "name": "Resistencia Infernal", "description": "Resistencia a un tipo de daño no mágico a tu elección, reelegible tras un descanso." }
         ]
       },
       {
         "level": 14,
-        "name": "Arrojar a Través del Infierno",
+        "name": "Arrastrar por el Infierno",
         "description": "Cuando impactas a una criatura puedes desterrarla brevemente a los Planos Inferiores, infligiéndole daño psíquico.",
         "effects": [
-          { "type": "passiveTrait", "name": "Arrojar a Través del Infierno", "description": "Envías a un objetivo golpeado por los Planos Inferiores: gran daño psíquico al volver." }
+          { "type": "passiveTrait", "name": "Arrastrar por el Infierno", "description": "Envías a un objetivo golpeado por los Planos Inferiores: gran daño psíquico al volver." }
         ]
       }
     ]
@@ -1863,10 +1863,10 @@
       },
       {
         "level": 10,
-        "name": "Defensas Cautivadoras",
+        "name": "Defensas Seductoras",
         "description": "Eres inmune a estar hechizado y puedes desviar los encantamientos hacia tus atacantes.",
         "effects": [
-          { "type": "passiveTrait", "name": "Defensas Cautivadoras", "description": "Inmune a ser hechizado; puedes redirigir un encantamiento al lanzador." }
+          { "type": "passiveTrait", "name": "Defensas Seductoras", "description": "Inmune a ser hechizado; puedes redirigir un encantamiento al lanzador." }
         ]
       },
       {
@@ -1914,10 +1914,10 @@
       },
       {
         "level": 14,
-        "name": "Venganza Abrasadora",
+        "name": "Venganza Ardiente",
         "description": "Cuando bajas a 0 PG puedes en su lugar volver con vida y quemar a los enemigos cercanos.",
         "effects": [
-          { "type": "passiveTrait", "name": "Venganza Abrasadora", "description": "Al caer a 0 PG, revives con algunos PG e infliges daño radiante a los enemigos cercanos." }
+          { "type": "passiveTrait", "name": "Venganza Ardiente", "description": "Al caer a 0 PG, revives con algunos PG e infliges daño radiante a los enemigos cercanos." }
         ]
       }
     ]

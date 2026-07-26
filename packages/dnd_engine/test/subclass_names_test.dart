@@ -109,7 +109,41 @@ void main() {
     });
   });
 
+  group('Monje', () {
+    test('las cuatro subclases, verificadas completas', () {
+      expect(featuresOf('open-hand'), contains('Plenitud de Cuerpo'));
+      expect(featuresOf('open-hand'), contains('Palma Estremecedora'));
+      expect(featuresOf('warrior-mercy'), contains('Toque de Galeno'));
+      expect(featuresOf('warrior-mercy'),
+          contains('Ráfaga de Curación y Aflicción'));
+      expect(featuresOf('warrior-shadow'), contains('Artes Sombrías'));
+      expect(featuresOf('warrior-shadow'), contains('Paso entre Sombras'));
+      expect(featuresOf('warrior-shadow'), contains('Capa de Sombras'));
+      expect(featuresOf('warrior-elements'),
+          contains('Armonía con los Elementos'));
+      expect(featuresOf('warrior-elements'), contains('Explosión Elemental'));
+      expect(featuresOf('warrior-elements'), contains('Paradigma Elemental'));
+    });
+  });
+
+  group('Brujo', () {
+    test('rasgos legibles del manual (faltan las páginas 76 y 79)', () {
+      expect(featuresOf('celestial-patron'), contains('Venganza Ardiente'));
+      expect(featuresOf('archfey-patron'), contains('Defensas Seductoras'));
+      expect(featuresOf('fiend-patron'), contains('La Suerte del Oscuro'));
+      expect(featuresOf('fiend-patron'), contains('Resistencia Infernal'));
+      expect(featuresOf('fiend-patron'), contains('Arrastrar por el Infierno'));
+    });
+  });
+
   group('Nombres tomados del índice del manual', () {
+    test('Pícaro: se nombran por el arquetipo, no por la clase', () {
+      expect(nameOf('arcane-trickster'), 'Embaucador Arcano');
+      expect(nameOf('soulknife'), 'Rebanaalmas');
+      expect(nameOf('thief'), 'Ladrón');
+      expect(nameOf('assassin'), 'Asesino');
+    });
+
     test('Explorador, Guerrero, Hechicero y Mago', () {
       expect(nameOf('beast-master'), 'Señor de las Bestias');
       expect(nameOf('gloom-stalker'), 'Acechador en la Penumbra');

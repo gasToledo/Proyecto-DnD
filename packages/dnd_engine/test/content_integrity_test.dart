@@ -65,6 +65,55 @@ void main() {
     }
   });
 
+  test('cada conjuro declara una de las ocho escuelas', () {
+    // El catálogo tenía "Necromancia" conviviendo con "Nigromancia": un solo
+    // conjuro con la escuela mal escrita y ningún test que lo viera.
+    const validSchools = {
+      'Abjuración',
+      'Adivinación',
+      'Conjuración',
+      'Encantamiento',
+      'Evocación',
+      'Ilusión',
+      'Nigromancia',
+      'Transmutación',
+    };
+    for (final s in repo.spells.values) {
+      expect(validSchools, contains(s.school),
+          reason: '${s.id}: escuela desconocida "${s.school}"');
+    }
+  });
+
+  test('los tiempos de lanzamiento usan la convención 2024', () {
+    // 2024 dice "Acción", no "1 acción" como en 2014.
+    final duration = RegExp(r'^\d+ (minuto|minutos|hora|horas)$');
+    for (final s in repo.spells.values) {
+      final ct = s.castingTime;
+      final ok = ct == 'Acción' ||
+          ct == 'Acción Adicional' ||
+          ct.startsWith('Reacción') ||
+          duration.hasMatch(ct);
+      expect(ok, isTrue,
+          reason: '${s.id}: tiempo de lanzamiento fuera de convención "$ct"');
+    }
+  });
+
+  test('los alcances de conjuro están en pies, no en metros', () {
+    // Había un único "Personal (9 m)" entre 177 conjuros en pies.
+    final metric = RegExp(r'\d+\s?m\b');
+    for (final s in repo.spells.values) {
+      expect(metric.hasMatch(s.range), isFalse,
+          reason: '${s.id}: alcance en métrico "${s.range}"');
+    }
+  });
+
+  test('un conjuro con concentración no puede ser instantáneo', () {
+    for (final s in repo.spells.values.where((s) => s.concentration)) {
+      expect(s.duration, isNot('Instantánea'),
+          reason: '${s.id}: concentración con duración instantánea');
+    }
+  });
+
   test('cada dote general con prerrequisito de competencia lo referencia bien',
       () {
     const knownProfs = {

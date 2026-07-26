@@ -617,6 +617,22 @@
         "effects": [
           { "type": "passiveTrait", "name": "Abrasar Muertos Vivientes", "description": "Cuando usás Expulsar Muertos Vivientes podés tirar tantos d8 como tu mod. de Sabiduría (mínimo 1d8): los muertos vivientes que fallen la salvación reciben ese total como daño radiante. El daño no termina el efecto de expulsión." }
         ]
+      },
+      {
+        "level": 6,
+        "name": "Canalizar Divinidad (3 usos)",
+        "description": "Tus usos de Canalizar Divinidad aumentan a 3.",
+        "effects": [
+          { "type": "resource", "id": "channel_divinity", "name": "Canalizar Divinidad", "max": 3, "recharge": "short", "description": "Usos de Canalizar Divinidad (p.ej. Expulsar Muertos Vivientes o Chispa Divina). Recuperas usos tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Canalizar Divinidad (4 usos)",
+        "description": "Tus usos de Canalizar Divinidad aumentan a 4.",
+        "effects": [
+          { "type": "resource", "id": "channel_divinity", "name": "Canalizar Divinidad", "max": 4, "recharge": "short", "description": "Usos de Canalizar Divinidad (p.ej. Expulsar Muertos Vivientes o Chispa Divina). Recuperas usos tras un descanso corto o largo." }
+        ]
       }
     ]
   },
@@ -628,7 +644,7 @@
     "iconId": "leaf",
     "hitDie": 8,
     "savingThrows": ["intelligence", "wisdom"],
-    "armorProficiencies": ["light", "medium", "shield"],
+    "armorProficiencies": ["light", "shield"],
     "weaponProficiencies": ["simple"],
     "skillChoiceCount": 2,
     "skillChoiceFrom": ["arcana", "animal-handling", "insight", "medicine", "nature", "perception", "religion", "survival"],
@@ -666,6 +682,22 @@
         "effects": [
           { "type": "passiveTrait", "name": "Compañero Salvaje", "description": "Puedes gastar un uso de Forma Salvaje para lanzar Encontrar Familiar sin componentes materiales, convocando un espíritu feérico." }
         ]
+      },
+      {
+        "level": 6,
+        "name": "Forma Salvaje (3 usos)",
+        "description": "Tus usos de Forma Salvaje aumentan a 3.",
+        "effects": [
+          { "type": "resource", "id": "wild_shape", "name": "Forma Salvaje", "max": 3, "recharge": "short", "description": "Como acción adicional te transformas en una bestia. Usos que se recuperan tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Forma Salvaje (4 usos)",
+        "description": "Tus usos de Forma Salvaje aumentan a 4.",
+        "effects": [
+          { "type": "resource", "id": "wild_shape", "name": "Forma Salvaje", "max": 4, "recharge": "short", "description": "Como acción adicional te transformas en una bestia. Usos que se recuperan tras un descanso corto o largo." }
+        ]
       }
     ]
   },
@@ -697,7 +729,7 @@
         "name": "Inspiración Bárdica",
         "description": "Como acción adicional das a un aliado un dado de Inspiración (d6) para sumar a una prueba, ataque o salvación.",
         "effects": [
-          { "type": "passiveTrait", "name": "Inspiración Bárdica", "description": "Como acción adicional otorgas un dado de Inspiración Bárdica (d6, sube con el nivel). Usos iguales a tu mod. de Carisma, recuperados tras un descanso largo (o corto desde nivel 5)." }
+          { "type": "passiveTrait", "name": "Inspiración Bárdica", "description": "Como acción adicional otorgas un dado de Inspiración Bárdica: d6 desde nivel 1, d8 desde nivel 5, d10 desde nivel 10 y d12 desde nivel 15. Usos iguales a tu mod. de Carisma (mínimo 1), recuperados tras un descanso largo (o corto desde nivel 5)." }
         ]
       },
       {

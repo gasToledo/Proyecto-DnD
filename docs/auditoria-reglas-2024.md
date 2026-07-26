@@ -27,12 +27,21 @@ corregir: es motivo para etiquetarlo bien.
 
 ### Dónde consultarlas
 
-Ambos manuales están cargados como PDF en el notebook `Manual del experto D&D`
-de NotebookLM, y es contra ellos que se citan las correcciones. El notebook
-también tiene *Forge of the Artificer*, para el día que se sume el Artífice.
+La biblioteca del proyecto es el notebook **`D&D Project`** de NotebookLM
+(`615f7888-577f-4f7c-a3c0-ee6c4a5924d4`), que tiene el PDF del *Manual del
+Jugador 2024* y el de *Forge of the Artificer*, para el día que se sume el
+Artífice.
 
-El resto de sus fuentes es material secundario (blogs, foros, D&D Beyond): sirve
-para detectar restos de 2014, no para fijar valores numéricos.
+Sus otras 53 fuentes son material secundario (blogs, Reddit, Roll20, tiendas):
+sirven para detectar restos de 2014, no para fijar valores numéricos.
+
+**Verificar siempre `sources_used` antes de tocar un dato.** El notebook tiene
+una instrucción persistente que le pide responder solo desde el PDF del PHB,
+pero no la cumple de forma confiable: en las pruebas contestó tablas enteras
+citando páginas del manual cuando en realidad había leído un blog. Una respuesta
+sirve como evidencia únicamente si `sources_used` incluye el id del PDF
+(`09011168-f63f-47cb-b3fb-e009ae22db50`) y el `cited_text` es texto de la
+sección consultada, no el índice general.
 
 Las reglas gratuitas 2024 de D&D Beyond quedan como apoyo de consulta:
 
@@ -57,7 +66,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` (antes degradaba a `homebrew` en silencio). Cerradas subclases (12 SRD / 36 PHB) y dotes (9 SRD / 48 PHB), con la procedencia visible en la app. **Falta trasfondos: el SRD solo incluye Acólito, Criminal, Erudito y Soldado, así que 10 de los 12 del catálogo son PHB.** Faltan también conjuros y equipo. |
 | Trasfondos | pendiente | Verificar competencias, herramientas, dotes de origen, equipo y tres características disponibles. |
-| Clases | en revisión | **Las 6 marciales verificadas tabla por tabla contra el PHB** (Guerrero, Bárbaro, Pícaro, Monje, Paladín, Explorador): corregidas las progresiones de maestría con armas, Tomar Aliento, Furias, Movimiento sin Armadura y Canalizar Divinidad, que estaban congeladas en el valor de nivel 1; sumada la ballesta de mano a Pícaro y Monje; quitada Interpretación de la lista del Pícaro. Antes se habían corregido rasgos del Clérigo, Mago, Bardo y Brujo. Faltan las 6 lanzadoras, los rasgos de nivel 8 a 20, el equipo inicial y las competencias con herramientas. |
+| Clases | en revisión | **Las 12 tablas verificadas contra el PHB.** Marciales: corregidas las progresiones de maestría con armas, Tomar Aliento, Furias, Movimiento sin Armadura y Canalizar Divinidad, congeladas en el valor de nivel 1; sumada la ballesta de mano a Pícaro y Monje; quitada Interpretación de la lista del Pícaro. Lanzadoras: Canalizar Divinidad del Clérigo (3 a nivel 6, 4 a nivel 18) y Forma Salvaje del Druida (3 a nivel 6, 4 a nivel 17) tenían el mismo defecto; el Druida perdió la armadura media, que en 2024 ya no tiene. Las 12 salvaciones y los 6 valores de trucos iniciales coinciden. Faltan los rasgos de nivel 8 a 20, el equipo inicial y las competencias con herramientas, que son contenido nuevo. |
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. Falta verificar los rasgos de las 47 restantes. |
 | Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. Prerrequisito real en Apresador, Maestro de Armas Grandes y Tirador de Élite. Falta el prerrequisito de las 40 generales restantes, la elección de característica (+1 a X o Y), Observador, y las dotes que el SRD no incluye. |
 | Conjuros | en revisión | Normalizados escuela (`Necromancia` vs `Nigromancia`), el único alcance en métrico y los 164 tiempos de lanzamiento a la convención 2024. Faltan las reescrituras de Toque Gélido, Convocar Animales y Marca del Cazador, la procedencia, y los 161 conjuros del SRD que no están en el catálogo (338 contra 177). |

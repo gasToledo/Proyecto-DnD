@@ -1,3 +1,4 @@
+import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import 'app_theme.dart';
@@ -624,18 +625,53 @@ class SpendRecoverButtons extends StatelessWidget {
 /// Pill dorada suave.
 class GoldPill extends StatelessWidget {
   final String text;
-  const GoldPill(this.text, {super.key});
+
+  /// En `false` usa un tono neutro en vez del dorado, para información
+  /// secundaria que no debe competir con el contenido principal.
+  final bool highlighted;
+  const GoldPill(this.text, {super.key, this.highlighted = true});
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
       decoration: BoxDecoration(
-        color: p.goldSoft,
+        color: highlighted ? p.goldSoft : p.plaque,
         border: Border.all(color: p.hairline),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(text, style: TextStyle(fontSize: 11, color: p.gold)),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11,
+          color: highlighted ? p.gold : p.textMuted,
+        ),
+      ),
+    );
+  }
+}
+
+/// Etiqueta visible de la procedencia de una opción del catálogo.
+///
+/// La distinción SRD / PHB no es cosmética: solo el contenido del SRD 5.2.1
+/// está cubierto por la atribución CC BY 4.0.
+String sourceLabel(ContentSource source) => switch (source) {
+  ContentSource.srd2024 => 'SRD',
+  ContentSource.phb2024 => 'PHB 2024',
+  ContentSource.srd2014 => 'SRD 2014',
+  ContentSource.homebrew => 'Propio',
+};
+
+/// Distintivo de procedencia para las tarjetas de selección.
+class SourceBadge extends StatelessWidget {
+  final ContentSource source;
+  const SourceBadge(this.source, {super.key});
+  @override
+  Widget build(BuildContext context) {
+    final label = sourceLabel(source);
+    return Semantics(
+      label: 'Procedencia: $label',
+      child: GoldPill(label, highlighted: source == ContentSource.srd2024),
     );
   }
 }

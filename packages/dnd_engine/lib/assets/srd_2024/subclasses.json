@@ -60,7 +60,7 @@
     "id": "battle-master",
     "name": "Maestro de Batalla",
     "classId": "fighter",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Un guerrero que estudia el combate como un arte marcial, empleando maniobras tácticas para dominar el campo de batalla.",
     "features": [
       {
@@ -118,7 +118,7 @@
     "id": "eldritch-knight",
     "name": "Caballero Arcano",
     "classId": "fighter",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Combina la maestría marcial con el estudio de la magia arcana, sobre todo de las escuelas de abjuración y evocación.",
     "features": [
       {
@@ -175,7 +175,7 @@
     "id": "psi-warrior",
     "name": "Guerrero Psiónico",
     "classId": "fighter",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Canaliza energía psiónica para potenciar sus golpes, mover objetos con la mente y protegerse con barreras telequinéticas.",
     "features": [
       {
@@ -267,7 +267,7 @@
     "id": "wild-heart",
     "name": "Senda del Corazón Salvaje",
     "classId": "barbarian",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Bárbaros ligados a los espíritus animales, que canalizan aspectos de la bestia en su Furia.",
     "features": [
       {
@@ -308,7 +308,7 @@
     "id": "world-tree",
     "name": "Senda del Árbol del Mundo",
     "classId": "barbarian",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Bárbaros ligados al Árbol del Mundo cósmico, que extraen vitalidad y usan sus raíces y ramas en combate.",
     "features": [
       {
@@ -349,7 +349,7 @@
     "id": "zealot",
     "name": "Senda del Fanático",
     "classId": "barbarian",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Guerreros divinos investidos de furia sagrada por un dios de la guerra o la sangre.",
     "features": [
       {
@@ -391,7 +391,7 @@
     "id": "college-dance",
     "name": "Colegio de la Danza",
     "classId": "bard",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Bardos cuya magia fluye del movimiento: esquivos, ágiles y letales con sus pies tanto como con su voz.",
     "features": [
       {
@@ -424,7 +424,7 @@
     "id": "college-glamour",
     "name": "Colegio del Glamour",
     "classId": "bard",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Bardos tocados por la magia feérica del Reino Feérico, capaces de encandilar y dominar mentes.",
     "features": [
       {
@@ -506,7 +506,7 @@
     "id": "college-valor",
     "name": "Colegio del Valor",
     "classId": "bard",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Bardos escaldos que inspiran con relatos de héroes y luchan junto a ellos en primera línea.",
     "features": [
       {
@@ -599,7 +599,7 @@
     "id": "light-domain",
     "name": "Dominio de la Luz",
     "classId": "cleric",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Sacerdotes de dioses del sol y la luz, que blanden fuego y resplandor contra las tinieblas.",
     "features": [
       {
@@ -640,7 +640,7 @@
     "id": "trickery-domain",
     "name": "Dominio del Engaño",
     "classId": "cleric",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Sacerdotes de dioses del caos, las travesuras y el engaño, maestros de las ilusiones y el sigilo.",
     "features": [
       {
@@ -681,7 +681,7 @@
     "id": "war-domain",
     "name": "Dominio de la Guerra",
     "classId": "cleric",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Sacerdotes marciales de dioses de la batalla, que combaten en la vanguardia con arma y bendición divina.",
     "features": [
       {
@@ -781,7 +781,7 @@
     "id": "circle-moon",
     "name": "Círculo de la Luna",
     "classId": "druid",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Druidas feroces que dominan la Forma Salvaje como arma, transformándose en bestias poderosas.",
     "features": [
       {
@@ -822,7 +822,7 @@
     "id": "circle-sea",
     "name": "Círculo del Mar",
     "classId": "druid",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Druidas ligados a los océanos y tormentas, que desatan el poder del mar sobre sus enemigos.",
     "features": [
       {
@@ -864,7 +864,7 @@
     "id": "circle-stars",
     "name": "Círculo de las Estrellas",
     "classId": "druid",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Druidas que estudiaron la sabiduría de las constelaciones y canalizan su poder en una Forma Estelar.",
     "features": [
       {
@@ -947,7 +947,7 @@
     "id": "warrior-elements",
     "name": "Guerrero de los Elementos",
     "classId": "monk",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Monjes que canalizan el poder elemental a través de su ki, extendiendo su alcance y desatando estallidos.",
     "features": [
       {
@@ -988,7 +988,7 @@
     "id": "warrior-mercy",
     "name": "Guerrero de la Misericordia",
     "classId": "monk",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Monjes médicos que manipulan la fuerza vital para sanar a los aliados o acelerar la muerte de sus enemigos.",
     "features": [
       {
@@ -1029,7 +1029,7 @@
     "id": "warrior-shadow",
     "name": "Guerrero de la Sombra",
     "classId": "monk",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Monjes ninja que emplean la magia de las sombras para el sigilo, el engaño y las emboscadas.",
     "features": [
       {
@@ -1121,7 +1121,7 @@
     "id": "oath-ancients",
     "name": "Juramento de los Antiguos",
     "classId": "paladin",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Paladines de la luz y la vida, campeones de la naturaleza y la alegría contra las tinieblas.",
     "features": [
       {
@@ -1170,7 +1170,7 @@
     "id": "oath-glory",
     "name": "Juramento de Gloria",
     "classId": "paladin",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Paladines que buscan la grandeza heroica, entrenados como atletas legendarios para lograr grandes hazañas.",
     "features": [
       {
@@ -1219,7 +1219,7 @@
     "id": "oath-vengeance",
     "name": "Juramento de Venganza",
     "classId": "paladin",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Paladines sombríos que persiguen a los malhechores sin descanso, sacrificando la pureza por la justicia.",
     "features": [
       {
@@ -1310,7 +1310,7 @@
     "id": "beast-master",
     "name": "Amo de las Bestias",
     "classId": "ranger",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Explorador que forma un vínculo primario con una bestia compañera que lucha a su lado.",
     "features": [
       {
@@ -1351,7 +1351,7 @@
     "id": "fey-wanderer",
     "name": "Errante Feérico",
     "classId": "ranger",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Explorador tocado por la magia del Reino Feérico, con un aura encantadora y golpes que siembran temor.",
     "features": [
       {
@@ -1392,7 +1392,7 @@
     "id": "gloom-stalker",
     "name": "Acechador de la Penumbra",
     "classId": "ranger",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Explorador de las tinieblas y el Underdark, maestro de la emboscada que ataca antes de ser visto.",
     "features": [
       {
@@ -1484,7 +1484,7 @@
     "id": "arcane-trickster",
     "name": "Pícaro Arcano",
     "classId": "rogue",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Pícaro que mezcla el latrocinio con magia de encantamiento e ilusión para engañar y robar.",
     "features": [
       {
@@ -1533,7 +1533,7 @@
     "id": "assassin",
     "name": "Asesino",
     "classId": "rogue",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Pícaro especializado en la infiltración, el disfraz y el golpe mortal por sorpresa.",
     "features": [
       {
@@ -1583,7 +1583,7 @@
     "id": "soulknife",
     "name": "Cuchilla del Alma",
     "classId": "rogue",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Pícaro psiónico que manifiesta hojas de energía mental y usa poderes psíquicos para el sigilo y el engaño.",
     "features": [
       {
@@ -1676,7 +1676,7 @@
     "id": "aberrant-sorcery",
     "name": "Hechicería de Mente Aberrante",
     "classId": "sorcerer",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Tu poder nace de una influencia psiónica alienígena, otorgándote telepatía y magia mental.",
     "features": [
       {
@@ -1718,7 +1718,7 @@
     "id": "clockwork-sorcery",
     "name": "Hechicería del Orden Cósmico",
     "classId": "sorcerer",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Tu magia proviene de los planos del orden y la ley, permitiéndote imponer equilibrio y previsibilidad.",
     "features": [
       {
@@ -1759,7 +1759,7 @@
     "id": "wild-magic-sorcery",
     "name": "Hechicería de Magia Salvaje",
     "classId": "sorcerer",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Tu magia es caótica e impredecible, ligada a las fuerzas salvajes del multiverso.",
     "features": [
       {
@@ -1842,7 +1842,7 @@
     "id": "archfey-patron",
     "name": "Patrón Feérico",
     "classId": "warlock",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Tu pacto es con un señor o señora del Reino Feérico, maestro del encantamiento y la ilusión.",
     "features": [
       {
@@ -1883,7 +1883,7 @@
     "id": "celestial-patron",
     "name": "Patrón Celestial",
     "classId": "warlock",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Tu pacto es con un ser de los Planos Superiores, canalizando luz sanadora y fuego radiante.",
     "features": [
       {
@@ -1926,7 +1926,7 @@
     "id": "great-old-one-patron",
     "name": "Patrón del Gran Antiguo",
     "classId": "warlock",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Tu pacto es con una entidad cósmica e incognoscible, fuente de secretos y poder psíquico.",
     "features": [
       {
@@ -2018,7 +2018,7 @@
     "id": "abjurer",
     "name": "Escuela de Abjuración",
     "classId": "wizard",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Magos protectores especializados en escudos arcanos, disipación y anulación de magia hostil.",
     "features": [
       {
@@ -2059,7 +2059,7 @@
     "id": "diviner",
     "name": "Escuela de Adivinación",
     "classId": "wizard",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Magos que atisban el pasado, el presente y el futuro, reescribiendo el destino con sus presagios.",
     "features": [
       {
@@ -2100,7 +2100,7 @@
     "id": "illusionist",
     "name": "Escuela de Ilusión",
     "classId": "wizard",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "description": "Magos que tejen ilusiones tan convincentes que confunden los sentidos e incluso alteran la realidad.",
     "features": [
       {

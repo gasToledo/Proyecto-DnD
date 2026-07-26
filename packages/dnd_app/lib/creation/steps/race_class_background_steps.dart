@@ -21,6 +21,7 @@ class _RaceStep extends StatelessWidget {
                 icon: raceIcon(r),
                 title: r.name,
                 subtitle: r.tagline,
+                source: r.source,
                 accent: pal.gold,
                 selected: draft.raceId == r.id,
                 onTap: () {
@@ -143,6 +144,7 @@ class _ClassStep extends StatelessWidget {
                 subtitle:
                     'd${c.hitDie} · '
                     '${c.savingThrows.map((a) => a.abbr).join(" / ")}',
+                source: c.source,
                 accent: classAccent(c, context.palette.gold),
                 selected: draft.classId == c.id,
                 onTap: () {
@@ -231,6 +233,7 @@ class _BackgroundStep extends StatelessWidget {
                 icon: backgroundIcon(b),
                 title: b.name,
                 subtitle: b.tagline,
+                source: b.source,
                 accent: context.palette.gold,
                 selected: draft.backgroundId == b.id,
                 onTap: () {

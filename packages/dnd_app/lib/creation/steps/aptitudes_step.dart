@@ -375,6 +375,8 @@ class _FeatCard extends StatelessWidget {
                         ),
                       ),
                     ],
+                    const SizedBox(height: 6),
+                    SourceBadge(feat.source),
                   ],
                 ),
               ),

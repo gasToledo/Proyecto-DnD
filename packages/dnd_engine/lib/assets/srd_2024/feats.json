@@ -15,7 +15,7 @@
   {
     "id": "tough",
     "name": "Robustez",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "origin",
     "effects": [
       {
@@ -54,7 +54,7 @@
   {
     "id": "lucky",
     "name": "Afortunado",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "origin",
     "effects": [
       {
@@ -67,7 +67,7 @@
   {
     "id": "crafter",
     "name": "Artesano",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "origin",
     "effects": [
       {
@@ -80,7 +80,7 @@
   {
     "id": "healer",
     "name": "Sanador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "origin",
     "effects": [
       {
@@ -93,7 +93,7 @@
   {
     "id": "musician",
     "name": "Músico",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "origin",
     "effects": [
       {
@@ -118,7 +118,7 @@
   {
     "id": "fs-dueling",
     "name": "Estilo de Combate: Duelo",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "fighting-style",
     "effects": [
       {
@@ -157,7 +157,7 @@
   {
     "id": "great-weapon-master",
     "name": "Maestro de Armas Grandes",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "effects": [
       {
@@ -180,7 +180,7 @@
   {
     "id": "sharpshooter",
     "name": "Tirador de Élite",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "effects": [
       {
@@ -203,7 +203,7 @@
   {
     "id": "resilient-wisdom",
     "name": "Resistente (Sabiduría)",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "effects": [
       {
@@ -230,7 +230,7 @@
   {
     "id": "actor",
     "name": "Actor",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -254,7 +254,7 @@
   {
     "id": "athlete",
     "name": "Atleta",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -278,7 +278,7 @@
   {
     "id": "charger",
     "name": "Embestidor",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -302,7 +302,7 @@
   {
     "id": "chef",
     "name": "Cocinero",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -326,7 +326,7 @@
   {
     "id": "crusher",
     "name": "Triturador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -350,7 +350,7 @@
   {
     "id": "crossbow-expert",
     "name": "Experto con Ballesta",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -369,7 +369,7 @@
   {
     "id": "defensive-duelist",
     "name": "Duelista Defensivo",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -393,7 +393,7 @@
   {
     "id": "dual-wielder",
     "name": "Ambidiestro",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -417,7 +417,7 @@
   {
     "id": "durable",
     "name": "Resistente Físico",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -441,7 +441,7 @@
   {
     "id": "elemental-adept",
     "name": "Adepto Elemental",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -460,7 +460,7 @@
   {
     "id": "fey-touched",
     "name": "Tocado por lo Feérico",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -508,7 +508,7 @@
   {
     "id": "heavily-armored",
     "name": "Fuertemente Acorazado",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -536,7 +536,7 @@
   {
     "id": "heavy-armor-master",
     "name": "Maestro de Armadura Pesada",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -560,7 +560,7 @@
   {
     "id": "inspiring-leader",
     "name": "Líder Inspirador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -584,7 +584,7 @@
   {
     "id": "keen-mind",
     "name": "Mente Aguda",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -608,7 +608,7 @@
   {
     "id": "lightly-armored",
     "name": "Ligeramente Acorazado",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -636,7 +636,7 @@
   {
     "id": "mage-slayer",
     "name": "Cazamagos",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -683,7 +683,7 @@
   {
     "id": "medium-armor-master",
     "name": "Maestro de Armadura Media",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -707,7 +707,7 @@
   {
     "id": "mobile",
     "name": "Ágil",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -730,7 +730,7 @@
   {
     "id": "moderately-armored",
     "name": "Moderadamente Acorazado",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -762,7 +762,7 @@
   {
     "id": "mounted-combatant",
     "name": "Combatiente Montado",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -786,7 +786,7 @@
   {
     "id": "observant",
     "name": "Observador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -810,7 +810,7 @@
   {
     "id": "piercer",
     "name": "Perforador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -834,7 +834,7 @@
   {
     "id": "poisoner",
     "name": "Envenenador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -853,7 +853,7 @@
   {
     "id": "polearm-master",
     "name": "Maestro de Armas de Asta",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -872,7 +872,7 @@
   {
     "id": "resilient-constitution",
     "name": "Resistente (Constitución)",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -900,7 +900,7 @@
   {
     "id": "resilient-dexterity",
     "name": "Resistente (Destreza)",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -928,7 +928,7 @@
   {
     "id": "ritual-caster",
     "name": "Lanzador de Rituales",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -947,7 +947,7 @@
   {
     "id": "sentinel",
     "name": "Centinela",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -966,7 +966,7 @@
   {
     "id": "shadow-touched",
     "name": "Tocado por la Sombra",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -990,7 +990,7 @@
   {
     "id": "shield-master",
     "name": "Maestro del Escudo",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1009,7 +1009,7 @@
   {
     "id": "skill-expert",
     "name": "Experto en Habilidades",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1033,7 +1033,7 @@
   {
     "id": "skulker",
     "name": "Acechador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1057,7 +1057,7 @@
   {
     "id": "slasher",
     "name": "Tajador",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1081,7 +1081,7 @@
   {
     "id": "speedy",
     "name": "Veloz",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1109,7 +1109,7 @@
   {
     "id": "spell-sniper",
     "name": "Francotirador Mágico",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1128,7 +1128,7 @@
   {
     "id": "telekinetic",
     "name": "Telequinético",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1152,7 +1152,7 @@
   {
     "id": "telepathic",
     "name": "Telépata",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
@@ -1176,7 +1176,7 @@
   {
     "id": "war-caster",
     "name": "Lanzador de Guerra",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [

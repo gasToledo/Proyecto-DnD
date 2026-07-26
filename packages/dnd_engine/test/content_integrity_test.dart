@@ -65,6 +65,79 @@ void main() {
     }
   });
 
+  test('ningún contenido oficial cae en homebrew ni en una edición vieja', () {
+    // `ContentSource.fromJson` degrada cualquier etiqueta desconocida a
+    // homebrew sin avisar. Este test es la red que convierte una etiqueta mal
+    // escrita en un fallo visible en vez de una degradación silenciosa: el
+    // Aasimar ya venía marcado `phb_2024` y se cargaba como homebrew.
+    final sources = <String, ContentSource>{
+      for (final e in repo.races.values) 'raza ${e.id}': e.source,
+      for (final e in repo.classes.values) 'clase ${e.id}': e.source,
+      for (final e in repo.subclasses.values) 'subclase ${e.id}': e.source,
+      for (final e in repo.lineages.values) 'linaje ${e.id}': e.source,
+      for (final e in repo.backgrounds.values) 'trasfondo ${e.id}': e.source,
+      for (final e in repo.feats.values) 'dote ${e.id}': e.source,
+      for (final e in repo.weapons.values) 'arma ${e.id}': e.source,
+      for (final e in repo.armor.values) 'armadura ${e.id}': e.source,
+      for (final e in repo.spells.values) 'conjuro ${e.id}': e.source,
+    };
+    sources.forEach((label, source) {
+      expect(source, anyOf(ContentSource.srd2024, ContentSource.phb2024),
+          reason: '$label: procedencia inesperada');
+    });
+  });
+
+  test('el SRD 5.2.1 aporta exactamente una subclase por clase', () {
+    // El SRD incluye 12 subclases; las otras 36 son PHB 2024 y no están
+    // cubiertas por la atribución CC BY 4.0.
+    const srdSubclasses = {
+      'champion',
+      'berserker',
+      'college-lore',
+      'life-domain',
+      'circle-land',
+      'open-hand',
+      'oath-devotion',
+      'hunter',
+      'thief',
+      'draconic-sorcery',
+      'fiend-patron',
+      'evoker',
+    };
+    final tagged = repo.subclasses.values
+        .where((s) => s.source == ContentSource.srd2024)
+        .map((s) => s.id)
+        .toSet();
+    expect(tagged, equals(srdSubclasses));
+    for (final classId in repo.classes.keys) {
+      final srdForClass = repo
+          .subclassesForClass(classId)
+          .where((s) => s.source == ContentSource.srd2024);
+      expect(srdForClass, hasLength(1),
+          reason: '$classId debe tener exactamente una subclase del SRD');
+    }
+  });
+
+  test('solo las dotes del SRD 5.2.1 quedan etiquetadas como tales', () {
+    // El SRD trae 17 dotes; de esas, 9 están en este catálogo.
+    const srdFeats = {
+      'alert',
+      'savage-attacker',
+      'skilled',
+      'magic-initiate-wizard',
+      'magic-initiate-cleric',
+      'grappler',
+      'fs-defense',
+      'fs-archery',
+      'fs-great-weapon',
+    };
+    final tagged = repo.feats.values
+        .where((f) => f.source == ContentSource.srd2024)
+        .map((f) => f.id)
+        .toSet();
+    expect(tagged, equals(srdFeats));
+  });
+
   test('cada conjuro declara una de las ocho escuelas', () {
     // El catálogo tenía "Necromancia" conviviendo con "Nigromancia": un solo
     // conjuro con la escuela mal escrita y ningún test que lo viera.

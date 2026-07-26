@@ -13,6 +13,10 @@ class _ChoiceCard extends StatelessWidget {
   final Color accent;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Procedencia de la opción. Se muestra debajo del subtítulo: el título ya usa
+  /// una sola línea con ellipsis en 228 px y un badge en línea lo comprimiría.
+  final ContentSource? source;
   const _ChoiceCard({
     required this.icon,
     required this.title,
@@ -20,6 +24,7 @@ class _ChoiceCard extends StatelessWidget {
     required this.accent,
     required this.selected,
     required this.onTap,
+    this.source,
   });
 
   @override
@@ -87,6 +92,10 @@ class _ChoiceCard extends StatelessWidget {
                             color: scheme.onSurfaceVariant,
                           ),
                         ),
+                      ],
+                      if (source != null) ...[
+                        const SizedBox(height: 6),
+                        SourceBadge(source!),
                       ],
                     ],
                   ),

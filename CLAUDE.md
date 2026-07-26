@@ -20,7 +20,7 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 
 ## Estado actual
 
-- 12 clases y 48 subclases del PHB 2024.
+- 12 clases y 48 subclases: 12 del SRD 5.2.1 y 36 del PHB 2024.
 - 9 especies del SRD más Aasimar del PHB 2024, 8 linajes, 12 trasfondos,
   57 dotes y 177 conjuros.
 - Creación guiada, subida de nivel, combate, inventario, notas y retratos IA.
@@ -119,6 +119,12 @@ La fuente normativa, la separación entre contenido SRD y PHB y el avance de la
 comprobación están en `docs/auditoria-reglas-2024.md`. No etiquetar contenido
 PHB como `srd_2024`; el hecho de que una opción sea oficial no implica que esté
 incluida en el SRD ni cubierta por CC BY 4.0.
+
+`ContentSource` distingue `srd_2024` de `phb_2024`, y `content_integrity_test`
+fija qué ids pertenecen al SRD. Un valor desconocido degrada a `homebrew` sin
+avisar, porque ese mismo parser procesa importaciones no confiables: la red de
+seguridad del contenido oficial es el test, no una excepción al cargar. La app
+muestra la procedencia con `SourceBadge` en las tarjetas de selección.
 
 ### UI
 

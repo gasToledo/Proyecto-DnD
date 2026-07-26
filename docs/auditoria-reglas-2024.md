@@ -28,20 +28,17 @@ corregir: es motivo para etiquetarlo bien.
 ### Dónde consultarlas
 
 La biblioteca del proyecto es el notebook **`D&D Project`** de NotebookLM
-(`615f7888-577f-4f7c-a3c0-ee6c4a5924d4`), que tiene el PDF del *Manual del
-Jugador 2024* y el de *Forge of the Artificer*, para el día que se sume el
-Artífice.
+(`ca6c9871-c8fd-4037-a7ae-bcf8397084b5`). Tiene exactamente dos fuentes, las dos
+PDFs oficiales: el *Manual del Jugador 2024* y *Forge of the Artificer*, este
+último para el día que se sume el Artífice. No hay material secundario.
 
-Sus otras 53 fuentes son material secundario (blogs, Reddit, Roll20, tiendas):
-sirven para detectar restos de 2014, no para fijar valores numéricos.
-
-**Verificar siempre `sources_used` antes de tocar un dato.** El notebook tiene
-una instrucción persistente que le pide responder solo desde el PDF del PHB,
-pero no la cumple de forma confiable: en las pruebas contestó tablas enteras
-citando páginas del manual cuando en realidad había leído un blog. Una respuesta
-sirve como evidencia únicamente si `sources_used` incluye el id del PDF
-(`09011168-f63f-47cb-b3fb-e009ae22db50`) y el `cited_text` es texto de la
-sección consultada, no el índice general.
+**Verificar `sources_used` antes de tocar un dato.** Una versión anterior de este
+notebook mezclaba los PDFs con 53 blogs y foros, y en esas condiciones el modelo
+contestó tablas enteras citando páginas del manual cuando en realidad había leído
+un blog; `sources_used` lo delataba. Con solo los dos PDFs esa confusión
+desaparece, pero la comprobación es barata y conviene mantenerla. El campo
+`cited_text`, en cambio, no sirve para juzgar: sobre este PDF casi siempre
+devuelve el índice general aunque la respuesta venga de una página interior.
 
 Las reglas gratuitas 2024 de D&D Beyond quedan como apoyo de consulta:
 

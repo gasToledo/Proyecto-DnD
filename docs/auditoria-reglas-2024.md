@@ -2,7 +2,7 @@
 
 ## Fuente de verdad
 
-Hay **dos referencias y no compiten**: resuelven preguntas distintas.
+Hay **tres referencias y no compiten**: resuelven preguntas distintas.
 
 ### Reglas y contenido: Manual del Jugador 2024
 
@@ -24,6 +24,26 @@ cubierto por la atribución CC.
 
 Que algo falte en el SRD no es motivo para excluirlo ni para dejarlo sin
 corregir: es motivo para etiquetarlo bien.
+
+### Expansión: Forge of the Artificer
+
+*Forge of the Artificer* (2025) suma la clase Artífice y contenido de Eberron.
+No está en el SRD y no es el PHB, así que tiene su propia etiqueta `foa_2025` y
+se muestra como **Forge 2025**.
+
+El motivo es distinto al de la licencia: el jugador tiene que poder reconocer
+que una opción viene de otro libro **antes** de comprometer un personaje con
+ella, porque no todas las mesas lo usan.
+
+### El objetivo es el catálogo completo
+
+El criterio del proyecto es que el jugador pueda ver todas las opciones al
+elegir. Un personaje dura mucho tiempo y decidir sin ver el panorama lleva a
+elecciones que después no se quieren. Por eso el contenido faltante deja de
+tratarse como relleno: es lo que más tapa la decisión.
+
+Medida de referencia: hoy Mago, Bardo, Hechicero y Brujo **no tienen ningún
+rasgo por encima del nivel 2**.
 
 ### Dónde consultarlas
 

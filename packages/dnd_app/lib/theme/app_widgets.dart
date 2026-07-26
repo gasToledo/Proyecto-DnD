@@ -654,10 +654,13 @@ class GoldPill extends StatelessWidget {
 /// Etiqueta visible de la procedencia de una opción del catálogo.
 ///
 /// La distinción SRD / PHB no es cosmética: solo el contenido del SRD 5.2.1
-/// está cubierto por la atribución CC BY 4.0.
+/// está cubierto por la atribución CC BY 4.0. Y *Forge of the Artificer* es una
+/// expansión aparte, que conviene reconocer antes de comprometer un personaje
+/// con una de sus opciones.
 String sourceLabel(ContentSource source) => switch (source) {
   ContentSource.srd2024 => 'SRD',
   ContentSource.phb2024 => 'PHB 2024',
+  ContentSource.foa2025 => 'Forge 2025',
   ContentSource.srd2014 => 'SRD 2014',
   ContentSource.homebrew => 'Propio',
 };

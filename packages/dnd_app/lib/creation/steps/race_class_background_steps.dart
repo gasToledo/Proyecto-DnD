@@ -64,6 +64,10 @@ class _RaceStep extends StatelessWidget {
                       for (final lineage in draft.lineageOptions)
                         lineage.id: lineage.name,
                     },
+                    sources: {
+                      for (final lineage in draft.lineageOptions)
+                        lineage.id: lineage.source,
+                    },
                     selected: draft.lineageId,
                     onSelect: (id) {
                       draft.lineageId = id;

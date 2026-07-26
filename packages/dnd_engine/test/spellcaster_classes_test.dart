@@ -21,7 +21,9 @@ void main() {
           name: 'Prueba',
           raceId: 'human',
           classId: classId,
-          backgroundId: 'acolyte',
+          // Trasfondo real del catálogo: uno inexistente se ignora en silencio
+          // (`background != null` en el compilador) y dejaría el caso sin premisa.
+          backgroundId: 'hermit',
           level: level,
           assignedScores: const {
             Ability.strength: 10,

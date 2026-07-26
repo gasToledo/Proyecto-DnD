@@ -14,7 +14,7 @@
   {
     "id": "guard",
     "name": "Guardia",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "security",
     "tagline": "Ojo entrenado para vigilar",
     "abilityOptions": ["strength", "intelligence", "wisdom"],
@@ -26,7 +26,7 @@
   {
     "id": "wayfarer",
     "name": "Trotamundos",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "explore",
     "tagline": "La calle fue tu escuela",
     "abilityOptions": ["dexterity", "wisdom", "charisma"],
@@ -38,7 +38,7 @@
   {
     "id": "artisan",
     "name": "Artesano",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "handyman",
     "tagline": "Un oficio en las manos",
     "abilityOptions": ["strength", "dexterity", "intelligence"],
@@ -50,7 +50,7 @@
   {
     "id": "charlatan",
     "name": "Charlatán",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "theater_comedy",
     "tagline": "Vivís de tu labia",
     "abilityOptions": ["dexterity", "constitution", "charisma"],
@@ -74,7 +74,7 @@
   {
     "id": "entertainer",
     "name": "Artista",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "music_note",
     "tagline": "El público es tu campo",
     "abilityOptions": ["strength", "dexterity", "charisma"],
@@ -86,7 +86,7 @@
   {
     "id": "farmer",
     "name": "Granjero",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "agriculture",
     "tagline": "Fuerza tranquila de la tierra",
     "abilityOptions": ["strength", "constitution", "wisdom"],
@@ -98,7 +98,7 @@
   {
     "id": "hermit",
     "name": "Ermitaño",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "self_improvement",
     "tagline": "Años de retiro y estudio",
     "abilityOptions": ["constitution", "wisdom", "charisma"],
@@ -110,7 +110,7 @@
   {
     "id": "merchant",
     "name": "Mercader",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "storefront",
     "tagline": "Caravanas, tratos y rutas",
     "abilityOptions": ["constitution", "intelligence", "charisma"],
@@ -122,7 +122,7 @@
   {
     "id": "noble",
     "name": "Noble",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "diamond",
     "tagline": "Título, privilegio y deber",
     "abilityOptions": ["strength", "intelligence", "charisma"],
@@ -134,7 +134,7 @@
   {
     "id": "scribe",
     "name": "Escriba",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "history_edu",
     "tagline": "Tinta, archivos y precisión",
     "abilityOptions": ["dexterity", "intelligence", "wisdom"],

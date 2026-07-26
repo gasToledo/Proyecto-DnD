@@ -136,6 +136,28 @@ void main() {
     });
   });
 
+  group('Hechicero', () {
+    test('rasgos con el nombre del manual', () {
+      expect(featuresOf('aberrant-sorcery'), contains('Revelación en Carne'));
+      expect(featuresOf('aberrant-sorcery'), contains('Implosión Deformadora'));
+      expect(featuresOf('wild-magic-sorcery'), contains('Doblegar la Suerte'));
+      expect(featuresOf('wild-magic-sorcery'), contains('Sobrecarga Domada'));
+      expect(featuresOf('clockwork-sorcery'), contains('Bastión de la Ley'));
+      expect(featuresOf('clockwork-sorcery'), contains('Trance de Orden'));
+      expect(featuresOf('clockwork-sorcery'), contains('Cabalgata Mecánica'));
+    });
+
+    test('Hechicería Dracónica todavía tiene el rasgo de 2014 en el nivel 18',
+        () {
+      // En 2024 el nivel 18 es Compañero Dragón, no la Presencia Dracónica de
+      // 2014. No es un cambio de nombre sino de rasgo, así que hace falta el
+      // texto del manual para reescribirlo. Este caso documenta la deuda: hay
+      // que darlo vuelta cuando se consiga, no dejarlo pasar en silencio.
+      expect(featuresOf('draconic-sorcery'), contains('Presencia Dracónica'),
+          reason: 'si ya se corrigió, actualizar esta prueba');
+    });
+  });
+
   group('Nombres tomados del índice del manual', () {
     test('Pícaro: se nombran por el arquetipo, no por la clase', () {
       expect(nameOf('arcane-trickster'), 'Embaucador Arcano');

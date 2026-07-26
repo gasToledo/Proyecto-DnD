@@ -1681,7 +1681,7 @@
     "features": [
       {
         "level": 3,
-        "name": "Habla Psiónica / Conjuros Psiónicos",
+        "name": "Conjuros Psiónicos / Habla Telepática",
         "description": "Ganas telepatía y conjuros psiónicos siempre preparados que puedes lanzar con Puntos de Hechicería.",
         "effects": [
           { "type": "passiveTrait", "name": "Mente Aberrante", "description": "Telepatía a corta distancia y conjuros psiónicos preparados que puedes canjear por Puntos de Hechicería." }
@@ -1698,18 +1698,18 @@
       },
       {
         "level": 14,
-        "name": "Revelación en la Carne",
+        "name": "Revelación en Carne",
         "description": "Gastas Puntos de Hechicería para mutar tu cuerpo, ganando vuelo, visión o nado sobrenaturales.",
         "effects": [
-          { "type": "passiveTrait", "name": "Revelación en la Carne", "description": "Mutaciones temporales: vuelo, visión en la oscuridad, respiración acuática o cuerpo maleable." }
+          { "type": "passiveTrait", "name": "Revelación en Carne", "description": "Mutaciones temporales: vuelo, visión en la oscuridad, respiración acuática o cuerpo maleable." }
         ]
       },
       {
         "level": 18,
-        "name": "Implosión Deformante",
+        "name": "Implosión Deformadora",
         "description": "Como acción desatas una onda telequinética que atrae y daña a las criaturas cercanas.",
         "effects": [
-          { "type": "passiveTrait", "name": "Implosión Deformante", "description": "Teletransporte con onda de daño de fuerza que arrastra a los enemigos." }
+          { "type": "passiveTrait", "name": "Implosión Deformadora", "description": "Teletransporte con onda de daño de fuerza que arrastra a los enemigos." }
         ]
       }
     ]
@@ -1723,34 +1723,34 @@
     "features": [
       {
         "level": 3,
-        "name": "Restaurar el Equilibrio / Conjuros del Orden",
+        "name": "Restablecer Equilibrio / Conjuros Mecánicos",
         "description": "Como reacción anulas ventaja o desventaja en una tirada cercana; ganas conjuros del orden siempre preparados.",
         "effects": [
-          { "type": "passiveTrait", "name": "Restaurar el Equilibrio", "description": "Reacción: cancelas ventaja o desventaja en una tirada de una criatura cercana." }
+          { "type": "passiveTrait", "name": "Restablecer Equilibrio", "description": "Reacción: cancelas ventaja o desventaja en una tirada de una criatura cercana." }
         ]
       },
       {
         "level": 6,
-        "name": "Bastión de Ley",
+        "name": "Bastión de la Ley",
         "description": "Gastas Puntos de Hechicería para dar a una criatura un escudo de dados que absorbe daño.",
         "effects": [
-          { "type": "passiveTrait", "name": "Bastión de Ley", "description": "Otorgas dados de protección (d8) que reducen el daño recibido." }
+          { "type": "passiveTrait", "name": "Bastión de la Ley", "description": "Otorgas dados de protección (d8) que reducen el daño recibido." }
         ]
       },
       {
         "level": 14,
-        "name": "Trance del Orden",
+        "name": "Trance de Orden",
         "description": "Tus tiradas de ataque y salvaciones no pueden verse afectadas por desventaja.",
         "effects": [
-          { "type": "passiveTrait", "name": "Trance del Orden", "description": "Tratas tiradas bajas de ataque/salvación como si sacaras al menos 10." }
+          { "type": "passiveTrait", "name": "Trance de Orden", "description": "Tratas tiradas bajas de ataque/salvación como si sacaras al menos 10." }
         ]
       },
       {
         "level": 18,
-        "name": "Cabalgata del Reloj",
+        "name": "Cabalgata Mecánica",
         "description": "Invocas espíritus mecánicos que reparan aliados y desmantelan conjuros en un área.",
         "effects": [
-          { "type": "passiveTrait", "name": "Cabalgata del Reloj", "description": "Área que cura aliados y disipa efectos mágicos de bajo nivel." }
+          { "type": "passiveTrait", "name": "Cabalgata Mecánica", "description": "Área que cura aliados y disipa efectos mágicos de bajo nivel." }
         ]
       }
     ]
@@ -1764,7 +1764,7 @@
     "features": [
       {
         "level": 3,
-        "name": "Oleada de Magia Salvaje / Marea del Caos",
+        "name": "Sobrecarga de Magia Salvaje / Mareas del Caos",
         "description": "Tus conjuros pueden desencadenar efectos aleatorios; puedes ganar ventaja a cambio de provocar el caos.",
         "effects": [
           { "type": "passiveTrait", "name": "Magia Salvaje", "description": "Al lanzar conjuros puedes tirar en la tabla de Oleada de Magia Salvaje; Marea del Caos te da ventaja una vez por descanso." }
@@ -1772,10 +1772,10 @@
       },
       {
         "level": 6,
-        "name": "Doblar la Suerte",
+        "name": "Doblegar la Suerte",
         "description": "Gastas Puntos de Hechicería para sumar o restar un dado a la tirada de cualquier criatura.",
         "effects": [
-          { "type": "passiveTrait", "name": "Doblar la Suerte", "description": "Gasta Puntos de Hechicería para modificar (2d4) una tirada de ataque, prueba o salvación." }
+          { "type": "passiveTrait", "name": "Doblegar la Suerte", "description": "Gasta Puntos de Hechicería para modificar (2d4) una tirada de ataque, prueba o salvación." }
         ]
       },
       {
@@ -1788,10 +1788,10 @@
       },
       {
         "level": 18,
-        "name": "Oleada Domada",
+        "name": "Sobrecarga Domada",
         "description": "Puedes provocar deliberadamente un efecto de Oleada de Magia Salvaje a tu elección.",
         "effects": [
-          { "type": "passiveTrait", "name": "Oleada Domada", "description": "Eliges el resultado de una Oleada de Magia Salvaje en lugar de tirarlo." }
+          { "type": "passiveTrait", "name": "Sobrecarga Domada", "description": "Eliges el resultado de una Oleada de Magia Salvaje en lugar de tirarlo." }
         ]
       }
     ]

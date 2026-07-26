@@ -77,9 +77,9 @@ void main() {
           .where((f) => f.name == name)
           .map((f) => '${f.level}')
           .firstOrNull;
-      // 2024: nivel 3 Potenciar Truco + Erudito de Evocación; nivel 6 Esculpir
+      // 2024: nivel 3 Truco Potente + Experto en Evocación; nivel 6 Esculpir
       // Conjuros. Antes Esculpir estaba a 3 y el "Adepto" (Savant de 2014) a 6.
-      expect(levelOf('Potenciar Truco'), '3');
+      expect(levelOf('Truco Potente'), '3');
       expect(levelOf('Experto en Evocación'), '3');
       expect(levelOf('Esculpir Conjuros'), '6');
       expect(levelOf('Evocación Potenciada'), '10');

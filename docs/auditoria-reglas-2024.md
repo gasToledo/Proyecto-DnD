@@ -32,9 +32,15 @@ La biblioteca del proyecto es el notebook **`D&D Project`** de NotebookLM
 PDFs oficiales: el *Manual del Jugador 2024* y *Forge of the Artificer*, este
 último para el día que se sume el Artífice. No hay material secundario.
 
-El PDF **no está completo**: al menos las páginas 64 y 65 (Colegio de la Danza y
-Colegio del Conocimiento) no figuran. Cuando el manual no alcanza, el modelo
-suele avisarlo y responder de memoria; esas respuestas no valen como evidencia.
+El PDF **no está completo**. Huecos detectados hasta ahora, todos en el capítulo
+3: páginas **64 y 65** (Colegio de la Danza y del Conocimiento), **87 y 89**
+(Dominio de la Vida y del Engaño), **97** (Círculo de la Luna), **107**
+(Cazador), **118** (Campeón y Guerrero Psiónico) y **145 y 147** (Adivino e
+Ilusionista). Cuando el manual no alcanza, el modelo suele avisarlo y responder
+de memoria; esas respuestas no valen como evidencia.
+
+El índice general sí está completo, y alcanza para fijar el **nombre** de las 48
+subclases aunque falte su página.
 
 **Verificar `sources_used` antes de tocar un dato.** Una versión anterior de este
 notebook mezclaba los PDFs con 53 blogs y foros, y en esas condiciones el modelo
@@ -69,7 +75,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Trasfondos | en revisión | **Los 12 verificados contra el PHB sin una sola diferencia** en dote de origen, las dos habilidades y la herramienta. Cerrada la procedencia: el SRD trae 4 trasfondos y el catálogo tiene 2 de ellos, así que 10 pasaron a `phb_2024`. Falta verificar las tres características ofrecidas y el equipo inicial, y faltan 4 trasfondos del manual: Acólito, Erudito, Guía y Marinero. |
 | Puntuaciones | en revisión | Verificados contra el capítulo 2: el array estándar (15, 14, 13, 12, 10, 8), la tirada de 4d6 quedándose con los tres más altos, el aumento de 3 puntos del trasfondo en sus dos repartos (+2/+1 y +1/+1/+1) y el tope de 20. **Falta la compra de puntos**, el tercer método oficial: 27 puntos, puntuaciones de 8 a 15, con costes 0/1/2/3/4/5/7/9. |
 | Clases | en revisión | **Las 12 tablas verificadas contra el PHB.** Marciales: corregidas las progresiones de maestría con armas, Tomar Aliento, Furias, Movimiento sin Armadura y Canalizar Divinidad, congeladas en el valor de nivel 1; sumada la ballesta de mano a Pícaro y Monje; quitada Interpretación de la lista del Pícaro. Lanzadoras: Canalizar Divinidad del Clérigo (3 a nivel 6, 4 a nivel 18) y Forma Salvaje del Druida (3 a nivel 6, 4 a nivel 17) tenían el mismo defecto; el Druida perdió la armadura media, que en 2024 ya no tiene. Las 12 salvaciones y los 6 valores de trucos iniciales coinciden. Faltan los rasgos de nivel 8 a 20, el equipo inicial y las competencias con herramientas, que son contenido nuevo. |
-| Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. **Verificadas por clase: Bárbaro (4/4), Bardo (2/4 con rasgos, 4/4 con nombre) y los nombres de los cuatro patrones del Brujo.** Los niveles coinciden en todos; lo que fallaba era la nomenclatura. Faltan nueve clases y los rasgos del Colegio de la Danza y del Conocimiento, cuyas páginas no están en el PDF. |
+| Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. **Los 48 nombres de subclase están verificados contra el índice del manual.** Rasgos verificados en Bárbaro (4/4), Paladín (4/4), Druida (3/4), Clérigo (2/4 parcial) y Bardo (2/4). Los niveles coinciden en todos los casos; lo que fallaba era la nomenclatura, y de forma sistemática. Faltan los rasgos de Monje, Pícaro, Guerrero, Hechicero, Mago, Explorador y Brujo, más los de las subclases cuya página no está en el PDF. |
 | Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. **Las 43 generales tienen ahora su prerrequisito real del PHB**: 12 con una característica, 10 con dos o tres alternativas, 4 con entrenamiento de armadura, 3 con lanzamiento de conjuros y 14 solo con el nivel 4. Para eso se agregó `anyAbilityScores`, porque el mapa anterior combinaba con Y lógico y no podía expresar "Fuerza o Destreza 13". Falta la elección de característica (+1 a X o Y) y revisar `mobile`, que no figura entre las 43 del capítulo. |
 | Conjuros | en revisión | Normalizados escuela (`Necromancia` vs `Nigromancia`), el único alcance en métrico y los 164 tiempos de lanzamiento a la convención 2024; las 8 escuelas, los tiempos, los alcances y la coherencia de concentración se comprueban ahora sobre los 177. **Hechas las tres reescrituras**: Toque Helado (pasa a Toque y ataque cuerpo a cuerpo), Conjurar Animales (deja de invocar criaturas, pasa a daño de área y baja a 10 minutos) y Marca del Cazador (daño de fuerza). Faltan la procedencia y los 161 conjuros del SRD que no están en el catálogo (338 contra 177). |
 | Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. **Las ocho propiedades de maestría tienen glosario** con el nombre oficial del PHB y el texto de la regla, así que la ficha dejó de mostrar el identificador en inglés. Falta precio, peso y alcance, que no existen como campo en el modelo, y las armas que el manual lista y el catálogo no tiene. |

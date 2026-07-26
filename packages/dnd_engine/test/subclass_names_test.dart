@@ -67,4 +67,60 @@ void main() {
       expect(nameOf('celestial-patron'), 'Patrón Celestial');
     });
   });
+
+  group('Clérigo', () {
+    test('rasgos legibles del manual (faltan las páginas 87 y 89)', () {
+      expect(featuresOf('war-domain'), contains('Sacerdote Guerrero'));
+      expect(featuresOf('life-domain'), contains('Sanación Suprema'));
+      expect(featuresOf('light-domain'), contains('Fulgor Protector'));
+    });
+  });
+
+  group('Druida', () {
+    test('Tierra, Estrellas y Mar con los nombres del manual', () {
+      expect(featuresOf('circle-land'), contains('Ayuda de la Tierra'));
+      expect(
+          featuresOf('circle-land'), contains('Protección de la Naturaleza'));
+      expect(
+          featuresOf('circle-stars'), contains('Constelaciones Centelleantes'));
+      expect(featuresOf('circle-stars'), contains('Colmado de Luz Estelar'));
+      expect(featuresOf('circle-sea'), contains('Ira de los Mares'));
+      expect(featuresOf('circle-sea'), contains('Nacido de la Tempestad'));
+      expect(featuresOf('circle-sea'), contains('Obsequio Oceánico'));
+    });
+  });
+
+  group('Paladín', () {
+    test('los cuatro juramentos, verificados completos', () {
+      expect(nameOf('oath-devotion'), 'Juramento de Entrega');
+      expect(nameOf('oath-ancients'), 'Juramento de los Antiguos');
+      expect(nameOf('oath-glory'), 'Juramento de Gloria');
+      expect(nameOf('oath-vengeance'), 'Juramento de Venganza');
+    });
+
+    test('rasgos con el nombre del manual', () {
+      expect(featuresOf('oath-devotion'), contains('Aura de Entrega'));
+      expect(featuresOf('oath-devotion'), contains('Castigo Protector'));
+      expect(featuresOf('oath-devotion'), contains('Halo Sagrado'));
+      expect(featuresOf('oath-ancients'), contains('Aura de Salvaguarda'));
+      expect(featuresOf('oath-ancients'), contains('Campeón Ancestral'));
+      expect(featuresOf('oath-glory'), contains('Aura de Celeridad'));
+      expect(featuresOf('oath-vengeance'), contains('Espíritu Vengativo'));
+    });
+  });
+
+  group('Nombres tomados del índice del manual', () {
+    test('Explorador, Guerrero, Hechicero y Mago', () {
+      expect(nameOf('beast-master'), 'Señor de las Bestias');
+      expect(nameOf('gloom-stalker'), 'Acechador en la Penumbra');
+      expect(nameOf('battle-master'), 'Maestro del Combate');
+      expect(nameOf('aberrant-sorcery'), 'Hechicería Aberrante');
+      expect(nameOf('clockwork-sorcery'), 'Hechicería Mecánica');
+      // Las escuelas de Mago se nombran por el practicante, no por la escuela.
+      expect(nameOf('evoker'), 'Evocador');
+      expect(nameOf('abjurer'), 'Abjurador');
+      expect(nameOf('diviner'), 'Adivino');
+      expect(nameOf('illusionist'), 'Ilusionista');
+    });
+  });
 }

@@ -58,7 +58,7 @@
   },
   {
     "id": "battle-master",
-    "name": "Maestro de Batalla",
+    "name": "Maestro del Combate",
     "classId": "fighter",
     "source": "phb_2024",
     "description": "Un guerrero que estudia el combate como un arte marcial, empleando maniobras tácticas para dominar el campo de batalla.",
@@ -571,7 +571,7 @@
       },
       {
         "level": 3,
-        "name": "Canalizar Divinidad: Preservar la Vida",
+        "name": "Canalizar Divinidad: Preservar Vida",
         "description": "Gastas Canalizar Divinidad para repartir puntos de golpe curativos entre criaturas cercanas.",
         "effects": [
           { "type": "passiveTrait", "name": "Preservar la Vida", "description": "Reparte PG curativos (5 × nivel de Clérigo) entre criaturas cercanas hasta la mitad de su máximo." }
@@ -587,10 +587,10 @@
       },
       {
         "level": 17,
-        "name": "Curación Suprema",
+        "name": "Sanación Suprema",
         "description": "Cuando lanzas un conjuro de curación con dados, usas el máximo de cada dado en lugar de tirar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Curación Suprema", "description": "Tus conjuros de curación restauran el máximo posible sin tirar dados." }
+          { "type": "passiveTrait", "name": "Sanación Suprema", "description": "Tus conjuros de curación restauran el máximo posible sin tirar dados." }
         ]
       }
     ]
@@ -604,10 +604,10 @@
     "features": [
       {
         "level": 3,
-        "name": "Destello Protector",
+        "name": "Fulgor Protector",
         "description": "Conoces el truco Luz y, como reacción, impones desventaja a un atacante iluminándolo con un destello.",
         "effects": [
-          { "type": "passiveTrait", "name": "Destello Protector", "description": "Reacción: impones desventaja al ataque de una criatura que puedas ver. Usos = mod. de Sabiduría." }
+          { "type": "passiveTrait", "name": "Fulgor Protector", "description": "Reacción: impones desventaja al ataque de una criatura que puedas ver. Usos = mod. de Sabiduría." }
         ]
       },
       {
@@ -620,10 +620,10 @@
       },
       {
         "level": 6,
-        "name": "Destello Protector Mejorado",
+        "name": "Fulgor Protector Mejorado",
         "description": "Puedes usar Destello Protector para proteger también a otras criaturas cercanas.",
         "effects": [
-          { "type": "passiveTrait", "name": "Destello Protector Mejorado", "description": "Usas Destello Protector cuando atacan a una criatura a 30 pies de ti." }
+          { "type": "passiveTrait", "name": "Fulgor Protector Mejorado", "description": "Usas Destello Protector cuando atacan a una criatura a 30 pies de ti." }
         ]
       },
       {
@@ -695,10 +695,10 @@
       },
       {
         "level": 3,
-        "name": "Sacerdote de Guerra",
+        "name": "Sacerdote Guerrero",
         "description": "Cuando realizas la acción de Ataque puedes hacer un ataque con arma adicional como acción adicional un número de veces por descanso.",
         "effects": [
-          { "type": "resource", "id": "war_priest", "name": "Sacerdote de Guerra", "max": 2, "recharge": "long", "description": "Ataque con arma adicional como acción adicional; usos = mod. de Sabiduría, recuperados en descanso largo." }
+          { "type": "resource", "id": "war_priest", "name": "Sacerdote Guerrero", "max": 2, "recharge": "long", "description": "Ataque con arma adicional como acción adicional; usos = mod. de Sabiduría, recuperados en descanso largo." }
         ]
       },
       {
@@ -745,10 +745,10 @@
       },
       {
         "level": 3,
-        "name": "Auxilio de la Tierra",
+        "name": "Ayuda de la Tierra",
         "description": "Gastas Forma Salvaje para crear un estallido de energía natural que cura o daña en un área.",
         "effects": [
-          { "type": "passiveTrait", "name": "Auxilio de la Tierra", "description": "Gasta Forma Salvaje: área de 10 pies que cura a un aliado o daña a un enemigo." }
+          { "type": "passiveTrait", "name": "Ayuda de la Tierra", "description": "Gasta Forma Salvaje: área de 10 pies que cura a un aliado o daña a un enemigo." }
         ]
       },
       {
@@ -761,10 +761,10 @@
       },
       {
         "level": 10,
-        "name": "Salvaguarda de la Naturaleza",
+        "name": "Protección de la Naturaleza",
         "description": "Eres inmune a ser envenenado y enfermado, y ganas resistencia a un tipo de daño según tu terreno.",
         "effects": [
-          { "type": "passiveTrait", "name": "Salvaguarda de la Naturaleza", "description": "Inmune a veneno y enfermedad; resistencia al daño elemental de tu terreno." }
+          { "type": "passiveTrait", "name": "Protección de la Naturaleza", "description": "Inmune a veneno y enfermedad; resistencia al daño elemental de tu terreno." }
         ]
       },
       {
@@ -827,10 +827,10 @@
     "features": [
       {
         "level": 3,
-        "name": "Ira del Mar",
+        "name": "Ira de los Mares",
         "description": "Gastas Forma Salvaje para invocar un aura tormentosa que empuja y daña a los enemigos que la tocan.",
         "effects": [
-          { "type": "passiveTrait", "name": "Ira del Mar", "description": "Aura de tormenta: daño frío/relámpago y empuje a enemigos cercanos." }
+          { "type": "passiveTrait", "name": "Ira de los Mares", "description": "Aura de tormenta: daño frío/relámpago y empuje a enemigos cercanos." }
         ]
       },
       {
@@ -844,18 +844,18 @@
       },
       {
         "level": 10,
-        "name": "Nacido de la Tormenta",
+        "name": "Nacido de la Tempestad",
         "description": "Mientras tu Ira del Mar esté activa ganas velocidad de vuelo y resistencia adicional.",
         "effects": [
-          { "type": "passiveTrait", "name": "Nacido de la Tormenta", "description": "Velocidad de vuelo y resistencia a relámpago con la Ira del Mar activa." }
+          { "type": "passiveTrait", "name": "Nacido de la Tempestad", "description": "Velocidad de vuelo y resistencia a relámpago con la Ira del Mar activa." }
         ]
       },
       {
         "level": 14,
-        "name": "Don Oceánico",
+        "name": "Obsequio Oceánico",
         "description": "Puedes proteger a un aliado con una envoltura de agua que absorbe daño y le da beneficios.",
         "effects": [
-          { "type": "passiveTrait", "name": "Don Oceánico", "description": "Envuelves a un aliado en agua protectora: resistencia y movimiento mejorado." }
+          { "type": "passiveTrait", "name": "Obsequio Oceánico", "description": "Envuelves a un aliado en agua protectora: resistencia y movimiento mejorado." }
         ]
       }
     ]
@@ -885,18 +885,18 @@
       },
       {
         "level": 10,
-        "name": "Constelaciones Parpadeantes",
+        "name": "Constelaciones Centelleantes",
         "description": "Tus Formas Estelares se potencian con efectos mejorados.",
         "effects": [
-          { "type": "passiveTrait", "name": "Constelaciones Parpadeantes", "description": "Versiones mejoradas de Arquero, Cáliz y Dragón." }
+          { "type": "passiveTrait", "name": "Constelaciones Centelleantes", "description": "Versiones mejoradas de Arquero, Cáliz y Dragón." }
         ]
       },
       {
         "level": 14,
-        "name": "Lleno de Estrellas",
+        "name": "Colmado de Luz Estelar",
         "description": "En Forma Estelar te vuelves parcialmente constelación: ganas resistencia a varios tipos de daño y puedes flotar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Lleno de Estrellas", "description": "En Forma Estelar: resistencia a contundente, perforante y cortante, y flotación." }
+          { "type": "passiveTrait", "name": "Colmado de Luz Estelar", "description": "En Forma Estelar: resistencia a contundente, perforante y cortante, y flotación." }
         ]
       }
     ]
@@ -1070,7 +1070,7 @@
 
   {
     "id": "oath-devotion",
-    "name": "Juramento de Devoción",
+    "name": "Juramento de Entrega",
     "classId": "paladin",
     "source": "srd_2024",
     "description": "El paladín ideal, ligado a los más altos ideales de justicia, virtud y orden.",
@@ -1093,26 +1093,26 @@
       },
       {
         "level": 7,
-        "name": "Aura de Devoción",
+        "name": "Aura de Entrega",
         "description": "Tú y los aliados cercanos no podéis ser hechizados.",
         "effects": [
-          { "type": "passiveTrait", "name": "Aura de Devoción", "description": "Inmunidad a estar hechizado para ti y aliados en tu aura." }
+          { "type": "passiveTrait", "name": "Aura de Entrega", "description": "Inmunidad a estar hechizado para ti y aliados en tu aura." }
         ]
       },
       {
         "level": 15,
-        "name": "Castigo de Protección",
+        "name": "Castigo Protector",
         "description": "Cuando una criatura cercana es atacada puedes usar tu reacción para estorbar el ataque con energía radiante.",
         "effects": [
-          { "type": "passiveTrait", "name": "Castigo de Protección", "description": "Reacción: impones desventaja a un ataque contra un aliado cercano." }
+          { "type": "passiveTrait", "name": "Castigo Protector", "description": "Reacción: impones desventaja a un ataque contra un aliado cercano." }
         ]
       },
       {
         "level": 20,
-        "name": "Nimbo Sagrado",
+        "name": "Halo Sagrado",
         "description": "Como acción emanas luz solar que daña a los enemigos y te da ventaja contra sus conjuros.",
         "effects": [
-          { "type": "passiveTrait", "name": "Nimbo Sagrado", "description": "Aura de luz solar: daño radiante a enemigos y ventaja en salvaciones contra sus conjuros." }
+          { "type": "passiveTrait", "name": "Halo Sagrado", "description": "Aura de luz solar: daño radiante a enemigos y ventaja en salvaciones contra sus conjuros." }
         ]
       }
     ]
@@ -1142,10 +1142,10 @@
       },
       {
         "level": 7,
-        "name": "Aura de Protección",
+        "name": "Aura de Salvaguarda",
         "description": "Tú y aliados cercanos tenéis resistencia al daño de conjuros.",
         "effects": [
-          { "type": "passiveTrait", "name": "Aura de Protección", "description": "Resistencia al daño de conjuros para ti y aliados en tu aura." }
+          { "type": "passiveTrait", "name": "Aura de Salvaguarda", "description": "Resistencia al daño de conjuros para ti y aliados en tu aura." }
         ]
       },
       {
@@ -1158,10 +1158,10 @@
       },
       {
         "level": 20,
-        "name": "Campeón Anciano",
+        "name": "Campeón Ancestral",
         "description": "Adoptas una forma radiante que regenera PG y potencia tus conjuros y castigos.",
         "effects": [
-          { "type": "passiveTrait", "name": "Campeón Anciano", "description": "Te regeneras cada turno y tus enemigos tienen desventaja contra tus conjuros y castigos." }
+          { "type": "passiveTrait", "name": "Campeón Ancestral", "description": "Te regeneras cada turno y tus enemigos tienen desventaja contra tus conjuros y castigos." }
         ]
       }
     ]
@@ -1175,7 +1175,7 @@
     "features": [
       {
         "level": 3,
-        "name": "Canalizar Divinidad: Atleta Inigualable / Castigo Inspirador",
+        "name": "Canalizar Divinidad: Atleta sin Parangón / Castigo Inspirador",
         "description": "Ganas ventaja en pruebas de Fuerza y Destreza, y puedes repartir PG temporales tras un Castigo Divino.",
         "effects": [
           { "type": "passiveTrait", "name": "Gloria del Campeón", "description": "Atleta Inigualable: ventaja en Atletismo/Acrobacias y mayor salto. Castigo Inspirador: reparte PG temporales tras un Castigo Divino." }
@@ -1191,10 +1191,10 @@
       },
       {
         "level": 7,
-        "name": "Aura de Prontitud",
+        "name": "Aura de Celeridad",
         "description": "Tú y aliados cercanos ganáis velocidad de movimiento adicional.",
         "effects": [
-          { "type": "passiveTrait", "name": "Aura de Prontitud", "description": "+10 pies de velocidad para ti y aliados en tu aura." }
+          { "type": "passiveTrait", "name": "Aura de Celeridad", "description": "+10 pies de velocidad para ti y aliados en tu aura." }
         ]
       },
       {
@@ -1248,10 +1248,10 @@
       },
       {
         "level": 15,
-        "name": "Alma de Venganza",
+        "name": "Espíritu Vengativo",
         "description": "Contra tu enemigo del Voto de Enemistad puedes reaccionar atacando cuando te ataca.",
         "effects": [
-          { "type": "passiveTrait", "name": "Alma de Venganza", "description": "Reacción: ataque contra tu enemigo jurado cuando él ataca." }
+          { "type": "passiveTrait", "name": "Espíritu Vengativo", "description": "Reacción: ataque contra tu enemigo jurado cuando él ataca." }
         ]
       },
       {
@@ -1308,7 +1308,7 @@
   },
   {
     "id": "beast-master",
-    "name": "Amo de las Bestias",
+    "name": "Señor de las Bestias",
     "classId": "ranger",
     "source": "phb_2024",
     "description": "Explorador que forma un vínculo primario con una bestia compañera que lucha a su lado.",
@@ -1390,7 +1390,7 @@
   },
   {
     "id": "gloom-stalker",
-    "name": "Acechador de la Penumbra",
+    "name": "Acechador en la Penumbra",
     "classId": "ranger",
     "source": "phb_2024",
     "description": "Explorador de las tinieblas y el Underdark, maestro de la emboscada que ataca antes de ser visto.",
@@ -1674,7 +1674,7 @@
   },
   {
     "id": "aberrant-sorcery",
-    "name": "Hechicería de Mente Aberrante",
+    "name": "Hechicería Aberrante",
     "classId": "sorcerer",
     "source": "phb_2024",
     "description": "Tu poder nace de una influencia psiónica alienígena, otorgándote telepatía y magia mental.",
@@ -1716,7 +1716,7 @@
   },
   {
     "id": "clockwork-sorcery",
-    "name": "Hechicería del Orden Cósmico",
+    "name": "Hechicería Mecánica",
     "classId": "sorcerer",
     "source": "phb_2024",
     "description": "Tu magia proviene de los planos del orden y la ley, permitiéndote imponer equilibrio y previsibilidad.",
@@ -1967,17 +1967,17 @@
 
   {
     "id": "evoker",
-    "name": "Escuela de Evocación",
+    "name": "Evocador",
     "classId": "wizard",
     "source": "srd_2024",
     "description": "Esculpes la magia elemental cruda: fuego, frío y relámpago obedecen tu voluntad sin dañar a tus aliados.",
     "features": [
       {
         "level": 3,
-        "name": "Potenciar Truco",
+        "name": "Truco Potente",
         "description": "Tus trucos de daño hacen daño reducido al fallar y suman tu característica de conjuro al daño de tus trucos de evocación.",
         "effects": [
-          { "type": "passiveTrait", "name": "Potenciar Truco", "description": "Tus trucos de daño hacen daño mínimo al fallar y suman tu característica de conjuro." }
+          { "type": "passiveTrait", "name": "Truco Potente", "description": "Tus trucos de daño hacen daño mínimo al fallar y suman tu característica de conjuro." }
         ]
       },
       {
@@ -2016,7 +2016,7 @@
   },
   {
     "id": "abjurer",
-    "name": "Escuela de Abjuración",
+    "name": "Abjurador",
     "classId": "wizard",
     "source": "phb_2024",
     "description": "Magos protectores especializados en escudos arcanos, disipación y anulación de magia hostil.",
@@ -2057,7 +2057,7 @@
   },
   {
     "id": "diviner",
-    "name": "Escuela de Adivinación",
+    "name": "Adivino",
     "classId": "wizard",
     "source": "phb_2024",
     "description": "Magos que atisban el pasado, el presente y el futuro, reescribiendo el destino con sus presagios.",
@@ -2098,7 +2098,7 @@
   },
   {
     "id": "illusionist",
-    "name": "Escuela de Ilusión",
+    "name": "Ilusionista",
     "classId": "wizard",
     "source": "phb_2024",
     "description": "Magos que tejen ilusiones tan convincentes que confunden los sentidos e incluso alteran la realidad.",

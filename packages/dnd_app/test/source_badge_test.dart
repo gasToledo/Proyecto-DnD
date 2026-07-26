@@ -30,7 +30,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    // Mago de nivel 2 a 3: elige entre 4 escuelas, de las cuales solo Evocación
+    // Mago de nivel 2 a 3: elige entre 4 escuelas, de las cuales solo Evocador
     // pertenece al SRD.
     final c = Character(
       id: 't-wizard-3',
@@ -58,7 +58,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Escuela de Evocación'), findsOneWidget);
+    expect(find.text('Evocador'), findsOneWidget);
     // Una sola opción del SRD y tres del PHB.
     expect(find.text('SRD'), findsOneWidget);
     expect(find.text('PHB 2024'), findsNWidgets(3));

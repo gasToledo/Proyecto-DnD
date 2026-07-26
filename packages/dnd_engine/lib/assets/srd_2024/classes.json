@@ -141,10 +141,10 @@
       },
       {
         "level": 3,
-        "name": "Conocimiento Primario",
-        "description": "Al ganar esta clase obtienes competencia en una habilidad adicional y puedes canalizar tu Furia en movimiento.",
+        "name": "Conocimiento Primigenio",
+        "description": "Ganás competencia en otra habilidad de la lista del Bárbaro y podés canalizar tu poder primigenio durante la Furia.",
         "effects": [
-          { "type": "passiveTrait", "name": "Conocimiento Primario", "description": "Mientras estás en Furia, puedes usar ciertas acciones (Correr, Forcejear, Saltar, etc.) sumando tu bonif. de Furia como daño en algunas maniobras." }
+          { "type": "passiveTrait", "name": "Conocimiento Primigenio", "description": "Ganás competencia en otra habilidad a elegir de la lista del Bárbaro de nivel 1. Además, mientras estés enfurecido podés hacer como prueba de Fuerza cualquier prueba de Acrobacias, Intimidación, Percepción, Sigilo o Supervivencia." }
         ]
       },
       {
@@ -290,11 +290,11 @@
         ]
       },
       {
-        "level": 8,
-        "name": "Talento Fiable",
+        "level": 7,
+        "name": "Talentos Fiables",
         "description": "Tus pruebas con competencia rara vez fallan.",
         "effects": [
-          { "type": "passiveTrait", "name": "Talento Fiable", "description": "Cuando haces una prueba de característica con la que aplicas tu bonif. de competencia, tratas cualquier resultado del d20 de 9 o menos como un 10." }
+          { "type": "passiveTrait", "name": "Talentos Fiables", "description": "Cuando hacés una prueba de característica en la que aplicás tu bonif. de competencia, tratás cualquier resultado del d20 de 9 o menos como un 10." }
         ]
       }
     ]
@@ -472,11 +472,11 @@
         ]
       },
       {
-        "level": 3,
-        "name": "Recuperación Arcana (mejora)",
-        "description": "Tus conjuros de nivel 1 y 2 se potencian con el tiempo.",
+        "level": 1,
+        "name": "Adepto en Rituales",
+        "description": "Podés lanzar como ritual cualquier conjuro de Mago de tu libro marcado como ritual, sin tenerlo preparado.",
         "effects": [
-          { "type": "passiveTrait", "name": "Rituales", "description": "Puedes lanzar como ritual cualquier conjuro de Mago preparado que tenga la etiqueta de ritual, sin gastar espacio." }
+          { "type": "passiveTrait", "name": "Adepto en Rituales", "description": "Podés lanzar de forma ritual cualquier conjuro de Mago que figure en tu libro y esté marcado como ritual. No hace falta tenerlo preparado, pero debés leerlo del libro." }
         ]
       }
     ]
@@ -522,10 +522,10 @@
       },
       {
         "level": 5,
-        "name": "Destruir Muertos Vivientes",
-        "description": "Tu Expulsar Muertos Vivientes puede destruir directamente a los más débiles.",
+        "name": "Abrasar Muertos Vivientes",
+        "description": "Al usar Expulsar Muertos Vivientes, los que fallen la salvación reciben además daño radiante.",
         "effects": [
-          { "type": "passiveTrait", "name": "Destruir Muertos Vivientes", "description": "Cuando un muerto viviente falla su salvación contra tu Expulsar y su nivel de desafío es bajo, es destruido al instante." }
+          { "type": "passiveTrait", "name": "Abrasar Muertos Vivientes", "description": "Cuando usás Expulsar Muertos Vivientes podés tirar tantos d8 como tu mod. de Sabiduría (mínimo 1d8): los muertos vivientes que fallen la salvación reciben ese total como daño radiante. El daño no termina el efecto de expulsión." }
         ]
       }
     ]
@@ -619,11 +619,11 @@
         ]
       },
       {
-        "level": 3,
+        "level": 2,
         "name": "Pericia",
-        "description": "Duplicas tu bonif. de competencia en dos habilidades.",
+        "description": "Duplicás tu bonif. de competencia en dos habilidades.",
         "effects": [
-          { "type": "passiveTrait", "name": "Pericia", "description": "Elige dos de tus competencias de habilidad; duplicas tu bonif. de competencia en ellas. Otras dos a nivel 9." }
+          { "type": "passiveTrait", "name": "Pericia", "description": "Elegí dos de tus competencias de habilidad; duplicás tu bonif. de competencia en ellas. Otras dos a nivel 9." }
         ]
       }
     ]
@@ -703,9 +703,9 @@
       {
         "level": 1,
         "name": "Invocaciones Sobrenaturales",
-        "description": "Aprendes fragmentos de conocimiento prohibido que otorgan capacidades mágicas.",
+        "description": "Aprendés fragmentos de conocimiento prohibido que otorgan capacidades mágicas.",
         "effects": [
-          { "type": "passiveTrait", "name": "Invocaciones Sobrenaturales", "description": "Conoces invocaciones (p.ej. Vista del Diablo, Máscara de Muchos Rostros) que puedes cambiar al subir de nivel." }
+          { "type": "passiveTrait", "name": "Invocaciones Sobrenaturales", "description": "Conocés invocaciones que podés cambiar al subir de nivel. En 2024 los pactos son invocaciones, no un rasgo aparte: Pacto de la Hoja, Pacto de la Cadena, Pacto del Grimorio y Pacto del Talismán se eligen desde esta lista." }
         ]
       },
       {
@@ -714,14 +714,6 @@
         "description": "Tras un descanso corto puedes recuperar espacios de Magia de Pacto gastados.",
         "effects": [
           { "type": "passiveTrait", "name": "Astucia Mágica", "description": "Como 1 minuto de concentración ritual, una vez por descanso largo, recuperas tus espacios de Magia de Pacto gastados." }
-        ]
-      },
-      {
-        "level": 3,
-        "name": "Dádiva de Pacto",
-        "description": "Tu mecenas te concede un don: Pacto de la Hoja, del Grimorio o de la Cadena.",
-        "effects": [
-          { "type": "passiveTrait", "name": "Dádiva de Pacto", "description": "Eliges un Pacto: de la Hoja (arma de pacto), del Grimorio (trucos extra) o de la Cadena (familiar especial)." }
         ]
       }
     ]
@@ -768,9 +760,9 @@
       {
         "level": 2,
         "name": "Castigo Divino",
-        "description": "Al impactar con un arma puedes gastar un espacio de conjuro para infligir daño radiante extra.",
+        "description": "Siempre tenés preparado el conjuro Castigo Divino y podés lanzarlo como acción adicional tras impactar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Castigo Divino", "description": "Siempre tienes preparado Castigo Divino. Al impactar con un ataque de arma, puedes gastar un espacio de conjuro para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes/infernales)." }
+          { "type": "passiveTrait", "name": "Castigo Divino", "description": "Siempre tenés preparado Castigo Divino. En 2024 es un conjuro: tras impactar con un ataque de arma lo lanzás como acción adicional, gastando un espacio, para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes e infernales)." }
         ]
       },
       {

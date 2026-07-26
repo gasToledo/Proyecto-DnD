@@ -424,17 +424,17 @@
   },
   {
     "id": "chill-touch",
-    "name": "Toque Gélido",
+    "name": "Toque Helado",
     "source": "srd_2024",
     "level": 0,
     "school": "Nigromancia",
     "castingTime": "Acción",
-    "range": "120 pies",
+    "range": "Toque",
     "components": "V, S",
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Mano espectral; ataque de conjuro a distancia por 1d10 necrótico e impide que el objetivo recupere PG hasta tu próximo turno.",
+    "description": "Canalizás un frío sepulcral y hacés un ataque de conjuro cuerpo a cuerpo contra un objetivo a tu alcance. Si acertás, recibe 1d10 de daño necrótico y no puede recuperar puntos de golpe hasta el final de tu siguiente turno. El daño sube a 2d10 en el nivel 5, 3d10 en el 11 y 4d10 en el 17.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -747,7 +747,7 @@
     "duration": "1 hora",
     "concentration": true,
     "ritual": false,
-    "description": "Marcas a una criatura; infliges 1d6 extra al golpearla con arma y tienes ventaja para rastrearla. Concentración.",
+    "description": "Marcás mágicamente como tu presa a una criatura que veas a tu alcance. Hasta que el conjuro termine, le infligís 1d6 de daño de fuerza adicional cada vez que le acertás con una tirada de ataque, y tenés ventaja en las pruebas de Sabiduría (Percepción o Supervivencia) que hagas para buscarla. Si sus puntos de golpe llegan a 0 antes de que termine, podés usar una acción adicional para pasar la marca a otra criatura que veas. Con un espacio de nivel 3 o 4 la concentración puede durar hasta 8 horas, y con uno de nivel 5 o más, hasta 24 horas.",
     "classes": [
       "ranger"
     ]
@@ -1437,17 +1437,17 @@
   },
   {
     "id": "conjure-animals",
-    "name": "Convocar Animales",
+    "name": "Conjurar Animales",
     "source": "srd_2024",
     "level": 3,
     "school": "Conjuración",
     "castingTime": "Acción",
     "range": "60 pies",
     "components": "V, S",
-    "duration": "1 hora",
+    "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Invocas espíritus con forma de bestia que combaten a tu lado durante la concentración.",
+    "description": "Conjurás espíritus de la naturaleza, que aparecen como una manada Grande de animales espectrales en un espacio libre que veas a tu alcance. Tenés ventaja en las salvaciones de Fuerza mientras estés a 1,5 m o menos de la manada, y al moverte en tu turno podés moverla hasta 9 m a otro espacio libre. Cuando la manada se acerca a 3 m o menos de una criatura que veas, o una criatura termina su turno ahí, podés obligarla a hacer una salvación de Destreza: si falla, recibe 3d10 de daño cortante. Cada criatura hace esta tirada una sola vez por turno. Con un espacio de nivel superior, el daño sube 1d10 por nivel por encima del 3.",
     "classes": [
       "druid",
       "ranger"

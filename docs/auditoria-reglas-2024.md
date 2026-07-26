@@ -67,7 +67,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Clases | en revisión | **Las 12 tablas verificadas contra el PHB.** Marciales: corregidas las progresiones de maestría con armas, Tomar Aliento, Furias, Movimiento sin Armadura y Canalizar Divinidad, congeladas en el valor de nivel 1; sumada la ballesta de mano a Pícaro y Monje; quitada Interpretación de la lista del Pícaro. Lanzadoras: Canalizar Divinidad del Clérigo (3 a nivel 6, 4 a nivel 18) y Forma Salvaje del Druida (3 a nivel 6, 4 a nivel 17) tenían el mismo defecto; el Druida perdió la armadura media, que en 2024 ya no tiene. Las 12 salvaciones y los 6 valores de trucos iniciales coinciden. Faltan los rasgos de nivel 8 a 20, el equipo inicial y las competencias con herramientas, que son contenido nuevo. |
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. Falta verificar los rasgos de las 47 restantes. |
 | Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. **Las 43 generales tienen ahora su prerrequisito real del PHB**: 12 con una característica, 10 con dos o tres alternativas, 4 con entrenamiento de armadura, 3 con lanzamiento de conjuros y 14 solo con el nivel 4. Para eso se agregó `anyAbilityScores`, porque el mapa anterior combinaba con Y lógico y no podía expresar "Fuerza o Destreza 13". Falta la elección de característica (+1 a X o Y) y revisar `mobile`, que no figura entre las 43 del capítulo. |
-| Conjuros | en revisión | Normalizados escuela (`Necromancia` vs `Nigromancia`), el único alcance en métrico y los 164 tiempos de lanzamiento a la convención 2024. Faltan las reescrituras de Toque Gélido, Convocar Animales y Marca del Cazador, la procedencia, y los 161 conjuros del SRD que no están en el catálogo (338 contra 177). |
+| Conjuros | en revisión | Normalizados escuela (`Necromancia` vs `Nigromancia`), el único alcance en métrico y los 164 tiempos de lanzamiento a la convención 2024; las 8 escuelas, los tiempos, los alcances y la coherencia de concentración se comprueban ahora sobre los 177. **Hechas las tres reescrituras**: Toque Helado (pasa a Toque y ataque cuerpo a cuerpo), Conjurar Animales (deja de invocar criaturas, pasa a daño de área y baja a 10 minutos) y Marca del Cazador (daño de fuerza). Faltan la procedencia y los 161 conjuros del SRD que no están en el catálogo (338 contra 177). |
 | Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. **Las ocho propiedades de maestría tienen glosario** con el nombre oficial del PHB y el texto de la regla, así que la ficha dejó de mostrar el identificador en inglés. Falta precio, peso y alcance, que no existen como campo en el modelo, y las armas que el manual lista y el catálogo no tiene. |
 
 ## Primera pasada: orígenes y magia innata
@@ -119,40 +119,37 @@ confunden bajo la misma atribución.
 
 Ordenados por costo, del más barato al más caro:
 
-1. **Reescritura de tres conjuros**: Toque Gélido (pasa a Toque y ataque cuerpo
-   a cuerpo), Convocar Animales (deja de invocar criaturas y pasa a daño de
-   área) y Marca del Cazador (daño de fuerza, sin ventaja para rastrear).
-2. **Compra de puntos**: es el tercer método oficial de asignar puntuaciones y
+1. **Compra de puntos**: es el tercer método oficial de asignar puntuaciones y
    la app solo tiene dos. El dato es chico (27 puntos, rango 8–15, costes
    0/1/2/3/4/5/7/9), pero la interacción no encaja en el paso actual, que
    reparte un pool fijo de seis valores con desplegables: la compra necesita
    selectores con presupuesto. Es un modo nuevo en `scores_step.dart` más un
    valor nuevo en `ScoreMethod`, que el borrador ya tolera porque resuelve el
    enum por nombre con respaldo.
-3. **Nomenclatura**: el catálogo usa traducciones propias donde el SRD tiene
+2. **Nomenclatura**: el catálogo usa traducciones propias donde el SRD tiene
    nombre oficial (Aprendiz de Mucho, Sentir el Peligro, Truco Potente). Esta
    tanda solo alineó los rasgos que tocó.
-4. **`mobile` no está en el capítulo 5**: las 43 dotes generales del PHB
+3. **`mobile` no está en el capítulo 5**: las 43 dotes generales del PHB
    incluyen Veloz (`speedy`) pero no Móvil, que es de 2014 y quedó cubierta por
    aquella. El catálogo tiene las dos y por ahora `mobile` copia el
    prerrequisito de `speedy`. Falta decidir si se retira o se marca como
    contenido propio.
-5. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
+4. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
    dato y anotada en el texto. Requiere efecto nuevo, campo persistido,
    migración y dos superficies de UI.
-6. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
+5. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
    ambos lo obtienen en el **nivel 2**. Falta implementarlo: `grantsFightingStyle`
    es un booleano sin noción de nivel y la pantalla de subida de nivel no tiene
    dónde elegirlo, así que activarlo tal cual lo regalaría a nivel 1. Hace falta
    un campo `fightingStyleLevel`, el gating del asistente y una sección nueva.
-7. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
+6. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
    afectan ningún cálculo. En 2024 el agotamiento da −2 por nivel a las pruebas
    de d20 y −5 pies de velocidad.
-8. **Precio y peso del equipo**: no existen como campo en `Weapon` ni en
+7. **Precio y peso del equipo**: no existen como campo en `Weapon` ni en
    `Armor`, así que no hay dónde guardarlos. Sumarlos implica campo nuevo,
    los valores de las 35 armas y 13 armaduras, y decidir si la ficha lleva
    carga.
-9. **Invocaciones Sobrenaturales**: el sistema no existe en el motor, así que
+8. **Invocaciones Sobrenaturales**: el sistema no existe en el motor, así que
     los cuatro pactos del Brujo solo figuran como texto.
 
 ## Criterio de cierre

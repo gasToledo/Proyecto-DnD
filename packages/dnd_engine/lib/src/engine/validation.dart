@@ -106,6 +106,21 @@ class CharacterValidator {
       ));
     }
 
+    // La maestría requiere competencia con el arma. La elección se conserva por
+    // si más adelante ganás la competencia, pero mientras tanto no se aplica.
+    for (final weaponId in c.weaponMasteryChoices) {
+      final weapon = repo.weapon(weaponId);
+      if (weapon == null) continue;
+      final proficient = sheet.weaponProficiencies.contains(weapon.category) ||
+          sheet.weaponProficiencies.contains(weapon.id);
+      if (!proficient) {
+        w.add(ValidationWarning(
+          'mastery_not_proficient',
+          'No sos competente con ${weapon.name}: su maestría no se aplica.',
+        ));
+      }
+    }
+
     final armorId = c.equippedArmorId;
     if (armorId != null) {
       final armor = repo.armorPiece(armorId);

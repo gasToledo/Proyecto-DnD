@@ -39,7 +39,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6). Falta separar la opción SRD de las opciones PHB y verificar el resto de las 48. |
 | Dotes | pendiente | Verificar categoría, prerrequisitos, aumentos y efectos. |
 | Conjuros | pendiente | Verificar nombres SRD, nivel, escuela, listas, componentes, duración, ritual y concentración. |
-| Equipo | pendiente | Verificar precio, daño/CA, propiedades, maestrías y requisitos. |
+| Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. Falta precio, peso y alcance, y las armas que el SRD lista y el catálogo no tiene. |
 
 ## Primera pasada: orígenes y magia innata
 

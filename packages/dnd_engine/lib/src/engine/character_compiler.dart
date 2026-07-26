@@ -310,9 +310,13 @@ class CharacterCompiler {
         ? w.versatileDice!
         : w.damageDice;
 
+    // 2024: la propiedad de Maestría solo se aplica con armas con las que sos
+    // competente. `proficient` sale de la ficha compilada, así que una subclase
+    // o dote que conceda la categoría también habilita la maestría.
     final hasMastery = w.mastery != null &&
         b.weaponMasterySlots > 0 &&
-        c.weaponMasteryChoices.contains(w.id);
+        c.weaponMasteryChoices.contains(w.id) &&
+        proficient;
 
     return Attack(
       weaponId: w.id,

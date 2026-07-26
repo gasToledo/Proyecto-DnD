@@ -157,7 +157,7 @@
       {
         "type": "passiveTrait",
         "name": "Ascendencia Dracónica",
-        "description": "Eliges un tipo de dragón; determina el tipo de daño de tu Arma de Aliento y tu Resistencia al Daño."
+        "description": "Eliges un tipo de dragón, que determina el tipo de daño de tu Arma de Aliento y tu Resistencia al Daño: Negro o Cobre (ácido), Azul o Bronce (relámpago), Blanco o Plata (frío), Verde (veneno), Rojo, Oro u Oropel (fuego)."
       },
       {
         "type": "passiveTrait",

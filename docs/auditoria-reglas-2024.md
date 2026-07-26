@@ -59,7 +59,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 | Bloque | Estado | Hallazgos y alcance |
 | --- | --- | --- |
-| Especies y linajes | en revisión | Verificados contra el SRD el Enano (Afinidad con la Piedra), el Orco (sin Complexión Poderosa) y el Humano. Los tres legados del Tiflin y los linajes de Elfo y Gnomo coinciden exactamente. Falta la elección de tamaño de Humano y Tiflin, las elecciones internas de Dracónido y Goliat, y el cambio de truco del Alto Elfo. |
+| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. La Ascendencia Dracónica ahora nombra los diez dragones y su tipo de daño, como ya hacía el Goliat con los seis gigantes. Falta la elección de tamaño (Humano, Tiflin **y Aasimar**, que en el PHB son Mediano o Pequeño), las ascendencias de Dracónido y Goliat como elección persistida, y el cambio de truco del Alto Elfo. |
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` (antes degradaba a `homebrew` en silencio). Cerradas subclases (12 SRD / 36 PHB), dotes (9 SRD / 48 PHB) y trasfondos (2 SRD / 10 PHB), con la procedencia visible en la app. Faltan conjuros y equipo. |
 | Trasfondos | en revisión | **Los 12 verificados contra el PHB sin una sola diferencia** en dote de origen, las dos habilidades y la herramienta. Cerrada la procedencia: el SRD trae 4 trasfondos y el catálogo tiene 2 de ellos, así que 10 pasaron a `phb_2024`. Falta verificar las tres características ofrecidas y el equipo inicial, y faltan 4 trasfondos del manual: Acólito, Erudito, Guía y Marinero. |
@@ -91,8 +91,9 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 ### Pendientes derivados
 
-- Elección Pequeño/Mediano para Humano y Tiefling. El SRD la declara explícita
-  ("elegido al seleccionar la especie"), así que es una elección a persistir.
+- Elección Pequeño/Mediano para Humano, Tiefling y Aasimar. El SRD la declara
+  explícita ("elegido al seleccionar la especie"), y el PHB confirma que el
+  Aasimar también la tiene, así que es una elección a persistir.
 - Cambio de truco del Alto Elfo después de un descanso largo.
 - Lanzamiento explícito de conjuros innatos usando espacios desde la ficha.
 - Elecciones de ascendencia del Dracónido y del Goliat.

@@ -6,6 +6,7 @@ export 'src/domain/ability.dart';
 export 'src/domain/alignment.dart';
 export 'src/domain/data_version.dart';
 export 'src/domain/skill.dart';
+export 'src/domain/weapon_mastery.dart';
 export 'src/domain/effects.dart';
 export 'src/domain/spell_slots.dart';
 export 'src/domain/content.dart';

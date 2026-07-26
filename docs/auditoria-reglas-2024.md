@@ -68,7 +68,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. Falta verificar los rasgos de las 47 restantes. |
 | Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. **Las 43 generales tienen ahora su prerrequisito real del PHB**: 12 con una característica, 10 con dos o tres alternativas, 4 con entrenamiento de armadura, 3 con lanzamiento de conjuros y 14 solo con el nivel 4. Para eso se agregó `anyAbilityScores`, porque el mapa anterior combinaba con Y lógico y no podía expresar "Fuerza o Destreza 13". Falta la elección de característica (+1 a X o Y) y revisar `mobile`, que no figura entre las 43 del capítulo. |
 | Conjuros | en revisión | Normalizados escuela (`Necromancia` vs `Nigromancia`), el único alcance en métrico y los 164 tiempos de lanzamiento a la convención 2024. Faltan las reescrituras de Toque Gélido, Convocar Animales y Marca del Cazador, la procedencia, y los 161 conjuros del SRD que no están en el catálogo (338 contra 177). |
-| Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. Falta precio, peso y alcance, y las armas que el SRD lista y el catálogo no tiene. |
+| Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. **Las ocho propiedades de maestría tienen glosario** con el nombre oficial del PHB y el texto de la regla, así que la ficha dejó de mostrar el identificador en inglés. Falta precio, peso y alcance, que no existen como campo en el modelo, y las armas que el manual lista y el catálogo no tiene. |
 
 ## Primera pasada: orígenes y magia innata
 
@@ -148,8 +148,10 @@ Ordenados por costo, del más barato al más caro:
 7. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
    afectan ningún cálculo. En 2024 el agotamiento da −2 por nivel a las pruebas
    de d20 y −5 pies de velocidad.
-8. **Glosario de maestrías**: `mastery` es un id suelto (`nick`, `vex`) sin
-   descripción en ningún lado; la ficha muestra el identificador en inglés.
+8. **Precio y peso del equipo**: no existen como campo en `Weapon` ni en
+   `Armor`, así que no hay dónde guardarlos. Sumarlos implica campo nuevo,
+   los valores de las 35 armas y 13 armaduras, y decidir si la ficha lleva
+   carga.
 9. **Invocaciones Sobrenaturales**: el sistema no existe en el motor, así que
     los cuatro pactos del Brujo solo figuran como texto.
 

@@ -35,7 +35,9 @@ String _weaponCategoryLabel(String category) =>
 /// Subtítulo con daño y (si aplica) la propiedad de maestría del arma.
 String _weaponSubtitle(Weapon w) {
   final dmg = '${w.damageDice} ${titleCase(w.damageType)}';
-  return w.mastery == null ? dmg : '$dmg · Maestría: ${titleCase(w.mastery!)}';
+  return w.mastery == null
+      ? dmg
+      : '$dmg · Maestría: ${weaponMasteryName(w.mastery!)}';
 }
 
 /// Encabezado de grupo (Simples / Marciales) dentro de un picker de armas.

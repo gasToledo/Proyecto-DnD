@@ -82,10 +82,10 @@
       },
       {
         "level": 2,
-        "name": "Oleada de Acción",
+        "name": "Acción Súbita",
         "description": "En tu turno puedes realizar una acción adicional.",
         "effects": [
-          { "type": "resource", "id": "action_surge", "name": "Oleada de Acción", "max": 1, "recharge": "short", "description": "En tu turno, además de tu acción normal, podés realizar una acción adicional." }
+          { "type": "resource", "id": "action_surge", "name": "Acción Súbita", "max": 1, "recharge": "short", "description": "En tu turno, además de tu acción normal, podés realizar una acción adicional." }
         ]
       },
       {
@@ -105,11 +105,67 @@
         ]
       },
       {
-        "level": 9,
-        "name": "Indomable",
-        "description": "Puedes volver a tirar una salvación fallida. Usos que escalan con el nivel.",
+        "level": 5,
+        "name": "Desplazamiento Táctico",
+        "description": "Al usar Tomar Aliento te movés media velocidad sin provocar ataques de oportunidad.",
         "effects": [
-          { "type": "passiveTrait", "name": "Indomable", "description": "Vuelve a tirar una tirada de salvación fallida; debes usar el nuevo resultado." }
+          { "type": "passiveTrait", "name": "Desplazamiento Táctico", "description": "Cuando usás Tomar Aliento con una acción adicional, podés moverte hasta la mitad de tu velocidad sin provocar ataques de oportunidad." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Indómito",
+        "description": "Repetís una salvación fallida sumando tu nivel de Guerrero, una vez por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Indómito", "description": "Si fallás una tirada de salvación podés repetirla con un bonificador igual a tu nivel de Guerrero. Tenés que quedarte con el nuevo resultado. Un uso por descanso largo; dos desde nivel 13 y tres desde nivel 17." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Maestro Táctico",
+        "description": "Cambiás la maestría de un arma por Debilitar, Empujar o Ralentizar.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Maestro Táctico", "description": "Cuando atacás con un arma cuya propiedad de maestría podés usar, podés sustituirla para ese ataque por Debilitar, Empujar o Ralentizar." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Dos Ataques Adicionales",
+        "description": "Al realizar la acción de Ataque hacés tres ataques en vez de uno.",
+        "effects": [
+          { "type": "extraAttack", "extra": 2 }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Ataques Estudiados",
+        "description": "Si fallás un ataque contra una criatura, ganás ventaja en el siguiente contra ella.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Ataques Estudiados", "description": "Si hacés una tirada de ataque contra una criatura y fallás, tenés ventaja en tu siguiente tirada de ataque contra esa criatura antes del final de tu siguiente turno." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Acción Súbita (dos usos)",
+        "description": "Tus usos de Acción Súbita aumentan a 2, pero sigue siendo uno por turno.",
+        "effects": [
+          { "type": "resource", "id": "action_surge", "name": "Acción Súbita", "max": 2, "recharge": "short", "description": "En tu turno podés llevar a cabo una acción más, salvo la acción de magia. Dos usos por descanso, pero solo uno por turno." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don de la Pericia en Combate.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Tres Ataques Adicionales",
+        "description": "Al realizar la acción de Ataque hacés cuatro ataques en vez de uno.",
+        "effects": [
+          { "type": "extraAttack", "extra": 3 }
         ]
       }
     ]
@@ -333,10 +389,10 @@
       },
       {
         "level": 3,
-        "name": "Puntería Firme",
+        "name": "Puntería Certera",
         "description": "Como acción adicional obtienes ventaja en tu próximo ataque si no te mueves este turno.",
         "effects": [
-          { "type": "passiveTrait", "name": "Puntería Firme", "description": "Como acción adicional, ganas ventaja en tu próxima tirada de ataque este turno, a cambio de tener velocidad 0 hasta el fin del turno." }
+          { "type": "passiveTrait", "name": "Puntería Certera", "description": "Como acción adicional, ganas ventaja en tu próxima tirada de ataque este turno, a cambio de tener velocidad 0 hasta el fin del turno." }
         ]
       },
       {
@@ -349,10 +405,10 @@
       },
       {
         "level": 6,
-        "name": "Pericia (mejora)",
+        "name": "Pericia (dos habilidades más)",
         "description": "Eliges otras dos habilidades para duplicar tu bonif. de competencia.",
         "effects": [
-          { "type": "passiveTrait", "name": "Pericia (mejora)", "description": "Eliges otras dos de tus competencias de habilidad para aplicar Pericia." }
+          { "type": "passiveTrait", "name": "Pericia (dos habilidades más)", "description": "Eliges otras dos de tus competencias de habilidad para aplicar Pericia." }
         ]
       },
       {
@@ -368,7 +424,65 @@
         "name": "Talentos Fiables",
         "description": "Tus pruebas con competencia rara vez fallan.",
         "effects": [
-          { "type": "passiveTrait", "name": "Talentos Fiables", "description": "Cuando hacés una prueba de característica en la que aplicás tu bonif. de competencia, tratás cualquier resultado del d20 de 9 o menos como un 10." }
+          { "type": "passiveTrait", "name": "Talentos Fiables", "description": "Cuando hacés una prueba de característica que use una de tus competencias en habilidades o con herramientas, tratás cualquier resultado del d20 de 9 o menos como un 10." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Golpe Astuto",
+        "description": "Renunciás a dados de Ataque Furtivo para sumar Retirada, Tropiezo o Veneno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Astuto", "description": "Al infligir daño de Ataque Furtivo podés renunciar a dados para sumar un efecto. Retirada (1d6): te movés hasta la mitad de tu velocidad sin provocar ataques de oportunidad. Tropiezo (1d6): salvación de Destreza o derribado, si el objetivo es Grande o menor. Veneno (1d6): salvación de Constitución o envenenado 1 minuto; necesitás útiles de envenenador. La CD es 8 + tu mod. de Destreza + tu bonif. de competencia." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Golpe Astuto Mejorado",
+        "description": "Podés aplicar dos efectos de Golpe Astuto en el mismo Ataque Furtivo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Astuto Mejorado", "description": "Podés usar hasta dos efectos de Golpe Astuto al infligir daño de Ataque Furtivo, pagando el coste en dados de cada uno." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Golpes Taimados",
+        "description": "Sumás Ofuscar a las opciones de Golpe Astuto.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpes Taimados", "description": "Entre las opciones de Golpe Astuto se suma Ofuscar (3d6): el objetivo hace una salvación de Destreza o queda cegado hasta el final de su siguiente turno." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Mente Escurridiza",
+        "description": "Ganás competencia en salvaciones de Sabiduría y Carisma.",
+        "effects": [
+          { "type": "savingThrowProficiency", "ability": "wisdom" },
+          { "type": "savingThrowProficiency", "ability": "charisma" },
+          { "type": "passiveTrait", "name": "Mente Escurridiza", "description": "Tu mente astuta es difícil de controlar: ganás competencia en las tiradas de salvación de Sabiduría y Carisma." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Elusivo",
+        "description": "Ningún ataque contra vos tiene ventaja mientras no estés incapacitado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Elusivo", "description": "Ninguna tirada de ataque contra vos tiene ventaja, salvo que tengas el estado de incapacitado." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Espíritu de la Noche.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Golpe de Suerte",
+        "description": "Convertís una prueba de d20 fallida en un 20, una vez por descanso.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe de Suerte", "description": "Si fallás una prueba con d20, podés convertir el resultado de la tirada en un 20. Recuperás el uso tras un descanso corto o largo." }
         ]
       }
     ]
@@ -1102,6 +1216,70 @@
         "effects": [
           { "type": "extraAttack", "extra": 1 }
         ]
+      },
+      {
+        "level": 5,
+        "name": "Corcel Fiel",
+        "description": "Siempre tenés preparado Hallar Corcel y lo lanzás gratis una vez por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Corcel Fiel", "description": "Siempre tenés preparado Hallar Corcel. Además podés lanzarlo una vez sin gastar espacio de conjuro, y recuperás esa capacidad tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Aura de Protección",
+        "description": "Emanación de 10 pies: vos y tus aliados sumáis tu mod. de Carisma a las salvaciones.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Aura de Protección", "description": "Irradiás un aura invisible en una emanación de 10 pies. Tus aliados dentro del aura y vos suman un bonificador a las tiradas de salvación igual a tu mod. de Carisma (mínimo +1). El aura se apaga si tenés el estado de incapacitado, y una criatura solo se beneficia de un Aura de Protección a la vez." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Abjurar de los Enemigos",
+        "description": "Gastás Canalizar Divinidad para asustar a varias criaturas durante 1 minuto.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Abjurar de los Enemigos", "description": "Como acción de magia gastás un uso de Canalizar Divinidad y hacés objetivo a tantas criaturas visibles a 60 pies como tu mod. de Carisma (mínimo 1). Cada una hace una salvación de Sabiduría o queda asustada 1 minuto, o hasta recibir daño. Mientras esté así, en su turno solo puede moverse, hacer una acción o una acción adicional." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Aura de Coraje",
+        "description": "Dentro de tu Aura de Protección, vos y tus aliados son inmunes a asustado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Aura de Coraje", "description": "Vos y tus aliados tienen inmunidad al estado de asustado mientras estén dentro de tu Aura de Protección. Si un aliado asustado entra en el aura, el estado no le hace efecto mientras siga adentro." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Golpes Radiantes",
+        "description": "Tus ataques cuerpo a cuerpo y sin armas suman 1d8 de daño radiante.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpes Radiantes", "description": "Cuando acertás con un arma cuerpo a cuerpo o un ataque sin armas, el objetivo recibe 1d8 de daño radiante adicional." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Toque Reparador",
+        "description": "Imponer las Manos también quita estados, a 5 puntos cada uno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Toque Reparador", "description": "Al usar Imponer las Manos podés eliminar además uno o más de estos estados: asustado, aturdido, cegado, ensordecido, hechizado o paralizado. Cuesta 5 puntos de la reserva por cada estado, y esos puntos no curan." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Expansión de Aura",
+        "description": "Tu Aura de Protección pasa a ser una emanación de 30 pies.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Expansión de Aura", "description": "Tu Aura de Protección pasa de 10 a 30 pies de emanación." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don de la Visión Verdadera.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
       }
     ]
   },
@@ -1158,6 +1336,78 @@
         "description": "Puedes atacar dos veces al realizar la acción de Ataque.",
         "effects": [
           { "type": "extraAttack", "extra": 1 }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Errante",
+        "description": "Sin armadura pesada tu velocidad sube 10 pies, y ganás velocidad nadando y trepando.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Errante", "description": "Si no llevás armadura pesada, tu velocidad aumenta en 10 pies. Además tenés velocidad nadando y trepando iguales a tu velocidad." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Pericia",
+        "description": "Ganás pericia en dos de tus competencias de habilidad.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Pericia", "description": "Escogé dos de tus competencias de habilidad en las que no tengas pericia; duplicás tu bonif. de competencia en ellas." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Infatigable",
+        "description": "Te das PG temporales como acción de magia, y cada descanso corto baja un nivel de cansancio.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Infatigable", "description": "Como acción de magia te concedés 1d8 + tu mod. de Sabiduría en puntos de golpe temporales (mínimo 1), con usos iguales a tu mod. de Sabiduría por descanso largo. Además, al terminar un descanso corto tu nivel de cansancio baja en 1." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Cazador Persistente",
+        "description": "Recibir daño ya no te rompe la concentración en Marca del Cazador.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Cazador Persistente", "description": "Sufrir daño no rompe tu concentración en Marca del Cazador." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Velo de la Naturaleza",
+        "description": "Como acción adicional te volvés invisible hasta el final de tu siguiente turno.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Velo de la Naturaleza", "description": "Como acción adicional invocás espíritus de la naturaleza y te otorgás el estado de invisible hasta el final de tu siguiente turno. Usos iguales a tu mod. de Sabiduría (mínimo 1) por descanso largo." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Cazador Preciso",
+        "description": "Ventaja en los ataques contra la criatura que tenga tu Marca del Cazador.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Cazador Preciso", "description": "Tenés ventaja en las tiradas de ataque contra la criatura que tenga encima tu Marca del Cazador." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Sentidos Salvajes",
+        "description": "Ganás visión ciega hasta 30 pies.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Sentidos Salvajes", "description": "Tu conexión con la naturaleza te otorga visión ciega hasta 30 pies." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Viaje Dimensional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Azote de Enemigos",
+        "description": "El daño extra de Marca del Cazador pasa de d6 a d10.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Azote de Enemigos", "description": "El dado de daño de tu Marca del Cazador es un d10 en vez de un d6." }
         ]
       }
     ]

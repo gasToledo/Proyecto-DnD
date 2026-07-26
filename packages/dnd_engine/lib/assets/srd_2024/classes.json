@@ -26,18 +26,58 @@
       },
       {
         "level": 1,
-        "name": "Segundo Aliento",
-        "description": "Usas una acción adicional para recuperar 1d10 + nivel de Guerrero PG.",
+        "name": "Tomar Aliento",
+        "description": "Como acción adicional recuperás 1d10 + tu nivel de Guerrero en PG.",
         "effects": [
-          { "type": "resource", "id": "second_wind", "name": "Segundo Aliento", "max": 2, "recharge": "short", "description": "Como acción adicional, recuperas 1d10 + tu nivel de Guerrero en puntos de golpe." }
+          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 2, "recharge": "short", "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe." }
         ]
       },
       {
         "level": 1,
-        "name": "Maestría de Armas",
-        "description": "Puedes usar la propiedad de Maestría de 3 armas con las que seas competente.",
+        "name": "Maestría con Armas",
+        "description": "Podés usar la propiedad de Maestría de 3 armas sencillas o marciales con las que seas competente. Tras un descanso largo podés cambiar una elección.",
         "effects": [
           { "type": "weaponMasterySlots", "count": 3 }
+        ]
+      },
+      {
+        "level": 4,
+        "name": "Maestría con Armas (4 armas)",
+        "description": "Tus elecciones de maestría con armas aumentan a 4.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 4 }
+        ]
+      },
+      {
+        "level": 4,
+        "name": "Tomar Aliento (3 usos)",
+        "description": "Tus usos de Tomar Aliento aumentan a 3.",
+        "effects": [
+          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 3, "recharge": "short", "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Maestría con Armas (5 armas)",
+        "description": "Tus elecciones de maestría con armas aumentan a 5.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 5 }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Tomar Aliento (4 usos)",
+        "description": "Tus usos de Tomar Aliento aumentan a 4.",
+        "effects": [
+          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 4, "recharge": "short", "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe." }
+        ]
+      },
+      {
+        "level": 16,
+        "name": "Maestría con Armas (6 armas)",
+        "description": "Tus elecciones de maestría con armas aumentan a 6.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 6 }
         ]
       },
       {
@@ -109,18 +149,34 @@
       },
       {
         "level": 1,
-        "name": "Maestría de Armas",
-        "description": "Puedes usar la propiedad de Maestría de 2 armas con las que seas competente.",
+        "name": "Maestría con Armas",
+        "description": "Podés usar la propiedad de Maestría de 2 armas con las que seas competente.",
         "effects": [
           { "type": "weaponMasterySlots", "count": 2 }
         ]
       },
       {
+        "level": 4,
+        "name": "Maestría con Armas (3 armas)",
+        "description": "Tus elecciones de maestría con armas aumentan a 3.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 3 }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Maestría con Armas (4 armas)",
+        "description": "Tus elecciones de maestría con armas aumentan a 4.",
+        "effects": [
+          { "type": "weaponMasterySlots", "count": 4 }
+        ]
+      },
+      {
         "level": 2,
-        "name": "Sentido del Peligro",
+        "name": "Sentir el Peligro",
         "description": "Ventaja en salvaciones de Destreza contra efectos que puedas ver.",
         "effects": [
-          { "type": "passiveTrait", "name": "Sentido del Peligro", "description": "Tienes ventaja en las salvaciones de Destreza contra efectos que puedas ver, salvo que estés incapacitado." }
+          { "type": "passiveTrait", "name": "Sentir el Peligro", "description": "Tenés ventaja en las tiradas de salvación de Destreza, salvo que tengas el estado de incapacitado." }
         ]
       },
       {
@@ -173,6 +229,22 @@
         ]
       },
       {
+        "level": 12,
+        "name": "Furia (5 usos)",
+        "description": "Tus usos de Furia aumentan a 5.",
+        "effects": [
+          { "type": "resource", "id": "rage", "name": "Furia", "max": 5, "recharge": "long", "description": "Usos de Furia." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Furia (6 usos)",
+        "description": "Tus usos de Furia aumentan a 6.",
+        "effects": [
+          { "type": "resource", "id": "rage", "name": "Furia", "max": 6, "recharge": "long", "description": "Usos de Furia." }
+        ]
+      },
+      {
         "level": 7,
         "name": "Instinto Feral",
         "description": "Ventaja en tiradas de Iniciativa.",
@@ -207,11 +279,13 @@
     "hitDie": 8,
     "savingThrows": ["dexterity", "intelligence"],
     "armorProficiencies": ["light"],
-    "weaponProficiencies": ["simple", "rapier", "shortsword", "scimitar", "whip"],
+    "weaponProficiencies": [
+      "simple", "rapier", "shortsword", "scimitar", "whip", "hand-crossbow"
+    ],
     "skillChoiceCount": 4,
     "skillChoiceFrom": [
       "acrobatics", "athletics", "deception", "insight", "intimidation",
-      "investigation", "perception", "performance", "persuasion",
+      "investigation", "perception", "persuasion",
       "sleight-of-hand", "stealth"
     ],
     "subclassLevel": 3,
@@ -308,7 +382,7 @@
     "hitDie": 8,
     "savingThrows": ["strength", "dexterity"],
     "armorProficiencies": [],
-    "weaponProficiencies": ["simple", "shortsword", "scimitar"],
+    "weaponProficiencies": ["simple", "shortsword", "scimitar", "hand-crossbow"],
     "skillChoiceCount": 2,
     "skillChoiceFrom": [
       "acrobatics", "athletics", "history", "insight", "religion", "stealth"
@@ -407,8 +481,24 @@
       },
       {
         "level": 10,
-        "name": "Movimiento sin Armadura (mejora)",
+        "name": "Movimiento sin Armadura (+20 pies)",
         "description": "El bono de velocidad sin armadura aumenta a +20 pies.",
+        "effects": [
+          { "type": "unarmoredMovement", "feet": 5 }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Movimiento sin Armadura (+25 pies)",
+        "description": "El bono de velocidad sin armadura aumenta a +25 pies.",
+        "effects": [
+          { "type": "unarmoredMovement", "feet": 5 }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Movimiento sin Armadura (+30 pies)",
+        "description": "El bono de velocidad sin armadura aumenta a +30 pies.",
         "effects": [
           { "type": "unarmoredMovement", "feet": 5 }
         ]
@@ -743,10 +833,10 @@
       },
       {
         "level": 1,
-        "name": "Imposición de Manos",
-        "description": "Tienes una reserva de curación igual a 5 × tu nivel de Paladín.",
+        "name": "Imponer las Manos",
+        "description": "Tenés una reserva de curación igual a 5 × tu nivel de Paladín.",
         "effects": [
-          { "type": "passiveTrait", "name": "Imposición de Manos", "description": "Reserva de PG igual a 5 × tu nivel de Paladín. Como acción, tocas a una criatura y gastas PG de la reserva para curarla; 5 PG también curan una enfermedad o veneno." }
+          { "type": "passiveTrait", "name": "Imponer las Manos", "description": "Reserva de PG igual a 5 × tu nivel de Paladín. Como acción adicional tocás a una criatura y gastás PG de la reserva para curarla; 5 PG también quitan el estado de envenenado." }
         ]
       },
       {
@@ -759,18 +849,26 @@
       },
       {
         "level": 2,
-        "name": "Castigo Divino",
+        "name": "Castigo de Paladín",
         "description": "Siempre tenés preparado el conjuro Castigo Divino y podés lanzarlo como acción adicional tras impactar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Castigo Divino", "description": "Siempre tenés preparado Castigo Divino. En 2024 es un conjuro: tras impactar con un ataque de arma lo lanzás como acción adicional, gastando un espacio, para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes e infernales)." }
+          { "type": "passiveTrait", "name": "Castigo de Paladín", "description": "Siempre tenés preparado el conjuro Castigo Divino. En 2024 es un conjuro: tras impactar con un ataque de arma lo lanzás como acción adicional, gastando un espacio, para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes e infernales)." }
         ]
       },
       {
         "level": 3,
         "name": "Canalizar Divinidad",
-        "description": "Canalizas poder divino para efectos de tu juramento.",
+        "description": "Canalizás poder divino para efectos de tu juramento.",
         "effects": [
           { "type": "resource", "id": "channel_divinity", "name": "Canalizar Divinidad", "max": 2, "recharge": "short", "description": "Usos de Canalizar Divinidad según tu juramento. Se recuperan tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Canalizar Divinidad (3 usos)",
+        "description": "Tus usos de Canalizar Divinidad aumentan a 3.",
+        "effects": [
+          { "type": "resource", "id": "channel_divinity", "name": "Canalizar Divinidad", "max": 3, "recharge": "short", "description": "Usos de Canalizar Divinidad según tu juramento. Se recuperan tras un descanso corto o largo." }
         ]
       },
       {

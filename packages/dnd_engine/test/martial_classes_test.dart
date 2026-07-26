@@ -85,7 +85,8 @@ void main() {
           .compile(_char(classId: 'barbarian', level: 5, hp: [12, 7, 7, 7, 7]));
       expect(s.attacksPerAction, 2);
       expect(s.speed, 40); // 30 + 10
-      expect(s.weaponMasterySlots, 2);
+      // La columna de maestría sube a 3 en el nivel 4.
+      expect(s.weaponMasterySlots, 3);
     });
 
     test('Movimiento Rápido: solo la armadura pesada lo anula', () {
@@ -208,6 +209,67 @@ void main() {
           classId: 'monk', level: 2, hp: [8, 5], scores: scores, shield: true));
       // Anulada por el escudo: 10 + DES(3) + escudo(2), sin SAB.
       expect(conEscudo.armorClass, 15);
+    });
+  });
+
+  group('Progresiones por nivel de la tabla de clase (PHB 2024)', () {
+    /// Compila la clase al nivel pedido con PG de relleno.
+    ComputedSheet at(String classId, int level) => compiler.compile(
+          _char(classId: classId, level: level, hp: List.filled(level, 6)),
+        );
+
+    int masteries(String classId, int level) =>
+        at(classId, level).weaponMasterySlots;
+
+    int resourceMax(String classId, int level, String id) =>
+        at(classId, level).resources.firstWhere((r) => r.id == id).max;
+
+    test('Guerrero: la maestría con armas va 3 / 4 / 5 / 6', () {
+      expect(masteries('fighter', 1), 3);
+      expect(masteries('fighter', 3), 3);
+      expect(masteries('fighter', 4), 4);
+      expect(masteries('fighter', 9), 4);
+      expect(masteries('fighter', 10), 5);
+      expect(masteries('fighter', 15), 5);
+      expect(masteries('fighter', 16), 6);
+      expect(masteries('fighter', 20), 6);
+    });
+
+    test('Guerrero: Tomar Aliento va 2 / 3 / 4', () {
+      expect(resourceMax('fighter', 1, 'second_wind'), 2);
+      expect(resourceMax('fighter', 4, 'second_wind'), 3);
+      expect(resourceMax('fighter', 10, 'second_wind'), 4);
+      expect(resourceMax('fighter', 20, 'second_wind'), 4);
+    });
+
+    test('Bárbaro: la maestría con armas va 2 / 3 / 4', () {
+      expect(masteries('barbarian', 1), 2);
+      expect(masteries('barbarian', 4), 3);
+      expect(masteries('barbarian', 10), 4);
+      expect(masteries('barbarian', 20), 4);
+    });
+
+    test('Bárbaro: las furias van 2 / 3 / 4 / 5 / 6', () {
+      expect(resourceMax('barbarian', 1, 'rage'), 2);
+      expect(resourceMax('barbarian', 3, 'rage'), 3);
+      expect(resourceMax('barbarian', 6, 'rage'), 4);
+      expect(resourceMax('barbarian', 12, 'rage'), 5);
+      expect(resourceMax('barbarian', 17, 'rage'), 6);
+    });
+
+    test('Monje: el movimiento sin armadura llega a +30 pies', () {
+      // Velocidad base 30 del Humano.
+      expect(at('monk', 2).speed, 40);
+      expect(at('monk', 6).speed, 45);
+      expect(at('monk', 10).speed, 50);
+      expect(at('monk', 14).speed, 55);
+      expect(at('monk', 18).speed, 60);
+    });
+
+    test('Pícaro y Monje son competentes con la ballesta de mano', () {
+      // Es marcial y ligera, así que entra en "marciales ligeras o sutiles".
+      expect(at('rogue', 1).weaponProficiencies, contains('hand-crossbow'));
+      expect(at('monk', 1).weaponProficiencies, contains('hand-crossbow'));
     });
   });
 }

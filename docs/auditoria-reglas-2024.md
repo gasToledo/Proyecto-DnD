@@ -57,7 +57,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` (antes degradaba a `homebrew` en silencio). Cerradas subclases (12 SRD / 36 PHB) y dotes (9 SRD / 48 PHB), con la procedencia visible en la app. **Falta trasfondos: el SRD solo incluye Acólito, Criminal, Erudito y Soldado, así que 10 de los 12 del catálogo son PHB.** Faltan también conjuros y equipo. |
 | Trasfondos | pendiente | Verificar competencias, herramientas, dotes de origen, equipo y tres características disponibles. |
-| Clases | en revisión | Corregidos contra el SRD: Abrasar Muertos Vivientes del Clérigo, Adepto en Rituales del Mago a nivel 1, Pericia del Bardo a nivel 2, Talentos Fiables del Pícaro a nivel 7, Conocimiento Primigenio del Bárbaro, Castigo Divino del Paladín y la Dádiva de Pacto del Brujo. Falta completar las tablas hasta nivel 20, el equipo inicial, las competencias con herramientas, la ballesta de mano de Pícaro y Monje, y el Estilo de Combate de Paladín y Explorador. |
+| Clases | en revisión | **Las 6 marciales verificadas tabla por tabla contra el PHB** (Guerrero, Bárbaro, Pícaro, Monje, Paladín, Explorador): corregidas las progresiones de maestría con armas, Tomar Aliento, Furias, Movimiento sin Armadura y Canalizar Divinidad, que estaban congeladas en el valor de nivel 1; sumada la ballesta de mano a Pícaro y Monje; quitada Interpretación de la lista del Pícaro. Antes se habían corregido rasgos del Clérigo, Mago, Bardo y Brujo. Faltan las 6 lanzadoras, los rasgos de nivel 8 a 20, el equipo inicial y las competencias con herramientas. |
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. Falta verificar los rasgos de las 47 restantes. |
 | Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. Prerrequisito real en Apresador, Maestro de Armas Grandes y Tirador de Élite. Falta el prerrequisito de las 40 generales restantes, la elección de característica (+1 a X o Y), Observador, y las dotes que el SRD no incluye. |
 | Conjuros | en revisión | Normalizados escuela (`Necromancia` vs `Nigromancia`), el único alcance en métrico y los 164 tiempos de lanzamiento a la convención 2024. Faltan las reescrituras de Toque Gélido, Convocar Animales y Marca del Cazador, la procedencia, y los 161 conjuros del SRD que no están en el catálogo (338 contra 177). |
@@ -126,9 +126,11 @@ Ordenados por costo, del más barato al más caro:
 6. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
    dato y anotada en el texto. Requiere efecto nuevo, campo persistido,
    migración y dos superficies de UI.
-7. **Estilo de Combate de Paladín y Explorador**: `grantsFightingStyle` no tiene
-   noción de nivel y la pantalla de subida de nivel no tiene dónde elegirlo.
-   Activarlo tal cual lo regalaría a nivel 1.
+7. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
+   ambos lo obtienen en el **nivel 2**. Falta implementarlo: `grantsFightingStyle`
+   es un booleano sin noción de nivel y la pantalla de subida de nivel no tiene
+   dónde elegirlo, así que activarlo tal cual lo regalaría a nivel 1. Hace falta
+   un campo `fightingStyleLevel`, el gating del asistente y una sección nueva.
 8. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
    afectan ningún cálculo. En 2024 el agotamiento da −2 por nivel a las pruebas
    de d20 y −5 pies de velocidad.

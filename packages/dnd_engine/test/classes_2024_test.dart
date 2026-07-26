@@ -68,16 +68,33 @@ void main() {
     expect(d, contains('Talismán'), reason: 'en 2024 son cuatro pactos');
   });
 
-  test('Paladín: Castigo Divino se lanza como acción adicional', () {
+  test('Paladín: Castigo de Paladín se lanza como acción adicional', () {
+    // El rasgo de clase se llama Castigo de Paladín; Castigo Divino es el
+    // conjuro que concede. El catálogo los confundía en un solo nombre.
+    expect(levelOf('paladin', 'Castigo de Paladín'), 2);
     final d = repo
         .characterClass('paladin')!
         .features
-        .firstWhere((f) => f.name == 'Castigo Divino')
+        .firstWhere((f) => f.name == 'Castigo de Paladín')
         .effects
         .whereType<PassiveTraitEffect>()
         .single
         .description;
     expect(d, contains('acción adicional'));
+  });
+
+  test('Paladín: Canalizar Divinidad pasa de 2 a 3 usos en el nivel 11', () {
+    final paladin = repo.characterClass('paladin')!;
+    int maxAt(int level) => paladin.features
+        .where((f) => f.level <= level)
+        .expand((f) => f.effects)
+        .whereType<ResourceEffect>()
+        .where((r) => r.id == 'channel_divinity')
+        .map((r) => r.max)
+        .reduce((a, b) => a > b ? a : b);
+    expect(maxAt(3), 2);
+    expect(maxAt(10), 2);
+    expect(maxAt(11), 3);
   });
 
   test('Bárbaro: Conocimiento Primigenio da competencia y pruebas de Fuerza',

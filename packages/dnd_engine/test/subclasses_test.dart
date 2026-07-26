@@ -63,6 +63,31 @@ void main() {
       }
     });
 
+    test('ninguna subclase repite el mismo rasgo en dos niveles', () {
+      for (final s in repo.subclasses.values) {
+        final names = s.features.map((f) => f.name).toList();
+        expect(names.toSet().length, names.length,
+            reason: '${s.id} tiene rasgos con nombre duplicado: $names');
+      }
+    });
+
+    test('la Escuela de Evocación sigue la progresión 2024', () {
+      final evoker = repo.subclass('evoker')!;
+      String? levelOf(String name) => evoker.features
+          .where((f) => f.name == name)
+          .map((f) => '${f.level}')
+          .firstOrNull;
+      // 2024: nivel 3 Potenciar Truco + Erudito de Evocación; nivel 6 Esculpir
+      // Conjuros. Antes Esculpir estaba a 3 y el "Adepto" (Savant de 2014) a 6.
+      expect(levelOf('Potenciar Truco'), '3');
+      expect(levelOf('Experto en Evocación'), '3');
+      expect(levelOf('Esculpir Conjuros'), '6');
+      expect(levelOf('Evocación Potenciada'), '10');
+      expect(levelOf('Sobrecanalizar'), '14');
+      expect(evoker.features.map((f) => f.name),
+          isNot(contains('Adepto de la Evocación')));
+    });
+
     test('round-trip JSON de una subclase', () {
       final champ = repo.subclass('champion')!;
       final back = Subclass.fromJson(champ.toJson());

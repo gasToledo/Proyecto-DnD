@@ -1982,18 +1982,18 @@
       },
       {
         "level": 3,
-        "name": "Esculpir Conjuros",
-        "description": "Al lanzar un conjuro de evocación puedes excluir a algunos aliados del área: superan la salvación y no reciben daño.",
+        "name": "Experto en Evocación",
+        "description": "Añades sin coste a tu libro dos conjuros de Mago de la escuela de evocación de nivel 2 o inferior, y uno más cada vez que consigues un nuevo nivel de espacios de conjuro de esta clase.",
         "effects": [
-          { "type": "passiveTrait", "name": "Esculpir Conjuros", "description": "Excluye a aliados del área de tus conjuros de evocación." }
+          { "type": "passiveTrait", "name": "Experto en Evocación", "description": "Dos conjuros de evocación de nivel 2 o inferior gratis en tu libro, y uno más por cada nuevo nivel de espacios de conjuro." }
         ]
       },
       {
         "level": 6,
-        "name": "Adepto de la Evocación",
-        "description": "Preparas conjuros de evocación con más facilidad y lanzas tus evocaciones favoritas más rápido.",
+        "name": "Esculpir Conjuros",
+        "description": "Al lanzar un conjuro de evocación puedes excluir a algunos aliados del área: superan la salvación y no reciben daño.",
         "effects": [
-          { "type": "passiveTrait", "name": "Adepto de la Evocación", "description": "Copiar y preparar conjuros de evocación cuesta menos tiempo y recursos." }
+          { "type": "passiveTrait", "name": "Esculpir Conjuros", "description": "Al lanzar un conjuro de evocación eliges un número de criaturas igual a 1 + el nivel del conjuro: superan la salvación automáticamente y no reciben daño." }
         ]
       },
       {

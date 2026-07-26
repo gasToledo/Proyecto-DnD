@@ -36,7 +36,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Procedencia del catálogo | en revisión | El SRD contiene 9 especies. Aasimar es contenido PHB 2024 y se reclasificó como `phb_2024`. Falta clasificar el resto del catálogo ampliado, especialmente subclases, trasfondos, dotes y conjuros. |
 | Trasfondos | pendiente | Verificar competencias, herramientas, dotes de origen, equipo y tres características disponibles. |
 | Clases | pendiente | Verificar tablas 1–20, recursos, progresión de conjuros, competencias y elecciones por nivel. |
-| Subclases | pendiente | Separar la opción SRD de las opciones PHB y verificar niveles y rasgos. |
+| Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6). Falta separar la opción SRD de las opciones PHB y verificar el resto de las 48. |
 | Dotes | pendiente | Verificar categoría, prerrequisitos, aumentos y efectos. |
 | Conjuros | pendiente | Verificar nombres SRD, nivel, escuela, listas, componentes, duración, ritual y concentración. |
 | Equipo | pendiente | Verificar precio, daño/CA, propiedades, maestrías y requisitos. |

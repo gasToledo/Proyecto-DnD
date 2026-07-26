@@ -63,6 +63,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` (antes degradaba a `homebrew` en silencio). Cerradas subclases (12 SRD / 36 PHB), dotes (9 SRD / 48 PHB) y trasfondos (2 SRD / 10 PHB), con la procedencia visible en la app. Faltan conjuros y equipo. |
 | Trasfondos | en revisión | **Los 12 verificados contra el PHB sin una sola diferencia** en dote de origen, las dos habilidades y la herramienta. Cerrada la procedencia: el SRD trae 4 trasfondos y el catálogo tiene 2 de ellos, así que 10 pasaron a `phb_2024`. Falta verificar las tres características ofrecidas y el equipo inicial, y faltan 4 trasfondos del manual: Acólito, Erudito, Guía y Marinero. |
+| Puntuaciones | en revisión | Verificados contra el capítulo 2: el array estándar (15, 14, 13, 12, 10, 8), la tirada de 4d6 quedándose con los tres más altos, el aumento de 3 puntos del trasfondo en sus dos repartos (+2/+1 y +1/+1/+1) y el tope de 20. **Falta la compra de puntos**, el tercer método oficial: 27 puntos, puntuaciones de 8 a 15, con costes 0/1/2/3/4/5/7/9. |
 | Clases | en revisión | **Las 12 tablas verificadas contra el PHB.** Marciales: corregidas las progresiones de maestría con armas, Tomar Aliento, Furias, Movimiento sin Armadura y Canalizar Divinidad, congeladas en el valor de nivel 1; sumada la ballesta de mano a Pícaro y Monje; quitada Interpretación de la lista del Pícaro. Lanzadoras: Canalizar Divinidad del Clérigo (3 a nivel 6, 4 a nivel 18) y Forma Salvaje del Druida (3 a nivel 6, 4 a nivel 17) tenían el mismo defecto; el Druida perdió la armadura media, que en 2024 ya no tiene. Las 12 salvaciones y los 6 valores de trucos iniciales coinciden. Faltan los rasgos de nivel 8 a 20, el equipo inicial y las competencias con herramientas, que son contenido nuevo. |
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. Falta verificar los rasgos de las 47 restantes. |
 | Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. Prerrequisito real en Apresador, Maestro de Armas Grandes y Tirador de Élite. Falta el prerrequisito de las 40 generales restantes, la elección de característica (+1 a X o Y), Observador, y las dotes que el SRD no incluye. |
@@ -121,25 +122,32 @@ Ordenados por costo, del más barato al más caro:
 1. **Reescritura de tres conjuros**: Toque Gélido (pasa a Toque y ataque cuerpo
    a cuerpo), Convocar Animales (deja de invocar criaturas y pasa a daño de
    área) y Marca del Cazador (daño de fuerza, sin ventaja para rastrear).
-2. **Nomenclatura**: el catálogo usa traducciones propias donde el SRD tiene
+2. **Compra de puntos**: es el tercer método oficial de asignar puntuaciones y
+   la app solo tiene dos. El dato es chico (27 puntos, rango 8–15, costes
+   0/1/2/3/4/5/7/9), pero la interacción no encaja en el paso actual, que
+   reparte un pool fijo de seis valores con desplegables: la compra necesita
+   selectores con presupuesto. Es un modo nuevo en `scores_step.dart` más un
+   valor nuevo en `ScoreMethod`, que el borrador ya tolera porque resuelve el
+   enum por nombre con respaldo.
+3. **Nomenclatura**: el catálogo usa traducciones propias donde el SRD tiene
    nombre oficial (Aprendiz de Mucho, Sentir el Peligro, Truco Potente). Esta
    tanda solo alineó los rasgos que tocó.
-3. **Prerrequisitos de dote**: 40 de las 43 generales siguen con
+4. **Prerrequisitos de dote**: 40 de las 43 generales siguen con
    `minAbilityScores` vacío, así que la validación no puede detectar nada.
-4. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
+5. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
    dato y anotada en el texto. Requiere efecto nuevo, campo persistido,
    migración y dos superficies de UI.
-5. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
+6. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
    ambos lo obtienen en el **nivel 2**. Falta implementarlo: `grantsFightingStyle`
    es un booleano sin noción de nivel y la pantalla de subida de nivel no tiene
    dónde elegirlo, así que activarlo tal cual lo regalaría a nivel 1. Hace falta
    un campo `fightingStyleLevel`, el gating del asistente y una sección nueva.
-6. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
+7. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
    afectan ningún cálculo. En 2024 el agotamiento da −2 por nivel a las pruebas
    de d20 y −5 pies de velocidad.
-7. **Glosario de maestrías**: `mastery` es un id suelto (`nick`, `vex`) sin
+8. **Glosario de maestrías**: `mastery` es un id suelto (`nick`, `vex`) sin
    descripción en ningún lado; la ficha muestra el identificador en inglés.
-8. **Invocaciones Sobrenaturales**: el sistema no existe en el motor, así que
+9. **Invocaciones Sobrenaturales**: el sistema no existe en el motor, así que
     los cuatro pactos del Brujo solo figuran como texto.
 
 ## Criterio de cierre

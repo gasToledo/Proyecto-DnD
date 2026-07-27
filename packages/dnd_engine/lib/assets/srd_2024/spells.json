@@ -4855,7 +4855,7 @@
     ]
   },
   {
-    "id": "conjure-volley",
+    "id": "conjure-barrage",
     "name": "Conjurar Descarga de Proyectiles",
     "source": "phb_2024",
     "level": 3,
@@ -5766,7 +5766,7 @@
     ]
   },
   {
-    "id": "negative-energy-flood",
+    "id": "antilife-shell",
     "name": "Caparazón Antivida",
     "source": "phb_2024",
     "level": 5,
@@ -5909,7 +5909,7 @@
     ]
   },
   {
-    "id": "conjure-volley-arrows",
+    "id": "conjure-volley",
     "name": "Conjurar Lluvia de Flechas",
     "source": "phb_2024",
     "level": 5,
@@ -5945,7 +5945,7 @@
     ]
   },
   {
-    "id": "bless-the-ground",
+    "id": "hallow",
     "name": "Consagrar",
     "source": "phb_2024",
     "level": 5,
@@ -5998,7 +5998,7 @@
     ]
   },
   {
-    "id": "fabricate-shadow",
+    "id": "creation",
     "name": "Creación",
     "source": "phb_2024",
     "level": 5,

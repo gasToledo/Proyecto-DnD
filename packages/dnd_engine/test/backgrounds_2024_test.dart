@@ -33,8 +33,10 @@ void main() {
   test('Erudito: Arcanos e Historia, Iniciado en la Magia (Mago)', () {
     final b = background('sage');
     expect(b.source, ContentSource.srd2024);
-    expect(b.abilityOptions, containsAll(
-        [Ability.constitution, Ability.intelligence, Ability.wisdom]));
+    expect(
+        b.abilityOptions,
+        containsAll(
+            [Ability.constitution, Ability.intelligence, Ability.wisdom]));
     expect(b.skillProficiencies, containsAll(['arcana', 'history']));
     expect(b.originFeatId, 'magic-initiate-wizard');
   });
@@ -42,8 +44,8 @@ void main() {
   test('Guía: Sigilo y Supervivencia, Iniciado en la Magia (Druida)', () {
     final b = background('guide');
     expect(b.source, ContentSource.phb2024);
-    expect(b.abilityOptions, containsAll(
-        [Ability.dexterity, Ability.constitution, Ability.wisdom]));
+    expect(b.abilityOptions,
+        containsAll([Ability.dexterity, Ability.constitution, Ability.wisdom]));
     expect(b.skillProficiencies, containsAll(['stealth', 'survival']));
     expect(b.toolProficiencies, contains('cartographers-tools'));
     expect(b.originFeatId, 'magic-initiate-druid');

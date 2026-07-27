@@ -406,12 +406,23 @@ class FeatPrerequisite {
   /// o 'spellcasting' para exigir alguna competencia de lanzamiento.
   final String? requiredProficiency;
 
+  /// Dotes de las que hay que tener **alguna**. Forge of the Artificer las usa
+  /// para encadenar marcas: Marca Mayor de Tormenta exige Marca de Tormenta.
+  final List<String> requiredFeatIds;
+
+  /// Categoría de dote de la que hay que tener alguna. Cubre la forma
+  /// "cualquier dote de Marca Dracónica", que no se puede escribir como lista
+  /// sin repetir las trece.
+  final String? requiredFeatCategory;
+
   final int? minLevel;
 
   const FeatPrerequisite({
     this.minAbilityScores = const {},
     this.anyAbilityScores = const {},
     this.requiredProficiency,
+    this.requiredFeatIds = const [],
+    this.requiredFeatCategory,
     this.minLevel,
   });
 
@@ -419,12 +430,16 @@ class FeatPrerequisite {
       minAbilityScores.isEmpty &&
       anyAbilityScores.isEmpty &&
       requiredProficiency == null &&
+      requiredFeatIds.isEmpty &&
+      requiredFeatCategory == null &&
       minLevel == null;
 
   Map<String, dynamic> toJson() => {
         'minAbilityScores': _abilityMapToJson(minAbilityScores),
         'anyAbilityScores': _abilityMapToJson(anyAbilityScores),
         'requiredProficiency': requiredProficiency,
+        'requiredFeatIds': requiredFeatIds,
+        'requiredFeatCategory': requiredFeatCategory,
         'minLevel': minLevel,
       };
 
@@ -432,6 +447,10 @@ class FeatPrerequisite {
         minAbilityScores: _abilityMapFromJson(j['minAbilityScores']),
         anyAbilityScores: _abilityMapFromJson(j['anyAbilityScores']),
         requiredProficiency: j['requiredProficiency'] as String?,
+        requiredFeatIds: (j['requiredFeatIds'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        requiredFeatCategory: j['requiredFeatCategory'] as String?,
         minLevel: j['minLevel'] as int?,
       );
 }
@@ -444,7 +463,12 @@ Map<Ability, int> _abilityMapFromJson(dynamic j) => {
         Ability.fromKey(e.key as String): e.value as int,
     };
 
-/// Dote. `category`: 'origin' | 'general' | 'fighting-style'.
+/// Dote. `category`: 'origin' | 'general' | 'fighting-style' | 'dragonmark' |
+/// 'epic-boon'.
+///
+/// Las dos últimas vienen de Forge of the Artificer. `dragonmark` se elige como
+/// dote de origen (los trasfondos de casa la conceden a nivel 1) o en cualquier
+/// elección libre posterior; `epic-boon` solo a nivel 19 o más.
 class Feat {
   final String id;
   final String name;

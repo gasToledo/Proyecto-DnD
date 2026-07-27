@@ -266,12 +266,15 @@ class CharacterValidator {
       ...c.featIds,
       c.fightingStyleId,
     ];
+    // El set completo se necesita para las dotes que exigen otra dote: una
+    // marca mayor mira si la marca base también está elegida.
+    final heldFeatIds = chosenFeatIds.whereType<String>().toSet();
     for (final id in chosenFeatIds) {
       if (id == null) continue;
       final feat = repo.feat(id);
       final prereq = feat?.prerequisite;
       if (feat == null || prereq == null || prereq.isEmpty) continue;
-      final missing = _unmetPrerequisite(prereq, c, sheet);
+      final missing = _unmetPrerequisite(prereq, c, sheet, heldFeatIds);
       if (missing != null) {
         w.add(ValidationWarning(
           'feat_prerequisite',
@@ -360,8 +363,8 @@ class CharacterValidator {
 
   /// Devuelve una descripción del primer prerrequisito incumplido, o null si
   /// se cumplen todos.
-  String? _unmetPrerequisite(
-      FeatPrerequisite prereq, Character c, ComputedSheet sheet) {
+  String? _unmetPrerequisite(FeatPrerequisite prereq, Character c,
+      ComputedSheet sheet, Set<String> heldFeatIds) {
     for (final entry in prereq.minAbilityScores.entries) {
       if (sheet.abilityScores[entry.key]! < entry.value) {
         return '${entry.key.abbr} ${entry.value}';
@@ -382,6 +385,16 @@ class CharacterValidator {
               sheet.toolProficiencies.contains(reqProf) ||
               sheet.skillProficiencies.contains(reqProf));
       if (!has) return 'competencia "$reqProf"';
+    }
+    final reqFeats = prereq.requiredFeatIds;
+    if (reqFeats.isNotEmpty && !reqFeats.any(heldFeatIds.contains)) {
+      final names = reqFeats.map((id) => repo.feat(id)?.name ?? id);
+      return 'la dote ${names.join(' o ')}';
+    }
+    final reqCategory = prereq.requiredFeatCategory;
+    if (reqCategory != null &&
+        !heldFeatIds.any((id) => repo.feat(id)?.category == reqCategory)) {
+      return 'alguna dote de categoría "$reqCategory"';
     }
     if (prereq.minLevel != null && c.level < prereq.minLevel!) {
       return 'nivel ${prereq.minLevel}';

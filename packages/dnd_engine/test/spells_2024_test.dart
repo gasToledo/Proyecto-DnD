@@ -102,8 +102,18 @@ void main() {
       for (final s in repo.spells.values) {
         porNivel[s.level] = (porNivel[s.level] ?? 0) + 1;
       }
-      const minimos = {0: 33, 1: 64, 2: 63, 3: 51, 4: 41, 5: 47, 6: 34, 7: 21,
-        8: 18, 9: 16};
+      const minimos = {
+        0: 33,
+        1: 64,
+        2: 63,
+        3: 51,
+        4: 41,
+        5: 47,
+        6: 34,
+        7: 21,
+        8: 18,
+        9: 16
+      };
       minimos.forEach((nivel, min) {
         expect(porNivel[nivel] ?? 0, greaterThanOrEqualTo(min),
             reason: 'nivel $nivel: cobertura incompleta');
@@ -121,7 +131,8 @@ void main() {
 
       expect(spell('summon-celestial').level, 5);
       expect(spell('conjure-celestial').level, 7);
-      expect(spell('summon-celestial').id, isNot(spell('conjure-celestial').id));
+      expect(
+          spell('summon-celestial').id, isNot(spell('conjure-celestial').id));
     });
 
     test('el alcance en kilómetros se convierte a millas', () {
@@ -154,7 +165,9 @@ void main() {
       expect(spell('clairvoyance').castingTime, '10 minutos');
     });
 
-    test('el alcance en millas usa la misma convención que Enjambre de Meteoros', () {
+    test(
+        'el alcance en millas usa la misma convención que Enjambre de Meteoros',
+        () {
       expect(spell('clairvoyance').range, '1 milla');
     });
 

@@ -219,7 +219,13 @@ void main() {
   });
 
   test('cada dote declara una categoría conocida', () {
-    const validCategories = {'origin', 'general', 'fighting-style'};
+    const validCategories = {
+      'origin',
+      'general',
+      'fighting-style',
+      'dragonmark',
+      'epic-boon',
+    };
     for (final f in repo.feats.values) {
       expect(validCategories, contains(f.category),
           reason: '${f.id}: categoría de dote desconocida "${f.category}"');
@@ -280,6 +286,37 @@ void main() {
     }
   });
 
+  test('las dotes de marca dracónica se pueden tomar a nivel 1', () {
+    // Igual que las de origen: el trasfondo de casa las concede en la creación,
+    // así que no pueden exigir nivel ni traer un aumento de característica.
+    for (final f
+        in repo.feats.values.where((f) => f.category == 'dragonmark')) {
+      expect(f.prerequisite?.minLevel, isNull,
+          reason: '${f.id}: una dote de marca no puede exigir nivel');
+      expect(f.effects.whereType<AbilityScoreBonusEffect>(), isEmpty,
+          reason: '${f.id}: una dote de marca no otorga característica');
+    }
+  });
+
+  test('las dotes de bendición épica exigen nivel 19', () {
+    for (final f in repo.feats.values.where((f) => f.category == 'epic-boon')) {
+      expect(f.prerequisite?.minLevel, 19, reason: f.id);
+    }
+  });
+
+  test('toda dote exigida como prerrequisito existe', () {
+    for (final f in repo.feats.values) {
+      for (final id in f.prerequisite?.requiredFeatIds ?? const <String>[]) {
+        expect(repo.feat(id), isNotNull,
+            reason: '${f.id}: exige la dote "$id", que no existe');
+      }
+      final cat = f.prerequisite?.requiredFeatCategory;
+      if (cat == null) continue;
+      expect(repo.feats.values.any((o) => o.category == cat), isTrue,
+          reason: '${f.id}: exige la categoría "$cat", que no tiene dotes');
+    }
+  });
+
   test('todas las dotes hacen round-trip por JSON (efectos y prerrequisitos)',
       () {
     for (final f in repo.feats.values) {
@@ -317,14 +354,18 @@ void main() {
     }
   });
 
-  test('cada trasfondo referencia una dote de origen existente', () {
+  test('cada trasfondo referencia una dote de nivel 1 existente', () {
+    // Los trasfondos de casa dracomarcada conceden una dote de Marca Dracónica
+    // en lugar de una de origen: Forge of the Artificer dice que tomar ese
+    // trasfondo es la única forma de tener una marca a nivel 1.
+    const grantable = {'origin', 'dragonmark'};
     for (final b in repo.backgrounds.values) {
       final id = b.originFeatId;
       if (id == null) continue;
       expect(repo.feat(id), isNotNull,
           reason: '${b.id}: dote de origen "$id" no existe');
-      expect(repo.feat(id)!.category, 'origin',
-          reason: '${b.id}: la dote "$id" no es de categoría origin');
+      expect(grantable, contains(repo.feat(id)!.category),
+          reason: '${b.id}: la dote "$id" no se puede conceder a nivel 1');
     }
   });
 

@@ -20,7 +20,7 @@ class _FeatFormState extends State<FeatForm> {
       children: [
         _text(_name, 'Nombre', onChanged: () => setState(() {})),
         _categoryDropdown(
-          ['origin', 'general', 'fighting-style'],
+          ['origin', 'general', 'fighting-style', 'dragonmark', 'epic-boon'],
           _category,
           (v) => setState(() => _category = v),
         ),

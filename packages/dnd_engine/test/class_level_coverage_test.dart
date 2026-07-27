@@ -19,8 +19,8 @@ void main() {
   int lastLevel(String id) =>
       featuresOf(id).map((f) => f.level).reduce((a, b) => a > b ? a : b);
 
-  /// Clases ya completadas contra el SRD. Se van sumando por tanda; el resto
-  /// queda en la lista de abajo para que el hueco siga siendo visible.
+  /// Las once clases que cierran en 20. El Paladín va aparte porque su nivel 20
+  /// es rasgo de subclase, no de clase.
   const completas = [
     'wizard',
     'bard',
@@ -28,7 +28,11 @@ void main() {
     'warlock',
     'rogue',
     'ranger',
-    'fighter'
+    'fighter',
+    'barbarian',
+    'cleric',
+    'druid',
+    'monk'
   ];
 
   for (final id in completas) {
@@ -91,18 +95,53 @@ void main() {
     );
   });
 
-  test('las clases que todavía no se completaron siguen anotadas', () {
-    // Este caso no protege un comportamiento: mide la deuda y falla cuando se
-    // salda, para que haya que venir a actualizarlo en vez de olvidarlo.
-    const pendientes = {
-      'druid': 17,
-      'cleric': 18,
-      'monk': 18,
-      'barbarian': 17,
-    };
-    for (final e in pendientes.entries) {
-      expect(lastLevel(e.key), e.value,
-          reason: '${e.key}: si ya se completó, moverlo a la lista de arriba');
+  test('ninguna clase deja un hueco: las 12 cubren hasta su último nivel', () {
+    // Reemplaza a la lista de deuda que llevaba la cuenta de lo que faltaba.
+    // Ahora la invariante es completa, así que un catálogo que retroceda falla.
+    for (final c in repo.classes.values) {
+      final esperado = c.id == 'paladin' ? 19 : 20;
+      expect(lastLevel(c.id), esperado, reason: '${c.id} dejó de llegar a 20');
     }
+    expect(repo.classes, hasLength(12));
+  });
+
+  test('las cuatro últimas clases cubren sus niveles de rasgo', () {
+    Set<int> levels(String id) => featuresOf(id).map((f) => f.level).toSet();
+    expect(levels('barbarian'),
+        containsAll([1, 2, 3, 5, 7, 9, 11, 13, 15, 17, 18, 19, 20]));
+    expect(levels('monk'),
+        containsAll([1, 2, 3, 4, 5, 6, 7, 9, 10, 13, 14, 15, 18, 19, 20]));
+    expect(levels('cleric'), containsAll([1, 2, 5, 7, 10, 14, 19, 20]));
+    expect(levels('druid'), containsAll([1, 2, 5, 7, 15, 18, 19, 20]));
+  });
+
+  test('el Monje competente en todas las salvaciones a nivel 14', () {
+    // Superviviente Disciplinado es el único rasgo de esta tanda con efecto
+    // mecánico sobre la ficha, así que se comprueba compilado y no por texto.
+    final efectos = featuresOf('monk')
+        .where((f) => f.level <= 14)
+        .expand((f) => f.effects)
+        .whereType<SavingThrowProficiencyEffect>()
+        .map((e) => e.ability)
+        .toSet();
+    expect(efectos, hasLength(Ability.values.length));
+  });
+
+  test('no quedan rasgos con la redacción de 2014', () {
+    // Los tres que sobrevivieron a la migración: Furia Implacable dejaba al
+    // Bárbaro en 1 PG, Golpes Potenciados volvía mágicos los golpes del Monje
+    // y el Monje llamaba "Enfoque" a la Concentración.
+    String textoDe(String claseId, String rasgo) => featuresOf(claseId)
+        .firstWhere((f) => f.name == rasgo)
+        .effects
+        .whereType<PassiveTraitEffect>()
+        .map((e) => e.description)
+        .join(' ');
+
+    expect(textoDe('barbarian', 'Furia Implacable'),
+        contains('doble de tu nivel de Bárbaro'));
+    expect(textoDe('monk', 'Golpes Potenciados'), contains('daño de fuerza'));
+    expect(featuresOf('monk').map((f) => f.name),
+        isNot(contains('Puntos de Enfoque')));
   });
 }

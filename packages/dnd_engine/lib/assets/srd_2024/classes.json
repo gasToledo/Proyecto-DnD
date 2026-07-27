@@ -230,7 +230,7 @@
       {
         "level": 2,
         "name": "Sentir el Peligro",
-        "description": "Ventaja en salvaciones de Destreza contra efectos que puedas ver.",
+        "description": "Ventaja en salvaciones de Destreza salvo que estés incapacitado.",
         "effects": [
           { "type": "passiveTrait", "name": "Sentir el Peligro", "description": "Tenés ventaja en las tiradas de salvación de Destreza, salvo que tengas el estado de incapacitado." }
         ]
@@ -302,10 +302,18 @@
       },
       {
         "level": 7,
-        "name": "Instinto Feral",
+        "name": "Instinto Salvaje",
         "description": "Ventaja en tiradas de Iniciativa.",
         "effects": [
-          { "type": "passiveTrait", "name": "Instinto Feral", "description": "Tienes ventaja en las tiradas de Iniciativa." }
+          { "type": "passiveTrait", "name": "Instinto Salvaje", "description": "Tenés ventaja en las tiradas de Iniciativa." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Salto Instintivo",
+        "description": "Al enfurecerte podés moverte hasta la mitad de tu velocidad.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Salto Instintivo", "description": "Como parte de la acción adicional para dejarte llevar por la Furia, podés moverte hasta la mitad de tu velocidad." }
         ]
       },
       {
@@ -319,9 +327,59 @@
       {
         "level": 11,
         "name": "Furia Implacable",
-        "description": "Si caerías a 0 PG en Furia, puedes hacer una salvación para quedar a 1 PG.",
+        "description": "Si caés a 0 PG en Furia, una salvación te deja con PG iguales al doble de tu nivel de Bárbaro.",
         "effects": [
-          { "type": "passiveTrait", "name": "Furia Implacable", "description": "Mientras estás en Furia y caerías a 0 PG sin morir, haces una salvación de Constitución CD 10 (sube cada uso) para quedar a 1 PG." }
+          { "type": "passiveTrait", "name": "Furia Implacable", "description": "Si tus PG bajan a 0 mientras estás enfurecido y no morís en el acto, podés hacer una salvación de Constitución CD 10. Si la superás, tus PG pasan a ser el doble de tu nivel de Bárbaro. Cada uso posterior sube la CD en 5; vuelve a 10 tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Golpe Brutal Mejorado",
+        "description": "Golpe Brutal suma los efectos de golpe abrumador y golpe desgarrador.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Brutal Mejorado", "description": "Golpe Brutal gana dos opciones más. Golpe abrumador: el objetivo tiene desventaja en su próxima salvación y no puede hacer ataques de oportunidad hasta tu siguiente turno. Golpe desgarrador: la próxima tirada de ataque de otra criatura contra el objetivo gana +5." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Furia Persistente",
+        "description": "Al tirar Iniciativa recuperás todos los usos de Furia, y la Furia dura 10 minutos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia Persistente", "description": "Cuando tirás Iniciativa podés recuperar todos los usos gastados de Furia; luego no podés volver a hacerlo hasta terminar un descanso largo. Además tu Furia dura 10 minutos sin necesidad de prolongarla, y solo termina antes si quedás inconsciente o te ponés armadura pesada." }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Golpe Brutal Mejorado (2d10)",
+        "description": "El daño extra de Golpe Brutal sube a 2d10 y podés aplicar dos efectos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpe Brutal Mejorado (2d10)", "description": "El daño adicional de Golpe Brutal aumenta a 2d10 y podés usar dos efectos distintos de Golpe Brutal cada vez que lo uses." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Poderío Indómito",
+        "description": "Podés usar tu puntuación de Fuerza en lugar de un resultado menor.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Poderío Indómito", "description": "Si el resultado de una prueba o salvación de Fuerza es menor que tu puntuación de Fuerza, podés usar esa puntuación en lugar del resultado." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Ataque Imparable.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Campeón Primordial",
+        "description": "Tu Fuerza y tu Constitución aumentan en 4, hasta un máximo de 25.",
+        "effects": [
+          { "type": "abilityScoreBonus", "ability": "strength", "amount": 4 },
+          { "type": "abilityScoreBonus", "ability": "constitution", "amount": 4 },
+          { "type": "passiveTrait", "name": "Campeón Primordial", "description": "Encarnás un poder primigenio: tus puntuaciones de Fuerza y Constitución aumentan en 4, hasta un máximo de 25." }
         ]
       }
     ]
@@ -522,10 +580,18 @@
       },
       {
         "level": 2,
-        "name": "Puntos de Enfoque",
-        "description": "Tienes Puntos de Enfoque iguales a tu nivel de Monje para alimentar rasgos como Ráfaga de Golpes, Defensa Paciente y Paso del Viento.",
+        "name": "Concentración de Monje",
+        "description": "Tenés Puntos de Concentración iguales a tu nivel de Monje para alimentar Ráfaga de Golpes, Defensa Paciente y Paso del Viento.",
         "effects": [
-          { "type": "resource", "id": "focus_points", "name": "Puntos de Enfoque", "max": 0, "maxPerLevel": true, "recharge": "short", "description": "Puntos iguales a tu nivel de Monje. Se recuperan tras un descanso corto o largo. Alimentan Ráfaga de Golpes, Defensa Paciente y Paso del Viento." }
+          { "type": "resource", "id": "focus_points", "name": "Puntos de Concentración", "max": 0, "maxPerLevel": true, "recharge": "short", "description": "Puntos iguales a tu nivel de Monje. Se recuperan tras un descanso corto o largo. Alimentan Ráfaga de Golpes, Defensa Paciente y Paso del Viento." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Metabolismo Asombroso",
+        "description": "Al tirar Iniciativa recuperás todos los Puntos de Concentración y curás PG.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Metabolismo Asombroso", "description": "Cuando tirás Iniciativa podés recuperar todos los Puntos de Concentración gastados. Al hacerlo tirás tu dado de Artes Marciales y recuperás PG iguales a tu nivel de Monje más el resultado. Una vez por descanso largo." }
         ]
       },
       {
@@ -579,10 +645,10 @@
       },
       {
         "level": 6,
-        "name": "Golpes Fortalecidos",
-        "description": "Tus golpes sin armas cuentan como mágicos para superar resistencias.",
+        "name": "Golpes Potenciados",
+        "description": "Podés elegir que tus ataques sin armas causen daño de fuerza.",
         "effects": [
-          { "type": "passiveTrait", "name": "Golpes Fortalecidos", "description": "Tus golpes sin armas cuentan como mágicos para efectos de resistencia e inmunidad al daño." }
+          { "type": "passiveTrait", "name": "Golpes Potenciados", "description": "Siempre que inflijas daño con un ataque sin armas, podés elegir entre causar daño de fuerza o su tipo de daño normal." }
         ]
       },
       {
@@ -615,6 +681,86 @@
         "description": "El bono de velocidad sin armadura aumenta a +30 pies.",
         "effects": [
           { "type": "unarmoredMovement", "feet": 5 }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Movimiento Acrobático",
+        "description": "Sin armadura ni escudo podés moverte por superficies verticales y sobre líquidos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Movimiento Acrobático", "description": "Mientras no lleves armadura ni portes escudo, podés moverte por superficies verticales y sobre líquidos sin caerte." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Autorrestablecimiento",
+        "description": "Al final de cada turno podés quitarte asustado, envenenado o hechizado.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Autorrestablecimiento", "description": "Al final de cada uno de tus turnos podés eliminar uno de estos estados que te afecte: asustado, envenenado o hechizado. Además, privarte de comida y bebida no te aplica niveles de cansancio." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Concentración Agudizada",
+        "description": "Defensa Paciente, Paso del Viento y Ráfaga de Golpes mejoran.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Concentración Agudizada", "description": "Defensa Paciente te da PG temporales iguales a dos tiradas de tu dado de Artes Marciales. Paso del Viento puede llevar con vos a una criatura voluntaria Grande o menor a 5 pies. Ráfaga de Golpes hace tres ataques sin armas en lugar de dos." }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Desviar Energía",
+        "description": "Desviar Ataques funciona contra cualquier tipo de daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Desviar Energía", "description": "Podés usar Desviar Ataques contra ataques que causen cualquier tipo de daño, no solo contundente, cortante o perforante." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Superviviente Disciplinado",
+        "description": "Ganás competencia en todas las salvaciones y podés repetir una fallida.",
+        "effects": [
+          { "type": "savingThrowProficiency", "ability": "strength" },
+          { "type": "savingThrowProficiency", "ability": "dexterity" },
+          { "type": "savingThrowProficiency", "ability": "constitution" },
+          { "type": "savingThrowProficiency", "ability": "intelligence" },
+          { "type": "savingThrowProficiency", "ability": "wisdom" },
+          { "type": "savingThrowProficiency", "ability": "charisma" },
+          { "type": "passiveTrait", "name": "Superviviente Disciplinado", "description": "Tenés competencia en todas las tiradas de salvación. Además, si fallás una salvación podés gastar 1 Punto de Concentración para repetirla, y debés usar el nuevo resultado." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Concentración Perfecta",
+        "description": "Al tirar Iniciativa recuperás Puntos de Concentración hasta tener 4.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Concentración Perfecta", "description": "Cuando tirás Iniciativa y no usás Metabolismo Asombroso, si te quedan 3 Puntos de Concentración o menos los recuperás hasta tener 4." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Defensa Superior",
+        "description": "Por 3 Puntos de Concentración ganás resistencia a todo el daño salvo fuerza.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Defensa Superior", "description": "Al principio de tu turno podés gastar 3 Puntos de Concentración para tener resistencia a todo el daño excepto el de fuerza durante 1 minuto o hasta quedar incapacitado." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Ataque Imparable.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Cuerpo y Mente",
+        "description": "Tu Destreza y tu Sabiduría aumentan en 4, hasta un máximo de 25.",
+        "effects": [
+          { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 4 },
+          { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 4 },
+          { "type": "passiveTrait", "name": "Cuerpo y Mente", "description": "Llevaste tu cuerpo y tu mente a otro nivel: tus puntuaciones de Destreza y Sabiduría aumentan en 4, hasta un máximo de 25." }
         ]
       }
     ]
@@ -779,6 +925,46 @@
         "effects": [
           { "type": "resource", "id": "channel_divinity", "name": "Canalizar Divinidad", "max": 4, "recharge": "short", "description": "Usos de Canalizar Divinidad (p.ej. Expulsar Muertos Vivientes o Chispa Divina). Recuperas usos tras un descanso corto o largo." }
         ]
+      },
+      {
+        "level": 7,
+        "name": "Golpes Benditos",
+        "description": "Elegís Golpe Divino (1d8 extra necrótico o radiante) o Lanzamiento Potente (Sabiduría al daño de trucos).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpes Benditos", "description": "Elegís una opción. Golpe Divino: una vez por turno, al acertar con un arma el objetivo sufre 1d8 de daño necrótico o radiante adicional. Lanzamiento Potente: sumás tu modificador por Sabiduría al daño de cualquier truco de Clérigo." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Intercesión Divina",
+        "description": "Como acción de magia lanzás un conjuro de Clérigo de nivel 5 o inferior sin gastar espacio.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Intercesión Divina", "description": "Como acción de magia elegís cualquier conjuro de Clérigo de nivel 5 o inferior que no requiera una reacción y lo lanzás sin gastar espacio de conjuro ni componentes materiales. Una vez por descanso largo." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Golpes Benditos Mejorados",
+        "description": "La opción elegida en Golpes Benditos se potencia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Golpes Benditos Mejorados", "description": "Golpe Divino: el daño adicional aumenta a 2d8. Lanzamiento Potente: al dañar a una criatura con un truco de Clérigo podés dar a vos o a otra criatura a 60 pies PG temporales iguales al doble de tu modificador por Sabiduría." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Destino.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Intercesión Divina Mayor",
+        "description": "Intercesión Divina puede lanzar deseo, a costa de 2d4 descansos largos.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Intercesión Divina Mayor", "description": "Al usar Intercesión Divina podés elegir el conjuro deseo. Si lo hacés, no podés volver a usar Intercesión Divina hasta terminar 2d4 descansos largos." }
+        ]
       }
     ]
   },
@@ -843,6 +1029,54 @@
         "description": "Tus usos de Forma Salvaje aumentan a 4.",
         "effects": [
           { "type": "resource", "id": "wild_shape", "name": "Forma Salvaje", "max": 4, "recharge": "short", "description": "Como acción adicional te transformas en una bestia. Usos que se recuperan tras un descanso corto o largo." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Resurgimiento Salvaje",
+        "description": "Podés cambiar espacios de conjuro por usos de Forma Salvaje y viceversa.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Resurgimiento Salvaje", "description": "Una vez por turno, si no te quedan usos de Forma Salvaje podés recuperar uno gastando un espacio de conjuro. Además podés gastar un uso de Forma Salvaje para obtener un espacio de conjuro de nivel 1, una vez por descanso largo." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Furia Elemental",
+        "description": "Elegís Golpe Primordial (1d8 elemental extra) o Lanzamiento Potente (Sabiduría al daño de trucos).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia Elemental", "description": "Elegís una opción. Golpe Primordial: una vez por turno, al acertar con un arma o con un ataque de bestia en Forma Salvaje, el objetivo sufre 1d8 de daño adicional de frío, fuego, relámpago o trueno. Lanzamiento Potente: sumás tu modificador por Sabiduría al daño de cualquier truco de Druida." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Furia Elemental Mejorada",
+        "description": "La opción elegida en Furia Elemental se potencia.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Furia Elemental Mejorada", "description": "Golpe Primordial: el daño adicional aumenta a 2d8. Lanzamiento Potente: los trucos de Druida con alcance de 10 pies o más ven su alcance aumentado en 300 pies." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Conjurar como Bestia",
+        "description": "Podés lanzar conjuros mientras estás en Forma Salvaje.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Conjurar como Bestia", "description": "Mientras usás Forma Salvaje podés lanzar conjuros en forma de bestia, salvo los que tengan un componente material con coste indicado o que se consuma como parte del conjuro." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don del Viaje Dimensional.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Archidruida",
+        "description": "Recuperás Forma Salvaje al tirar Iniciativa, la convertís en espacios de conjuro y envejecés más lento.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Archidruida", "description": "Forma Salvaje perenne: al tirar Iniciativa sin usos de Forma Salvaje recuperás uno. Mago de la Naturaleza: convertís usos no gastados de Forma Salvaje en un espacio de conjuro, a 2 niveles por uso, una vez por descanso largo. Longevidad: la magia primigenia ralentiza tu envejecimiento." }
         ]
       }
     ]

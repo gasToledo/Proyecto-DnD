@@ -1692,15 +1692,15 @@
       {
         "level": 2,
         "name": "Réplica de Objeto Mágico",
-        "description": "Elegís cuatro planos de objetos mágicos que podés conocer; podés reemplazar uno al subir de nivel de Artífice. Tras un descanso largo, con Herramientas de Manitas en mano, podés crear uno o más objetos mágicos temporales basados en tus planos conocidos (la cantidad de planos conocidos y de objetos que podés tener a la vez crece con el nivel, según la tabla de rasgos). Un objeto creado así se desvanece 1d4 días después de tu muerte, o de inmediato si reemplazás el plan con el que se hizo.",
+        "description": "Elegís cuatro planos de objetos mágicos que podés conocer; podés reemplazar uno al subir de nivel de Artífice. Tras un descanso largo, con Herramientas de Manitas en mano, podés crear uno o dos objetos mágicos temporales basados en tus planos conocidos (planos conocidos y objetos simultáneos crecen con el nivel: hasta 8 planos y 6 objetos a nivel 18, según la tabla de rasgos). Un objeto creado así se desvanece 1d4 días después de tu muerte, o de inmediato si reemplazás el plan con el que se hizo.",
         "effects": [
-          { "type": "passiveTrait", "name": "Réplica de Objeto Mágico", "description": "4 planos conocidos a nivel 2, con crecimiento hasta el nivel 18 según la tabla de rasgos del Artífice; hasta 2 objetos simultáneos, creciendo con el nivel. Requiere Herramientas de Manitas en mano y un descanso largo." }
+          { "type": "passiveTrait", "name": "Réplica de Objeto Mágico", "description": "4 planos conocidos a nivel 2, hasta 8 a nivel 18; 2 objetos simultáneos a nivel 2, hasta 6 a nivel 18. Requiere Herramientas de Manitas en mano y un descanso largo." }
         ]
       },
       {
         "level": 6,
         "name": "Manitas de Objetos Mágicos",
-        "description": "Tu Réplica de Objeto Mágico gana tres opciones de acción adicional: Cargar Objeto Mágico (gastás un espacio de conjuro para recargarlo), Drenar Objeto Mágico (lo conviertes en un espacio de conjuro de nivel 1 o 2, una vez por descanso largo) y Transmutar Objeto Mágico (acción de magia, una vez por descanso largo, para transformarlo en otro objeto de un plan que conocés).",
+        "description": "Tu Réplica de Objeto Mágico gana tres opciones nuevas: Cargar Objeto Mágico (acción adicional, gastás un espacio de conjuro para recargarlo), Drenar Objeto Mágico (acción adicional, lo conviertes en un espacio de conjuro de nivel 1 o 2, una vez por descanso largo) y Transmutar Objeto Mágico (acción de magia, una vez por descanso largo, para transformarlo en otro objeto de un plan que conocés).",
         "effects": [
           { "type": "passiveTrait", "name": "Manitas de Objetos Mágicos", "description": "Cargar Objeto Mágico (acción adicional, gasta espacio de conjuro), Drenar Objeto Mágico (acción adicional, una vez por descanso largo) y Transmutar Objeto Mágico (acción de magia, una vez por descanso largo)." }
         ]

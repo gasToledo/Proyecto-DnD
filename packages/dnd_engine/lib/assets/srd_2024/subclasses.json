@@ -2147,7 +2147,7 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con Herramientas de Alquimista y el Kit de Herbolario. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad. Además, tenés siempre preparados Palabra de Curación y Rayo Nauseabundo, que a nivel 5 se suman a Esfera de Llamas y Flecha Ácida de Melf, a nivel 9 a Forma Gaseosa y Palabra de Curación en Masa, y a nivel 13 a Guarda contra la Muerte y Esfera Vitriólica.",
+        "description": "Competencia con Herramientas de Alquimista y el Kit de Herbolario. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad. Además, tenés siempre preparados Palabra de Curación y Rayo Nauseabundo, que a nivel 5 se suman a Esfera de Llamas y Flecha Ácida de Melf, a nivel 9 a Forma Gaseosa y Palabra de Curación en Masa, a nivel 13 a Guarda contra la Muerte y Esfera Vitriólica, y a nivel 17 a Nube Aniquiladora y Alzar a los Muertos.",
         "effects": [
           { "type": "toolProficiency", "tool": "alchemists-supplies" },
           { "type": "toolProficiency", "tool": "herbalism-kit" }
@@ -2201,7 +2201,7 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Entrenamiento con armadura pesada y competencia con Herramientas de Herrero. El tiempo para fabricar armadura, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Proyectil Mágico y Ola Atronadora, que a nivel 5 se suman a Imagen Múltiple y Hacer Añicos, a nivel 9 a Patrón Hipnótico y Relámpago, y a nivel 13 a Escudo de Fuego e Invisibilidad Mejorada.",
+        "description": "Entrenamiento con armadura pesada y competencia con Herramientas de Herrero. El tiempo para fabricar armadura, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Proyectil Mágico y Ola Atronadora, que a nivel 5 se suman a Imagen Múltiple y Hacer Añicos, a nivel 9 a Patrón Hipnótico y Relámpago, a nivel 13 a Escudo de Fuego e Invisibilidad Mejorada, y a nivel 17 a Pasamuros y Muro de Fuerza.",
         "effects": [
           { "type": "armorProficiency", "category": "heavy" },
           { "type": "toolProficiency", "tool": "smiths-tools" }
@@ -2251,7 +2251,7 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con armas a distancia marciales y con Herramientas de Tallista. El tiempo para fabricar una varita mágica se reduce a la mitad. Además, tenés siempre preparados Escudo y Ola Atronadora, que a nivel 5 se suman a Rayo Abrasador y Hacer Añicos, a nivel 9 a Bola de Fuego y Muro de Viento, y a nivel 13 a Tormenta de Hielo y Muro de Fuego.",
+        "description": "Competencia con armas a distancia marciales y con Herramientas de Tallista. El tiempo para fabricar una varita mágica se reduce a la mitad. Además, tenés siempre preparados Escudo y Ola Atronadora, que a nivel 5 se suman a Rayo Abrasador y Hacer Añicos, a nivel 9 a Bola de Fuego y Muro de Viento, a nivel 13 a Tormenta de Hielo y Muro de Fuego, y a nivel 17 a Cono de Frío y Muro de Fuerza.",
         "effects": [
           { "type": "weaponProficiency", "category": "martial" },
           { "type": "toolProficiency", "tool": "woodcarvers-tools" }
@@ -2301,7 +2301,7 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con Herramientas de Herrero. El tiempo para fabricar un arma, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Heroísmo y Escudo, que a nivel 5 se suman a Castigo Brillante y Vínculo Protector, a nivel 9 a Aura de Vitalidad y Conjurar Descarga de Proyectiles, y a nivel 13 a Aura de Pureza y Escudo de Fuego.",
+        "description": "Competencia con Herramientas de Herrero. El tiempo para fabricar un arma, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Heroísmo y Escudo, que a nivel 5 se suman a Castigo Brillante y Vínculo Protector, a nivel 9 a Aura de Vitalidad y Conjurar Descarga de Proyectiles, a nivel 13 a Aura de Pureza y Escudo de Fuego, y a nivel 17 a Castigo Desterrador y Curar Heridas en Masa.",
         "effects": [
           { "type": "toolProficiency", "tool": "smiths-tools" }
         ]
@@ -2359,7 +2359,7 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con Suministros de Calígrafo y Herramientas de Cartógrafo. El tiempo para copiar un pergamino de conjuro se reduce a la mitad. Además, tenés siempre preparados Fuego Feérico, Saeta Guía y Palabra de Curación, que a nivel 5 se suman a Localizar Objeto y Clavo Mental, a nivel 9 a Llamar al Relámpago y Clarividencia, y a nivel 13 a Destierro y Localizar Criatura.",
+        "description": "Competencia con Suministros de Calígrafo y Herramientas de Cartógrafo. El tiempo para copiar un pergamino de conjuro se reduce a la mitad. Además, tenés siempre preparados Fuego Feérico, Saeta Guía y Palabra de Curación, que a nivel 5 se suman a Localizar Objeto y Clavo Mental, a nivel 9 a Llamar al Relámpago y Clarividencia, a nivel 13 a Destierro y Localizar Criatura, y a nivel 17 a Escudriñar y Círculo de Teletransportación.",
         "effects": [
           { "type": "toolProficiency", "tool": "calligraphers-supplies" },
           { "type": "toolProficiency", "tool": "cartographers-tools" }

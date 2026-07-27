@@ -4011,5 +4011,732 @@
     "classes": [
       "ranger"
     ]
+  },
+  {
+    "id": "rope-trick",
+    "name": "Truco de la Cuerda",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una cuerda tocada se yergue sola y abre un portal a un espacio extradimensional en su extremo superior, donde caben hasta ocho criaturas Medianas.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "knock",
+    "name": "Abrir",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Abre, desatasca o desatranca un objetivo cerrado con normalidad; una cerradura arcana queda anulada 10 minutos. Se oye un golpe audible a 300 pies.",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "enlarge-reduce",
+    "name": "Agrandar/Reducir",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Aumentás o reducís una categoría de tamaño a una criatura u objeto; salvación de Constitución si no es voluntaria. Cambia el daño de sus ataques en 1d4.",
+    "classes": [
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "dragons-breath",
+    "name": "Aliento de Dragón",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción Adicional",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Tocás a una criatura voluntaria: puede exhalar en un cono de 15 pies una vez por turno para causar 3d6 del tipo elegido; salvación de Destreza, mitad de daño.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "alter-self",
+    "name": "Alterar el Propio Aspecto",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Elegís una opción —branquias y membranas, armas naturales o cambiar de aspecto— que dura hasta que termine el conjuro; podés cambiarla con una acción de magia.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "magic-weapon",
+    "name": "Arma Mágica",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción Adicional",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un arma no mágica tocada gana +1 a ataque y daño hasta que termine el conjuro.",
+    "classes": [
+      "ranger",
+      "sorcerer",
+      "wizard",
+      "paladin"
+    ]
+  },
+  {
+    "id": "augury",
+    "name": "Augurio",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "1 minuto",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": true,
+    "description": "Pedís un presagio sobre un curso de acción de los próximos 30 minutos: fortuna, desdicha, ambas o indiferencia.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "nystuls-magic-aura",
+    "name": "Aura Mágica de Nystul",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Aplicás una ilusión a una criatura voluntaria u objeto: enmascarar su tipo o aura mágica ante la detección, o falsear el aura de un objeto.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "magic-mouth",
+    "name": "Boca Mágica",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Ilusionismo",
+    "castingTime": "1 minuto",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": true,
+    "description": "Implantás un mensaje en un objeto que se pronuncia en voz alta cuando se cumple la condición de activación que elijas.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "branding-smite",
+    "name": "Castigo Brillante",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Tras acertar: 2d6 radiante extra y el objetivo emite luz brillante en 5 pies, sin poder beneficiarse de invisibilidad, mientras dure.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "arcane-lock",
+    "name": "Cerradura Arcana",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una puerta u objeto tocado queda cerrado mágicamente hasta que termine el conjuro; solo vos y quienes designes podéis abrirlo.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "mind-spike",
+    "name": "Clavo Mental",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o 3d8 psíquico; si falla, conocés su ubicación mientras dure el conjuro.",
+    "classes": [
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "snare",
+    "name": "Cordón de Flechas",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Hasta cuatro flechas clavadas en el suelo disparan contra quien entre en su zona; salvación de Destreza o sufre 1d6 perforante por cada una que impacte.",
+    "classes": [
+      "ranger"
+    ]
+  },
+  {
+    "id": "crown-of-madness",
+    "name": "Corona de la Locura",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o queda hechizado: debe atacar cuerpo a cuerpo a la criatura que elijas cada turno, con desventaja si no hay ninguna a su alcance.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "spike-growth",
+    "name": "Crecimiento Espinoso",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una esfera de 20 pies se vuelve terreno difícil con espinas ocultas: 2d4 perforante por cada 5 pies recorridos dentro.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "detect-thoughts",
+    "name": "Detectar Pensamientos",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Percibís pensamientos cercanos, leés la mente de un objetivo con salvación de Sabiduría, o localizáis criaturas pensantes que no veis.",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "find-traps",
+    "name": "Detectar Trampas",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Detectás cualquier trampa dentro del alcance y en tu línea de visión, mágica o mecánica, pero no debilidades naturales del terreno.",
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "gentle-repose",
+    "name": "Dulce Descanso",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Nigromancia",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "10 dias",
+    "concentration": false,
+    "ritual": true,
+    "description": "Un cadáver tocado queda protegido de la descomposición y no puede convertirse en muerto viviente; el tiempo bajo el efecto no cuenta para resucitarlo.",
+    "classes": [
+      "cleric",
+      "wizard",
+      "paladin"
+    ]
+  },
+  {
+    "id": "enthrall",
+    "name": "Embelesar",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o las criaturas elegidas tienen -10 a Percepción mientras hablás; quienes ya luchan contra vos la superan automáticamente.",
+    "classes": [
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "melfs-acid-arrow",
+    "name": "Flecha Ácida de Melf",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro a distancia: 4d4 de ácido y 2d4 más al final de su siguiente turno; mitad de daño inicial si falla.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "phantasmal-force",
+    "name": "Fuerza Fantasmal",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Inteligencia o creás una ilusión de hasta un cubo de 10 pies que solo el objetivo percibe; puede infligir daño psíquico si actúa como si fuera real.",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "shatter",
+    "name": "Hacer Añicos",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Esfera de 10 pies: salvación de Constitución o 3d8 de trueno (desventaja para autómatas); mitad de daño si la supera. También daña objetos no mágicos.",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "find-steed",
+    "name": "Hallar Corcel",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Invocás un corcel sobrenatural con forma de animal Grande de tu elección en un espacio libre dentro del alcance.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "flame-blade",
+    "name": "Hoja de Fuego",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás una hoja de fuego en tu mano; ataque de conjuro cuerpo a cuerpo por 3d6 más tu modificador de aptitud mágica en daño de fuego.",
+    "classes": [
+      "druid",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "mirror-image",
+    "name": "Imagen Múltiple",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creás tres duplicados ilusorios; cada ataque que te acierten tira 1d6 por duplicado restante, y un 3 o más desvía el golpe a uno de ellos.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "summon-beast",
+    "name": "Invocar Bestia",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu bestial de tierra, mar o aire en un espacio libre; usa el perfil del espíritu bestial y desaparece a 0 PG o al terminar el conjuro.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "continual-flame",
+    "name": "Llama Permanente",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una llama sin calor ni combustible surge de un objeto tocado, con luz brillante en 20 pies y tenue 20 pies más allá; se puede tapar pero no apagar.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "locate-animals-or-plants",
+    "name": "Localizar Animales o Plantas",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": true,
+    "description": "Descubrís dirección y distancia hasta el animal o planta más cercano de un tipo que nombres, dentro de 5 millas.",
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "locate-object",
+    "name": "Localizar Objeto",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Sentís la dirección de un objeto conocido o del más cercano de un tipo, hasta 1000 pies; conocés su dirección de movimiento si se desplaza.",
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "ranger",
+      "wizard",
+      "paladin"
+    ]
+  },
+  {
+    "id": "animal-messenger",
+    "name": "Mensajero Animal",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": true,
+    "description": "Una bestia Diminuta lleva un mensaje corto a un lugar y destinatario que describas; salvación de Carisma para aceptar la tarea.",
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "cloud-of-daggers",
+    "name": "Nube de Dagas",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Cubo de 5 pies con dagas giratorias: 4d4 cortante a quien entre, termine su turno o sea alcanzado por el cubo; una vez por turno.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "barkskin",
+    "name": "Piel Robliza",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción Adicional",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "La piel de una criatura voluntaria se vuelve corteza; su CA no puede ser inferior a 17 mientras dure el conjuro.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "protection-from-poison",
+    "name": "Protección contra Veneno",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Termina el estado de envenenada si lo sufre; da ventaja en salvaciones contra veneno y resistencia al daño de veneno.",
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger",
+      "paladin"
+    ]
+  },
+  {
+    "id": "beast-sense",
+    "name": "Sentidos de la Bestia",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": true,
+    "description": "Percibís a través de los sentidos de una bestia voluntaria tocada, incluyendo cualquier sentido especial que tenga.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "blindness-deafness",
+    "name": "Sordera/Ceguera",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Salvación de Constitución o queda cegada o ensordecida a tu elección; repite la salvación al final de cada turno.",
+    "classes": [
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "suggestion",
+    "name": "Sugestión",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, M",
+    "duration": "8 horas",
+    "concentration": true,
+    "ritual": false,
+    "description": "Sugerís un curso de acción factible y no dañino de hasta 25 palabras; salvación de Sabiduría o el objetivo lo sigue mientras dure.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "warding-bond",
+    "name": "Vínculo Protector",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una criatura tocada gana +1 a CA y salvaciones y resistencia a todo el daño mientras esté a 60 pies de vos, pero vos sufrís el mismo daño que ella reciba.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "zone-of-truth",
+    "name": "Zona de la Verdad",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": false,
+    "ritual": false,
+    "description": "Esfera de 15 pies: quien entre hace salvación de Carisma o no puede mentir voluntariamente mientras esté dentro.",
+    "classes": [
+      "bard",
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "arcane-vigor",
+    "name": "Vigor Arcano",
+    "source": "phb_2024",
+    "level": 2,
+    "school": "Abjuración",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tirás uno o dos dados de golpe no gastados y recuperás PG iguales al resultado más tu modificador de aptitud mágica; los dados quedan gastados.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
   }
 ]

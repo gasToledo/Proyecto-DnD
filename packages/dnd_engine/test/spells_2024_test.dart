@@ -55,6 +55,23 @@ void main() {
       expect(nivel1.length, greaterThanOrEqualTo(63));
     });
 
+    test('el catálogo cubre el nivel 2 del manual', () {
+      final nivel2 = repo.spells.values.where((s) => s.level == 2);
+      expect(nivel2.length, greaterThanOrEqualTo(63));
+    });
+
+    test('Truco de la Cuerda perdió la comilla suelta del OCR', () {
+      // El PDF trae el nombre partido entre dos columnas con una comilla
+      // tipográfica pegada al principio ("“TRUCO DE LA CUERDA); es el caso que
+      // más se parece a corromper un id o un nombre por accidente.
+      expect(spell('rope-trick').name, 'Truco de la Cuerda');
+    });
+
+    test('los conjuros compuestos capitalizan las dos mitades', () {
+      expect(spell('enlarge-reduce').name, 'Agrandar/Reducir');
+      expect(spell('blindness-deafness').name, 'Sordera/Ceguera');
+    });
+
     test('Castigo Divino es un conjuro en 2024, no un rasgo del Paladín', () {
       // El cambio de reglas más visible de este nivel: en 2014 el Paladín
       // gastaba espacios directamente; en 2024 gasta el conjuro.

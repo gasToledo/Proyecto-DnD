@@ -5218,5 +5218,511 @@
     "classes": [
       "cleric"
     ]
+  },
+  {
+    "id": "divination",
+    "name": "Adivinación",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": true,
+    "description": "Contactás a un dios o sus sirvientes para preguntar sobre un suceso de los próximos 7 días; el DM da una respuesta verdadera, tal vez críptica.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "aura-of-purity",
+    "name": "Aura de Pureza",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Emanación de 30 pies: vos y tus aliados dentro tenéis resistencia al veneno y ventaja en salvaciones contra varios estados adversos.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "aura-of-life",
+    "name": "Aura de Vida",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Emanación de 30 pies: vos y tus aliados dentro tenéis resistencia al daño necrótico y no pueden reducirse los PG máximos; cura 1 PG a quien empiece su turno ahí con 0 PG.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "staggering-smite",
+    "name": "Castigo Abrumador",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Encantamiento",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tras acertar: 4d6 psíquico extra y salvación de Sabiduría o queda aturdido hasta el final de tu siguiente turno.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "leomunds-secret-chest",
+    "name": "Cofre Oculto de Leomund",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ocultás un cofre tocado en el Plano Etéreo; podés recuperarlo con una acción de magia usando la réplica en miniatura.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "compulsion",
+    "name": "Compulsión",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o queda hechizado y, con una acción adicional tuya, debe avanzar en la dirección que marques cada turno.",
+    "classes": [
+      "bard"
+    ]
+  },
+  {
+    "id": "conjure-minor-elementals",
+    "name": "Conjurar Elementales Menores",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Espíritus elementales te rodean en 15 pies: tus ataques causan 2d8 extra del tipo elemental que elijas a quien esté dentro.",
+    "classes": [
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "conjure-woodland-beings",
+    "name": "Conjurar Seres del Bosque",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Espíritus de la naturaleza en 10 pies: salvación de Sabiduría contra 5d8 de fuerza a quien entre en la emanación o termine su turno ahí.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "control-water",
+    "name": "Controlar Agua",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "300 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Controlás una masa de agua elegida: inundar, hundir, redirigir una corriente o dividirla en un muro.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "dominate-beast",
+    "name": "Dominar Bestia",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o una bestia queda hechizada; tenés vínculo telepático y podés darle órdenes u ordenarle atacar.",
+    "classes": [
+      "druid",
+      "ranger",
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "grasping-vine",
+    "name": "Enredadera",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción Adicional",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Ataque de conjuro cuerpo a cuerpo: 4d8 contundente y arrastra hasta 30 pies hacia la enredadera; apresa si el objetivo es Enorme o menor.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "otilukes-resilient-sphere",
+    "name": "Esfera Elástica de Otiluke",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una esfera encierra a una criatura u objeto Grande o menor; salvación de Destreza si no es voluntaria. Nada la atraviesa en ninguna dirección.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "vitriolic-sphere",
+    "name": "Esfera Vitriólica",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Esfera de 20 pies de ácido: salvación de Destreza contra 10d4 de ácido y otros 5d4 al final del siguiente turno; mitad de daño inicial si supera.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "fabricate",
+    "name": "Fabricar",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Transmutación",
+    "castingTime": "10 minutos",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Convertís materias primas a la vista en un producto Grande o menor del mismo material, como madera en un puente o lino en ropa.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "fount-of-moonlight",
+    "name": "Fuente de Luz Lunar",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Luz fría te envuelve: resistencia al daño radiante y tus ataques cuerpo a cuerpo causan 2d6 radiante extra al acertar. Podés cegar a quien te dañe cerca con una reacción.",
+    "classes": [
+      "bard",
+      "druid"
+    ]
+  },
+  {
+    "id": "guardian-of-faith",
+    "name": "Guardián de la Fe",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un guardián espectral Grande e invulnerable levita en un espacio; salvación de Destreza contra 20 radiante a quien se acerque, hasta 60 PG totales de daño.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "charm-monster",
+    "name": "Hechizar Monstruo",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Salvación de Sabiduría (con ventaja si lucha contra vos) o una criatura queda hechizada y amistosa hasta que termine el conjuro o reciba daño de vos.",
+    "classes": [
+      "bard",
+      "warlock",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "giant-insect",
+    "name": "Insecto Gigante",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás una araña, avispa o ciempiés gigante en un espacio libre; usa el perfil del insecto gigante elegido.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "summon-aberration",
+    "name": "Invocar Aberración",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu aberrante —azotamentes, contemplador o slaad— en un espacio libre; usa el perfil del espíritu aberrante.",
+    "classes": [
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "summon-construct",
+    "name": "Invocar Autómata",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu de autómata de arcilla, metal o piedra en un espacio libre; usa el perfil del espíritu autómata.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "summon-elemental",
+    "name": "Invocar Elemental",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu elemental de agua, aire, fuego o tierra en un espacio libre; usa el perfil del espíritu elemental.",
+    "classes": [
+      "druid",
+      "ranger",
+      "wizard"
+    ]
+  },
+  {
+    "id": "locate-creature",
+    "name": "Localizar Criatura",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Sentís la dirección de una criatura conocida o de la más cercana de un tipo, hasta 1000 pies; conocés su dirección si se mueve.",
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "ranger",
+      "wizard",
+      "paladin"
+    ]
+  },
+  {
+    "id": "mordenkainens-faithful-hound",
+    "name": "Mastín Fiel de Mordenkainen",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "3 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un perro guardián invisible ladra ante intrusos sin la contraseña y muerde por 4d8 perforante a quien se acerque, hasta que termine el conjuro.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "stone-shape",
+    "name": "Moldear la Piedra",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Moldeás un objeto o sección de piedra Mediana o menor con la forma que quieras, con hasta dos bisagras y un pestillo.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "arcane-eye",
+    "name": "Ojo Arcano",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creás un ojo invisible que levita y explorás a través de él con visión normal y en la oscuridad de 30 pies.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "mordenkainens-private-sanctum",
+    "name": "Sanctasanctórum Privado de Mordenkainen",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Abjuración",
+    "castingTime": "10 minutos",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Volvés mágicamente segura una zona en cubo de hasta 100 pies: podés bloquear sonido, visión, teletransporte o escrutinio.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "evards-black-tentacles",
+    "name": "Tentáculos Negros de Evard",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Cuadrado de 20 pies con tentáculos: salvación de Fuerza contra 3d6 contundente y queda apresado; sufre el mismo daño cada turno mientras siga ahí.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "hallucinatory-terrain",
+    "name": "Terreno Alucinatorio",
+    "source": "phb_2024",
+    "level": 4,
+    "school": "Ilusionismo",
+    "castingTime": "10 minutos",
+    "range": "300 pies",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un cubo de 150 pies de terreno natural parece, suena y huele a otro tipo de terreno natural durante 24 horas.",
+    "classes": [
+      "bard",
+      "warlock",
+      "druid",
+      "wizard"
+    ]
   }
 ]

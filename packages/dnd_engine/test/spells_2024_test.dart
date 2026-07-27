@@ -65,6 +65,22 @@ void main() {
       expect(nivel3.length, greaterThanOrEqualTo(51));
     });
 
+    test('el catálogo cubre el nivel 4 del manual', () {
+      final nivel4 = repo.spells.values.where((s) => s.level == 4);
+      expect(nivel4.length, greaterThanOrEqualTo(41));
+    });
+
+    test('Hechizar Monstruo y Dominar Monstruo son conjuros distintos', () {
+      // "Hechizar Monstruo" (charm-monster, nivel 4) no es una versión menor
+      // de "Dominar Monstruo" (dominate-monster, nivel 8): son dos conjuros
+      // separados en el manual, y usar mal el id habría pisado el existente.
+      final hechizar = spell('charm-monster');
+      final dominar = spell('dominate-monster');
+      expect(hechizar.level, 4);
+      expect(dominar.level, 8);
+      expect(hechizar.id, isNot(dominar.id));
+    });
+
     test('los tiempos de lanzamiento en minutos u horas pluralizan bien', () {
       // La alternancia de regex probaba "minuto" antes que "minutos" y
       // recortaba el plural; Clarividencia (10 minutos) lo destapó.

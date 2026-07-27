@@ -99,6 +99,3 @@ El usuario y los demás jugadores de su mesa de D&D. Cada uno instala su propia 
 - **Modo DM**: un modo alternativo de la app pensado para quien dirige la partida, donde en vez de gestionar únicamente personajes propios, se pueda:
   - Crear y gestionar NPCs.
   - Importar los archivos de personaje exportados por los jugadores de la mesa, para tener una vista de referencia de cómo funciona cada uno (stats, equipo, hechizos disponibles) sin necesidad de preguntarles en el momento.
-
-## 12. Siguiente acción recomendada
-Con este brief funcional cerrado, el siguiente paso natural es definir la arquitectura técnica: elegir el framework multiplataforma (por ejemplo Flutter o .NET MAUI, dado que cubren Windows, Linux, Android e iOS con un solo código base), diseñar el modelo de datos (esquema de la ficha, formato JSON de exportación individual y de backup completo), y estructurar la base de datos oficial de reglas de 5e antes de empezar a programar el wizard de creación.

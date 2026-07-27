@@ -102,7 +102,7 @@ void main() {
       final esperado = c.id == 'paladin' ? 19 : 20;
       expect(lastLevel(c.id), esperado, reason: '${c.id} dejó de llegar a 20');
     }
-    expect(repo.classes, hasLength(12));
+    expect(repo.classes, hasLength(13));
   });
 
   test('las cuatro últimas clases cubren sus niveles de rasgo', () {

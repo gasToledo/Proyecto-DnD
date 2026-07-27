@@ -41,10 +41,13 @@ void main() {
   });
 
   group('Carga y consulta de subclases', () {
-    test('cada clase tiene 4 subclases y todas apuntan a su clase', () {
+    test('cada clase tiene sus subclases y todas apuntan a su clase', () {
+      // El Artífice de Forge of the Artificer trae 5 subclases; el resto, 4.
       for (final classId in repo.classes.keys) {
         final subs = repo.subclassesForClass(classId);
-        expect(subs.length, 4, reason: '$classId debería tener 4 subclases');
+        final esperado = classId == 'artificer' ? 5 : 4;
+        expect(subs.length, esperado,
+            reason: '$classId debería tener $esperado subclases');
         for (final s in subs) {
           expect(s.classId, classId);
         }

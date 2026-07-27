@@ -84,7 +84,7 @@
   },
   {
     "id": "true-strike",
-    "name": "Golpe Certero",
+    "name": "Impacto Certero",
     "source": "srd_2024",
     "level": 0,
     "school": "Adivinación",
@@ -246,7 +246,7 @@
   },
   {
     "id": "shillelagh",
-    "name": "Porra Encantada",
+    "name": "Shillelagh",
     "source": "srd_2024",
     "level": 0,
     "school": "Transmutación",
@@ -392,7 +392,7 @@
     "name": "Salpicadura Ácida",
     "source": "srd_2024",
     "level": 0,
-    "school": "Conjuración",
+    "school": "Evocación",
     "castingTime": "Acción",
     "range": "60 pies",
     "components": "V, S",
@@ -443,7 +443,7 @@
   },
   {
     "id": "goodberry",
-    "name": "Baya Nutritiva",
+    "name": "Buenas Bayas",
     "source": "srd_2024",
     "level": 1,
     "school": "Conjuración",
@@ -754,7 +754,7 @@
   },
   {
     "id": "fog-cloud",
-    "name": "Nube de Niebla",
+    "name": "Nube de Oscurecimiento",
     "source": "srd_2024",
     "level": 1,
     "school": "Conjuración",
@@ -794,7 +794,7 @@
   },
   {
     "id": "command",
-    "name": "Orden",
+    "name": "Orden Imperiosa",
     "source": "srd_2024",
     "level": 1,
     "school": "Encantamiento",
@@ -920,7 +920,7 @@
   },
   {
     "id": "sleep",
-    "name": "Sopor",
+    "name": "Dormir",
     "source": "srd_2024",
     "level": 1,
     "school": "Encantamiento",
@@ -1032,7 +1032,7 @@
   },
   {
     "id": "blur",
-    "name": "Difuminar",
+    "name": "Contorno Borroso",
     "source": "srd_2024",
     "level": 2,
     "school": "Ilusionismo",
@@ -1050,7 +1050,7 @@
   },
   {
     "id": "flaming-sphere",
-    "name": "Esfera Flamígera",
+    "name": "Esfera de Llamas",
     "source": "srd_2024",
     "level": 2,
     "school": "Conjuración",
@@ -1250,7 +1250,7 @@
   },
   {
     "id": "enhance-ability",
-    "name": "Realzar Característica",
+    "name": "Potenciar Característica",
     "source": "srd_2024",
     "level": 2,
     "school": "Transmutación",
@@ -1327,7 +1327,7 @@
   },
   {
     "id": "spider-climb",
-    "name": "Trepar como Arácnido",
+    "name": "Trepar cual Arácnido",
     "source": "srd_2024",
     "level": 2,
     "school": "Transmutación",
@@ -1531,7 +1531,7 @@
   },
   {
     "id": "call-lightning",
-    "name": "Invocar Relámpago",
+    "name": "Llamar al Relámpago",
     "source": "srd_2024",
     "level": 3,
     "school": "Conjuración",
@@ -1590,7 +1590,7 @@
   },
   {
     "id": "fear",
-    "name": "Miedo",
+    "name": "Terror",
     "source": "srd_2024",
     "level": 3,
     "school": "Ilusionismo",
@@ -1610,7 +1610,7 @@
   },
   {
     "id": "stinking-cloud",
-    "name": "Nube Hedionda",
+    "name": "Nube Apestosa",
     "source": "srd_2024",
     "level": 3,
     "school": "Conjuración",
@@ -1629,7 +1629,7 @@
   },
   {
     "id": "mass-healing-word",
-    "name": "Palabra de Curación Masiva",
+    "name": "Palabra de Curación en Masa",
     "source": "srd_2024",
     "level": 3,
     "school": "Abjuración",
@@ -1666,7 +1666,7 @@
   },
   {
     "id": "haste",
-    "name": "Prisa",
+    "name": "Acelerar",
     "source": "srd_2024",
     "level": 3,
     "school": "Transmutación",
@@ -1684,7 +1684,7 @@
   },
   {
     "id": "protection-from-energy",
-    "name": "Protección contra la Energía",
+    "name": "Protección contra Energía",
     "source": "srd_2024",
     "level": 3,
     "school": "Abjuración",
@@ -1932,7 +1932,7 @@
   },
   {
     "id": "greater-invisibility",
-    "name": "Invisibilidad Superior",
+    "name": "Invisibilidad Mejorada",
     "source": "srd_2024",
     "level": 4,
     "school": "Ilusionismo",
@@ -1991,7 +1991,7 @@
   },
   {
     "id": "polymorph",
-    "name": "Metamorfosis",
+    "name": "Polimorfar",
     "source": "srd_2024",
     "level": 4,
     "school": "Transmutación",
@@ -2030,7 +2030,7 @@
   },
   {
     "id": "stoneskin",
-    "name": "Piel de Piedra",
+    "name": "Piel Pétrea",
     "source": "srd_2024",
     "level": 4,
     "school": "Transmutación",
@@ -2200,7 +2200,7 @@
   },
   {
     "id": "scrying",
-    "name": "Escrutar",
+    "name": "Escudriñar",
     "source": "srd_2024",
     "level": 5,
     "school": "Adivinación",
@@ -2317,7 +2317,7 @@
   },
   {
     "id": "cloudkill",
-    "name": "Nube Mortal",
+    "name": "Nube Aniquiladora",
     "source": "srd_2024",
     "level": 5,
     "school": "Conjuración",
@@ -2354,7 +2354,7 @@
   },
   {
     "id": "greater-restoration",
-    "name": "Restauración Mayor",
+    "name": "Restablecimiento Mayor",
     "source": "srd_2024",
     "level": 5,
     "school": "Abjuración",
@@ -2501,7 +2501,7 @@
   },
   {
     "id": "sunbeam",
-    "name": "Rayo de Sol",
+    "name": "Rayo Solar",
     "source": "srd_2024",
     "level": 6,
     "school": "Evocación",
@@ -2556,7 +2556,7 @@
   },
   {
     "id": "mass-suggestion",
-    "name": "Sugestión Masiva",
+    "name": "Sugestión en Masa",
     "source": "srd_2024",
     "level": 6,
     "school": "Encantamiento",
@@ -2597,7 +2597,7 @@
   },
   {
     "id": "delayed-blast-fireball",
-    "name": "Bola de Fuego Retardada",
+    "name": "Bola de Fuego de Explosión Retardada",
     "source": "srd_2024",
     "level": 7,
     "school": "Evocación",
@@ -2676,7 +2676,7 @@
   },
   {
     "id": "reverse-gravity",
-    "name": "Invertir Gravedad",
+    "name": "Invertir la Gravedad",
     "source": "srd_2024",
     "level": 7,
     "school": "Transmutación",
@@ -2714,7 +2714,7 @@
   },
   {
     "id": "regenerate",
-    "name": "Regeneración",
+    "name": "Regenerar",
     "source": "srd_2024",
     "level": 7,
     "school": "Transmutación",
@@ -2847,7 +2847,7 @@
   },
   {
     "id": "sunburst",
-    "name": "Estallido Solar",
+    "name": "Explosión Solar",
     "source": "srd_2024",
     "level": 8,
     "school": "Evocación",
@@ -2883,7 +2883,7 @@
   },
   {
     "id": "feeblemind",
-    "name": "Mente en Blanco",
+    "name": "Ofuscación",
     "source": "srd_2024",
     "level": 8,
     "school": "Encantamiento",
@@ -2893,7 +2893,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "4d6 psíquico y, si falla la salvación de INT, reduce a 1 su Inteligencia y Carisma, incapaz de lanzar conjuros.",
+    "description": "Salvación de Inteligencia: si falla, 10d12 psíquico y no puede lanzar conjuros ni usar acciones de magia; repite la salvación cada 30 días. Si la supera, mitad de daño.",
     "classes": [
       "wizard",
       "druid",
@@ -2903,7 +2903,7 @@
   },
   {
     "id": "mind-blank",
-    "name": "Mente Vacía",
+    "name": "Mente en Blanco",
     "source": "srd_2024",
     "level": 8,
     "school": "Abjuración",
@@ -2996,7 +2996,7 @@
   },
   {
     "id": "time-stop",
-    "name": "Detener el Tiempo",
+    "name": "Parar el Tiempo",
     "source": "srd_2024",
     "level": 9,
     "school": "Transmutación",
@@ -3014,7 +3014,7 @@
   },
   {
     "id": "imprisonment",
-    "name": "Encarcelamiento",
+    "name": "Cautiverio",
     "source": "srd_2024",
     "level": 9,
     "school": "Abjuración",
@@ -3032,7 +3032,7 @@
   },
   {
     "id": "meteor-swarm",
-    "name": "Enjambre de Meteoros",
+    "name": "Tormenta de Meteoritos",
     "source": "srd_2024",
     "level": 9,
     "school": "Evocación",
@@ -3087,7 +3087,7 @@
   },
   {
     "id": "weird",
-    "name": "Pesadilla",
+    "name": "Terror Abyecto",
     "source": "srd_2024",
     "level": 9,
     "school": "Ilusionismo",
@@ -3234,7 +3234,7 @@
   },
   {
     "id": "false-life",
-    "name": "Vida Fingida",
+    "name": "Falsa Vida",
     "source": "srd_2024",
     "level": 1,
     "school": "Nigromancia",
@@ -3252,7 +3252,7 @@
   },
   {
     "id": "ray-of-enfeeblement",
-    "name": "Rayo de Debilitamiento",
+    "name": "Rayo Debilitador",
     "source": "srd_2024",
     "level": 2,
     "school": "Nigromancia",
@@ -3270,7 +3270,7 @@
   },
   {
     "id": "hellish-rebuke",
-    "name": "Represalia Infernal",
+    "name": "Reprensión Infernal",
     "source": "srd_2024",
     "level": 1,
     "school": "Evocación",

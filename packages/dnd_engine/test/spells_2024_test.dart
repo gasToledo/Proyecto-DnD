@@ -60,6 +60,21 @@ void main() {
       expect(nivel2.length, greaterThanOrEqualTo(63));
     });
 
+    test('el catálogo cubre el nivel 3 del manual', () {
+      final nivel3 = repo.spells.values.where((s) => s.level == 3);
+      expect(nivel3.length, greaterThanOrEqualTo(51));
+    });
+
+    test('los tiempos de lanzamiento en minutos u horas pluralizan bien', () {
+      // La alternancia de regex probaba "minuto" antes que "minutos" y
+      // recortaba el plural; Clarividencia (10 minutos) lo destapó.
+      expect(spell('clairvoyance').castingTime, '10 minutos');
+    });
+
+    test('el alcance en millas usa la misma convención que Enjambre de Meteoros', () {
+      expect(spell('clairvoyance').range, '1 milla');
+    });
+
     test('Truco de la Cuerda perdió la comilla suelta del OCR', () {
       // El PDF trae el nombre partido entre dos columnas con una comilla
       // tipográfica pegada al principio ("“TRUCO DE LA CUERDA); es el caso que

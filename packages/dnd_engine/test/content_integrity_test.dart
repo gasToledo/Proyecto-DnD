@@ -159,7 +159,8 @@ void main() {
       'Conjuración',
       'Encantamiento',
       'Evocación',
-      'Ilusión',
+      // El PHB 2024 en español dice "Ilusionismo", no "Ilusión".
+      'Ilusionismo',
       'Nigromancia',
       'Transmutación',
     };

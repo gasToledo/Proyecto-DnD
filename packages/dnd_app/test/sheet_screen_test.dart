@@ -128,7 +128,7 @@ void main() {
 
     expect(find.text('LANZAMIENTO DE CONJUROS'), findsOneWidget);
     expect(find.text('ESPACIOS DE CONJURO'), findsOneWidget);
-    expect(find.text('Contacto Electrizante'), findsOneWidget);
+    expect(find.text('Agarre Electrizante'), findsOneWidget);
     expect(find.text('Detectar Magia'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

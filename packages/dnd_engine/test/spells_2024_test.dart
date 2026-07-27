@@ -43,4 +43,47 @@ void main() {
     // Ya no hay criaturas aliadas con bloque de estadísticas.
     expect(s.description, isNot(contains('combaten a tu lado')));
   });
+
+  group('nomenclatura del PHB 2024', () {
+    // 31 conjuros llevaban un nombre en español que no es el del manual. Se
+    // verificaron por dos vías independientes: la firma de metadatos (nivel,
+    // componentes, duración, alcance y clases) contra el capítulo 7, y el id,
+    // que es el nombre en inglés. Los ids no cambian: son la referencia que
+    // usan los linajes y los personajes guardados.
+    const oficiales = {
+      'druidcraft': 'Saber Druídico',
+      'vicious-mockery': 'Burla Dañina',
+      'shocking-grasp': 'Agarre Electrizante',
+      'spare-the-dying': 'Piedad con los Moribundos',
+      'produce-flame': 'Crear Llama',
+      'fire-bolt': 'Descarga de Fuego',
+      'charm-person': 'Hechizar Persona',
+      'thunderwave': 'Ola Atronadora',
+      'guiding-bolt': 'Saeta Guía',
+      'see-invisibility': 'Ver Invisibilidad',
+      'animate-dead': 'Animar a los Muertos',
+      'tongues': 'Don de Lenguas',
+      'raise-dead': 'Alzar a los Muertos',
+      'heal': 'Curar',
+      'plane-shift': 'Desplazamiento entre Planos',
+      'mass-heal': 'Curar en Masa',
+    };
+
+    oficiales.forEach((id, nombre) {
+      test('$id se llama $nombre', () => expect(spell(id).name, nombre));
+    });
+
+    test('Geas dejó de llamarse Mandato', () {
+      // Es el caso que más confundía: "Mandato" es el nombre de otro conjuro
+      // (Command, de nivel 1), no de este.
+      expect(spell('geas').name, 'Geas');
+      expect(spell('geas').level, 5);
+    });
+
+    test('la escuela de ilusión se llama Ilusionismo', () {
+      final escuelas = repo.spells.values.map((s) => s.school).toSet();
+      expect(escuelas, contains('Ilusionismo'));
+      expect(escuelas, isNot(contains('Ilusión')));
+    });
+  });
 }

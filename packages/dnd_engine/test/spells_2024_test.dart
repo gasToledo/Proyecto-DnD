@@ -70,6 +70,30 @@ void main() {
       expect(nivel4.length, greaterThanOrEqualTo(41));
     });
 
+    test('el catálogo cubre el nivel 5 del manual', () {
+      final nivel5 = repo.spells.values.where((s) => s.level == 5);
+      expect(nivel5.length, greaterThanOrEqualTo(47));
+    });
+
+    test('Invocar Elemental y Conjurar Elemental son conjuros distintos', () {
+      // Invocar Elemental (summon-elemental, nivel 4) es el conjuro de
+      // invocación nuevo de 2024, con el perfil del espíritu elemental.
+      // Conjurar Elemental (conjure-elemental, nivel 5) es el conjuro de
+      // 2014 que sigue en el manual, con un elemental Grande de estadísticas
+      // propias. Comparten la raíz del nombre pero no son la misma entrada.
+      final invocar = spell('summon-elemental');
+      final conjurar = spell('conjure-elemental');
+      expect(invocar.level, 4);
+      expect(conjurar.level, 5);
+      expect(invocar.id, isNot(conjurar.id));
+    });
+
+    test('el alcance "Especial" se preserva tal cual lo trae el manual', () {
+      // Ensueño alcanza al lanzador o a un objetivo lejano según el caso,
+      // así que el PHB no le da una distancia fija.
+      expect(spell('dream').range, 'Especial');
+    });
+
     test('Hechizar Monstruo y Dominar Monstruo son conjuros distintos', () {
       // "Hechizar Monstruo" (charm-monster, nivel 4) no es una versión menor
       // de "Dominar Monstruo" (dominate-monster, nivel 8): son dos conjuros

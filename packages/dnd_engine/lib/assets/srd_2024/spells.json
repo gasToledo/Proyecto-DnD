@@ -5724,5 +5724,583 @@
       "druid",
       "wizard"
     ]
+  },
+  {
+    "id": "seeming",
+    "name": "Apariencia",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Le das una apariencia ilusoria a las criaturas que elijas; salvación de Carisma si no son voluntarias. Podés cambiar altura, complexión y equipo.",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "planar-binding",
+    "name": "Atadura Planar",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Abjuración",
+    "castingTime": "1 hora",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Obligás a un celestial, elemental, feérico o infernal a serviros: salvación de Carisma o queda a tu servicio hasta que termine el conjuro.",
+    "classes": [
+      "bard",
+      "warlock",
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "negative-energy-flood",
+    "name": "Caparazón Antivida",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un aura de 10 pies impide el paso a criaturas vivas, salvo autómatas o muertos vivientes; termina si te ves forzado a cruzarla.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "swift-quiver",
+    "name": "Carcaj Veloz",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Transmutación",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Podés hacer dos ataques a distancia con arco o ballesta como acción adicional; el conjuro crea la munición mágicamente.",
+    "classes": [
+      "ranger"
+    ]
+  },
+  {
+    "id": "banishing-smite",
+    "name": "Castigo Desterrador",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Tras acertar: 5d10 de fuerza extra, y si el objetivo queda a 50 PG o menos, salvación de Carisma o es desterrado a un semiplano hasta que termine el conjuro.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "circle-of-power",
+    "name": "Círculo de Poder",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Emanación de 30 pies: vos y tus aliados dentro tenéis ventaja en salvaciones contra magia, y no sufrís daño si superáis una que reduzca el daño a la mitad.",
+    "classes": [
+      "cleric",
+      "wizard",
+      "paladin"
+    ]
+  },
+  {
+    "id": "teleportation-circle",
+    "name": "Círculo de Teletransportación",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "1 minuto",
+    "range": "10 pies",
+    "components": "V, M",
+    "duration": "1 asalto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Trazás un círculo que abre un portal a un círculo de teletransportación permanente conocido, abierto hasta el final de tu siguiente turno.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "commune",
+    "name": "Comunión",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Adivinación",
+    "castingTime": "1 minuto",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": true,
+    "description": "Contactás a tu deidad y hacés hasta tres preguntas de sí o no; recibís una respuesta correcta a cada una.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "commune-with-nature",
+    "name": "Comunión con la Naturaleza",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Adivinación",
+    "castingTime": "1 minuto",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": true,
+    "description": "Comulgás con la naturaleza y obtenés información del terreno circundante en un radio de 3 millas (900 pies bajo tierra).",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "conjure-elemental",
+    "name": "Conjurar Elemental",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu elemental Grande de agua, aire, fuego o tierra que ataca según el elemento elegido, con daño propio de estadísticas.",
+    "classes": [
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "conjure-volley-arrows",
+    "name": "Conjurar Lluvia de Flechas",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "150 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Cilindro de 40 pies de radio: salvación de Destreza contra 8d8 de fuerza, mitad de daño si la supera.",
+    "classes": [
+      "ranger"
+    ]
+  },
+  {
+    "id": "legend-lore",
+    "name": "Conocer las Leyendas",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Adivinación",
+    "castingTime": "10 minutos",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Nombrás algo famoso y recibís un resumen de la información relevante que el DM describa.",
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ]
+  },
+  {
+    "id": "bless-the-ground",
+    "name": "Consagrar",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Abjuración",
+    "castingTime": "24 horas",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Impregnás una zona de hasta 60 pies con poder sagrado o impío, con efectos de protección o daño según el bando elegido.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "contact-other-plane",
+    "name": "Contactar con Otro Plano",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Adivinación",
+    "castingTime": "1 minuto",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": true,
+    "description": "Contactás una entidad de otro plano; salvación de Inteligencia CD 15 o sufrís daño mental. Si la superás, podés hacer hasta cinco preguntas.",
+    "classes": [
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "contagion",
+    "name": "Contagio",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Nigromancia",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "7 dias",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tu toque causa un contagio mágico: salvación de Constitución o 11d8 necrótico y envenenado, con desventaja en salvaciones de la característica elegida.",
+    "classes": [
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "fabricate-shadow",
+    "name": "Creación",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Ilusionismo",
+    "castingTime": "1 minuto",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "Especial",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creás un objeto de materia vegetal o mineral con hebras de sombra; dura de una hora a permanente según el material.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "awaken",
+    "name": "Despertar",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Transmutación",
+    "castingTime": "8 horas",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una bestia o planta con Inteligencia 3 o menos gana Inteligencia 10 y la capacidad de hablar un idioma que conocés.",
+    "classes": [
+      "bard",
+      "druid"
+    ]
+  },
+  {
+    "id": "dispel-good-and-evil",
+    "name": "Disipar el Bien y el Mal",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Celestiales, elementales, feéricos, infernales y muertos vivientes tienen desventaja para atacarte; podés despedirlos o proteger a un aliado hechizado o poseído.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "mislead",
+    "name": "Engañar",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "S",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Te volvés invisible y creás un doble ilusorio en tu lugar que podés mover y hacer hablar; podés ver y oír a través de él.",
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "rarys-telepathic-bond",
+    "name": "Enlace Telepático de Rary",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": true,
+    "description": "Hasta ocho criaturas voluntarias quedan vinculadas telepáticamente entre sí mientras dure el conjuro, sin importar el idioma.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "dream",
+    "name": "Ensueño",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Ilusionismo",
+    "castingTime": "1 minuto",
+    "range": "Especial",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una criatura voluntaria entra en trance y aparece en los sueños de un objetivo conocido para conversar; incapacitada y velocidad 0 mientras dure.",
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "synaptic-static",
+    "name": "Estática Sináptica",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Esfera de 20 pies: salvación de Inteligencia contra 8d6 psíquico; si falla, además resta 1d6 a ataques y pruebas de característica durante 1 minuto.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "steel-wind-strike",
+    "name": "Golpe de Viento Acerado",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro cuerpo a cuerpo contra hasta cinco criaturas: 6d10 de fuerza cada una; después te teletransportás junto a un objetivo.",
+    "classes": [
+      "ranger",
+      "wizard"
+    ]
+  },
+  {
+    "id": "summon-celestial",
+    "name": "Invocar Celestial",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu celestial defensor o vengador en un espacio libre; se considera tu aliado y actúa justo después de tu turno.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "summon-dragon",
+    "name": "Invocar Dragón",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu dracónico en un espacio libre; se considera tu aliado y actúa justo después de tu turno.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "bigbys-hand",
+    "name": "Mano de Bigby",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creás una mano de fuerza Grande que obedece tus órdenes: puede empujar, agarrar, interponerse como escudo o atacar.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "destructive-wave",
+    "name": "Ola Destructora",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Emanación de 30 pies: salvación de Constitución contra 5d6 de trueno y 5d6 radiante o necrótico a elección, con derribo si falla.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "passwall",
+    "name": "Pasamuros",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Abrís un pasaje en una superficie de madera, yeso o piedra, de hasta 5 pies de ancho, 8 de alto y 20 de largo, mientras dure el conjuro.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "tree-stride",
+    "name": "Paso Arbóreo",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Podés entrar en un árbol y moverte a otro del mismo tipo a 500 pies o menos, gastando 5 pies de movimiento por árbol.",
+    "classes": [
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "yolandes-regal-presence",
+    "name": "Presencia Regia de Yolande",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Emanación de 10 pies: salvación de Sabiduría o 4d6 psíquico, derribo y empuje de 10 pies a quien entre o la toque.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "reincarnate",
+    "name": "Reencarnar",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Nigromancia",
+    "castingTime": "1 hora",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tocás a un humanoide muerto hace menos de 10 días: forma un nuevo cuerpo de especie aleatoria (o elegida por el DM) y llama al alma de vuelta.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "jallarzis-storm-of-radiance",
+    "name": "Tormenta Resplandeciente de Jallarzi",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Cilindro de tormenta: cegadas y ensordecidas sin poder lanzar conjuros con componente verbal; salvación de Constitución contra daño radiante y de trueno.",
+    "classes": [
+      "warlock",
+      "wizard"
+    ]
   }
 ]

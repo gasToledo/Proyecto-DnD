@@ -6302,5 +6302,825 @@
       "warlock",
       "wizard"
     ]
+  },
+  {
+    "id": "planar-ally",
+    "name": "Aliado Planar",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "10 minutos",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Suplicás la ayuda de una entidad conocida de otro mundo, que enviará un celestial, elemental o infernal leal a ayudarte a cambio de un servicio o pago.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "ottos-irresistible-dance",
+    "name": "Baile Irresistible de Otto",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o queda hechizado y baila sin control gastando todo su movimiento; con desventaja en Destreza y en ataques mientras dure.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "tashas-bubbling-cauldron",
+    "name": "Caldero Burbujeante de Tasha",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "5 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un caldero aparece a tu lado con un líquido que copia las propiedades de una poción común o infrecuente que elijas; da hasta seis dosis.",
+    "classes": [
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "conjure-fey",
+    "name": "Conjurar Feérico",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu Mediano de los Parajes Feéricos con forma de criatura feérica; al aparecer podés atacar cuerpo a cuerpo por 3d12 psíquico.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "contingency",
+    "name": "Contingencia",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Abjuración",
+    "castingTime": "10 minutos",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "10 dias",
+    "concentration": false,
+    "ritual": false,
+    "description": "Preparás un conjuro de nivel 5 o inferior para que se active solo cuando se cumpla una condición que fijes, sin gastar tu acción en ese momento.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "create-undead",
+    "name": "Crear Muerto Viviente",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Nigromancia",
+    "castingTime": "1 minuto",
+    "range": "10 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Solo de noche: hasta tres cadáveres se convierten en gules bajo tu control, que podés dirigir con una acción adicional.",
+    "classes": [
+      "warlock",
+      "cleric",
+      "wizard"
+    ]
+  },
+  {
+    "id": "flesh-to-stone",
+    "name": "De la Carne a la Piedra",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Constitución o queda apresado y, tras fallar tres veces acumuladas, petrificado; los autómatas la superan automáticamente.",
+    "classes": [
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "find-the-path",
+    "name": "Encontrar el Camino",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Adivinación",
+    "castingTime": "1 minuto",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 dia",
+    "concentration": true,
+    "ritual": false,
+    "description": "Percibís el camino físico más corto hacia un lugar conocido dentro del mismo plano, y sabés si os desviáis de él.",
+    "classes": [
+      "bard",
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "otilukes-freezing-sphere",
+    "name": "Esfera Congelante de Otiluke",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "300 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Esfera de 60 pies: salvación de Constitución contra 10d6 de frío, mitad de daño si la supera; puede congelar agua a su paso.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "heroes-feast",
+    "name": "Festín de Héroes",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "10 minutos",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un festín para hasta doce criaturas: cura enfermedades y venenos, y da resistencia al veneno, inmunidad a asustado y ventaja en salvaciones de Sabiduría durante 24 horas.",
+    "classes": [
+      "bard",
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "guards-and-wards",
+    "name": "Guardas y Guardias",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Abjuración",
+    "castingTime": "1 hora",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Protegés hasta 2500 pies cuadrados con efectos combinados: niebla, oscuridad, sonidos falsos, puertas selladas y una trampa de tu elección.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "programmed-illusion",
+    "name": "Ilusión Programada",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creás una ilusión imperceptible que se activa con una condición específica y actúa según lo programado durante hasta 5 minutos.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "drawmijs-instant-summons",
+    "name": "Invocación Instantánea de Drawmij",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "1 minuto",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": true,
+    "description": "Marcás un objeto con un zafiro; luego podés convocarlo a tu mano desde cualquier distancia con una acción de magia.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "summon-fiend",
+    "name": "Invocar Infernal",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Invocás un espíritu infernal —demonio, diablo o yugoloth— en un espacio libre; usa el perfil del espíritu infernal.",
+    "classes": [
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "move-earth",
+    "name": "Mover la Tierra",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "2 horas",
+    "concentration": true,
+    "ritual": false,
+    "description": "Remodelás tierra, arena o arcilla en una zona de hasta 40 pies de lado: elevar, excavar, levantar muros o columnas.",
+    "classes": [
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "wall-of-thorns",
+    "name": "Muro de Espinas",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creás un muro de maleza espinosa recto o circular; quien lo atraviese o empiece su turno junto a él sufre daño cortante y queda apresado.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "wall-of-ice",
+    "name": "Muro de Hielo",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creás un muro de hielo en forma de cúpula o paneles planos, de 1 pie de grosor; salvación de Destreza contra frío al aparecer.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "word-of-recall",
+    "name": "Palabra de Regreso",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "5 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Vos y hasta cinco criaturas voluntarias os teletransportáis al instante a un santuario preparado con anterioridad.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "forbiddance",
+    "name": "Prohibición",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Abjuración",
+    "castingTime": "10 minutos",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 dia",
+    "concentration": false,
+    "ritual": true,
+    "description": "Protegés una zona de hasta 40000 pies cuadrados contra teletransporte y viaje interplanar; podés causar daño extra a un tipo de criatura elegido.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "arcane-gate",
+    "name": "Puerta Arcana",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "500 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Abrís dos portales enlazados: uno cerca tuyo y otro dentro del alcance; cualquiera puede atravesarlos en cualquier dirección.",
+    "classes": [
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "magic-jar",
+    "name": "Urna Mágica",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Nigromancia",
+    "castingTime": "1 minuto",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tu alma abandona tu cuerpo y entra en un recipiente; desde ahí podés intentar poseer el cuerpo de un humanoide cercano.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "wind-walk",
+    "name": "Viajar con el Viento",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Transmutación",
+    "castingTime": "1 minuto",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Vos y hasta diez criaturas voluntarias adoptan forma gaseosa: vuelan a 300 pies, con inmunidad a derribo y resistencia al daño físico.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "transport-via-plants",
+    "name": "Viajar Mediante Plantas",
+    "source": "phb_2024",
+    "level": 6,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "10 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Vinculás mágicamente dos plantas Grandes; cualquiera puede entrar por una y salir por la otra gastando 5 pies de movimiento.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "conjure-celestial",
+    "name": "Conjurar Celestial",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un pilar de luz de 10 pies de radio y 40 de alto: elegís, por criatura afectada, luz abrasadora (6d12 radiante, salvación de Destreza) o luz sanadora (6d8 de curación).",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "mordenkainens-sword",
+    "name": "Espada de Mordenkainen",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creás una espada espectral que ataca cuerpo a cuerpo por 4d12 de fuerza más tu modificador de aptitud mágica; podés reposicionarla y volver a atacar cada turno.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "mirage-arcane",
+    "name": "Espejismo Arcano",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Ilusionismo",
+    "castingTime": "10 minutos",
+    "range": "Vista",
+    "components": "V, S",
+    "duration": "10 dias",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un cuadrado de hasta 1 milla de lado adopta el aspecto, sonido, olor y tacto de otro terreno, incluso con estructuras ilusorias, durante 10 días.",
+    "classes": [
+      "bard",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "mordenkainens-magnificent-mansion",
+    "name": "Mansión Magnífica de Mordenkainen",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Conjuración",
+    "castingTime": "1 minuto",
+    "range": "300 pies",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Abrís una puerta a una morada extradimensional amueblada donde podés refugiarte con quienes designes durante 24 horas.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "power-word-fortify",
+    "name": "Palabra de Poder: Fortalecer",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Repartís 120 PG temporales entre hasta seis criaturas que veas dentro del alcance, sin tirada de por medio.",
+    "classes": [
+      "bard",
+      "cleric"
+    ]
+  },
+  {
+    "id": "holy-word",
+    "name": "Palabra Divina",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Evocación",
+    "castingTime": "Acción Adicional",
+    "range": "30 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Salvación de Carisma para las criaturas que elijas; quienes fallen y tengan 50 PG o menos sufren un efecto según sus PG actuales (aturdir, cegar, incapacitar o matar).",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "project-image",
+    "name": "Proyectar Imagen",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "500 millas",
+    "components": "V, S, M",
+    "duration": "1 dia",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creás una copia ilusoria de vos mismo en un lugar conocido, a 500 millas o menos; podés ver y oír a través de ella, e interactuar por su voz.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "sequester",
+    "name": "Recluir",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Un objeto o criatura voluntaria tocada queda invisible e indetectable por adivinación, en animación suspendida, hasta que se cumpla una condición que fijes.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "symbol",
+    "name": "Símbolo",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Abjuración",
+    "castingTime": "1 minuto",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Inscribís un glifo dañino que se activa con una condición; salvación según el efecto elegido (aturdir, dormir, miedo y más).",
+    "classes": [
+      "bard",
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "simulacrum",
+    "name": "Simulacro",
+    "source": "phb_2024",
+    "level": 7,
+    "school": "Ilusionismo",
+    "castingTime": "12 horas",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Hasta disipar",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creás un duplicado de hielo o nieve de una criatura que conocés, con la mitad de sus PG máximos y leal a vos.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "antipathy-sympathy",
+    "name": "Antipatía/Simpatía",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Encantamiento",
+    "castingTime": "1 hora",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "10 dias",
+    "concentration": false,
+    "ritual": false,
+    "description": "Elegís un tipo de criatura y un objetivo: quienes se acerquen harán salvación de Sabiduría y, según antipatía o simpatía, huirán o quedarán atraídas.",
+    "classes": [
+      "bard",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "holy-aura",
+    "name": "Aura Sagrada",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Emanación de 30 pies: quienes elijas tienen ventaja en todas las salvaciones, y quienes los ataquen cuerpo a cuerpo tienen desventaja; los infernales y muertos vivientes que acierten pueden quedar cegados.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "clone",
+    "name": "Clon",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Nigromancia",
+    "castingTime": "1 hora",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creás un duplicado inerte de una criatura a partir de tejido tocado; si la original muere, su alma pasa al clon, que madura en 120 días.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "control-weather",
+    "name": "Controlar el Clima",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Transmutación",
+    "castingTime": "10 minutos",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": true,
+    "ritual": false,
+    "description": "Controlás el clima en 5 millas a la redonda mientras dure el conjuro: precipitación, temperatura y viento, con un cambio gradual de 1d4×10 minutos.",
+    "classes": [
+      "cleric",
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "maze",
+    "name": "Laberinto",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Destierra a una criatura a un semiplano laberíntico; puede intentar escapar con una prueba de Inteligencia (Investigación) CD 20.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "glibness",
+    "name": "Labia",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Podés sustituir el resultado de cualquier prueba de Carisma por un 15, y la magia que detecte mentiras te dará como sincero.",
+    "classes": [
+      "bard",
+      "warlock"
+    ]
+  },
+  {
+    "id": "demiplane",
+    "name": "Semiplano",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "S",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creás una puerta de sombras a un semiplano vacío de 30 pies de lado, hecho de madera o piedra a tu elección.",
+    "classes": [
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "telepathy",
+    "name": "Telepatía",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Ilimitado",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Enlace telepático sin límite de distancia (mismo plano) con una criatura voluntaria conocida: compartís palabras, imágenes y sensaciones.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "tsunami",
+    "name": "Tsunami",
+    "source": "phb_2024",
+    "level": 8,
+    "school": "Conjuración",
+    "castingTime": "1 minuto",
+    "range": "1 milla",
+    "components": "V, S",
+    "duration": "6 asaltos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Un muro de agua de hasta 300 pies de largo y alto: salvación de Fuerza contra 6d10 contundente, y avanza arrastrando todo a su paso mientras dure.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "shapechange",
+    "name": "Cambiar de Forma",
+    "source": "phb_2024",
+    "level": 9,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Asumís la forma de otra criatura con valor de desafío igual o menor al vuestro; podés cambiar de forma otra vez con una acción de magia mientras dure.",
+    "classes": [
+      "druid",
+      "wizard"
+    ]
+  },
+  {
+    "id": "power-word-heal",
+    "name": "Palabra de Poder: Sanar",
+    "source": "phb_2024",
+    "level": 9,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una criatura que veas recupera todos sus PG y se libra de asustada, aturdida, envenenada, hechizada o paralizada; si está derribada, puede levantarse con su reacción.",
+    "classes": [
+      "bard",
+      "cleric"
+    ]
+  },
+  {
+    "id": "true-polymorph",
+    "name": "Polimorfar Verdadero",
+    "source": "phb_2024",
+    "level": 9,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una criatura u objeto no mágico adopta la forma de otra criatura u objeto; si mantenés la concentración 1 hora, el cambio se vuelve permanente.",
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "storm-of-vengeance",
+    "name": "Tormenta de la Venganza",
+    "source": "phb_2024",
+    "level": 9,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "1 milla",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una nube de tormenta de 300 pies de radio: salvación de Constitución contra 2d6 de trueno y ensordecidas; cada turno siguiente produce un efecto distinto.",
+    "classes": [
+      "druid"
+    ]
   }
 ]

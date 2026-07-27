@@ -94,6 +94,49 @@ void main() {
       expect(spell('dream').range, 'Especial');
     });
 
+    test('el catálogo cubre los 388 conjuros del capítulo 7', () {
+      // Cierra Q2: trucos, nivel 1 a 9. Sin espacio para lista de deuda, así
+      // que la invariante es exacta y no un piso.
+      expect(repo.spells.length, greaterThanOrEqualTo(388));
+      final porNivel = <int, int>{};
+      for (final s in repo.spells.values) {
+        porNivel[s.level] = (porNivel[s.level] ?? 0) + 1;
+      }
+      const minimos = {0: 33, 1: 64, 2: 63, 3: 51, 4: 41, 5: 47, 6: 34, 7: 21,
+        8: 18, 9: 16};
+      minimos.forEach((nivel, min) {
+        expect(porNivel[nivel] ?? 0, greaterThanOrEqualTo(min),
+            reason: 'nivel $nivel: cobertura incompleta');
+      });
+    });
+
+    test('Invocar Feérico/Celestial no son Conjurar Feérico/Celestial', () {
+      // Cuarta y quinta repetición del mismo patrón: dos verbos en español
+      // ("invocar" para el conjuro nuevo de 2024, "conjurar" para el que
+      // sigue del 2014) sobre la misma criatura, pero son conjuros distintos
+      // con nivel y mecánica propios.
+      expect(spell('summon-fey').level, 3);
+      expect(spell('conjure-fey').level, 6);
+      expect(spell('summon-fey').id, isNot(spell('conjure-fey').id));
+
+      expect(spell('summon-celestial').level, 5);
+      expect(spell('conjure-celestial').level, 7);
+      expect(spell('summon-celestial').id, isNot(spell('conjure-celestial').id));
+    });
+
+    test('el alcance en kilómetros se convierte a millas', () {
+      // Proyectar Imagen viene en 750 km; la conversión es genérica
+      // (no solo el caso de 1,5 km que ya usaba Enjambre de Meteoros).
+      expect(spell('project-image').range, '500 millas');
+      expect(spell('storm-of-vengeance').range, '1 milla');
+    });
+
+    test('Telepatía es de alcance Ilimitado pese al OCR', () {
+      // El PDF pierde la "I" mayúscula ("Alcance: limitado"); el texto del
+      // conjuro confirma que no hay límite de distancia dentro del plano.
+      expect(spell('telepathy').range, 'Ilimitado');
+    });
+
     test('Hechizar Monstruo y Dominar Monstruo son conjuros distintos', () {
       // "Hechizar Monstruo" (charm-monster, nivel 4) no es una versión menor
       // de "Dominar Monstruo" (dominate-monster, nivel 8): son dos conjuros

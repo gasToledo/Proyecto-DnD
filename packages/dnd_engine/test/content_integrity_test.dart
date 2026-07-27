@@ -82,7 +82,10 @@ void main() {
       for (final e in repo.spells.values) 'conjuro ${e.id}': e.source,
     };
     sources.forEach((label, source) {
-      expect(source, anyOf(ContentSource.srd2024, ContentSource.phb2024),
+      expect(
+          source,
+          anyOf(ContentSource.srd2024, ContentSource.phb2024,
+              ContentSource.foa2025),
           reason: '$label: procedencia inesperada');
     });
   });

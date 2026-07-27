@@ -313,31 +313,31 @@ class Character {
   }
 
   /// Cuatro conjuros del catálogo quedaron con un identificador inglés que no
-/// era el suyo: el nombre y las reglas eran correctos, pero el id apuntaba a
-/// otro conjuro. Corregirlo en el pack dejaría huérfana la elección de una
-/// ficha guardada, así que la ficha se reescribe al abrirla.
-static const Map<String, String> _spellIdRenames3to4 = {
-  'negative-energy-flood': 'antilife-shell',
-  'bless-the-ground': 'hallow',
-  'fabricate-shadow': 'creation',
-  // Los dos de Conjurar intercambian id, así que el orden del mapa no alcanza:
-  // se resuelven contra el mapa original, nunca en cadena.
-  'conjure-volley': 'conjure-barrage',
-  'conjure-volley-arrows': 'conjure-volley',
-};
+  /// era el suyo: el nombre y las reglas eran correctos, pero el id apuntaba a
+  /// otro conjuro. Corregirlo en el pack dejaría huérfana la elección de una
+  /// ficha guardada, así que la ficha se reescribe al abrirla.
+  static const Map<String, String> _spellIdRenames3to4 = {
+    'negative-energy-flood': 'antilife-shell',
+    'bless-the-ground': 'hallow',
+    'fabricate-shadow': 'creation',
+    // Los dos de Conjurar intercambian id, así que el orden del mapa no alcanza:
+    // se resuelven contra el mapa original, nunca en cadena.
+    'conjure-volley': 'conjure-barrage',
+    'conjure-volley-arrows': 'conjure-volley',
+  };
 
-static void _renameSpellIds(
-    Map<String, dynamic> j, Map<String, String> renames) {
-  for (final key in const ['cantripIds', 'spellIds']) {
-    final list = j[key];
-    if (list is! List) continue;
-    j[key] = [
-      for (final id in list) id is String ? (renames[id] ?? id) : id,
-    ];
+  static void _renameSpellIds(
+      Map<String, dynamic> j, Map<String, String> renames) {
+    for (final key in const ['cantripIds', 'spellIds']) {
+      final list = j[key];
+      if (list is! List) continue;
+      j[key] = [
+        for (final id in list) id is String ? (renames[id] ?? id) : id,
+      ];
+    }
   }
-}
 
-/// Lleva una ficha histórica al esquema actual sin modificar el mapa de
+  /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
   /// entrada. Cada paso se conserva explícito para que las próximas versiones
   /// puedan encadenarse sin saltos.
   static Map<String, dynamic> migrateJson(Map<String, dynamic> source) {

@@ -1206,5 +1206,777 @@
       "minLevel": 4,
       "requiredProficiency": "spellcasting"
     }
+  },
+  {
+    "id": "aberrant-dragonmark",
+    "name": "Marca Dracónica Aberrante",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Fortaleza Aberrante",
+        "description": "Cuando fallás una salvación de Constitución, podés usar tu reacción para tirar 1d4 y sumarlo a la salvación, con lo que quizá la conviertas en un éxito. Una vez por descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Magia Aberrante",
+        "description": "Conocés un truco de la lista de Hechicero a tu elección. Además elegís un conjuro de nivel 1 de esa lista: lo tenés siempre preparado, podés lanzarlo gratis una vez por descanso corto o largo, y también con espacios. Tu aptitud mágica para ese conjuro es Constitución."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Oleada Aberrante",
+        "description": "Al lanzar el conjuro de nivel 1 de esta dote podés gastar un dado de golpe y tirarlo. Con par ganás esos PG temporales; con impar, una criatura a 30 pies (no vos) recibe ese daño de fuerza. Si no hay otra criatura a alcance, el daño lo recibís vos."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-detection",
+    "name": "Marca de Detección",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Deductiva",
+        "description": "Cuando hacés una prueba de Inteligencia (Investigación) o Sabiduría (Perspicacia), podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Detección Mágica",
+        "description": "Tenés siempre preparados Detectar Magia y Detectar Venenos y Enfermedades. Podés lanzar cada uno gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote). A nivel 3 sumás Ver Invisibilidad en las mismas condiciones."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Detectar el Bien y el Mal, Identificar; Nivel 2: Detectar Pensamientos, Detectar Trampas; Nivel 3: Clarividencia, Indetectable; Nivel 4: Ojo Arcano, Adivinación; Nivel 5: Conocer las Leyendas."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-finding",
+    "name": "Marca de Hallazgo",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición del Cazador",
+        "description": "Cuando hacés una prueba de Sabiduría (Percepción o Supervivencia), podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Magia del Rastreador",
+        "description": "Tenés siempre preparado Marca del Cazador. Podés lanzarlo gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote). A nivel 3 sumás Localizar Objeto en las mismas condiciones."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Fuego Feérico, Zancada Prodigiosa; Nivel 2: Localizar Animales o Plantas, Clavo Mental; Nivel 3: Clarividencia, Hablar con las Plantas; Nivel 4: Adivinación, Localizar Criatura; Nivel 5: Comunión con la Naturaleza."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-handling",
+    "name": "Marca de Manejo",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Salvaje",
+        "description": "Cuando hacés una prueba de Inteligencia (Naturaleza) o Sabiduría (Trato con Animales), podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conexión Primigenia",
+        "description": "Tenés siempre preparados Encantar Animal y Hablar con los Animales. Podés lanzar cada uno gratis una vez por descanso largo, y también con espacios. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Vínculos Monstruosos",
+        "description": "A nivel 3 podés apuntar a una monstruosidad con Encantar Animal o Hablar con los Animales si su Inteligencia es 3 o menos."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Orden Imperiosa, Encontrar Familiar; Nivel 2: Sentidos de la Bestia, Calmar Emociones; Nivel 3: Señal de Esperanza, Conjurar Animales; Nivel 4: Aura de Vida, Dominar Bestia; Nivel 5: Despertar."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-healing",
+    "name": "Marca de Sanación",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Médica",
+        "description": "Cuando hacés una prueba de Sabiduría (Medicina) o una prueba con un kit de herboristería, podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Toque Sanador",
+        "description": "Tenés siempre preparado Curar Heridas. Podés lanzarlo gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote). A nivel 3 sumás Restablecimiento Menor en las mismas condiciones."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Falsa Vida, Palabra de Curación; Nivel 2: Vigor Arcano, Plegaria de Curación; Nivel 3: Aura de Vitalidad, Palabra de Curación en Masa; Nivel 4: Aura de Vida, Aura de Pureza; Nivel 5: Restablecimiento Mayor."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-hospitality",
+    "name": "Marca de Hospitalidad",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Siempre Hospitalario",
+        "description": "Cuando hacés una prueba de Carisma (Persuasión) o una prueba con útiles de cervecero o de cocinero, podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Magia del Posadero",
+        "description": "Tenés siempre preparados Purificar Comida y Bebida y Sirviente Invisible. Podés lanzar cada uno gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote). A nivel 3 sumás Calmar Emociones en las mismas condiciones."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Buenas Bayas, Dormir; Nivel 2: Auxilio, Potenciar Característica; Nivel 3: Crear Comida y Agua, Pequeña Choza de Leomund; Nivel 4: Aura de Pureza, Sanctasanctórum Privado de Mordenkainen; Nivel 5: Consagrar."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-making",
+    "name": "Marca de Creación",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición del Artesano",
+        "description": "Cuando hacés una prueba de Inteligencia (Arcanos) o una prueba con herramientas de artesano, podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Herrero de Conjuros",
+        "description": "Conocés el truco Reparar. Además tenés siempre preparado Arma Mágica: podés lanzarlo gratis una vez por descanso largo, y también con espacios. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Identificar, Disco Flotante de Tenser; Nivel 2: Llama Permanente, Arma Espiritual; Nivel 3: Conjurar Descarga de Proyectiles, Arma Elemental; Nivel 4: Fabricar, Moldear la Piedra; Nivel 5: Creación."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-passage",
+    "name": "Marca de Tránsito",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Movimiento Intuitivo",
+        "description": "Cuando hacés una prueba de Fuerza (Atletismo) o Destreza (Acrobacias), podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tránsito Mágico",
+        "description": "Tenés siempre preparado Paso Brumoso. Podés lanzarlo gratis una vez por descanso largo, y también con espacios. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Velocidad del Mensajero",
+        "description": "Tu velocidad aumenta 5 pies."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Retirada Expeditiva, Salto; Nivel 2: Hallar Corcel, Pasar sin Rastro; Nivel 3: Desplazamiento, Corcel Fantasma; Nivel 4: Puerta Dimensional, Libertad de Movimiento; Nivel 5: Círculo de Teletransportación."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-scribing",
+    "name": "Marca de Escritura",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Escriba Dotado",
+        "description": "Cuando hacés una prueba de Inteligencia (Historia) o una prueba con útiles de caligrafía, podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Perspicacia del Escriba",
+        "description": "Conocés el truco Mensaje. Además tenés siempre preparado Entender Idiomas: podés lanzarlo gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote). A nivel 3 sumás Boca Mágica en las mismas condiciones."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Orden Imperiosa, Texto Ilusorio; Nivel 2: Mensajero Animal, Silencio; Nivel 3: Recado, Don de Lenguas; Nivel 4: Ojo Arcano, Confusión; Nivel 5: Ensueño."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-sentinel",
+    "name": "Marca de Centinela",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición del Centinela",
+        "description": "Cuando hacés una prueba de Sabiduría (Perspicacia o Percepción), podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Escudo del Guardián",
+        "description": "Tenés siempre preparado Escudo. Podés lanzarlo gratis una vez por descanso largo, y también con espacios. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Guardián Vigilante",
+        "description": "Cuando una criatura que ves a 5 pies o menos recibe un impacto, podés usar tu reacción para intercambiar posiciones con ella y recibir vos el ataque. Tantas veces como tu bonif. de competencia, y se recuperan con un descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Duelo Forzado, Escudo de Fe; Nivel 2: Vínculo Protector, Zona de la Verdad; Nivel 3: Contrahechizo, Protección contra Energía; Nivel 4: Guarda contra la Muerte, Guardián de la Fe; Nivel 5: Mano de Bigby."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-shadow",
+    "name": "Marca de Sombra",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Astuta",
+        "description": "Cuando hacés una prueba de Destreza (Sigilo) o Carisma (Interpretación), podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Moldear Sombras",
+        "description": "Conocés el truco Ilusión Menor. Además tenés siempre preparado Invisibilidad: podés lanzarlo gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Disfrazarse, Imagen Silenciosa; Nivel 2: Oscuridad, Pasar sin Rastro; Nivel 3: Clarividencia, Imagen Mayor; Nivel 4: Invisibilidad Mejorada, Terreno Alucinatorio; Nivel 5: Engañar."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-storm",
+    "name": "Marca de Tormenta",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición del Timonel",
+        "description": "Cuando hacés una prueba de Destreza (Acrobacias) o una prueba con útiles de navegante, podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Magia de Tormenta",
+        "description": "Conocés el truco Tronar. A nivel 3 tenés además siempre preparado Ráfaga de Viento: podés lanzarlo gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Don de la Tormenta",
+        "description": "Tenés resistencia al daño de relámpago."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Caída de Pluma, Nube de Oscurecimiento; Nivel 2: Levitar, Hacer Añicos; Nivel 3: Tormenta de Aguanieve, Muro de Viento; Nivel 4: Conjurar Elementales Menores, Controlar Agua; Nivel 5: Conjurar Elemental."
+      }
+    ]
+  },
+  {
+    "id": "mark-of-warding",
+    "name": "Marca de Guarda",
+    "source": "foa_2025",
+    "category": "dragonmark",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intuición del Guardián",
+        "description": "Cuando hacés una prueba de Inteligencia (Investigación) o una prueba con herramientas de ladrón, podés tirar 1d4 y sumarlo a la prueba."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Guardas y Sellos",
+        "description": "Tenés siempre preparados Alarma y Armadura de Mago. Podés lanzar cada uno gratis una vez por descanso largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote). A nivel 3 sumás Cerradura Arcana en las mismas condiciones."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Conjuros de la Marca",
+        "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Armadura de Agathys, Santuario; Nivel 2: Abrir, Aura Mágica de Nystul; Nivel 3: Glifo Custodio, Círculo Mágico; Nivel 4: Cofre Oculto de Leomund, Mastín Fiel de Mordenkainen; Nivel 5: Caparazón Antivida."
+      }
+    ]
+  },
+  {
+    "id": "greater-aberrant-mark",
+    "name": "Marca Aberrante Mayor",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "constitution",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Fortaleza Mejorada",
+        "description": "Cuando usás Fortaleza Aberrante podés tirar 1d6 en vez de 1d4, y la recuperás con un descanso corto o largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Marca de Inspiración",
+        "description": "Al lanzar un truco podés tirar uno o dos de tus dados de golpe sin gastar. Ganás PG temporales iguales a lo tirado más tu modificador por Constitución, y una criatura a tu elección a 30 pies (no vos) recibe ese daño de fuerza. Esos dados quedan gastados. Tantas veces como tu bonif. de competencia, y se recuperan con un descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "aberrant-dragonmark"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-detection",
+    "name": "Marca Mayor de Detección",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición Deductiva de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Detección Compartida",
+        "description": "Cuando usás Detección Mágica para lanzar Ver Invisibilidad sin espacio, podés elegir una criatura que veas a 30 pies: también recibe los efectos del conjuro mientras dure."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-detection"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-finding",
+    "name": "Marca Mayor de Hallazgo",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición del Cazador de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Rastreo Mejorado",
+        "description": "Cuando usás Magia del Rastreador para lanzar Marca del Cazador sin espacio, el alcance del conjuro se duplica y podés modificarlo para que el objetivo no se beneficie de la condición invisible mientras dure."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-finding"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-handling",
+    "name": "Marca Mayor de Manejo",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición Salvaje de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Manejo Mejorado",
+        "description": "Mientras estás montado, apenas impactás con un ataque cuerpo a cuerpo a un objetivo a 5 pies o menos de tu montura, esta puede usar su reacción para moverse hasta su velocidad o hacer un único ataque (a tu elección). Además, como acción mágica, una bestia o monstruosidad que veas a 30 pies debe superar una salvación de Sabiduría (CD 8 + tu mod. de Sabiduría + tu bonif. de competencia) o quedar asustada hasta el inicio de tu próximo turno; tantas veces como tu bonif. de competencia por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-handling"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-healing",
+    "name": "Marca Mayor de Sanación",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición Médica de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Sanación Mejorada",
+        "description": "Podés usar Toque Sanador para lanzar Curar Heridas sin espacio tantas veces como tu bonif. de competencia, y se recuperan con un descanso largo. Además, al tirar los dados de curación de Curar Heridas, cada 1 o 2 cuenta como 3."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-healing"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-hospitality",
+    "name": "Marca Mayor de Hospitalidad",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Siempre Hospitalario de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Hospitalidad Inspirada",
+        "description": "Al lanzar Purificar Comida y Bebida podés modificarlo para que, en vez de su efecto normal, cada criatura a tu elección a 30 pies se reponga: baja 1 su nivel de agotamiento y gana PG temporales iguales a tu bonif. de competencia más tu modificador por Inteligencia, Sabiduría o Carisma (se elige al tomar la dote). Una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-hospitality"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-making",
+    "name": "Marca Mayor de Creación",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición del Artesano de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Creación Mejorada",
+        "description": "Cuando usás Herrero de Conjuros para lanzar Arma Mágica sin espacio, lo lanzás como si fuera de nivel 3."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-making"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-passage",
+    "name": "Marca Mayor de Tránsito",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Movimiento Intuitivo de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tránsito Inspirado",
+        "description": "Cuando usás Tránsito Mágico para lanzar Paso Brumoso sin espacio, antes de teletransportarte podés elegir hasta dos criaturas voluntarias que veas a 30 pies. Cada una puede usar su reacción para teletransportarse hasta 30 pies a un espacio libre que vea."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-passage"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-scribing",
+    "name": "Marca Mayor de Escritura",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Escriba Dotado de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Escritura Inspirada",
+        "description": "Al lanzar Entender Idiomas podés modificarlo para abarcar hasta tres criaturas voluntarias que veas a 30 pies: también reciben los efectos mientras dure. Además, mientras dure el conjuro, vos y ellas pueden comunicarse telepáticamente estando a 1 milla o menos. Una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-scribing"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-sentinel",
+    "name": "Marca Mayor de Centinela",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición del Centinela de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Centinela Mejorado",
+        "description": "Cuando usás Guardián Vigilante, podés además hacer un ataque con un arma o sin armas como parte de esa misma reacción."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-sentinel"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-shadow",
+    "name": "Marca Mayor de Sombra",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición Astuta de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Sombra Mejorada",
+        "description": "Cuando usás Moldear Sombras para lanzar Invisibilidad sin espacio, lo lanzás como si fuera de nivel 3."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-shadow"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-storm",
+    "name": "Marca Mayor de Tormenta",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición del Timonel de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tormenta Mejorada",
+        "description": "Cuando usás Magia de Tormenta para lanzar Ráfaga de Viento sin espacio, ganás además velocidad de vuelo 60 pies mientras dure el conjuro."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-storm"
+      ]
+    }
+  },
+  {
+    "id": "greater-mark-of-warding",
+    "name": "Marca Mayor de Guarda",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Intuición Mejorada",
+        "description": "Cuando usás Intuición del Guardián de tu dote base, podés tirar 1d6 en vez de 1d4."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Guarda Mejorada",
+        "description": "Cuando una criatura hace una tirada de ataque contra vos o contra alguien que veas a 30 pies, podés usar tu reacción para imponerle desventaja. Tantas veces como tu bonif. de competencia, y se recuperan con un descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatIds": [
+        "mark-of-warding"
+      ]
+    }
+  },
+  {
+    "id": "potent-dragonmark",
+    "name": "Marca Dracónica Potente",
+    "source": "foa_2025",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 la característica de lanzamiento que usa tu dote de marca, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Preparación de la Marca",
+        "description": "Tenés siempre preparados los conjuros de tu lista de Conjuros de la Marca, si la tenés."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Lanzamiento de la Marca",
+        "description": "Tenés un espacio de conjuro adicional para los conjuros que te da tu dote de marca. Su nivel es la mitad de tu nivel redondeando hacia arriba, hasta un máximo de nivel 5, y se recupera con un descanso corto o largo. Solo sirve para conjuros preparados por tu dote de marca o por Preparación de la Marca."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4,
+      "requiredFeatCategory": "dragonmark"
+    }
+  },
+  {
+    "id": "boon-of-siberys",
+    "name": "Bendición de Siberys",
+    "source": "foa_2025",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Aumento de Característica",
+        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 30."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Magia Aberrante",
+        "description": "Elegís un conjuro de nivel 8 o menor de la lista de Hechicero, o uno de la tabla de conjuros de marca de Siberys: Aspectos Animales, Controlar el Clima, Semiplano, Festín de Héroes, Laberinto, Mente en Blanco, Desplazamiento entre Planos, Proyectar Imagen, Regenerar, Símbolo, Teletransporte, Visión Veraz. Lo tenés siempre preparado, podés lanzarlo gratis y sin componentes una vez por descanso corto o largo, y también con espacios del nivel adecuado. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
   }
 ]

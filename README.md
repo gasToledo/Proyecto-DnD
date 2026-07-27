@@ -33,9 +33,12 @@ La última versión publicada está en
   57 dotes, 35 armas, 13 armaduras y 177 conjuros.
 - Subida de nivel con elección de subclase, mejora de característica o dote,
   gestión de conjuros y resumen de cambios.
-- Ficha de juego con daño, curación, PG temporales, descansos, condiciones,
-  salvaciones de muerte, recursos, concentración y espacios de conjuro.
-- Inventario, notas, competencias, ataques y maestrías de armas.
+- Ficha con panel lateral fijo (Personaje, Combate, Inventario, Notas) y
+  contenido en tarjetas por sección, con daño, curación, PG temporales,
+  descansos, condiciones, salvaciones de muerte, recursos, concentración y
+  espacios de conjuro.
+- Listado completo de habilidades y salvaciones con su modificador y
+  competencia, inventario, notas, ataques y maestrías de armas.
 - Retratos generados por IA mediante Pollinations, Hugging Face o Gemini.
 - Homebrew para armas, armaduras, dotes, especies, trasfondos y conjuros.
 - Exportación individual e importación compatible con formatos anteriores.
@@ -89,9 +92,12 @@ el homebrew recorren la misma maquinaria. La UI consume la ficha calculada y no
 duplica las reglas.
 
 El código actual también incorpora una fase de mantenibilidad: los ocho pasos
-del asistente, las cinco pestañas de la ficha, el flujo de subida de nivel, el
+del asistente, las secciones de la ficha, el flujo de subida de nivel, el
 dashboard y los formularios de homebrew están separados por responsabilidad,
 con pruebas de regresión para preservar sus flujos.
+
+La ficha y el dashboard comparten el mismo patrón de navegación: panel lateral
+fijo en ventanas anchas, que se colapsa a un menú desplegable en las angostas.
 
 ## Desarrollo
 

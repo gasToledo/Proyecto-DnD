@@ -137,7 +137,9 @@ void main() {
       expect(warnings.map((w) => w.code), contains('skill_choice_duplicate'));
     });
 
-    test('habilidad fuera de las listas de raza/clase advierte skill_choice_invalid', () {
+    test(
+        'habilidad fuera de las listas de raza/clase advierte skill_choice_invalid',
+        () {
       final c = _minimalCharacter(chosenSkills: ['athletics', 'medicine']);
       final warnings = CharacterValidator(repo).validate(c);
       expect(warnings.map((w) => w.code), contains('skill_choice_invalid'));
@@ -183,6 +185,36 @@ void main() {
       expect(warnings.map((w) => w.code), isNot(contains('feat_prerequisite')));
     });
 
+    test('prerrequisito disyuntivo: basta cumplir una de las dos', () {
+      // El PHB 2024 escribe "Fuerza o Destreza 13 o más"; con el mapa
+      // conjuntivo esto no se podía expresar sin exigir las dos.
+      Map<Ability, int> scores(int str, int dex) => {
+            Ability.strength: str,
+            Ability.dexterity: dex,
+            Ability.constitution: 10,
+            Ability.intelligence: 10,
+            Ability.wisdom: 10,
+            Ability.charisma: 10,
+          };
+      final repoAny = _minimalRepo(featOverrides: {
+        'prerequisite': {
+          'anyAbilityScores': {'strength': 13, 'dexterity': 13},
+        },
+      });
+      List<String> codesFor(int str, int dex) => CharacterValidator(repoAny)
+          .validate(_minimalCharacter(
+              featIds: ['test-feat'], assignedScores: scores(str, dex)))
+          .map((w) => w.code)
+          .toList();
+
+      expect(codesFor(13, 8), isNot(contains('feat_prerequisite')),
+          reason: 'alcanza con Fuerza');
+      expect(codesFor(8, 13), isNot(contains('feat_prerequisite')),
+          reason: 'alcanza con Destreza');
+      expect(codesFor(8, 8), contains('feat_prerequisite'),
+          reason: 'ninguna de las dos llega a 13');
+    });
+
     test('el motor sigue sin bloquear pese a las advertencias', () {
       final c = _minimalCharacter(chosenSkills: const []);
       expect(() => CharacterCompiler(repo).compile(c), returnsNormally);
@@ -207,7 +239,56 @@ void main() {
         'asi_invalid_level',
         'feat_prerequisite',
       };
-      expect(warnings.map((w) => w.code).toSet().intersection(newCodes), isEmpty);
+      expect(
+          warnings.map((w) => w.code).toSet().intersection(newCodes), isEmpty);
+    });
+
+    test('Bardo acepta cualquier habilidad válida cuando su lista está vacía',
+        () {
+      final json = sagan().toJson()
+        ..['raceId'] = 'elf'
+        ..['lineageId'] = 'elf-drow'
+        ..['classId'] = 'bard'
+        ..['chosenSkills'] = const [
+          'persuasion',
+          'deception',
+          'insight',
+          'perception',
+        ];
+      final bard = Character.fromJson(json);
+
+      final warnings = CharacterValidator(repo).validate(bard);
+
+      expect(
+        warnings.map((warning) => warning.code),
+        isNot(contains('skill_choice_invalid')),
+      );
+      expect(
+        warnings.map((warning) => warning.code),
+        isNot(contains('skill_choice_count')),
+      );
+    });
+
+    test('Bardo sigue rechazando un identificador de habilidad desconocido',
+        () {
+      final json = sagan().toJson()
+        ..['raceId'] = 'elf'
+        ..['lineageId'] = 'elf-drow'
+        ..['classId'] = 'bard'
+        ..['chosenSkills'] = const [
+          'persuasion',
+          'deception',
+          'insight',
+          'not-a-skill',
+        ];
+      final bard = Character.fromJson(json);
+
+      final warnings = CharacterValidator(repo).validate(bard);
+
+      expect(
+        warnings.map((warning) => warning.code),
+        contains('skill_choice_invalid'),
+      );
     });
   });
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "espada-fixture",
+    "name": "Espada histórica",
+    "source": "homebrew",
+    "category": "martial",
+    "damageDice": "1d8",
+    "damageType": "slashing",
+    "properties": [],
+    "mastery": null
+  }
+]

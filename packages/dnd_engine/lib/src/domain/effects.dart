@@ -53,12 +53,10 @@ sealed class Effect {
           description: json['description'] as String? ?? '',
         ),
       'grantFeat' => GrantFeatEffect(featId: json['featId'] as String?),
-      'weaponMasterySlots' =>
-        WeaponMasterySlotsEffect(json['count'] as int),
+      'weaponMasterySlots' => WeaponMasterySlotsEffect(json['count'] as int),
       'extraAttack' => ExtraAttackEffect(json['extra'] as int),
       'bonusMaxHpFlat' => BonusMaxHpFlatEffect(json['amount'] as int),
-      'bonusMaxHpPerLevel' =>
-        BonusMaxHpPerLevelEffect(json['perLevel'] as int),
+      'bonusMaxHpPerLevel' => BonusMaxHpPerLevelEffect(json['perLevel'] as int),
       'armorClassBonus' => ArmorClassBonusEffect(json['amount'] as int),
       'unarmoredDefense' => UnarmoredDefenseEffect(
           Ability.fromKey(json['ability'] as String),
@@ -71,8 +69,10 @@ sealed class Effect {
         ),
       'spellcasting' => SpellcastingEffect(
           ability: Ability.fromKey(json['ability'] as String),
-          progression: CasterProgression.fromJson(json['progression'] as String?),
-          preparation: SpellPreparation.fromJson(json['preparation'] as String?),
+          progression:
+              CasterProgression.fromJson(json['progression'] as String?),
+          preparation:
+              SpellPreparation.fromJson(json['preparation'] as String?),
           spellList: json['spellList'] as String,
           cantripsKnown: json['cantripsKnown'] as int? ?? 0,
         ),
@@ -83,6 +83,11 @@ sealed class Effect {
           recharge: _rechargeFromJson(json['recharge'] as String?),
           description: json['description'] as String? ?? '',
           maxPerLevel: json['maxPerLevel'] as bool? ?? false,
+        ),
+      'grantSpell' => GrantSpellEffect(
+          spellId: json['spellId'] as String,
+          ability: Ability.fromKey(json['ability'] as String),
+          use: InnateSpellUse.fromJson(json['use'] as String?),
         ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
@@ -203,6 +208,31 @@ class GrantFeatEffect extends Effect {
   Map<String, dynamic> toJson() => {'type': 'grantFeat', 'featId': featId};
 }
 
+/// Concede un conjuro concreto por fuera de la magia de clase (linajes de
+/// especie, dotes). La característica de lanzamiento la fija el contenido: los
+/// linajes 2024 dejan elegirla, pero eso todavía no se modela.
+///
+/// Si [use] es `oncePerLongRest`, el compilador además crea el recurso que
+/// registra ese uso gratuito, para que la ficha lo muestre y lo gaste como
+/// cualquier otro.
+class GrantSpellEffect extends Effect {
+  final String spellId;
+  final Ability ability;
+  final InnateSpellUse use;
+  const GrantSpellEffect({
+    required this.spellId,
+    required this.ability,
+    this.use = InnateSpellUse.atWill,
+  });
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'grantSpell',
+        'spellId': spellId,
+        'ability': ability.name,
+        'use': use.toJson(),
+      };
+}
+
 /// Cantidad de armas en las que se puede elegir Maestría (Guerrero 2024: 3).
 class WeaponMasterySlotsEffect extends Effect {
   final int count;
@@ -224,8 +254,7 @@ class BonusMaxHpFlatEffect extends Effect {
   final int amount;
   const BonusMaxHpFlatEffect(this.amount);
   @override
-  Map<String, dynamic> toJson() =>
-      {'type': 'bonusMaxHpFlat', 'amount': amount};
+  Map<String, dynamic> toJson() => {'type': 'bonusMaxHpFlat', 'amount': amount};
 }
 
 /// PG máximos adicionales por nivel de personaje (p.ej. dote Robustez).

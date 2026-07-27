@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/data/character_store.dart';
 import 'package:dnd_app/data/characters_controller.dart';
+import 'package:dnd_app/data/data_recovery.dart';
 import 'package:dnd_app/data/transfer_service.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,9 +11,20 @@ import 'package:flutter_test/flutter_test.dart';
 class _FakeStore implements CharacterStore {
   final Map<String, Character> saved = {};
   @override
+  final List<DataRecoveryIssue> recoveryIssues = [];
+  @override
+  final List<DataMigrationBackup> migrationBackups = [];
+  @override
   Future<List<Character>> loadAll() async => saved.values.toList();
   @override
   Future<void> save(Character c) async => saved[c.id] = c;
+  @override
+  Future<void> saveAll(Iterable<Character> characters) async {
+    for (final character in characters) {
+      saved[character.id] = character;
+    }
+  }
+
   @override
   Future<void> delete(String id) async => saved.remove(id);
   @override
@@ -50,8 +62,83 @@ void main() {
     });
 
     test('rechaza un formato desconocido', () {
-      expect(() => TransferService.parseImport('{"type":"otra_cosa"}'),
-          throwsFormatException);
+      expect(
+        () => TransferService.parseImport('{"type":"otra_cosa"}'),
+        throwsFormatException,
+      );
+    });
+
+    test('rechaza envoltorios JSON de una versión futura', () {
+      final future = jsonEncode({
+        'type': 'dnd_character',
+        'formatVersion': TransferService.formatVersion + 1,
+        'character': demoSagan().toJson(),
+      });
+
+      expect(
+        () => TransferService.parseImport(future),
+        throwsA(isA<UnsupportedDataVersionException>()),
+      );
+    });
+
+    test('rechaza ids que podrían escapar de la carpeta de datos', () {
+      final json = demoSagan().toJson()..['id'] = '../fuera';
+      expect(
+        () => TransferService.parseImport(jsonEncode(json)),
+        throwsFormatException,
+      );
+    });
+  });
+
+  group('parseHomebrewImport', () {
+    test('lee un pack de homebrew y devuelve listas por tipo', () {
+      final text = jsonEncode({
+        'type': 'dnd_homebrew',
+        'formatVersion': 1,
+        'content': {
+          'weapons': [
+            {
+              'id': 'hb-sword',
+              'name': 'Espada rúnica',
+              'source': 'homebrew',
+              'category': 'martial',
+              'damageDice': '1d8',
+              'damageType': 'cortante',
+            },
+          ],
+          'feats': [
+            {'id': 'hb-feat', 'name': 'Dote casera', 'source': 'homebrew'},
+          ],
+        },
+      });
+      final parsed = TransferService.parseHomebrewImport(text);
+      expect(parsed['weapons'], hasLength(1));
+      expect(parsed['feats'], hasLength(1));
+      // Los tipos ausentes vienen como listas vacías, no null.
+      expect(parsed['spells'], isEmpty);
+      // Round-trip a modelo del engine.
+      expect(Weapon.fromJson(parsed['weapons']!.first).name, 'Espada rúnica');
+    });
+
+    test('rechaza un archivo que no es homebrew', () {
+      final text = jsonEncode({'type': 'dnd_character', 'character': {}});
+      expect(
+        () => TransferService.parseHomebrewImport(text),
+        throwsFormatException,
+      );
+    });
+
+    test('rechaza un pack homebrew de versión futura', () {
+      final text = jsonEncode({
+        'type': 'dnd_homebrew',
+        'formatVersion': TransferService.formatVersion + 1,
+        'content': const <String, dynamic>{},
+      });
+
+      expect(
+        () => TransferService.parseHomebrewImport(text),
+        throwsA(isA<UnsupportedDataVersionException>()),
+      );
     });
   });
 

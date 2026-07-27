@@ -73,10 +73,12 @@ void main() {
     });
 
     test('salvaciones de Guerrero', () {
-      expect(s.savingThrowProficiencies, containsAll([
-        Ability.strength,
-        Ability.constitution,
-      ]));
+      expect(
+          s.savingThrowProficiencies,
+          containsAll([
+            Ability.strength,
+            Ability.constitution,
+          ]));
     });
 
     test('Maestría de Armas: 3 espacios', () {
@@ -161,8 +163,8 @@ void main() {
       final b = compiler.compile(restored);
       expect(b.maxHp, a.maxHp);
       expect(b.armorClass, a.armorClass);
-      expect(b.abilityScores[Ability.strength],
-          a.abilityScores[Ability.strength]);
+      expect(
+          b.abilityScores[Ability.strength], a.abilityScores[Ability.strength]);
       expect(b.attacks.single.mastery, a.attacks.single.mastery);
     });
   });
@@ -172,7 +174,10 @@ void main() {
       // 4 maestrías elegidas cuando solo hay 3 espacios.
       final json = sagan().toJson();
       json['weaponMasteryChoices'] = [
-        'longsword', 'greatsword', 'dagger', 'shortbow'
+        'longsword',
+        'greatsword',
+        'dagger',
+        'shortbow'
       ];
       final over = Character.fromJson(json);
 
@@ -189,6 +194,58 @@ void main() {
           CharacterValidator(repo).validate(Character.fromJson(json));
       expect(
           warnings.map((w) => w.code), isNot(contains('armor_not_proficient')));
+    });
+  });
+
+  group('La maestría de armas requiere competencia (2024)', () {
+    /// Pícaro: tiene espacios de maestría, y su competencia con armas marciales
+    /// es por id (estoque, espada corta, cimitarra, látigo) en vez de por
+    /// categoría. Sirve para probar los dos caminos de `weaponProficiencies`.
+    Character rogue(String weaponId) => Character(
+          id: 'probe-mastery',
+          name: 'Prueba',
+          raceId: 'human',
+          classId: 'rogue',
+          backgroundId: 'soldier',
+          level: 1,
+          assignedScores: {
+            Ability.strength: 12,
+            Ability.dexterity: 15,
+            Ability.constitution: 14,
+            Ability.intelligence: 13,
+            Ability.wisdom: 10,
+            Ability.charisma: 10,
+          },
+          weaponMasteryChoices: [weaponId],
+          hpPerLevel: const [8],
+          equippedWeaponIds: [weaponId],
+        );
+
+    test('Sagan conserva la maestría: es competente con marciales', () {
+      final a = compiler.compile(sagan()).attacks.single;
+      expect(a.mastery, 'sap');
+    });
+
+    test('sin competencia con el arma, la maestría no se aplica', () {
+      // La espada larga es marcial y no figura en la lista del Pícaro.
+      final s = compiler.compile(rogue('longsword'));
+      expect(s.weaponProficiencies, isNot(contains('martial')));
+      expect(s.attacks.single.mastery, isNull);
+    });
+
+    test('advierte cuando la maestría elegida no se aplica', () {
+      final warnings = CharacterValidator(repo).validate(rogue('longsword'));
+      expect(warnings.map((w) => w.code), contains('mastery_not_proficient'));
+    });
+
+    test('la competencia por id del arma también habilita la maestría', () {
+      // El estoque es marcial pero está listado por id en el Pícaro: el chequeo
+      // mira la ficha compilada, no solo la categoría.
+      final s = compiler.compile(rogue('rapier'));
+      expect(s.attacks.single.mastery, 'vex');
+      final warnings = CharacterValidator(repo).validate(rogue('rapier'));
+      expect(warnings.map((w) => w.code),
+          isNot(contains('mastery_not_proficient')));
     });
   });
 }

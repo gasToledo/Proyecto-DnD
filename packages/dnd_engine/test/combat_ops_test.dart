@@ -53,9 +53,15 @@ void main() {
   group('Descansos', () {
     final resources = [
       const CharacterResource(
-          id: 'second_wind', name: 'Segundo Aliento', max: 2, recharge: RechargeOn.shortRest),
+          id: 'second_wind',
+          name: 'Segundo Aliento',
+          max: 2,
+          recharge: RechargeOn.shortRest),
       const CharacterResource(
-          id: 'action_surge', name: 'Oleada de Acción', max: 1, recharge: RechargeOn.shortRest),
+          id: 'action_surge',
+          name: 'Oleada de Acción',
+          max: 1,
+          recharge: RechargeOn.shortRest),
     ];
 
     test('descanso corto recupera recursos de recarga corta', () {
@@ -68,7 +74,8 @@ void main() {
     });
 
     test('descanso largo restaura PG, agotamiento y dados de golpe', () {
-      final c = CombatState(currentHp: 3, tempHp: 4, exhaustion: 2, hitDiceUsed: 4);
+      final c =
+          CombatState(currentHp: 3, tempHp: 4, exhaustion: 2, hitDiceUsed: 4);
       CombatOps.longRest(c, 20, resources, 4);
       expect(c.currentHp, 20);
       expect(c.tempHp, 0);
@@ -77,7 +84,8 @@ void main() {
     });
   });
 
-  test('gastar dado de golpe cura (tirada + mod CON) de forma determinista', () {
+  test('gastar dado de golpe cura (tirada + mod CON) de forma determinista',
+      () {
     // Sheet mínima con CON +2 y dado de golpe d10.
     final sheet = ComputedSheet(
       level: 1,

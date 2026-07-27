@@ -1,0 +1,371 @@
+[
+  {
+    "id": "elf-drow",
+    "name": "Elfo Oscuro (Drow)",
+    "raceId": "elf",
+    "source": "srd_2024",
+    "description": "Linaje de las profundidades. Visión superior en la oscuridad y magia de las sombras. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Drow",
+        "description": "Tu visión en la oscuridad alcanza 120 pies y conocés el truco Luces Danzantes.",
+        "effects": [
+          {
+            "type": "darkvision",
+            "range": 120
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "dancing-lights",
+            "ability": "charisma",
+            "use": "atWill"
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia Drow (nivel 3)",
+        "description": "Aprendés Fuego Feérico, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "faerie-fire",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Magia Drow (nivel 5)",
+        "description": "Aprendés Oscuridad, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "darkness",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elf-high",
+    "name": "Alto Elfo",
+    "raceId": "elf",
+    "source": "srd_2024",
+    "description": "Linaje de tradición arcana. Conocés magia menor y podés desplazarte con un parpadeo. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Alto Elfo",
+        "description": "Conocés el truco Prestidigitación (podés cambiarlo tras un descanso largo).",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "prestidigitation",
+            "ability": "intelligence",
+            "use": "atWill"
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia Alto Elfo (nivel 3)",
+        "description": "Aprendés Detectar Magia, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "detect-magic",
+            "ability": "intelligence",
+            "use": "oncePerLongRest"
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Magia Alto Elfo (nivel 5)",
+        "description": "Aprendés Paso Brumoso, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "misty-step",
+            "ability": "intelligence",
+            "use": "oncePerLongRest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "elf-wood",
+    "name": "Elfo del Bosque",
+    "raceId": "elf",
+    "source": "srd_2024",
+    "description": "Linaje de los bosques. Más veloz y con magia druídica. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Pie Ligero",
+        "description": "Tu velocidad aumenta a 35 pies.",
+        "effects": [
+          {
+            "type": "setSpeed",
+            "feet": 35
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "druidcraft",
+            "ability": "wisdom",
+            "use": "atWill"
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia del Bosque (nivel 3)",
+        "description": "Aprendés Zancada Larga, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "longstrider",
+            "ability": "wisdom",
+            "use": "oncePerLongRest"
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Magia del Bosque (nivel 5)",
+        "description": "Aprendés Pasar sin Dejar Rastro, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "pass-without-trace",
+            "ability": "wisdom",
+            "use": "oncePerLongRest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gnome-forest",
+    "name": "Gnomo del Bosque",
+    "raceId": "gnome",
+    "source": "srd_2024",
+    "description": "Linaje de la espesura. Ilusiones y trato con las bestias. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje del Bosque",
+        "description": "Conocés el truco Ilusión Menor y podés lanzar Hablar con los Animales sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "minor-illusion",
+            "ability": "intelligence",
+            "use": "atWill"
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "speak-with-animals",
+            "ability": "intelligence",
+            "use": "proficiencyBonusPerLongRest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gnome-rock",
+    "name": "Gnomo de las Rocas",
+    "raceId": "gnome",
+    "source": "srd_2024",
+    "description": "Linaje de artífices natos. Reparás y creás pequeñas maravillas. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Artífice de la Naturaleza",
+        "description": "Conocés los trucos Reparar y Prestidigitación, y podés construir un pequeño aparato mecánico.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "mending",
+            "ability": "intelligence",
+            "use": "atWill"
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "prestidigitation",
+            "ability": "intelligence",
+            "use": "atWill"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aparato Mecánico",
+            "description": "Con materiales por 10 po construís un juguete, encendedor o caja musical mecánicos."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tiefling-abyssal",
+    "name": "Abisal",
+    "raceId": "tiefling",
+    "source": "srd_2024",
+    "description": "Legado Abisal. Resistencia a veneno y magia de tu estirpe. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Legado Abisal",
+        "description": "Ganás resistencia a veneno y conocés un truco de tu legado.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "poison"
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "poison-spray",
+            "ability": "charisma",
+            "use": "atWill"
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia del Legado (nivel 3)",
+        "description": "Aprendés un conjuro, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "ray-of-sickness",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Magia del Legado (nivel 5)",
+        "description": "Aprendés un conjuro, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "hold-person",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tiefling-chthonic",
+    "name": "Ctónico",
+    "raceId": "tiefling",
+    "source": "srd_2024",
+    "description": "Legado Ctónico. Resistencia a daño necrótico y magia de tu estirpe. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Legado Ctónico",
+        "description": "Ganás resistencia a daño necrótico y conocés un truco de tu legado.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "necrotic"
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "chill-touch",
+            "ability": "charisma",
+            "use": "atWill"
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia del Legado (nivel 3)",
+        "description": "Aprendés un conjuro, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "false-life",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Magia del Legado (nivel 5)",
+        "description": "Aprendés un conjuro, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "ray-of-enfeeblement",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tiefling-infernal",
+    "name": "Infernal",
+    "raceId": "tiefling",
+    "source": "srd_2024",
+    "description": "Legado Infernal. Resistencia a fuego y magia de tu estirpe. Elegís Inteligencia, Sabiduría o Carisma como aptitud mágica.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Legado Infernal",
+        "description": "Ganás resistencia a fuego y conocés un truco de tu legado.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "fire"
+          },
+          {
+            "type": "grantSpell",
+            "spellId": "fire-bolt",
+            "ability": "charisma",
+            "use": "atWill"
+          }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia del Legado (nivel 3)",
+        "description": "Aprendés un conjuro, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "hellish-rebuke",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Magia del Legado (nivel 5)",
+        "description": "Aprendés un conjuro, una vez por descanso largo sin gastar espacio.",
+        "effects": [
+          {
+            "type": "grantSpell",
+            "spellId": "darkness",
+            "ability": "charisma",
+            "use": "oncePerLongRest"
+          }
+        ]
+      }
+    ]
+  }
+]

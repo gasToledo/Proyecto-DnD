@@ -25,3 +25,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Manuales locales (copyright, no versionar)
+d&d-data/

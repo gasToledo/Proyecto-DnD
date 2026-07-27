@@ -8,8 +8,7 @@ class PassiveTrait {
   final String description;
   const PassiveTrait(this.name, [this.description = '']);
 
-  Map<String, dynamic> toJson() =>
-      {'name': name, 'description': description};
+  Map<String, dynamic> toJson() => {'name': name, 'description': description};
 }
 
 /// Recurso consumible con su máximo y cómo se recarga.
@@ -33,6 +32,46 @@ class CharacterResource {
         'max': max,
         'recharge': recharge.name,
         'description': description,
+      };
+}
+
+/// Conjuro concedido por un rasgo (linaje, dote), por fuera de la magia de
+/// clase. Trae su propia CD y bono de ataque porque se lanza con la
+/// característica que fija el rasgo, que puede no ser la de la clase.
+class InnateSpell {
+  final String spellId;
+  final String name;
+  final int level;
+  final Ability ability;
+  final InnateSpellUse use;
+  final int saveDc;
+  final int attackBonus;
+
+  /// Rasgo que lo concede, para mostrarlo en la ficha (p.ej. "Alto Elfo").
+  final String source;
+
+  const InnateSpell({
+    required this.spellId,
+    required this.name,
+    required this.level,
+    required this.ability,
+    required this.use,
+    required this.saveDc,
+    required this.attackBonus,
+    this.source = '',
+  });
+
+  bool get isCantrip => level == 0;
+
+  Map<String, dynamic> toJson() => {
+        'spellId': spellId,
+        'name': name,
+        'level': level,
+        'ability': ability.name,
+        'use': use.toJson(),
+        'saveDc': saveDc,
+        'attackBonus': attackBonus,
+        'source': source,
       };
 }
 
@@ -112,7 +151,9 @@ class Spellcasting {
         'attackBonus': attackBonus,
         'cantripsKnown': cantripsKnown,
         'preparedCount': preparedCount,
-        'slotsByLevel': {for (final e in slotsByLevel.entries) '${e.key}': e.value},
+        'slotsByLevel': {
+          for (final e in slotsByLevel.entries) '${e.key}': e.value
+        },
       };
 }
 
@@ -147,6 +188,9 @@ class ComputedSheet {
   final List<PassiveTrait> passives;
   final List<CharacterResource> resources;
 
+  /// Conjuros concedidos por rasgos (linajes, dotes), fuera de la magia de clase.
+  final List<InnateSpell> innateSpells;
+
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
 
@@ -174,6 +218,7 @@ class ComputedSheet {
     required this.attacks,
     required this.passives,
     required this.resources,
+    this.innateSpells = const [],
     this.spellcasting,
   });
 

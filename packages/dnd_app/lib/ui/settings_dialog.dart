@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../ai/portrait_provider.dart';
 import '../data/settings_service.dart';
+import '../theme/app_widgets.dart';
 
 /// Ajustes: elegir proveedor de imágenes y, si corresponde, su API key/token.
 /// Todo se guarda solo en el equipo del usuario.
 class SettingsDialog extends StatefulWidget {
-  const SettingsDialog({super.key});
+  final SettingsService? service;
+
+  const SettingsDialog({super.key, this.service});
 
   @override
   State<SettingsDialog> createState() => _SettingsDialogState();
 }
 
 class _SettingsDialogState extends State<SettingsDialog> {
-  final _service = SettingsService();
+  late final SettingsService _service = widget.service ?? SettingsService();
   final _geminiCtrl = TextEditingController();
   final _hfCtrl = TextEditingController();
   final _hfModelCtrl = TextEditingController();
@@ -22,6 +25,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
   String _providerId = 'pollinations';
   bool _obscure = true;
   bool _loaded = false;
+  bool _saving = false;
+  String? _settingsLoadWarning;
 
   @override
   void initState() {
@@ -34,6 +39,14 @@ class _SettingsDialogState extends State<SettingsDialog> {
         _hfCtrl.text = s.huggingFaceToken;
         _hfModelCtrl.text = s.huggingFaceModel;
         _loaded = true;
+        final issue = _service.recoveryIssues.firstOrNull;
+        _settingsLoadWarning = issue == null
+            ? null
+            : issue.wasMoved
+            ? 'El archivo de ajustes era ilegible y fue apartado en:\n'
+                  '${issue.recoveryPath}'
+            : '${issue.error}\nEl archivo se conservó sin modificaciones en:\n'
+                  '${issue.originalPath}';
       });
     });
   }
@@ -47,15 +60,29 @@ class _SettingsDialogState extends State<SettingsDialog> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
+    setState(() => _saving = true);
     final model = _hfModelCtrl.text.trim();
-    await _service.save(AppSettings(
-      imageProvider: _providerId,
-      geminiApiKey: _geminiCtrl.text.trim(),
-      huggingFaceToken: _hfCtrl.text.trim(),
-      huggingFaceModel: model.isEmpty ? defaultHuggingFaceModel : model,
-    ));
-    if (!mounted) return;
-    Navigator.of(context).pop(true);
+    try {
+      await _service.save(
+        AppSettings(
+          imageProvider: _providerId,
+          geminiApiKey: _geminiCtrl.text.trim(),
+          huggingFaceToken: _hfCtrl.text.trim(),
+          huggingFaceModel: model.isEmpty ? defaultHuggingFaceModel : model,
+        ),
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (error) {
+      if (!mounted) return;
+      showAppMessage(
+        context,
+        'No se pudieron guardar los ajustes: $error',
+        tone: AppMessageTone.error,
+      );
+      setState(() => _saving = false);
+    }
   }
 
   @override
@@ -63,43 +90,79 @@ class _SettingsDialogState extends State<SettingsDialog> {
     final provider = providerById(_providerId);
     return AlertDialog(
       title: const Text('Ajustes · Generación de imágenes'),
-      content: SizedBox(
-        width: 480,
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: (MediaQuery.sizeOf(context).width - 80).clamp(240, 480),
+          maxHeight: MediaQuery.sizeOf(context).height * .65,
+        ),
         child: !_loaded
             ? const SizedBox(
-                height: 80, child: Center(child: CircularProgressIndicator()))
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Proveedor de retratos:'),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    initialValue: _providerId,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(), isDense: true),
-                    items: _providers
-                        .map((p) => DropdownMenuItem(
-                            value: p.id, child: Text(p.name)))
-                        .toList(),
-                    onChanged: (v) =>
-                        setState(() => _providerId = v ?? _providerId),
+                height: 80,
+                child: Center(child: AppBusyLabel('Cargando ajustes…')),
+              )
+            : SingleChildScrollView(
+                child: FocusTraversalGroup(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (_settingsLoadWarning != null) ...[
+                        Text(
+                          _settingsLoadWarning!,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      const Text('Proveedor de retratos:'),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        initialValue: _providerId,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          isDense: true,
+                        ),
+                        items: _providers
+                            .map(
+                              (p) => DropdownMenuItem(
+                                value: p.id,
+                                child: Text(
+                                  p.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) =>
+                            setState(() => _providerId = v ?? _providerId),
+                      ),
+                      const SizedBox(height: 16),
+                      if (provider.keyHint == null)
+                        const Text(
+                          'Este proveedor no requiere API key. '
+                          '¡Podés generar retratos directamente!',
+                        )
+                      else
+                        _keyField(provider),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  if (provider.keyHint == null)
-                    const Text('Este proveedor no requiere API key. '
-                        '¡Podés generar retratos directamente!')
-                  else
-                    _keyField(provider),
-                ],
+                ),
               ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: _saving ? null : () => Navigator.of(context).pop(false),
           child: const Text('Cancelar'),
         ),
-        FilledButton(onPressed: _save, child: const Text('Guardar')),
+        FilledButton(
+          onPressed: _loaded && !_saving ? _save : null,
+          child: _saving
+              ? const AppBusyLabel('Guardando…', indicatorSize: 15)
+              : const Text('Guardar'),
+        ),
       ],
     );
   }
@@ -121,11 +184,15 @@ class _SettingsDialogState extends State<SettingsDialog> {
             labelText: provider.keyHint,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon:
-                  Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+              tooltip: _obscure ? 'Mostrar credencial' : 'Ocultar credencial',
+              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
               onPressed: () => setState(() => _obscure = !_obscure),
             ),
           ),
+          textInputAction: provider.id == 'huggingface'
+              ? TextInputAction.next
+              : TextInputAction.done,
+          onSubmitted: provider.id == 'huggingface' ? null : (_) => _save(),
         ),
         if (provider.id == 'huggingface') ...[
           const SizedBox(height: 12),
@@ -136,6 +203,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
               helperText: 'El catálogo gratuito cambia; podés probar otro id.',
               border: OutlineInputBorder(),
             ),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _save(),
           ),
         ],
       ],

@@ -43,7 +43,7 @@ abstract class PortraitProvider {
 class PollinationsProvider implements PortraitProvider {
   final http.Client _client;
   PollinationsProvider({http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   @override
   String get id => 'pollinations';
@@ -56,31 +56,29 @@ class PollinationsProvider implements PortraitProvider {
   @override
   int get defaultCount => 2;
 
-  static Uri buildUri(String prompt, int seed) => Uri.https(
-        'image.pollinations.ai',
-        '/prompt/$prompt',
-        {
-          'width': '768',
-          'height': '768',
-          'nologo': 'true',
-          'seed': '$seed',
-          'model': 'flux',
-        },
-      );
+  static Uri buildUri(String prompt, int seed) =>
+      Uri.https('image.pollinations.ai', '/prompt/$prompt', {
+        'width': '768',
+        'height': '768',
+        'nologo': 'true',
+        'seed': '$seed',
+        'model': 'flux',
+      });
 
   Future<Uint8List> _fetch(Uri uri) async {
-    for (var attempt = 0;; attempt++) {
-      final resp =
-          await _client.get(uri).timeout(const Duration(seconds: 120));
+    for (var attempt = 0; ; attempt++) {
+      final resp = await _client.get(uri).timeout(const Duration(seconds: 120));
       if (resp.statusCode == 200) return resp.bodyBytes;
       if (resp.statusCode == 429 && attempt < 3) {
         await Future<void>.delayed(Duration(seconds: 3 * (attempt + 1)));
         continue;
       }
-      throw ProviderException(resp.statusCode == 429
-          ? 'Pollinations está limitando las peticiones (429). Esperá unos '
-              'segundos y probá de nuevo.'
-          : 'Pollinations respondió ${resp.statusCode}.');
+      throw ProviderException(
+        resp.statusCode == 429
+            ? 'Pollinations está limitando las peticiones (429). Esperá unos '
+                  'segundos y probá de nuevo.'
+            : 'Pollinations respondió ${resp.statusCode}.',
+      );
     }
   }
 
@@ -147,7 +145,8 @@ class HuggingFaceProvider implements PortraitProvider {
         .timeout(const Duration(seconds: 120));
     if (resp.statusCode == 503) {
       throw ProviderException(
-          'El modelo se está cargando en Hugging Face; probá de nuevo en ~20 s.');
+        'El modelo se está cargando en Hugging Face; probá de nuevo en ~20 s.',
+      );
     }
     if (resp.statusCode != 200) {
       throw ProviderException(_error(resp.body, resp.statusCode));
@@ -177,7 +176,7 @@ class HuggingFaceProvider implements PortraitProvider {
 class GeminiProvider implements PortraitProvider {
   final GeminiImageService _service;
   GeminiProvider({GeminiImageService? service})
-      : _service = service ?? GeminiImageService();
+    : _service = service ?? GeminiImageService();
 
   @override
   String get id => 'gemini';
@@ -198,17 +197,21 @@ class GeminiProvider implements PortraitProvider {
     int? count,
   }) {
     return _service.generate(
-        apiKey: apiKey, prompt: prompt, reference: reference);
+      apiKey: apiKey,
+      prompt: prompt,
+      reference: reference,
+    );
   }
 }
 
 /// Todos los proveedores disponibles, en orden de preferencia.
 List<PortraitProvider> buildProviders() => [
-      PollinationsProvider(),
-      HuggingFaceProvider(),
-      GeminiProvider(),
-    ];
+  PollinationsProvider(),
+  HuggingFaceProvider(),
+  GeminiProvider(),
+];
 
-PortraitProvider providerById(String id) =>
-    buildProviders().firstWhere((p) => p.id == id,
-        orElse: () => PollinationsProvider());
+PortraitProvider providerById(String id) => buildProviders().firstWhere(
+  (p) => p.id == id,
+  orElse: () => PollinationsProvider(),
+);

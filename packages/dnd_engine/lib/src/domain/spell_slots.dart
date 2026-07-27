@@ -27,6 +27,35 @@ enum CasterProgression {
 }
 
 /// Cómo obtiene sus conjuros la clase.
+/// Cómo se puede lanzar un conjuro concedido por un rasgo (linaje, dote…),
+/// aparte de la magia de clase.
+enum InnateSpellUse {
+  /// A voluntad, sin límite. Es el caso de los trucos.
+  atWill,
+
+  /// Gratis una vez por descanso largo; además se puede lanzar gastando un
+  /// espacio de conjuro, si el personaje tiene.
+  oncePerLongRest,
+
+  /// Gratis una cantidad de veces igual al bono de competencia por descanso
+  /// largo; además se puede lanzar gastando un espacio de conjuro.
+  proficiencyBonusPerLongRest;
+
+  String toJson() => switch (this) {
+        InnateSpellUse.atWill => 'atWill',
+        InnateSpellUse.oncePerLongRest => 'oncePerLongRest',
+        InnateSpellUse.proficiencyBonusPerLongRest =>
+          'proficiencyBonusPerLongRest',
+      };
+
+  static InnateSpellUse fromJson(String? v) => switch (v) {
+        'oncePerLongRest' => InnateSpellUse.oncePerLongRest,
+        'proficiencyBonusPerLongRest' =>
+          InnateSpellUse.proficiencyBonusPerLongRest,
+        _ => InnateSpellUse.atWill,
+      };
+}
+
 enum SpellPreparation {
   /// Prepara conjuros de toda la lista de clase tras un descanso (Clérigo, Druida, Mago…).
   prepared,
@@ -150,33 +179,134 @@ const List<(int count, int slotLevel)> _pactTable = [
 
 /// Lanzadores completos con progresión estándar (Mago, Clérigo, Druida, Bardo).
 const List<int> _preparedFull = [
-  0, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 18, 19, 21, 22, 23, 24, 25,
+  0,
+  4,
+  5,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  14,
+  15,
+  16,
+  16,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
 ];
 
 /// Hechicero: arranca más bajo (2/4) y luego converge con los completos.
 const List<int> _preparedSorcerer = [
-  0, 2, 4, 6, 7, 9, 10, 11, 12, 14, 15, 16, 16, 17, 18, 19, 21, 22, 23, 24, 25,
+  0,
+  2,
+  4,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  14,
+  15,
+  16,
+  16,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
 ];
 
 /// Semi-lanzadores (Paladín, Explorador).
 const List<int> _preparedHalf = [
-  0, 2, 3, 4, 5, 6, 6, 7, 7, 9, 9, 10, 10, 11, 11, 12, 12, 14, 14, 15, 15,
+  0,
+  2,
+  3,
+  4,
+  5,
+  6,
+  6,
+  7,
+  7,
+  9,
+  9,
+  10,
+  10,
+  11,
+  11,
+  12,
+  12,
+  14,
+  14,
+  15,
+  15,
 ];
 
 /// Magia de Pacto (Brujo).
 const List<int> _preparedPact = [
-  0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
+  0,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  10,
+  11,
+  11,
+  12,
+  12,
+  13,
+  13,
+  14,
+  14,
+  15,
+  15,
 ];
 
 /// Un tercio (subclases: Caballero Arcano, Pícaro Arcano). Empiezan a nivel 3.
 const List<int> _preparedThird = [
-  0, 0, 0, 3, 4, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 10, 11, 11, 11, 12, 13,
+  0,
+  0,
+  0,
+  3,
+  4,
+  4,
+  4,
+  5,
+  6,
+  6,
+  7,
+  8,
+  8,
+  9,
+  10,
+  10,
+  11,
+  11,
+  11,
+  12,
+  13,
 ];
 
 /// Conjuros preparados para una [progression] a [level], según las tablas fijas
 /// de 2024. [spellList] distingue al Hechicero (progresión propia) del resto de
 /// lanzadores completos.
-int preparedSpellsFor(CasterProgression progression, int level, String spellList) {
+int preparedSpellsFor(
+    CasterProgression progression, int level, String spellList) {
   final lv = level.clamp(0, 20);
   final table = switch (progression) {
     CasterProgression.none => const [0],

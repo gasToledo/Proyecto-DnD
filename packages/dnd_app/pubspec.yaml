@@ -14,6 +14,7 @@ dependencies:
   http: ^1.2.2
   dnd_engine:
     path: ../dnd_engine
+  archive: 4.0.9
 
 dev_dependencies:
   flutter_test:
@@ -23,9 +24,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - packages/dnd_engine/assets/srd_2024/manifest.json
     - packages/dnd_engine/assets/srd_2024/races.json
     - packages/dnd_engine/assets/srd_2024/classes.json
     - packages/dnd_engine/assets/srd_2024/subclasses.json
+    - packages/dnd_engine/assets/srd_2024/lineages.json
     - packages/dnd_engine/assets/srd_2024/backgrounds.json
     - packages/dnd_engine/assets/srd_2024/feats.json
     - packages/dnd_engine/assets/srd_2024/weapons.json

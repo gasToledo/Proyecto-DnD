@@ -22,8 +22,13 @@ JSON, no programar**.
 - `lib/src/data/content_repository.dart` — repositorio en memoria + carga de packs.
 - `lib/assets/srd_2024/` — pack semilla marcial (Humano, Guerrero, Soldado,
   dotes, armas, armaduras). Bajo `lib/` para poder empaquetarlo también como
-  asset de Flutter vía `packages/dnd_engine/assets/srd_2024/...`.
+  asset de Flutter vía `packages/dnd_engine/assets/srd_2024/...`. Su
+  `manifest.json` declara el formato y el reglamento antes de cargar los datos.
 - `test/` — tests del compilador contra el caso Sagan (brief §10) y subida a L2.
+
+`Character` usa un esquema versionado con migraciones secuenciales. Una versión
+futura lanza `UnsupportedDataVersionException` antes de interpretar o modificar
+el documento.
 
 ## Correr los tests
 

@@ -3,6 +3,8 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/effects.dart';
+import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
 import 'character_compiler.dart';
 
@@ -32,16 +34,50 @@ class CharacterValidator {
 
     final race = repo.race(c.raceId);
     if (race == null) {
-      w.add(ValidationWarning('missing_race', 'Raza "${c.raceId}" no encontrada.'));
+      w.add(ValidationWarning(
+          'missing_race', 'Raza "${c.raceId}" no encontrada.'));
+    } else {
+      // Linaje de especie: obligatorio si la especie ofrece alguno. Sin él, los
+      // rasgos que dependen de la elección (resistencias, trucos) no se aplican.
+      final options = repo.lineagesForRace(c.raceId);
+      final lineageId = c.lineageId;
+      if (lineageId == null) {
+        if (options.isNotEmpty) {
+          w.add(ValidationWarning(
+            'lineage_pending',
+            'Falta elegir el linaje de ${race.name} '
+                '(${options.map((l) => l.name).join(", ")}).',
+          ));
+        }
+      } else {
+        final lineage = repo.lineage(lineageId);
+        if (lineage == null) {
+          w.add(ValidationWarning(
+              'lineage_missing', 'Linaje "$lineageId" no encontrado.'));
+        } else if (lineage.raceId != c.raceId) {
+          w.add(ValidationWarning(
+            'lineage_wrong_race',
+            'El linaje "${lineage.name}" pertenece a ${lineage.raceId}, '
+                'no a ${c.raceId}.',
+          ));
+        } else if (_lineageUsesSpellcasting(lineage) &&
+            c.speciesSpellcastingAbility == null) {
+          w.add(const ValidationWarning(
+            'species_spellcasting_ability_pending',
+            'Falta elegir la aptitud mágica del linaje (INT, SAB o CAR).',
+          ));
+        }
+      }
     }
     final klass = repo.characterClass(c.classId);
     if (klass == null) {
-      w.add(ValidationWarning('missing_class', 'Clase "${c.classId}" no encontrada.'));
+      w.add(ValidationWarning(
+          'missing_class', 'Clase "${c.classId}" no encontrada.'));
     }
     final background = repo.background(c.backgroundId);
     if (background == null) {
-      w.add(ValidationWarning(
-          'missing_background', 'Trasfondo "${c.backgroundId}" no encontrado.'));
+      w.add(ValidationWarning('missing_background',
+          'Trasfondo "${c.backgroundId}" no encontrado.'));
     }
 
     if (c.hpPerLevel.length != c.level) {
@@ -70,6 +106,21 @@ class CharacterValidator {
       ));
     }
 
+    // La maestría requiere competencia con el arma. La elección se conserva por
+    // si más adelante ganás la competencia, pero mientras tanto no se aplica.
+    for (final weaponId in c.weaponMasteryChoices) {
+      final weapon = repo.weapon(weaponId);
+      if (weapon == null) continue;
+      final proficient = sheet.weaponProficiencies.contains(weapon.category) ||
+          sheet.weaponProficiencies.contains(weapon.id);
+      if (!proficient) {
+        w.add(ValidationWarning(
+          'mastery_not_proficient',
+          'No sos competente con ${weapon.name}: su maestría no se aplica.',
+        ));
+      }
+    }
+
     final armorId = c.equippedArmorId;
     if (armorId != null) {
       final armor = repo.armorPiece(armorId);
@@ -92,8 +143,8 @@ class CharacterValidator {
     }
 
     if (c.equippedWeaponIds.isEmpty) {
-      w.add(ValidationWarning('no_weapon', 'No hay arma equipada.',
-          WarningSeverity.info));
+      w.add(ValidationWarning(
+          'no_weapon', 'No hay arma equipada.', WarningSeverity.info));
     }
 
     for (final wid in c.equippedWeaponIds) {
@@ -120,8 +171,19 @@ class CharacterValidator {
     }
 
     if (klass != null) {
-      final allowedSkills = {...race?.skillChoiceFrom ?? const [], ...klass.skillChoiceFrom};
-      final expectedCount = (race?.skillChoiceCount ?? 0) + klass.skillChoiceCount;
+      final raceSkillOptions = race == null
+          ? const <String>[]
+          : _skillChoiceOptions(
+              race.skillChoiceCount,
+              race.skillChoiceFrom,
+            );
+      final classSkillOptions = _skillChoiceOptions(
+        klass.skillChoiceCount,
+        klass.skillChoiceFrom,
+      );
+      final allowedSkills = {...raceSkillOptions, ...classSkillOptions};
+      final expectedCount =
+          (race?.skillChoiceCount ?? 0) + klass.skillChoiceCount;
       if (c.chosenSkills.length != expectedCount) {
         w.add(ValidationWarning(
           'skill_choice_count',
@@ -134,19 +196,12 @@ class CharacterValidator {
           'Hay habilidades elegidas repetidas.',
         ));
       }
-      // Si la raza otorga elección libre (cupo > 0 sin lista), no se puede
-      // validar membresía por habilidad sin trackear de qué origen viene cada
-      // elección: se omite ese chequeo puntual para no generar falsos positivos.
-      final raceGrantsFreeChoice =
-          (race?.skillChoiceCount ?? 0) > 0 && (race?.skillChoiceFrom.isEmpty ?? true);
-      if (allowedSkills.isNotEmpty && !raceGrantsFreeChoice) {
-        for (final s in c.chosenSkills) {
-          if (!allowedSkills.contains(s)) {
-            w.add(ValidationWarning(
-              'skill_choice_invalid',
-              'Habilidad "$s" no está entre las opciones de raza/clase.',
-            ));
-          }
+      for (final s in c.chosenSkills) {
+        if (!allowedSkills.contains(s)) {
+          w.add(ValidationWarning(
+            'skill_choice_invalid',
+            'Habilidad "$s" no está entre las opciones de raza/clase.',
+          ));
         }
       }
 
@@ -211,12 +266,15 @@ class CharacterValidator {
       ...c.featIds,
       c.fightingStyleId,
     ];
+    // El set completo se necesita para las dotes que exigen otra dote: una
+    // marca mayor mira si la marca base también está elegida.
+    final heldFeatIds = chosenFeatIds.whereType<String>().toSet();
     for (final id in chosenFeatIds) {
       if (id == null) continue;
       final feat = repo.feat(id);
       final prereq = feat?.prerequisite;
       if (feat == null || prereq == null || prereq.isEmpty) continue;
-      final missing = _unmetPrerequisite(prereq, c, sheet);
+      final missing = _unmetPrerequisite(prereq, c, sheet, heldFeatIds);
       if (missing != null) {
         w.add(ValidationWarning(
           'feat_prerequisite',
@@ -227,6 +285,11 @@ class CharacterValidator {
 
     return w;
   }
+
+  bool _lineageUsesSpellcasting(Lineage lineage) => lineage.features.any(
+        (feature) =>
+            feature.effects.any((effect) => effect is GrantSpellEffect),
+      );
 
   /// Chequeos no bloqueantes sobre trucos y conjuros elegidos.
   void _validateSpells(
@@ -275,7 +338,8 @@ class CharacterValidator {
     for (final id in c.spellIds) {
       final sp = repo.spell(id);
       if (sp == null) {
-        w.add(ValidationWarning('spell_missing', 'Conjuro "$id" no encontrado.'));
+        w.add(
+            ValidationWarning('spell_missing', 'Conjuro "$id" no encontrado.'));
         continue;
       }
       if (sp.isCantrip) {
@@ -299,12 +363,18 @@ class CharacterValidator {
 
   /// Devuelve una descripción del primer prerrequisito incumplido, o null si
   /// se cumplen todos.
-  String? _unmetPrerequisite(
-      FeatPrerequisite prereq, Character c, ComputedSheet sheet) {
+  String? _unmetPrerequisite(FeatPrerequisite prereq, Character c,
+      ComputedSheet sheet, Set<String> heldFeatIds) {
     for (final entry in prereq.minAbilityScores.entries) {
       if (sheet.abilityScores[entry.key]! < entry.value) {
         return '${entry.key.abbr} ${entry.value}';
       }
+    }
+    // Basta una: el PHB 2024 escribe "Fuerza o Destreza 13 o más".
+    final any = prereq.anyAbilityScores;
+    if (any.isNotEmpty &&
+        !any.entries.any((e) => sheet.abilityScores[e.key]! >= e.value)) {
+      return any.entries.map((e) => '${e.key.abbr} ${e.value}').join(' o ');
     }
     final reqProf = prereq.requiredProficiency;
     if (reqProf != null) {
@@ -316,9 +386,24 @@ class CharacterValidator {
               sheet.skillProficiencies.contains(reqProf));
       if (!has) return 'competencia "$reqProf"';
     }
+    final reqFeats = prereq.requiredFeatIds;
+    if (reqFeats.isNotEmpty && !reqFeats.any(heldFeatIds.contains)) {
+      final names = reqFeats.map((id) => repo.feat(id)?.name ?? id);
+      return 'la dote ${names.join(' o ')}';
+    }
+    final reqCategory = prereq.requiredFeatCategory;
+    if (reqCategory != null &&
+        !heldFeatIds.any((id) => repo.feat(id)?.category == reqCategory)) {
+      return 'alguna dote de categoría "$reqCategory"';
+    }
     if (prereq.minLevel != null && c.level < prereq.minLevel!) {
       return 'nivel ${prereq.minLevel}';
     }
     return null;
   }
 }
+
+/// Una lista vacía con cupo positivo significa "cualquier habilidad" en el
+/// contenido 2024 (por ejemplo, el Bardo), no "ninguna habilidad".
+Iterable<String> _skillChoiceOptions(int count, List<String> from) =>
+    count > 0 && from.isEmpty ? Skill.allIds : from;

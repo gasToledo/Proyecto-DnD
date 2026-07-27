@@ -2,7 +2,10 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:test/test.dart';
 
 /// Reusa el caso Sagan para verificar el diff entre niveles.
-Character sagan({required int level, required List<int> hp, List<AsiChoice> asi = const []}) =>
+Character sagan(
+        {required int level,
+        required List<int> hp,
+        List<AsiChoice> asi = const []}) =>
     Character(
       id: 'sagan',
       name: 'Sagan',
@@ -33,7 +36,8 @@ void main() {
   late CharacterCompiler compiler;
 
   setUpAll(() async {
-    final repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+    final repo =
+        await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
     compiler = CharacterCompiler(repo);
   });
 
@@ -64,7 +68,9 @@ void main() {
     final after = compiler.compile(sagan(
       level: 4,
       hp: [10, 6, 6, 6],
-      asi: [const AsiChoice(level: 4, abilityIncreases: {Ability.strength: 2})],
+      asi: [
+        const AsiChoice(level: 4, abilityIncreases: {Ability.strength: 2})
+      ],
     ));
     final d = diffSheets(before, after);
     expect(d.abilityChanges[Ability.strength], 2);

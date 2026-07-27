@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 
+import '../data/app_paths.dart';
+
 /// Error de generación con mensaje legible.
 class GeminiException implements Exception {
   final String message;
@@ -18,16 +20,22 @@ class GeminiException implements Exception {
 class GeminiImageService {
   final http.Client _client;
   final String model;
-  GeminiImageService({http.Client? client, this.model = 'gemini-2.5-flash-image'})
-      : _client = client ?? http.Client();
+  GeminiImageService({
+    http.Client? client,
+    this.model = 'gemini-2.5-flash-image',
+  }) : _client = client ?? http.Client();
 
   Uri get _uri => Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent');
+    'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent',
+  );
 
   /// Cuerpo de la petición. [reference] es una imagen de referencia opcional.
   /// Puro y testeable.
-  static Map<String, dynamic> buildRequestBody(String prompt,
-      {Uint8List? reference, String referenceMime = 'image/png'}) {
+  static Map<String, dynamic> buildRequestBody(
+    String prompt, {
+    Uint8List? reference,
+    String referenceMime = 'image/png',
+  }) {
     final parts = <Map<String, dynamic>>[
       {'text': prompt},
       if (reference != null)
@@ -35,12 +43,12 @@ class GeminiImageService {
           'inlineData': {
             'mimeType': referenceMime,
             'data': base64Encode(reference),
-          }
+          },
         },
     ];
     return {
       'contents': [
-        {'parts': parts}
+        {'parts': parts},
       ],
       'generationConfig': {
         'responseModalities': ['IMAGE'],
@@ -94,10 +102,7 @@ class GeminiImageService {
   }) async {
     final resp = await _client.post(
       _uri,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
-      },
+      headers: {'Content-Type': 'application/json', 'x-goog-api-key': apiKey},
       body: jsonEncode(buildRequestBody(prompt, reference: reference)),
     );
     if (resp.statusCode != 200) {
@@ -119,10 +124,15 @@ Future<String> savePortrait({
   required String characterId,
   required Uint8List bytes,
 }) async {
-  final dir = Directory(p.join(portraitsRoot, characterId));
+  final safeCharacterId = requireSafePathSegment(
+    characterId,
+    label: 'id de personaje',
+  );
+  final dir = Directory(p.join(portraitsRoot, safeCharacterId));
   await dir.create(recursive: true);
-  final file =
-      File(p.join(dir.path, '${DateTime.now().microsecondsSinceEpoch}.png'));
+  final file = File(
+    p.join(dir.path, '${DateTime.now().microsecondsSinceEpoch}.png'),
+  );
   await file.writeAsBytes(bytes);
   return file.path;
 }

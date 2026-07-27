@@ -12,37 +12,38 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   Character fighterL3() => Character(
-        id: 't-fighter',
-        name: 'Prueba',
-        raceId: 'human',
-        classId: 'fighter',
-        backgroundId: 'soldier',
-        subclassId: 'champion',
-        level: 3,
-        assignedScores: {
-          Ability.strength: 16,
-          Ability.dexterity: 14,
-          Ability.constitution: 14,
-          Ability.intelligence: 10,
-          Ability.wisdom: 12,
-          Ability.charisma: 8,
-        },
-        hpPerLevel: [10, 6, 6],
-      );
+    id: 't-fighter',
+    name: 'Prueba',
+    raceId: 'human',
+    classId: 'fighter',
+    backgroundId: 'soldier',
+    subclassId: 'champion',
+    level: 3,
+    assignedScores: {
+      Ability.strength: 16,
+      Ability.dexterity: 14,
+      Ability.constitution: 14,
+      Ability.intelligence: 10,
+      Ability.wisdom: 12,
+      Ability.charisma: 8,
+    },
+    hpPerLevel: [10, 6, 6],
+  );
 
-  testWidgets('cambiar a "Tomar dote" sin elegir dote no crashea', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: LevelUpScreen(
-        character: fighterL3(),
-        repo: repo,
-        onDone: (_) {},
+  testWidgets('cambiar a "Tomar dote" sin elegir dote no crashea', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: fighterL3(), repo: repo, onDone: (_) {}),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
 
     // Nivel 4 es ASI para el Guerrero: aparece la elección de mejora/dote.
@@ -51,6 +52,26 @@ void main() {
     await tester.pumpAndSettle();
 
     // No debe haberse lanzado ninguna excepción durante el rebuild.
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('la subida de nivel cabe en una ventana compacta', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(480, 520);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: fighterL3(), repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Subir a nivel 4'), findsOneWidget);
+    expect(find.text('Confirmar nivel 4'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -77,10 +98,12 @@ void main() {
       asiChoices: const [AsiChoice(level: 4, featId: 'great-weapon-master')],
     );
 
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: LevelUpScreen(character: c, repo: repo, onDone: (_) {}),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: c, repo: repo, onDone: (_) {}),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Nivel 6 es ASI para el Guerrero.
@@ -88,7 +111,52 @@ void main() {
     await tester.pumpAndSettle();
 
     // La dote ya tomada no debe ofrecerse de nuevo (no es repetible).
-    expect(find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
-        findsNothing);
+    expect(
+      find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('no ofrece Iniciado en la Magia: es dote de origen', (
+    tester,
+  ) async {
+    // En 2024 los ASI solo admiten dotes generales, e Iniciado en la Magia es
+    // de origen. Antes figuraba como general y aparecía acá.
+    expect(repo.feat('magic-initiate-wizard')!.category, 'origin');
+
+    final c = Character(
+      id: 't-fighter-4',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      subclassId: 'champion',
+      level: 3,
+      assignedScores: {
+        Ability.strength: 16,
+        Ability.dexterity: 14,
+        Ability.constitution: 14,
+        Ability.intelligence: 10,
+        Ability.wisdom: 12,
+        Ability.charisma: 8,
+      },
+      hpPerLevel: [10, 6, 6],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: c, repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tomar dote'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.widgetWithText(ChoiceChip, 'Iniciado en la Magia (Mago)'),
+      findsNothing,
+    );
   });
 }

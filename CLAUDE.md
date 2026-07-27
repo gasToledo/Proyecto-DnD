@@ -21,8 +21,9 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 ## Estado actual
 
 - 12 clases y 48 subclases: 12 del SRD 5.2.1 y 36 del PHB 2024.
-- 9 especies del SRD más Aasimar del PHB 2024, 8 linajes, 12 trasfondos,
-  57 dotes y 177 conjuros.
+- 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
+  Artificer*), 8 linajes, 33 trasfondos, 87 dotes y los 388 conjuros del
+  capítulo 7 del PHB.
 - Creación guiada, subida de nivel, combate, inventario, notas y retratos IA.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
   secuenciales de datos.
@@ -127,8 +128,14 @@ es motivo para excluirlo del catálogo: es motivo para etiquetarlo `phb_2024`.
 El detalle y el avance de la comprobación están en
 `docs/auditoria-reglas-2024.md`.
 
-`ContentSource` distingue `srd_2024` de `phb_2024`, y `content_integrity_test`
-fija qué ids pertenecen al SRD. Un valor desconocido degrada a `homebrew` sin
+*Forge of the Artificer* (2025) es una tercera procedencia, `foa_2025`. No está
+en el SRD y no es el PHB, pero la razón de distinguirlo no es de licencia: no
+todas las mesas usan esa expansión, así que el jugador tiene que reconocer que
+una opción viene de otro libro **antes** de comprometer un personaje con ella.
+
+`ContentSource` distingue `srd_2024`, `phb_2024` y `foa_2025`, y
+`content_integrity_test` fija qué ids pertenecen al SRD. Un valor desconocido
+degrada a `homebrew` sin
 avisar, porque ese mismo parser procesa importaciones no confiables: la red de
 seguridad del contenido oficial es el test, no una excepción al cargar. La app
 muestra la procedencia con `SourceBadge` en las tarjetas de selección.

@@ -666,6 +666,33 @@
     ]
   },
   {
+    "id": "magic-initiate-druid",
+    "name": "Iniciado en la Magia (Druida)",
+    "source": "phb_2024",
+    "category": "origin",
+    "repeatable": true,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Iniciado en la Magia (Druida)",
+        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Druida. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios."
+      }
+    ]
+  },
+  {
+    "id": "tavern-brawler",
+    "name": "Matón de Taberna",
+    "source": "phb_2024",
+    "category": "origin",
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Matón de Taberna",
+        "description": "Tu ataque sin armas causa 1d4 más tu modificador por Fuerza en daño contundente, y podés repetir un 1 en el dado de daño. Competencia con armas improvisadas. Al acertar con un ataque sin armas en tu turno podés empujar al objetivo 1,5 m, una vez por turno."
+      }
+    ]
+  },
+  {
     "id": "magic-initiate-cleric",
     "name": "Iniciado en la Magia (Clérigo)",
     "source": "srd_2024",

@@ -142,5 +142,53 @@
     "toolProficiencies": ["calligraphers-supplies"],
     "originFeatId": "skilled",
     "effects": []
+  },
+  {
+    "id": "acolyte",
+    "name": "Acólito",
+    "source": "srd_2024",
+    "iconId": "church",
+    "tagline": "Devoción y estudio en un templo",
+    "abilityOptions": ["intelligence", "wisdom", "charisma"],
+    "skillProficiencies": ["insight", "religion"],
+    "toolProficiencies": ["calligraphers-supplies"],
+    "originFeatId": "magic-initiate-cleric",
+    "effects": []
+  },
+  {
+    "id": "sage",
+    "name": "Erudito",
+    "source": "srd_2024",
+    "iconId": "menu_book",
+    "tagline": "Años de estudio arcano e histórico",
+    "abilityOptions": ["constitution", "intelligence", "wisdom"],
+    "skillProficiencies": ["arcana", "history"],
+    "toolProficiencies": ["calligraphers-supplies"],
+    "originFeatId": "magic-initiate-wizard",
+    "effects": []
+  },
+  {
+    "id": "guide",
+    "name": "Guía",
+    "source": "phb_2024",
+    "iconId": "hiking",
+    "tagline": "Conocés cada senda y cada atajo",
+    "abilityOptions": ["dexterity", "constitution", "wisdom"],
+    "skillProficiencies": ["stealth", "survival"],
+    "toolProficiencies": ["cartographers-tools"],
+    "originFeatId": "magic-initiate-druid",
+    "effects": []
+  },
+  {
+    "id": "sailor",
+    "name": "Marinero",
+    "source": "phb_2024",
+    "iconId": "sailing",
+    "tagline": "El viento en popa y la sal en la piel",
+    "abilityOptions": ["strength", "dexterity", "wisdom"],
+    "skillProficiencies": ["acrobatics", "perception"],
+    "toolProficiencies": ["navigators-tools"],
+    "originFeatId": "tavern-brawler",
+    "effects": []
   }
 ]

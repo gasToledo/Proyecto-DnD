@@ -139,10 +139,9 @@ void main() {
   });
 
   test('solo los trasfondos del SRD 5.2.1 quedan etiquetados como tales', () {
-    // El SRD trae 4 trasfondos (Acólito, Criminal, Erudito y Soldado) y este
-    // catálogo tiene 2 de ellos. Los otros 10 son PHB 2024 y no están cubiertos
-    // por la atribución CC BY 4.0.
-    const srdBackgrounds = {'criminal', 'soldier'};
+    // El SRD trae exactamente estos 4 trasfondos; los otros 12 son PHB 2024
+    // y no están cubiertos por la atribución CC BY 4.0.
+    const srdBackgrounds = {'criminal', 'soldier', 'acolyte', 'sage'};
     final tagged = repo.backgrounds.values
         .where((b) => b.source == ContentSource.srd2024)
         .map((b) => b.id)

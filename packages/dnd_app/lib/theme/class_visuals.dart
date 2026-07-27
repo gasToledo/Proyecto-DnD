@@ -50,6 +50,10 @@ const Map<String, IconData> _icons = {
   'storefront': Icons.storefront,
   'diamond': Icons.diamond,
   'history_edu': Icons.history_edu,
+  'church': Icons.church,
+  'menu_book': Icons.menu_book,
+  'hiking': Icons.hiking,
+  'sailing': Icons.sailing,
 };
 
 /// Ícono declarado por un contenido, o [fallback] si no lo declara o el id no

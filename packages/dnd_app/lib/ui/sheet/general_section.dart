@@ -1,135 +1,181 @@
 part of '../sheet_screen.dart';
 
 extension _SheetGeneralSection on _SheetScreenState {
-  // -------------------------------------------------------------- General
+  // ------------------------------------------------------------- Personaje
 
-  Widget _buildGeneral() {
+  Widget _buildPersonaje() {
     final s = sheet;
-    final pal = context.palette;
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final warnings = CharacterValidator(repo).validate(_c);
-    final portrait = _c.portraitPaths.isNotEmpty
-        ? _c.portraitPaths.first
-        : null;
-    final hasPortrait = portrait != null && File(portrait).existsSync();
-    final race = repo.race(_c.raceId)?.name ?? _c.raceId;
-    final klassObj = repo.characterClass(_c.classId);
-    final klass = klassObj?.name ?? _c.classId;
-    final accent = classAccent(klassObj, pal.gold);
-    final sub = _c.subclassId == null
-        ? null
-        : repo.subclass(_c.subclassId!)?.name;
-    final klassLine = sub == null ? klass : '$klass ($sub)';
-    final bg = repo.background(_c.backgroundId)?.name ?? '';
-    final subtitle = [race, klassLine, if (bg.isNotEmpty) bg].join(' · ');
 
-    return PageBody(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: hasPortrait ? () => _openPortraitViewer(portrait) : null,
-              child: MouseRegion(
-                cursor: hasPortrait
-                    ? SystemMouseCursors.click
-                    : SystemMouseCursors.basic,
-                child: ClassMedallion(
-                  klass: klassObj,
-                  image: hasPortrait ? FileImage(File(portrait)) : null,
-                  fallback: _c.name.characters.first,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  InkWell(
-                    onTap: _editName,
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              _c.name,
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(Icons.edit_outlined, size: 16, color: muted),
-                        ],
-                      ),
+        if (warnings.isNotEmpty) ...[
+          sheetCard(
+            icon: Icons.warning_amber,
+            title: 'Advertencias',
+            child: DenseRows(
+              children: [
+                for (final w in warnings)
+                  ListTile(
+                    dense: true,
+                    leading: Icon(
+                      Icons.warning_amber,
+                      color: context.palette.crimson,
                     ),
+                    title: Text(w.message),
                   ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Icon(classIcon(klassObj), size: 16, color: accent),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(subtitle, style: TextStyle(color: muted)),
-                      ),
-                    ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        responsiveColumns([
+          [_identityCard(), _abilitiesCard(s), _proficienciesCard(s)],
+          [_skillsCard(s)],
+          [_passivesCard(s)],
+        ]),
+      ],
+    );
+  }
+
+  Widget _identityCard() {
+    final pal = context.palette;
+    final race = repo.race(_c.raceId);
+    final bg = repo.background(_c.backgroundId)?.name ?? '—';
+    final rows = <(String, String)>[
+      ('Alineamiento', _c.alignment?.label ?? '—'),
+      ('Tamaño', race?.size ?? '—'),
+      ('Trasfondo', bg),
+      if (_c.personalityTrait.isNotEmpty) ('Rasgo', _c.personalityTrait),
+    ];
+    return sheetCard(
+      icon: Icons.badge,
+      title: 'Identidad',
+      child: DenseRows(
+        children: [
+          for (final (label, value) in rows)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(label, style: TextStyle(color: pal.textMuted)),
+                  ),
+                  Flexible(
+                    flex: 2,
+                    child: Text(value, textAlign: TextAlign.end),
                   ),
                 ],
               ),
             ),
-            Column(
+        ],
+      ),
+    );
+  }
+
+  Widget _abilitiesCard(ComputedSheet s) {
+    return sheetCard(
+      icon: Icons.fitness_center,
+      title: 'Características',
+      child: Padding(padding: const EdgeInsets.all(14), child: _abilityRow(s)),
+    );
+  }
+
+  Widget _proficienciesCard(ComputedSheet s) {
+    final labels = [
+      ...s.armorProficiencies,
+      ...s.weaponProficiencies,
+      ...s.toolProficiencies,
+    ].map(_title).toList()..sort();
+    return sheetCard(
+      icon: Icons.verified_user,
+      title: 'Competencias',
+      child: Padding(padding: const EdgeInsets.all(14), child: _chips(labels)),
+    );
+  }
+
+  Widget _skillsCard(ComputedSheet s) {
+    return sheetCard(
+      icon: Icons.psychology,
+      title: 'Habilidades',
+      child: DenseRows(
+        children: [for (final skill in Skill.values) _skillRow(s, skill)],
+      ),
+    );
+  }
+
+  Widget _skillRow(ComputedSheet s, Skill skill) {
+    final pal = context.palette;
+    final proficient = s.skillProficiencies.contains(skill.id);
+    final mod =
+        s.abilityModifiers[skill.ability]! +
+        (proficient ? s.proficiencyBonus : 0);
+    final color = proficient ? pal.gold : null;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: proficient ? pal.gold : pal.hairline,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(skill.label, style: TextStyle(color: color)),
+          ),
+          Text(
+            skill.ability.abbr,
+            style: TextStyle(fontSize: 10.5, color: pal.textMuted),
+          ),
+          SizedBox(
+            width: 42,
+            child: Text(
+              _signed(mod),
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 16,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _passivesCard(ComputedSheet s) {
+    if (s.passives.isEmpty) return const SizedBox.shrink();
+    return sheetCard(
+      icon: Icons.auto_awesome,
+      title: 'Rasgos y dotes',
+      trailing: GoldPill('${s.passives.length}'),
+      child: Column(
+        children: [
+          for (var i = 0; i < s.passives.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: context.palette.hairline),
+            ExpansionTile(
+              title: Text(s.passives[i].name),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              expandedAlignment: Alignment.centerLeft,
               children: [
                 Text(
-                  '${_c.level}',
+                  s.passives[i].description,
                   style: TextStyle(
-                    fontFamily: 'Georgia',
-                    fontSize: 28,
-                    height: 1,
-                    color: pal.gold,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 13,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Eyebrow('Nivel'),
               ],
             ),
           ],
-        ),
-        const SectionRule(),
-        _statPlaques(s),
-        const SectionRule(),
-        const Eyebrow('Características'),
-        _abilityRow(s),
-        const SizedBox(height: 20),
-        if (s.attacks.isNotEmpty) ...[
-          const Eyebrow('Ataques'),
-          DenseRows(children: [for (final a in s.attacks) _attackRow(a)]),
-          const SizedBox(height: 20),
         ],
-        if (s.passives.isNotEmpty) ...[
-          const Eyebrow('Rasgos pasivos'),
-          DenseRows(children: [for (final t in s.passives) _passiveRow(t)]),
-          const SizedBox(height: 20),
-        ],
-        if (s.skillProficiencies.isNotEmpty) ...[
-          const Eyebrow('Competencias'),
-          _chips(s.skillProficiencies.map(Skill.labelFor).toList()),
-        ],
-        if (warnings.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          const Eyebrow('Advertencias'),
-          DenseRows(
-            children: [
-              for (final w in warnings)
-                ListTile(
-                  dense: true,
-                  leading: Icon(Icons.warning_amber, color: pal.crimson),
-                  title: Text(w.message),
-                ),
-            ],
-          ),
-        ],
-      ],
+      ),
     );
   }
 
@@ -215,77 +261,11 @@ extension _SheetGeneralSection on _SheetScreenState {
     );
   }
 
-  /// Píldora de maestría con el nombre en español y la regla en el tooltip.
-  /// Una maestría desconocida (homebrew o importada) cae en su identificador y
-  /// se muestra sin explicación, que es todo lo que se puede decir de ella.
-  Widget _masteryPill(String id) {
-    final m = weaponMasteries[id];
-    final pill = GoldPill('Maestría: ${weaponMasteryName(id)}');
-    if (m == null) return pill;
-    return Tooltip(
-      message: m.description,
-      textAlign: TextAlign.start,
-      child: pill,
-    );
-  }
-
-  Widget _attackRow(Attack a) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  a.name,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 3),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      '${a.damage} ${_title(a.damageType)}',
-                      style: TextStyle(color: muted, fontSize: 13),
-                    ),
-                    if (a.mastery != null) _masteryPill(a.mastery!),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Text(
-            _signed(a.attackBonus),
-            style: TextStyle(
-              fontFamily: 'Georgia',
-              fontSize: 20,
-              color: context.palette.gold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _passiveRow(PassiveTrait t) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(t.name, style: const TextStyle(fontWeight: FontWeight.w500)),
-          if (t.description.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(t.description, style: TextStyle(color: muted, fontSize: 13)),
-          ],
-        ],
-      ),
-    );
-  }
+  Widget _chips(List<String> labels) => labels.isEmpty
+      ? Text('—', style: TextStyle(color: context.palette.textMuted))
+      : Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: labels.map((l) => Chip(label: Text(l))).toList(),
+        );
 }

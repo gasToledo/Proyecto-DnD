@@ -63,6 +63,7 @@ void main() {
           character: character,
           repo: repo,
           controller: controller,
+          onToggleTheme: () {},
         ),
       ),
     );
@@ -77,10 +78,10 @@ void main() {
     final initialHp = character.combat.currentHp;
     await pumpSheet(tester, character);
 
-    expect(find.text(character.name), findsOneWidget);
-    expect(find.text('CARACTERÍSTICAS'), findsOneWidget);
+    expect(find.text(character.name), findsWidgets);
+    expect(find.text('Características'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(Tab, 'Combate'));
+    await tester.tap(find.text('Combate'));
     await tester.pumpAndSettle();
     expect(find.text('Descanso corto'), findsOneWidget);
     expect(find.text('Descanso largo'), findsOneWidget);
@@ -89,14 +90,14 @@ void main() {
     await tester.pump();
     expect(character.combat.currentHp, initialHp - 2);
 
-    await tester.tap(find.widgetWithText(Tab, 'Inventario'));
+    await tester.tap(find.text('Inventario'));
     await tester.pumpAndSettle();
     expect(find.text('ARMADURA EQUIPADA'), findsOneWidget);
     expect(find.text('ARMA EQUIPADA'), findsOneWidget);
 
-    await tester.tap(find.widgetWithText(Tab, 'Notas'));
+    await tester.tap(find.text('Notas'));
     await tester.pumpAndSettle();
-    expect(find.text('NOTAS DEL PERSONAJE'), findsOneWidget);
+    expect(find.text('Notas del personaje'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -123,10 +124,10 @@ void main() {
     );
     await pumpSheet(tester, wizard);
 
-    await tester.tap(find.widgetWithText(Tab, 'Conjuros'));
+    await tester.tap(find.text('Combate'));
     await tester.pumpAndSettle();
 
-    expect(find.text('LANZAMIENTO DE CONJUROS'), findsOneWidget);
+    expect(find.text('Conjuros'), findsOneWidget);
     expect(find.text('ESPACIOS DE CONJURO'), findsOneWidget);
     expect(find.text('Agarre Electrizante'), findsOneWidget);
     expect(find.text('Detectar Magia'), findsOneWidget);
@@ -149,13 +150,13 @@ void main() {
     );
     await pumpSheet(tester, elf);
 
-    await tester.tap(find.widgetWithText(Tab, 'Conjuros'));
+    await tester.tap(find.text('Combate'));
     await tester.pumpAndSettle();
 
     expect(find.text('CONJUROS DE ESPECIE Y LINAJE'), findsOneWidget);
     expect(find.text('Prestidigitación'), findsOneWidget);
     expect(find.textContaining('WIS'), findsOneWidget);
-    expect(find.text('LANZAMIENTO DE CONJUROS'), findsNothing);
+    expect(find.text('ESPACIOS DE CONJURO'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

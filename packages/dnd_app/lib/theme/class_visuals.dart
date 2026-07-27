@@ -37,6 +37,11 @@ const Map<String, IconData> _icons = {
   'whatshot': Icons.whatshot,
   'landscape': Icons.landscape,
   'auto_awesome': Icons.auto_awesome,
+  // Especies de Forge of the Artificer.
+  'masks': Icons.masks,
+  'psychology': Icons.psychology,
+  'handshake': Icons.handshake,
+  'smart_toy': Icons.smart_toy,
   // Trasfondos.
   'military_tech': Icons.military_tech,
   'security': Icons.security,

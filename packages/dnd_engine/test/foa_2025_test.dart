@@ -202,4 +202,96 @@ void main() {
       }
     });
   });
+
+  group('Especies', () {
+    Race race(String id) => repo.race(id)!;
+    Iterable<PassiveTraitEffect> rasgos(String id) =>
+        race(id).effects.whereType<PassiveTraitEffect>();
+    String rasgo(String id, String nombre) =>
+        rasgos(id).firstWhere((e) => e.name == nombre).description;
+
+    test('están las 5 especies del capítulo 2', () {
+      final foa =
+          repo.races.values.where((r) => r.source == ContentSource.foa2025);
+      expect(foa.map((r) => r.id).toSet(), {
+        'changeling',
+        'kalashtar',
+        'khoravar',
+        'shifter',
+        'warforged',
+      });
+    });
+
+    test('Cambiaformas elige dos habilidades de una lista de cinco', () {
+      final r = race('changeling');
+      expect(r.skillChoiceCount, 2);
+      expect(r.skillChoiceFrom, [
+        'deception',
+        'insight',
+        'intimidation',
+        'performance',
+        'persuasion',
+      ]);
+    });
+
+    test('Kalashtar resiste lo psíquico y tiene telepatía por nivel', () {
+      final r = race('kalashtar');
+      expect(
+          r.effects.whereType<ResistanceEffect>().single.damageType, 'psychic');
+      expect(
+          rasgo('kalashtar', 'Vínculo Mental'), contains('10 veces tu nivel'));
+      expect(rasgo('kalashtar', 'Mente Dual'), contains('ventaja'));
+    });
+
+    test('Khoravar y Cambiante ven en la oscuridad a 60 pies', () {
+      for (final id in ['khoravar', 'shifter']) {
+        expect(race(id).effects.whereType<DarkvisionEffect>().single.range, 60,
+            reason: id);
+      }
+      // El Cambiaformas y el Forjado no la tienen.
+      for (final id in ['changeling', 'warforged']) {
+        expect(race(id).effects.whereType<DarkvisionEffect>(), isEmpty,
+            reason: id);
+      }
+    });
+
+    test('Cambiante elige entre las cuatro habilidades bestiales', () {
+      final r = race('shifter');
+      expect(r.skillChoiceCount, 1);
+      expect(r.skillChoiceFrom,
+          ['acrobatics', 'athletics', 'intimidation', 'survival']);
+      // Los cuatro modos de transformación viven en un solo rasgo, porque la
+      // elección todavía no se persiste.
+      final bestial = rasgo('shifter', 'Naturaleza Bestial');
+      for (final modo in [
+        'Piel Robusta',
+        'Colmillo Largo',
+        'Paso Veloz',
+        'Cacería Salvaje',
+      ]) {
+        expect(bestial, contains(modo));
+      }
+    });
+
+    test('Forjado suma +1 a la CA y resiste veneno', () {
+      final r = race('warforged');
+      expect(r.effects.whereType<ArmorClassBonusEffect>().single.amount, 1);
+      expect(
+          r.effects.whereType<ResistanceEffect>().single.damageType, 'poison');
+    });
+
+    test('ninguna especie nueva mide distancias en métrico', () {
+      // El manual del que sale el contenido está en metros; la casa juega en
+      // pies y el catálogo entero está normalizado así.
+      final metrico =
+          RegExp(r'\d\s?(m|km|cm)(?![\wáéíóúñ])', caseSensitive: false);
+      for (final r in repo.races.values
+          .where((r) => r.source == ContentSource.foa2025)) {
+        for (final e in r.effects.whereType<PassiveTraitEffect>()) {
+          expect(metrico.hasMatch(e.description), isFalse,
+              reason: '${r.id}/${e.name}: ${e.description}');
+        }
+      }
+    });
+  });
 }

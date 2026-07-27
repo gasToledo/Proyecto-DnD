@@ -19,13 +19,14 @@ String buildPortraitPrompt({
   required ContentRepository repo,
   required String style,
   required String extraText,
+  bool includeWeapon = true,
 }) {
   final race = repo.race(character.raceId)?.name ?? '';
   final klass = repo.characterClass(character.classId)?.name ?? '';
   final armor = character.equippedArmorId == null
       ? null
       : repo.armorPiece(character.equippedArmorId!)?.name;
-  final weapon = character.equippedWeaponIds.isEmpty
+  final weapon = !includeWeapon || character.equippedWeaponIds.isEmpty
       ? null
       : repo.weapon(character.equippedWeaponIds.first)?.name;
 

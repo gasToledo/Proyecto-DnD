@@ -20,6 +20,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
   final _geminiCtrl = TextEditingController();
   final _hfCtrl = TextEditingController();
   final _hfModelCtrl = TextEditingController();
+  final _azureCtrl = TextEditingController();
 
   final _providers = buildProviders();
   String _providerId = 'pollinations';
@@ -38,6 +39,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
         _geminiCtrl.text = s.geminiApiKey;
         _hfCtrl.text = s.huggingFaceToken;
         _hfModelCtrl.text = s.huggingFaceModel;
+        _azureCtrl.text = s.azureApiKey;
         _loaded = true;
         final issue = _service.recoveryIssues.firstOrNull;
         _settingsLoadWarning = issue == null
@@ -56,6 +58,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     _geminiCtrl.dispose();
     _hfCtrl.dispose();
     _hfModelCtrl.dispose();
+    _azureCtrl.dispose();
     super.dispose();
   }
 
@@ -70,6 +73,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
           geminiApiKey: _geminiCtrl.text.trim(),
           huggingFaceToken: _hfCtrl.text.trim(),
           huggingFaceModel: model.isEmpty ? defaultHuggingFaceModel : model,
+          azureApiKey: _azureCtrl.text.trim(),
         ),
       );
       if (!mounted) return;
@@ -168,14 +172,23 @@ class _SettingsDialogState extends State<SettingsDialog> {
   }
 
   Widget _keyField(PortraitProvider provider) {
-    final ctrl = provider.id == 'gemini' ? _geminiCtrl : _hfCtrl;
-    final url = provider.id == 'gemini'
-        ? 'aistudio.google.com/apikey'
-        : 'huggingface.co/settings/tokens';
+    final ctrl = switch (provider.id) {
+      'gemini' => _geminiCtrl,
+      'azure' => _azureCtrl,
+      _ => _hfCtrl,
+    };
+    final hint = switch (provider.id) {
+      'gemini' => 'Conseguila gratis en: aistudio.google.com/apikey',
+      'azure' =>
+        'La generás en tu recurso de Azure AI Foundry (Keys and '
+            'Endpoint).',
+      _ => 'Conseguila gratis en: huggingface.co/settings/tokens',
+    };
+    final needsMoreFields = provider.id == 'huggingface';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Conseguila gratis en: $url'),
+        Text(hint),
         const SizedBox(height: 8),
         TextField(
           controller: ctrl,
@@ -189,10 +202,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
               onPressed: () => setState(() => _obscure = !_obscure),
             ),
           ),
-          textInputAction: provider.id == 'huggingface'
+          textInputAction: needsMoreFields
               ? TextInputAction.next
               : TextInputAction.done,
-          onSubmitted: provider.id == 'huggingface' ? null : (_) => _save(),
+          onSubmitted: needsMoreFields ? null : (_) => _save(),
         ),
         if (provider.id == 'huggingface') ...[
           const SizedBox(height: 12),

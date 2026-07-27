@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import 'azure_image_service.dart';
 import 'gemini_image_service.dart';
 
 /// Error legible de un proveedor de imágenes.
@@ -204,11 +205,43 @@ class GeminiProvider implements PortraitProvider {
   }
 }
 
+/// Flux (Black Forest Labs) en Azure AI Foundry. Endpoint y modelo son fijos
+/// (beca Azure Students de un solo recurso); solo pide la API key.
+class AzureProvider implements PortraitProvider {
+  final http.Client? _client;
+  AzureProvider({this._client});
+
+  @override
+  String get id => 'azure';
+  @override
+  String get name => 'Azure AI Foundry (Flux, requiere API key)';
+  @override
+  String? get keyHint => 'API key del recurso de Azure AI Foundry';
+  @override
+  bool get supportsReference => false;
+  @override
+  int get defaultCount => 1;
+
+  @override
+  Future<List<Uint8List>> generate({
+    required String prompt,
+    String apiKey = '',
+    Uint8List? reference,
+    int? count,
+  }) {
+    final service = AzureImageService(client: _client);
+    return service
+        .generate(apiKey: apiKey, prompt: prompt, count: count ?? defaultCount)
+        .whenComplete(service.close);
+  }
+}
+
 /// Todos los proveedores disponibles, en orden de preferencia.
 List<PortraitProvider> buildProviders() => [
   PollinationsProvider(),
   HuggingFaceProvider(),
   GeminiProvider(),
+  AzureProvider(),
 ];
 
 PortraitProvider providerById(String id) => buildProviders().firstWhere(

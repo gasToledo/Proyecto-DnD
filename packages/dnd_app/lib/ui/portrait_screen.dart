@@ -66,6 +66,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
       _provider = switch (s.imageProvider) {
         'huggingface' => HuggingFaceProvider(model: s.huggingFaceModel),
         'gemini' => GeminiProvider(),
+        'azure' => AzureProvider(),
         _ => PollinationsProvider(),
       };
       _loading = false;
@@ -87,6 +88,8 @@ class _PortraitScreenState extends State<PortraitScreen> {
     repo: widget.repo,
     style: _effectiveStyle,
     extraText: _extraCtrl.text,
+    // El filtro de contenido de Azure rechaza retratos con arma explícita.
+    includeWeapon: _providerId != 'azure',
   );
 
   Future<void> _openSettings() async {

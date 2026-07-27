@@ -17,25 +17,29 @@ const defaultHuggingFaceModel =
     'stabilityai/stable-diffusion-3-medium-diffusers';
 
 class AppSettings {
-  static const int currentSchemaVersion = 2;
+  static const int currentSchemaVersion = 3;
 
-  /// Proveedor de imágenes elegido: 'pollinations' | 'huggingface' | 'gemini'.
+  /// Proveedor de imágenes elegido:
+  /// 'pollinations' | 'huggingface' | 'gemini' | 'azure'.
   String imageProvider;
   String geminiApiKey;
   String huggingFaceToken;
   String huggingFaceModel;
+  String azureApiKey;
 
   AppSettings({
     this.imageProvider = 'pollinations',
     this.geminiApiKey = '',
     this.huggingFaceToken = '',
     this.huggingFaceModel = defaultHuggingFaceModel,
+    this.azureApiKey = '',
   });
 
   /// La key correspondiente al proveedor indicado (o '' si no aplica).
   String keyFor(String providerId) => switch (providerId) {
     'gemini' => geminiApiKey,
     'huggingface' => huggingFaceToken,
+    'azure' => azureApiKey,
     _ => '',
   };
 
@@ -48,6 +52,7 @@ class AppSettings {
     'credentials': {
       'geminiApiKey': geminiApiKey,
       'huggingFaceToken': huggingFaceToken,
+      'azureApiKey': azureApiKey,
     },
   };
 
@@ -97,6 +102,16 @@ class AppSettings {
             },
           };
           version = 2;
+        case 2:
+          final credentials =
+              (migrated['credentials'] as Map?)?.cast<String, dynamic>() ??
+              const {};
+          migrated = {
+            'schemaVersion': 3,
+            'preferences': migrated['preferences'],
+            'credentials': {...credentials, 'azureApiKey': ''},
+          };
+          version = 3;
       }
     }
     return migrated;
@@ -117,6 +132,7 @@ class AppSettings {
               true
           ? preferences['huggingFaceModel'] as String
           : defaultHuggingFaceModel,
+      azureApiKey: credentials['azureApiKey'] as String? ?? '',
     );
   }
 }
@@ -204,7 +220,12 @@ class SettingsService {
     final provider = preferences['imageProvider'];
     final model = preferences['huggingFaceModel'];
     if (provider is String &&
-        const {'pollinations', 'huggingface', 'gemini'}.contains(provider)) {
+        const {
+          'pollinations',
+          'huggingface',
+          'gemini',
+          'azure',
+        }.contains(provider)) {
       current.imageProvider = provider;
     }
     if (model is String && model.trim().isNotEmpty) {

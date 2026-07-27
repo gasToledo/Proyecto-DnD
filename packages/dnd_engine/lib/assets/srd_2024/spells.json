@@ -3285,5 +3285,731 @@
       "warlock",
       "sorcerer"
     ]
+  },
+  {
+    "id": "friends",
+    "name": "Amistad",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "10 pies",
+    "components": "S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o queda hechizado; falla solo con humanoides y termina si lo dañás o atacás.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "elementalism",
+    "name": "Elementalismo",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Efecto elemental menor: esculpir tierra o fuego, crear agua o una llama, levantar polvo o apagar fuegos pequeños.",
+    "classes": [
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "sorcerous-burst",
+    "name": "Estallido Mágico",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "120 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro a distancia: 1d8 del tipo que elijas entre ácido, frío, fuego, psíquico, relámpago, trueno o veneno. Cada 8 permite tirar otro d8, hasta tu modificador de aptitud mágica.",
+    "classes": [
+      "sorcerer"
+    ]
+  },
+  {
+    "id": "mind-sliver",
+    "name": "Fragmento Mental",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "1 asalto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Salvación de Inteligencia o 1d6 psíquico y resta 1d4 a su próxima salvación antes del final de tu siguiente turno.",
+    "classes": [
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "blade-ward",
+    "name": "Guardia de Cuchillas",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Quien te ataque resta 1d4 a la tirada mientras dure el conjuro.",
+    "classes": [
+      "bard",
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "thorn-whip",
+    "name": "Látigo de Espinas",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro cuerpo a cuerpo: 1d6 perforante y, si el objetivo es Grande o menor, lo arrastrás 10 pies hacia vos.",
+    "classes": [
+      "druid"
+    ]
+  },
+  {
+    "id": "word-of-radiance",
+    "name": "Palabra de Resplandor",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Emanación de 5 pies: las criaturas que elijas hacen salvación de Constitución o sufren 1d6 radiante.",
+    "classes": [
+      "cleric"
+    ]
+  },
+  {
+    "id": "thunderclap",
+    "name": "Tronar",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Emanación de 5 pies: salvación de Constitución o 1d6 de trueno. El estruendo se oye a 100 pies.",
+    "classes": [
+      "bard",
+      "warlock",
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "alarm",
+    "name": "Alarma",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "1 minuto",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": true,
+    "description": "Vigilás una zona de hasta un cubo de 20 pies; te avisa mental o sonoramente si alguien no exento entra o la toca.",
+    "classes": [
+      "ranger",
+      "wizard"
+    ]
+  },
+  {
+    "id": "armor-of-agathys",
+    "name": "Armadura de Agathys",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": false,
+    "description": "5 PG temporales y 5 de daño de frío a quien te acierte cuerpo a cuerpo. Termina si perdés los temporales.",
+    "classes": [
+      "warlock"
+    ]
+  },
+  {
+    "id": "mage-armor",
+    "name": "Armadura de Mago",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Abjuración",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "8 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "La CA base de una criatura sin armadura pasa a 13 + su modificador por Destreza. Termina si se pone armadura.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "arms-of-hadar",
+    "name": "Brazos de Hadar",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Emanación de 10 pies: salvación de Fuerza o 2d6 necrótico y sin reacciones hasta su siguiente turno; mitad de daño si la supera.",
+    "classes": [
+      "warlock"
+    ]
+  },
+  {
+    "id": "searing-smite",
+    "name": "Castigo Abrasador",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tras acertar: 1d6 de fuego extra y el objetivo arde 1d6 por turno hasta que supere una salvación de Constitución.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "thunderous-smite",
+    "name": "Castigo Atronador",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tras acertar: 2d6 de trueno extra y salvación de Fuerza o lo empujás 10 pies y queda derribado.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "divine-smite",
+    "name": "Castigo Divino",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tras acertar: 2d8 radiante extra, más 1d8 si el objetivo es infernal o muerto viviente.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "wrathful-smite",
+    "name": "Castigo Furioso",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Nigromancia",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tras acertar: 1d6 necrótico extra y salvación de Sabiduría o queda asustado; repite la salvación al final de cada turno.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "create-or-destroy-water",
+    "name": "Crear o Destruir Agua",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Creás o destruís hasta 40 litros de agua, o hacés llover en un cubo de 30 pies para apagar llamas.",
+    "classes": [
+      "cleric",
+      "druid"
+    ]
+  },
+  {
+    "id": "ice-knife",
+    "name": "Cuchillo de Hielo",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro a distancia por 1d10 perforante; acierte o no, estalla y las criaturas a 5 pies hacen salvación de Destreza contra 2d6 de frío.",
+    "classes": [
+      "druid",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "detect-evil-and-good",
+    "name": "Detectar el Bien y el Mal",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Percibís aberraciones, celestiales, elementales, feéricos, infernales y muertos vivientes a 30 pies, y el conjuro consagrar.",
+    "classes": [
+      "cleric",
+      "paladin"
+    ]
+  },
+  {
+    "id": "detect-poison-and-disease",
+    "name": "Detectar Venenos y Enfermedades",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Adivinación",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": true,
+    "description": "Percibís e identificás venenos, criaturas venenosas y enfermedades mágicas a 30 pies.",
+    "classes": [
+      "cleric",
+      "druid",
+      "ranger",
+      "paladin"
+    ]
+  },
+  {
+    "id": "tensers-floating-disk",
+    "name": "Disco Flotante de Tenser",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": true,
+    "description": "Un disco de fuerza flota a tu lado y carga hasta 250 kg; te sigue si te alejás menos de 20 pies.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "compelled-duel",
+    "name": "Duelo Forzado",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "Acción Adicional",
+    "range": "30 pies",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o el objetivo tiene desventaja al atacar a otros y no puede alejarse más de 30 pies de vos.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "animal-friendship",
+    "name": "Encantar Animal",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "24 horas",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una bestia hace salvación de Sabiduría o queda hechizada. Termina si vos o tus aliados la dañan.",
+    "classes": [
+      "bard",
+      "druid",
+      "ranger"
+    ]
+  },
+  {
+    "id": "find-familiar",
+    "name": "Encontrar Familiar",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "1 hora",
+    "range": "10 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": true,
+    "description": "Invocás un espíritu familiar con forma de animal pequeño; podés ver por sus sentidos y lanzar conjuros de toque a través de él.",
+    "classes": [
+      "wizard"
+    ]
+  },
+  {
+    "id": "divine-favor",
+    "name": "Favor Divino",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Transmutación",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tus ataques con arma infligen 1d4 radiante adicional al acertar.",
+    "classes": [
+      "paladin"
+    ]
+  },
+  {
+    "id": "ensnaring-strike",
+    "name": "Golpe Apresador",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Tras acertar: salvación de Fuerza o queda apresado por enredaderas y sufre 1d6 perforante por turno.",
+    "classes": [
+      "ranger"
+    ]
+  },
+  {
+    "id": "heroism",
+    "name": "Heroísmo",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "Toque",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "La criatura es inmune al estado de asustada y gana PG temporales iguales a tu modificador de aptitud mágica al inicio de cada turno.",
+    "classes": [
+      "bard",
+      "paladin"
+    ]
+  },
+  {
+    "id": "silent-image",
+    "name": "Imagen Silenciosa",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": true,
+    "ritual": false,
+    "description": "Creás una ilusión visual de hasta un cubo de 15 pies, sin sonido ni olor, que podés mover con una acción de magia.",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "hex",
+    "name": "Maleficio",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "Acción Adicional",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": true,
+    "ritual": false,
+    "description": "Maldecís a una criatura: 1d6 necrótico extra cuando le acertás, y desventaja en las pruebas de una característica a elegir.",
+    "classes": [
+      "warlock"
+    ]
+  },
+  {
+    "id": "chromatic-orb",
+    "name": "Orbe Cromático",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "90 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Ataque de conjuro a distancia: 3d8 de ácido, frío, fuego, relámpago, trueno o veneno. Si repetís número en los d8, el orbe rebota a otra criatura.",
+    "classes": [
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "bane",
+    "name": "Perdición",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Hasta tres criaturas hacen salvación de Carisma; las que fallen restan 1d4 a sus ataques y salvaciones.",
+    "classes": [
+      "bard",
+      "cleric",
+      "warlock"
+    ]
+  },
+  {
+    "id": "purify-food-and-drink",
+    "name": "Purificar Comida y Bebida",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Transmutación",
+    "castingTime": "Acción",
+    "range": "10 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Quitás veneno y podredumbre de la comida y bebida no mágicas en una esfera de 5 pies de radio.",
+    "classes": [
+      "cleric",
+      "druid",
+      "paladin"
+    ]
+  },
+  {
+    "id": "witch-bolt",
+    "name": "Rayo de Hechicería",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Evocación",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Ataque de conjuro a distancia por 2d12 de relámpago; después, con una acción adicional por turno, repetís 1d12 automático.",
+    "classes": [
+      "warlock",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "tashas-hideous-laughter",
+    "name": "Risa Horrible de Tasha",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o queda derribada e incapacitada, riendo sin control; repite la salvación al final de cada turno y con daño.",
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "color-spray",
+    "name": "Rociada de Color",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Ilusionismo",
+    "castingTime": "Acción",
+    "range": "Personal",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Cono de 15 pies: salvación de Constitución o quedan cegadas hasta el final de tu siguiente turno.",
+    "classes": [
+      "bard",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "jump",
+    "name": "Salto",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Transmutación",
+    "castingTime": "Acción Adicional",
+    "range": "Toque",
+    "components": "V, S, M",
+    "duration": "1 minuto",
+    "concentration": false,
+    "ritual": false,
+    "description": "La criatura puede saltar hasta 30 pies una vez por turno gastando 10 pies de movimiento.",
+    "classes": [
+      "druid",
+      "ranger",
+      "sorcerer",
+      "wizard"
+    ]
+  },
+  {
+    "id": "unseen-servant",
+    "name": "Sirviente Invisible",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S, M",
+    "duration": "1 hora",
+    "concentration": false,
+    "ritual": true,
+    "description": "Una fuerza invisible Mediana hace tareas simples que le ordenes. CA 10, 1 PG y Fuerza 2; no puede atacar.",
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "dissonant-whispers",
+    "name": "Susurros Discordantes",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Salvación de Sabiduría o 3d6 psíquico y debe usar su reacción para huir de vos; mitad de daño y sin huida si la supera.",
+    "classes": [
+      "bard"
+    ]
+  },
+  {
+    "id": "illusory-script",
+    "name": "Texto Ilusorio",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Ilusionismo",
+    "castingTime": "1 minuto",
+    "range": "Toque",
+    "components": "S, M",
+    "duration": "10 dias",
+    "concentration": false,
+    "ritual": true,
+    "description": "Escribís un texto que solo leen quienes designes; el resto ve letra mágica o un mensaje distinto.",
+    "classes": [
+      "bard",
+      "warlock",
+      "wizard"
+    ]
+  },
+  {
+    "id": "hail-of-thorns",
+    "name": "Tormenta de Espinas",
+    "source": "phb_2024",
+    "level": 1,
+    "school": "Conjuración",
+    "castingTime": "Acción Adicional",
+    "range": "Personal",
+    "components": "V",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Tras acertar con un arma a distancia: el objetivo y las criaturas a 5 pies hacen salvación de Destreza contra 1d10 perforante.",
+    "classes": [
+      "ranger"
+    ]
   }
 ]

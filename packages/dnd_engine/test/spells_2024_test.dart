@@ -44,6 +44,59 @@ void main() {
     expect(s.description, isNot(contains('combaten a tu lado')));
   });
 
+  group('altas del capítulo 7: trucos y nivel 1', () {
+    // Los campos mecánicos salieron del parseo del PDF, no de transcribir a
+    // mano, así que lo que se comprueba acá es la conversión: métrico a pies,
+    // el ritual separado del tiempo de lanzamiento y la concentración.
+    test('el catálogo cubre los trucos y el nivel 1 del manual', () {
+      final trucos = repo.spells.values.where((s) => s.level == 0);
+      final nivel1 = repo.spells.values.where((s) => s.level == 1);
+      expect(trucos.length, greaterThanOrEqualTo(32));
+      expect(nivel1.length, greaterThanOrEqualTo(63));
+    });
+
+    test('Castigo Divino es un conjuro en 2024, no un rasgo del Paladín', () {
+      // El cambio de reglas más visible de este nivel: en 2014 el Paladín
+      // gastaba espacios directamente; en 2024 gasta el conjuro.
+      final s = spell('divine-smite');
+      expect(s.level, 1);
+      expect(s.classes, contains('paladin'));
+      expect(s.castingTime, 'Acción Adicional');
+      expect(s.description, contains('2d8'));
+    });
+
+    test('el ritual sale del tiempo de lanzamiento y no lo ensucia', () {
+      // El PDF escribe "Acción o ritual" en el mismo campo; acá va separado.
+      for (final id in ['alarm', 'find-familiar', 'unseen-servant']) {
+        expect(spell(id).ritual, isTrue, reason: '$id debería ser ritual');
+        expect(spell(id).castingTime, isNot(contains('ritual')));
+      }
+      expect(spell('chromatic-orb').ritual, isFalse);
+    });
+
+    test('los alcances nuevos quedaron en pies', () {
+      expect(spell('thorn-whip').range, '30 pies');
+      expect(spell('hex').range, '90 pies');
+      expect(spell('blade-ward').range, 'Personal');
+      expect(spell('mage-armor').range, 'Toque');
+    });
+
+    test('la concentración quedó separada de la duración', () {
+      final s = spell('hex');
+      expect(s.concentration, isTrue);
+      expect(s.duration, '1 hora');
+      expect(spell('divine-favor').concentration, isFalse);
+    });
+
+    test('las altas se etiquetan phb_2024, no srd_2024', () {
+      // Sin el SRD a mano no se puede afirmar que estén cubiertas por
+      // CC BY 4.0. Quedarse corto es seguro; al revés sería un problema.
+      for (final id in ['friends', 'divine-smite', 'hex', 'chromatic-orb']) {
+        expect(spell(id).source, ContentSource.phb2024);
+      }
+    });
+  });
+
   group('nomenclatura del PHB 2024', () {
     // 31 conjuros llevaban un nombre en español que no es el del manual. Se
     // verificaron por dos vías independientes: la firma de metadatos (nivel,

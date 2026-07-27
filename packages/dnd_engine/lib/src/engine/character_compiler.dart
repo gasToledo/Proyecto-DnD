@@ -37,14 +37,22 @@ class CharacterCompiler {
     }
 
     // Efectos de raza, clase (por nivel), trasfondo y dotes.
-    if (race != null) builder.applyAll(race.effects);
+    if (race != null) {
+      builder.applyAll(
+        race.effects,
+        spellAbilityOverride: c.speciesSpellcastingAbility,
+      );
+    }
 
     // Rasgos del linaje de especie (si se eligió y pertenece a esta especie),
     // por nivel: igual que las subclases, pueden crecer con el personaje.
     final lineage = c.lineageId == null ? null : repo.lineage(c.lineageId!);
     if (lineage != null && lineage.raceId == c.raceId) {
       for (final f in lineage.featuresUpTo(c.level)) {
-        builder.applyAll(f.effects);
+        builder.applyAll(
+          f.effects,
+          spellAbilityOverride: c.speciesSpellcastingAbility,
+        );
       }
     }
 
@@ -87,7 +95,9 @@ class CharacterCompiler {
 
     // --- Finalización a valores derivados ---
     final scores = {for (final a in Ability.values) a: builder.finalScore(a)};
-    final mods = {for (final a in Ability.values) a: abilityModifier(scores[a]!)};
+    final mods = {
+      for (final a in Ability.values) a: abilityModifier(scores[a]!)
+    };
     final profBonus = proficiencyBonusForLevel(c.level);
     final conMod = mods[Ability.constitution]!;
     final dexMod = mods[Ability.dexterity]!;
@@ -170,11 +180,13 @@ class CharacterCompiler {
         saveDc: 8 + proficiencyBonus + mod,
         attackBonus: proficiencyBonus + mod,
       ));
-      if (g.use == InnateSpellUse.oncePerLongRest) {
+      if (g.use != InnateSpellUse.atWill) {
         resources.add(CharacterResource(
           id: 'innate-${spell.id}',
           name: spell.name,
-          max: 1,
+          max: g.use == InnateSpellUse.proficiencyBonusPerLongRest
+              ? proficiencyBonus
+              : 1,
           recharge: RechargeOn.longRest,
           description: 'Lanzarlo sin gastar espacio de conjuro. '
               'También podés lanzarlo gastando un espacio.',
@@ -234,11 +246,13 @@ class CharacterCompiler {
   int _speed(Character c, SheetBuilder b) {
     var speed = b.speed;
     if (b.unarmoredMovementBonus != 0) {
-      final armor =
-          c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
+      final armor = c.equippedArmorId == null
+          ? null
+          : repo.armorPiece(c.equippedArmorId!);
       var voided = false;
       if (armor != null && !armor.isShield) {
-        voided = b.unarmoredMovementHeavyOnly ? armor.category == 'heavy' : true;
+        voided =
+            b.unarmoredMovementHeavyOnly ? armor.category == 'heavy' : true;
       }
       if (c.shieldEquipped && !b.unarmoredMovementAllowShield) voided = true;
       if (!voided) speed += b.unarmoredMovementBonus;
@@ -249,17 +263,19 @@ class CharacterCompiler {
   int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {
     final dexMod = mods[Ability.dexterity]!;
     var ac = 10 + dexMod; // Sin armadura.
-    final armor = c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
+    final armor =
+        c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
     if (armor != null && !armor.isShield) {
       ac = armor.baseAc;
       if (armor.addDexMod) {
-        ac += armor.maxDexBonus == null ? dexMod : min(dexMod, armor.maxDexBonus!);
+        ac += armor.maxDexBonus == null
+            ? dexMod
+            : min(dexMod, armor.maxDexBonus!);
       }
     } else if (b.unarmoredDefenseAbility != null) {
       // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
       // El Monje la pierde si empuña un escudo; el Bárbaro la conserva.
-      final voidedByShield =
-          c.shieldEquipped && !b.unarmoredDefenseAllowShield;
+      final voidedByShield = c.shieldEquipped && !b.unarmoredDefenseAllowShield;
       if (!voidedByShield) {
         ac = 10 + dexMod + mods[b.unarmoredDefenseAbility!]!;
       }
@@ -294,9 +310,13 @@ class CharacterCompiler {
         ? w.versatileDice!
         : w.damageDice;
 
+    // 2024: la propiedad de Maestría solo se aplica con armas con las que sos
+    // competente. `proficient` sale de la ficha compilada, así que una subclase
+    // o dote que conceda la categoría también habilita la maestría.
     final hasMastery = w.mastery != null &&
         b.weaponMasterySlots > 0 &&
-        c.weaponMasteryChoices.contains(w.id);
+        c.weaponMasteryChoices.contains(w.id) &&
+        proficient;
 
     return Attack(
       weaponId: w.id,

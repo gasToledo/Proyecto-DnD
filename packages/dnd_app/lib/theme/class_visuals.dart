@@ -37,6 +37,11 @@ const Map<String, IconData> _icons = {
   'whatshot': Icons.whatshot,
   'landscape': Icons.landscape,
   'auto_awesome': Icons.auto_awesome,
+  // Especies de Forge of the Artificer.
+  'masks': Icons.masks,
+  'psychology': Icons.psychology,
+  'handshake': Icons.handshake,
+  'smart_toy': Icons.smart_toy,
   // Trasfondos.
   'military_tech': Icons.military_tech,
   'security': Icons.security,
@@ -50,6 +55,28 @@ const Map<String, IconData> _icons = {
   'storefront': Icons.storefront,
   'diamond': Icons.diamond,
   'history_edu': Icons.history_edu,
+  'church': Icons.church,
+  'menu_book': Icons.menu_book,
+  'hiking': Icons.hiking,
+  'sailing': Icons.sailing,
+  // Trasfondos de Forge of the Artificer: las trece casas dracomarcadas más
+  // Heredero Aberrante, Agente de Casa, Arqueólogo e Inquisidor.
+  'blur_on': Icons.blur_on,
+  'account_balance': Icons.account_balance,
+  'badge': Icons.badge,
+  'precision_manufacturing': Icons.precision_manufacturing,
+  'restaurant': Icons.restaurant,
+  'medical_services': Icons.medical_services,
+  'lock': Icons.lock,
+  'air': Icons.air,
+  'visibility': Icons.visibility,
+  'train': Icons.train,
+  'dark_mode': Icons.dark_mode,
+  'edit_note': Icons.edit_note,
+  'travel_explore': Icons.travel_explore,
+  'nightlife': Icons.nightlife,
+  'pets': Icons.pets,
+  'search': Icons.search,
 };
 
 /// Ícono declarado por un contenido, o [fallback] si no lo declara o el id no

@@ -21,12 +21,14 @@ class _RaceStep extends StatelessWidget {
                 icon: raceIcon(r),
                 title: r.name,
                 subtitle: r.tagline,
+                source: r.source,
                 accent: pal.gold,
                 selected: draft.raceId == r.id,
                 onTap: () {
                   if (draft.raceId != r.id) {
                     draft.raceId = r.id;
                     draft.lineageId = null;
+                    draft.speciesSpellcastingAbility = null;
                     draft.raceSkills.clear();
                     draft.raceFeatId = null;
                   }
@@ -62,9 +64,14 @@ class _RaceStep extends StatelessWidget {
                       for (final lineage in draft.lineageOptions)
                         lineage.id: lineage.name,
                     },
+                    sources: {
+                      for (final lineage in draft.lineageOptions)
+                        lineage.id: lineage.source,
+                    },
                     selected: draft.lineageId,
                     onSelect: (id) {
                       draft.lineageId = id;
+                      draft.speciesSpellcastingAbility = null;
                       onChanged();
                     },
                   ),
@@ -79,6 +86,27 @@ class _RaceStep extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
+                  ],
+                  if (draft.lineageUsesSpellcastingAbility) ...[
+                    const SizedBox(height: 14),
+                    _AbilityDropdown(
+                      label: 'Aptitud mágica',
+                      value: draft.speciesSpellcastingAbility,
+                      options: const [
+                        Ability.intelligence,
+                        Ability.wisdom,
+                        Ability.charisma,
+                      ],
+                      onChanged: (ability) {
+                        draft.speciesSpellcastingAbility = ability;
+                        onChanged();
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Se usa para la CD y los ataques de los conjuros del linaje.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ],
               ],
@@ -120,6 +148,7 @@ class _ClassStep extends StatelessWidget {
                 subtitle:
                     'd${c.hitDie} · '
                     '${c.savingThrows.map((a) => a.abbr).join(" / ")}',
+                source: c.source,
                 accent: classAccent(c, context.palette.gold),
                 selected: draft.classId == c.id,
                 onTap: () {
@@ -208,6 +237,7 @@ class _BackgroundStep extends StatelessWidget {
                 icon: backgroundIcon(b),
                 title: b.name,
                 subtitle: b.tagline,
+                source: b.source,
                 accent: context.palette.gold,
                 selected: draft.backgroundId == b.id,
                 onTap: () {

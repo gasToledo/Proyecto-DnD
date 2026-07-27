@@ -10,7 +10,8 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   /// Navega hasta Equipo con la clase indicada.
@@ -19,10 +20,12 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: CreationWizard(repo: repo, onCreate: (_) {}),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: CreationWizard(repo: repo, onCreate: (_) {}),
+      ),
+    );
     await tester.pumpAndSettle();
 
     Future<void> next() async {
@@ -63,7 +66,9 @@ void main() {
       await tester.tap(find.byType(DropdownButtonFormField<int>).at(i));
       await tester.pumpAndSettle();
       final item = find.descendant(
-          of: find.byType(ListView), matching: find.text('${order[i]}'));
+        of: find.byType(ListView),
+        matching: find.text('${order[i]}'),
+      );
       await tester.ensureVisible(item);
       await tester.pumpAndSettle();
       await tester.tap(item);
@@ -89,8 +94,9 @@ void main() {
     await next();
   }
 
-  testWidgets('lanzador: muestra trucos y conjuros con sus contadores',
-      (tester) async {
+  testWidgets('lanzador: muestra trucos y conjuros con sus contadores', (
+    tester,
+  ) async {
     await gotoEquipo(tester, 'Mago');
 
     expect(find.text('ARMADURA'), findsOneWidget);
@@ -102,8 +108,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('no lanzador: muestra el cartel en vez de la lista',
-      (tester) async {
+  testWidgets('no lanzador: muestra el cartel en vez de la lista', (
+    tester,
+  ) async {
     await gotoEquipo(tester, 'Guerrero');
 
     expect(find.text('CONJUROS'), findsOneWidget);
@@ -117,7 +124,9 @@ void main() {
 
     // Hay dos listas acotadas posibles en el wizard; en Equipo, la del arma.
     final list = find.descendant(
-        of: find.byType(Scrollbar), matching: find.byType(ListView));
+      of: find.byType(Scrollbar),
+      matching: find.byType(ListView),
+    );
     expect(list, findsOneWidget);
     expect(tester.getSize(list).height, lessThanOrEqualTo(300.0));
     expect(tester.takeException(), isNull);

@@ -49,6 +49,9 @@ void main() {
       findsOneWidget,
     );
     await tapText('Alto Elfo');
+    await tester.tap(find.byType(DropdownButton<Ability>));
+    await tester.pumpAndSettle();
+    await tapText('INT');
     await next();
     await tapText('Mago');
     await next();
@@ -130,6 +133,7 @@ void main() {
     expect(created!.classId, 'wizard');
     expect(created!.raceId, 'elf');
     expect(created!.lineageId, 'elf-high');
+    expect(created!.speciesSpellcastingAbility, Ability.intelligence);
     expect(created!.backgroundId, 'soldier');
     expect(created!.alignment, CharacterAlignment.neutralGood);
     expect(created!.chosenSkills, containsAll(['arcana', 'history']));

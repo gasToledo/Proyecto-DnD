@@ -43,9 +43,19 @@ extension _LevelUpSections on _LevelUpScreenState {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            s.name,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  s.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              SourceBadge(s.source),
+                            ],
                           ),
                           if (s.description.isNotEmpty) ...[
                             const SizedBox(height: 3),

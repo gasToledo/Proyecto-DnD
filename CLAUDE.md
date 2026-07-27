@@ -6,7 +6,7 @@ este repositorio.
 ## Producto
 
 Aplicación personal y offline-first para crear, administrar y usar fichas de
-personaje de **D&D 5e con reglas 2024 (SRD 5.2)**.
+personaje de **D&D 5e con reglas 2024 (SRD 5.2.1)**.
 
 Es un monorepo con dos paquetes:
 
@@ -20,8 +20,10 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 
 ## Estado actual
 
-- 12 clases y 48 subclases del PHB 2024.
-- 10 especies, 8 linajes, 12 trasfondos, 57 dotes y 177 conjuros.
+- 12 clases y 48 subclases: 12 del SRD 5.2.1 y 36 del PHB 2024.
+- 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
+  Artificer*), 8 linajes, 33 trasfondos, 87 dotes y los 388 conjuros del
+  capítulo 7 del PHB.
 - Creación guiada, subida de nivel, combate, inventario, notas y retratos IA.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
   secuenciales de datos.
@@ -113,6 +115,30 @@ contenido de `HomebrewStore` al mismo `ContentRepository` y luego inicia
 El contenido oficial vive en
 `packages/dnd_engine/lib/assets/srd_2024/`. Su `manifest.json` declara la versión
 del formato y la edición de reglas.
+
+Hay dos referencias, que resuelven preguntas distintas. Las **reglas** las manda
+el **Manual del Jugador 2024**, que es con el que juega la mesa: si difiere del
+SRD, gana el PHB. La **licencia** la manda el **SRD 5.2.1**: solo lo que está
+ahí queda cubierto por CC BY 4.0.
+
+No etiquetar contenido PHB como `srd_2024`; el hecho de que una opción sea
+oficial no implica que esté incluida en el SRD. Que algo falte en el SRD tampoco
+es motivo para excluirlo del catálogo: es motivo para etiquetarlo `phb_2024`.
+
+El detalle y el avance de la comprobación están en
+`docs/auditoria-reglas-2024.md`.
+
+*Forge of the Artificer* (2025) es una tercera procedencia, `foa_2025`. No está
+en el SRD y no es el PHB, pero la razón de distinguirlo no es de licencia: no
+todas las mesas usan esa expansión, así que el jugador tiene que reconocer que
+una opción viene de otro libro **antes** de comprometer un personaje con ella.
+
+`ContentSource` distingue `srd_2024`, `phb_2024` y `foa_2025`, y
+`content_integrity_test` fija qué ids pertenecen al SRD. Un valor desconocido
+degrada a `homebrew` sin
+avisar, porque ese mismo parser procesa importaciones no confiables: la red de
+seguridad del contenido oficial es el test, no una excepción al cargar. La app
+muestra la procedencia con `SourceBadge` en las tarjetas de selección.
 
 ### UI
 

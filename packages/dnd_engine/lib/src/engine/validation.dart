@@ -3,6 +3,7 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/effects.dart';
 import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
 import 'character_compiler.dart';
@@ -59,6 +60,12 @@ class CharacterValidator {
             'El linaje "${lineage.name}" pertenece a ${lineage.raceId}, '
                 'no a ${c.raceId}.',
           ));
+        } else if (_lineageUsesSpellcasting(lineage) &&
+            c.speciesSpellcastingAbility == null) {
+          w.add(const ValidationWarning(
+            'species_spellcasting_ability_pending',
+            'Falta elegir la aptitud mágica del linaje (INT, SAB o CAR).',
+          ));
         }
       }
     }
@@ -97,6 +104,21 @@ class CharacterValidator {
         'too_many_masteries',
         'Elegiste ${c.weaponMasteryChoices.length} maestrías pero tenés ${sheet.weaponMasterySlots} espacios.',
       ));
+    }
+
+    // La maestría requiere competencia con el arma. La elección se conserva por
+    // si más adelante ganás la competencia, pero mientras tanto no se aplica.
+    for (final weaponId in c.weaponMasteryChoices) {
+      final weapon = repo.weapon(weaponId);
+      if (weapon == null) continue;
+      final proficient = sheet.weaponProficiencies.contains(weapon.category) ||
+          sheet.weaponProficiencies.contains(weapon.id);
+      if (!proficient) {
+        w.add(ValidationWarning(
+          'mastery_not_proficient',
+          'No sos competente con ${weapon.name}: su maestría no se aplica.',
+        ));
+      }
     }
 
     final armorId = c.equippedArmorId;
@@ -244,12 +266,15 @@ class CharacterValidator {
       ...c.featIds,
       c.fightingStyleId,
     ];
+    // El set completo se necesita para las dotes que exigen otra dote: una
+    // marca mayor mira si la marca base también está elegida.
+    final heldFeatIds = chosenFeatIds.whereType<String>().toSet();
     for (final id in chosenFeatIds) {
       if (id == null) continue;
       final feat = repo.feat(id);
       final prereq = feat?.prerequisite;
       if (feat == null || prereq == null || prereq.isEmpty) continue;
-      final missing = _unmetPrerequisite(prereq, c, sheet);
+      final missing = _unmetPrerequisite(prereq, c, sheet, heldFeatIds);
       if (missing != null) {
         w.add(ValidationWarning(
           'feat_prerequisite',
@@ -260,6 +285,11 @@ class CharacterValidator {
 
     return w;
   }
+
+  bool _lineageUsesSpellcasting(Lineage lineage) => lineage.features.any(
+        (feature) =>
+            feature.effects.any((effect) => effect is GrantSpellEffect),
+      );
 
   /// Chequeos no bloqueantes sobre trucos y conjuros elegidos.
   void _validateSpells(
@@ -333,12 +363,18 @@ class CharacterValidator {
 
   /// Devuelve una descripción del primer prerrequisito incumplido, o null si
   /// se cumplen todos.
-  String? _unmetPrerequisite(
-      FeatPrerequisite prereq, Character c, ComputedSheet sheet) {
+  String? _unmetPrerequisite(FeatPrerequisite prereq, Character c,
+      ComputedSheet sheet, Set<String> heldFeatIds) {
     for (final entry in prereq.minAbilityScores.entries) {
       if (sheet.abilityScores[entry.key]! < entry.value) {
         return '${entry.key.abbr} ${entry.value}';
       }
+    }
+    // Basta una: el PHB 2024 escribe "Fuerza o Destreza 13 o más".
+    final any = prereq.anyAbilityScores;
+    if (any.isNotEmpty &&
+        !any.entries.any((e) => sheet.abilityScores[e.key]! >= e.value)) {
+      return any.entries.map((e) => '${e.key.abbr} ${e.value}').join(' o ');
     }
     final reqProf = prereq.requiredProficiency;
     if (reqProf != null) {
@@ -349,6 +385,16 @@ class CharacterValidator {
               sheet.toolProficiencies.contains(reqProf) ||
               sheet.skillProficiencies.contains(reqProf));
       if (!has) return 'competencia "$reqProf"';
+    }
+    final reqFeats = prereq.requiredFeatIds;
+    if (reqFeats.isNotEmpty && !reqFeats.any(heldFeatIds.contains)) {
+      final names = reqFeats.map((id) => repo.feat(id)?.name ?? id);
+      return 'la dote ${names.join(' o ')}';
+    }
+    final reqCategory = prereq.requiredFeatCategory;
+    if (reqCategory != null &&
+        !heldFeatIds.any((id) => repo.feat(id)?.category == reqCategory)) {
+      return 'alguna dote de categoría "$reqCategory"';
     }
     if (prereq.minLevel != null && c.level < prereq.minLevel!) {
       return 'nivel ${prereq.minLevel}';

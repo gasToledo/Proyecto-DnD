@@ -116,4 +116,47 @@ void main() {
       findsNothing,
     );
   });
+
+  testWidgets('no ofrece Iniciado en la Magia: es dote de origen', (
+    tester,
+  ) async {
+    // En 2024 los ASI solo admiten dotes generales, e Iniciado en la Magia es
+    // de origen. Antes figuraba como general y aparecía acá.
+    expect(repo.feat('magic-initiate-wizard')!.category, 'origin');
+
+    final c = Character(
+      id: 't-fighter-4',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      subclassId: 'champion',
+      level: 3,
+      assignedScores: {
+        Ability.strength: 16,
+        Ability.dexterity: 14,
+        Ability.constitution: 14,
+        Ability.intelligence: 10,
+        Ability.wisdom: 12,
+        Ability.charisma: 8,
+      },
+      hpPerLevel: [10, 6, 6],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: c, repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tomar dote'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.widgetWithText(ChoiceChip, 'Iniciado en la Magia (Mago)'),
+      findsNothing,
+    );
+  });
 }

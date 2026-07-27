@@ -5,10 +5,17 @@ class _SingleSelect extends StatelessWidget {
   final Map<String, String> options; // id -> label
   final String? selected;
   final ValueChanged<String> onSelect;
+
+  /// Procedencia por opción, cuando corresponde mostrarla (id -> fuente).
+  /// Los linajes la necesitan por el mismo motivo que las especies: una subraza
+  /// puede venir de otro libro y eso hay que verlo antes de elegirla.
+  final Map<String, ContentSource>? sources;
+
   const _SingleSelect({
     required this.options,
     required this.selected,
     required this.onSelect,
+    this.sources,
   });
 
   @override
@@ -19,7 +26,17 @@ class _SingleSelect extends StatelessWidget {
       children: [
         for (final e in options.entries)
           ChoiceChip(
-            label: Text(e.value),
+            label: switch (sources?[e.key]) {
+              final source? => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(e.value),
+                  const SizedBox(width: 8),
+                  SourceBadge(source),
+                ],
+              ),
+              null => Text(e.value),
+            },
             selected: selected == e.key,
             onSelected: (_) => onSelect(e.key),
           ),
@@ -35,7 +52,9 @@ String _weaponCategoryLabel(String category) =>
 /// Subtítulo con daño y (si aplica) la propiedad de maestría del arma.
 String _weaponSubtitle(Weapon w) {
   final dmg = '${w.damageDice} ${titleCase(w.damageType)}';
-  return w.mastery == null ? dmg : '$dmg · Maestría: ${titleCase(w.mastery!)}';
+  return w.mastery == null
+      ? dmg
+      : '$dmg · Maestría: ${weaponMasteryName(w.mastery!)}';
 }
 
 /// Encabezado de grupo (Simples / Marciales) dentro de un picker de armas.

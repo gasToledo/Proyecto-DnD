@@ -28,7 +28,7 @@ class _SpellFormState extends State<SpellForm> {
     text: widget.initial?.school ?? '',
   );
   late final _castingTime = TextEditingController(
-    text: widget.initial?.castingTime ?? '1 acción',
+    text: widget.initial?.castingTime ?? 'Acción',
   );
   late final _range = TextEditingController(text: widget.initial?.range ?? '');
   late final _components = TextEditingController(

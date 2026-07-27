@@ -3,13 +3,28 @@ import 'effects.dart';
 
 /// Origen del contenido. Oficial y homebrew comparten estructura; solo cambia
 /// esta etiqueta (y de qué edición proviene lo oficial).
+///
+/// `srd2024` es lo licenciable bajo CC BY 4.0. `phb2024` es contenido oficial
+/// del Player's Handbook 2024 que **no** está en el SRD 5.2.1 y por lo tanto no
+/// queda cubierto por esa atribución: la distinción es de licencia, no cosmética.
+/// `foa2025` es *Forge of the Artificer*, una expansión aparte: tampoco está en
+/// el SRD, y además el jugador necesita ver que una opción viene de otro libro
+/// antes de comprometer un personaje con ella.
 enum ContentSource {
   srd2024,
+  phb2024,
+  foa2025,
   srd2014,
   homebrew;
 
+  /// Un valor desconocido degrada a [homebrew] a propósito: este parser también
+  /// procesa importaciones, que se tratan como datos no confiables y no deben
+  /// hacer fallar la carga. La red de seguridad del contenido oficial es
+  /// `content_integrity_test.dart`, no una excepción en tiempo de carga.
   static ContentSource fromJson(String? v) => switch (v) {
         'srd_2024' => ContentSource.srd2024,
+        'phb_2024' => ContentSource.phb2024,
+        'foa_2025' => ContentSource.foa2025,
         'srd_2014' => ContentSource.srd2014,
         'homebrew' => ContentSource.homebrew,
         _ => ContentSource.homebrew,
@@ -17,6 +32,8 @@ enum ContentSource {
 
   String toJson() => switch (this) {
         ContentSource.srd2024 => 'srd_2024',
+        ContentSource.phb2024 => 'phb_2024',
+        ContentSource.foa2025 => 'foa_2025',
         ContentSource.srd2014 => 'srd_2014',
         ContentSource.homebrew => 'homebrew',
       };
@@ -376,33 +393,64 @@ class Background {
 /// Mágico exige ser competente con conjuros). Todos los campos son opcionales
 /// y se combinan con Y lógico; ausentes = sin restricción de ese tipo.
 class FeatPrerequisite {
-  /// Puntuación mínima requerida por característica.
+  /// Puntuación mínima requerida por característica. Se combinan con Y lógico:
+  /// hay que cumplirlas todas.
   final Map<Ability, int> minAbilityScores;
+
+  /// Puntuaciones mínimas de las que basta cumplir **una**. El PHB 2024 usa
+  /// mucho esta forma ("Fuerza o Destreza 13 o más"), que [minAbilityScores]
+  /// no puede expresar porque exige todas sus entradas.
+  final Map<Ability, int> anyAbilityScores;
 
   /// Competencia requerida (id o categoría de arma/armadura/herramienta),
   /// o 'spellcasting' para exigir alguna competencia de lanzamiento.
   final String? requiredProficiency;
 
+  /// Dotes de las que hay que tener **alguna**. Forge of the Artificer las usa
+  /// para encadenar marcas: Marca Mayor de Tormenta exige Marca de Tormenta.
+  final List<String> requiredFeatIds;
+
+  /// Categoría de dote de la que hay que tener alguna. Cubre la forma
+  /// "cualquier dote de Marca Dracónica", que no se puede escribir como lista
+  /// sin repetir las trece.
+  final String? requiredFeatCategory;
+
   final int? minLevel;
 
   const FeatPrerequisite({
     this.minAbilityScores = const {},
+    this.anyAbilityScores = const {},
     this.requiredProficiency,
+    this.requiredFeatIds = const [],
+    this.requiredFeatCategory,
     this.minLevel,
   });
 
   bool get isEmpty =>
-      minAbilityScores.isEmpty && requiredProficiency == null && minLevel == null;
+      minAbilityScores.isEmpty &&
+      anyAbilityScores.isEmpty &&
+      requiredProficiency == null &&
+      requiredFeatIds.isEmpty &&
+      requiredFeatCategory == null &&
+      minLevel == null;
 
   Map<String, dynamic> toJson() => {
         'minAbilityScores': _abilityMapToJson(minAbilityScores),
+        'anyAbilityScores': _abilityMapToJson(anyAbilityScores),
         'requiredProficiency': requiredProficiency,
+        'requiredFeatIds': requiredFeatIds,
+        'requiredFeatCategory': requiredFeatCategory,
         'minLevel': minLevel,
       };
 
   factory FeatPrerequisite.fromJson(Map<String, dynamic> j) => FeatPrerequisite(
         minAbilityScores: _abilityMapFromJson(j['minAbilityScores']),
+        anyAbilityScores: _abilityMapFromJson(j['anyAbilityScores']),
         requiredProficiency: j['requiredProficiency'] as String?,
+        requiredFeatIds: (j['requiredFeatIds'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        requiredFeatCategory: j['requiredFeatCategory'] as String?,
         minLevel: j['minLevel'] as int?,
       );
 }
@@ -415,7 +463,12 @@ Map<Ability, int> _abilityMapFromJson(dynamic j) => {
         Ability.fromKey(e.key as String): e.value as int,
     };
 
-/// Dote. `category`: 'origin' | 'general' | 'fighting-style'.
+/// Dote. `category`: 'origin' | 'general' | 'fighting-style' | 'dragonmark' |
+/// 'epic-boon'.
+///
+/// Las dos últimas vienen de Forge of the Artificer. `dragonmark` se elige como
+/// dote de origen (los trasfondos de casa la conceden a nivel 1) o en cualquier
+/// elección libre posterior; `epic-boon` solo a nivel 19 o más.
 class Feat {
   final String id;
   final String name;
@@ -547,7 +600,7 @@ class Spell {
     required this.source,
     required this.level,
     this.school = '',
-    this.castingTime = '1 acción',
+    this.castingTime = 'Acción',
     this.range = '',
     this.components = '',
     this.duration = '',
@@ -581,7 +634,7 @@ class Spell {
         source: ContentSource.fromJson(j['source'] as String?),
         level: j['level'] as int,
         school: j['school'] as String? ?? '',
-        castingTime: j['castingTime'] as String? ?? '1 acción',
+        castingTime: j['castingTime'] as String? ?? 'Acción',
         range: j['range'] as String? ?? '',
         components: j['components'] as String? ?? '',
         duration: j['duration'] as String? ?? '',

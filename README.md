@@ -1,7 +1,7 @@
 # Fichas D&D 5e
 
 Aplicación de escritorio para crear y llevar personajes de **D&D 5.ª edición
-con las reglas de 2024 (SRD 5.2)**.
+con las reglas de 2024 (SRD 5.2.1)**.
 
 Funciona offline y sin cuentas: el asistente guía la creación, el motor calcula
 la ficha y todo se guarda en el equipo del usuario. Solo la generación opcional
@@ -9,7 +9,8 @@ de retratos por IA necesita conexión.
 
 El [brief funcional](brief-app-dnd5e.md) conserva la visión original del
 producto. La [guía técnica](CLAUDE.md) documenta la arquitectura y las reglas
-para contribuir.
+para contribuir. La [auditoría de reglas 2024](docs/auditoria-reglas-2024.md)
+registra la fuente de verdad, los hallazgos y el avance por bloque.
 
 ## Descargar para Windows
 
@@ -28,8 +29,8 @@ La última versión publicada está en
 - Creación guiada en ocho pasos, con borrador recuperable y protección ante
   salidas accidentales.
 - 12 clases y 48 subclases del PHB 2024.
-- 10 especies, 8 linajes, 12 trasfondos, 57 dotes, 35 armas, 13 armaduras y
-  177 conjuros.
+- 9 especies del SRD más Aasimar del PHB 2024, 8 linajes, 12 trasfondos,
+  57 dotes, 35 armas, 13 armaduras y 177 conjuros.
 - Subida de nivel con elección de subclase, mejora de característica o dote,
   gestión de conjuros y resumen de cambios.
 - Ficha de juego con daño, curación, PG temporales, descansos, condiciones,
@@ -151,5 +152,12 @@ sumar esas capacidades más adelante sin reescribir la ficha.
 
 ## Reglas y licencia
 
-Contenido de reglas basado en el **SRD 5.2** de D&D, © Wizards of the Coast,
-bajo licencia **CC BY 4.0**. Proyecto personal, sin fines comerciales.
+Esta obra incluye material procedente del documento de referencia del sistema
+5.2.1 (“SRD 5.2.1”) de Wizards of the Coast LLC, disponible en
+<https://www.dndbeyond.com/srd>. La licencia sobre el SRD 5.2.1 se concede de
+acuerdo con la licencia internacional de atribución/reconocimiento 4.0 de
+Creative Commons, disponible en
+<https://creativecommons.org/licenses/by/4.0/legalcode>.
+
+El catálogo ampliado puede contener opciones del PHB 2024 que no forman parte
+del SRD; se identifican por separado y no se presentan como contenido CC.

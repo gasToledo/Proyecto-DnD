@@ -215,6 +215,20 @@ extension _SheetGeneralSection on _SheetScreenState {
     );
   }
 
+  /// Píldora de maestría con el nombre en español y la regla en el tooltip.
+  /// Una maestría desconocida (homebrew o importada) cae en su identificador y
+  /// se muestra sin explicación, que es todo lo que se puede decir de ella.
+  Widget _masteryPill(String id) {
+    final m = weaponMasteries[id];
+    final pill = GoldPill('Maestría: ${weaponMasteryName(id)}');
+    if (m == null) return pill;
+    return Tooltip(
+      message: m.description,
+      textAlign: TextAlign.start,
+      child: pill,
+    );
+  }
+
   Widget _attackRow(Attack a) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
@@ -239,8 +253,7 @@ extension _SheetGeneralSection on _SheetScreenState {
                       '${a.damage} ${_title(a.damageType)}',
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
-                    if (a.mastery != null)
-                      GoldPill('Maestría: ${_title(a.mastery!)}'),
+                    if (a.mastery != null) _masteryPill(a.mastery!),
                   ],
                 ),
               ],

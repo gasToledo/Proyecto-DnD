@@ -5,57 +5,102 @@
     "source": "srd_2024",
     "iconId": "military_tech",
     "tagline": "Disciplina forjada en el campo de batalla",
-    "abilityOptions": ["strength", "dexterity", "constitution"],
-    "skillProficiencies": ["athletics", "intimidation"],
-    "toolProficiencies": ["gaming-set"],
+    "abilityOptions": [
+      "strength",
+      "dexterity",
+      "constitution"
+    ],
+    "skillProficiencies": [
+      "athletics",
+      "intimidation"
+    ],
+    "toolProficiencies": [
+      "gaming-set"
+    ],
     "originFeatId": "savage-attacker",
     "effects": []
   },
   {
     "id": "guard",
     "name": "Guardia",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "security",
     "tagline": "Ojo entrenado para vigilar",
-    "abilityOptions": ["strength", "intelligence", "wisdom"],
-    "skillProficiencies": ["athletics", "perception"],
-    "toolProficiencies": ["gaming-set"],
+    "abilityOptions": [
+      "strength",
+      "intelligence",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "athletics",
+      "perception"
+    ],
+    "toolProficiencies": [
+      "gaming-set"
+    ],
     "originFeatId": "alert",
     "effects": []
   },
   {
     "id": "wayfarer",
     "name": "Trotamundos",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "explore",
     "tagline": "La calle fue tu escuela",
-    "abilityOptions": ["dexterity", "wisdom", "charisma"],
-    "skillProficiencies": ["insight", "stealth"],
-    "toolProficiencies": ["thieves-tools"],
+    "abilityOptions": [
+      "dexterity",
+      "wisdom",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "insight",
+      "stealth"
+    ],
+    "toolProficiencies": [
+      "thieves-tools"
+    ],
     "originFeatId": "lucky",
     "effects": []
   },
   {
     "id": "artisan",
     "name": "Artesano",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "handyman",
     "tagline": "Un oficio en las manos",
-    "abilityOptions": ["strength", "dexterity", "intelligence"],
-    "skillProficiencies": ["investigation", "persuasion"],
-    "toolProficiencies": ["artisans-tools"],
+    "abilityOptions": [
+      "strength",
+      "dexterity",
+      "intelligence"
+    ],
+    "skillProficiencies": [
+      "investigation",
+      "persuasion"
+    ],
+    "toolProficiencies": [
+      "artisans-tools"
+    ],
     "originFeatId": "crafter",
     "effects": []
   },
   {
     "id": "charlatan",
     "name": "Charlatán",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "theater_comedy",
     "tagline": "Vivís de tu labia",
-    "abilityOptions": ["dexterity", "constitution", "charisma"],
-    "skillProficiencies": ["deception", "sleight-of-hand"],
-    "toolProficiencies": ["forgery-kit"],
+    "abilityOptions": [
+      "dexterity",
+      "constitution",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "deception",
+      "sleight-of-hand"
+    ],
+    "toolProficiencies": [
+      "forgery-kit"
+    ],
     "originFeatId": "skilled",
     "effects": []
   },
@@ -65,82 +110,586 @@
     "source": "srd_2024",
     "iconId": "lock_open",
     "tagline": "Contactos en las sombras",
-    "abilityOptions": ["dexterity", "constitution", "intelligence"],
-    "skillProficiencies": ["sleight-of-hand", "stealth"],
-    "toolProficiencies": ["thieves-tools"],
+    "abilityOptions": [
+      "dexterity",
+      "constitution",
+      "intelligence"
+    ],
+    "skillProficiencies": [
+      "sleight-of-hand",
+      "stealth"
+    ],
+    "toolProficiencies": [
+      "thieves-tools"
+    ],
     "originFeatId": "alert",
     "effects": []
   },
   {
     "id": "entertainer",
     "name": "Artista",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "music_note",
     "tagline": "El público es tu campo",
-    "abilityOptions": ["strength", "dexterity", "charisma"],
-    "skillProficiencies": ["acrobatics", "performance"],
-    "toolProficiencies": ["musical-instrument"],
+    "abilityOptions": [
+      "strength",
+      "dexterity",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "acrobatics",
+      "performance"
+    ],
+    "toolProficiencies": [
+      "musical-instrument"
+    ],
     "originFeatId": "musician",
     "effects": []
   },
   {
     "id": "farmer",
     "name": "Granjero",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "agriculture",
     "tagline": "Fuerza tranquila de la tierra",
-    "abilityOptions": ["strength", "constitution", "wisdom"],
-    "skillProficiencies": ["animal-handling", "nature"],
-    "toolProficiencies": ["carpenters-tools"],
+    "abilityOptions": [
+      "strength",
+      "constitution",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "animal-handling",
+      "nature"
+    ],
+    "toolProficiencies": [
+      "carpenters-tools"
+    ],
     "originFeatId": "tough",
     "effects": []
   },
   {
     "id": "hermit",
     "name": "Ermitaño",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "self_improvement",
     "tagline": "Años de retiro y estudio",
-    "abilityOptions": ["constitution", "wisdom", "charisma"],
-    "skillProficiencies": ["medicine", "religion"],
-    "toolProficiencies": ["herbalism-kit"],
+    "abilityOptions": [
+      "constitution",
+      "wisdom",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "medicine",
+      "religion"
+    ],
+    "toolProficiencies": [
+      "herbalism-kit"
+    ],
     "originFeatId": "healer",
     "effects": []
   },
   {
     "id": "merchant",
     "name": "Mercader",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "storefront",
     "tagline": "Caravanas, tratos y rutas",
-    "abilityOptions": ["constitution", "intelligence", "charisma"],
-    "skillProficiencies": ["animal-handling", "persuasion"],
-    "toolProficiencies": ["navigators-tools"],
+    "abilityOptions": [
+      "constitution",
+      "intelligence",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "animal-handling",
+      "persuasion"
+    ],
+    "toolProficiencies": [
+      "navigators-tools"
+    ],
     "originFeatId": "lucky",
     "effects": []
   },
   {
     "id": "noble",
     "name": "Noble",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "diamond",
     "tagline": "Título, privilegio y deber",
-    "abilityOptions": ["strength", "intelligence", "charisma"],
-    "skillProficiencies": ["history", "persuasion"],
-    "toolProficiencies": ["gaming-set"],
+    "abilityOptions": [
+      "strength",
+      "intelligence",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "history",
+      "persuasion"
+    ],
+    "toolProficiencies": [
+      "gaming-set"
+    ],
     "originFeatId": "skilled",
     "effects": []
   },
   {
     "id": "scribe",
     "name": "Escriba",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "history_edu",
     "tagline": "Tinta, archivos y precisión",
-    "abilityOptions": ["dexterity", "intelligence", "wisdom"],
-    "skillProficiencies": ["investigation", "perception"],
-    "toolProficiencies": ["calligraphers-supplies"],
+    "abilityOptions": [
+      "dexterity",
+      "intelligence",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "investigation",
+      "perception"
+    ],
+    "toolProficiencies": [
+      "calligraphers-supplies"
+    ],
     "originFeatId": "skilled",
+    "effects": []
+  },
+  {
+    "id": "acolyte",
+    "name": "Acólito",
+    "source": "srd_2024",
+    "iconId": "church",
+    "tagline": "Devoción y estudio en un templo",
+    "abilityOptions": [
+      "intelligence",
+      "wisdom",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "insight",
+      "religion"
+    ],
+    "toolProficiencies": [
+      "calligraphers-supplies"
+    ],
+    "originFeatId": "magic-initiate-cleric",
+    "effects": []
+  },
+  {
+    "id": "sage",
+    "name": "Erudito",
+    "source": "srd_2024",
+    "iconId": "menu_book",
+    "tagline": "Años de estudio arcano e histórico",
+    "abilityOptions": [
+      "constitution",
+      "intelligence",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "arcana",
+      "history"
+    ],
+    "toolProficiencies": [
+      "calligraphers-supplies"
+    ],
+    "originFeatId": "magic-initiate-wizard",
+    "effects": []
+  },
+  {
+    "id": "guide",
+    "name": "Guía",
+    "source": "phb_2024",
+    "iconId": "hiking",
+    "tagline": "Conocés cada senda y cada atajo",
+    "abilityOptions": [
+      "dexterity",
+      "constitution",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "stealth",
+      "survival"
+    ],
+    "toolProficiencies": [
+      "cartographers-tools"
+    ],
+    "originFeatId": "magic-initiate-druid",
+    "effects": []
+  },
+  {
+    "id": "sailor",
+    "name": "Marinero",
+    "source": "phb_2024",
+    "iconId": "sailing",
+    "tagline": "El viento en popa y la sal en la piel",
+    "abilityOptions": [
+      "strength",
+      "dexterity",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "acrobatics",
+      "perception"
+    ],
+    "toolProficiencies": [
+      "navigators-tools"
+    ],
+    "originFeatId": "tavern-brawler",
+    "effects": []
+  },
+  {
+    "id": "aberrant-heir",
+    "name": "Heredero Aberrante",
+    "source": "foa_2025",
+    "iconId": "blur_on",
+    "tagline": "Una marca que las casas preferirían no ver",
+    "abilityOptions": [
+      "strength",
+      "constitution",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "history",
+      "intimidation"
+    ],
+    "toolProficiencies": [
+      "disguise-kit"
+    ],
+    "originFeatId": "aberrant-dragonmark",
+    "effects": []
+  },
+  {
+    "id": "archaeologist",
+    "name": "Arqueólogo",
+    "source": "foa_2025",
+    "iconId": "account_balance",
+    "tagline": "Las ruinas del pasado son tu biblioteca",
+    "abilityOptions": [
+      "dexterity",
+      "intelligence",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "history",
+      "survival"
+    ],
+    "toolProficiencies": [
+      "cartographers-tools"
+    ],
+    "originFeatId": "skilled",
+    "effects": []
+  },
+  {
+    "id": "house-agent",
+    "name": "Agente de Casa",
+    "source": "foa_2025",
+    "iconId": "badge",
+    "tagline": "Servís a una casa sin llevar su marca",
+    "abilityOptions": [
+      "strength",
+      "intelligence",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "investigation",
+      "persuasion"
+    ],
+    "toolProficiencies": [
+      "artisans-tools"
+    ],
+    "originFeatId": "lucky",
+    "effects": []
+  },
+  {
+    "id": "house-cannith-heir",
+    "name": "Heredero de Casa Cannith",
+    "source": "foa_2025",
+    "iconId": "precision_manufacturing",
+    "tagline": "La forja que hizo el mundo moderno",
+    "abilityOptions": [
+      "strength",
+      "dexterity",
+      "intelligence"
+    ],
+    "skillProficiencies": [
+      "investigation",
+      "sleight-of-hand"
+    ],
+    "toolProficiencies": [
+      "artisans-tools"
+    ],
+    "originFeatId": "mark-of-making",
+    "effects": []
+  },
+  {
+    "id": "house-deneith-heir",
+    "name": "Heredero de Casa Deneith",
+    "source": "foa_2025",
+    "iconId": "shield",
+    "tagline": "Deber, honor y la espada por contrato",
+    "abilityOptions": [
+      "strength",
+      "constitution",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "insight",
+      "perception"
+    ],
+    "toolProficiencies": [
+      "gaming-set"
+    ],
+    "originFeatId": "mark-of-sentinel",
+    "effects": []
+  },
+  {
+    "id": "house-ghallanda-heir",
+    "name": "Heredero de Casa Ghallanda",
+    "source": "foa_2025",
+    "iconId": "restaurant",
+    "tagline": "Buena mesa, buena charla, buenos contactos",
+    "abilityOptions": [
+      "dexterity",
+      "wisdom",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "insight",
+      "persuasion"
+    ],
+    "toolProficiencies": [
+      "cooks-utensils"
+    ],
+    "originFeatId": "mark-of-hospitality",
+    "effects": []
+  },
+  {
+    "id": "house-jorasco-heir",
+    "name": "Heredero de Casa Jorasco",
+    "source": "foa_2025",
+    "iconId": "medical_services",
+    "tagline": "Sanar es un oficio, y se cobra",
+    "abilityOptions": [
+      "dexterity",
+      "constitution",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "medicine",
+      "stealth"
+    ],
+    "toolProficiencies": [
+      "herbalism-kit"
+    ],
+    "originFeatId": "mark-of-healing",
+    "effects": []
+  },
+  {
+    "id": "house-kundarak-heir",
+    "name": "Heredero de Casa Kundarak",
+    "source": "foa_2025",
+    "iconId": "lock",
+    "tagline": "Lo que guardás, nadie lo abre",
+    "abilityOptions": [
+      "strength",
+      "constitution",
+      "intelligence"
+    ],
+    "skillProficiencies": [
+      "arcana",
+      "investigation"
+    ],
+    "toolProficiencies": [
+      "thieves-tools"
+    ],
+    "originFeatId": "mark-of-warding",
+    "effects": []
+  },
+  {
+    "id": "house-lyrandar-heir",
+    "name": "Heredero de Casa Lyrandar",
+    "source": "foa_2025",
+    "iconId": "air",
+    "tagline": "El viento es tu aliado; el cielo, tu dominio",
+    "abilityOptions": [
+      "strength",
+      "dexterity",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "acrobatics",
+      "nature"
+    ],
+    "toolProficiencies": [
+      "navigators-tools"
+    ],
+    "originFeatId": "mark-of-storm",
+    "effects": []
+  },
+  {
+    "id": "house-medani-heir",
+    "name": "Heredero de Casa Medani",
+    "source": "foa_2025",
+    "iconId": "visibility",
+    "tagline": "La amenaza se detiene antes de existir",
+    "abilityOptions": [
+      "dexterity",
+      "intelligence",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "insight",
+      "investigation"
+    ],
+    "toolProficiencies": [
+      "disguise-kit"
+    ],
+    "originFeatId": "mark-of-detection",
+    "effects": []
+  },
+  {
+    "id": "house-orien-heir",
+    "name": "Heredero de Casa Orien",
+    "source": "foa_2025",
+    "iconId": "train",
+    "tagline": "Los caminos de Khorvaire son tuyos",
+    "abilityOptions": [
+      "dexterity",
+      "constitution",
+      "intelligence"
+    ],
+    "skillProficiencies": [
+      "acrobatics",
+      "athletics"
+    ],
+    "toolProficiencies": [
+      "cartographers-tools"
+    ],
+    "originFeatId": "mark-of-passage",
+    "effects": []
+  },
+  {
+    "id": "house-phiarlan-heir",
+    "name": "Heredero de Casa Phiarlan",
+    "source": "foa_2025",
+    "iconId": "dark_mode",
+    "tagline": "El arte es la tapadera; el secreto, el tesoro",
+    "abilityOptions": [
+      "dexterity",
+      "wisdom",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "deception",
+      "stealth"
+    ],
+    "toolProficiencies": [
+      "disguise-kit"
+    ],
+    "originFeatId": "mark-of-shadow",
+    "effects": []
+  },
+  {
+    "id": "house-sivis-heir",
+    "name": "Heredero de Casa Sivis",
+    "source": "foa_2025",
+    "iconId": "edit_note",
+    "tagline": "La palabra escrita sostiene la civilización",
+    "abilityOptions": [
+      "intelligence",
+      "wisdom",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "history",
+      "perception"
+    ],
+    "toolProficiencies": [
+      "calligraphers-supplies"
+    ],
+    "originFeatId": "mark-of-scribing",
+    "effects": []
+  },
+  {
+    "id": "house-tharashk-heir",
+    "name": "Heredero de Casa Tharashk",
+    "source": "foa_2025",
+    "iconId": "travel_explore",
+    "tagline": "Casa joven, aprendiste a valerte solo",
+    "abilityOptions": [
+      "constitution",
+      "intelligence",
+      "wisdom"
+    ],
+    "skillProficiencies": [
+      "perception",
+      "survival"
+    ],
+    "toolProficiencies": [
+      "gaming-set"
+    ],
+    "originFeatId": "mark-of-finding",
+    "effects": []
+  },
+  {
+    "id": "house-thuranni-heir",
+    "name": "Heredero de Casa Thuranni",
+    "source": "foa_2025",
+    "iconId": "nightlife",
+    "tagline": "Espionaje con forma de espectáculo",
+    "abilityOptions": [
+      "dexterity",
+      "intelligence",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "performance",
+      "stealth"
+    ],
+    "toolProficiencies": [
+      "musical-instrument"
+    ],
+    "originFeatId": "mark-of-shadow",
+    "effects": []
+  },
+  {
+    "id": "house-vadalis-heir",
+    "name": "Heredero de Casa Vadalis",
+    "source": "foa_2025",
+    "iconId": "pets",
+    "tagline": "Respeto por la familia y por lo vivo",
+    "abilityOptions": [
+      "constitution",
+      "wisdom",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "animal-handling",
+      "nature"
+    ],
+    "toolProficiencies": [
+      "herbalism-kit"
+    ],
+    "originFeatId": "mark-of-handling",
+    "effects": []
+  },
+  {
+    "id": "inquisitive",
+    "name": "Inquisidor",
+    "source": "foa_2025",
+    "iconId": "search",
+    "tagline": "Curiosidad sin fondo y ojo para el detalle",
+    "abilityOptions": [
+      "constitution",
+      "intelligence",
+      "charisma"
+    ],
+    "skillProficiencies": [
+      "insight",
+      "investigation"
+    ],
+    "toolProficiencies": [
+      "thieves-tools"
+    ],
+    "originFeatId": "alert",
     "effects": []
   }
 ]

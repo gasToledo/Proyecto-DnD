@@ -11,7 +11,8 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   /// Avanza hasta Puntuaciones. Usa Mago a propósito: no pide estilo de combate
@@ -21,10 +22,12 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: CreationWizard(repo: repo, onCreate: (_) {}),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: CreationWizard(repo: repo, onCreate: (_) {}),
+      ),
+    );
     await tester.pumpAndSettle();
 
     Future<void> next() async {
@@ -42,16 +45,20 @@ void main() {
     await tester.pumpAndSettle();
     await next();
 
-    // Trasfondo (+1/+1/+1 no necesita elegir características)
+    // Trasfondo (+1/+1/+1 no necesita elegir características). El reparto vive
+    // debajo de la grilla, que ya tiene 33 trasfondos: hay que scrollear.
     await tester.tap(find.text('Soldado'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await next();
   }
 
-  testWidgets('muestra una tarjeta por característica y el pool pendiente',
-      (tester) async {
+  testWidgets('muestra una tarjeta por característica y el pool pendiente', (
+    tester,
+  ) async {
     await gotoScores(tester);
 
     expect(find.text('Valores sin asignar'), findsOneWidget);

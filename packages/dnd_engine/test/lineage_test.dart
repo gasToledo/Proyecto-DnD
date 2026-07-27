@@ -107,7 +107,8 @@ void main() {
     });
 
     test('un linaje de otra especie se ignora', () {
-      final s = CharacterCompiler(_repo()).compile(_elf(lineageId: 'dwarf-hill'));
+      final s =
+          CharacterCompiler(_repo()).compile(_elf(lineageId: 'dwarf-hill'));
       expect(s.speed, 30, reason: 'no debe aplicar nada ajeno');
     });
   });
@@ -150,10 +151,26 @@ void main() {
     });
   });
 
-  test('lineageId sobrevive al round-trip y respeta el centinela', () {
-    final c = _elf(lineageId: 'elf-wood');
-    expect(Character.fromJson(c.toJson()).lineageId, 'elf-wood');
+  test('linaje y aptitud mágica sobreviven al round-trip', () {
+    final c = Character(
+      id: 'elf-choice',
+      name: 'Elfo',
+      raceId: 'elf',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      lineageId: 'elf-wood',
+      speciesSpellcastingAbility: Ability.charisma,
+      assignedScores: {for (final ability in Ability.values) ability: 10},
+      hpPerLevel: const [10],
+    );
+    final restored = Character.fromJson(c.toJson());
+    expect(restored.lineageId, 'elf-wood');
+    expect(restored.speciesSpellcastingAbility, Ability.charisma);
     expect(c.copyWith(name: 'Otro').lineageId, 'elf-wood');
+    expect(
+      c.copyWith(speciesSpellcastingAbility: null).speciesSpellcastingAbility,
+      isNull,
+    );
     expect(c.copyWith(lineageId: null).lineageId, isNull);
     // Una ficha anterior al campo se lee sin romperse.
     final old = c.toJson()..remove('lineageId');

@@ -4,70 +4,85 @@ extension _SheetSpellsSection on _SheetScreenState {
   // ------------------------------------------------------------- Conjuros
 
   Widget _buildSpells() {
-    final sc = sheet.spellcasting!;
+    final sc = sheet.spellcasting;
     final combat = _c.combat;
     final pal = context.palette;
-    final abbr = sc.ability.abbr;
 
-    final cantrips =
-        _c.cantripIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
-    final spells =
-        _c.spellIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
-          ..sort(
-            (a, b) => a.level != b.level
-                ? a.level.compareTo(b.level)
-                : a.name.compareTo(b.name),
-          );
+    final cantrips = sc == null
+        ? <Spell>[]
+        : (_c.cantripIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
+            ..sort((a, b) => a.name.compareTo(b.name)));
+    final spells = sc == null
+        ? <Spell>[]
+        : (_c.spellIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
+            ..sort(
+              (a, b) => a.level != b.level
+                  ? a.level.compareTo(b.level)
+                  : a.name.compareTo(b.name),
+            ));
 
-    final slotLevels = sc.slotsByLevel.keys.toList()..sort();
+    final slotLevels = sc?.slotsByLevel.keys.toList() ?? <int>[];
+    slotLevels.sort();
 
     return PageBody(
       children: [
-        Row(
-          children: [
-            const Expanded(child: Eyebrow('Lanzamiento de conjuros')),
-            TextButton.icon(
-              onPressed: () => _openSpellEditor(sc),
-              icon: const Icon(Icons.edit, size: 16),
-              label: Text(
-                sc.preparation == SpellPreparation.prepared
-                    ? 'Preparar'
-                    : 'Editar',
+        if (sc != null) ...[
+          Row(
+            children: [
+              const Expanded(child: Eyebrow('Lanzamiento de conjuros')),
+              TextButton.icon(
+                onPressed: () => _openSpellEditor(sc),
+                icon: const Icon(Icons.edit, size: 16),
+                label: Text(
+                  sc.preparation == SpellPreparation.prepared
+                      ? 'Preparar'
+                      : 'Editar',
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: StatPlaque(label: 'CD SALV.', value: '${sc.saveDc}'),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: StatPlaque(
-                label: 'ATAQUE',
-                value: '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus}',
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: StatPlaque(label: 'CD SALV.', value: '${sc.saveDc}'),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: StatPlaque(label: 'APTITUD', value: abbr),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          [
-            sc.preparation == SpellPreparation.prepared
-                ? 'Preparados: ${_c.spellIds.length} / ${sc.preparedCount}'
-                : 'Conocidos: ${_c.spellIds.length}',
-            if (sc.cantripsKnown > 0)
-              'Trucos: ${cantrips.length} / ${sc.cantripsKnown}',
-          ].join(' · '),
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: StatPlaque(
+                  label: 'ATAQUE',
+                  value: '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus}',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: StatPlaque(label: 'APTITUD', value: sc.ability.abbr),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            [
+              sc.preparation == SpellPreparation.prepared
+                  ? 'Preparados: ${_c.spellIds.length} / ${sc.preparedCount}'
+                  : 'Conocidos: ${_c.spellIds.length}',
+              if (sc.cantripsKnown > 0)
+                'Trucos: ${cantrips.length} / ${sc.cantripsKnown}',
+            ].join(' · '),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+
+        if (sheet.innateSpells.isNotEmpty) ...[
+          if (sc != null) const SizedBox(height: 20),
+          const Eyebrow('Conjuros de especie y linaje'),
+          const SizedBox(height: 6),
+          DenseRows(
+            children: [
+              for (final innate in sheet.innateSpells) _innateSpellRow(innate),
+            ],
+          ),
+        ],
 
         if (combat.concentratingOn != null) ...[
           const SizedBox(height: 14),
@@ -97,7 +112,7 @@ extension _SheetSpellsSection on _SheetScreenState {
         if (slotLevels.isNotEmpty) ...[
           const SizedBox(height: 20),
           const Eyebrow('Espacios de conjuro'),
-          DenseRows(children: [for (final lv in slotLevels) _slotRow(sc, lv)]),
+          DenseRows(children: [for (final lv in slotLevels) _slotRow(sc!, lv)]),
         ],
 
         if (cantrips.isNotEmpty) ...[
@@ -109,14 +124,17 @@ extension _SheetSpellsSection on _SheetScreenState {
         if (spells.isNotEmpty) ...[
           const SizedBox(height: 20),
           Eyebrow(
-            sc.preparation == SpellPreparation.prepared
+            sc!.preparation == SpellPreparation.prepared
                 ? 'Conjuros preparados'
                 : 'Conjuros conocidos',
           ),
           DenseRows(children: [for (final s in spells) _spellRow(s)]),
         ],
 
-        if (cantrips.isEmpty && spells.isEmpty) ...[
+        if (sc != null &&
+            cantrips.isEmpty &&
+            spells.isEmpty &&
+            sheet.innateSpells.isEmpty) ...[
           const SizedBox(height: 20),
           Text(
             'Todavía no elegiste conjuros. Editá al subir de nivel o al crear.',
@@ -124,6 +142,52 @@ extension _SheetSpellsSection on _SheetScreenState {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _innateSpellRow(InnateSpell innate) {
+    final spell = repo.spell(innate.spellId);
+    final use = switch (innate.use) {
+      InnateSpellUse.atWill => 'A voluntad',
+      InnateSpellUse.oncePerLongRest => '1/descanso largo',
+      InnateSpellUse.proficiencyBonusPerLongRest =>
+        'Competencia/descanso largo',
+    };
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: spell == null ? null : () => _showSpellDialog(spell),
+              borderRadius: BorderRadius.circular(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    innate.name,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$use · ${innate.ability.abbr} · '
+                    'CD ${innate.saveDc} · Ataque '
+                    '${innate.attackBonus >= 0 ? "+" : ""}${innate.attackBonus}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (spell?.concentration == true)
+            TextButton(
+              onPressed: () => _mutateCombat(
+                () => CombatOps.startConcentration(_c.combat, innate.name),
+              ),
+              child: const Text('Concentrar'),
+            ),
+        ],
+      ),
     );
   }
 

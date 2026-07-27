@@ -43,6 +43,43 @@ void main() {
     );
   });
 
+  test('v3 → v4: los cuatro conjuros mal identificados se reescriben', () {
+    // Los ids estaban mal, no el contenido: la ficha eligió el conjuro que
+    // quería y no debe perderlo porque el pack corrija su identificador.
+    final source = {
+      'schemaVersion': 3,
+      'id': 'v3',
+      'name': 'Consagrada',
+      'raceId': 'human',
+      'classId': 'cleric',
+      'backgroundId': 'acolyte',
+      'assignedScores': const <String, int>{},
+      'cantripIds': const ['sacred-flame'],
+      'spellIds': const [
+        'bless-the-ground',
+        'negative-energy-flood',
+        'fabricate-shadow',
+        'conjure-volley',
+        'conjure-volley-arrows',
+        'cure-wounds',
+      ],
+    };
+
+    final migrated = Character.migrateJson(source);
+
+    expect(migrated['schemaVersion'], 4);
+    expect(migrated['cantripIds'], ['sacred-flame']);
+    // Los dos de Conjurar intercambian id: ninguno puede migrar dos veces.
+    expect(migrated['spellIds'], [
+      'hallow',
+      'antilife-shell',
+      'creation',
+      'conjure-barrage',
+      'conjure-volley',
+      'cure-wounds',
+    ]);
+  });
+
   test('rechaza una versión futura con un error comprensible', () {
     final future = {
       'schemaVersion': Character.currentSchemaVersion + 1,
@@ -52,8 +89,16 @@ void main() {
       () => Character.migrateJson(future),
       throwsA(
         isA<UnsupportedDataVersionException>()
-            .having((e) => e.found, 'versión encontrada', 3)
-            .having((e) => e.supported, 'versión soportada', 2),
+            .having(
+              (e) => e.found,
+              'versión encontrada',
+              Character.currentSchemaVersion + 1,
+            )
+            .having(
+              (e) => e.supported,
+              'versión soportada',
+              Character.currentSchemaVersion,
+            ),
       ),
     );
   });

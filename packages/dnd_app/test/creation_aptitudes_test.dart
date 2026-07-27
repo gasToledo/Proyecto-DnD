@@ -10,7 +10,8 @@ void main() {
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory(
-        '../dnd_engine/lib/assets/srd_2024');
+      '../dnd_engine/lib/assets/srd_2024',
+    );
   });
 
   /// Navega hasta Aptitudes con Humano + Mago + Soldado.
@@ -19,10 +20,12 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MaterialApp(
-      theme: AppTheme.dark,
-      home: CreationWizard(repo: repo, onCreate: (_) {}),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: CreationWizard(repo: repo, onCreate: (_) {}),
+      ),
+    );
     await tester.pumpAndSettle();
 
     Future<void> next() async {
@@ -61,8 +64,9 @@ void main() {
     await next();
   }
 
-  testWidgets('muestra las habilidades en español con su característica',
-      (tester) async {
+  testWidgets('muestra las habilidades en español con su característica', (
+    tester,
+  ) async {
     await gotoAptitudes(tester);
 
     expect(find.text('Competencias de clase'.toUpperCase()), findsOneWidget);
@@ -94,6 +98,20 @@ void main() {
     // Llegado al tope, una no elegida deja de responder.
     await tapClassSkill('Medicina');
     expect(find.text('2 / 2 elegidas'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('ofrece Iniciado en la Magia como dote de origen del Humano', (
+    tester,
+  ) async {
+    // Contraparte de la regresión en la subida de nivel: al pasar de general a
+    // origin, la dote sale del picker de ASI y entra en el del Humano.
+    await gotoAptitudes(tester);
+
+    final card = find.text('Iniciado en la Magia (Mago)');
+    await tester.scrollUntilVisible(card, 200);
+    await tester.pumpAndSettle();
+    expect(card, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

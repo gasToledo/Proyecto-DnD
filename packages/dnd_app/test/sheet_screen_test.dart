@@ -128,8 +128,34 @@ void main() {
 
     expect(find.text('LANZAMIENTO DE CONJUROS'), findsOneWidget);
     expect(find.text('ESPACIOS DE CONJURO'), findsOneWidget);
-    expect(find.text('Contacto Electrizante'), findsOneWidget);
+    expect(find.text('Agarre Electrizante'), findsOneWidget);
     expect(find.text('Detectar Magia'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('un personaje marcial muestra sus conjuros de linaje', (
+    tester,
+  ) async {
+    final elf = Character(
+      id: 'elf-sheet',
+      name: 'Lethariel',
+      raceId: 'elf',
+      lineageId: 'elf-high',
+      speciesSpellcastingAbility: Ability.wisdom,
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      assignedScores: {for (final ability in Ability.values) ability: 12},
+      hpPerLevel: const [10],
+    );
+    await pumpSheet(tester, elf);
+
+    await tester.tap(find.widgetWithText(Tab, 'Conjuros'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('CONJUROS DE ESPECIE Y LINAJE'), findsOneWidget);
+    expect(find.text('Prestidigitación'), findsOneWidget);
+    expect(find.textContaining('WIS'), findsOneWidget);
+    expect(find.text('LANZAMIENTO DE CONJUROS'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

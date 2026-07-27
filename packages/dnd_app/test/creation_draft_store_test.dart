@@ -30,6 +30,7 @@ void main() {
     final draft = CreationDraft(repo)
       ..raceId = 'elf'
       ..lineageId = 'elf-high'
+      ..speciesSpellcastingAbility = Ability.intelligence
       ..backgroundId = 'soldier'
       ..name = 'Borrador'
       ..personalityTrait = 'Siempre alerta';
@@ -45,6 +46,7 @@ void main() {
     expect(snapshot.step, CreationStep.detalles);
     expect(restored.raceId, 'elf');
     expect(restored.lineageId, 'elf-high');
+    expect(restored.speciesSpellcastingAbility, Ability.intelligence);
     expect(restored.backgroundId, 'soldier');
     expect(restored.name, 'Borrador');
     expect(restored.assignedScores, hasLength(6));

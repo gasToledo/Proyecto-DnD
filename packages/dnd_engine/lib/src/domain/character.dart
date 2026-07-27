@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 2;
+  static const int currentSchemaVersion = 4;
 
   final String id;
   String name;
@@ -174,6 +174,10 @@ class Character {
   /// Linaje de especie elegido (Linaje Élfico, Ascendencia Dracónica…).
   /// Null si la especie no exige uno o si todavía no se eligió.
   final String? lineageId;
+
+  /// Aptitud mágica elegida para los conjuros concedidos por la especie o su
+  /// linaje. En 2024, Elfo, Gnomo y Tiefling eligen INT, SAB o CAR.
+  final Ability? speciesSpellcastingAbility;
   int level;
 
   /// Puntuaciones asignadas por el método elegido (4d6 o array), antes de
@@ -240,6 +244,7 @@ class Character {
     required this.backgroundId,
     this.subclassId,
     this.lineageId,
+    this.speciesSpellcastingAbility,
     this.level = 1,
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
@@ -273,6 +278,7 @@ class Character {
         'backgroundId': backgroundId,
         'subclassId': subclassId,
         'lineageId': lineageId,
+        'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
         'level': level,
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
@@ -306,6 +312,31 @@ class Character {
     return value;
   }
 
+  /// Cuatro conjuros del catálogo quedaron con un identificador inglés que no
+  /// era el suyo: el nombre y las reglas eran correctos, pero el id apuntaba a
+  /// otro conjuro. Corregirlo en el pack dejaría huérfana la elección de una
+  /// ficha guardada, así que la ficha se reescribe al abrirla.
+  static const Map<String, String> _spellIdRenames3to4 = {
+    'negative-energy-flood': 'antilife-shell',
+    'bless-the-ground': 'hallow',
+    'fabricate-shadow': 'creation',
+    // Los dos de Conjurar intercambian id, así que el orden del mapa no alcanza:
+    // se resuelven contra el mapa original, nunca en cadena.
+    'conjure-volley': 'conjure-barrage',
+    'conjure-volley-arrows': 'conjure-volley',
+  };
+
+  static void _renameSpellIds(
+      Map<String, dynamic> j, Map<String, String> renames) {
+    for (final key in const ['cantripIds', 'spellIds']) {
+      final list = j[key];
+      if (list is! List) continue;
+      j[key] = [
+        for (final id in list) id is String ? (renames[id] ?? id) : id,
+      ];
+    }
+  }
+
   /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
   /// entrada. Cada paso se conserva explícito para que las próximas versiones
   /// puedan encadenarse sin saltos.
@@ -333,6 +364,14 @@ class Character {
           migrated.putIfAbsent('combat', () => {});
           version = 2;
           migrated['schemaVersion'] = version;
+        case 2:
+          migrated.putIfAbsent('speciesSpellcastingAbility', () => null);
+          version = 3;
+          migrated['schemaVersion'] = version;
+        case 3:
+          _renameSpellIds(migrated, _spellIdRenames3to4);
+          version = 4;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -352,6 +391,8 @@ class Character {
       backgroundId: j['backgroundId'] as String,
       subclassId: j['subclassId'] as String?,
       lineageId: j['lineageId'] as String?,
+      speciesSpellcastingAbility:
+          _abilityFromJson(j['speciesSpellcastingAbility']),
       level: j['level'] as int? ?? 1,
       assignedScores: _abilityMapFromJson(j['assignedScores']),
       backgroundAbilityBonuses:
@@ -404,6 +445,7 @@ class Character {
     CharacterStatus? status,
     Object? subclassId = _unset,
     Object? lineageId = _unset,
+    Object? speciesSpellcastingAbility = _unset,
     int? level,
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
@@ -432,6 +474,9 @@ class Character {
           : subclassId as String?,
       lineageId:
           identical(lineageId, _unset) ? this.lineageId : lineageId as String?,
+      speciesSpellcastingAbility: identical(speciesSpellcastingAbility, _unset)
+          ? this.speciesSpellcastingAbility
+          : speciesSpellcastingAbility as Ability?,
       level: level ?? this.level,
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,
@@ -461,4 +506,12 @@ class Character {
       combat: combat ?? this.combat,
     );
   }
+}
+
+Ability? _abilityFromJson(Object? value) {
+  if (value is! String) return null;
+  for (final ability in Ability.values) {
+    if (ability.name == value) return ability;
+  }
+  return null;
 }

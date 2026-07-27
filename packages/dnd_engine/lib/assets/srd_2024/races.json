@@ -12,15 +12,23 @@
     "effects": [
       {
         "type": "passiveTrait",
+        "name": "Diestro",
+        "description": "Ganás competencia en una habilidad a tu elección."
+      },
+      {
+        "type": "passiveTrait",
         "name": "Ingenioso",
-        "description": "Obtienes Inspiración Heroica cada vez que terminas un descanso largo."
+        "description": "Obtenés Inspiración Heroica cada vez que terminás un descanso largo."
       },
       {
         "type": "passiveTrait",
         "name": "Versátil",
         "description": "Obtienes una dote de Origen a tu elección."
       },
-      { "type": "grantFeat", "featId": null }
+      {
+        "type": "grantFeat",
+        "featId": null
+      }
     ]
   },
   {
@@ -32,14 +40,23 @@
     "size": "Mediano",
     "speed": 30,
     "effects": [
-      { "type": "darkvision", "range": 120 },
-      { "type": "resistance", "damageType": "poison" },
+      {
+        "type": "darkvision",
+        "range": 120
+      },
+      {
+        "type": "resistance",
+        "damageType": "poison"
+      },
       {
         "type": "passiveTrait",
         "name": "Resistencia Enana",
         "description": "Ventaja en salvaciones para evitar o terminar el estado envenenado."
       },
-      { "type": "bonusMaxHpPerLevel", "perLevel": 1 },
+      {
+        "type": "bonusMaxHpPerLevel",
+        "perLevel": 1
+      },
       {
         "type": "passiveTrait",
         "name": "Dureza Enana",
@@ -47,8 +64,8 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Sentir la Piedra",
-        "description": "Como acción adicional, obtienes sentido del temblor de 60 pies (solo superficie de piedra) hasta el fin de tu turno."
+        "name": "Afinidad con la Piedra",
+        "description": "Como acción adicional, ganas sentido del temblor con alcance de 60 pies durante 10 minutos. Debés estar sobre una superficie de piedra o en contacto con ella. Usos iguales a tu bonif. de competencia; se recuperan tras un descanso largo."
       }
     ]
   },
@@ -92,21 +109,19 @@
     "size": "Mediano",
     "speed": 30,
     "effects": [
-      { "type": "darkvision", "range": 120 },
       {
-        "type": "passiveTrait",
-        "name": "Impulso de Adrenalina",
-        "description": "Como acción adicional, avanzas una distancia igual a tu velocidad y ganas PG temporales iguales a tu bonif. de competencia. Usos iguales a tu competencia por descanso corto o largo."
+        "type": "darkvision",
+        "range": 120
       },
       {
         "type": "passiveTrait",
-        "name": "Resistencia Implacable",
-        "description": "Cuando caerías a 0 PG sin morir, en su lugar caes a 1 PG. Una vez por descanso largo."
+        "name": "Descarga de Adrenalina",
+        "description": "Podés llevar a cabo la acción de Correr como acción adicional y ganás PG temporales iguales a tu bonif. de competencia. Usos iguales a tu bonif. de competencia; se recuperan tras un descanso corto o largo."
       },
       {
         "type": "passiveTrait",
-        "name": "Complexión Poderosa",
-        "description": "Cuentas como un tamaño más grande al determinar tu capacidad de carga y lo que puedes empujar, arrastrar o levantar."
+        "name": "Aguante Incansable",
+        "description": "Cuando tus PG se reducen a 0 pero no morís inmediatamente, podés recuperar 1 PG. Una vez por descanso largo."
       }
     ]
   },
@@ -119,9 +134,16 @@
     "size": "Mediano",
     "speed": 30,
     "skillChoiceCount": 1,
-    "skillChoiceFrom": ["insight", "perception", "survival"],
+    "skillChoiceFrom": [
+      "insight",
+      "perception",
+      "survival"
+    ],
     "effects": [
-      { "type": "darkvision", "range": 60 },
+      {
+        "type": "darkvision",
+        "range": 60
+      },
       {
         "type": "passiveTrait",
         "name": "Ascendencia Feérica",
@@ -153,11 +175,14 @@
     "size": "Mediano",
     "speed": 30,
     "effects": [
-      { "type": "darkvision", "range": 60 },
+      {
+        "type": "darkvision",
+        "range": 60
+      },
       {
         "type": "passiveTrait",
         "name": "Ascendencia Dracónica",
-        "description": "Eliges un tipo de dragón; determina el tipo de daño de tu Arma de Aliento y tu Resistencia al Daño."
+        "description": "Eliges un tipo de dragón, que determina el tipo de daño de tu Arma de Aliento y tu Resistencia al Daño: Negro o Cobre (ácido), Azul o Bronce (relámpago), Blanco o Plata (frío), Verde (veneno), Rojo, Oro u Oropel (fuego)."
       },
       {
         "type": "passiveTrait",
@@ -185,7 +210,10 @@
     "size": "Pequeño",
     "speed": 30,
     "effects": [
-      { "type": "darkvision", "range": 60 },
+      {
+        "type": "darkvision",
+        "range": 60
+      },
       {
         "type": "passiveTrait",
         "name": "Astucia Gnoma",
@@ -207,8 +235,16 @@
     "size": "Mediano",
     "speed": 30,
     "effects": [
-      { "type": "darkvision", "range": 60 },
-      { "type": "grantSpell", "spellId": "thaumaturgy", "ability": "charisma", "use": "atWill" },
+      {
+        "type": "darkvision",
+        "range": 60
+      },
+      {
+        "type": "grantSpell",
+        "spellId": "thaumaturgy",
+        "ability": "charisma",
+        "use": "atWill"
+      },
       {
         "type": "passiveTrait",
         "name": "Presencia de Otro Mundo",
@@ -250,15 +286,24 @@
   {
     "id": "aasimar",
     "name": "Aasimar",
-    "source": "srd_2024",
+    "source": "phb_2024",
     "iconId": "auto_awesome",
     "tagline": "Tocados por la luz celestial",
     "size": "Mediano",
     "speed": 30,
     "effects": [
-      { "type": "darkvision", "range": 60 },
-      { "type": "resistance", "damageType": "necrotic" },
-      { "type": "resistance", "damageType": "radiant" },
+      {
+        "type": "darkvision",
+        "range": 60
+      },
+      {
+        "type": "resistance",
+        "damageType": "necrotic"
+      },
+      {
+        "type": "resistance",
+        "damageType": "radiant"
+      },
       {
         "type": "passiveTrait",
         "name": "Resistencia Celestial",
@@ -267,7 +312,7 @@
       {
         "type": "passiveTrait",
         "name": "Manos Sanadoras",
-        "description": "Como acción, tocas a una criatura y le restauras PG iguales a tu bonif. de competencia por tu nivel de personaje en dados. Una vez por descanso largo."
+        "description": "Como acción, tocás a una criatura y tirás tantos d4 como tu bonif. de competencia: recupera esa cantidad de PG. Una vez por descanso largo."
       },
       {
         "type": "passiveTrait",
@@ -278,6 +323,217 @@
         "type": "passiveTrait",
         "name": "Revelación Celestial (nivel 3)",
         "description": "A partir del nivel 3, como acción adicional te transformas revelando tu naturaleza celestial (Necrótico, Radiante o Vuelo). Una vez por descanso largo."
+      }
+    ]
+  },
+  {
+    "id": "changeling",
+    "name": "Cambiaformas",
+    "source": "foa_2025",
+    "iconId": "masks",
+    "tagline": "Cada rostro es una vida distinta",
+    "size": "Mediano",
+    "speed": 30,
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": [
+      "deception",
+      "insight",
+      "intimidation",
+      "performance",
+      "persuasion"
+    ],
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Feérico",
+        "description": "Sos una criatura de tipo feérico. Elegís tamaño Mediano (4 a 7 pies) o Pequeño (2 a 4 pies) al tomar la especie."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Instintos de Cambiaformas",
+        "description": "Ganás competencia en dos habilidades a elegir entre Engaño, Perspicacia, Intimidación, Interpretación y Persuasión."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Metamorfo",
+        "description": "Como acción cambiás tu aspecto y tu voz: color, largo de pelo, sexo, altura, peso y tamaño entre Mediano y Pequeño. Podés parecer miembro de otra especie jugable, pero tus valores de juego no cambian. No podés copiar a alguien que nunca viste ni adoptar una forma con otra disposición de miembros. No cambia ropa ni equipo. Mientras estás transformado tenés ventaja en las pruebas de Carisma. Volvés a tu forma real con otra acción."
+      }
+    ]
+  },
+  {
+    "id": "kalashtar",
+    "name": "Kalashtar",
+    "source": "foa_2025",
+    "iconId": "psychology",
+    "tagline": "Dos mentes en un solo cuerpo",
+    "size": "Mediano",
+    "speed": 30,
+    "skillChoiceCount": 1,
+    "skillChoiceFrom": [],
+    "effects": [
+      {
+        "type": "resistance",
+        "damageType": "psychic"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Aberración",
+        "description": "Sos una criatura de tipo aberración, de tamaño Mediano (6 a 7 pies)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Mente Dual",
+        "description": "Tenés ventaja en las salvaciones de Sabiduría y de Carisma."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Disciplina Mental",
+        "description": "Tenés resistencia al daño psíquico."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Vínculo Mental",
+        "description": "Tenés telepatía con un alcance en pies igual a 10 veces tu nivel. Mientras hablás telepáticamente con una criatura podés usar una acción mágica para darle la capacidad de responderte durante 1 hora, o hasta que la termines con otra acción mágica."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Ajeno a los Sueños",
+        "description": "No podés ser objetivo del conjuro Sueño. Además, al terminar un descanso largo ganás competencia en una habilidad a tu elección, hasta el próximo descanso largo."
+      }
+    ]
+  },
+  {
+    "id": "khoravar",
+    "name": "Khoravar",
+    "source": "foa_2025",
+    "iconId": "handshake",
+    "tagline": "Hijos de Khorvaire, el puente entre",
+    "size": "Mediano",
+    "speed": 30,
+    "skillChoiceCount": 1,
+    "skillChoiceFrom": [],
+    "effects": [
+      {
+        "type": "darkvision",
+        "range": 60
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Humanoide",
+        "description": "Sos una criatura de tipo humanoide. Elegís tamaño Mediano (4 a 6 pies) o Pequeño (2 a 4 pies) al tomar la especie."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Ascendencia Feérica",
+        "description": "Tenés ventaja en las salvaciones para evitar o terminar el estado hechizado."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Don Feérico",
+        "description": "Conocés el truco Amistad. Al terminar un descanso largo podés cambiarlo por otro truco de la lista de Clérigo, Druida o Mago. Tu aptitud mágica para él es Inteligencia, Sabiduría o Carisma (se elige al tomar la especie)."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistencia al Letargo",
+        "description": "Cuando fallás una salvación para evitar o terminar el estado inconsciente, podés tener éxito en su lugar. No podés volver a usarlo hasta terminar 1d4 descansos largos."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Versatilidad de Habilidad",
+        "description": "Ganás competencia en una habilidad o una herramienta a tu elección. Al terminar un descanso largo podés cambiarla por otra."
+      }
+    ]
+  },
+  {
+    "id": "shifter",
+    "name": "Cambiante",
+    "source": "foa_2025",
+    "iconId": "pets",
+    "tagline": "La bestia interior, a flor de piel",
+    "size": "Mediano",
+    "speed": 30,
+    "skillChoiceCount": 1,
+    "skillChoiceFrom": [
+      "acrobatics",
+      "athletics",
+      "intimidation",
+      "survival"
+    ],
+    "effects": [
+      {
+        "type": "darkvision",
+        "range": 60
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Humanoide",
+        "description": "Sos una criatura de tipo humanoide. Elegís tamaño Mediano (4 a 7 pies) o Pequeño (2 a 4 pies) al tomar la especie."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Instintos Bestiales",
+        "description": "Ganás competencia en una habilidad a elegir entre Acrobacias, Atletismo, Intimidación y Supervivencia."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Transformación",
+        "description": "Como acción adicional adoptás un aspecto más bestial durante 1 minuto, o hasta que volvés a tu forma normal con otra acción adicional. Al transformarte ganás PG temporales iguales al doble de tu bonif. de competencia. Podés transformarte tantas veces como tu bonif. de competencia y recuperás todos los usos con un descanso largo."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Naturaleza Bestial",
+        "description": "Elegís al tomar la especie qué beneficio ganás al transformarte. Piel Robusta: 1d6 PG temporales extra y +1 a la CA mientras dure. Colmillo Largo: al transformarte, y como acción adicional en tus turnos siguientes, hacés un ataque sin armas con tus colmillos que causa 1d6 perforante más tu modificador por Fuerza. Paso Veloz: +10 pies de velocidad y podés moverte hasta 10 pies como reacción cuando una criatura termina su turno a 5 pies o menos, sin provocar ataques de oportunidad. Cacería Salvaje: ventaja en las pruebas de Sabiduría, y ninguna criatura a 30 pies puede tener ventaja para atacarte salvo que estés incapacitado."
+      }
+    ]
+  },
+  {
+    "id": "warforged",
+    "name": "Forjado",
+    "source": "foa_2025",
+    "iconId": "smart_toy",
+    "tagline": "Hecho para la guerra, vivo por accidente",
+    "size": "Mediano",
+    "speed": 30,
+    "skillChoiceCount": 1,
+    "skillChoiceFrom": [],
+    "effects": [
+      {
+        "type": "resistance",
+        "damageType": "poison"
+      },
+      {
+        "type": "armorClassBonus",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Autómata",
+        "description": "Sos una criatura de tipo autómata. Elegís tamaño Mediano (6 a 8 pies) o Pequeño (3 a 4 pies) al tomar la especie."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Resistencia de Autómata",
+        "description": "Tenés resistencia al daño de veneno y ventaja en las salvaciones para evitar o terminar el estado envenenado."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Protección Integrada",
+        "description": "Ganás +1 a la CA. Además, la armadura que te pusiste no puede quitarse contra tu voluntad mientras vivas."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Descanso del Centinela",
+        "description": "No necesitás dormir y la magia no puede dormirte. Podés terminar un descanso largo en 6 horas si las pasás inactivo e inmóvil: parecés inerte pero seguís consciente."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Diseño Especializado",
+        "description": "Ganás competencia en una habilidad y en una herramienta a tu elección."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Incansable",
+        "description": "No ganás niveles de agotamiento por deshidratación, desnutrición ni asfixia."
       }
     ]
   }

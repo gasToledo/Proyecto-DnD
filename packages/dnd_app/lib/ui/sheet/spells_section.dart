@@ -3,8 +3,8 @@ part of '../sheet_screen.dart';
 extension _SheetSpellsSection on _SheetScreenState {
   // ------------------------------------------------------------- Conjuros
 
-  Widget _buildSpells() {
-    final sc = sheet.spellcasting;
+  Widget _spellsCard(ComputedSheet sheetArg) {
+    final sc = sheetArg.spellcasting;
     final combat = _c.combat;
     final pal = context.palette;
 
@@ -24,124 +24,138 @@ extension _SheetSpellsSection on _SheetScreenState {
     final slotLevels = sc?.slotsByLevel.keys.toList() ?? <int>[];
     slotLevels.sort();
 
-    return PageBody(
-      children: [
-        if (sc != null) ...[
-          Row(
-            children: [
-              const Expanded(child: Eyebrow('Lanzamiento de conjuros')),
-              TextButton.icon(
-                onPressed: () => _openSpellEditor(sc),
-                icon: const Icon(Icons.edit, size: 16),
-                label: Text(
+    return sheetCard(
+      icon: Icons.auto_stories,
+      title: 'Conjuros',
+      trailing: sc == null
+          ? null
+          : TextButton.icon(
+              onPressed: () => _openSpellEditor(sc),
+              icon: const Icon(Icons.edit, size: 16),
+              label: Text(
+                sc.preparation == SpellPreparation.prepared
+                    ? 'Preparar'
+                    : 'Editar',
+              ),
+            ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (sc != null) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: StatPlaque(label: 'CD SALV.', value: '${sc.saveDc}'),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: StatPlaque(
+                      label: 'ATAQUE',
+                      value:
+                          '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus}',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: StatPlaque(label: 'APTITUD', value: sc.ability.abbr),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                [
                   sc.preparation == SpellPreparation.prepared
-                      ? 'Preparar'
-                      : 'Editar',
+                      ? 'Preparados: ${_c.spellIds.length} / ${sc.preparedCount}'
+                      : 'Conocidos: ${_c.spellIds.length}',
+                  if (sc.cantripsKnown > 0)
+                    'Trucos: ${cantrips.length} / ${sc.cantripsKnown}',
+                ].join(' · '),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+
+            if (sheet.innateSpells.isNotEmpty) ...[
+              if (sc != null) const SizedBox(height: 20),
+              const Eyebrow('Conjuros de especie y linaje'),
+              const SizedBox(height: 6),
+              DenseRows(
+                children: [
+                  for (final innate in sheet.innateSpells)
+                    _innateSpellRow(innate),
+                ],
+              ),
+            ],
+
+            if (combat.concentratingOn != null) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: pal.gold),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.blur_on, size: 18, color: pal.gold),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Concentrándote en ${combat.concentratingOn}',
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => _mutateCombat(
+                        () => CombatOps.endConcentration(combat),
+                      ),
+                      child: const Text('Terminar'),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: StatPlaque(label: 'CD SALV.', value: '${sc.saveDc}'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: StatPlaque(
-                  label: 'ATAQUE',
-                  value: '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus}',
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: StatPlaque(label: 'APTITUD', value: sc.ability.abbr),
+
+            if (slotLevels.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              const Eyebrow('Espacios de conjuro'),
+              DenseRows(
+                children: [for (final lv in slotLevels) _slotRow(sc!, lv)],
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            [
-              sc.preparation == SpellPreparation.prepared
-                  ? 'Preparados: ${_c.spellIds.length} / ${sc.preparedCount}'
-                  : 'Conocidos: ${_c.spellIds.length}',
-              if (sc.cantripsKnown > 0)
-                'Trucos: ${cantrips.length} / ${sc.cantripsKnown}',
-            ].join(' · '),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
 
-        if (sheet.innateSpells.isNotEmpty) ...[
-          if (sc != null) const SizedBox(height: 20),
-          const Eyebrow('Conjuros de especie y linaje'),
-          const SizedBox(height: 6),
-          DenseRows(
-            children: [
-              for (final innate in sheet.innateSpells) _innateSpellRow(innate),
+            if (cantrips.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              const Eyebrow('Trucos'),
+              DenseRows(children: [for (final s in cantrips) _spellRow(s)]),
             ],
-          ),
-        ],
 
-        if (combat.concentratingOn != null) ...[
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border.all(color: pal.gold),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.blur_on, size: 18, color: pal.gold),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('Concentrándote en ${combat.concentratingOn}'),
-                ),
-                TextButton(
-                  onPressed: () =>
-                      _mutateCombat(() => CombatOps.endConcentration(combat)),
-                  child: const Text('Terminar'),
-                ),
-              ],
-            ),
-          ),
-        ],
+            if (spells.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Eyebrow(
+                sc!.preparation == SpellPreparation.prepared
+                    ? 'Conjuros preparados'
+                    : 'Conjuros conocidos',
+              ),
+              DenseRows(children: [for (final s in spells) _spellRow(s)]),
+            ],
 
-        if (slotLevels.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          const Eyebrow('Espacios de conjuro'),
-          DenseRows(children: [for (final lv in slotLevels) _slotRow(sc!, lv)]),
-        ],
-
-        if (cantrips.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          const Eyebrow('Trucos'),
-          DenseRows(children: [for (final s in cantrips) _spellRow(s)]),
-        ],
-
-        if (spells.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Eyebrow(
-            sc!.preparation == SpellPreparation.prepared
-                ? 'Conjuros preparados'
-                : 'Conjuros conocidos',
-          ),
-          DenseRows(children: [for (final s in spells) _spellRow(s)]),
-        ],
-
-        if (sc != null &&
-            cantrips.isEmpty &&
-            spells.isEmpty &&
-            sheet.innateSpells.isEmpty) ...[
-          const SizedBox(height: 20),
-          Text(
-            'Todavía no elegiste conjuros. Editá al subir de nivel o al crear.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ],
+            if (sc != null &&
+                cantrips.isEmpty &&
+                spells.isEmpty &&
+                sheet.innateSpells.isEmpty) ...[
+              const SizedBox(height: 20),
+              Text(
+                'Todavía no elegiste conjuros. Editá al subir de nivel o al crear.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

@@ -16,8 +16,24 @@ part 'sheet/combat_section.dart';
 part 'sheet/general_section.dart';
 part 'sheet/inventory_section.dart';
 part 'sheet/notes_section.dart';
+part 'sheet/sheet_navigation.dart';
 part 'sheet/sheet_widgets.dart';
 part 'sheet/spells_section.dart';
+
+/// Ancho a partir del cual el panel lateral queda fijo (igual que el
+/// dashboard). Por debajo se colapsa a un Drawer.
+const _kSheetWideBreakpoint = 900.0;
+
+enum _SheetTab {
+  personaje('Personaje', Icons.person),
+  combate('Combate', Icons.sports_martial_arts),
+  inventario('Inventario', Icons.backpack),
+  notas('Notas', Icons.edit_note);
+
+  const _SheetTab(this.label, this.icon);
+  final String label;
+  final IconData icon;
+}
 
 /// Condición: etiqueta + qué le hace al personaje (reglas 2024), para el
 /// gestor de estados en combate.
@@ -111,11 +127,13 @@ class SheetScreen extends StatefulWidget {
   final Character character;
   final ContentRepository repo;
   final CharactersController controller;
+  final VoidCallback onToggleTheme;
   const SheetScreen({
     super.key,
     required this.character,
     required this.repo,
     required this.controller,
+    required this.onToggleTheme,
   });
 
   @override
@@ -124,6 +142,7 @@ class SheetScreen extends StatefulWidget {
 
 class _SheetScreenState extends State<SheetScreen> {
   late Character _c = widget.character;
+  _SheetTab _tab = _SheetTab.personaje;
 
   ContentRepository get repo => widget.repo;
   CharactersController get ctrl => widget.controller;
@@ -160,6 +179,8 @@ class _SheetScreenState extends State<SheetScreen> {
     setState(change);
     ctrl.touch(_c);
   }
+
+  void _selectTab(_SheetTab tab) => setState(() => _tab = tab);
 
   void _replace(Character next) {
     setState(() => _c = next);
@@ -205,48 +226,39 @@ class _SheetScreenState extends State<SheetScreen> {
   void _snack(String msg) =>
       showAppMessage(context, msg, duration: const Duration(seconds: 2));
 
+  Widget _tabContent(_SheetTab tab) => switch (tab) {
+    _SheetTab.personaje => _buildPersonaje(),
+    _SheetTab.combate => _buildCombat(),
+    _SheetTab.inventario => _buildInventory(),
+    _SheetTab.notas => _buildNotes(),
+  };
+
   @override
   Widget build(BuildContext context) {
-    final hasSpells =
-        sheet.spellcasting != null || sheet.innateSpells.isNotEmpty;
-    return DefaultTabController(
-      length: hasSpells ? 5 : 4,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('${_c.name} · Nivel ${_c.level}'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.face_retouching_natural),
-              tooltip: 'Generar retrato',
-              onPressed: _openPortrait,
+    return LayoutBuilder(
+      builder: (context, box) {
+        final wide = box.maxWidth >= _kSheetWideBreakpoint;
+        if (wide) {
+          return Scaffold(
+            body: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _sidebar(context),
+                Expanded(child: _sheetBody()),
+              ],
             ),
-            IconButton(
-              icon: const Icon(Icons.arrow_upward),
-              tooltip: 'Subir de nivel',
-              onPressed: _openLevelUp,
+          );
+        }
+        return Scaffold(
+          appBar: AppBar(title: Text('${_c.name} · Nivel ${_c.level}')),
+          drawer: Drawer(
+            child: SafeArea(
+              child: Builder(builder: (ctx) => _sidebar(ctx, inDrawer: true)),
             ),
-          ],
-          bottom: TabBar(
-            isScrollable: true,
-            tabs: [
-              const Tab(text: 'General'),
-              const Tab(text: 'Combate'),
-              if (hasSpells) const Tab(text: 'Conjuros'),
-              const Tab(text: 'Inventario'),
-              const Tab(text: 'Notas'),
-            ],
           ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildGeneral(),
-            _buildCombat(),
-            if (hasSpells) _buildSpells(),
-            _buildInventory(),
-            _buildNotes(),
-          ],
-        ),
-      ),
+          body: _sheetBody(),
+        );
+      },
     );
   }
 }

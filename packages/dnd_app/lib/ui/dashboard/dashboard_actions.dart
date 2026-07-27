@@ -20,8 +20,12 @@ extension _DashboardActions on _DashboardScreenState {
   void _openSheet(Character c) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            SheetScreen(character: c, repo: repo, controller: controller),
+        builder: (_) => SheetScreen(
+          character: c,
+          repo: repo,
+          controller: controller,
+          onToggleTheme: widget.onToggleTheme,
+        ),
       ),
     );
   }

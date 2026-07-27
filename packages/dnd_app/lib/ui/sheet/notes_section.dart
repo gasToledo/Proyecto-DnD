@@ -4,10 +4,12 @@ extension _SheetNotesSection on _SheetScreenState {
   // ---------------------------------------------------------------- Notas
 
   Widget _buildNotes() {
-    return PageBody(
-      children: [
-        const Eyebrow('Notas del personaje'),
-        TextField(
+    return sheetCard(
+      icon: Icons.edit_note,
+      title: 'Notas del personaje',
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: TextField(
           controller: _notesCtrl,
           minLines: 12,
           maxLines: null,
@@ -22,15 +24,7 @@ extension _SheetNotesSection on _SheetScreenState {
             ctrl.touch(_c);
           },
         ),
-      ],
+      ),
     );
   }
-
-  Widget _chips(List<String> labels) => labels.isEmpty
-      ? const Text('—')
-      : Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: labels.map((l) => Chip(label: Text(l))).toList(),
-        );
 }

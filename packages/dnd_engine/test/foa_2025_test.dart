@@ -133,4 +133,73 @@ void main() {
           contains('5 pies'));
     });
   });
+
+  group('Trasfondos', () {
+    Background background(String id) => repo.background(id)!;
+
+    test('están los 17 trasfondos del capítulo 2', () {
+      final foa = repo.backgrounds.values
+          .where((b) => b.source == ContentSource.foa2025);
+      expect(foa, hasLength(17));
+    });
+
+    test('las trece casas dracomarcadas conceden su marca a nivel 1', () {
+      // El libro es explícito: tomar el trasfondo de la casa es la única forma
+      // de tener una marca a nivel 1.
+      const casas = {
+        'cannith': 'mark-of-making',
+        'deneith': 'mark-of-sentinel',
+        'ghallanda': 'mark-of-hospitality',
+        'jorasco': 'mark-of-healing',
+        'kundarak': 'mark-of-warding',
+        'lyrandar': 'mark-of-storm',
+        'medani': 'mark-of-detection',
+        'orien': 'mark-of-passage',
+        'phiarlan': 'mark-of-shadow',
+        'sivis': 'mark-of-scribing',
+        'tharashk': 'mark-of-finding',
+        'thuranni': 'mark-of-shadow',
+        'vadalis': 'mark-of-handling',
+      };
+      casas.forEach((casa, marca) {
+        final b = background('house-$casa-heir');
+        expect(b.originFeatId, marca, reason: casa);
+        expect(repo.feat(marca)!.category, 'dragonmark');
+      });
+      // Phiarlan y Thuranni comparten la Marca de Sombra: la casa se escindió,
+      // la marca no. Dos trasfondos que apuntan a la misma dote es correcto.
+      expect(background('house-phiarlan-heir').originFeatId,
+          background('house-thuranni-heir').originFeatId);
+    });
+
+    test('Heredero Aberrante trae la marca aberrante', () {
+      final b = background('aberrant-heir');
+      expect(b.originFeatId, 'aberrant-dragonmark');
+      expect(b.skillProficiencies, containsAll(['history', 'intimidation']));
+    });
+
+    test('los tres sin marca usan dotes de origen normales', () {
+      // Agente de Casa da afiliación sin marca; Arqueólogo e Inquisidor
+      // sostienen las campañas de los capítulos 4 y 6.
+      const sinMarca = {
+        'house-agent': 'lucky',
+        'archaeologist': 'skilled',
+        'inquisitive': 'alert',
+      };
+      sinMarca.forEach((id, dote) {
+        expect(background(id).originFeatId, dote, reason: id);
+        expect(repo.feat(dote)!.category, 'origin');
+      });
+    });
+
+    test('todos declaran ícono y línea de sabor', () {
+      // `iconFor` cae en silencio a un genérico si el id no está registrado en
+      // la app, así que acá al menos se exige que el dato esté.
+      for (final b in repo.backgrounds.values
+          .where((b) => b.source == ContentSource.foa2025)) {
+        expect(b.iconId, isNotNull, reason: b.id);
+        expect(b.tagline, isNotNull, reason: b.id);
+      }
+    });
+  });
 }

@@ -45,8 +45,11 @@ void main() {
     await tester.pumpAndSettle();
     await next();
 
-    // Trasfondo (+1/+1/+1 no necesita elegir características)
+    // Trasfondo (+1/+1/+1 no necesita elegir características). El reparto vive
+    // debajo de la grilla, que ya tiene 33 trasfondos: hay que scrollear.
     await tester.tap(find.text('Soldado'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();

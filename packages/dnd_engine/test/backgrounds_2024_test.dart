@@ -17,7 +17,11 @@ void main() {
   Feat feat(String id) => repo.feat(id)!;
 
   test('el catálogo tiene los 16 trasfondos del capítulo 4', () {
-    expect(repo.backgrounds.length, 16);
+    // Solo los del PHB: Forge of the Artificer suma otros 17, que se cuentan
+    // aparte en `foa_2025_test.dart`.
+    final phb =
+        repo.backgrounds.values.where((b) => b.source != ContentSource.foa2025);
+    expect(phb, hasLength(16));
   });
 
   test('Acólito: Perspicacia y Religión, Iniciado en la Magia (Clérigo)', () {

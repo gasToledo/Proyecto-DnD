@@ -36,6 +36,21 @@ void main() {
     hpPerLevel: [10, 6, 6],
   );
 
+  Future<void> goToAsi(WidgetTester tester) async {
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mejora tu personaje'), findsOneWidget);
+  }
+
+  Future<void> searchFeat(WidgetTester tester, String query) async {
+    final search = find.widgetWithText(TextField, 'Buscar dote');
+    expect(search, findsOneWidget);
+    await tester.enterText(search, query);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('cambiar a "Tomar dote" sin elegir dote no crashea', (
     tester,
   ) async {
@@ -47,7 +62,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Nivel 4 es ASI para el Guerrero: aparece la elección de mejora/dote.
+    // Nivel 4 es ASI para el Guerrero: el wizard llega a mejora/dote tras
+    // resolver el resumen y los PG.
+    await goToAsi(tester);
     expect(find.text('Tomar dote'), findsOneWidget);
     await tester.tap(find.text('Tomar dote'));
     await tester.pumpAndSettle();
@@ -72,7 +89,80 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Subir a nivel 4'), findsOneWidget);
+    expect(find.text('Continuar'), findsOneWidget);
+    expect(find.textContaining('Paso 1 de'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tirar PG bloquea el avance hasta obtener un resultado', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: fighterL3(), repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tirar'));
+    await tester.pumpAndSettle();
+
+    var button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Continuar'),
+    );
+    expect(button.onPressed, isNull);
+    expect(
+      find.text('Tirá el dado o elegí el promedio para continuar.'),
+      findsOneWidget,
+    );
+
+    await tester.ensureVisible(find.text('Tirar el dado'));
+    await tester.tap(find.text('Tirar el dado'));
+    await tester.pumpAndSettle();
+    button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Continuar'),
+    );
+    expect(button.onPressed, isNotNull);
+  });
+
+  testWidgets('la revisión confirma recién al final y abre la celebración', (
+    tester,
+  ) async {
+    Character? saved;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(
+          character: fighterL3(),
+          repo: repo,
+          onDone: (updated) => saved = updated,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await goToAsi(tester);
+    await tester.tap(find.widgetWithText(InkWell, 'Fuerza'));
+    await tester.pumpAndSettle();
+
+    expect(saved, isNull);
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Así queda Prueba'), findsOneWidget);
     expect(find.text('Confirmar nivel 4'), findsOneWidget);
+    expect(saved, isNull);
+
+    await tester.tap(find.text('Confirmar nivel 4'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.level, 4);
+    expect(saved?.asiChoices.last.abilityIncreases[Ability.strength], 2);
+    expect(find.text('¡Subiste a nivel 4!'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -108,12 +198,14 @@ void main() {
     await tester.pumpAndSettle();
 
     // Nivel 6 es ASI para el Guerrero.
+    await goToAsi(tester);
     await tester.tap(find.text('Tomar dote'));
     await tester.pumpAndSettle();
+    await searchFeat(tester, 'Maestro de Armas Grandes');
 
     // La dote ya tomada no debe ofrecerse de nuevo (no es repetible).
     expect(
-      find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
       findsNothing,
     );
   });
@@ -150,6 +242,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await goToAsi(tester);
     await tester.tap(find.text('Tomar dote'));
     await tester.pumpAndSettle();
   }
@@ -159,23 +252,23 @@ void main() {
   ) async {
     // Maestro de Armas Grandes exige Fuerza 13.
     await openFeatPicker(tester, fighterL5(strength: 8));
+    await searchFeat(tester, 'Maestro de Armas Grandes');
 
     expect(
-      find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
       findsNothing,
     );
     // Pero el selector no queda vacío: Cocinero no pide característica.
-    expect(find.widgetWithText(ChoiceChip, 'Cocinero'), findsOneWidget);
+    await searchFeat(tester, 'Cocinero');
+    expect(find.widgetWithText(InkWell, 'Cocinero'), findsOneWidget);
   });
 
   testWidgets('no ofrece una marca mayor sin la marca base', (tester) async {
     // Marca Mayor de Manejo exige tener Marca de Manejo.
     await openFeatPicker(tester, fighterL5());
+    await searchFeat(tester, 'Marca Mayor de Manejo');
 
-    expect(
-      find.widgetWithText(ChoiceChip, 'Marca Mayor de Manejo'),
-      findsNothing,
-    );
+    expect(find.widgetWithText(InkWell, 'Marca Mayor de Manejo'), findsNothing);
   });
 
   testWidgets('ofrece la marca mayor cuando ya tiene la marca base', (
@@ -185,9 +278,10 @@ void main() {
       tester,
       fighterL5(featIds: const ['mark-of-handling']),
     );
+    await searchFeat(tester, 'Marca Mayor de Manejo');
 
     expect(
-      find.widgetWithText(ChoiceChip, 'Marca Mayor de Manejo'),
+      find.widgetWithText(InkWell, 'Marca Mayor de Manejo'),
       findsOneWidget,
     );
   });
@@ -199,9 +293,10 @@ void main() {
     // a 4 debe verlas: comprobar contra el nivel viejo vaciaría el selector
     // justo en el ASI más común.
     await openFeatPicker(tester, fighterL3());
+    await searchFeat(tester, 'Maestro de Armas Grandes');
 
     expect(
-      find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
       findsOneWidget,
     );
   });
@@ -221,15 +316,17 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await goToAsi(tester);
     await tester.tap(find.text('Tomar dote'));
     await tester.pumpAndSettle();
 
     // Sin dote elegida, se explica qué hacer para ver la descripción.
-    expect(find.text('Elegí una dote para ver qué hace.'), findsOneWidget);
+    expect(find.text('Elegí una dote'), findsOneWidget);
 
     // Cocinero y no Actor: Actor exige Carisma 13 y este guerrero tiene 8, así
     // que desde que el selector respeta los prerrequisitos no se ofrece.
-    final chip = find.widgetWithText(ChoiceChip, 'Cocinero');
+    await searchFeat(tester, 'Cocinero');
+    final chip = find.widgetWithText(InkWell, 'Cocinero');
     await tester.ensureVisible(chip);
     await tester.tap(chip);
     await tester.pumpAndSettle();
@@ -237,8 +334,9 @@ void main() {
     // El texto sale de los rasgos pasivos de la dote, no de un literal.
     final esperado = featSummary(repo.feat('chef')!);
     expect(esperado, isNotEmpty);
-    expect(find.text(esperado), findsOneWidget);
-    expect(find.text('Elegí una dote para ver qué hace.'), findsNothing);
+    // La tarjeta y el panel de detalle comparten el resumen.
+    expect(find.text(esperado), findsWidgets);
+    expect(find.text('Elegí una dote'), findsNothing);
   });
 
   testWidgets('no ofrece Iniciado en la Magia: es dote de origen', (
@@ -275,11 +373,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await goToAsi(tester);
     await tester.tap(find.text('Tomar dote'));
     await tester.pumpAndSettle();
+    await searchFeat(tester, 'Iniciado en la Magia');
 
     expect(
-      find.widgetWithText(ChoiceChip, 'Iniciado en la Magia (Mago)'),
+      find.widgetWithText(InkWell, 'Iniciado en la Magia (Mago)'),
       findsNothing,
     );
   });

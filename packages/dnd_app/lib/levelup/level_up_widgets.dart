@@ -1,5 +1,500 @@
 part of 'level_up_screen.dart';
 
+class _LevelBadge extends StatelessWidget {
+  final int from;
+  final int to;
+  const _LevelBadge({required this.from, required this.to});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+      decoration: BoxDecoration(
+        color: pal.plaque,
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('$from', style: TextStyle(color: pal.textMuted)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: Icon(Icons.arrow_forward, size: 15, color: pal.gold),
+          ),
+          Text(
+            '$to',
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              fontSize: 16,
+              color: pal.gold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LevelUpStepper extends StatelessWidget {
+  final List<_LevelUpStep> steps;
+  final int current;
+  final bool compact;
+  final bool Function(int index) canReach;
+  final ValueChanged<int> onSelected;
+
+  const _LevelUpStepper({
+    required this.steps,
+    required this.current,
+    required this.compact,
+    required this.canReach,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    if (compact) {
+      final step = steps[current];
+      return Container(
+        padding: const EdgeInsets.fromLTRB(18, 11, 18, 12),
+        decoration: BoxDecoration(
+          color: scheme.surface,
+          border: Border(bottom: BorderSide(color: pal.hairline)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(step.icon, size: 18, color: pal.gold),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    step.label,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Text(
+                  'Paso ${current + 1} de ${steps.length}',
+                  style: TextStyle(fontSize: 11, color: pal.textMuted),
+                ),
+              ],
+            ),
+            const SizedBox(height: 9),
+            LinearProgressIndicator(
+              value: (current + 1) / steps.length,
+              minHeight: 4,
+              borderRadius: BorderRadius.circular(2),
+              backgroundColor: pal.plaque,
+              color: pal.gold,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(bottom: BorderSide(color: pal.hairline)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (var i = 0; i < steps.length; i++) ...[
+              _StepButton(
+                number: i + 1,
+                step: steps[i],
+                active: i == current,
+                done: i < current,
+                enabled: canReach(i),
+                onTap: () => onSelected(i),
+              ),
+              if (i != steps.length - 1)
+                Container(width: 24, height: 1, color: pal.hairline),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StepButton extends StatelessWidget {
+  final int number;
+  final _LevelUpStep step;
+  final bool active;
+  final bool done;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _StepButton({
+    required this.number,
+    required this.step,
+    required this.active,
+    required this.done,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final fg = active
+        ? Theme.of(context).colorScheme.onSurface
+        : enabled
+        ? Theme.of(context).colorScheme.onSurfaceVariant
+        : pal.textMuted;
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(9),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: active
+                    ? pal.gold
+                    : done
+                    ? pal.goldSoft
+                    : pal.plaque,
+                border: Border.all(
+                  color: active || done ? pal.gold : pal.hairline,
+                ),
+              ),
+              child: done
+                  ? Icon(Icons.check, size: 14, color: pal.gold)
+                  : Text(
+                      '$number',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: active
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : fg,
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 7),
+            Text(step.label, style: TextStyle(fontSize: 12, color: fg)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LevelUpFooter extends StatelessWidget {
+  final int current;
+  final int total;
+  final String? pendingMessage;
+  final bool canContinue;
+  final bool isReview;
+  final int level;
+  final VoidCallback? onBack;
+  final VoidCallback onContinue;
+
+  const _LevelUpFooter({
+    required this.current,
+    required this.total,
+    required this.pendingMessage,
+    required this.canContinue,
+    required this.isReview,
+    required this.level,
+    required this.onBack,
+    required this.onContinue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(top: BorderSide(color: pal.hairline)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 600;
+          return Row(
+            children: [
+              OutlinedButton.icon(
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back, size: 17),
+                label: Text(compact ? '' : 'Atrás'),
+              ),
+              SizedBox(width: compact ? 8 : 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Paso ${current + 1} de $total',
+                      style: TextStyle(fontSize: 11, color: pal.textMuted),
+                    ),
+                    if (pendingMessage != null)
+                      Text(
+                        pendingMessage!,
+                        maxLines: compact ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 11, color: scheme.error),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              FilledButton.icon(
+                onPressed: canContinue ? onContinue : null,
+                icon: Icon(
+                  isReview ? Icons.check : Icons.arrow_forward,
+                  size: 18,
+                ),
+                label: Text(
+                  isReview
+                      ? compact
+                            ? 'Confirmar'
+                            : 'Confirmar nivel $level'
+                      : 'Continuar',
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _LevelUpIntro extends StatelessWidget {
+  final String eyebrow;
+  final String title;
+  final String body;
+
+  const _LevelUpIntro({
+    required this.eyebrow,
+    required this.title,
+    required this.body,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final pal = context.palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          eyebrow.toUpperCase(),
+          style: TextStyle(
+            color: pal.gold,
+            fontSize: 10,
+            letterSpacing: 2,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 30,
+            color: scheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 7),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680),
+          child: Text(
+            body,
+            style: TextStyle(
+              height: 1.55,
+              fontSize: 13.5,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LevelUpCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String body;
+  final String? tag;
+  final bool selected;
+  final VoidCallback? onTap;
+  final Widget? trailing;
+
+  const _LevelUpCard({
+    required this.icon,
+    required this.title,
+    required this.body,
+    this.tag,
+    this.selected = false,
+    this.onTap,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(13),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: selected ? pal.goldSoft : scheme.surface,
+          border: Border.all(
+            color: selected ? pal.gold : pal.hairline,
+            width: selected ? 1.5 : 1,
+          ),
+          borderRadius: BorderRadius.circular(13),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: pal.gold),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ?trailing,
+              ],
+            ),
+            if (body.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                body,
+                style: TextStyle(
+                  height: 1.5,
+                  fontSize: 12.5,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            if (tag != null) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: pal.plaque,
+                  border: Border.all(color: pal.hairline),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  tag!,
+                  style: TextStyle(
+                    fontSize: 10,
+                    letterSpacing: 0.5,
+                    color: selected ? pal.gold : pal.textMuted,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String note;
+  final String before;
+  final String after;
+
+  const _ReviewRow({
+    required this.icon,
+    required this.label,
+    required this.note,
+    required this.before,
+    required this.after,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: pal.gold),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 13.5)),
+                if (note.isNotEmpty)
+                  Text(
+                    note,
+                    style: TextStyle(fontSize: 11.5, color: pal.textMuted),
+                  ),
+              ],
+            ),
+          ),
+          Text(
+            before,
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 7),
+            child: Icon(Icons.arrow_forward, size: 15, color: pal.gold),
+          ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 56, maxWidth: 180),
+            child: Text(
+              after,
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 16,
+                color: pal.gold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Detalle de la dote elegida en la subida de nivel.
 ///
 /// La grilla de dotes son 57 chips con solo el nombre, así que sin esto hay que

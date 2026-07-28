@@ -106,6 +106,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Resumen → PG → selección de subclase.
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Evocador'), findsOneWidget);
     // Una sola opción del SRD y tres del PHB.
     expect(find.text('SRD'), findsOneWidget);

@@ -196,9 +196,13 @@ credenciales se envían por encabezado, nunca en la URL, se guardan en
 
 - La ruta del proyecto no puede contener `&`; Flutter rechaza ese carácter al
   construir para Windows. El nombre correcto de la carpeta es `Proyecto DnD`.
-- Evitar plugins nativos de Flutter mientras el proyecto mantenga su estrategia
-  actual sin Modo Desarrollador de Windows. Antes de agregar una dependencia,
-  comprobar si introduce plugins o symlinks.
+- El Modo Desarrollador de Windows está habilitado para poder construir con
+  plugins nativos (`file_picker`, usado para importar retratos desde archivo,
+  es el primero). Sigue siendo buena práctica evitar sumar plugins nativos sin
+  necesidad: cada uno agregado exige que cualquier máquina que compile el
+  proyecto tenga el Modo Desarrollador activo. Antes de agregar una
+  dependencia nueva, comprobar si introduce plugins o symlinks y si el mismo
+  resultado se puede lograr sin ellos.
 - Construir rutas con `package:path` (`p.join`), nunca concatenando `/`.
 - No asumir que una comprobación visual queda cubierta por tests. Para cambios
   visibles, validar análisis, tests y build, y describir qué necesita revisar

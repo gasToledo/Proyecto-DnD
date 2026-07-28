@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dnd_engine/dnd_engine.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../ai/gemini_image_service.dart' show savePortrait;
@@ -45,8 +46,11 @@ class _PortraitScreenState extends State<PortraitScreen> {
   bool _customStyle = false;
 
   bool _generating = false;
+  bool _importing = false;
   String? _error;
   List<Uint8List> _results = [];
+
+  static const _importExtensions = ['png', 'jpg', 'jpeg', 'webp'];
 
   PortraitProvider _provider = PollinationsProvider();
   bool get _needsKey => _provider.keyHint != null && _apiKey.isEmpty;
@@ -136,6 +140,30 @@ class _PortraitScreenState extends State<PortraitScreen> {
     if (mounted) setState(() => _error = msg);
   }
 
+  /// Importa un retrato ya existente desde el disco, en vez de generarlo.
+  /// Reusa [_use], el mismo camino de guardado que un resultado de IA.
+  Future<void> _importFromFile() async {
+    setState(() {
+      _importing = true;
+      _error = null;
+    });
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: _importExtensions,
+        dialogTitle: 'Elegir imagen de retrato',
+      );
+      final path = result?.files.single.path;
+      if (path == null) return; // el usuario canceló el diálogo
+      final bytes = await File(path).readAsBytes();
+      await _use(bytes);
+    } catch (e) {
+      _fail('No se pudo importar la imagen: $e');
+    } finally {
+      if (mounted) setState(() => _importing = false);
+    }
+  }
+
   Future<void> _use(Uint8List bytes) async {
     final String path;
     try {
@@ -161,7 +189,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Generar retrato'),
+        title: const Text('Retrato'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -217,7 +245,32 @@ class _PortraitScreenState extends State<PortraitScreen> {
             TextButton(onPressed: _openSettings, child: const Text('Cambiar')),
           ],
         ),
-        const Divider(),
+        OutlinedButton.icon(
+          onPressed: _importing ? null : _importFromFile,
+          icon: _importing
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.upload_file),
+          label: Text(
+            _importing ? 'Importando…' : 'Importar imagen desde archivo',
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Expanded(child: Divider()),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('o generá uno nuevo'),
+              ),
+              Expanded(child: Divider()),
+            ],
+          ),
+        ),
         Text('Estilo', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Wrap(

@@ -230,18 +230,37 @@ extension _LevelUpSections on _LevelUpScreenState {
         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
       );
     }
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: feats
-          .map(
-            (f) => ChoiceChip(
-              label: Text(f.name),
-              selected: _featId == f.id,
-              onSelected: (_) => _updateState(() => _featId = f.id),
+    final selected = _featId == null
+        ? null
+        : feats.where((f) => f.id == _featId).firstOrNull;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: feats
+              .map(
+                (f) => ChoiceChip(
+                  label: Text(f.name),
+                  selected: _featId == f.id,
+                  onSelected: (_) => _updateState(() => _featId = f.id),
+                ),
+              )
+              .toList(),
+        ),
+        const SizedBox(height: 12),
+        if (selected != null)
+          _FeatDetail(selected)
+        else
+          Text(
+            'Elegí una dote para ver qué hace.',
+            style: TextStyle(
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-          )
-          .toList(),
+          ),
+      ],
     );
   }
 

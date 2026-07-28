@@ -117,6 +117,94 @@ void main() {
     );
   });
 
+  // Regresión: el selector no miraba `Feat.prerequisite`, así que ofrecía
+  // dotes que el personaje no podía tomar. Ahora las oculta, delegando la
+  // comprobación en `CharacterValidator.unmetFeatPrerequisite`.
+  Character fighterL5({int strength = 16, List<String> featIds = const []}) =>
+      Character(
+        id: 't-fighter-prereq',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        subclassId: 'champion',
+        level: 5,
+        assignedScores: {
+          Ability.strength: strength,
+          Ability.dexterity: 14,
+          Ability.constitution: 14,
+          Ability.intelligence: 10,
+          Ability.wisdom: 12,
+          Ability.charisma: 8,
+        },
+        hpPerLevel: [10, 6, 6, 6, 6],
+        featIds: featIds,
+      );
+
+  Future<void> openFeatPicker(WidgetTester tester, Character c) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: c, repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tomar dote'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('no ofrece una dote cuya característica mínima no se cumple', (
+    tester,
+  ) async {
+    // Maestro de Armas Grandes exige Fuerza 13.
+    await openFeatPicker(tester, fighterL5(strength: 8));
+
+    expect(
+      find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
+      findsNothing,
+    );
+    // Pero el selector no queda vacío: Cocinero no pide característica.
+    expect(find.widgetWithText(ChoiceChip, 'Cocinero'), findsOneWidget);
+  });
+
+  testWidgets('no ofrece una marca mayor sin la marca base', (tester) async {
+    // Marca Mayor de Manejo exige tener Marca de Manejo.
+    await openFeatPicker(tester, fighterL5());
+
+    expect(
+      find.widgetWithText(ChoiceChip, 'Marca Mayor de Manejo'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('ofrece la marca mayor cuando ya tiene la marca base', (
+    tester,
+  ) async {
+    await openFeatPicker(
+      tester,
+      fighterL5(featIds: const ['mark-of-handling']),
+    );
+
+    expect(
+      find.widgetWithText(ChoiceChip, 'Marca Mayor de Manejo'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('el nivel del prerrequisito se mide en el nivel nuevo', (
+    tester,
+  ) async {
+    // Las 57 dotes generales exigen nivel 4. Un personaje de nivel 3 subiendo
+    // a 4 debe verlas: comprobar contra el nivel viejo vaciaría el selector
+    // justo en el ASI más común.
+    await openFeatPicker(tester, fighterL3());
+
+    expect(
+      find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('no ofrece Iniciado en la Magia: es dote de origen', (
     tester,
   ) async {

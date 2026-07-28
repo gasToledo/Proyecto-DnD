@@ -261,20 +261,13 @@ class CharacterValidator {
 
     _validateSpells(c, sheet, w);
 
-    final chosenFeatIds = <String?>[
-      background?.originFeatId,
-      ...c.featIds,
-      c.fightingStyleId,
-    ];
     // El set completo se necesita para las dotes que exigen otra dote: una
     // marca mayor mira si la marca base también está elegida.
-    final heldFeatIds = chosenFeatIds.whereType<String>().toSet();
-    for (final id in chosenFeatIds) {
-      if (id == null) continue;
+    final held = heldFeatIds(c);
+    for (final id in held) {
       final feat = repo.feat(id);
-      final prereq = feat?.prerequisite;
-      if (feat == null || prereq == null || prereq.isEmpty) continue;
-      final missing = _unmetPrerequisite(prereq, c, sheet, heldFeatIds);
+      if (feat == null) continue;
+      final missing = unmetFeatPrerequisite(feat, c, sheet, held: held);
       if (missing != null) {
         w.add(ValidationWarning(
           'feat_prerequisite',
@@ -359,6 +352,32 @@ class CharacterValidator {
         ));
       }
     }
+  }
+
+  /// Ids de todas las dotes que el personaje ya tiene: la de origen del
+  /// trasfondo, las elegidas (incluida la que concede la especie) y el estilo
+  /// de combate. Es lo que hay que mirar para las dotes que exigen otra dote.
+  Set<String> heldFeatIds(Character c) => <String?>[
+        repo.background(c.backgroundId)?.originFeatId,
+        ...c.featIds,
+        c.fightingStyleId,
+      ].whereType<String>().toSet();
+
+  /// Descripción del primer prerrequisito de [feat] que [c] no cumple, o null
+  /// si los cumple todos (o si la dote no exige nada).
+  ///
+  /// La UI la usa para no ofrecer dotes inelegibles; `validate` la usa para
+  /// avisar sobre las que ya están elegidas. Ambas comparten esta única
+  /// implementación: las reglas no se duplican en la app.
+  ///
+  /// [held] permite pasar el set ya calculado cuando se evalúan muchas dotes
+  /// seguidas, y también evaluar una dote todavía **no** elegida sin que se
+  /// cuente a sí misma.
+  String? unmetFeatPrerequisite(Feat feat, Character c, ComputedSheet sheet,
+      {Set<String>? held}) {
+    final prereq = feat.prerequisite;
+    if (prereq == null || prereq.isEmpty) return null;
+    return _unmetPrerequisite(prereq, c, sheet, held ?? heldFeatIds(c));
   }
 
   /// Devuelve una descripción del primer prerrequisito incumplido, o null si

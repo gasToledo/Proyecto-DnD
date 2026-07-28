@@ -102,7 +102,11 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   /// Construye el personaje tal como quedará tras confirmar (nivel, ASI/dote,
   /// PG y conjuros re-preparados). Se usa para confirmar y para previsualizar
   /// el lanzamiento al nuevo nivel.
-  Character _buildUpdated() {
+  ///
+  /// [withFeat] en false deja fuera la dote tentativa. El selector lo necesita
+  /// para evaluar prerrequisitos: una dote que sube una característica no debe
+  /// poder habilitarse a sí misma.
+  Character _buildUpdated({bool withFeat = true}) {
     final c = widget.character;
     final asiChoices = List<AsiChoice>.of(c.asiChoices);
     final featIds = List<String>.of(c.featIds);
@@ -112,7 +116,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
         asiChoices.add(
           AsiChoice(level: _newLevel, abilityIncreases: _abilityIncreases),
         );
-      } else if (_featId != null) {
+      } else if (withFeat && _featId != null) {
         // La dote solo se agrega si ya se eligió: `_buildUpdated` corre en cada
         // build (previsualización de conjuros), incluso antes de elegir dote.
         asiChoices.add(AsiChoice(level: _newLevel, featId: _featId));

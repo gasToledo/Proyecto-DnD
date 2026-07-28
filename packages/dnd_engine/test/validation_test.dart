@@ -221,6 +221,86 @@ void main() {
     });
   });
 
+  // La UI consulta estos dos métodos para no ofrecer dotes inelegibles, en vez
+  // de reimplementar la comprobación: son la misma lógica que usa `validate`.
+  group('Prerrequisitos consultables desde afuera', () {
+    late ContentRepository repo;
+    setUp(() => repo = _minimalRepo());
+
+    ComputedSheet sheetOf(ContentRepository r, Character c) =>
+        CharacterCompiler(r).compile(c);
+
+    test('unmetFeatPrerequisite explica la característica que falta', () {
+      final c = _minimalCharacter();
+      final motivo = CharacterValidator(repo).unmetFeatPrerequisite(
+        repo.feat('test-feat')!,
+        c,
+        sheetOf(repo, c),
+      );
+      expect(motivo, 'STR 13');
+    });
+
+    test('unmetFeatPrerequisite devuelve null cuando se cumple', () {
+      final c = _minimalCharacter(assignedScores: {
+        Ability.strength: 13,
+        Ability.dexterity: 10,
+        Ability.constitution: 10,
+        Ability.intelligence: 10,
+        Ability.wisdom: 10,
+        Ability.charisma: 10,
+      });
+      final motivo = CharacterValidator(repo).unmetFeatPrerequisite(
+        repo.feat('test-feat')!,
+        c,
+        sheetOf(repo, c),
+      );
+      expect(motivo, isNull);
+    });
+
+    test('una dote que exige otra dote se evalúa contra las ya tenidas', () {
+      final repoChain = _minimalRepo(featOverrides: {
+        'prerequisite': {
+          'requiredFeatIds': ['base-feat'],
+        },
+      });
+      final validator = CharacterValidator(repoChain);
+      final feat = repoChain.feat('test-feat')!;
+
+      // Sin la dote base: no se puede tomar.
+      final sinBase = _minimalCharacter();
+      expect(
+        validator.unmetFeatPrerequisite(
+            feat, sinBase, sheetOf(repoChain, sinBase)),
+        isNotNull,
+      );
+
+      // `held` permite evaluar una dote que todavía no está elegida contra el
+      // set real de dotes del personaje: es lo que hace el selector.
+      expect(
+        validator.unmetFeatPrerequisite(
+          feat,
+          sinBase,
+          sheetOf(repoChain, sinBase),
+          held: const {'base-feat'},
+        ),
+        isNull,
+      );
+    });
+
+    test('heldFeatIds junta las elegidas y el estilo de combate', () {
+      // `copyWith` no expone fightingStyleId (lo preserva), así que se fija
+      // por JSON.
+      final c = Character.fromJson(
+        _minimalCharacter(featIds: ['test-feat']).toJson()
+          ..['fightingStyleId'] = 'style-feat',
+      );
+      expect(
+        CharacterValidator(repo).heldFeatIds(c),
+        {'test-feat', 'style-feat'},
+      );
+    });
+  });
+
   group('Regresión contra el contenido real del SRD', () {
     late ContentRepository repo;
     setUpAll(() async {

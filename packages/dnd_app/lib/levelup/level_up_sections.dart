@@ -216,12 +216,31 @@ extension _LevelUpSections on _LevelUpScreenState {
   }
 
   Widget _buildFeatPicker() {
+    // Los prerrequisitos se evalúan sobre el personaje tal como quedará al
+    // nuevo nivel: las marcas mayores exigen nivel 4, y a nivel 3 el personaje
+    // todavía no lo tiene aunque esté subiendo justo a ese nivel.
+    final target = _buildUpdated(withFeat: false);
+    final sheet = CharacterCompiler(widget.repo).compile(target);
+    final validator = CharacterValidator(widget.repo);
+    final held = validator.heldFeatIds(target);
+
     // No se puede repetir una dote ya tomada salvo que sea repetible (2024).
     final taken = widget.character.featIds.toSet();
     final feats =
         widget.repo.feats.values
             .where((f) => f.category == 'general')
             .where((f) => f.repeatable || !taken.contains(f.id))
+            // Las reglas viven en el motor: la UI solo esconde lo inelegible.
+            .where(
+              (f) =>
+                  validator.unmetFeatPrerequisite(
+                    f,
+                    target,
+                    sheet,
+                    held: held,
+                  ) ==
+                  null,
+            )
             .toList()
           ..sort((a, b) => a.name.compareTo(b.name));
     if (feats.isEmpty) {

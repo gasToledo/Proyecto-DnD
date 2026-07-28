@@ -178,15 +178,14 @@ class _AptitudesStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = draft.repo;
     final klass = draft.klass;
     final race = draft.race;
     final bg = draft.background;
     final granted = {...?bg?.skillProficiencies};
     final grantsFeat = race?.effects.any((e) => e is GrantFeatEffect) ?? false;
-    final originFeats = repo.feats.values
-        .where((f) => f.category == 'origin')
-        .toList();
+    final originFeats = grantsFeat
+        ? _eligibleOriginFeats(draft)
+        : const <Feat>[];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -287,6 +286,23 @@ class _AptitudesStep extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Dotes de origen que el personaje puede tomar realmente. Ninguna de las
+/// oficiales tiene prerrequisitos, pero una homebrew sí puede tenerlos, y el
+/// paso corre después de Puntuaciones, así que ya hay con qué compararlos.
+///
+/// La dote tentativa se deja fuera del personaje evaluado: una dote que sube
+/// una característica no debe poder cumplir su propio prerrequisito.
+List<Feat> _eligibleOriginFeats(CreationDraft draft) {
+  final repo = draft.repo;
+  final base = draft.build().copyWith(featIds: const []);
+  final sheet = CharacterCompiler(repo).compile(base);
+  final validator = CharacterValidator(repo);
+  return repo.feats.values
+      .where((f) => f.category == 'origin')
+      .where((f) => validator.unmetFeatPrerequisite(f, base, sheet) == null)
+      .toList();
 }
 
 /// Resumen legible de una dote. `Feat` no tiene descripción propia: lo que se

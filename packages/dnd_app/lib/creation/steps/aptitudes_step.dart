@@ -305,19 +305,6 @@ List<Feat> _eligibleOriginFeats(CreationDraft draft) {
       .toList();
 }
 
-/// Resumen legible de una dote. `Feat` no tiene descripción propia: lo que se
-/// muestra sale de sus rasgos pasivos, y si no tiene, de los nombres de sus
-/// efectos.
-String _featSummary(Feat feat) {
-  final traits = feat.effects.whereType<PassiveTraitEffect>();
-  if (traits.isNotEmpty) {
-    return traits
-        .map((t) => t.description.isEmpty ? t.name : t.description)
-        .join(' ');
-  }
-  return '';
-}
-
 /// Tarjeta de dote: ícono, nombre, descripción y marca de selección.
 class _FeatCard extends StatelessWidget {
   final Feat feat;
@@ -378,10 +365,10 @@ class _FeatCard extends StatelessWidget {
                         color: scheme.onSurface,
                       ),
                     ),
-                    if (_featSummary(feat).isNotEmpty) ...[
+                    if (featSummary(feat).isNotEmpty) ...[
                       const SizedBox(height: 5),
                       Text(
-                        _featSummary(feat),
+                        featSummary(feat),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

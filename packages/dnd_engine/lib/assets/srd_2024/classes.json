@@ -1645,5 +1645,122 @@
         ]
       }
     ]
+  },
+  {
+    "id": "artificer",
+    "name": "Artífice",
+    "source": "foa_2025",
+    "accentColor": "#B08D57",
+    "iconId": "gear",
+    "hitDie": 8,
+    "savingThrows": ["constitution", "intelligence"],
+    "armorProficiencies": ["light", "medium", "shield"],
+    "weaponProficiencies": ["simple"],
+    "skillChoiceCount": 2,
+    "skillChoiceFrom": [
+      "arcana", "history", "investigation", "medicine", "nature", "perception", "sleight-of-hand"
+    ],
+    "subclassLevel": 3,
+    "asiLevels": [4, 8, 12, 16, 19],
+    "features": [
+      {
+        "level": 1,
+        "name": "Lanzamiento de Conjuros",
+        "description": "Lanzas conjuros de Artífice usando Inteligencia y un foco de conjuro (Herramientas de Ladrón, de Manitas u otras Herramientas de Artesano con las que tengas competencia). Preparas conjuros de nivel 1+ tras un descanso largo; conoces 2 trucos a nivel 1, y aprendés otro a niveles 10 y 14.",
+        "effects": [
+          { "type": "spellcasting", "ability": "intelligence", "progression": "half", "preparation": "prepared", "spellList": "artificer", "cantripsKnown": 2, "cantripIncreases": [10, 14] }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Herramientas de Artífice",
+        "description": "Competencia con Herramientas de Ladrón, Herramientas de Manitas y un tipo de Herramientas de Artesano a elección.",
+        "effects": [
+          { "type": "toolProficiency", "tool": "thieves-tools" },
+          { "type": "toolProficiency", "tool": "tinkers-tools" }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Magia de Manitas",
+        "description": "Conocés el truco Reparar. Con Herramientas de Manitas en mano, como acción de magia creás un objeto mundano sencillo (una cantidad de veces igual a tu mod. de Inteligencia, mínimo una vez) en un espacio libre a 5 pies; el objeto dura hasta que terminás un descanso largo, momento en el que desaparece.",
+        "effects": [
+          { "type": "grantSpell", "spellId": "mending", "ability": "intelligence", "use": "atWill" },
+          { "type": "resource", "id": "tinkers_magic", "name": "Magia de Manitas", "max": 1, "maxFromAbility": "intelligence", "recharge": "long", "description": "Usos para crear un objeto mundano con Herramientas de Manitas. Recuperás todos los usos tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Réplica de Objeto Mágico",
+        "description": "Elegís cuatro planos de objetos mágicos que podés conocer; podés reemplazar uno al subir de nivel de Artífice. Tras un descanso largo, con Herramientas de Manitas en mano, podés crear uno o dos objetos mágicos temporales basados en tus planos conocidos (planos conocidos y objetos simultáneos crecen con el nivel: hasta 8 planos y 6 objetos a nivel 18, según la tabla de rasgos). Un objeto creado así se desvanece 1d4 días después de tu muerte, o de inmediato si reemplazás el plan con el que se hizo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Réplica de Objeto Mágico", "description": "4 planos conocidos a nivel 2, hasta 8 a nivel 18; 2 objetos simultáneos a nivel 2, hasta 6 a nivel 18. Requiere Herramientas de Manitas en mano y un descanso largo." }
+        ]
+      },
+      {
+        "level": 6,
+        "name": "Manitas de Objetos Mágicos",
+        "description": "Tu Réplica de Objeto Mágico gana tres opciones nuevas: Cargar Objeto Mágico (acción adicional, gastás un espacio de conjuro para recargarlo), Drenar Objeto Mágico (acción adicional, lo conviertes en un espacio de conjuro de nivel 1 o 2, una vez por descanso largo) y Transmutar Objeto Mágico (acción de magia, una vez por descanso largo, para transformarlo en otro objeto de un plan que conocés).",
+        "effects": [
+          { "type": "passiveTrait", "name": "Manitas de Objetos Mágicos", "description": "Cargar Objeto Mágico (acción adicional, gasta espacio de conjuro), Drenar Objeto Mágico (acción adicional, una vez por descanso largo) y Transmutar Objeto Mágico (acción de magia, una vez por descanso largo)." }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Chispa de Genialidad",
+        "description": "Cuando vos o una criatura que veas a 30 pies falla una prueba de característica o una salvación, podés usar una reacción para sumarle tu mod. de Inteligencia (mínimo +1) a la tirada.",
+        "effects": [
+          { "type": "resource", "id": "flash_of_genius", "name": "Chispa de Genialidad", "max": 1, "maxFromAbility": "intelligence", "recharge": "long", "description": "Reacciones para sumar tu mod. de Inteligencia a una prueba de característica o salvación fallida propia o ajena. Recuperás todos los usos tras un descanso largo." }
+        ]
+      },
+      {
+        "level": 10,
+        "name": "Adepto en Objetos Mágicos",
+        "description": "Ahora podés sintonizarte con hasta cuatro objetos mágicos a la vez.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Adepto en Objetos Mágicos", "description": "Sintonía con hasta cuatro objetos mágicos simultáneos." }
+        ]
+      },
+      {
+        "level": 11,
+        "name": "Objeto Almacenaconjuros",
+        "description": "Tras un descanso largo, podés almacenar en un arma o un foco de conjuro un conjuro de Artífice de nivel 1 a 3 con tiempo de lanzamiento de una acción y sin componente material consumible (no hace falta tenerlo preparado). Una criatura que sostenga el objeto puede usar una acción de magia para producir el efecto, usando tu mod. de lanzamiento. El conjuro puede usarse un número de veces igual al doble de tu mod. de Inteligencia (mínimo dos) antes de agotarse.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Objeto Almacenaconjuros", "description": "Almacena un conjuro de Artífice de nivel 1 a 3 en un arma o foco de conjuro tras un descanso largo; se usa el doble de tu mod. de Inteligencia (mínimo dos) veces." }
+        ]
+      },
+      {
+        "level": 14,
+        "name": "Artificio Avanzado",
+        "description": "Ahora podés sintonizarte con hasta cinco objetos mágicos a la vez. Además, al terminar un descanso corto recuperás un uso gastado de Chispa de Genialidad.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Artificio Avanzado", "description": "Sintonía con hasta cinco objetos mágicos simultáneos; recuperás un uso de Chispa de Genialidad tras un descanso corto." }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Maestro de Objetos Mágicos",
+        "description": "Ahora podés sintonizarte con hasta seis objetos mágicos a la vez.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Maestro de Objetos Mágicos", "description": "Sintonía con hasta seis objetos mágicos simultáneos." }
+        ]
+      },
+      {
+        "level": 19,
+        "name": "Don Épico",
+        "description": "Obtenés una dote de don épico; se recomienda Don de la Resistencia a la Energía.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Don Épico", "description": "Obtenés una dote de don épico u otra dote para la que cumplas las condiciones." }
+        ]
+      },
+      {
+        "level": 20,
+        "name": "Alma del Artificio",
+        "description": "Si quedás a 0 PG sin morir de inmediato, podés desintegrar objetos mágicos poco comunes o raros creados con Réplica de Objeto Mágico para pasar a tener 20 PG por cada uno desintegrado. Además, al terminar un descanso corto recuperás todos los usos de Chispa de Genialidad si estás sintonizado con al menos un objeto mágico.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Alma del Artificio", "description": "Desintegrar objetos poco comunes o raros de Réplica de Objeto Mágico cambia tus PG a 0 por 20 por objeto. Recuperás todos los usos de Chispa de Genialidad tras un descanso corto si estás sintonizado con al menos un objeto mágico." }
+        ]
+      }
+    ]
   }
 ]

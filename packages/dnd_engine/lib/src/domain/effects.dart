@@ -75,6 +75,9 @@ sealed class Effect {
               SpellPreparation.fromJson(json['preparation'] as String?),
           spellList: json['spellList'] as String,
           cantripsKnown: json['cantripsKnown'] as int? ?? 0,
+          cantripIncreases: (json['cantripIncreases'] as List?)
+              ?.map((e) => e as int)
+              .toList(),
         ),
       'resource' => ResourceEffect(
           id: json['id'] as String,
@@ -83,6 +86,9 @@ sealed class Effect {
           recharge: _rechargeFromJson(json['recharge'] as String?),
           description: json['description'] as String? ?? '',
           maxPerLevel: json['maxPerLevel'] as bool? ?? false,
+          maxFromAbility: json['maxFromAbility'] != null
+              ? Ability.fromKey(json['maxFromAbility'] as String)
+              : null,
         ),
       'grantSpell' => GrantSpellEffect(
           spellId: json['spellId'] as String,
@@ -335,12 +341,21 @@ class SpellcastingEffect extends Effect {
   /// nivel puede refinarse luego con efectos gated).
   final int cantripsKnown;
 
+  /// Niveles de personaje en los que se gana un truco adicional. `null`
+  /// conserva el escalado por defecto (+1 a nivel 4 y +1 a nivel 10 para
+  /// lanzadores completos y semi-lanzadores con trucos; +1 a nivel 10 para
+  /// `third`), que es el que usan las 8 clases y 2 subclases existentes. El
+  /// Artífice, con trucos a niveles 1/10/14, es el primer caso que necesita
+  /// una progresión propia.
+  final List<int>? cantripIncreases;
+
   const SpellcastingEffect({
     required this.ability,
     required this.progression,
     required this.preparation,
     required this.spellList,
     this.cantripsKnown = 0,
+    this.cantripIncreases,
   });
 
   @override
@@ -351,13 +366,17 @@ class SpellcastingEffect extends Effect {
         'preparation': preparation.toJson(),
         'spellList': spellList,
         'cantripsKnown': cantripsKnown,
+        if (cantripIncreases != null) 'cantripIncreases': cantripIncreases,
       };
 }
 
 /// Plantilla de un recurso consumible (Segundo Aliento, Oleada de Acción).
 ///
-/// El máximo puede ser fijo ([max]) o escalar con el nivel de personaje
-/// ([maxPerLevel] = true, p.ej. Puntos de Enfoque del Monje = nivel de Monje).
+/// El máximo puede ser fijo ([max]), escalar con el nivel de personaje
+/// ([maxPerLevel] = true, p.ej. Puntos de Enfoque del Monje = nivel de Monje)
+/// o escalar con un modificador de característica ([maxFromAbility], p.ej.
+/// Magia de Manitas del Artífice = mod. de Inteligencia). En ese último caso
+/// [max] es el piso (normalmente 1, "mínimo una vez").
 /// Para recursos con tramos por nivel (p.ej. Furia del Bárbaro: 2/3/4/5/6) se
 /// declaran varios ResourceEffect con el mismo [id] a distintos niveles: el de
 /// mayor nivel aplicable sobrescribe a los previos.
@@ -368,6 +387,7 @@ class ResourceEffect extends Effect {
   final RechargeOn recharge;
   final String description;
   final bool maxPerLevel;
+  final Ability? maxFromAbility;
   const ResourceEffect({
     required this.id,
     required this.name,
@@ -375,6 +395,7 @@ class ResourceEffect extends Effect {
     required this.recharge,
     this.description = '',
     this.maxPerLevel = false,
+    this.maxFromAbility,
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -385,5 +406,6 @@ class ResourceEffect extends Effect {
         'recharge': _rechargeToJson(recharge),
         'description': description,
         'maxPerLevel': maxPerLevel,
+        if (maxFromAbility != null) 'maxFromAbility': maxFromAbility!.name,
       };
 }

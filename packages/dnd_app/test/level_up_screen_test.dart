@@ -1,6 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/levelup/level_up_screen.dart';
 import 'package:dnd_app/theme/app_theme.dart';
+import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -203,6 +204,41 @@ void main() {
       find.widgetWithText(ChoiceChip, 'Maestro de Armas Grandes'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('elegir una dote muestra qué hace', (tester) async {
+    // La grilla son decenas de chips con solo el nombre: sin este panel había
+    // que elegir a ciegas.
+    tester.view.physicalSize = const Size(1200, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: fighterL3(), repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tomar dote'));
+    await tester.pumpAndSettle();
+
+    // Sin dote elegida, se explica qué hacer para ver la descripción.
+    expect(find.text('Elegí una dote para ver qué hace.'), findsOneWidget);
+
+    // Cocinero y no Actor: Actor exige Carisma 13 y este guerrero tiene 8, así
+    // que desde que el selector respeta los prerrequisitos no se ofrece.
+    final chip = find.widgetWithText(ChoiceChip, 'Cocinero');
+    await tester.ensureVisible(chip);
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+
+    // El texto sale de los rasgos pasivos de la dote, no de un literal.
+    final esperado = featSummary(repo.feat('chef')!);
+    expect(esperado, isNotEmpty);
+    expect(find.text(esperado), findsOneWidget);
+    expect(find.text('Elegí una dote para ver qué hace.'), findsNothing);
   });
 
   testWidgets('no ofrece Iniciado en la Magia: es dote de origen', (

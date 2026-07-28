@@ -34,6 +34,7 @@ void main() {
     'druid',
     'paladin',
     'ranger',
+    'artificer',
   };
 
   test('el catálogo se cargó con volumen razonable', () {
@@ -112,12 +113,15 @@ void main() {
         .map((s) => s.id)
         .toSet();
     expect(tagged, equals(srdSubclasses));
-    for (final classId in repo.classes.keys) {
+    // Solo las clases del SRD tienen que aportar una: el Artífice de Forge of
+    // the Artificer es foa_2025 y no tiene ninguna subclase srd_2024.
+    for (final klass in repo.classes.values
+        .where((c) => c.source == ContentSource.srd2024)) {
       final srdForClass = repo
-          .subclassesForClass(classId)
+          .subclassesForClass(klass.id)
           .where((s) => s.source == ContentSource.srd2024);
       expect(srdForClass, hasLength(1),
-          reason: '$classId debe tener exactamente una subclase del SRD');
+          reason: '${klass.id} debe tener exactamente una subclase del SRD');
     }
   });
 

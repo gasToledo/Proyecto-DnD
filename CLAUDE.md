@@ -20,10 +20,12 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 
 ## Estado actual
 
-- 12 clases y 48 subclases: 12 del SRD 5.2.1 y 36 del PHB 2024.
+- 13 clases y 53 subclases: 12 clases y 48 subclases del PHB 2024 (12 de esas
+  subclases están además en el SRD 5.2.1), más la clase Artífice y sus 5
+  subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
-  Artificer*), 8 linajes, 33 trasfondos, 87 dotes y los 388 conjuros del
-  capítulo 7 del PHB.
+  Artificer*), 8 linajes, 33 trasfondos, 87 dotes, los 388 conjuros del
+  capítulo 7 del PHB y 1 conjuro de *Forge of the Artificer*.
 - Creación guiada, subida de nivel, combate, inventario, notas y retratos IA.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
   secuenciales de datos.

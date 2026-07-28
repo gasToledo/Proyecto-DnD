@@ -151,7 +151,10 @@ class CharacterCompiler {
       attacksPerAction: attacksPerAction,
       attacks: attacks,
       passives: builder.passives,
-      resources: [...builder.resources, ...innate.resources],
+      resources: [
+        ...builder.resolveResources(mods, c.level),
+        ...innate.resources
+      ],
       innateSpells: innate.spells,
       spellcasting: spellcasting,
     );
@@ -214,12 +217,16 @@ class CharacterCompiler {
         ? preparedSpellsFor(sc.progression, level, sc.spellList)
         : 0;
 
-    // Trucos conocidos: base de la clase + escalado por nivel. Los lanzadores
-    // completos ganan +1 a niveles 4 y 10; los de un tercio solo a nivel 10
-    // (2024). Las clases sin trucos (Paladín/Explorador) no ganan ninguno.
+    // Trucos conocidos: base de la clase + escalado por nivel. Si el rasgo
+    // declara sus propios niveles de aumento (Artífice: 10 y 14), se usan esos;
+    // si no, se conserva el escalado por defecto de 2024: los lanzadores
+    // completos ganan +1 a niveles 4 y 10, los de un tercio solo a nivel 10, y
+    // las clases sin trucos (Paladín/Explorador) no ganan ninguno.
     final int cantripBonus;
     if (sc.cantripsKnown == 0) {
       cantripBonus = 0;
+    } else if (sc.cantripIncreases != null) {
+      cantripBonus = sc.cantripIncreases!.where((lv) => level >= lv).length;
     } else if (sc.progression == CasterProgression.third) {
       cantripBonus = level >= 10 ? 1 : 0;
     } else {

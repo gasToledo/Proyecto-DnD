@@ -28,18 +28,22 @@ La última versión publicada está en
 
 - Creación guiada en ocho pasos, con borrador recuperable y protección ante
   salidas accidentales.
-- 12 clases y 48 subclases del PHB 2024.
-- 9 especies del SRD más Aasimar del PHB 2024, 8 linajes, 12 trasfondos,
-  57 dotes, 35 armas, 13 armaduras y 177 conjuros.
-- Subida de nivel con elección de subclase, mejora de característica o dote,
-  gestión de conjuros y resumen de cambios.
+- 13 clases y 53 subclases: 12 clases y 48 subclases del PHB 2024, más la
+  clase Artífice y sus 5 subclases de *Forge of the Artificer*.
+- 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
+  Artificer*), 8 linajes, 33 trasfondos, 110 dotes, 35 armas, 13 armaduras y
+  392 conjuros.
+- Subida de nivel guiada paso a paso (resumen, puntos de golpe, subclase,
+  mejora de característica, rasgos, conjuros y repaso), mostrando solo lo que
+  aplica en cada nivel, con resumen final de cambios.
 - Ficha con panel lateral fijo (Personaje, Combate, Inventario, Notas) y
   contenido en tarjetas por sección, con daño, curación, PG temporales,
   descansos, condiciones, salvaciones de muerte, recursos, concentración y
   espacios de conjuro.
 - Listado completo de habilidades y salvaciones con su modificador y
   competencia, inventario, notas, ataques y maestrías de armas.
-- Retratos generados por IA mediante Pollinations, Hugging Face o Gemini.
+- Retratos generados por IA mediante Pollinations, Hugging Face, Gemini o
+  Azure AI Foundry (Flux), o importados desde un archivo local.
 - Homebrew para armas, armaduras, dotes, especies, trasfondos y conjuros.
 - Exportación individual e importación compatible con formatos anteriores.
 - Respaldo ZIP completo de personajes, retratos, homebrew y preferencias, sin
@@ -159,11 +163,11 @@ sumar esas capacidades más adelante sin reescribir la ficha.
 ## Reglas y licencia
 
 Esta obra incluye material procedente del documento de referencia del sistema
-5.2.1 (“SRD 5.2.1”) de Wizards of the Coast LLC, disponible en
+5.2.1 ("SRD 5.2.1") de Wizards of the Coast LLC, disponible en
 <https://www.dndbeyond.com/srd>. La licencia sobre el SRD 5.2.1 se concede de
 acuerdo con la licencia internacional de atribución/reconocimiento 4.0 de
 Creative Commons, disponible en
 <https://creativecommons.org/licenses/by/4.0/legalcode>.
 
 El catálogo ampliado puede contener opciones del PHB 2024 que no forman parte
-del SRD; se identifican por separado y no se presentan como contenido CC.
+del SRD. Se identifican por separado y no se presentan como contenido CC.

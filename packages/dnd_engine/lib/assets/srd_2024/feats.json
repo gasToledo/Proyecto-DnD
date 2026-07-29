@@ -216,7 +216,7 @@
   },
   {
     "id": "resilient-wisdom",
-    "name": "Resistente (Sabiduría)",
+    "name": "Resiliente (Sabiduría)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "resilient",
@@ -232,7 +232,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente (Sabiduría)",
+        "name": "Resiliente (Sabiduría)",
         "description": "Ganas competencia en salvaciones de Sabiduría."
       }
     ],
@@ -434,7 +434,7 @@
   },
   {
     "id": "durable",
-    "name": "Resistente Físico",
+    "name": "Resistente",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -446,7 +446,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente Físico",
+        "name": "Resistente",
         "description": "Al gastar dados de golpe recuperas más PG y te estabilizas mejor."
       }
     ],
@@ -883,7 +883,7 @@
   },
   {
     "id": "resilient-constitution",
-    "name": "Resistente (Constitución)",
+    "name": "Resiliente (Constitución)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "resilient",
@@ -900,7 +900,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente (Constitución)",
+        "name": "Resiliente (Constitución)",
         "description": "Ganas competencia en salvaciones de Constitución (clave para mantener concentración)."
       }
     ],
@@ -910,7 +910,7 @@
   },
   {
     "id": "resilient-dexterity",
-    "name": "Resistente (Destreza)",
+    "name": "Resiliente (Destreza)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "resilient",
@@ -927,7 +927,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente (Destreza)",
+        "name": "Resiliente (Destreza)",
         "description": "Ganas competencia en salvaciones de Destreza."
       }
     ],

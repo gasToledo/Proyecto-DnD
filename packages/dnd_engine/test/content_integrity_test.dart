@@ -339,6 +339,41 @@ void main() {
     expect(resilient.map((f) => f.exclusiveGroup).toSet(), {'resilient'});
   });
 
+  test('Resiliente y Resistente no se pisan el nombre', () {
+    // El capítulo 5 trae las dos como dotes distintas: Resiliente da +1 a una
+    // característica y competencia en su salvación; Resistente (Durable) da +1
+    // a Constitución, ventaja en salvaciones contra muerte y Recuperación
+    // rápida. Tres variantes de Resiliente estaban cargadas con el nombre de
+    // Resistente, y por eso `durable` había quedado con un sufijo inventado.
+    for (final feat in repo.feats.values.where(
+      (f) => f.id.startsWith('resilient-'),
+    )) {
+      expect(
+        feat.name,
+        startsWith('Resiliente ('),
+        reason: '${feat.id}: Resistente es el nombre de otra dote',
+      );
+    }
+    expect(repo.feat('durable')!.name, 'Resistente');
+  });
+
+  test('ninguna dote comparte nombre con otra', () {
+    // Una colisión de nombre no la delata ninguna tabla: el id apunta bien y lo
+    // que engaña es la etiqueta visible. Ya pasó con conjuros (`feeblemind`
+    // cargado como Mente en Blanco) y con Resiliente/Resistente.
+    final byName = <String, List<String>>{};
+    for (final feat in repo.feats.values) {
+      byName.putIfAbsent(feat.name, () => []).add(feat.id);
+    }
+    final repeated = byName.entries.where((e) => e.value.length > 1).toList();
+    expect(
+      repeated,
+      isEmpty,
+      reason: 'nombres repetidos: '
+          '${repeated.map((e) => '"${e.key}" -> ${e.value}').join(', ')}',
+    );
+  });
+
   test('las dotes repetibles respetan sus elecciones internas', () {
     expect(repo.feat('ability-score-improvement')!.repeatable, isTrue);
     expect(repo.feat('elemental-adept')!.repeatable, isTrue);
@@ -465,6 +500,31 @@ void main() {
             reason: '${w.id}: versátil sin versatileDice');
       }
     }
+  });
+
+  test('las 38 armas de la tabla del PHB están cargadas', () {
+    // Faltaban las tres últimas de Armas Marciales a Distancia. La Cerbatana
+    // hace 1 de daño fijo, no un dado: `damageDice` es una cadena de display y
+    // nunca se parsea, así que "1" es un valor legítimo.
+    expect(repo.weapons, hasLength(38));
+
+    const esperadas = {
+      'blowgun': ('Cerbatana', '1', 'vex'),
+      'musket': ('Mosquete', '1d12', 'slow'),
+      'pistol': ('Pistola', '1d10', 'vex'),
+    };
+    for (final entry in esperadas.entries) {
+      final w = repo.weapons[entry.key];
+      expect(w, isNotNull, reason: '${entry.key}: no está en el catálogo');
+      expect(w!.name, entry.value.$1);
+      expect(w.damageDice, entry.value.$2, reason: entry.key);
+      expect(w.mastery, entry.value.$3, reason: entry.key);
+      expect(w.damageType, 'piercing', reason: entry.key);
+      expect(w.category, 'martial', reason: entry.key);
+      expect(w.properties, containsAll(['ammunition', 'loading', 'ranged']),
+          reason: entry.key);
+    }
+    expect(repo.weapons['musket']!.properties, contains('two-handed'));
   });
 
   test('cada armadura tiene categoría válida', () {

@@ -280,7 +280,7 @@ void main() {
     });
 
     test('ningún conjuro comparte nombre con otro', () {
-      // Renombrar destapó una colisión: feeblemind estaba catalogado como
+      // Renombrar destapó una colisión: Ofuscación estaba catalogado como
       // "Mente en Blanco", que es el nombre de mind-blank. Dos conjuros con el
       // mismo nombre son indistinguibles en los selectores de la app.
       final porNombre = <String, String>{};
@@ -292,7 +292,7 @@ void main() {
     });
 
     test('Ofuscación usa la versión 2024, no la Mente Débil de 2014', () {
-      final s = spell('feeblemind');
+      final s = spell('befuddlement');
       expect(s.name, 'Ofuscación');
       expect(s.description, contains('10d12'));
       // En 2014 reducía Inteligencia y Carisma a 1; en 2024 no toca las
@@ -315,6 +315,132 @@ void main() {
       final escuelas = repo.spells.values.map((s) => s.school).toSet();
       expect(escuelas, contains('Ilusionismo'));
       expect(escuelas, isNot(contains('Ilusión')));
+    });
+  });
+
+  group('cierre de contenido contra el capítulo 7', () {
+    const clasesBase = {
+      'bard',
+      'cleric',
+      'druid',
+      'paladin',
+      'ranger',
+      'sorcerer',
+      'warlock',
+      'wizard',
+    };
+
+    const clasesOficiales = <String, Set<String>>{
+      'message': {'bard', 'druid', 'sorcerer', 'wizard'},
+      'detect-magic': {
+        'bard',
+        'cleric',
+        'druid',
+        'paladin',
+        'ranger',
+        'sorcerer',
+        'warlock',
+        'wizard',
+      },
+      'aid': {'bard', 'cleric', 'druid', 'paladin', 'ranger'},
+      'heat-metal': {'bard', 'druid'},
+      'prayer-of-healing': {'cleric', 'paladin'},
+      'gust-of-wind': {'druid', 'ranger', 'sorcerer', 'wizard'},
+      'enhance-ability': {
+        'bard',
+        'cleric',
+        'druid',
+        'ranger',
+        'sorcerer',
+        'wizard',
+      },
+      'spider-climb': {'sorcerer', 'warlock', 'wizard'},
+      'dispel-magic': {
+        'bard',
+        'cleric',
+        'druid',
+        'paladin',
+        'ranger',
+        'sorcerer',
+        'warlock',
+        'wizard',
+      },
+      'mass-healing-word': {'bard', 'cleric'},
+      'slow': {'bard', 'sorcerer', 'wizard'},
+      'phantasmal-killer': {'bard', 'wizard'},
+      'fire-shield': {'druid', 'sorcerer', 'wizard'},
+      'greater-restoration': {
+        'bard',
+        'cleric',
+        'druid',
+        'paladin',
+        'ranger',
+      },
+      'sunbeam': {'cleric', 'druid', 'sorcerer', 'wizard'},
+      'mass-suggestion': {'bard', 'sorcerer', 'wizard'},
+      'regenerate': {'bard', 'cleric', 'druid'},
+      'sunburst': {'cleric', 'druid', 'sorcerer', 'wizard'},
+      'incendiary-cloud': {'druid', 'sorcerer', 'wizard'},
+      'prismatic-wall': {'bard', 'wizard'},
+      'weird': {'warlock', 'wizard'},
+      'gate': {'cleric', 'sorcerer', 'warlock', 'wizard'},
+      'speak-with-animals': {'bard', 'druid', 'ranger', 'warlock'},
+      'hellish-rebuke': {'warlock'},
+    };
+
+    test('las 24 listas de clase coinciden con el PHB 2024', () {
+      clasesOficiales.forEach((id, esperadas) {
+        final actuales = spell(id).classes.toSet().intersection(clasesBase);
+        expect(actuales, esperadas, reason: id);
+      });
+    });
+
+    test('las tres banderas excepcionales coinciden con el encabezado', () {
+      expect(spell('forcecage').concentration, isTrue);
+      expect(spell('animal-shapes').concentration, isFalse);
+      expect(spell('purify-food-and-drink').ritual, isTrue);
+    });
+
+    test('incluye las tres entradas ausentes con su firma oficial', () {
+      final alterar = spell('modify-memory');
+      expect(alterar.name, 'Alterar los Recuerdos');
+      expect(alterar.level, 5);
+      expect(alterar.classes.toSet(), {'bard', 'wizard'});
+      expect(alterar.concentration, isTrue);
+
+      final muertos = spell('speak-with-dead');
+      expect(muertos.name, 'Hablar con los Muertos');
+      expect(muertos.level, 3);
+      expect(muertos.classes.toSet(), {'bard', 'cleric', 'wizard'});
+      expect(muertos.duration, '10 minutos');
+
+      final tanido = spell('toll-the-dead');
+      expect(tanido.name, 'Tañido por los Muertos');
+      expect(tanido.level, 0);
+      expect(tanido.classes.toSet(), {'warlock', 'cleric', 'wizard'});
+      expect(tanido.description, contains('1d12'));
+    });
+
+    test('usa los cinco ids canónicos de 2024 y descarta los heredados', () {
+      const renombres = {
+        'feeblemind': 'befuddlement',
+        'snare': 'cordon-of-arrows',
+        'dispel-good-and-evil': 'dispel-evil-and-good',
+        'holy-word': 'divine-word',
+        'branding-smite': 'shining-smite',
+      };
+      renombres.forEach((anterior, actual) {
+        expect(repo.spells, isNot(contains(anterior)), reason: anterior);
+        expect(repo.spells, contains(actual), reason: actual);
+      });
+    });
+
+    test('el catálogo base contiene los 391 conjuros del PHB', () {
+      final oficiales =
+          repo.spells.values.where((s) => s.source != ContentSource.foa2025);
+      expect(oficiales.length, 391);
+      expect(repo.spells.length, 392,
+          reason: '391 del PHB más Sirviente Homúnculo de Forge');
     });
   });
 }

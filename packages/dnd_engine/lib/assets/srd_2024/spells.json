@@ -230,6 +230,7 @@
       "wizard",
       "sorcerer",
       "bard",
+      "druid",
       "artificer"
     ]
   },
@@ -570,6 +571,7 @@
       "bard",
       "paladin",
       "ranger",
+      "warlock",
       "artificer"
     ],
     "description": "Percibes la presencia de magia en 30 pies y su escuela. Ritual."
@@ -1015,6 +1017,7 @@
       "paladin",
       "bard",
       "ranger",
+      "druid",
       "artificer"
     ]
   },
@@ -1032,7 +1035,6 @@
     "ritual": false,
     "description": "Calientas al rojo un objeto metálico; quien lo porte recibe 2d8 de fuego y puede soltarlo. Concentración. Escala.",
     "classes": [
-      "wizard",
       "druid",
       "bard",
       "artificer"
@@ -1222,7 +1224,8 @@
     "ritual": false,
     "description": "Hasta seis criaturas recuperan 2d8 + tu característica de conjuro en PG. Escala.",
     "classes": [
-      "cleric"
+      "cleric",
+      "paladin"
     ]
   },
   {
@@ -1241,7 +1244,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "druid"
+      "druid",
+      "ranger"
     ]
   },
   {
@@ -1296,6 +1300,7 @@
       "cleric",
       "druid",
       "bard",
+      "ranger",
       "artificer"
     ]
   },
@@ -1374,7 +1379,6 @@
       "wizard",
       "sorcerer",
       "warlock",
-      "druid",
       "artificer"
     ]
   },
@@ -1505,6 +1509,7 @@
       "druid",
       "bard",
       "paladin",
+      "ranger",
       "warlock",
       "artificer"
     ],
@@ -1677,7 +1682,8 @@
     "ritual": false,
     "description": "Hasta seis criaturas recuperan 2d4 + tu característica de conjuro en PG. Escala.",
     "classes": [
-      "cleric"
+      "cleric",
+      "bard"
     ]
   },
   {
@@ -1776,7 +1782,8 @@
     "description": "Hasta seis criaturas (salvación de SAB) reducen velocidad y CA, y actúan más lento. Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "bard"
     ]
   },
   {
@@ -1909,7 +1916,7 @@
     "description": "Manifiestas el peor miedo de una criatura; salvación de SAB o queda asustada y recibe 4d10 psíquico por turno. Concentración. Escala.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "bard"
     ]
   },
   {
@@ -1968,7 +1975,8 @@
     "description": "Un aura ígnea o gélida te da resistencia (fuego o frío) y daña a quien te golpee de cerca. Dura 10 minutos.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "druid"
     ]
   },
   {
@@ -2414,6 +2422,7 @@
       "cleric",
       "druid",
       "bard",
+      "paladin",
       "ranger",
       "artificer"
     ]
@@ -2561,7 +2570,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "druid"
+      "druid",
+      "cleric"
     ]
   },
   {
@@ -2616,8 +2626,7 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard",
-      "warlock"
+      "bard"
     ]
   },
   {
@@ -2749,7 +2758,7 @@
     "range": "100 pies",
     "components": "V, S, M",
     "duration": "1 hora",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "description": "Una prisión de fuerza (jaula o caja) atrapa a las criaturas dentro; escapar exige teletransporte de alto nivel.",
     "classes": [
@@ -2774,8 +2783,7 @@
     "classes": [
       "cleric",
       "druid",
-      "bard",
-      "ranger"
+      "bard"
     ]
   },
   {
@@ -2907,7 +2915,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "druid"
+      "druid",
+      "cleric"
     ]
   },
   {
@@ -2920,15 +2929,15 @@
     "range": "30 pies",
     "components": "V, S",
     "duration": "24 horas",
-    "concentration": true,
+    "concentration": false,
     "ritual": false,
-    "description": "Transformas a varios aliados en bestias grandes durante 24 horas. Concentración.",
+    "description": "Transformas a varios aliados en bestias grandes durante 24 horas.",
     "classes": [
       "druid"
     ]
   },
   {
-    "id": "feeblemind",
+    "id": "befuddlement",
     "name": "Ofuscación",
     "source": "srd_2024",
     "level": 8,
@@ -2980,7 +2989,8 @@
     "description": "Una nube de humo y brasas de 20 pies que se mueve: 10d8 de fuego a quien esté dentro. Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "druid"
     ]
   },
   {
@@ -3108,7 +3118,8 @@
     "ritual": false,
     "description": "Un muro de siete capas de colores, cada una con un efecto letal distinto que hay que superar por separado.",
     "classes": [
-      "wizard"
+      "wizard",
+      "bard"
     ]
   },
   {
@@ -3145,7 +3156,8 @@
     "ritual": false,
     "description": "Manifiestas el peor miedo de varias criaturas en 30 pies; quedan asustadas y reciben 4d10 psíquico por turno. Concentración.",
     "classes": [
-      "wizard"
+      "wizard",
+      "warlock"
     ]
   },
   {
@@ -3164,7 +3176,8 @@
     "classes": [
       "wizard",
       "cleric",
-      "sorcerer"
+      "sorcerer",
+      "warlock"
     ]
   },
   {
@@ -3257,7 +3270,8 @@
     "classes": [
       "bard",
       "druid",
-      "ranger"
+      "ranger",
+      "warlock"
     ]
   },
   {
@@ -3329,8 +3343,7 @@
     "ritual": false,
     "description": "Envolvés en llamas a quien te dañó: 2d10 de fuego, salvación de Destreza para la mitad. Escala.",
     "classes": [
-      "warlock",
-      "sorcerer"
+      "warlock"
     ]
   },
   {
@@ -3906,7 +3919,7 @@
     "components": "V, S",
     "duration": "Instantánea",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "description": "Quitás veneno y podredumbre de la comida y bebida no mágicas en una esfera de 5 pies de radio.",
     "classes": [
       "cleric",
@@ -4238,7 +4251,7 @@
     ]
   },
   {
-    "id": "branding-smite",
+    "id": "shining-smite",
     "name": "Castigo Brillante",
     "source": "phb_2024",
     "level": 2,
@@ -4292,7 +4305,7 @@
     ]
   },
   {
-    "id": "snare",
+    "id": "cordon-of-arrows",
     "name": "Cordón de Flechas",
     "source": "phb_2024",
     "level": 2,
@@ -6112,7 +6125,7 @@
     ]
   },
   {
-    "id": "dispel-good-and-evil",
+    "id": "dispel-evil-and-good",
     "name": "Disipar el Bien y el Mal",
     "source": "phb_2024",
     "level": 5,
@@ -6882,7 +6895,7 @@
     ]
   },
   {
-    "id": "holy-word",
+    "id": "divine-word",
     "name": "Palabra Divina",
     "source": "phb_2024",
     "level": 7,
@@ -7200,6 +7213,62 @@
     "description": "Una nube de tormenta de 300 pies de radio: salvación de Constitución contra 2d6 de trueno y ensordecidas; cada turno siguiente produce un efecto distinto.",
     "classes": [
       "druid"
+    ]
+  },
+  {
+    "id": "modify-memory",
+    "name": "Alterar los Recuerdos",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una criatura que falle una salvación de Sabiduría queda hechizada e incapacitada mientras alterás el recuerdo de un suceso de hasta 10 minutos ocurrido en las últimas 24 horas. Los espacios superiores permiten modificar recuerdos más antiguos.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "speak-with-dead",
+    "name": "Hablar con los Muertos",
+    "source": "phb_2024",
+    "level": 3,
+    "school": "Nigromancia",
+    "castingTime": "Acción",
+    "range": "10 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": false,
+    "ritual": false,
+    "description": "Concedés una apariencia de vida e inteligencia a un cadáver para formularle hasta cinco preguntas. El conjuro falla si era un muerto viviente o ya fue objetivo de este conjuro durante los últimos 10 días.",
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ]
+  },
+  {
+    "id": "toll-the-dead",
+    "name": "Tañido por los Muertos",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Nigromancia",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una criatura que falle una salvación de Sabiduría recibe 1d8 de daño necrótico, o 1d12 si le falta algún PG. El daño aumenta al alcanzar los niveles 5, 11 y 17.",
+    "classes": [
+      "warlock",
+      "cleric",
+      "wizard"
     ]
   },
   {

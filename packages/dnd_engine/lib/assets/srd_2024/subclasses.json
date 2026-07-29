@@ -9,17 +9,17 @@
       {
         "level": 3,
         "name": "Crítico Mejorado",
-        "description": "Tus ataques con arma obtienen un impacto crítico con una tirada de 19 o 20.",
+        "description": "Tus ataques con armas y ataques sin armas causan un crítico con una tirada de 19 o 20.",
         "effects": [
-          { "type": "passiveTrait", "name": "Crítico Mejorado", "description": "Obtienes un crítico con arma al sacar 19 o 20 en el dado de ataque." }
+          { "type": "passiveTrait", "name": "Crítico Mejorado", "description": "Tus ataques con armas y ataques sin armas causan un crítico al sacar 19 o 20 en el d20." }
         ]
       },
       {
         "level": 3,
-        "name": "Atleta Notable",
-        "description": "Sumas la mitad de tu bono de competencia a las pruebas de Fuerza, Destreza o Constitución en las que no seas competente.",
+        "name": "Atleta Sobresaliente",
+        "description": "Tienes ventaja en las tiradas de iniciativa y las pruebas de Fuerza (Atletismo). Justo después de causar un crítico, puedes moverte hasta la mitad de tu velocidad sin provocar ataques de oportunidad.",
         "effects": [
-          { "type": "passiveTrait", "name": "Atleta Notable", "description": "Sumas medio bono de competencia a pruebas de FUE/DES/CON sin competencia; mayor distancia de salto." }
+          { "type": "passiveTrait", "name": "Atleta Sobresaliente", "description": "Ventaja en iniciativa y pruebas de Fuerza (Atletismo). Justo después de causar un crítico, puedes moverte hasta la mitad de tu velocidad sin provocar ataques de oportunidad." }
         ]
       },
       {
@@ -41,9 +41,9 @@
       {
         "level": 15,
         "name": "Crítico Superior",
-        "description": "Tus ataques con arma obtienen un impacto crítico con una tirada de 18-20.",
+        "description": "Tus ataques con armas y ataques sin armas causan un crítico con una tirada de 18 a 20.",
         "effects": [
-          { "type": "passiveTrait", "name": "Crítico Superior", "description": "Obtienes un crítico con arma al sacar 18, 19 o 20." }
+          { "type": "passiveTrait", "name": "Crítico Superior", "description": "Tus ataques con armas y ataques sin armas causan un crítico al sacar 18, 19 o 20 en el d20." }
         ]
       },
       {

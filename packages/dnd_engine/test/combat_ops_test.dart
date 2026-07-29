@@ -54,9 +54,10 @@ void main() {
     final resources = [
       const CharacterResource(
           id: 'second_wind',
-          name: 'Segundo Aliento',
+          name: 'Tomar Aliento',
           max: 2,
-          recharge: RechargeOn.shortRest),
+          recharge: RechargeOn.longRest,
+          shortRestRecovery: 1),
       const CharacterResource(
           id: 'action_surge',
           name: 'Oleada de Acción',
@@ -64,13 +65,16 @@ void main() {
           recharge: RechargeOn.shortRest),
     ];
 
-    test('descanso corto recupera recursos de recarga corta', () {
+    test('descanso corto aplica recuperación completa o parcial', () {
       final c = CombatState()
         ..resourceUsage['second_wind'] = 2
         ..resourceUsage['action_surge'] = 1;
       CombatOps.shortRest(c, resources);
-      expect(c.resourceUsage['second_wind'], 0);
+      expect(c.resourceUsage['second_wind'], 1);
       expect(c.resourceUsage['action_surge'], 0);
+
+      CombatOps.shortRest(c, resources);
+      expect(c.resourceUsage['second_wind'], 0);
     });
 
     test('descanso largo restaura PG, agotamiento y dados de golpe', () {

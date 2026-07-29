@@ -94,6 +94,20 @@ void main() {
     expect(resource.max, 3);
   });
 
+  test('el dispositivo del Gnomo de las Rocas sigue la regla 2024', () {
+    final trait = repo
+        .lineage('gnome-rock')!
+        .features
+        .expand((f) => f.effects)
+        .whereType<PassiveTraitEffect>()
+        .singleWhere((e) => e.name == 'Dispositivo Mecánico')
+        .description;
+    expect(trait, contains('10 minutos'));
+    expect(trait, contains('hasta tres'));
+    expect(trait, contains('8 horas'));
+    expect(trait, isNot(contains('10 po')));
+  });
+
   test('los conjuros de nivel 3 y 5 aparecen al subir, con su recurso', () {
     final low = CharacterCompiler(repo)
         .compile(_pj('tiefling', 'tiefling-infernal', level: 1));

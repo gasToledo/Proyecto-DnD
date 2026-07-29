@@ -286,6 +286,32 @@ void main() {
     );
   });
 
+  testWidgets(
+    'Mejora de Característica no se duplica en el selector de dotes',
+    (tester) async {
+      await openFeatPicker(tester, fighterL5());
+      await searchFeat(tester, 'Mejora de Característica');
+
+      expect(
+        find.widgetWithText(InkWell, 'Mejora de Característica'),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets('no ofrece otra variante de Resiliente', (tester) async {
+    await openFeatPicker(
+      tester,
+      fighterL5(featIds: const ['resilient-wisdom']),
+    );
+    await searchFeat(tester, 'Resiliente (Constitución)');
+
+    expect(
+      find.widgetWithText(InkWell, 'Resiliente (Constitución)'),
+      findsNothing,
+    );
+  });
+
   testWidgets('el nivel del prerrequisito se mide en el nivel nuevo', (
     tester,
   ) async {

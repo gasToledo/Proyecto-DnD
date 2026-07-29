@@ -17,12 +17,14 @@ class CharacterResource {
   final String name;
   final int max;
   final RechargeOn recharge;
+  final int shortRestRecovery;
   final String description;
   const CharacterResource({
     required this.id,
     required this.name,
     required this.max,
     required this.recharge,
+    this.shortRestRecovery = 0,
     this.description = '',
   });
 
@@ -31,6 +33,7 @@ class CharacterResource {
         'name': name,
         'max': max,
         'recharge': recharge.name,
+        'shortRestRecovery': shortRestRecovery,
         'description': description,
       };
 }

@@ -5,7 +5,11 @@ import 'character_compiler_test.dart' show sagan;
 
 /// Repositorio mínimo aislado para probar las reglas nuevas sin depender del
 /// contenido real del SRD (que puede crecer/cambiar con el tiempo).
-ContentRepository _minimalRepo({Map<String, dynamic>? featOverrides}) {
+ContentRepository _minimalRepo({
+  Map<String, dynamic>? featOverrides,
+  List<Map<String, dynamic>> extraFeats = const [],
+  List<Map<String, dynamic>> classFeatures = const [],
+}) {
   return ContentRepository.fromJsonPacks(
     races: [
       {
@@ -26,7 +30,7 @@ ContentRepository _minimalRepo({Map<String, dynamic>? featOverrides}) {
         'skillChoiceFrom': ['stealth', 'insight'],
         'weaponProficiencies': ['simple'],
         'asiLevels': [4],
-        'features': [],
+        'features': classFeatures,
       },
     ],
     backgrounds: [
@@ -42,6 +46,7 @@ ContentRepository _minimalRepo({Map<String, dynamic>? featOverrides}) {
         },
         ...?featOverrides,
       },
+      ...extraFeats,
     ],
     weapons: [
       {
@@ -185,6 +190,33 @@ void main() {
       expect(warnings.map((w) => w.code), isNot(contains('feat_prerequisite')));
     });
 
+    test('dote no repetible elegida dos veces advierte feat_duplicate', () {
+      final warnings = CharacterValidator(repo)
+          .validate(_minimalCharacter(featIds: ['test-feat', 'test-feat']));
+      expect(warnings.map((w) => w.code), contains('feat_duplicate'));
+    });
+
+    test('dos dotes del mismo grupo advierten feat_exclusive_group', () {
+      final repoExclusive = _minimalRepo(
+        featOverrides: {'exclusiveGroup': 'resilient'},
+        extraFeats: const [
+          {
+            'id': 'test-feat-2',
+            'name': 'Dote de prueba 2',
+            'source': 'homebrew',
+            'exclusiveGroup': 'resilient',
+          },
+        ],
+      );
+      final warnings = CharacterValidator(repoExclusive).validate(
+        _minimalCharacter(featIds: ['test-feat', 'test-feat-2']),
+      );
+      expect(
+        warnings.map((w) => w.code),
+        contains('feat_exclusive_group'),
+      );
+    });
+
     test('prerrequisito disyuntivo: basta cumplir una de las dos', () {
       // El PHB 2024 escribe "Fuerza o Destreza 13 o más"; con el mapa
       // conjuntivo esto no se podía expresar sin exigir las dos.
@@ -255,6 +287,64 @@ void main() {
         sheetOf(repo, c),
       );
       expect(motivo, isNull);
+    });
+
+    test('un rasgo de clase puede ser prerrequisito de una dote', () {
+      final withoutFeature = _minimalRepo(featOverrides: {
+        'prerequisite': {'requiredClassFeature': 'Estilo de Combate'},
+      });
+      final c = _minimalCharacter();
+      expect(
+        CharacterValidator(withoutFeature).unmetFeatPrerequisite(
+          withoutFeature.feat('test-feat')!,
+          c,
+          sheetOf(withoutFeature, c),
+        ),
+        contains('Estilo de Combate'),
+      );
+
+      final withFeature = _minimalRepo(
+        featOverrides: {
+          'prerequisite': {'requiredClassFeature': 'Estilo de Combate'},
+        },
+        classFeatures: const [
+          {
+            'level': 1,
+            'name': 'Estilo de Combate',
+            'description': 'Obtienes una dote de estilo de combate.',
+          },
+        ],
+      );
+      expect(
+        CharacterValidator(withFeature).unmetFeatPrerequisite(
+          withFeature.feat('test-feat')!,
+          c,
+          sheetOf(withFeature, c),
+        ),
+        isNull,
+      );
+    });
+
+    test('una dote excluye las demás de su mismo grupo', () {
+      final repoExclusive = _minimalRepo(
+        featOverrides: {'exclusiveGroup': 'resilient'},
+        extraFeats: const [
+          {
+            'id': 'test-feat-2',
+            'name': 'Dote de prueba 2',
+            'source': 'homebrew',
+            'exclusiveGroup': 'resilient',
+          },
+        ],
+      );
+      final c = _minimalCharacter();
+      final motivo = CharacterValidator(repoExclusive).unmetFeatPrerequisite(
+        repoExclusive.feat('test-feat-2')!,
+        c,
+        sheetOf(repoExclusive, c),
+        held: const {'test-feat'},
+      );
+      expect(motivo, contains('resilient'));
     });
 
     test('una dote que exige otra dote se evalúa contra las ya tenidas', () {

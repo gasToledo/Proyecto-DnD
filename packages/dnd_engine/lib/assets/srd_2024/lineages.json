@@ -205,8 +205,8 @@
           },
           {
             "type": "passiveTrait",
-            "name": "Aparato Mecánico",
-            "description": "Con materiales por 10 po construís un juguete, encendedor o caja musical mecánicos."
+            "name": "Dispositivo Mecánico",
+            "description": "Podés pasar 10 minutos lanzando Prestidigitación para crear un dispositivo mecánico Diminuto (CA 5, 1 PG) que produce uno de los efectos del conjuro al activarlo con un toque como acción adicional. Podés tener hasta tres dispositivos activos; se desarman 8 horas después de crearlos o cuando los desmontás con un toque como acción de Utilizar."
           }
         ]
       }

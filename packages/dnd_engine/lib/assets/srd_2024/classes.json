@@ -29,7 +29,7 @@
         "name": "Tomar Aliento",
         "description": "Como acción adicional recuperás 1d10 + tu nivel de Guerrero en PG.",
         "effects": [
-          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 2, "recharge": "short", "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe." }
+          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 2, "recharge": "long", "shortRestRecovery": 1, "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe. Recuperás un uso tras un descanso corto y todos tras un descanso largo." }
         ]
       },
       {
@@ -53,7 +53,7 @@
         "name": "Tomar Aliento (3 usos)",
         "description": "Tus usos de Tomar Aliento aumentan a 3.",
         "effects": [
-          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 3, "recharge": "short", "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe." }
+          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 3, "recharge": "long", "shortRestRecovery": 1, "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe. Recuperás un uso tras un descanso corto y todos tras un descanso largo." }
         ]
       },
       {
@@ -69,7 +69,7 @@
         "name": "Tomar Aliento (4 usos)",
         "description": "Tus usos de Tomar Aliento aumentan a 4.",
         "effects": [
-          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 4, "recharge": "short", "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe." }
+          { "type": "resource", "id": "second_wind", "name": "Tomar Aliento", "max": 4, "recharge": "long", "shortRestRecovery": 1, "description": "Como acción adicional, recuperás 1d10 + tu nivel de Guerrero en puntos de golpe. Recuperás un uso tras un descanso corto y todos tras un descanso largo." }
         ]
       },
       {
@@ -83,17 +83,17 @@
       {
         "level": 2,
         "name": "Acción Súbita",
-        "description": "En tu turno puedes realizar una acción adicional.",
+        "description": "En tu turno puedes realizar una acción adicional, salvo la acción de Magia.",
         "effects": [
-          { "type": "resource", "id": "action_surge", "name": "Acción Súbita", "max": 1, "recharge": "short", "description": "En tu turno, además de tu acción normal, podés realizar una acción adicional." }
+          { "type": "resource", "id": "action_surge", "name": "Acción Súbita", "max": 1, "recharge": "short", "description": "En tu turno, además de tu acción normal, podés realizar una acción adicional, salvo la acción de Magia." }
         ]
       },
       {
         "level": 2,
         "name": "Mente Táctica",
-        "description": "Al fallar una prueba de característica, puedes gastar un uso de Segundo Aliento para sumar 1d10.",
+        "description": "Al fallar una prueba de característica, puedes gastar un uso de Tomar Aliento para sumar 1d10.",
         "effects": [
-          { "type": "passiveTrait", "name": "Mente Táctica", "description": "Gasta Segundo Aliento para sumar 1d10 a una prueba de característica fallida." }
+          { "type": "passiveTrait", "name": "Mente Táctica", "description": "Gasta Tomar Aliento para sumar 1d10 a una prueba de característica fallida." }
         ]
       },
       {
@@ -504,9 +504,9 @@
       {
         "level": 14,
         "name": "Golpes Taimados",
-        "description": "Sumás Ofuscar a las opciones de Golpe Astuto.",
+        "description": "Sumás Confundir, Noquear y Ofuscar a las opciones de Golpe Astuto.",
         "effects": [
-          { "type": "passiveTrait", "name": "Golpes Taimados", "description": "Entre las opciones de Golpe Astuto se suma Ofuscar (3d6): el objetivo hace una salvación de Destreza o queda cegado hasta el final de su siguiente turno." }
+          { "type": "passiveTrait", "name": "Golpes Taimados", "description": "Golpe Astuto gana tres opciones. Confundir (2d6): salvación de Constitución o, en su próximo turno, el objetivo solo puede moverse, realizar una acción o realizar una acción adicional. Noquear (6d6): salvación de Constitución o queda inconsciente durante 1 minuto o hasta recibir daño; repite la salvación al final de cada turno. Ofuscar (3d6): salvación de Destreza o queda cegado hasta el final de su siguiente turno." }
         ]
       },
       {
@@ -630,9 +630,9 @@
       {
         "level": 5,
         "name": "Golpe Aturdidor",
-        "description": "Gastando un Punto de Enfoque al impactar puedes intentar aturdir al objetivo.",
+        "description": "Una vez por turno, al impactar con un arma de monje o un ataque sin armas, puedes gastar 1 Punto de Concentración para intentar aturdir al objetivo.",
         "effects": [
-          { "type": "passiveTrait", "name": "Golpe Aturdidor", "description": "Al impactar con un ataque cuerpo a cuerpo, puedes gastar 1 Punto de Enfoque para forzar una salvación de Constitución; si falla, queda Aturdido hasta el inicio de tu próximo turno." }
+          { "type": "passiveTrait", "name": "Golpe Aturdidor", "description": "Una vez por turno, al impactar con un arma de monje o un ataque sin armas, gastás 1 Punto de Concentración y el objetivo hace una salvación de Constitución. Si falla, queda aturdido hasta el principio de tu siguiente turno. Si la supera, su velocidad se reduce a la mitad y la siguiente tirada de ataque contra él tiene ventaja hasta entonces." }
         ]
       },
       {

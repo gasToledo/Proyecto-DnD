@@ -98,6 +98,32 @@ void main() {
       expect(back.classId, 'fighter');
       expect(back.features.length, champ.features.length);
     });
+
+    test('Campeón usa Atleta Sobresaliente de 2024', () {
+      final champ = repo.subclass('champion')!;
+      final athlete =
+          champ.features.singleWhere((f) => f.name == 'Atleta Sobresaliente');
+      final description =
+          athlete.effects.whereType<PassiveTraitEffect>().single.description;
+      expect(description, contains('Ventaja en iniciativa'));
+      expect(description, contains('Fuerza (Atletismo)'));
+      expect(description, contains('después de causar un crítico'));
+      expect(
+          champ.features.map((f) => f.name), isNot(contains('Atleta Notable')));
+    });
+
+    test('los críticos del Campeón incluyen ataques sin armas', () {
+      final champ = repo.subclass('champion')!;
+      for (final name in ['Crítico Mejorado', 'Crítico Superior']) {
+        final description = champ.features
+            .singleWhere((f) => f.name == name)
+            .effects
+            .whereType<PassiveTraitEffect>()
+            .single
+            .description;
+        expect(description, contains('ataques sin armas'), reason: name);
+      }
+    });
   });
 
   group('Aplicación de rasgos de subclase en el compilador', () {

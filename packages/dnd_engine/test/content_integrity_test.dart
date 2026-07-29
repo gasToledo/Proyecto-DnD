@@ -239,6 +239,119 @@ void main() {
     }
   });
 
+  test('el catálogo incluye las 21 dotes del PHB que faltaban', () {
+    const expected = {
+      'ability-score-improvement': ('Mejora de Característica', 'general'),
+      'martial-weapon-training': (
+        'Entrenamiento con Armas Marciales',
+        'general',
+      ),
+      'weapon-master': ('Maestro de Armas', 'general'),
+      'fs-blind-fighting': ('Lucha a Ciegas', 'fighting-style'),
+      'fs-interception': ('Intercepción', 'fighting-style'),
+      'fs-protection': ('Protección', 'fighting-style'),
+      'fs-thrown-weapon-fighting': (
+        'Combate con Armas Arrojadizas',
+        'fighting-style',
+      ),
+      'fs-two-weapon-fighting': (
+        'Combate con Dos Armas',
+        'fighting-style',
+      ),
+      'fs-unarmed-fighting': ('Combate sin Armas', 'fighting-style'),
+      'boon-of-fortitude': ('Don de la Fortaleza', 'epic-boon'),
+      'boon-of-skill': ('Don de la Habilidad', 'epic-boon'),
+      'boon-of-combat-prowess': (
+        'Don de la Pericia en Combate',
+        'epic-boon',
+      ),
+      'boon-of-recovery': ('Don de la Recuperación', 'epic-boon'),
+      'boon-of-energy-resistance': (
+        'Don de la Resistencia a Energías',
+        'epic-boon',
+      ),
+      'boon-of-speed': ('Don de la Velocidad', 'epic-boon'),
+      'boon-of-truesight': ('Don de la Visión Verdadera', 'epic-boon'),
+      'boon-of-irresistible-offense': (
+        'Don del Ataque Imparable',
+        'epic-boon',
+      ),
+      'boon-of-fate': ('Don del Destino', 'epic-boon'),
+      'boon-of-the-night-spirit': (
+        'Don del Espíritu de la Noche',
+        'epic-boon',
+      ),
+      'boon-of-spell-recall': (
+        'Don del Recuerdo de Conjuros',
+        'epic-boon',
+      ),
+      'boon-of-dimensional-travel': (
+        'Don del Viaje Dimensional',
+        'epic-boon',
+      ),
+    };
+
+    for (final entry in expected.entries) {
+      final feat = repo.feat(entry.key);
+      expect(feat, isNotNull, reason: 'falta ${entry.key}');
+      expect(feat!.name, entry.value.$1, reason: entry.key);
+      expect(feat.category, entry.value.$2, reason: entry.key);
+      expect(feat.source, ContentSource.phb2024, reason: entry.key);
+    }
+    expect(repo.feat('mobile'), isNull,
+        reason: 'Ágil/Mobile es la dote 2014 reemplazada por Veloz en 2024');
+  });
+
+  test('las 75 dotes canónicas del PHB están representadas', () {
+    final phb = repo.feats.values
+        .where(
+          (f) =>
+              f.source == ContentSource.phb2024 ||
+              f.source == ContentSource.srd2024,
+        )
+        .toList();
+    // Son 82 registros porque Iniciado en la Magia se divide en 3 listas
+    // (+2) y Resiliente en 6 características (+5).
+    expect(phb, hasLength(82));
+    expect(phb.where((f) => f.category == 'origin'), hasLength(12));
+    expect(phb.where((f) => f.category == 'general'), hasLength(48));
+    expect(phb.where((f) => f.category == 'fighting-style'), hasLength(10));
+    expect(phb.where((f) => f.category == 'epic-boon'), hasLength(12));
+  });
+
+  test('los diez estilos exigen el rasgo Estilo de Combate', () {
+    final styles =
+        repo.feats.values.where((f) => f.category == 'fighting-style').toList();
+    expect(styles, hasLength(10));
+    for (final feat in styles) {
+      expect(
+        feat.prerequisite?.requiredClassFeature,
+        'Estilo de Combate',
+        reason: feat.id,
+      );
+    }
+  });
+
+  test('Resiliente ofrece las seis características pero solo permite una', () {
+    final resilient =
+        repo.feats.values.where((f) => f.id.startsWith('resilient-')).toList();
+    expect(resilient, hasLength(6));
+    expect(resilient.map((f) => f.exclusiveGroup).toSet(), {'resilient'});
+  });
+
+  test('las dotes repetibles respetan sus elecciones internas', () {
+    expect(repo.feat('ability-score-improvement')!.repeatable, isTrue);
+    expect(repo.feat('elemental-adept')!.repeatable, isTrue);
+    expect(repo.feat('skilled')!.repeatable, isTrue);
+    for (final id in [
+      'magic-initiate-cleric',
+      'magic-initiate-druid',
+      'magic-initiate-wizard',
+    ]) {
+      expect(repo.feat(id)!.repeatable, isFalse, reason: id);
+    }
+  });
+
   test('los prerrequisitos de característica del PHB 2024 están cargados', () {
     // Muestra de las tres formas que usa el capítulo 5: una sola característica,
     // dos alternativas y tres alternativas. Antes todas estas dotes tenían el
@@ -406,14 +519,18 @@ void main() {
       name: 'Forcejeador',
       source: ContentSource.homebrew,
       category: 'general',
+      exclusiveGroup: 'prueba',
       prerequisite: FeatPrerequisite(
         minAbilityScores: {Ability.strength: 13},
+        requiredClassFeature: 'Estilo de Combate',
         minLevel: 4,
       ),
     );
     final r = Feat.fromJson(feat.toJson());
     expect(r.prerequisite, isNotNull);
     expect(r.prerequisite!.minAbilityScores[Ability.strength], 13);
+    expect(r.prerequisite!.requiredClassFeature, 'Estilo de Combate');
     expect(r.prerequisite!.minLevel, 4);
+    expect(r.exclusiveGroup, 'prueba');
   });
 }

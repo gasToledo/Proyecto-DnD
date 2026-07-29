@@ -131,6 +131,20 @@ void main() {
     test('tiene nivel de ASI extra en 10', () {
       expect(repo.characterClass('rogue')!.asiLevels, contains(10));
     });
+
+    test('Golpes Taimados incluye las tres opciones de nivel 14', () {
+      final trait = repo
+          .characterClass('rogue')!
+          .features
+          .singleWhere((f) => f.name == 'Golpes Taimados')
+          .effects
+          .whereType<PassiveTraitEffect>()
+          .single
+          .description;
+      for (final option in ['Confundir', 'Noquear', 'Ofuscar']) {
+        expect(trait, contains(option));
+      }
+    });
   });
 
   group('Monje', () {
@@ -193,6 +207,20 @@ void main() {
       expect(s.attacksPerAction, 2);
     });
 
+    test('Golpe Aturdidor conserva límite y efecto de salvación exitosa', () {
+      final trait = repo
+          .characterClass('monk')!
+          .features
+          .singleWhere((f) => f.name == 'Golpe Aturdidor')
+          .effects
+          .whereType<PassiveTraitEffect>()
+          .single
+          .description;
+      expect(trait, contains('Una vez por turno'));
+      expect(trait, contains('velocidad se reduce a la mitad'));
+      expect(trait, contains('tiene ventaja'));
+    });
+
     test('con escudo pierde la Defensa sin Armadura (regla 2024)', () {
       final scores = {
         Ability.strength: 12,
@@ -240,6 +268,19 @@ void main() {
       expect(resourceMax('fighter', 4, 'second_wind'), 3);
       expect(resourceMax('fighter', 10, 'second_wind'), 4);
       expect(resourceMax('fighter', 20, 'second_wind'), 4);
+    });
+
+    test('Guerrero: Tomar Aliento recupera uno en descanso corto', () {
+      final resource =
+          at('fighter', 10).resources.singleWhere((r) => r.id == 'second_wind');
+      expect(resource.recharge, RechargeOn.longRest);
+      expect(resource.shortRestRecovery, 1);
+    });
+
+    test('Guerrero: Acción Súbita excluye la acción de Magia', () {
+      final resource =
+          at('fighter', 2).resources.singleWhere((r) => r.id == 'action_surge');
+      expect(resource.description, contains('salvo la acción de Magia'));
     });
 
     test('Bárbaro: la maestría con armas va 2 / 3 / 4', () {

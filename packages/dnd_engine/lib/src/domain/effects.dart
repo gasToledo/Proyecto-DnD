@@ -84,6 +84,7 @@ sealed class Effect {
           name: json['name'] as String,
           max: json['max'] as int? ?? 0,
           recharge: _rechargeFromJson(json['recharge'] as String?),
+          shortRestRecovery: json['shortRestRecovery'] as int? ?? 0,
           description: json['description'] as String? ?? '',
           maxPerLevel: json['maxPerLevel'] as bool? ?? false,
           maxFromAbility: json['maxFromAbility'] != null
@@ -385,6 +386,7 @@ class ResourceEffect extends Effect {
   final String name;
   final int max;
   final RechargeOn recharge;
+  final int shortRestRecovery;
   final String description;
   final bool maxPerLevel;
   final Ability? maxFromAbility;
@@ -393,6 +395,7 @@ class ResourceEffect extends Effect {
     required this.name,
     required this.max,
     required this.recharge,
+    this.shortRestRecovery = 0,
     this.description = '',
     this.maxPerLevel = false,
     this.maxFromAbility,
@@ -404,6 +407,7 @@ class ResourceEffect extends Effect {
         'name': name,
         'max': max,
         'recharge': _rechargeToJson(recharge),
+        if (shortRestRecovery > 0) 'shortRestRecovery': shortRestRecovery,
         'description': description,
         'maxPerLevel': maxPerLevel,
         if (maxFromAbility != null) 'maxFromAbility': maxFromAbility!.name,

@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 4;
+  static const int currentSchemaVersion = 5;
 
   final String id;
   String name;
@@ -326,6 +326,16 @@ class Character {
     'conjure-volley-arrows': 'conjure-volley',
   };
 
+  /// Cinco entradas conservaban ids de conjuros 2014 distintos pese a que su
+  /// nombre y sus reglas ya correspondían a los reemplazos del PHB 2024.
+  static const Map<String, String> _spellIdRenames4to5 = {
+    'feeblemind': 'befuddlement',
+    'snare': 'cordon-of-arrows',
+    'dispel-good-and-evil': 'dispel-evil-and-good',
+    'holy-word': 'divine-word',
+    'branding-smite': 'shining-smite',
+  };
+
   static void _renameSpellIds(
       Map<String, dynamic> j, Map<String, String> renames) {
     for (final key in const ['cantripIds', 'spellIds']) {
@@ -371,6 +381,10 @@ class Character {
         case 3:
           _renameSpellIds(migrated, _spellIdRenames3to4);
           version = 4;
+          migrated['schemaVersion'] = version;
+        case 4:
+          _renameSpellIds(migrated, _spellIdRenames4to5);
+          version = 5;
           migrated['schemaVersion'] = version;
       }
     }

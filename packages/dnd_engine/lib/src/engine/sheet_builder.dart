@@ -71,6 +71,7 @@ class SheetBuilder {
         name: e.name,
         max: max,
         recharge: e.recharge,
+        shortRestRecovery: e.shortRestRecovery,
         description: e.description,
       );
     }).toList();

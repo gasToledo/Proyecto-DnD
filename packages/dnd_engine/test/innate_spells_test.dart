@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 /// recurso de un uso gratuito por descanso largo.
 ContentRepository _repo() => ContentRepository.fromJsonPacks(
       races: [
-        {'id': 'tiefling', 'name': 'Tiflin', 'source': 'srd_2024'},
+        {'id': 'tiefling', 'name': 'Tiefling', 'source': 'srd_2024'},
       ],
       classes: [
         {
@@ -158,7 +158,7 @@ void main() {
   test('un conjuro que no está en el repositorio se ignora sin romper', () {
     final repo = ContentRepository.fromJsonPacks(
       races: [
-        {'id': 'tiefling', 'name': 'Tiflin', 'source': 'srd_2024'},
+        {'id': 'tiefling', 'name': 'Tiefling', 'source': 'srd_2024'},
       ],
       classes: [
         {

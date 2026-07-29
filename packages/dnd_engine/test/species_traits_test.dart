@@ -81,6 +81,12 @@ void main() {
     });
   });
 
+  group('Tiefling', () {
+    test('usa el nombre legible en el selector de especie', () {
+      expect(repo.race('tiefling')!.name, 'Tiefling');
+    });
+  });
+
   group('Goliat', () {
     test('Constitución Poderosa usa la regla 2024', () {
       final d = traitOf('goliath', 'Constitución Poderosa');

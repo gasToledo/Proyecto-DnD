@@ -46,7 +46,7 @@ class SheetBuilder {
   /// el repositorio para armar los [InnateSpell]).
   final List<GrantSpellEffect> grantedSpells = [];
 
-  final Map<String, CharacterResource> _resources = {};
+  final Map<String, ResourceEffect> _resources = {};
 
   int weaponMasterySlots = 0;
   int maxExtraAttack = 0;
@@ -56,7 +56,26 @@ class SheetBuilder {
 
   SheetBuilder({required this.baseScores, this.level = 1});
 
-  List<CharacterResource> get resources => _resources.values.toList();
+  /// Resuelve las plantillas de recurso acumuladas a su [CharacterResource]
+  /// final. Se hace acá, y no en [applyEffect], porque un [ResourceEffect]
+  /// puede escalar con un modificador de característica ([maxFromAbility]),
+  /// y los modificadores finales solo se conocen después de aplicar todos los
+  /// efectos de bonus a características.
+  List<CharacterResource> resolveResources(Map<Ability, int> mods, int level) {
+    return _resources.values.map((e) {
+      final max = e.maxFromAbility != null
+          ? [e.max, mods[e.maxFromAbility]!].reduce((a, b) => a > b ? a : b)
+          : (e.maxPerLevel ? level : e.max);
+      return CharacterResource(
+        id: e.id,
+        name: e.name,
+        max: max,
+        recharge: e.recharge,
+        shortRestRecovery: e.shortRestRecovery,
+        description: e.description,
+      );
+    }).toList();
+  }
 
   void addAbilityBonus(Ability a, int amount) =>
       abilityBonuses[a] = abilityBonuses[a]! + amount;
@@ -132,21 +151,10 @@ class SheetBuilder {
       case SpellcastingEffect():
         // El último rasgo de lanzamiento gana (una clase por ahora).
         spellcasting = e;
-      case ResourceEffect(
-          :final id,
-          :final name,
-          :final max,
-          :final recharge,
-          :final description,
-          :final maxPerLevel
-        ):
-        _resources[id] = CharacterResource(
-          id: id,
-          name: name,
-          max: maxPerLevel ? level : max,
-          recharge: recharge,
-          description: description,
-        );
+      case ResourceEffect(:final id):
+        // El máximo puede depender de un modificador de característica que
+        // todavía no está disponible acá; se resuelve en [resolveResources].
+        _resources[id] = e;
     }
   }
 

@@ -2,7 +2,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:test/test.dart';
 
 /// L3, Tier A: verifica el contenido real de los linajes de Elfo, Gnomo y
-/// Tiflin contra el pack, para que un id mal escrito no pase silencioso.
+/// Tiefling contra el pack, para que un id mal escrito no pase silencioso.
 void main() {
   late ContentRepository repo;
 
@@ -56,7 +56,7 @@ void main() {
     }
   });
 
-  test('los tres legados del Tiflin dan resistencia y truco a nivel 1', () {
+  test('los tres legados del Tiefling dan resistencia y truco a nivel 1', () {
     final cases = {
       'tiefling-infernal': ('fire', 'fire-bolt'),
       'tiefling-abyssal': ('poison', 'poison-spray'),
@@ -66,11 +66,11 @@ void main() {
       final s =
           CharacterCompiler(repo).compile(_pj('tiefling', lineageId, level: 1));
       expect(s.resistances, contains(expected.$1), reason: lineageId);
-      // El truco del legado + la Taumaturgia base del Tiflin.
+      // El truco del legado + la Taumaturgia base del Tiefling.
       final ids = s.innateSpells.map((x) => x.spellId);
       expect(ids, contains(expected.$2), reason: lineageId);
       expect(ids, contains('thaumaturgy'),
-          reason: 'la Taumaturgia del Tiflin base ahora es real');
+          reason: 'la Taumaturgia del Tiefling base ahora es real');
     });
   });
 
@@ -92,6 +92,20 @@ void main() {
     final resource = forest.resources
         .firstWhere((entry) => entry.id == 'innate-speak-with-animals');
     expect(resource.max, 3);
+  });
+
+  test('el dispositivo del Gnomo de las Rocas sigue la regla 2024', () {
+    final trait = repo
+        .lineage('gnome-rock')!
+        .features
+        .expand((f) => f.effects)
+        .whereType<PassiveTraitEffect>()
+        .singleWhere((e) => e.name == 'Dispositivo Mecánico')
+        .description;
+    expect(trait, contains('10 minutos'));
+    expect(trait, contains('hasta tres'));
+    expect(trait, contains('8 horas'));
+    expect(trait, isNot(contains('10 po')));
   });
 
   test('los conjuros de nivel 3 y 5 aparecen al subir, con su recurso', () {

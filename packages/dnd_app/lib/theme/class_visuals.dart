@@ -26,6 +26,7 @@ const Map<String, IconData> _icons = {
   'eye': Icons.remove_red_eye,
   'oath': Icons.verified_user,
   'bow': Icons.gps_fixed,
+  'gear': Icons.settings,
   // Especies.
   'person': Icons.person,
   'terrain': Icons.terrain,

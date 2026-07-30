@@ -52,6 +52,31 @@ La fuente primaria son los **PDFs locales** de `d&d-data/`: el *Manual del
 Jugador 2024* y *Forge of the Artificer*. La carpeta está en `.gitignore` — son
 manuales con copyright y no se versionan.
 
+#### Verificación determinista: `Player's Handbook (2024).md`
+
+La misma carpeta tiene una extracción del PHB completo **en inglés y en
+markdown**, con las tablas en formato parseable. Para todo lo que sea enumerable
+conviene más que el PDF: no arrastra el ruido de OCR que se describe abajo, así
+que el catálogo se puede comparar con un script en vez de por lectura, y el
+resultado es reproducible. Así se cerró la tabla de armas y así se comprobó que
+las dotes reconcilian contra el capítulo 5.
+
+Lo que **sí** trae: la *Feat List* completa con categoría y repetibilidad
+(cap. 5), las tablas de armas y armaduras con peso y precio (cap. 6), la tabla
+de costes de la compra de puntos (cap. 2), los 48 nombres de subclase (cap. 3) y
+el glosario de reglas.
+
+Lo que **no** trae, y sigue exigiendo el PDF en español: las descripciones de
+conjuros (el cap. 7 del markdown son solo las reglas de lanzamiento), los rasgos
+de clase y de especie en detalle (los cap. 3 y 4 son resúmenes) y la entrada de
+Agotamiento del glosario, que quedó como un embed HTML sin extraer.
+
+Los **nombres en español** nunca salen de ahí: para eso manda el PDF, que es lo
+que lee la mesa. Traducir a ojo desde el inglés es justamente cómo aparecen las
+colisiones de nombre.
+
+#### Extracción del PDF
+
 El texto se extrae con `pdftotext`, que **no** son escaneos:
 
 ```sh
@@ -106,17 +131,17 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 | Bloque | Estado | Hallazgos y alcance |
 | --- | --- | --- |
-| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. La Ascendencia Dracónica ahora nombra los diez dragones y su tipo de daño, como ya hacía el Goliat con los seis gigantes. Falta la elección de tamaño (Humano, Tiflin **y Aasimar**, que en el PHB son Mediano o Pequeño), las ascendencias de Dracónido y Goliat como elección persistida, y el cambio de truco del Alto Elfo. |
+| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. La Ascendencia Dracónica ahora nombra los diez dragones y su tipo de daño, como ya hacía el Goliat con los seis gigantes. Falta la elección de tamaño (Humano, Tiefling **y Aasimar**, que en el PHB son Mediano o Pequeño), las ascendencias de Dracónido y Goliat como elección persistida, y el cambio de truco del Alto Elfo. |
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
-| Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` (antes degradaba a `homebrew` en silencio). Cerradas subclases (12 SRD / 36 PHB), dotes (9 SRD / 48 PHB) y trasfondos (2 SRD / 10 PHB), con la procedencia visible en la app. Faltan conjuros y equipo. |
+| Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` y `foa_2025` (antes degradaba a `homebrew` en silencio), con la procedencia visible en la app. Estado actual del etiquetado: subclases 12 SRD / 36 PHB / 5 FoA, dotes 9 / 73 / 28, trasfondos 4 / 12 / 17, conjuros 177 / 214 / 1, especies 9 / 1 / 5. Cerrado en todos los bloques salvo equipo, que sigue sin desglose por procedencia. |
 | Trasfondos | corregido | **Cierra Q3**: los 4 trasfondos que faltaban, cargados con los datos del bloque de características de cada uno en el capítulo 4 (más confiable que la tabla resumen de creación de personaje, que quedó cortada por columnas en la extracción). Acólito y Erudito son `srd_2024`; Guía y Marinero, `phb_2024`. Trajeron dos dotes de origen que no estaban: **Iniciado en la Magia (Druida)** y **Matón de Taberna**, con el mismo texto que las variantes de Mago y Clérigo ya cargadas. El catálogo llega a **16 trasfondos y 59 dotes**. Falta verificar las tres características ofrecidas y el equipo inicial de los 16. |
 | Puntuaciones | en revisión | Verificados contra el capítulo 2: el array estándar (15, 14, 13, 12, 10, 8), la tirada de 4d6 quedándose con los tres más altos, el aumento de 3 puntos del trasfondo en sus dos repartos (+2/+1 y +1/+1/+1) y el tope de 20. **Falta la compra de puntos**, el tercer método oficial: 27 puntos, puntuaciones de 8 a 15, con costes 0/1/2/3/4/5/7/9. |
 | Clases | en revisión | **Las 12 tablas verificadas contra el PHB.** Marciales: corregidas las progresiones de maestría con armas, Tomar Aliento, Furias, Movimiento sin Armadura y Canalizar Divinidad, congeladas en el valor de nivel 1; sumada la ballesta de mano a Pícaro y Monje; quitada Interpretación de la lista del Pícaro. Lanzadoras: Canalizar Divinidad del Clérigo (3 a nivel 6, 4 a nivel 18) y Forma Salvaje del Druida (3 a nivel 6, 4 a nivel 17) tenían el mismo defecto; el Druida perdió la armadura media, que en 2024 ya no tiene. Las 12 salvaciones y los 6 valores de trucos iniciales coinciden. **Rasgos de nivel 3 a 20 completados en las 12 clases**: las once que cierran en 20 más el Paladín, cuyo nivel 20 es rasgo de subclase. Al cargarlos aparecieron tres restos de 2014 que ninguna tabla delataba, porque el nombre del rasgo era correcto y lo que estaba mal era el texto: **Furia Implacable** dejaba al Bárbaro en 1 PG en vez de en el doble de su nivel, **Golpes Potenciados** volvía mágicos los golpes del Monje en vez de dejarle elegir daño de fuerza, y el Monje llamaba *Puntos de Enfoque* a la Concentración (se cambió el nombre visible; el id `focus_points` se conserva para no perder los puntos gastados de las partidas guardadas). Los únicos rasgos de la tanda con efecto mecánico y no solo descriptivo son Superviviente Disciplinado del Monje (competencia en las seis salvaciones) y los capstones de Bárbaro, Monje y Druida. Faltan el equipo inicial y las competencias con herramientas, que son contenido nuevo. |
 | Subclases | en revisión | Corregida la progresión del Evocador (Experto en Evocación a 3, Esculpir Conjuros a 6) y separada la procedencia: 12 SRD y 36 PHB. **Los 48 nombres de subclase están verificados contra el índice del manual.** Rasgos verificados: Bárbaro (4/4), Monje (4/4), Paladín (4/4), Hechicero (4/4), Druida (3/4), Brujo (3/4 parcial), Clérigo (2/4 parcial) y Bardo (2/4). Los niveles coinciden en todos los casos; lo que fallaba era la nomenclatura, y de forma sistemática. **Único rasgo mal, no solo mal traducido: el nivel 18 de Hechicería Dracónica sigue siendo la Presencia Dracónica de 2014 en vez de Compañero Dragón**; hace falta el texto del manual para reescribirlo y hay un test que lo deja anotado. **Quedan sin verificar los rasgos de Guerrero, Mago, Explorador y Pícaro**, no por falta de intento sino porque esas consultas no pudieron citar el manual: ver la nota de fuentes. |
-| Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. **Las 43 generales tienen ahora su prerrequisito real del PHB**: 12 con una característica, 10 con dos o tres alternativas, 4 con entrenamiento de armadura, 3 con lanzamiento de conjuros y 14 solo con el nivel 4. Para eso se agregó `anyAbilityScores`, porque el mapa anterior combinaba con Y lógico y no podía expresar "Fuerza o Destreza 13". Falta la elección de característica (+1 a X o Y) y revisar `mobile`, que no figura entre las 43 del capítulo. |
+| Dotes | en revisión | Iniciado en la Magia pasó a origen, Habilidoso a repetible, y se corrigieron Acechador, Tirador de Élite y el estilo Arma Grande. **Las 43 generales tienen ahora su prerrequisito real del PHB**: 12 con una característica, 10 con dos o tres alternativas, 4 con entrenamiento de armadura, 3 con lanzamiento de conjuros y 14 solo con el nivel 4. Para eso se agregó `anyAbilityScores`, porque el mapa anterior combinaba con Y lógico y no podía expresar "Fuerza o Destreza 13". Falta la elección de característica (+1 a X o Y) y revisar `mobile`, que no figura entre las 43 del capítulo. **Sumadas 24 dotes que faltaban del capítulo 5**: Mejora de Característica, Entrenamiento con Armas Marciales, Maestro de Armas, los 6 Estilos de Combate (Lucha a Ciegas, Intercepción, Protección, Combate con Armas Arrojadizas, Combate con Dos Armas, Combate sin Armas), las 3 Resiliente (Fuerza, Inteligencia, Carisma) y los 12 Dones Épicos (de la Fortaleza, de la Habilidad, de la Pericia en Combate, de la Recuperación, de la Resistencia a Energías, de la Velocidad, de la Visión Verdadera, del Ataque Imparable, del Destino, del Espíritu de la Noche, del Recuerdo de Conjuros, del Viaje Dimensional). Se quitó una dote duplicada. El catálogo llega a **110 dotes** (9 SRD, 73 PHB, 28 FoA); falta verificar el prerrequisito y el texto de los Dones Épicos contra el capítulo 5. **Comprobado que las 110 reconcilian exacto contra las 75 del capítulo 5**, con dos familias expandidas a propósito: Iniciado en la Magia en 3 listas y Resiliente en 6 características (75 − 2 + 3 + 6 = 82, más las 28 de FoA). **Resuelta una colisión de nombre**: tres variantes de Resiliente (Sabiduría, Constitución y Destreza) estaban cargadas como *Resistente*, que es el nombre en español de otra dote general —la que da +1 a Constitución, ventaja en salvaciones contra muerte y Recuperación rápida, `durable` en el catálogo—. Por esa colisión `durable` había quedado con un sufijo inventado, *Resistente Físico*, que ya no necesita. Es el mismo defecto que tuvieron los conjuros con `feeblemind`: el id apunta bien y lo que engaña es la etiqueta visible. Hay un test que prohíbe nombres de dote repetidos, que antes solo existía para conjuros. |
 | Conjuros | corregido | Normalizados escuela (`Necromancia` vs `Nigromancia`), el único alcance en métrico y los 164 tiempos de lanzamiento a la convención 2024; las 8 escuelas, los tiempos, los alcances y la coherencia de concentración se comprueban ahora sobre los 177. **Hechas las tres reescrituras**: Toque Helado (pasa a Toque y ataque cuerpo a cuerpo), Conjurar Animales (deja de invocar criaturas, pasa a daño de área y baja a 10 minutos) y Marca del Cazador (daño de fuerza). **El capítulo 7 del PDF se parsea completo**: 384 conjuros con nivel, escuela, clases, tiempo, alcance, componentes y duración. El encabezado es regular (`NOMBRE` + `Escuela de nivel N (clases)`), con tres trampas que hay que tolerar: el nombre a veces cae en la misma línea que la escuela, la lista de clases se parte en dos, y una docena de encabezados salen en caja mixta (`Luz DEL DÍA`, `Trepar cual arácnido`) en vez de mayúsculas. La escuela se llama **Ilusionismo**, no Ilusión: eso se corrigió en los 12 conjuros afectados y en la lista blanca del test. **31 conjuros llevaban un nombre que no es el del manual y se renombraron**, verificando cada uno por dos vías independientes —la firma de metadatos contra el capítulo 7 y el id, que es el nombre en inglés—; emparejar solo por metadatos no alcanza, porque mandaba Deseo y Detener el Tiempo al mismo destino. El peor era `geas`, catalogado como *Mandato*, que es el nombre de otro conjuro. **Cerrada la nomenclatura**: una segunda tanda resolvió los 43 restantes verificando cada destino contra su encabezado y su nivel en el capítulo 7 (0 rechazos); 36 eran renombres reales y 7 ya coincidían. Renombrar destapó dos cosas más: una **colisión de nombres** —`feeblemind` estaba catalogado como *Mente en Blanco*, que es el nombre de `mind-blank`— y, al mirarlo, que su texto seguía siendo el de 2014 (reducía Inteligencia y Carisma a 1, cuando en 2024 son 10d12 psíquicos y bloqueo de conjuros). Con los nombres alineados se pudo cruzar por fin escuela y nivel de los 172 emparejados: una sola diferencia, **Salpicadura Ácida**, que en 2024 es de Evocación y no de Conjuración. Hay un test que prohíbe nombres repetidos. **Altas en curso**: cargados los **8 trucos y 32 conjuros de nivel 1** que faltaban (catálogo de 177 a 217). Los campos mecánicos no se transcriben a mano: salen del parseo y un generador los convierte a la convención de la casa —métrico a pies, el ritual separado del tiempo de lanzamiento, la concentración separada de la duración—; solo la descripción corta es de autor. Se etiquetan `phb_2024`: sin el SRD a mano no se puede afirmar que estén cubiertas por CC BY 4.0, y quedarse corto es seguro mientras que al revés sería un problema de licencia. De paso quedó claro que **Castigo Divino es un conjuro en 2024**, no un rasgo del Paladín. **Nivel 2 cargado**: los 39 conjuros que faltaban (catálogo de 217 a 256). Dos defectos del generador aparecieron y quedaron corregidos con test: una comilla tipográfica del OCR pegada al nombre de Truco de la Cuerda, y el Title Case de la casa no capitalizaba la segunda mitad de un nombre compuesto (Agrandar/Reducir, Sordera/Ceguera). **Nivel 3 cargado**: los 26 conjuros que faltaban (catálogo de 256 a 282; el hueco real fue menor que la estimación de 33). Dos defectos del generador aparecieron y quedaron corregidos con test: el alcance en kilómetros de Clarividencia (1,5 km, la misma distancia que ya usa Enjambre de Meteoros como "1 milla") no tenía conversión, y el tiempo de lanzamiento en minutos u horas pluralizaba mal porque la alternancia de la regex probaba la forma singular antes que la plural y recortaba la "s". **Nivel 4 cargado**: los 28 conjuros que faltaban (catálogo de 282 a 310; otra vez el hueco real fue menor que la estimación de 31). Aparecieron dos colisiones de id reales, no de nombre: `moonbeam` ya estaba tomado por Rayo de Luna (nivel 2) y el nuevo conjuro era en realidad Fuente de Luz Lunar (*Fount of Moonlight*, nivel 4, sin relación); y `dominate-monster` ya era Dominar Monstruo (nivel 8) cuando el nuevo era Hechizar Monstruo (*Charm Monster*, nivel 4) — dos conjuros distintos del manual, no una progresión del mismo. El chequeo de id duplicado que atajó `friends`/`feeblemind` en tandas anteriores volvió a servir. **Nivel 5 cargado**: los 32 conjuros que faltaban (catálogo de 310 a 342; el hueco real igualó la estimación esta vez). Dos casos nuevos en el parseo, ambos con campos vacíos que se completaron a mano leyendo el PDF directamente: Círculo de Teletransportación (tiempo de lanzamiento partido entre columnas) y Creación (duración "Especial" y alcance "9 m" sepultados bajo el cuerpo del conjuro). De paso apareció la tercera colisión de nombre-no-id de la tanda: Invocar Elemental (nivel 4, el conjuro de invocación nuevo de 2024) y Conjurar Elemental (nivel 5, el conjuro de 2014 con un elemental Grande de estadísticas propias) comparten la raíz en español pero son conjuros distintos del manual. **Q2 completo**: cargados los conjuros de nivel 6 a 9 (23, 10, 9 y 4 respectivamente). El catálogo cierra en **388 conjuros**, la cifra exacta que trae el capítulo 7. Cinco parejas de conjuros que comparten raíz en español pero son entradas distintas del manual (el nuevo verbo "invocar" de 2024 contra el "conjurar" que sigue de 2014, sobre la misma criatura): elemental (nivel 4/5), feérico (3/6) y celestial (5/7), más las dos colisiones de nombre-no-id de tandas anteriores (Fuente de Luz Lunar/Rayo de Luna, Hechizar/Dominar Monstruo). El chequeo de id contra el catálogo, hecho rutina desde la tercera tanda, las atajó todas antes de escribir nada. Dos artefactos de OCR nuevos: Telepatía perdía la mayúscula de "Ilimitado" ("Alcance: limitado"), corregido contrastando con la descripción del conjuro; y el alcance en kilómetros —antes solo el caso de Enjambre de Meteoros— se generalizó a una conversión (750 km de Proyectar Imagen dan 500 millas). |
-| Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. **Las ocho propiedades de maestría tienen glosario** con el nombre oficial del PHB y el texto de la regla, así que la ficha dejó de mostrar el identificador en inglés. Falta precio, peso y alcance, que no existen como campo en el modelo, y las armas que el manual lista y el catálogo no tiene. |
-| Forge of the Artificer | corregido | **Cierra Q4**: cargado el capítulo 2 completo salvo la clase Artífice — **5 especies** (Cambiaformas, Kalashtar, Khoravar, Cambiante y Forjado), **17 trasfondos** (trece herederos de casa dracomarcada, Heredero Aberrante, Agente de Casa, Arqueólogo e Inquisidor) y **28 dotes** (13 de Marca Dracónica, 14 generales y Bendición de Siberys). Todo etiquetado `foa_2025`. Hicieron falta dos categorías de dote nuevas, `dragonmark` y `epic-boon`, y que un trasfondo pueda conceder una dote de marca a nivel 1: el libro dice que tomar el trasfondo de la casa es la única forma de tener una marca en la creación. También `requiredFeatIds` y `requiredFeatCategory` en el prerrequisito, porque las doce marcas mayores exigen su marca base y Marca Dracónica Potente exige "alguna dote de marca"; sin eso la validación aceptaba cualquier combinación. Las tablas de Conjuros de la Marca no se transcribieron: se resolvieron por id contra `spells.json`, y ese cruce destapó **cuatro conjuros con un id inglés que no era el suyo** —Consagrar, Caparazón Antivida, Creación y el par Conjurar Descarga de Proyectiles / Conjurar Lluvia de Flechas, que tenían los ids intercambiados—. El nombre y las reglas estaban bien; solo el id apuntaba a otro conjuro, que es la clase de defecto que ninguna verificación por tabla puede ver. Corregirlo obligó a la migración de ficha **v3 → v4**, que reescribe `cantripIds` y `spellIds` para que nadie pierda un conjuro elegido. Falta el equipo inicial de los 17 trasfondos, la elección de tamaño y el tipo de criatura de las 5 especies (misma deuda que Humano, Tiflin y Aasimar), y la clase Artífice, que va aparte. |
+| Equipo | en revisión | Armas y armaduras verificadas contra el SRD en daño, propiedades y maestrías. La maestría ahora exige competencia con el arma. **Las ocho propiedades de maestría tienen glosario** con el nombre oficial del PHB y el texto de la regla, así que la ficha dejó de mostrar el identificador en inglés. **Cerrada la tabla de armas**: cargadas las tres que faltaban de Armas Marciales a Distancia —Cerbatana, Mosquete y Pistola—, así que el catálogo llega a las **38 armas** del capítulo 6, con las 13 armaduras ya completas. La verificación se hizo por primera vez de forma determinista contra las tablas del cap. 6 (ver la nota de fuentes): las 35 armas previas coincidían con el PHB en dado, tipo de daño y maestría sin una sola diferencia, y las armaduras en CA, tope de Destreza, sigilo y requisito de Fuerza. La Cerbatana hace 1 de daño fijo y no un dado; `damageDice` es una cadena de presentación que nunca se parsea, así que `"1"` es un valor legítimo. Las tres van como `phb_2024`: sin el SRD a mano no se puede afirmar que estén cubiertas por CC BY 4.0, el mismo criterio conservador que se usó con los conjuros. Falta precio, peso y alcance, que no existen como campo en el modelo. |
+| Forge of the Artificer | corregido | **Cierra Q4**: cargado el capítulo 2 completo salvo la clase Artífice — **5 especies** (Cambiaformas, Kalashtar, Khoravar, Cambiante y Forjado), **17 trasfondos** (trece herederos de casa dracomarcada, Heredero Aberrante, Agente de Casa, Arqueólogo e Inquisidor) y **28 dotes** (13 de Marca Dracónica, 14 generales y Bendición de Siberys). Todo etiquetado `foa_2025`. Hicieron falta dos categorías de dote nuevas, `dragonmark` y `epic-boon`, y que un trasfondo pueda conceder una dote de marca a nivel 1: el libro dice que tomar el trasfondo de la casa es la única forma de tener una marca en la creación. También `requiredFeatIds` y `requiredFeatCategory` en el prerrequisito, porque las doce marcas mayores exigen su marca base y Marca Dracónica Potente exige "alguna dote de marca"; sin eso la validación aceptaba cualquier combinación. Las tablas de Conjuros de la Marca no se transcribieron: se resolvieron por id contra `spells.json`, y ese cruce destapó **cuatro conjuros con un id inglés que no era el suyo** —Consagrar, Caparazón Antivida, Creación y el par Conjurar Descarga de Proyectiles / Conjurar Lluvia de Flechas, que tenían los ids intercambiados—. El nombre y las reglas estaban bien; solo el id apuntaba a otro conjuro, que es la clase de defecto que ninguna verificación por tabla puede ver. Corregirlo obligó a la migración de ficha **v3 → v4**, que reescribe `cantripIds` y `spellIds` para que nadie pierda un conjuro elegido. Falta el equipo inicial de los 17 trasfondos, la elección de tamaño y el tipo de criatura de las 5 especies (misma deuda que Humano, Tiefling y Aasimar), y la clase Artífice, que va aparte. **Cierra Q5**: cargada la clase Artífice completa (niveles 1 a 20) y sus **5 subclases** (Alquimista, Armero, Artillero, Herrero de Batalla y Cartógrafo), la 13ª clase del catálogo y las últimas piezas del capítulo 2. Es un semi-lanzador cuya tabla de espacios y de conjuros preparados coincide exactamente con la que ya usan Paladín y Explorador (`progression: "half"`, sin tocar el motor); lo que sí obligó a tocar el motor fueron sus trucos, que crecen a niveles 1/10/14 en vez de 1/4/10, y media docena de recursos (Magia de Manitas, Chispa de Genialidad y uno por subclase) cuyo máximo es un modificador de característica y no el nivel de personaje. Se sumaron `SpellcastingEffect.cantripIncreases` y `ResourceEffect.maxFromAbility`, ambos opcionales y sin efecto sobre ninguna de las 8 clases y 2 subclases lanzadoras existentes. Réplica de Objeto Mágico, Defensor de Acero, Cañón Arcano, Elixir Experimental, Armadura Arcana y Atlas del Aventurero no tienen modelo mecánico propio en el motor —objetos mágicos temporales y compañeros con estadísticas propias son mecánicas que no existen todavía— así que van como texto descriptivo, la misma convención que ya usan los conjuros siempre preparados de las 48 subclases del PHB. La lista de conjuros del Artífice tiene 80 conjuros; 79 ya estaban en el catálogo y solo hizo falta agregarles la clase, y el conjuro nuevo del capítulo (**Sirviente Homúnculo**) se cargó como `foa_2025`, el primer conjuro con esa procedencia. El catálogo llegó a **389 conjuros**. **Corrección posterior de contenido PHB 2024**: cinco ids apuntaban a un conjuro distinto del que llevaban de nombre (`feeblemind`, `branding-smite`, `snare`, `dispel-good-and-evil`, `holy-word`) y se realinearon; sumados los 8 conjuros que quedaban sin cargar (Ofuscación, Castigo Brillante, Cordón de Flechas, Disipar el Bien y el Mal, Palabra Divina, Alterar los Recuerdos, Hablar con los Muertos, Tañido por los Muertos). El catálogo llega a **392 conjuros** (177 SRD, 214 PHB, 1 FoA). |
 
 ## Primera pasada: orígenes y magia innata
 
@@ -155,50 +180,65 @@ Medido contra el PDF en español, para dimensionar cuánto del catálogo es PHB:
 | --- | --- | --- |
 | Especies | 9 (sin Aasimar) | 15 |
 | Trasfondos | 4 (Acólito, Criminal, Erudito, Soldado) | 33 |
-| Subclases | 12 (una por clase) | 48 |
-| Dotes | 17 | 87 |
-| Conjuros | 388 (PHB, cap. 7) | 388 |
+| Subclases | 12 (una por clase del PHB) | 53 |
+| Dotes | 17 | 110 |
+| Conjuros | 388 (PHB, cap. 7) | 392 |
 
-El catálogo es a la vez más chico que el SRD en conjuros y más grande en el
-resto, con contenido del PHB 2024. Sin la etiqueta correcta, ambas cosas se
-confunden bajo la misma atribución.
+El catálogo es más grande que el SRD en todos los bloques, con contenido del
+PHB 2024 y, desde Q4/Q5, de *Forge of the Artificer* (2025). De los 392
+conjuros, 391 vienen del capítulo 7 del PHB (177 dentro del SRD, 214 fuera) y
+el único que lo excede es Sirviente Homúnculo, de *Forge of the Artificer*.
+Sin la etiqueta correcta, todo esto se confundiría bajo la misma atribución.
 
 ## Pendientes abiertos al cierre de esta tanda
 
 Ordenados por costo, del más barato al más caro:
 
-1. **Compra de puntos**: es el tercer método oficial de asignar puntuaciones y
-   la app solo tiene dos. El dato es chico (27 puntos, rango 8–15, costes
-   0/1/2/3/4/5/7/9), pero la interacción no encaja en el paso actual, que
-   reparte un pool fijo de seis valores con desplegables: la compra necesita
-   selectores con presupuesto. Es un modo nuevo en `scores_step.dart` más un
-   valor nuevo en `ScoreMethod`, que el borrador ya tolera porque resuelve el
-   enum por nombre con respaldo.
+1. **Texto de 2014 en Resistente** (`durable`): la descripción dice "al gastar
+   dados de golpe recuperas más PG y te estabilizas mejor", que es la dote de
+   2014. En 2024 son dos beneficios distintos: **Desafiar a la muerte**, ventaja
+   en las tiradas de salvación contra muerte, y **Recuperación rápida**, gastar
+   un dado de puntos de golpe **como acción adicional** y recuperar el resultado
+   —sin aumentar la cantidad—. Es un solo campo de texto y el PDF ya está
+   verificado. Ninguno de los dos beneficios tiene modelo mecánico, así que van
+   como descripción, misma convención que el resto de los rasgos sin efecto.
+   Vale revisar de paso si otras dotes arrastran texto de 2014: esta apareció
+   por casualidad, al desambiguar su nombre.
 2. **Nomenclatura**: el catálogo usa traducciones propias donde el SRD tiene
    nombre oficial (Aprendiz de Mucho, Sentir el Peligro, Truco Potente). Esta
    tanda solo alineó los rasgos que tocó.
-3. **`mobile` no está en el capítulo 5**: las 43 dotes generales del PHB
-   incluyen Veloz (`speedy`) pero no Móvil, que es de 2014 y quedó cubierta por
-   aquella. El catálogo tiene las dos y por ahora `mobile` copia el
-   prerrequisito de `speedy`. Falta decidir si se retira o se marca como
-   contenido propio.
-4. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
+3. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
    dato y anotada en el texto. Requiere efecto nuevo, campo persistido,
    migración y dos superficies de UI.
-5. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
+4. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
    ambos lo obtienen en el **nivel 2**. Falta implementarlo: `grantsFightingStyle`
    es un booleano sin noción de nivel y la pantalla de subida de nivel no tiene
    dónde elegirlo, así que activarlo tal cual lo regalaría a nivel 1. Hace falta
    un campo `fightingStyleLevel`, el gating del asistente y una sección nueva.
+   Hoy solo lo declara Guerrero, a nivel 1.
+5. **Compra de puntos**: es el tercer método oficial de puntuaciones y no existe.
+   `ScoreMethod` solo tiene array estándar y 4d6. La tabla del capítulo 2 ya está
+   verificada: 27 puntos, puntuaciones de 8 a 15, costes 0/1/2/3/4/5/7/9.
 6. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
    afectan ningún cálculo. En 2024 el agotamiento da −2 por nivel a las pruebas
-   de d20 y −5 pies de velocidad.
+   de d20 y −5 pies de velocidad. La Inspiración Heroica no está modelada en
+   absoluto, lo que deja incompleto al **Humano**: su rasgo Ingenioso la concede
+   en cada descanso largo y hoy es solo texto. Hay un choque de diseño que
+   resolver: `CombatState` no alimenta `ComputedSheet` por decisión explícita,
+   así que conviene aplicarlo como una capa de modificadores situacionales sobre
+   la ficha ya calculada, que además sirve para el resto de las condiciones.
 7. **Precio y peso del equipo**: no existen como campo en `Weapon` ni en
    `Armor`, así que no hay dónde guardarlos. Sumarlos implica campo nuevo,
-   los valores de las 35 armas y 13 armaduras, y decidir si la ficha lleva
-   carga.
+   los valores de las 38 armas y 13 armaduras, y decidir si la ficha lleva
+   carga. Los datos ya están en las tablas del capítulo 6. Se conecta con el
+   equipo inicial: cada trasfondo ofrece un paquete de equipo **o 50 po**.
 8. **Invocaciones Sobrenaturales**: el sistema no existe en el motor, así que
-    los cuatro pactos del Brujo solo figuran como texto.
+   los cuatro pactos del Brujo solo figuran como texto.
+9. **Objetos mágicos temporales y compañeros con estadísticas propias**: no
+   tienen modelo mecánico. Réplica de Objeto Mágico, Defensor de Acero y Cañón
+   Arcano del Artífice, cargados en Q5, van como texto descriptivo por esto
+   mismo; sistematizarlo alcanzaría también a las invocaciones del Druida y del
+   Explorador.
 
 ## Criterio de cierre
 

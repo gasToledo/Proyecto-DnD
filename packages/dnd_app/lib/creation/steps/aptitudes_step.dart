@@ -178,15 +178,14 @@ class _AptitudesStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = draft.repo;
     final klass = draft.klass;
     final race = draft.race;
     final bg = draft.background;
     final granted = {...?bg?.skillProficiencies};
     final grantsFeat = race?.effects.any((e) => e is GrantFeatEffect) ?? false;
-    final originFeats = repo.feats.values
-        .where((f) => f.category == 'origin')
-        .toList();
+    final originFeats = grantsFeat
+        ? _eligibleOriginFeats(draft)
+        : const <Feat>[];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -289,17 +288,28 @@ class _AptitudesStep extends StatelessWidget {
   }
 }
 
-/// Resumen legible de una dote. `Feat` no tiene descripción propia: lo que se
-/// muestra sale de sus rasgos pasivos, y si no tiene, de los nombres de sus
-/// efectos.
-String _featSummary(Feat feat) {
-  final traits = feat.effects.whereType<PassiveTraitEffect>();
-  if (traits.isNotEmpty) {
-    return traits
-        .map((t) => t.description.isEmpty ? t.name : t.description)
-        .join(' ');
-  }
-  return '';
+/// Dotes de origen que el personaje puede tomar realmente. Ninguna de las
+/// oficiales tiene prerrequisitos, pero una homebrew sí puede tenerlos, y el
+/// paso corre después de Puntuaciones, así que ya hay con qué compararlos.
+///
+/// La dote tentativa se deja fuera del personaje evaluado: una dote que sube
+/// una característica no debe poder cumplir su propio prerrequisito.
+///
+/// Tampoco se ofrece la dote de origen que ya concede el trasfondo: el
+/// personaje la tendría por dos vías y el PHB solo permite repetir las dotes
+/// que lo declaran. Sin este filtro, un Humano con trasfondo de Soldado podía
+/// elegir Atacante Salvaje y quedar con la dote duplicada.
+List<Feat> _eligibleOriginFeats(CreationDraft draft) {
+  final repo = draft.repo;
+  final base = draft.build().copyWith(featIds: const []);
+  final sheet = CharacterCompiler(repo).compile(base);
+  final validator = CharacterValidator(repo);
+  final grantedByBackground = draft.background?.originFeatId;
+  return repo.feats.values
+      .where((f) => f.category == 'origin')
+      .where((f) => f.repeatable || f.id != grantedByBackground)
+      .where((f) => validator.unmetFeatPrerequisite(f, base, sheet) == null)
+      .toList();
 }
 
 /// Tarjeta de dote: ícono, nombre, descripción y marca de selección.
@@ -362,10 +372,10 @@ class _FeatCard extends StatelessWidget {
                         color: scheme.onSurface,
                       ),
                     ),
-                    if (_featSummary(feat).isNotEmpty) ...[
+                    if (featSummary(feat).isNotEmpty) ...[
                       const SizedBox(height: 5),
                       Text(
-                        _featSummary(feat),
+                        featSummary(feat),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

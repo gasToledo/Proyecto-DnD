@@ -20,11 +20,18 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 
 ## Estado actual
 
-- 12 clases y 48 subclases: 12 del SRD 5.2.1 y 36 del PHB 2024.
+- 13 clases y 53 subclases: 12 clases y 48 subclases del PHB 2024 (12 de esas
+  subclases están además en el SRD 5.2.1), más la clase Artífice y sus 5
+  subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
-  Artificer*), 8 linajes, 33 trasfondos, 87 dotes y los 388 conjuros del
-  capítulo 7 del PHB.
-- Creación guiada, subida de nivel, combate, inventario, notas y retratos IA.
+  Artificer*), 8 linajes, 33 trasfondos, 110 dotes (9 SRD, 73 PHB 2024, 28 FoA)
+  y 392 conjuros (177 SRD, 214 PHB 2024, 1 FoA).
+- Creación guiada, subida de nivel con wizard multi-paso (resumen, puntos de
+  golpe, subclase, mejora de característica, rasgos, conjuros y repaso, cada
+  paso mostrado solo si aplica al nivel), combate, inventario, notas y
+  retratos IA.
+- Retratos IA con Pollinations, Hugging Face, Gemini o Azure AI Foundry
+  (Flux) como proveedor, además de importar un retrato desde archivo local.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
   secuenciales de datos.
 - Exportación individual y respaldos ZIP completos.
@@ -32,7 +39,10 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
   mantenibilidad actual.
 
 Limitaciones vigentes: cada personaje usa una sola clase; no hay sincronización
-en la nube ni Modo DM.
+en la nube ni Modo DM. `docs/auditoria-reglas-2024.md` mantiene el detalle de
+pendientes mecánicos (Estilo de Combate de Paladín/Explorador a nivel 2,
+Invocaciones Sobrenaturales del Brujo, Agotamiento/Inspiración Heroica sin
+efecto mecánico, precio/peso de equipo, entre otros).
 
 ## Comandos
 
@@ -186,17 +196,23 @@ ruta escape de `FichasDnD`.
 ### Retratos IA
 
 `PortraitProvider` es intercambiable. Pollinations es la opción predeterminada
-sin clave; Hugging Face y Gemini usan claves configuradas por el usuario. Las
-credenciales se envían por encabezado, nunca en la URL, se guardan en
-`settings.json` y no se incluyen en los respaldos.
+sin clave; Hugging Face, Gemini y Azure AI Foundry (Flux) usan claves
+configuradas por el usuario. Las credenciales se envían por encabezado, nunca
+en la URL, se guardan en `settings.json` y no se incluyen en los respaldos.
+También se puede importar un retrato desde un archivo local mediante
+`file_picker`.
 
 ## Restricciones del entorno Windows
 
 - La ruta del proyecto no puede contener `&`; Flutter rechaza ese carácter al
   construir para Windows. El nombre correcto de la carpeta es `Proyecto DnD`.
-- Evitar plugins nativos de Flutter mientras el proyecto mantenga su estrategia
-  actual sin Modo Desarrollador de Windows. Antes de agregar una dependencia,
-  comprobar si introduce plugins o symlinks.
+- El Modo Desarrollador de Windows está habilitado para poder construir con
+  plugins nativos (`file_picker`, usado para importar retratos desde archivo,
+  es el primero). Sigue siendo buena práctica evitar sumar plugins nativos sin
+  necesidad: cada uno agregado exige que cualquier máquina que compile el
+  proyecto tenga el Modo Desarrollador activo. Antes de agregar una
+  dependencia nueva, comprobar si introduce plugins o symlinks y si el mismo
+  resultado se puede lograr sin ellos.
 - Construir rutas con `package:path` (`p.join`), nunca concatenando `/`.
 - No asumir que una comprobación visual queda cubierta por tests. Para cambios
   visibles, validar análisis, tests y build, y describir qué necesita revisar

@@ -9,17 +9,17 @@
       {
         "level": 3,
         "name": "Crítico Mejorado",
-        "description": "Tus ataques con arma obtienen un impacto crítico con una tirada de 19 o 20.",
+        "description": "Tus ataques con armas y ataques sin armas causan un crítico con una tirada de 19 o 20.",
         "effects": [
-          { "type": "passiveTrait", "name": "Crítico Mejorado", "description": "Obtienes un crítico con arma al sacar 19 o 20 en el dado de ataque." }
+          { "type": "passiveTrait", "name": "Crítico Mejorado", "description": "Tus ataques con armas y ataques sin armas causan un crítico al sacar 19 o 20 en el d20." }
         ]
       },
       {
         "level": 3,
-        "name": "Atleta Notable",
-        "description": "Sumas la mitad de tu bono de competencia a las pruebas de Fuerza, Destreza o Constitución en las que no seas competente.",
+        "name": "Atleta Sobresaliente",
+        "description": "Tienes ventaja en las tiradas de iniciativa y las pruebas de Fuerza (Atletismo). Justo después de causar un crítico, puedes moverte hasta la mitad de tu velocidad sin provocar ataques de oportunidad.",
         "effects": [
-          { "type": "passiveTrait", "name": "Atleta Notable", "description": "Sumas medio bono de competencia a pruebas de FUE/DES/CON sin competencia; mayor distancia de salto." }
+          { "type": "passiveTrait", "name": "Atleta Sobresaliente", "description": "Ventaja en iniciativa y pruebas de Fuerza (Atletismo). Justo después de causar un crítico, puedes moverte hasta la mitad de tu velocidad sin provocar ataques de oportunidad." }
         ]
       },
       {
@@ -41,9 +41,9 @@
       {
         "level": 15,
         "name": "Crítico Superior",
-        "description": "Tus ataques con arma obtienen un impacto crítico con una tirada de 18-20.",
+        "description": "Tus ataques con armas y ataques sin armas causan un crítico con una tirada de 18 a 20.",
         "effects": [
-          { "type": "passiveTrait", "name": "Crítico Superior", "description": "Obtienes un crítico con arma al sacar 18, 19 o 20." }
+          { "type": "passiveTrait", "name": "Crítico Superior", "description": "Tus ataques con armas y ataques sin armas causan un crítico al sacar 18, 19 o 20 en el d20." }
         ]
       },
       {
@@ -2133,6 +2133,278 @@
         "description": "Puedes volver real un objeto de una de tus ilusiones durante un breve tiempo.",
         "effects": [
           { "type": "passiveTrait", "name": "Realidad Ilusoria", "description": "Conviertes en real (1 minuto) un objeto inanimado de tu conjuro de ilusión." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alchemist",
+    "name": "Alquimista",
+    "classId": "artificer",
+    "source": "foa_2025",
+    "description": "Un experto en combinar reactivos para producir efectos mágicos; usa sus creaciones tanto para dar vida como para arrebatarla.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Herramientas del Oficio",
+        "description": "Competencia con Herramientas de Alquimista y el Kit de Herbolario. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad. Además, tenés siempre preparados Palabra de Curación y Rayo Nauseabundo, que a nivel 5 se suman a Esfera de Llamas y Flecha Ácida de Melf, a nivel 9 a Forma Gaseosa y Palabra de Curación en Masa, a nivel 13 a Guarda contra la Muerte y Esfera Vitriólica, y a nivel 17 a Nube Aniquiladora y Alzar a los Muertos.",
+        "effects": [
+          { "type": "toolProficiency", "tool": "alchemists-supplies" },
+          { "type": "toolProficiency", "tool": "herbalism-kit" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Elixir Experimental",
+        "description": "Tras un descanso largo, con Herramientas de Alquimista en mano, producís dos elixires (tres a nivel 5, cuatro a nivel 9, cinco a nivel 15) de efecto aleatorio o elegido (curación, celeridad, resiliencia, audacia o vuelo), que se beben como acción adicional y se pierden al terminar el próximo descanso largo. Podés crear un elixir adicional gastando un espacio de conjuro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Elixir Experimental", "description": "Dos elixires por descanso largo (tres a nivel 5, cuatro a nivel 9, cinco a nivel 15), de efecto elegido o aleatorio entre curación, celeridad, resiliencia, audacia y vuelo." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Experto Alquímico",
+        "description": "Al lanzar un conjuro usando tus Herramientas de Alquimista como foco, sumás tu mod. de Inteligencia (mínimo +1) a una tirada de curación o de daño de ácido, fuego o veneno del conjuro.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Experto Alquímico", "description": "Suma tu mod. de Inteligencia (mínimo +1) a una tirada de curación o de daño de ácido, fuego o veneno de un conjuro lanzado con tus Herramientas de Alquimista." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Reactivos Restaurativos",
+        "description": "Podés lanzar Restablecimiento Menor sin gastar espacio de conjuro ni tenerlo preparado, usando Herramientas de Alquimista como foco, un número de veces igual a tu mod. de Inteligencia (mínimo una vez) por descanso largo.",
+        "effects": [
+          { "type": "resource", "id": "restorative_reagents", "name": "Reactivos Restaurativos", "max": 1, "maxFromAbility": "intelligence", "recharge": "long", "description": "Usos para lanzar Restablecimiento Menor sin espacio de conjuro ni preparación, con Herramientas de Alquimista." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Maestría Química",
+        "description": "Ganás resistencia a daño de ácido y veneno e inmunidad a envenenado. Al causar daño de ácido, fuego o veneno con un conjuro de Artífice, podés sumar 2d8 de daño de fuerza (una vez por turno). Además podés lanzar Caldero Burbujeante de Tasha sin espacio de conjuro, preparación ni componentes materiales, con Herramientas de Alquimista, una vez por descanso largo.",
+        "effects": [
+          { "type": "resistance", "damageType": "acid" },
+          { "type": "resistance", "damageType": "poison" },
+          { "type": "immunity", "damageType": "poisoned" },
+          { "type": "passiveTrait", "name": "Erupción Química", "description": "Una vez por turno, al causar daño de ácido, fuego o veneno con un conjuro de Artífice, sumás 2d8 de daño de fuerza." },
+          { "type": "resource", "id": "conjured_cauldron", "name": "Caldero Conjurado", "max": 1, "recharge": "long", "description": "Lanzás Caldero Burbujeante de Tasha sin espacio de conjuro, preparación ni componentes materiales, usando Herramientas de Alquimista." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "armorer",
+    "name": "Armero",
+    "classId": "artificer",
+    "source": "foa_2025",
+    "description": "Modifica la armadura hasta volverla casi una segunda piel, potenciando su magia, sus ataques y su defensa.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Herramientas del Oficio",
+        "description": "Entrenamiento con armadura pesada y competencia con Herramientas de Herrero. El tiempo para fabricar armadura, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Proyectil Mágico y Ola Atronadora, que a nivel 5 se suman a Imagen Múltiple y Hacer Añicos, a nivel 9 a Patrón Hipnótico y Relámpago, a nivel 13 a Escudo de Fuego e Invisibilidad Mejorada, y a nivel 17 a Pasamuros y Muro de Fuerza.",
+        "effects": [
+          { "type": "armorProficiency", "category": "heavy" },
+          { "type": "toolProficiency", "tool": "smiths-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Armadura Arcana",
+        "description": "Como acción de magia con Herramientas de Herrero en mano, convertís una armadura que llevés puesta en Armadura Arcana: sin requisito de Fuerza, se pone y se quita como acción de utilizar y sirve como foco de conjuro. Elegís un modelo —Acorazado, Guardián o Infiltrado—, cada uno con un arma especial que usa tu mod. de Inteligencia para atacar y dañar en vez de Fuerza o Destreza; podés cambiar de modelo en un descanso corto o largo con las herramientas en mano.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Armadura Arcana", "description": "Elegís Acorazado (arma de alcance y Estatura Gigante), Guardián (arma de área y Campo Defensivo) o Infiltrado (arma a distancia, más velocidad y sigilo); usás Inteligencia para su arma especial." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces en vez de una al realizar la acción de Atacar.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Armero Mejorado",
+        "description": "Aprendés un plan adicional de Réplica de Objeto Mágico de la categoría Armadura y podés tener un objeto adicional de esa categoría. El arma especial de tu Armadura Arcana gana +1 a los ataques y al daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Armero Mejorado", "description": "Un plan y objeto adicionales de la categoría Armadura; +1 a ataque y daño con el arma especial de la Armadura Arcana." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Armadura Perfeccionada",
+        "description": "El modelo de tu Armadura Arcana gana beneficios adicionales: el Acorazado aumenta el daño de su arma y la Estatura Gigante; el Guardián aumenta el daño de su arma y gana un tirón a distancia; el Infiltrado aumenta el daño de su arma y gana Velocidad de Vuelo temporal.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Armadura Perfeccionada", "description": "Mejora según el modelo elegido: más daño de arma especial y un beneficio único (Acorazado, Guardián o Infiltrado)." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "artillerist",
+    "name": "Artillero",
+    "classId": "artificer",
+    "source": "foa_2025",
+    "description": "Domina la magia para lanzar energía, proyectiles y explosiones a distancia en el campo de batalla.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Herramientas del Oficio",
+        "description": "Competencia con armas a distancia marciales y con Herramientas de Tallista. El tiempo para fabricar una varita mágica se reduce a la mitad. Además, tenés siempre preparados Escudo y Ola Atronadora, que a nivel 5 se suman a Rayo Abrasador y Hacer Añicos, a nivel 9 a Bola de Fuego y Muro de Viento, a nivel 13 a Tormenta de Hielo y Muro de Fuego, y a nivel 17 a Cono de Frío y Muro de Fuerza.",
+        "effects": [
+          { "type": "weaponProficiency", "category": "martial" },
+          { "type": "toolProficiency", "tool": "woodcarvers-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Cañón Arcano",
+        "description": "Con Herramientas de Herrero o de Tallista, creás como acción de magia un Cañón Arcano Pequeño o Diminuto en un espacio libre a 5 pies. Como acción adicional lo activás para usar Lanzallamas, Ballesta de Fuerza o Protector; podés moverlo hasta 15 pies antes o después. Desaparece tras 1 hora, a 0 PG, o si lo desactivás. Solo podés tener un cañón a la vez.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Cañón Arcano", "description": "Un cañón (CA 18, 5 PG por nivel de Artífice) que activás como acción adicional para Lanzallamas (2d8 fuego en cono), Ballesta de Fuerza (2d8 fuerza a distancia) o Protector (PG temporales)." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Arma de Fuego Arcana",
+        "description": "Tras un descanso largo, con Herramientas de Tallista, tallás sigilos en una vara, bastón, varita o arma a distancia marcial para convertirla en tu Arma de Fuego Arcana, que usás como foco de conjuro. Al lanzar un conjuro de Artífice a través de ella, tirás 1d8 y sumás el resultado a una de sus tiradas de daño.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Arma de Fuego Arcana", "description": "Foco de conjuro tallado; al lanzar un conjuro de Artífice a través de él, sumás 1d8 a una tirada de daño." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Cañón Explosivo",
+        "description": "Tu Cañón Arcano se vuelve más destructivo: al recibir daño, podés detonarlo como reacción (3d10 de fuerza en área, mitad con salvación), y sus daños y las PG temporales de Protector aumentan en 1d8.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Cañón Explosivo", "description": "Reacción de detonación (3d10 de fuerza en área a 20 pies); +1d8 a los daños del cañón y a las PG temporales de Protector." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Posición Fortificada",
+        "description": "Podés tener y crear dos Cañones Arcanos a la vez, activándolos con la misma acción adicional. Vos y tus aliados tenéis media cobertura a 10 pies de tu Cañón Arcano.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Posición Fortificada", "description": "Hasta dos cañones simultáneos, activados juntos; media cobertura para vos y tus aliados cerca del cañón." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "battle-smith",
+    "name": "Herrero de Batalla",
+    "classId": "artificer",
+    "source": "foa_2025",
+    "description": "Combina protección y medicina: un experto en defender a otros y reparar tanto material como personal, acompañado de un Defensor de Acero de su propia creación.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Herramientas del Oficio",
+        "description": "Competencia con Herramientas de Herrero. El tiempo para fabricar un arma, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Heroísmo y Escudo, que a nivel 5 se suman a Castigo Brillante y Vínculo Protector, a nivel 9 a Aura de Vitalidad y Conjurar Descarga de Proyectiles, a nivel 13 a Aura de Pureza y Escudo de Fuego, y a nivel 17 a Castigo Desterrador y Curar Heridas en Masa.",
+        "effects": [
+          { "type": "toolProficiency", "tool": "smiths-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Listo para el Combate",
+        "description": "Al atacar con un arma mágica, podés usar tu mod. de Inteligencia en vez de Fuerza o Destreza para el ataque y el daño. Ganás competencia con armas marciales, y podés usar un arma con la que tengas competencia como foco de conjuro.",
+        "effects": [
+          { "type": "weaponProficiency", "category": "martial" },
+          { "type": "passiveTrait", "name": "Empoderamiento Arcano", "description": "Usás tu mod. de Inteligencia en vez de Fuerza o Destreza para atacar y dañar con un arma mágica." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Defensor de Acero",
+        "description": "Tu tinkering te da un compañero, un Defensor de Acero: PG 5 + cinco veces tu nivel de Artífice, CA 12 + tu mod. de Inteligencia, actúa en tu turno (Esquivar salvo que le ordenes otra acción con una acción adicional), y su ataque causa 1d8 + 2 + tu mod. de Inteligencia de daño de fuerza. Tras un descanso largo con Herramientas de Herrero en mano podés crear uno nuevo, y podés revivir al actual gastando un espacio de conjuro si murió hace menos de una hora.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Defensor de Acero", "description": "Compañero construido (PG 5 + 5×nivel de Artífice, CA 12+INT, ataque 1d8+2+INT de fuerza) que se crea tras un descanso largo con Herramientas de Herrero." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Ataque Adicional",
+        "description": "Puedes atacar dos veces en vez de una al realizar la acción de Atacar; podés ceder uno de esos ataques para ordenarle a tu Defensor de Acero que ataque.",
+        "effects": [
+          { "type": "extraAttack", "extra": 1 }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Descarga Arcana",
+        "description": "Cuando vos o tu Defensor de Acero acertáis un ataque con un arma mágica, podés canalizar energía arcana: 2d6 de daño de fuerza extra, o restaurar 2d6 PG a una criatura u objeto a 30 pies. Podés usar esto último un número de veces igual a tu mod. de Inteligencia (mínimo una vez) por descanso largo, y no más de una vez por turno.",
+        "effects": [
+          { "type": "resource", "id": "arcane_jolt_healing", "name": "Descarga Arcana (curación)", "max": 1, "maxFromAbility": "intelligence", "recharge": "long", "description": "Usos de la opción de curación (2d6 PG) de Descarga Arcana; el daño extra (2d6 de fuerza) no tiene límite de usos." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Defensor Mejorado",
+        "description": "El daño y la curación de tu Descarga Arcana aumentan a 4d6. Cuando tu Defensor de Acero usa Desviar Ataque, el atacante recibe 1d4 + tu mod. de Inteligencia de daño de fuerza.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Defensor Mejorado", "description": "Descarga Arcana pasa a 4d6; Desviar Ataque de tu Defensor de Acero inflige 1d4 + tu mod. de Inteligencia de daño de fuerza al atacante." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cartographer",
+    "name": "Cartógrafo",
+    "classId": "artificer",
+    "source": "foa_2025",
+    "description": "Navegante y explorador de avanzada: con sus creaciones, señala amenazas, protege a sus aliados y traza rutas hacia lugares distantes.",
+    "features": [
+      {
+        "level": 3,
+        "name": "Herramientas del Oficio",
+        "description": "Competencia con Suministros de Calígrafo y Herramientas de Cartógrafo. El tiempo para copiar un pergamino de conjuro se reduce a la mitad. Además, tenés siempre preparados Fuego Feérico, Saeta Guía y Palabra de Curación, que a nivel 5 se suman a Localizar Objeto y Clavo Mental, a nivel 9 a Llamar al Relámpago y Clarividencia, a nivel 13 a Destierro y Localizar Criatura, y a nivel 17 a Escudriñar y Círculo de Teletransportación.",
+        "effects": [
+          { "type": "toolProficiency", "tool": "calligraphers-supplies" },
+          { "type": "toolProficiency", "tool": "cartographers-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Atlas del Aventurero",
+        "description": "Tras un descanso largo con Herramientas de Cartógrafo en mano, tocás al menos dos criaturas (podés ser una de ellas) hasta un máximo de 1 + tu mod. de Inteligencia (mínimo dos) para entregarles un mapa mágico que muestra la posición relativa de los demás portadores y permite lanzarles conjuros sin necesidad de verlos. Los mapas duran hasta tu muerte o hasta que uses el rasgo de nuevo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Atlas del Aventurero", "description": "Mapas mágicos para hasta 1 + mod. de Inteligencia portadores (mínimo dos): +1d4 a Iniciativa y permiten apuntar a otro portador sin línea de visión." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Magia de Cartografía",
+        "description": "Podés lanzar Fuego Feérico sin gastar espacio de conjuro un número de veces igual a tu mod. de Inteligencia (mínimo una vez) por descanso largo. Además, en tu turno podés gastar la mitad de tu movimiento para teletransportarte hasta un espacio libre a 10 pies de vos o a 5 pies de un portador de tu Atlas del Aventurero a 30 pies.",
+        "effects": [
+          { "type": "resource", "id": "illuminated_cartography", "name": "Cartografía Iluminada", "max": 1, "maxFromAbility": "intelligence", "recharge": "long", "description": "Usos para lanzar Fuego Feérico sin gastar espacio de conjuro." } ,
+          { "type": "passiveTrait", "name": "Salto de Portal", "description": "Gastás la mitad de tu movimiento para teletransportarte a un espacio libre a 10 pies, o a 5 pies de un portador de tu Atlas del Aventurero a 30 pies." }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Precisión Guiada",
+        "description": "Una vez por turno, al lanzar un conjuro de tu lista de Cartógrafo o al acertar con un ataque a una criatura afectada por tu Fuego Feérico, sumás tu mod. de Inteligencia a una tirada de daño. Además, recibir daño ya no puede quitarte la concentración en Fuego Feérico.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Precisión Guiada", "description": "Suma tu mod. de Inteligencia a una tirada de daño (una vez por turno); Fuego Feérico ya no pierde concentración por daño recibido." }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Movimiento Ingenioso",
+        "description": "Al usar tu Chispa de Genialidad, vos o una criatura voluntaria a 30 pies pueden teletransportarse hasta 30 pies como parte de esa misma reacción.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Movimiento Ingenioso", "description": "Chispa de Genialidad también teletransporta hasta 30 pies a vos o a una criatura voluntaria a 30 pies." }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Atlas Superior",
+        "description": "Un portador de tu Atlas del Aventurero que caería a 0 PG puede destruir su mapa para pasar a tener el doble de tu nivel de Artífice en PG y teletransportarse junto a otro portador. Además, mientras seas portador, podés lanzar Encontrar el Camino sin gastar espacio de conjuro, preparación ni componentes, una vez por descanso largo.",
+        "effects": [
+          { "type": "passiveTrait", "name": "Refugio Seguro", "description": "Un portador del Atlas a 0 PG puede destruir su mapa para tener PG iguales al doble de tu nivel de Artífice y teletransportarse junto a otro portador." },
+          { "type": "resource", "id": "unerring_path", "name": "Sendero Infalible", "max": 1, "recharge": "long", "description": "Lanzás Encontrar el Camino sin espacio de conjuro, preparación ni componentes, mientras seas portador de tu Atlas del Aventurero." }
         ]
       }
     ]

@@ -5,7 +5,11 @@ import 'character_compiler_test.dart' show sagan;
 
 /// Repositorio mínimo aislado para probar las reglas nuevas sin depender del
 /// contenido real del SRD (que puede crecer/cambiar con el tiempo).
-ContentRepository _minimalRepo({Map<String, dynamic>? featOverrides}) {
+ContentRepository _minimalRepo({
+  Map<String, dynamic>? featOverrides,
+  List<Map<String, dynamic>> extraFeats = const [],
+  List<Map<String, dynamic>> classFeatures = const [],
+}) {
   return ContentRepository.fromJsonPacks(
     races: [
       {
@@ -26,7 +30,7 @@ ContentRepository _minimalRepo({Map<String, dynamic>? featOverrides}) {
         'skillChoiceFrom': ['stealth', 'insight'],
         'weaponProficiencies': ['simple'],
         'asiLevels': [4],
-        'features': [],
+        'features': classFeatures,
       },
     ],
     backgrounds: [
@@ -42,6 +46,7 @@ ContentRepository _minimalRepo({Map<String, dynamic>? featOverrides}) {
         },
         ...?featOverrides,
       },
+      ...extraFeats,
     ],
     weapons: [
       {
@@ -185,6 +190,33 @@ void main() {
       expect(warnings.map((w) => w.code), isNot(contains('feat_prerequisite')));
     });
 
+    test('dote no repetible elegida dos veces advierte feat_duplicate', () {
+      final warnings = CharacterValidator(repo)
+          .validate(_minimalCharacter(featIds: ['test-feat', 'test-feat']));
+      expect(warnings.map((w) => w.code), contains('feat_duplicate'));
+    });
+
+    test('dos dotes del mismo grupo advierten feat_exclusive_group', () {
+      final repoExclusive = _minimalRepo(
+        featOverrides: {'exclusiveGroup': 'resilient'},
+        extraFeats: const [
+          {
+            'id': 'test-feat-2',
+            'name': 'Dote de prueba 2',
+            'source': 'homebrew',
+            'exclusiveGroup': 'resilient',
+          },
+        ],
+      );
+      final warnings = CharacterValidator(repoExclusive).validate(
+        _minimalCharacter(featIds: ['test-feat', 'test-feat-2']),
+      );
+      expect(
+        warnings.map((w) => w.code),
+        contains('feat_exclusive_group'),
+      );
+    });
+
     test('prerrequisito disyuntivo: basta cumplir una de las dos', () {
       // El PHB 2024 escribe "Fuerza o Destreza 13 o más"; con el mapa
       // conjuntivo esto no se podía expresar sin exigir las dos.
@@ -218,6 +250,144 @@ void main() {
     test('el motor sigue sin bloquear pese a las advertencias', () {
       final c = _minimalCharacter(chosenSkills: const []);
       expect(() => CharacterCompiler(repo).compile(c), returnsNormally);
+    });
+  });
+
+  // La UI consulta estos dos métodos para no ofrecer dotes inelegibles, en vez
+  // de reimplementar la comprobación: son la misma lógica que usa `validate`.
+  group('Prerrequisitos consultables desde afuera', () {
+    late ContentRepository repo;
+    setUp(() => repo = _minimalRepo());
+
+    ComputedSheet sheetOf(ContentRepository r, Character c) =>
+        CharacterCompiler(r).compile(c);
+
+    test('unmetFeatPrerequisite explica la característica que falta', () {
+      final c = _minimalCharacter();
+      final motivo = CharacterValidator(repo).unmetFeatPrerequisite(
+        repo.feat('test-feat')!,
+        c,
+        sheetOf(repo, c),
+      );
+      expect(motivo, 'STR 13');
+    });
+
+    test('unmetFeatPrerequisite devuelve null cuando se cumple', () {
+      final c = _minimalCharacter(assignedScores: {
+        Ability.strength: 13,
+        Ability.dexterity: 10,
+        Ability.constitution: 10,
+        Ability.intelligence: 10,
+        Ability.wisdom: 10,
+        Ability.charisma: 10,
+      });
+      final motivo = CharacterValidator(repo).unmetFeatPrerequisite(
+        repo.feat('test-feat')!,
+        c,
+        sheetOf(repo, c),
+      );
+      expect(motivo, isNull);
+    });
+
+    test('un rasgo de clase puede ser prerrequisito de una dote', () {
+      final withoutFeature = _minimalRepo(featOverrides: {
+        'prerequisite': {'requiredClassFeature': 'Estilo de Combate'},
+      });
+      final c = _minimalCharacter();
+      expect(
+        CharacterValidator(withoutFeature).unmetFeatPrerequisite(
+          withoutFeature.feat('test-feat')!,
+          c,
+          sheetOf(withoutFeature, c),
+        ),
+        contains('Estilo de Combate'),
+      );
+
+      final withFeature = _minimalRepo(
+        featOverrides: {
+          'prerequisite': {'requiredClassFeature': 'Estilo de Combate'},
+        },
+        classFeatures: const [
+          {
+            'level': 1,
+            'name': 'Estilo de Combate',
+            'description': 'Obtienes una dote de estilo de combate.',
+          },
+        ],
+      );
+      expect(
+        CharacterValidator(withFeature).unmetFeatPrerequisite(
+          withFeature.feat('test-feat')!,
+          c,
+          sheetOf(withFeature, c),
+        ),
+        isNull,
+      );
+    });
+
+    test('una dote excluye las demás de su mismo grupo', () {
+      final repoExclusive = _minimalRepo(
+        featOverrides: {'exclusiveGroup': 'resilient'},
+        extraFeats: const [
+          {
+            'id': 'test-feat-2',
+            'name': 'Dote de prueba 2',
+            'source': 'homebrew',
+            'exclusiveGroup': 'resilient',
+          },
+        ],
+      );
+      final c = _minimalCharacter();
+      final motivo = CharacterValidator(repoExclusive).unmetFeatPrerequisite(
+        repoExclusive.feat('test-feat-2')!,
+        c,
+        sheetOf(repoExclusive, c),
+        held: const {'test-feat'},
+      );
+      expect(motivo, contains('resilient'));
+    });
+
+    test('una dote que exige otra dote se evalúa contra las ya tenidas', () {
+      final repoChain = _minimalRepo(featOverrides: {
+        'prerequisite': {
+          'requiredFeatIds': ['base-feat'],
+        },
+      });
+      final validator = CharacterValidator(repoChain);
+      final feat = repoChain.feat('test-feat')!;
+
+      // Sin la dote base: no se puede tomar.
+      final sinBase = _minimalCharacter();
+      expect(
+        validator.unmetFeatPrerequisite(
+            feat, sinBase, sheetOf(repoChain, sinBase)),
+        isNotNull,
+      );
+
+      // `held` permite evaluar una dote que todavía no está elegida contra el
+      // set real de dotes del personaje: es lo que hace el selector.
+      expect(
+        validator.unmetFeatPrerequisite(
+          feat,
+          sinBase,
+          sheetOf(repoChain, sinBase),
+          held: const {'base-feat'},
+        ),
+        isNull,
+      );
+    });
+
+    test('heldFeatIds junta las elegidas y el estilo de combate', () {
+      // `copyWith` no expone fightingStyleId (lo preserva), así que se fija
+      // por JSON.
+      final c = Character.fromJson(
+        _minimalCharacter(featIds: ['test-feat']).toJson()
+          ..['fightingStyleId'] = 'style-feat',
+      );
+      expect(
+        CharacterValidator(repo).heldFeatIds(c),
+        {'test-feat', 'style-feat'},
+      );
     });
   });
 

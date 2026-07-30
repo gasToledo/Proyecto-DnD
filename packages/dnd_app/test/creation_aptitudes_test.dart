@@ -114,4 +114,24 @@ void main() {
     expect(card, findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('no ofrece la dote de origen que ya concede el trasfondo', (
+    tester,
+  ) async {
+    // El Soldado concede Atacante Salvaje. Si el Humano podía elegirla otra vez
+    // quedaba con la dote por dos vías y el rasgo aparecía duplicado en la
+    // ficha. El PHB solo permite repetir las dotes que lo declaran.
+    await gotoAptitudes(tester);
+
+    // La sección existe y ofrece alternativas, así que la ausencia es del
+    // filtro y no de un paso que no llegó a construirse.
+    expect(find.text('Dote de origen'.toUpperCase()), findsOneWidget);
+    final otra = find.text('Robustez');
+    await tester.scrollUntilVisible(otra, 200);
+    await tester.pumpAndSettle();
+    expect(otra, findsOneWidget);
+
+    expect(find.text('Atacante Salvaje'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

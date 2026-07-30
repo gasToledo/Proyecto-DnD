@@ -43,7 +43,7 @@ void main() {
     );
   });
 
-  test('v3 → v4: los cuatro conjuros mal identificados se reescriben', () {
+  test('la migración incluye el paso v3 → v4 de ids históricos', () {
     // Los ids estaban mal, no el contenido: la ficha eligió el conjuro que
     // quería y no debe perderlo porque el pack corrija su identificador.
     final source = {
@@ -67,7 +67,7 @@ void main() {
 
     final migrated = Character.migrateJson(source);
 
-    expect(migrated['schemaVersion'], 4);
+    expect(migrated['schemaVersion'], Character.currentSchemaVersion);
     expect(migrated['cantripIds'], ['sacred-flame']);
     // Los dos de Conjurar intercambian id: ninguno puede migrar dos veces.
     expect(migrated['spellIds'], [
@@ -77,6 +77,40 @@ void main() {
       'conjure-barrage',
       'conjure-volley',
       'cure-wounds',
+    ]);
+  });
+
+  test('v4 → v5: normaliza los cinco ids heredados del catálogo 2014', () {
+    final source = {
+      'schemaVersion': 4,
+      'id': 'v4',
+      'name': 'Cronista',
+      'raceId': 'human',
+      'classId': 'wizard',
+      'backgroundId': 'sage',
+      'assignedScores': const <String, int>{},
+      'cantripIds': const ['toll-the-dead'],
+      'spellIds': const [
+        'feeblemind',
+        'snare',
+        'dispel-good-and-evil',
+        'holy-word',
+        'branding-smite',
+        'magic-missile',
+      ],
+    };
+
+    final migrated = Character.migrateJson(source);
+
+    expect(migrated['schemaVersion'], 5);
+    expect(migrated['cantripIds'], ['toll-the-dead']);
+    expect(migrated['spellIds'], [
+      'befuddlement',
+      'cordon-of-arrows',
+      'dispel-evil-and-good',
+      'divine-word',
+      'shining-smite',
+      'magic-missile',
     ]);
   });
 

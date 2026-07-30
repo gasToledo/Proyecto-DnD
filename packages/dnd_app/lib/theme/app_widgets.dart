@@ -665,6 +665,19 @@ String sourceLabel(ContentSource source) => switch (source) {
   ContentSource.homebrew => 'Propio',
 };
 
+/// Resumen legible de una dote. `Feat` no tiene descripción propia: lo que se
+/// muestra sale de sus rasgos pasivos, y si no tiene ninguno, queda vacío.
+///
+/// Vive acá, y no en una pantalla, porque lo usan tanto el paso de dotes de la
+/// creación como el selector de dote de la subida de nivel.
+String featSummary(Feat feat) {
+  final traits = feat.effects.whereType<PassiveTraitEffect>();
+  if (traits.isEmpty) return '';
+  return traits
+      .map((t) => t.description.isEmpty ? t.name : t.description)
+      .join(' ');
+}
+
 /// Distintivo de procedencia para las tarjetas de selección.
 class SourceBadge extends StatelessWidget {
   final ContentSource source;

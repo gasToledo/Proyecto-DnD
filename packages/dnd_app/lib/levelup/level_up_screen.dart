@@ -15,6 +15,24 @@ enum _AsiKind { improve, feat }
 
 enum _ImproveMode { plusTwo, plusOneTwo }
 
+enum _LevelUpStepKind {
+  overview,
+  hitPoints,
+  subclass,
+  abilityScore,
+  features,
+  spells,
+  review,
+}
+
+class _LevelUpStep {
+  final _LevelUpStepKind kind;
+  final String label;
+  final IconData icon;
+
+  const _LevelUpStep(this.kind, this.label, this.icon);
+}
+
 /// Wizard de subida de nivel (manual, brief §3.D). Elige PG, resuelve el ASI
 /// si corresponde, muestra los rasgos ganados y devuelve el personaje
 /// actualizado. Los rasgos fijos de clase los aplica solo el compilador al
@@ -61,6 +79,8 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   Ability? _abilityA;
   Ability? _abilityB;
   String? _featId;
+  String _featQuery = '';
+  int _currentStep = 0;
 
   int get _hpGain => _hpMethod == _HpMethod.average
       ? averageHitDie(_hitDie)
@@ -99,10 +119,114 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
   void _updateState(VoidCallback update) => setState(update);
 
+  List<_LevelUpStep> get _steps {
+    return [
+      const _LevelUpStep(
+        _LevelUpStepKind.overview,
+        'Resumen',
+        Icons.auto_awesome,
+      ),
+      const _LevelUpStep(
+        _LevelUpStepKind.hitPoints,
+        'Puntos de golpe',
+        Icons.favorite,
+      ),
+      if (_needsSubclass)
+        const _LevelUpStep(_LevelUpStepKind.subclass, 'Subclase', Icons.shield),
+      if (_isAsi)
+        const _LevelUpStep(
+          _LevelUpStepKind.abilityScore,
+          'Mejora o dote',
+          Icons.trending_up,
+        ),
+      if (_gainedFeatures().isNotEmpty)
+        const _LevelUpStep(
+          _LevelUpStepKind.features,
+          'Rasgos',
+          Icons.workspace_premium,
+        ),
+      if (_hasSpellcasting)
+        const _LevelUpStep(
+          _LevelUpStepKind.spells,
+          'Conjuros',
+          Icons.auto_stories,
+        ),
+      const _LevelUpStep(_LevelUpStepKind.review, 'Revisión', Icons.fact_check),
+    ];
+  }
+
+  bool get _hasSpellcasting =>
+      CharacterCompiler(widget.repo).compile(_buildUpdated()).spellcasting !=
+      null;
+
+  _LevelUpStep get _activeStep {
+    final steps = _steps;
+    final index = _currentStep.clamp(0, steps.length - 1);
+    return steps[index];
+  }
+
+  bool get _asiComplete {
+    if (!_isAsi) return true;
+    if (_asiKind == _AsiKind.feat) return _featId != null;
+    if (_abilityA == null) return false;
+    return _impMode == _ImproveMode.plusTwo || _abilityB != null;
+  }
+
+  bool _isStepComplete(_LevelUpStepKind kind) => switch (kind) {
+    _LevelUpStepKind.hitPoints =>
+      _hpMethod == _HpMethod.average || _rolledHp != null,
+    _LevelUpStepKind.subclass => !_needsSubclass || _subclassId != null,
+    _LevelUpStepKind.abilityScore => _asiComplete,
+    _ => true,
+  };
+
+  bool _canReachStep(int target) {
+    if (target <= _currentStep) return true;
+    final steps = _steps;
+    for (var i = 0; i < target; i++) {
+      if (!_isStepComplete(steps[i].kind)) return false;
+    }
+    return true;
+  }
+
+  void _goToStep(int index) {
+    if (!_canReachStep(index)) return;
+    setState(() => _currentStep = index);
+  }
+
+  void _continue() {
+    final steps = _steps;
+    final current = _currentStep.clamp(0, steps.length - 1);
+    if (!_isStepComplete(steps[current].kind)) return;
+    if (steps[current].kind == _LevelUpStepKind.review) {
+      _confirm();
+      return;
+    }
+    setState(() => _currentStep = (current + 1).clamp(0, steps.length - 1));
+  }
+
+  String? get _pendingMessage => switch (_activeStep.kind) {
+    _LevelUpStepKind.hitPoints
+        when _hpMethod == _HpMethod.roll && _rolledHp == null =>
+      'Tirá el dado o elegí el promedio para continuar.',
+    _LevelUpStepKind.subclass when _subclassId == null =>
+      'Elegí una subclase para continuar.',
+    _LevelUpStepKind.abilityScore
+        when _asiKind == _AsiKind.improve && !_asiComplete =>
+      'Completá la mejora de características.',
+    _LevelUpStepKind.abilityScore when _featId == null =>
+      'Elegí una dote para continuar.',
+    _ => null,
+  };
+
   /// Construye el personaje tal como quedará tras confirmar (nivel, ASI/dote,
   /// PG y conjuros re-preparados). Se usa para confirmar y para previsualizar
   /// el lanzamiento al nuevo nivel.
-  Character _buildUpdated() {
+  ///
+  /// [withFeat] en false deja fuera la dote tentativa. El selector lo necesita
+  /// para evaluar prerrequisitos: una dote que sube una característica no debe
+  /// poder habilitarse a sí misma.
+  Character _buildUpdated({bool withFeat = true}) {
     final c = widget.character;
     final asiChoices = List<AsiChoice>.of(c.asiChoices);
     final featIds = List<String>.of(c.featIds);
@@ -112,7 +236,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
         asiChoices.add(
           AsiChoice(level: _newLevel, abilityIncreases: _abilityIncreases),
         );
-      } else if (_featId != null) {
+      } else if (withFeat && _featId != null) {
         // La dote solo se agrega si ya se eligió: `_buildUpdated` corre en cada
         // build (previsualización de conjuros), incluso antes de elegir dote.
         asiChoices.add(AsiChoice(level: _newLevel, featId: _featId));
@@ -180,107 +304,83 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   /// Paso de elección de subclase (solo al alcanzar el nivel de subclase).
   @override
   Widget build(BuildContext context) {
-    final newFeatures = _gainedFeatures();
+    final steps = _steps;
+    if (_currentStep >= steps.length) {
+      _currentStep = steps.length - 1;
+    }
+    final active = steps[_currentStep];
+    final complete = _isStepComplete(active.kind);
+    final isReview = active.kind == _LevelUpStepKind.review;
+
     return Scaffold(
-      appBar: AppBar(title: Text('Subir a nivel $_newLevel')),
-      body: PageBody(
-        children: [
-          Eyebrow('Puntos de golpe (dado d$_hitDie)'),
-          SegmentedButton<_HpMethod>(
-            segments: [
-              ButtonSegment(
-                value: _HpMethod.average,
-                label: Text('Promedio (${averageHitDie(_hitDie)})'),
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Subir a nivel $_newLevel'),
+            Text(
+              '${widget.character.name} · ${_klass?.name ?? widget.character.classId}',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-              const ButtonSegment(value: _HpMethod.roll, label: Text('Tirar')),
-            ],
-            selected: {_hpMethod},
-            onSelectionChanged: (s) => setState(() {
-              _hpMethod = s.first;
-              _rolledHp = null;
-            }),
-          ),
-          if (_hpMethod == _HpMethod.roll)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () =>
-                        setState(() => _rolledHp = Dice().rollHitDie(_hitDie)),
-                    icon: const Icon(Icons.casino),
-                    label: const Text('Tirar dado'),
-                  ),
-                  const SizedBox(width: 12),
-                  if (_rolledHp != null)
-                    Text(
-                      'Resultado: $_rolledHp',
-                      style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 18,
-                        color: context.palette.gold,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 8),
-          Text(
-            'PG ganados: +$_hpGain (más tu mod. de CON)',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          _buildSubclassSection(),
-          if (_isAsi) _buildAsi() else const SizedBox.shrink(),
-          if (newFeatures.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Eyebrow('Rasgos ganados a nivel $_newLevel'),
-            DenseRows(
-              children: [
-                for (final f in newFeatures)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          f.name,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        if (f.description.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            f.description,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-              ],
             ),
           ],
-          _buildSpellSection(),
+        ),
+        actions: [
+          _LevelBadge(from: widget.character.level, to: _newLevel),
+          const SizedBox(width: 12),
         ],
       ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 720;
+          return Column(
+            children: [
+              _LevelUpStepper(
+                steps: steps,
+                current: _currentStep,
+                compact: compact,
+                canReach: _canReachStep,
+                onSelected: _goToStep,
+              ),
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1060),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 240),
+                      child: SingleChildScrollView(
+                        key: ValueKey(active.kind),
+                        padding: EdgeInsets.fromLTRB(
+                          compact ? 18 : 30,
+                          22,
+                          compact ? 18 : 30,
+                          28,
+                        ),
+                        child: _buildStep(active.kind),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: FilledButton.icon(
-            onPressed: _canConfirm ? _confirm : null,
-            icon: const Icon(Icons.check),
-            label: Text('Confirmar nivel $_newLevel'),
-          ),
+        child: _LevelUpFooter(
+          current: _currentStep,
+          total: steps.length,
+          pendingMessage: _pendingMessage,
+          canContinue: complete && (!isReview || _canConfirm),
+          isReview: isReview,
+          level: _newLevel,
+          onBack: _currentStep == 0
+              ? null
+              : () => setState(() => _currentStep--),
+          onContinue: _continue,
         ),
       ),
     );

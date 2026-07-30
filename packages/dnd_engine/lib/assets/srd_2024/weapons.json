@@ -354,5 +354,35 @@
     "damageType": "piercing",
     "properties": ["ammunition", "heavy", "two-handed", "ranged"],
     "mastery": "slow"
+  },
+  {
+    "id": "blowgun",
+    "name": "Cerbatana",
+    "source": "phb_2024",
+    "category": "martial",
+    "damageDice": "1",
+    "damageType": "piercing",
+    "properties": ["ammunition", "loading", "ranged"],
+    "mastery": "vex"
+  },
+  {
+    "id": "musket",
+    "name": "Mosquete",
+    "source": "phb_2024",
+    "category": "martial",
+    "damageDice": "1d12",
+    "damageType": "piercing",
+    "properties": ["ammunition", "loading", "two-handed", "ranged"],
+    "mastery": "slow"
+  },
+  {
+    "id": "pistol",
+    "name": "Pistola",
+    "source": "phb_2024",
+    "category": "martial",
+    "damageDice": "1d10",
+    "damageType": "piercing",
+    "properties": ["ammunition", "loading", "ranged"],
+    "mastery": "vex"
   }
 ]

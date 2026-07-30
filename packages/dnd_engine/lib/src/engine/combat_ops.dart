@@ -41,7 +41,8 @@ class CombatOps {
     c.tempHp = max(0, max(c.tempHp, value));
   }
 
-  /// Descanso corto: recupera los recursos que recargan en descanso corto. Si el
+  /// Descanso corto: recupera por completo los recursos de recarga corta y la
+  /// cantidad declarada por los recursos de recuperación parcial. Si el
   /// personaje usa Magia de Pacto (Brujo), también recupera sus espacios.
   static void shortRest(
     CombatState c,
@@ -49,7 +50,12 @@ class CombatOps {
     Spellcasting? spellcasting,
   }) {
     for (final r in resources) {
-      if (r.recharge == RechargeOn.shortRest) c.resourceUsage[r.id] = 0;
+      if (r.recharge == RechargeOn.shortRest) {
+        c.resourceUsage[r.id] = 0;
+      } else if (r.shortRestRecovery > 0) {
+        final used = c.resourceUsage[r.id] ?? 0;
+        c.resourceUsage[r.id] = max(0, used - r.shortRestRecovery);
+      }
     }
     if (spellcasting?.progression == CasterProgression.pact) {
       c.spellSlotsUsed.clear();

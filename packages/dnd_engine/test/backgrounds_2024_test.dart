@@ -73,7 +73,16 @@ void main() {
     }
   });
 
-  test('Iniciado en la Magia (Druida) es repetible con lista distinta', () {
-    expect(feat('magic-initiate-druid').repeatable, isTrue);
+  test('cada variante de Iniciado en la Magia se elige una sola vez', () {
+    // La dote canónica es repetible solo si se escoge una lista diferente.
+    // Como el catálogo modela cada lista como una dote separada, cada variante
+    // individual debe ser no repetible.
+    for (final id in [
+      'magic-initiate-cleric',
+      'magic-initiate-druid',
+      'magic-initiate-wizard',
+    ]) {
+      expect(feat(id).repeatable, isFalse, reason: id);
+    }
   });
 }

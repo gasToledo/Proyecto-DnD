@@ -113,7 +113,10 @@
         "type": "armorClassBonus",
         "amount": 1
       }
-    ]
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
   },
   {
     "id": "fs-dueling",
@@ -126,7 +129,10 @@
         "name": "Duelo",
         "description": "+2 al daño con un arma cuerpo a cuerpo a una mano y sin otra arma."
       }
-    ]
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
   },
   {
     "id": "fs-archery",
@@ -139,7 +145,10 @@
         "name": "Arquería",
         "description": "+2 a las tiradas de ataque con armas a distancia."
       }
-    ]
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
   },
   {
     "id": "fs-great-weapon",
@@ -152,7 +161,10 @@
         "name": "Arma Grande",
         "description": "Al tirar daño con un arma cuerpo a cuerpo que empuñás con ambas manos, tratás cualquier 1 o 2 en los dados de daño como un 3. El arma debe tener la propiedad a dos manos o versátil."
       }
-    ]
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
   },
   {
     "id": "great-weapon-master",
@@ -204,9 +216,10 @@
   },
   {
     "id": "resilient-wisdom",
-    "name": "Resistente (Sabiduría)",
+    "name": "Resiliente (Sabiduría)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "resilient",
     "effects": [
       {
         "type": "abilityScoreBonus",
@@ -219,7 +232,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente (Sabiduría)",
+        "name": "Resiliente (Sabiduría)",
         "description": "Ganas competencia en salvaciones de Sabiduría."
       }
     ],
@@ -421,7 +434,7 @@
   },
   {
     "id": "durable",
-    "name": "Resistente Físico",
+    "name": "Resistente",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -433,7 +446,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente Físico",
+        "name": "Resistente",
         "description": "Al gastar dados de golpe recuperas más PG y te estabilizas mejor."
       }
     ],
@@ -446,7 +459,7 @@
     "name": "Adepto Elemental",
     "source": "phb_2024",
     "category": "general",
-    "repeatable": false,
+    "repeatable": true,
     "effects": [
       {
         "type": "passiveTrait",
@@ -656,7 +669,7 @@
     "name": "Iniciado en la Magia (Mago)",
     "source": "srd_2024",
     "category": "origin",
-    "repeatable": true,
+    "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
@@ -670,7 +683,7 @@
     "name": "Iniciado en la Magia (Druida)",
     "source": "phb_2024",
     "category": "origin",
-    "repeatable": true,
+    "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
@@ -697,7 +710,7 @@
     "name": "Iniciado en la Magia (Clérigo)",
     "source": "srd_2024",
     "category": "origin",
-    "repeatable": true,
+    "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
@@ -727,31 +740,6 @@
     "prerequisite": {
       "minLevel": 4,
       "requiredProficiency": "medium"
-    }
-  },
-  {
-    "id": "mobile",
-    "name": "Ágil",
-    "source": "phb_2024",
-    "category": "general",
-    "repeatable": false,
-    "effects": [
-      {
-        "type": "speedBonus",
-        "feet": 10
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Ágil",
-        "description": "El terreno difícil no te frena al Correr; tras atacar cuerpo a cuerpo a una criatura, no provocas ataques de oportunidad de ella."
-      }
-    ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "dexterity": 13,
-        "constitution": 13
-      }
     }
   },
   {
@@ -895,9 +883,10 @@
   },
   {
     "id": "resilient-constitution",
-    "name": "Resistente (Constitución)",
+    "name": "Resiliente (Constitución)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "resilient",
     "repeatable": false,
     "effects": [
       {
@@ -911,7 +900,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente (Constitución)",
+        "name": "Resiliente (Constitución)",
         "description": "Ganas competencia en salvaciones de Constitución (clave para mantener concentración)."
       }
     ],
@@ -921,9 +910,10 @@
   },
   {
     "id": "resilient-dexterity",
-    "name": "Resistente (Destreza)",
+    "name": "Resiliente (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "resilient",
     "repeatable": false,
     "effects": [
       {
@@ -937,7 +927,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Resistente (Destreza)",
+        "name": "Resiliente (Destreza)",
         "description": "Ganas competencia en salvaciones de Destreza."
       }
     ],
@@ -1205,6 +1195,452 @@
     "prerequisite": {
       "minLevel": 4,
       "requiredProficiency": "spellcasting"
+    }
+  },
+  {
+    "id": "ability-score-improvement",
+    "name": "Mejora de Característica",
+    "source": "phb_2024",
+    "category": "general",
+    "repeatable": true,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Mejora de Característica",
+        "description": "Aumenta una característica en 2 o dos características en 1 cada una, hasta un máximo de 20. La pantalla de subida de nivel registra esta elección mediante la opción Mejorar características."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "martial-weapon-training",
+    "name": "Entrenamiento con Armas Marciales",
+    "source": "phb_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "weaponProficiency",
+        "category": "martial"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Mejora de Característica",
+        "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "weapon-master",
+    "name": "Maestro de Armas",
+    "source": "phb_2024",
+    "category": "general",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Mejora de Característica",
+        "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Propiedad de Maestría",
+        "description": "Puedes usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Puedes cambiar el tipo de arma tras un descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "fs-blind-fighting",
+    "name": "Lucha a Ciegas",
+    "source": "phb_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Lucha a Ciegas",
+        "description": "Tienes visión ciega hasta 10 pies."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
+  },
+  {
+    "id": "fs-interception",
+    "name": "Intercepción",
+    "source": "phb_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Intercepción",
+        "description": "Como reacción, cuando una criatura visible acierta a otra criatura a 5 pies de ti, reduces el daño en 1d10 más tu bonificador por competencia. Debes llevar un escudo o empuñar un arma sencilla o marcial."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
+  },
+  {
+    "id": "fs-protection",
+    "name": "Protección",
+    "source": "phb_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Protección",
+        "description": "Con un escudo, puedes usar una reacción para imponer desventaja a un ataque contra otra criatura a 5 pies de ti y a los demás ataques contra ella hasta tu siguiente turno mientras permanezca a tu lado."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
+  },
+  {
+    "id": "fs-thrown-weapon-fighting",
+    "name": "Combate con Armas Arrojadizas",
+    "source": "phb_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Combate con Armas Arrojadizas",
+        "description": "Cuando aciertas con un ataque a distancia usando un arma arrojadiza, sumas +2 a la tirada de daño."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
+  },
+  {
+    "id": "fs-two-weapon-fighting",
+    "name": "Combate con Dos Armas",
+    "source": "phb_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Combate con Dos Armas",
+        "description": "Cuando haces el ataque extra de la propiedad Ligera, puedes sumar tu modificador por característica al daño si no lo sumabas ya."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
+  },
+  {
+    "id": "fs-unarmed-fighting",
+    "name": "Combate sin Armas",
+    "source": "phb_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Combate sin Armas",
+        "description": "Tus ataques sin armas causan 1d6 más Fuerza, o 1d8 si no empuñas armas ni llevas escudo. Al inicio de tu turno puedes causar 1d4 de daño contundente a una criatura agarrada por ti."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate"
+    }
+  },
+  {
+    "id": "resilient-strength",
+    "name": "Resiliente (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "repeatable": false,
+    "exclusiveGroup": "resilient",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "savingThrowProficiency",
+        "ability": "strength"
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "resilient-intelligence",
+    "name": "Resiliente (Inteligencia)",
+    "source": "phb_2024",
+    "category": "general",
+    "repeatable": false,
+    "exclusiveGroup": "resilient",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "intelligence",
+        "amount": 1
+      },
+      {
+        "type": "savingThrowProficiency",
+        "ability": "intelligence"
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "resilient-charisma",
+    "name": "Resiliente (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "repeatable": false,
+    "exclusiveGroup": "resilient",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "charisma",
+        "amount": 1
+      },
+      {
+        "type": "savingThrowProficiency",
+        "ability": "charisma"
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "boon-of-fortitude",
+    "name": "Don de la Fortaleza",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "bonusMaxHpFlat",
+        "amount": 40
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Mejora de Característica",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30."
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Salud Fortalecida",
+        "description": "Tus puntos de golpe máximos aumentan en 40. Una vez por turno, cuando recuperas puntos de golpe, recuperas además tu modificador por Constitución."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-skill",
+    "name": "Don de la Habilidad",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Don de la Habilidad",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Ganas competencia en todas las habilidades y pericia en una habilidad en la que no la tuvieras."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-combat-prowess",
+    "name": "Don de la Pericia en Combate",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Precisión sin Igual",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Cuando fallas una tirada de ataque, puedes convertirla en un impacto; vuelves a poder hacerlo al inicio de tu siguiente turno."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-recovery",
+    "name": "Don de la Recuperación",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Don de la Recuperación",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Una vez por descanso largo, al caer a 0 PG quedas con 1 y recuperas la mitad de tus PG máximos. También tienes una reserva diaria de 10d10 que puedes gastar como acción adicional para curarte."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-energy-resistance",
+    "name": "Don de la Resistencia a Energías",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Resistencias a Energías",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Elige dos resistencias entre ácido, frío, fuego, necrótico, psíquico, radiante, relámpago, trueno y veneno; puedes cambiarlas tras un descanso largo. Cuando recibes uno de esos daños, puedes redirigir energía con tu reacción."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-speed",
+    "name": "Don de la Velocidad",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "speedBonus",
+        "feet": 30
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Don de la Velocidad",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tu velocidad aumenta en 30 pies y, como acción adicional, puedes Destrabarte y finalizar el estado Agarrado sobre ti."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-truesight",
+    "name": "Don de la Visión Verdadera",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Visión Verdadera",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tienes visión verdadera hasta 60 pies."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-irresistible-offense",
+    "name": "Don del Ataque Imparable",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Ataque Imparable",
+        "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 30. Tu daño contundente, cortante y perforante ignora resistencia. Al sacar 20 en una tirada de ataque, infliges daño adicional igual a la puntuación aumentada."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-fate",
+    "name": "Don del Destino",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Mejorar el Destino",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tras el éxito o fallo de una prueba con d20 de una criatura a 60 pies, puedes sumar o restar 2d4. Recuperas el uso al tirar iniciativa o finalizar un descanso corto o largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-the-night-spirit",
+    "name": "Don del Espíritu de la Noche",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Espíritu de la Noche",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. En luz tenue u oscuridad, puedes volverte Invisible como acción adicional hasta que actúes y tienes resistencia a todo daño salvo psíquico y radiante."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
+    }
+  },
+  {
+    "id": "boon-of-spell-recall",
+    "name": "Don del Recuerdo de Conjuros",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Lanzamiento Gratuito",
+        "description": "Aumenta Inteligencia, Sabiduría o Carisma en 1, hasta un máximo de 30. Al lanzar un conjuro con un espacio de nivel 1 a 4, tira 1d4; si coincide con el nivel del espacio, no lo gastas."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19,
+      "requiredProficiency": "spellcasting"
+    }
+  },
+  {
+    "id": "boon-of-dimensional-travel",
+    "name": "Don del Viaje Dimensional",
+    "source": "phb_2024",
+    "category": "epic-boon",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Pasos Desplazadores",
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Inmediatamente después de realizar la acción de Atacar o Magia, puedes teletransportarte hasta 30 pies a un espacio desocupado que veas."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 19
     }
   },
   {

@@ -17,6 +17,7 @@ const _spellClasses = {
   'warlock': 'Brujo',
   'paladin': 'Paladín',
   'ranger': 'Explorador',
+  'artificer': 'Artífice',
 };
 
 class _SpellFormState extends State<SpellForm> {

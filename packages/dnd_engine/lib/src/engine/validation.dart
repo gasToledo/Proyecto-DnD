@@ -261,20 +261,51 @@ class CharacterValidator {
 
     _validateSpells(c, sheet, w);
 
-    final chosenFeatIds = <String?>[
-      background?.originFeatId,
+    final heldList = <String?>[
+      repo.background(c.backgroundId)?.originFeatId,
       ...c.featIds,
       c.fightingStyleId,
-    ];
+    ].whereType<String>().toList();
+    final held = heldList.toSet();
+
+    final counts = <String, int>{};
+    for (final id in heldList) {
+      counts[id] = (counts[id] ?? 0) + 1;
+    }
+    for (final entry in counts.entries.where((e) => e.value > 1)) {
+      final feat = repo.feat(entry.key);
+      if (feat != null && !feat.repeatable) {
+        w.add(ValidationWarning(
+          'feat_duplicate',
+          '${feat.name}: esta dote no se puede elegir más de una vez.',
+        ));
+      }
+    }
+
+    final exclusiveGroups = <String, Set<String>>{};
+    for (final id in held) {
+      final feat = repo.feat(id);
+      final group = feat?.effectiveExclusiveGroup;
+      if (group != null) {
+        exclusiveGroups.putIfAbsent(group, () => <String>{}).add(id);
+      }
+    }
+    for (final entry
+        in exclusiveGroups.entries.where((e) => e.value.length > 1)) {
+      final names =
+          entry.value.map((id) => repo.feat(id)?.name ?? id).join(', ');
+      w.add(ValidationWarning(
+        'feat_exclusive_group',
+        'Estas dotes son mutuamente excluyentes: $names.',
+      ));
+    }
+
     // El set completo se necesita para las dotes que exigen otra dote: una
     // marca mayor mira si la marca base también está elegida.
-    final heldFeatIds = chosenFeatIds.whereType<String>().toSet();
-    for (final id in chosenFeatIds) {
-      if (id == null) continue;
+    for (final id in held) {
       final feat = repo.feat(id);
-      final prereq = feat?.prerequisite;
-      if (feat == null || prereq == null || prereq.isEmpty) continue;
-      final missing = _unmetPrerequisite(prereq, c, sheet, heldFeatIds);
+      if (feat == null) continue;
+      final missing = unmetFeatPrerequisite(feat, c, sheet, held: held);
       if (missing != null) {
         w.add(ValidationWarning(
           'feat_prerequisite',
@@ -361,6 +392,40 @@ class CharacterValidator {
     }
   }
 
+  /// Ids de todas las dotes que el personaje ya tiene: la de origen del
+  /// trasfondo, las elegidas (incluida la que concede la especie) y el estilo
+  /// de combate. Es lo que hay que mirar para las dotes que exigen otra dote.
+  Set<String> heldFeatIds(Character c) => <String?>[
+        repo.background(c.backgroundId)?.originFeatId,
+        ...c.featIds,
+        c.fightingStyleId,
+      ].whereType<String>().toSet();
+
+  /// Descripción del primer prerrequisito de [feat] que [c] no cumple, o null
+  /// si los cumple todos (o si la dote no exige nada).
+  ///
+  /// La UI la usa para no ofrecer dotes inelegibles; `validate` la usa para
+  /// avisar sobre las que ya están elegidas. Ambas comparten esta única
+  /// implementación: las reglas no se duplican en la app.
+  ///
+  /// [held] permite pasar el set ya calculado cuando se evalúan muchas dotes
+  /// seguidas, y también evaluar una dote todavía **no** elegida sin que se
+  /// cuente a sí misma.
+  String? unmetFeatPrerequisite(Feat feat, Character c, ComputedSheet sheet,
+      {Set<String>? held}) {
+    final heldIds = held ?? heldFeatIds(c);
+    final exclusiveGroup = feat.effectiveExclusiveGroup;
+    if (exclusiveGroup != null &&
+        heldIds.any((id) =>
+            id != feat.id &&
+            repo.feat(id)?.effectiveExclusiveGroup == exclusiveGroup)) {
+      return 'no tener otra dote del grupo "$exclusiveGroup"';
+    }
+    final prereq = feat.prerequisite;
+    if (prereq == null || prereq.isEmpty) return null;
+    return _unmetPrerequisite(prereq, c, sheet, heldIds);
+  }
+
   /// Devuelve una descripción del primer prerrequisito incumplido, o null si
   /// se cumplen todos.
   String? _unmetPrerequisite(FeatPrerequisite prereq, Character c,
@@ -395,6 +460,13 @@ class CharacterValidator {
     if (reqCategory != null &&
         !heldFeatIds.any((id) => repo.feat(id)?.category == reqCategory)) {
       return 'alguna dote de categoría "$reqCategory"';
+    }
+    final reqFeature = prereq.requiredClassFeature;
+    if (reqFeature != null) {
+      final has = repo.characterClass(c.classId)?.features.any((feature) =>
+              feature.level <= c.level && feature.name == reqFeature) ??
+          false;
+      if (!has) return 'el rasgo de clase "$reqFeature"';
     }
     if (prereq.minLevel != null && c.level < prereq.minLevel!) {
       return 'nivel ${prereq.minLevel}';

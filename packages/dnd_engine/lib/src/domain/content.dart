@@ -415,6 +415,11 @@ class FeatPrerequisite {
   /// sin repetir las trece.
   final String? requiredFeatCategory;
 
+  /// Nombre de un rasgo de clase que debe haber obtenido el personaje.
+  /// Permite expresar requisitos como "rasgo Estilo de combate" sin fingir
+  /// que se trata de una competencia.
+  final String? requiredClassFeature;
+
   final int? minLevel;
 
   const FeatPrerequisite({
@@ -423,6 +428,7 @@ class FeatPrerequisite {
     this.requiredProficiency,
     this.requiredFeatIds = const [],
     this.requiredFeatCategory,
+    this.requiredClassFeature,
     this.minLevel,
   });
 
@@ -432,6 +438,7 @@ class FeatPrerequisite {
       requiredProficiency == null &&
       requiredFeatIds.isEmpty &&
       requiredFeatCategory == null &&
+      requiredClassFeature == null &&
       minLevel == null;
 
   Map<String, dynamic> toJson() => {
@@ -440,6 +447,7 @@ class FeatPrerequisite {
         'requiredProficiency': requiredProficiency,
         'requiredFeatIds': requiredFeatIds,
         'requiredFeatCategory': requiredFeatCategory,
+        'requiredClassFeature': requiredClassFeature,
         'minLevel': minLevel,
       };
 
@@ -451,6 +459,7 @@ class FeatPrerequisite {
             .map((e) => e as String)
             .toList(),
         requiredFeatCategory: j['requiredFeatCategory'] as String?,
+        requiredClassFeature: j['requiredClassFeature'] as String?,
         minLevel: j['minLevel'] as int?,
       );
 }
@@ -475,6 +484,7 @@ class Feat {
   final ContentSource source;
   final String category;
   final bool repeatable;
+  final String? exclusiveGroup;
   final List<Effect> effects;
   final FeatPrerequisite? prerequisite;
 
@@ -484,6 +494,7 @@ class Feat {
     required this.source,
     this.category = 'general',
     this.repeatable = false,
+    this.exclusiveGroup,
     this.effects = const [],
     this.prerequisite,
   });
@@ -494,6 +505,7 @@ class Feat {
         'source': source.toJson(),
         'category': category,
         'repeatable': repeatable,
+        if (exclusiveGroup != null) 'exclusiveGroup': exclusiveGroup,
         'effects': effects.map((e) => e.toJson()).toList(),
         'prerequisite': prerequisite?.toJson(),
       };
@@ -504,12 +516,17 @@ class Feat {
         source: ContentSource.fromJson(j['source'] as String?),
         category: j['category'] as String? ?? 'general',
         repeatable: j['repeatable'] as bool? ?? false,
+        exclusiveGroup: j['exclusiveGroup'] as String?,
         effects: Effect.listFromJson(j['effects']),
         prerequisite: j['prerequisite'] == null
             ? null
             : FeatPrerequisite.fromJson(
                 (j['prerequisite'] as Map).cast<String, dynamic>()),
       );
+
+  /// Las marcas dracónicas son mutuamente excluyentes por regla de Forge.
+  String? get effectiveExclusiveGroup =>
+      exclusiveGroup ?? (category == 'dragonmark' ? 'dragonmark' : null);
 }
 
 class Weapon {

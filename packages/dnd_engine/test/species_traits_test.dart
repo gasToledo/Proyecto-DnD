@@ -53,7 +53,7 @@ void main() {
 
     test('no tiene Complexión Poderosa: es rasgo del Goliat', () {
       expect(traitNames('orc'), isNot(contains('Complexión Poderosa')));
-      expect(traitNames('goliath'), contains('Complexión Poderosa'));
+      expect(traitNames('goliath'), contains('Constitución Poderosa'));
     });
 
     test('Descarga de Adrenalina se recupera en descanso corto o largo', () {
@@ -78,6 +78,27 @@ void main() {
       final d = traitOf('aasimar', 'Manos Sanadoras');
       expect(d, contains('d4'));
       expect(d, contains('competencia'));
+    });
+  });
+
+  group('Tiefling', () {
+    test('usa el nombre legible en el selector de especie', () {
+      expect(repo.race('tiefling')!.name, 'Tiefling');
+    });
+  });
+
+  group('Goliat', () {
+    test('Constitución Poderosa usa la regla 2024', () {
+      final d = traitOf('goliath', 'Constitución Poderosa');
+      expect(d, contains('terminar el estado agarrado'));
+      expect(d, contains('capacidad de carga'));
+      expect(d, isNot(contains('empujar')));
+    });
+
+    test('Forma Grande concede Fuerza y velocidad', () {
+      final d = traitOf('goliath', 'Forma Grande (nivel 5)');
+      expect(d, contains('ventaja en las pruebas de Fuerza'));
+      expect(d, contains('velocidad aumenta 10 pies'));
     });
   });
 }

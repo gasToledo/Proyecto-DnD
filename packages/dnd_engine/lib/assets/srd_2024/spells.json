@@ -46,7 +46,8 @@
     "description": "Ataque de conjuro cuerpo a cuerpo; 1d8 de relámpago y el objetivo no puede usar reacciones hasta su próximo turno. Ventaja si lleva metal.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -99,7 +100,8 @@
       "wizard",
       "sorcerer",
       "bard",
-      "warlock"
+      "warlock",
+      "artificer"
     ]
   },
   {
@@ -115,7 +117,8 @@
     "concentration": true,
     "classes": [
       "cleric",
-      "druid"
+      "druid",
+      "artificer"
     ],
     "description": "El objetivo suma 1d4 a una prueba de característica a su elección."
   },
@@ -168,7 +171,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -185,7 +189,8 @@
       "wizard",
       "sorcerer",
       "cleric",
-      "bard"
+      "bard",
+      "artificer"
     ],
     "description": "Un objeto emite luz brillante en 20 pies y tenue otros 20. Salvación de DES si es sobre una criatura."
   },
@@ -203,7 +208,8 @@
       "wizard",
       "sorcerer",
       "bard",
-      "warlock"
+      "warlock",
+      "artificer"
     ],
     "description": "Crea una mano espectral que manipula objetos de hasta 10 libras a distancia."
   },
@@ -223,7 +229,9 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard"
+      "bard",
+      "druid",
+      "artificer"
     ]
   },
   {
@@ -241,7 +249,8 @@
     "description": "Tocas a una criatura con 0 PG y la estabilizas. También afecta a muertos vivientes con salvación.",
     "classes": [
       "cleric",
-      "druid"
+      "druid",
+      "artificer"
     ]
   },
   {
@@ -275,7 +284,8 @@
       "wizard",
       "sorcerer",
       "bard",
-      "warlock"
+      "warlock",
+      "artificer"
     ],
     "description": "Pequeños efectos mágicos menores: chispas, limpiar o ensuciar, sabores, etc."
   },
@@ -308,7 +318,8 @@
     "duration": "Instantánea",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ],
     "description": "Ataque de conjuro a distancia; 1d8 de daño por frío y reduce la velocidad del objetivo 10 pies."
   },
@@ -324,7 +335,8 @@
     "duration": "Instantánea",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ],
     "description": "Ataque de conjuro a distancia; 1d10 de daño por fuego. Escala a niveles 5, 11 y 17."
   },
@@ -364,7 +376,8 @@
     "description": "El objetivo suma 1d4 a una tirada de salvación de su elección dentro del minuto. Concentración.",
     "classes": [
       "cleric",
-      "druid"
+      "druid",
+      "artificer"
     ]
   },
   {
@@ -384,7 +397,8 @@
       "wizard",
       "sorcerer",
       "druid",
-      "warlock"
+      "warlock",
+      "artificer"
     ]
   },
   {
@@ -402,7 +416,8 @@
     "description": "Arrojas una burbuja ácida; hasta dos criaturas cercanas hacen salvación de DES o reciben 1d6 de ácido. Escala por nivel.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -492,7 +507,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -530,7 +546,8 @@
       "druid",
       "bard",
       "paladin",
-      "ranger"
+      "ranger",
+      "artificer"
     ],
     "description": "Restaura 2d8 + mod. de lanzamiento PG (+2d8 por espacio superior)."
   },
@@ -553,7 +570,9 @@
       "druid",
       "bard",
       "paladin",
-      "ranger"
+      "ranger",
+      "warlock",
+      "artificer"
     ],
     "description": "Percibes la presencia de magia en 30 pies y su escuela. Ritual."
   },
@@ -573,7 +592,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -662,7 +682,8 @@
     "concentration": true,
     "classes": [
       "druid",
-      "bard"
+      "bard",
+      "artificer"
     ],
     "description": "Cubo de 20 pies; salvación de DES o los objetivos brillan y dan ventaja a los ataques contra ellos."
   },
@@ -681,7 +702,8 @@
     "description": "Cubres un cuadrado de 10 pies de grasa resbalosa; quien esté o entre hace salvación de DES o cae derribado.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -699,7 +721,8 @@
     "description": "Aprendes las propiedades mágicas de un objeto que tocas y si porta una maldición conocida.",
     "classes": [
       "wizard",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -898,7 +921,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "warlock"
+      "warlock",
+      "artificer"
     ]
   },
   {
@@ -915,7 +939,8 @@
     "ritual": false,
     "description": "Protege a una criatura: quien quiera atacarla debe superar una salvación de SAB o elegir otro objetivo.",
     "classes": [
-      "cleric"
+      "cleric",
+      "artificer"
     ]
   },
   {
@@ -954,7 +979,8 @@
       "wizard",
       "bard",
       "druid",
-      "ranger"
+      "ranger",
+      "artificer"
     ]
   },
   {
@@ -990,7 +1016,9 @@
       "cleric",
       "paladin",
       "bard",
-      "ranger"
+      "ranger",
+      "druid",
+      "artificer"
     ]
   },
   {
@@ -1007,9 +1035,9 @@
     "ritual": false,
     "description": "Calientas al rojo un objeto metálico; quien lo porte recibe 2d8 de fuego y puede soltarlo. Concentración. Escala.",
     "classes": [
-      "wizard",
       "druid",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -1045,7 +1073,8 @@
     "description": "Tu silueta se vuelve borrosa; los ataques contra ti tienen desventaja (salvo que el atacante no dependa de la vista). Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -1103,7 +1132,8 @@
       "wizard",
       "sorcerer",
       "bard",
-      "warlock"
+      "warlock",
+      "artificer"
     ],
     "description": "El objetivo se vuelve invisible hasta que ataque o lance un conjuro. +1 objetivo por espacio superior."
   },
@@ -1122,7 +1152,8 @@
     "description": "Una criatura u objeto flota hasta 20 pies y permanece suspendido. Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -1193,7 +1224,8 @@
     "ritual": false,
     "description": "Hasta seis criaturas recuperan 2d8 + tu característica de conjuro en PG. Escala.",
     "classes": [
-      "cleric"
+      "cleric",
+      "paladin"
     ]
   },
   {
@@ -1212,7 +1244,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "druid"
+      "druid",
+      "ranger"
     ]
   },
   {
@@ -1266,7 +1299,9 @@
       "sorcerer",
       "cleric",
       "druid",
-      "bard"
+      "bard",
+      "ranger",
+      "artificer"
     ]
   },
   {
@@ -1284,7 +1319,8 @@
       "druid",
       "bard",
       "paladin",
-      "ranger"
+      "ranger",
+      "artificer"
     ],
     "description": "Termina una enfermedad o un estado: cegado, ensordecido, paralizado o envenenado."
   },
@@ -1322,7 +1358,8 @@
     "description": "Telarañas llenan un cubo de 20 pies (terreno difícil); quien entre hace salvación de DES o queda apresado. Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -1342,7 +1379,7 @@
       "wizard",
       "sorcerer",
       "warlock",
-      "druid"
+      "artificer"
     ]
   },
   {
@@ -1361,7 +1398,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -1381,7 +1419,8 @@
       "wizard",
       "sorcerer",
       "druid",
-      "ranger"
+      "ranger",
+      "artificer"
     ]
   },
   {
@@ -1470,7 +1509,9 @@
       "druid",
       "bard",
       "paladin",
-      "warlock"
+      "ranger",
+      "warlock",
+      "artificer"
     ],
     "description": "Termina conjuros de nivel 3 o inferior sobre un objetivo; niveles superiores requieren prueba de característica."
   },
@@ -1641,7 +1682,8 @@
     "ritual": false,
     "description": "Hasta seis criaturas recuperan 2d4 + tu característica de conjuro en PG. Escala.",
     "classes": [
-      "cleric"
+      "cleric",
+      "bard"
     ]
   },
   {
@@ -1679,7 +1721,8 @@
     "description": "El objetivo dobla su velocidad, gana +2 CA, ventaja en salvaciones de DES y una acción limitada extra. Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -1700,7 +1743,8 @@
       "sorcerer",
       "cleric",
       "druid",
-      "ranger"
+      "ranger",
+      "artificer"
     ]
   },
   {
@@ -1738,7 +1782,8 @@
     "description": "Hasta seis criaturas (salvación de SAB) reducen velocidad y CA, y actúan más lento. Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "bard"
     ]
   },
   {
@@ -1776,7 +1821,8 @@
       "wizard",
       "sorcerer",
       "druid",
-      "ranger"
+      "ranger",
+      "artificer"
     ]
   },
   {
@@ -1793,7 +1839,8 @@
       "cleric",
       "paladin",
       "druid",
-      "ranger"
+      "ranger",
+      "artificer"
     ],
     "description": "Devuelve la vida a una criatura muerta hace menos de 1 minuto, con 1 PG. Requiere diamantes por 300 po."
   },
@@ -1849,7 +1896,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "warlock"
+      "warlock",
+      "artificer"
     ],
     "description": "El objetivo gana velocidad de vuelo de 60 pies. +1 objetivo por espacio superior."
   },
@@ -1868,7 +1916,7 @@
     "description": "Manifiestas el peor miedo de una criatura; salvación de SAB o queda asustada y recibe 4d10 psíquico por turno. Concentración. Escala.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "bard"
     ]
   },
   {
@@ -1927,7 +1975,8 @@
     "description": "Un aura ígnea o gélida te da resistencia (fuego o frío) y daña a quien te golpee de cerca. Dura 10 minutos.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "druid"
     ]
   },
   {
@@ -1966,7 +2015,8 @@
       "cleric",
       "druid",
       "ranger",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -2045,7 +2095,8 @@
       "wizard",
       "sorcerer",
       "druid",
-      "ranger"
+      "ranger",
+      "artificer"
     ]
   },
   {
@@ -2121,7 +2172,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard"
+      "bard",
+      "artificer"
     ]
   },
   {
@@ -2312,7 +2364,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "druid"
+      "druid",
+      "artificer"
     ]
   },
   {
@@ -2369,7 +2422,9 @@
       "cleric",
       "druid",
       "bard",
-      "ranger"
+      "paladin",
+      "ranger",
+      "artificer"
     ]
   },
   {
@@ -2515,7 +2570,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "druid"
+      "druid",
+      "cleric"
     ]
   },
   {
@@ -2570,8 +2626,7 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "bard",
-      "warlock"
+      "bard"
     ]
   },
   {
@@ -2703,7 +2758,7 @@
     "range": "100 pies",
     "components": "V, S, M",
     "duration": "1 hora",
-    "concentration": false,
+    "concentration": true,
     "ritual": false,
     "description": "Una prisión de fuerza (jaula o caja) atrapa a las criaturas dentro; escapar exige teletransporte de alto nivel.",
     "classes": [
@@ -2728,8 +2783,7 @@
     "classes": [
       "cleric",
       "druid",
-      "bard",
-      "ranger"
+      "bard"
     ]
   },
   {
@@ -2861,7 +2915,8 @@
     "classes": [
       "wizard",
       "sorcerer",
-      "druid"
+      "druid",
+      "cleric"
     ]
   },
   {
@@ -2874,15 +2929,15 @@
     "range": "30 pies",
     "components": "V, S",
     "duration": "24 horas",
-    "concentration": true,
+    "concentration": false,
     "ritual": false,
-    "description": "Transformas a varios aliados en bestias grandes durante 24 horas. Concentración.",
+    "description": "Transformas a varios aliados en bestias grandes durante 24 horas.",
     "classes": [
       "druid"
     ]
   },
   {
-    "id": "feeblemind",
+    "id": "befuddlement",
     "name": "Ofuscación",
     "source": "srd_2024",
     "level": 8,
@@ -2934,7 +2989,8 @@
     "description": "Una nube de humo y brasas de 20 pies que se mueve: 10d8 de fuego a quien esté dentro. Concentración.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "druid"
     ]
   },
   {
@@ -3062,7 +3118,8 @@
     "ritual": false,
     "description": "Un muro de siete capas de colores, cada una con un efecto letal distinto que hay que superar por separado.",
     "classes": [
-      "wizard"
+      "wizard",
+      "bard"
     ]
   },
   {
@@ -3099,7 +3156,8 @@
     "ritual": false,
     "description": "Manifiestas el peor miedo de varias criaturas en 30 pies; quedan asustadas y reciben 4d10 psíquico por turno. Concentración.",
     "classes": [
-      "wizard"
+      "wizard",
+      "warlock"
     ]
   },
   {
@@ -3118,7 +3176,8 @@
     "classes": [
       "wizard",
       "cleric",
-      "sorcerer"
+      "sorcerer",
+      "warlock"
     ]
   },
   {
@@ -3211,7 +3270,8 @@
     "classes": [
       "bard",
       "druid",
-      "ranger"
+      "ranger",
+      "warlock"
     ]
   },
   {
@@ -3247,7 +3307,8 @@
     "description": "Ganas 2d4 + 4 puntos de golpe temporales durante 1 hora. Escala.",
     "classes": [
       "wizard",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -3282,8 +3343,7 @@
     "ritual": false,
     "description": "Envolvés en llamas a quien te dañó: 2d10 de fuego, salvación de Destreza para la mitad. Escala.",
     "classes": [
-      "warlock",
-      "sorcerer"
+      "warlock"
     ]
   },
   {
@@ -3322,7 +3382,8 @@
     "classes": [
       "druid",
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -3395,7 +3456,8 @@
     "ritual": false,
     "description": "Ataque de conjuro cuerpo a cuerpo: 1d6 perforante y, si el objetivo es Grande o menor, lo arrastrás 10 pies hacia vos.",
     "classes": [
-      "druid"
+      "druid",
+      "artificer"
     ]
   },
   {
@@ -3433,7 +3495,8 @@
       "warlock",
       "druid",
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -3451,7 +3514,8 @@
     "description": "Vigilás una zona de hasta un cubo de 20 pies; te avisa mental o sonoramente si alguien no exento entra o la toca.",
     "classes": [
       "ranger",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -3855,12 +3919,13 @@
     "components": "V, S",
     "duration": "Instantánea",
     "concentration": false,
-    "ritual": false,
+    "ritual": true,
     "description": "Quitás veneno y podredumbre de la comida y bebida no mágicas en una esfera de 5 pies de radio.",
     "classes": [
       "cleric",
       "druid",
-      "paladin"
+      "paladin",
+      "artificer"
     ]
   },
   {
@@ -3937,7 +4002,8 @@
       "druid",
       "ranger",
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4026,7 +4092,8 @@
     "ritual": false,
     "description": "Una cuerda tocada se yergue sola y abre un portal a un espacio extradimensional en su extremo superior, donde caben hasta ocho criaturas Medianas.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4065,7 +4132,8 @@
       "bard",
       "druid",
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4083,7 +4151,8 @@
     "description": "Tocás a una criatura voluntaria: puede exhalar en un cono de 15 pies una vez por turno para causar 3d6 del tipo elegido; salvación de Destreza, mitad de daño.",
     "classes": [
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4101,7 +4170,8 @@
     "description": "Elegís una opción —branquias y membranas, armas naturales o cambiar de aspecto— que dura hasta que termine el conjuro; podés cambiarla con una acción de magia.",
     "classes": [
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4121,7 +4191,8 @@
       "ranger",
       "sorcerer",
       "wizard",
-      "paladin"
+      "paladin",
+      "artificer"
     ]
   },
   {
@@ -4175,11 +4246,12 @@
     "description": "Implantás un mensaje en un objeto que se pronuncia en voz alta cuando se cumple la condición de activación que elijas.",
     "classes": [
       "bard",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
-    "id": "branding-smite",
+    "id": "shining-smite",
     "name": "Castigo Brillante",
     "source": "phb_2024",
     "level": 2,
@@ -4209,7 +4281,8 @@
     "ritual": false,
     "description": "Una puerta u objeto tocado queda cerrado mágicamente hasta que termine el conjuro; solo vos y quienes designes podéis abrirlo.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4232,7 +4305,7 @@
     ]
   },
   {
-    "id": "snare",
+    "id": "cordon-of-arrows",
     "name": "Cordón de Flechas",
     "source": "phb_2024",
     "level": 2,
@@ -4505,7 +4578,8 @@
     "classes": [
       "cleric",
       "druid",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4623,7 +4697,8 @@
       "cleric",
       "druid",
       "ranger",
-      "paladin"
+      "paladin",
+      "artificer"
     ]
   },
   {
@@ -4736,7 +4811,8 @@
     "description": "Tirás uno o dos dados de golpe no gastados y recuperás PG iguales al resultado más tu modificador de aptitud mágica; los dados quedan gastados.",
     "classes": [
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -4755,7 +4831,8 @@
     "classes": [
       "druid",
       "ranger",
-      "paladin"
+      "paladin",
+      "artificer"
     ]
   },
   {
@@ -4794,7 +4871,8 @@
       "cleric",
       "druid",
       "ranger",
-      "sorcerer"
+      "sorcerer",
+      "artificer"
     ]
   },
   {
@@ -4903,7 +4981,8 @@
     "description": "Creás comida y agua potable suficiente para varias personas; la comida se echa a perder si no se come en 24 horas.",
     "classes": [
       "cleric",
-      "paladin"
+      "paladin",
+      "artificer"
     ]
   },
   {
@@ -4940,7 +5019,8 @@
     "description": "Al final de cada turno tirás 1d6; con 4-6 pasás al Plano Etéreo hasta tu siguiente turno, donde solo podés afectar e interactuar con lo que también está ahí.",
     "classes": [
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5034,7 +5114,8 @@
     "classes": [
       "bard",
       "cleric",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5305,7 +5386,8 @@
     "ritual": false,
     "description": "Ocultás un cofre tocado en el Plano Etéreo; podés recuperarlo con una acción de magia usando la réplica en miniatura.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5431,7 +5513,8 @@
     "ritual": false,
     "description": "Una esfera encierra a una criatura u objeto Grande o menor; salvación de Destreza si no es voluntaria. Nada la atraviesa en ninguna dirección.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5466,7 +5549,8 @@
     "ritual": false,
     "description": "Convertís materias primas a la vista en un producto Grande o menor del mismo material, como madera en un puente o lino en ropa.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5574,7 +5658,8 @@
     "ritual": false,
     "description": "Invocás un espíritu de autómata de arcilla, metal o piedra en un espacio libre; usa el perfil del espíritu autómata.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5632,7 +5717,8 @@
     "ritual": false,
     "description": "Un perro guardián invisible ladra ante intrusos sin la contraseña y muerde por 4d8 perforante a quien se acerque, hasta que termine el conjuro.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5651,7 +5737,8 @@
     "classes": [
       "cleric",
       "druid",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5668,7 +5755,8 @@
     "ritual": false,
     "description": "Creás un ojo invisible que levita y explorás a través de él con visión normal y en la oscuridad de 30 pies.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5685,7 +5773,8 @@
     "ritual": false,
     "description": "Volvés mágicamente segura una zona en cubo de hasta 100 pies: podés bloquear sonido, visión, teletransporte o escrutinio.",
     "classes": [
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -5832,7 +5921,8 @@
     "classes": [
       "cleric",
       "wizard",
-      "paladin"
+      "paladin",
+      "artificer"
     ]
   },
   {
@@ -6012,7 +6102,8 @@
     "description": "Creás un objeto de materia vegetal o mineral con hebras de sombra; dura de una hora a permanente según el material.",
     "classes": [
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -6034,7 +6125,7 @@
     ]
   },
   {
-    "id": "dispel-good-and-evil",
+    "id": "dispel-evil-and-good",
     "name": "Disipar el Bien y el Mal",
     "source": "phb_2024",
     "level": 5,
@@ -6195,7 +6286,8 @@
     "description": "Creás una mano de fuerza Grande que obedece tus órdenes: puede empujar, agarrar, interponerse como escudo o atacar.",
     "classes": [
       "sorcerer",
-      "wizard"
+      "wizard",
+      "artificer"
     ]
   },
   {
@@ -6803,7 +6895,7 @@
     ]
   },
   {
-    "id": "holy-word",
+    "id": "divine-word",
     "name": "Palabra Divina",
     "source": "phb_2024",
     "level": 7,
@@ -7121,6 +7213,79 @@
     "description": "Una nube de tormenta de 300 pies de radio: salvación de Constitución contra 2d6 de trueno y ensordecidas; cada turno siguiente produce un efecto distinto.",
     "classes": [
       "druid"
+    ]
+  },
+  {
+    "id": "modify-memory",
+    "name": "Alterar los Recuerdos",
+    "source": "phb_2024",
+    "level": 5,
+    "school": "Encantamiento",
+    "castingTime": "Acción",
+    "range": "30 pies",
+    "components": "V, S",
+    "duration": "1 minuto",
+    "concentration": true,
+    "ritual": false,
+    "description": "Una criatura que falle una salvación de Sabiduría queda hechizada e incapacitada mientras alterás el recuerdo de un suceso de hasta 10 minutos ocurrido en las últimas 24 horas. Los espacios superiores permiten modificar recuerdos más antiguos.",
+    "classes": [
+      "bard",
+      "wizard"
+    ]
+  },
+  {
+    "id": "speak-with-dead",
+    "name": "Hablar con los Muertos",
+    "source": "phb_2024",
+    "level": 3,
+    "school": "Nigromancia",
+    "castingTime": "Acción",
+    "range": "10 pies",
+    "components": "V, S, M",
+    "duration": "10 minutos",
+    "concentration": false,
+    "ritual": false,
+    "description": "Concedés una apariencia de vida e inteligencia a un cadáver para formularle hasta cinco preguntas. El conjuro falla si era un muerto viviente o ya fue objetivo de este conjuro durante los últimos 10 días.",
+    "classes": [
+      "bard",
+      "cleric",
+      "wizard"
+    ]
+  },
+  {
+    "id": "toll-the-dead",
+    "name": "Tañido por los Muertos",
+    "source": "phb_2024",
+    "level": 0,
+    "school": "Nigromancia",
+    "castingTime": "Acción",
+    "range": "60 pies",
+    "components": "V, S",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": false,
+    "description": "Una criatura que falle una salvación de Sabiduría recibe 1d8 de daño necrótico, o 1d12 si le falta algún PG. El daño aumenta al alcanzar los niveles 5, 11 y 17.",
+    "classes": [
+      "warlock",
+      "cleric",
+      "wizard"
+    ]
+  },
+  {
+    "id": "homunculus-servant",
+    "name": "Sirviente Homúnculo",
+    "source": "foa_2025",
+    "level": 2,
+    "school": "Conjuración",
+    "castingTime": "1 hora",
+    "range": "10 pies",
+    "components": "V, S, M",
+    "duration": "Instantánea",
+    "concentration": false,
+    "ritual": true,
+    "description": "Invocás un homúnculo (construcción diminuta, 5 + 5 por nivel de espacio de PG, CA 13, vuela 30 pies) en un espacio libre; comparte tu iniciativa y actúa justo después. Si ya tenías uno de este conjuro, es reemplazado.",
+    "classes": [
+      "artificer"
     ]
   }
 ]

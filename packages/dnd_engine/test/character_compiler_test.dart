@@ -197,6 +197,41 @@ void main() {
     });
   });
 
+  group('Una dote no repetible se aplica una sola vez', () {
+    // El Soldado ya concede Atacante Salvaje. Si el Humano elige la misma dote
+    // para su rasgo Versátil, el personaje la tiene por dos vías y sus efectos
+    // se aplicaban dos veces. El PHB es explícito: una dote se toma una sola
+    // vez salvo que su descripción diga lo contrario.
+    Character conDoteRepetida() =>
+        sagan().copyWith(featIds: ['savage-attacker']);
+
+    test('el rasgo pasivo no se duplica en la ficha', () {
+      final s = compiler.compile(conDoteRepetida());
+      final atacante = s.passives.where((t) => t.name == 'Atacante Salvaje');
+      expect(atacante, hasLength(1));
+    });
+
+    test('sigue advirtiendo aunque el efecto ya no se duplique', () {
+      final warnings = CharacterValidator(repo).validate(conDoteRepetida());
+      expect(warnings.map((w) => w.code), contains('feat_duplicate'));
+    });
+
+    test('una dote repetible sí acumula sus efectos', () {
+      // Robustez da +2 PG por nivel y no es repetible; Mejora de Característica
+      // sí lo es, así que dos instancias deben sumar 2 puntos, no 1.
+      final base = sagan().copyWith(featIds: const []);
+      final unaVez = sagan().copyWith(featIds: ['tough']);
+      final dosVeces = sagan().copyWith(featIds: ['tough', 'tough']);
+      final hpBase = compiler.compile(base).maxHp;
+      expect(compiler.compile(unaVez).maxHp, greaterThan(hpBase));
+      expect(
+        compiler.compile(dosVeces).maxHp,
+        compiler.compile(unaVez).maxHp,
+        reason: 'Robustez no es repetible: no debe acumular dos veces',
+      );
+    });
+  });
+
   group('La maestría de armas requiere competencia (2024)', () {
     /// Pícaro: tiene espacios de maestría, y su competencia con armas marciales
     /// es por id (estoque, espada corta, cimitarra, látigo) en vez de por

@@ -41,10 +41,13 @@ void main() {
   });
 
   group('Carga y consulta de subclases', () {
-    test('cada clase tiene 4 subclases y todas apuntan a su clase', () {
+    test('cada clase tiene sus subclases y todas apuntan a su clase', () {
+      // El Artífice de Forge of the Artificer trae 5 subclases; el resto, 4.
       for (final classId in repo.classes.keys) {
         final subs = repo.subclassesForClass(classId);
-        expect(subs.length, 4, reason: '$classId debería tener 4 subclases');
+        final esperado = classId == 'artificer' ? 5 : 4;
+        expect(subs.length, esperado,
+            reason: '$classId debería tener $esperado subclases');
         for (final s in subs) {
           expect(s.classId, classId);
         }
@@ -94,6 +97,32 @@ void main() {
       expect(back.id, 'champion');
       expect(back.classId, 'fighter');
       expect(back.features.length, champ.features.length);
+    });
+
+    test('Campeón usa Atleta Sobresaliente de 2024', () {
+      final champ = repo.subclass('champion')!;
+      final athlete =
+          champ.features.singleWhere((f) => f.name == 'Atleta Sobresaliente');
+      final description =
+          athlete.effects.whereType<PassiveTraitEffect>().single.description;
+      expect(description, contains('Ventaja en iniciativa'));
+      expect(description, contains('Fuerza (Atletismo)'));
+      expect(description, contains('después de causar un crítico'));
+      expect(
+          champ.features.map((f) => f.name), isNot(contains('Atleta Notable')));
+    });
+
+    test('los críticos del Campeón incluyen ataques sin armas', () {
+      final champ = repo.subclass('champion')!;
+      for (final name in ['Crítico Mejorado', 'Crítico Superior']) {
+        final description = champ.features
+            .singleWhere((f) => f.name == name)
+            .effects
+            .whereType<PassiveTraitEffect>()
+            .single
+            .description;
+        expect(description, contains('ataques sin armas'), reason: name);
+      }
     });
   });
 

@@ -228,7 +228,7 @@
   },
   {
     "id": "tiefling",
-    "name": "Tiflin",
+    "name": "Tiefling",
     "source": "srd_2024",
     "iconId": "whatshot",
     "tagline": "Marcados por un legado de otro plano",
@@ -273,13 +273,13 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Complexión Poderosa",
-        "description": "Cuentas como un tamaño más grande al determinar tu capacidad de carga y lo que puedes empujar, arrastrar o levantar."
+        "name": "Constitución Poderosa",
+        "description": "Tienes ventaja en cualquier prueba de característica para terminar el estado agarrado. Además, cuentas como un tamaño más grande al determinar tu capacidad de carga."
       },
       {
         "type": "passiveTrait",
         "name": "Forma Grande (nivel 5)",
-        "description": "A partir del nivel 5, como acción adicional puedes agrandarte a tamaño Grande durante 10 minutos si hay espacio. Una vez por descanso largo."
+        "description": "A partir del nivel 5, como acción adicional puedes cambiar a tamaño Grande durante 10 minutos si hay espacio. Mientras dure, tienes ventaja en las pruebas de Fuerza y tu velocidad aumenta 10 pies. Una vez por descanso largo."
       }
     ]
   },

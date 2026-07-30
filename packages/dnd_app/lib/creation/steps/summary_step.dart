@@ -25,9 +25,10 @@ class _SummaryStep extends StatelessWidget {
           ? 'Sin armadura'
           : repo.armor[draft.equippedArmorId]?.name ?? draft.equippedArmorId!,
       if (draft.shieldEquipped) 'Escudo',
-      draft.weaponId == null
-          ? 'Sin arma (puños)'
-          : repo.weapons[draft.weaponId]?.name ?? draft.weaponId!,
+      if (draft.weaponIds.isEmpty)
+        'Sin arma (puños)'
+      else
+        for (final id in draft.weaponIds) repo.weapons[id]?.name ?? id,
     ];
 
     final feats = <String>[

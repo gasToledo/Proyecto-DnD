@@ -25,7 +25,7 @@ void main() {
       ..spreadPlusTwo = Ability.strength
       ..spreadPlusOne = Ability.constitution
       ..equippedArmorId = 'leather'
-      ..weaponId = 'longsword'
+      ..weaponIds.add('longsword')
       ..name = 'Sagan "The Red"';
 
     d.classSkills.addAll(['perception', 'survival']);
@@ -141,6 +141,25 @@ void main() {
       expect(d.allScoresAssigned, isTrue);
     });
 
+    test('holdersExcept y freeCopiesOf distinguen valores repetidos', () {
+      final d = CreationDraft(repo)
+        ..applyScoreMethod(ScoreMethod.manual)
+        ..scoreMethod = ScoreMethod.roll4d6
+        ..pool = [15, 14, 14, 10, 9, 8];
+      expect(d.freeCopiesOf(14, Ability.strength), 2);
+
+      d.assignScore(Ability.dexterity, 14);
+      // Desde FUE: el 14 sigue teniendo una copia libre, pero hay que poder
+      // ver que la otra está en DES.
+      expect(d.holdersExcept(Ability.strength)[14], [Ability.dexterity]);
+      expect(d.freeCopiesOf(14, Ability.strength), 1);
+
+      d.assignScore(Ability.constitution, 14);
+      expect(d.freeCopiesOf(14, Ability.strength), 0);
+      // La propia característica no se cuenta como ocupante de su valor.
+      expect(d.holdersExcept(Ability.dexterity)[14], [Ability.constitution]);
+    });
+
     test('clearScores vacía las asignaciones y conserva el pool', () {
       final d = newDraft();
       d.assignScore(Ability.strength, 15);
@@ -148,6 +167,90 @@ void main() {
       d.clearScores();
       expect(d.assignedScores, isEmpty);
       expect(d.pool, pool);
+    });
+  });
+
+  // --- Armas equipadas -----------------------------------------------------
+  group('armas equipadas', () {
+    test('varias armas producen un ataque por cada una', () {
+      final d = CreationDraft(repo)
+        ..classId = 'rogue'
+        ..raceId = 'human'
+        ..backgroundId = 'soldier'
+        ..weaponIds.addAll(['dagger', 'dagger'])
+        ..applyScoreMethod(ScoreMethod.standardArray);
+      for (final a in Ability.values) {
+        d.assignScore(a, d.availableFor(a).first);
+      }
+      // Dos dagas: el pícaro las lleva en ambas manos.
+      final sheet = CharacterCompiler(repo).compile(d.build());
+      expect(sheet.attacks, hasLength(2));
+      expect(
+        sheet.attacks.every((a) => a.name.toLowerCase().contains('daga')),
+        isTrue,
+      );
+    });
+
+    test('un borrador con el formato viejo de un arma se sigue leyendo', () {
+      final d = CreationDraft(repo)..weaponIds.addAll(['dagger', 'shortsword']);
+      final json = d.toJson()
+        ..remove('weaponIds')
+        ..['weaponId'] = 'longsword';
+      expect(CreationDraft.fromJson(repo, json).weaponIds, ['longsword']);
+    });
+
+    test('el round-trip conserva el orden y descarta ids inexistentes', () {
+      final d = CreationDraft(repo)..weaponIds.addAll(['shortsword', 'dagger']);
+      final json = d.toJson()..['weaponIds'] = ['shortsword', 'nope', 'dagger'];
+      expect(CreationDraft.fromJson(repo, json).weaponIds, [
+        'shortsword',
+        'dagger',
+      ]);
+    });
+  });
+
+  // --- Puntuaciones escritas a mano ----------------------------------------
+  group('ScoreMethod.manual', () {
+    test('acepta valores fuera del pool y respeta el rango', () {
+      final d = CreationDraft(repo)..applyScoreMethod(ScoreMethod.manual);
+      d.setManualScore(Ability.strength, 17);
+      d.setManualScore(Ability.dexterity, 17); // repetir es legítimo
+      expect(d.assignedScores[Ability.strength], 17);
+      expect(d.assignedScores[Ability.dexterity], 17);
+
+      d.setManualScore(Ability.constitution, 0);
+      d.setManualScore(Ability.intelligence, 31);
+      expect(d.assignedScores.containsKey(Ability.constitution), isFalse);
+      expect(d.assignedScores.containsKey(Ability.intelligence), isFalse);
+
+      d.setManualScore(Ability.strength, null);
+      expect(d.assignedScores.containsKey(Ability.strength), isFalse);
+    });
+
+    test('un borrador manual sobrevive al guardado', () {
+      final d = CreationDraft(repo)..applyScoreMethod(ScoreMethod.manual);
+      // Valores que ningún pool podría producir: el round-trip los filtraría
+      // si siguiera validando contra el array estándar.
+      const written = [20, 3, 19, 11, 7, 16];
+      for (var i = 0; i < Ability.values.length; i++) {
+        d.setManualScore(Ability.values[i], written[i]);
+      }
+      expect(d.allScoresAssigned, isTrue);
+
+      final restored = CreationDraft.fromJson(repo, d.toJson());
+      expect(restored.scoreMethod, ScoreMethod.manual);
+      expect(restored.allScoresAssigned, isTrue);
+      for (var i = 0; i < Ability.values.length; i++) {
+        expect(restored.assignedScores[Ability.values[i]], written[i]);
+      }
+    });
+
+    test('cambiar de método limpia lo escrito a mano', () {
+      final d = CreationDraft(repo)..applyScoreMethod(ScoreMethod.manual);
+      d.setManualScore(Ability.strength, 20);
+      d.applyScoreMethod(ScoreMethod.standardArray);
+      expect(d.assignedScores, isEmpty);
+      expect(d.pool, standardArray);
     });
   });
 

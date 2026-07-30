@@ -62,16 +62,24 @@ class _EquipmentStep extends StatelessWidget {
         const SizedBox(height: 14),
         _ShieldToggle(draft: draft, onChanged: onChanged),
         const SizedBox(height: 26),
-        const _SectionHeader(title: 'Arma equipada'),
+        const _SectionHeader(title: 'Armas equipadas'),
         const SizedBox(height: 12),
         _WeaponSelect(
           weapons: repo.weapons.values.toList(),
-          selected: draft.weaponId,
-          onSelect: (id) {
-            draft.weaponId = id;
+          selected: draft.weaponIds,
+          onToggle: (id) {
+            if (!draft.weaponIds.remove(id)) draft.weaponIds.add(id);
+            onChanged();
+          },
+          onClear: () {
+            draft.weaponIds.clear();
             onChanged();
           },
         ),
+        if (draft.weaponIds.length > 1) ...[
+          const SizedBox(height: 10),
+          const _TwoWeaponNotice(),
+        ],
         const SizedBox(height: 26),
         const _SectionHeader(title: 'Conjuros'),
         const SizedBox(height: 12),
@@ -80,6 +88,45 @@ class _EquipmentStep extends StatelessWidget {
         else
           const _NoSpellsNotice(),
       ],
+    );
+  }
+}
+
+/// Aviso al equipar más de un arma. La ficha lista un ataque por arma, pero
+/// todavía no aplica la regla 2024 de combate con dos armas (arma Ligera,
+/// ataque de mano secundaria como acción adicional y sin sumar el modificador
+/// al daño salvo con el estilo de combate correspondiente). Sin este cartel el
+/// segundo ataque se lee como si ya estuviera resuelto, y en la mesa no lo está.
+class _TwoWeaponNotice extends StatelessWidget {
+  const _TwoWeaponNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: pal.goldSoft,
+        border: Border.all(color: pal.gold),
+        borderRadius: BorderRadius.circular(11),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline, size: 18, color: pal.gold),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'La ficha va a mostrar un ataque por cada arma equipada, pero '
+              'todavía no aplica sola la regla de combate con dos armas: el '
+              'ataque de la mano secundaria es una acción adicional, exige un '
+              'arma Ligera y no suma tu modificador al daño salvo que tengas '
+              'el estilo de combate Combate con Dos Armas. Ajustalo en la mesa.',
+              style: TextStyle(fontSize: 12, color: pal.gold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

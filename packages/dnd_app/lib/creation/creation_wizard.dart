@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/creation_draft_store.dart';
 import '../theme/app_theme.dart';
@@ -301,14 +302,22 @@ class _CreationWizardState extends State<CreationWizard> {
               children: [
                 _headerAndStepper(context, wide),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.fromLTRB(
-                      wide ? 40 : 20,
-                      14,
-                      wide ? 40 : 20,
-                      8,
+                  // El LayoutBuilder va afuera del scroll a propósito: adentro
+                  // el alto disponible ya es infinito y no hay contra qué
+                  // medir una lista que quiera ocupar lo que haya.
+                  child: LayoutBuilder(
+                    builder: (context, viewport) => _StepViewport(
+                      height: viewport.maxHeight,
+                      child: SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(
+                          wide ? 40 : 20,
+                          14,
+                          wide ? 40 : 20,
+                          8,
+                        ),
+                        child: _buildStep(),
+                      ),
                     ),
-                    child: _buildStep(),
                   ),
                 ),
                 _footer(context, pending),

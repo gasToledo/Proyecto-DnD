@@ -42,8 +42,8 @@ La última versión publicada está en
   espacios de conjuro.
 - Listado completo de habilidades y salvaciones con su modificador y
   competencia, inventario, notas, ataques y maestrías de armas.
-- Retratos generados por IA mediante Pollinations, Hugging Face, Gemini o
-  Azure AI Foundry (Flux), o importados desde un archivo local.
+- Retratos generados por IA mediante Pollinations, Azure AI Foundry (Flux) o
+  Azure gpt-image-2, o importados desde un archivo local.
 - Homebrew para armas, armaduras, dotes, especies, trasfondos y conjuros.
 - Exportación individual e importación compatible con formatos anteriores.
 - Respaldo ZIP completo de personajes, retratos, homebrew y preferencias, sin

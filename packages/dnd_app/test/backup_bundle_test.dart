@@ -34,8 +34,10 @@ void main() {
         ],
       },
       preferences: {
-        'imageProvider': 'huggingface',
-        'huggingFaceModel': 'modelo/prueba',
+        'imageProvider': 'azure-gpt-image',
+        // Credenciales actuales y de proveedores retirados: ninguna sale.
+        'azureApiKey': 'no-exportar',
+        'azureOpenAiApiKey': 'no-exportar',
         'geminiApiKey': 'no-exportar',
         'huggingFaceToken': 'no-exportar',
       },
@@ -50,9 +52,10 @@ void main() {
       await portrait.readAsBytes(),
     );
     expect(decoded.homebrew!['weapons']!.single['id'], 'hb-espada');
-    expect(decoded.preferences!['imageProvider'], 'huggingface');
-    expect(decoded.preferences, isNot(contains('geminiApiKey')));
-    expect(decoded.preferences, isNot(contains('huggingFaceToken')));
+    expect(decoded.preferences!['imageProvider'], 'azure-gpt-image');
+    for (final key in portableCredentialKeys) {
+      expect(decoded.preferences, isNot(contains(key)));
+    }
   });
 
   test('exportación individual genera ZIP importable', () async {

@@ -10,6 +10,15 @@ import 'app_paths.dart';
 
 enum BackupScope { character, full, legacy }
 
+/// Nombres de credencial que nunca pueden viajar en un respaldo. Incluye las de
+/// proveedores retirados: un settings.json viejo todavía puede tenerlas.
+const portableCredentialKeys = {
+  'geminiApiKey',
+  'huggingFaceToken',
+  'azureApiKey',
+  'azureOpenAiApiKey',
+};
+
 class BundlePortrait {
   final String fileName;
   final Uint8List bytes;
@@ -70,8 +79,10 @@ class BackupBundleCodec {
     final characterEntries = <Map<String, dynamic>>[];
     final characterIds = <String>{};
     final portablePreferences = Map<String, dynamic>.of(preferences ?? const {})
-      ..remove('geminiApiKey')
-      ..remove('huggingFaceToken');
+      // Las credenciales nunca salen del equipo. Se listan por nombre, e
+      // incluyen las de proveedores ya retirados: un respaldo puede armarse a
+      // partir de un settings.json viejo que todavía las tenga.
+      ..removeWhere((key, _) => portableCredentialKeys.contains(key));
 
     for (final character in characters) {
       final id = requireSafePathSegment(character.id, label: 'id de personaje');
@@ -293,8 +304,7 @@ class BackupBundleCodec {
         throw const FormatException('Ruta de ajustes inválida.');
       }
       preferences = _readJsonMap(files, preferencesPath);
-      if (preferences.containsKey('geminiApiKey') ||
-          preferences.containsKey('huggingFaceToken')) {
+      if (preferences.keys.any(portableCredentialKeys.contains)) {
         throw const FormatException(
           'El respaldo contiene credenciales que no deberían exportarse.',
         );

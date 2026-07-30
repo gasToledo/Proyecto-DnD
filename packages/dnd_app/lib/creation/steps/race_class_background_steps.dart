@@ -244,6 +244,17 @@ class _BackgroundStep extends StatelessWidget {
                   draft.backgroundId = b.id;
                   draft.spreadPlusTwo = null;
                   draft.spreadPlusOne = null;
+                  // El trasfondo nuevo puede conceder justo la dote de origen
+                  // que ya estaba elegida para la especie. El paso de aptitudes
+                  // deja de ofrecerla, pero volver atrás a cambiar el trasfondo
+                  // dejaría la elección vieja en pie y duplicada.
+                  final granted = b.originFeatId;
+                  final chosen = draft.raceFeatId;
+                  if (chosen != null &&
+                      chosen == granted &&
+                      !(draft.repo.feat(chosen)?.repeatable ?? false)) {
+                    draft.raceFeatId = null;
+                  }
                   onChanged();
                 },
               ),

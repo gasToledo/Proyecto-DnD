@@ -79,15 +79,24 @@ class CharacterCompiler {
     }
 
     // Dotes: la de origen del trasfondo + las elegidas + estilo de combate.
+    //
+    // Una dote se toma una sola vez salvo que sea repetible (PHB, cap. 5). Un
+    // personaje puede tenerla por dos vías sin que nadie lo haya buscado —el
+    // trasfondo concede una dote de origen y el Humano otra—, así que la
+    // repetición se descarta en vez de aplicar los efectos dos veces. La
+    // validación sigue avisando aparte con `feat_duplicate`.
     final featIds = <String?>[
       background?.originFeatId,
       ...c.featIds,
       c.fightingStyleId,
     ];
+    final appliedOnce = <String>{};
     for (final id in featIds) {
       if (id == null) continue;
       final feat = repo.feat(id);
-      if (feat != null) builder.applyAll(feat.effects);
+      if (feat == null) continue;
+      if (!feat.repeatable && !appliedOnce.add(id)) continue;
+      builder.applyAll(feat.effects);
     }
 
     // Habilidades elegidas en el wizard (raza/clase/trasfondo).

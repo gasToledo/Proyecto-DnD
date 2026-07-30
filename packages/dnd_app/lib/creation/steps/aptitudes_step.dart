@@ -294,13 +294,20 @@ class _AptitudesStep extends StatelessWidget {
 ///
 /// La dote tentativa se deja fuera del personaje evaluado: una dote que sube
 /// una característica no debe poder cumplir su propio prerrequisito.
+///
+/// Tampoco se ofrece la dote de origen que ya concede el trasfondo: el
+/// personaje la tendría por dos vías y el PHB solo permite repetir las dotes
+/// que lo declaran. Sin este filtro, un Humano con trasfondo de Soldado podía
+/// elegir Atacante Salvaje y quedar con la dote duplicada.
 List<Feat> _eligibleOriginFeats(CreationDraft draft) {
   final repo = draft.repo;
   final base = draft.build().copyWith(featIds: const []);
   final sheet = CharacterCompiler(repo).compile(base);
   final validator = CharacterValidator(repo);
+  final grantedByBackground = draft.background?.originFeatId;
   return repo.feats.values
       .where((f) => f.category == 'origin')
+      .where((f) => f.repeatable || f.id != grantedByBackground)
       .where((f) => validator.unmetFeatPrerequisite(f, base, sheet) == null)
       .toList();
 }

@@ -7,6 +7,7 @@ import 'data/asset_content_loader.dart';
 import 'data/character_store.dart';
 import 'data/characters_controller.dart';
 import 'data/homebrew_store.dart';
+import 'data/update_service.dart';
 import 'demo/demo_characters.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_widgets.dart';
@@ -50,7 +51,8 @@ class _AppData {
   final ContentRepository repo;
   final CharactersController controller;
   final HomebrewStore homebrew;
-  _AppData(this.repo, this.controller, this.homebrew);
+  final UpdateService updates;
+  _AppData(this.repo, this.controller, this.homebrew, this.updates);
 }
 
 /// Carga el contenido oficial y los personajes persistidos antes del dashboard.
@@ -107,7 +109,8 @@ class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
     if (controller.characters.isEmpty) {
       controller.add(demoSagan());
     }
-    final data = _AppData(repo, controller, homebrew);
+    final updates = await UpdateService.forCurrentPlatform();
+    final data = _AppData(repo, controller, homebrew, updates);
     _data = data;
     return data;
   }
@@ -165,6 +168,7 @@ class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
           repo: snap.data!.repo,
           controller: snap.data!.controller,
           homebrew: snap.data!.homebrew,
+          updateService: snap.data!.updates,
           onToggleTheme: widget.onToggleTheme,
         );
       },

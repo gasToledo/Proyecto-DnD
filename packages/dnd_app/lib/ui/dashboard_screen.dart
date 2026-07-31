@@ -11,6 +11,7 @@ import '../data/data_recovery.dart';
 import '../data/homebrew_store.dart';
 import '../data/settings_service.dart';
 import '../data/transfer_service.dart';
+import '../data/update_service.dart';
 import '../homebrew/homebrew_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
@@ -47,12 +48,14 @@ class DashboardScreen extends StatefulWidget {
   final ContentRepository repo;
   final CharactersController controller;
   final HomebrewStore homebrew;
+  final UpdateService? updateService;
   final VoidCallback onToggleTheme;
   const DashboardScreen({
     super.key,
     required this.repo,
     required this.controller,
     required this.homebrew,
+    this.updateService,
     required this.onToggleTheme,
   });
 
@@ -73,7 +76,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     widget.controller.addListener(_handleControllerState);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _showDataNotices());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _showDataNotices();
+      if (mounted) await _checkForUpdates();
+    });
   }
 
   @override

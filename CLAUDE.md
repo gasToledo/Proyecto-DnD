@@ -24,14 +24,15 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
   subclases están además en el SRD 5.2.1), más la clase Artífice y sus 5
   subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
-  Artificer*), 8 linajes, 33 trasfondos, 110 dotes (9 SRD, 73 PHB 2024, 28 FoA)
+  Artificer*), 24 linajes (8 SRD, 16 PHB 2024), 33 trasfondos, 110 dotes
+  (9 SRD, 73 PHB 2024, 28 FoA)
   y 392 conjuros (177 SRD, 214 PHB 2024, 1 FoA).
 - Creación guiada, subida de nivel con wizard multi-paso (resumen, puntos de
   golpe, subclase, mejora de característica, rasgos, conjuros y repaso, cada
   paso mostrado solo si aplica al nivel), combate, inventario, notas y
   retratos IA.
-- Retratos IA con Pollinations, Hugging Face, Gemini o Azure AI Foundry
-  (Flux) como proveedor, además de importar un retrato desde archivo local.
+- Retratos IA con Pollinations, Azure AI Foundry (Flux) o Azure gpt-image-2
+  como proveedor, además de importar un retrato desde archivo local.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
   secuenciales de datos.
 - Exportación individual y respaldos ZIP completos.
@@ -43,6 +44,12 @@ en la nube ni Modo DM. `docs/auditoria-reglas-2024.md` mantiene el detalle de
 pendientes mecánicos (Estilo de Combate de Paladín/Explorador a nivel 2,
 Invocaciones Sobrenaturales del Brujo, Agotamiento/Inspiración Heroica sin
 efecto mecánico, precio/peso de equipo, entre otros).
+
+Se pueden equipar varias armas y la ficha lista un ataque por cada una, pero el
+motor todavía **no** aplica la regla 2024 de combate con dos armas (arma Ligera,
+ataque de mano secundaria como acción adicional, sin modificador al daño salvo
+con el estilo de combate correspondiente, maestría Nick). La UI lo avisa; si se
+implementa, va junto con los estilos de combate pendientes.
 
 ## Comandos
 
@@ -91,6 +98,12 @@ la ficha por su cuenta.
   representa la consecuencia mecánica de un rasgo.
 - `domain/content.dart`: especies, clases, subclases, trasfondos, dotes, armas,
   armaduras y conjuros son contenido.
+- `domain/damage_type.dart`: los 13 tipos de daño con su nombre en español. El
+  contenido los referencia por su id en inglés, que es la clave estable que
+  viaja en JSON y en los personajes guardados; la traducción vive solo acá, no
+  en la UI. `ImmunityEffect` también se usa hoy para inmunidad a **estados**
+  (el Artífice es inmune a `poisoned`), así que `labelFor` los cubre y cae al
+  id capitalizado ante cualquier otra cosa, para tolerar homebrew.
 - `data/content_repository.dart`: reúne el contenido oficial y homebrew.
 - `engine/character_compiler.dart`: combina un `Character` con el repositorio y
   produce una `ComputedSheet` inmutable.
@@ -196,9 +209,22 @@ ruta escape de `FichasDnD`.
 ### Retratos IA
 
 `PortraitProvider` es intercambiable. Pollinations es la opción predeterminada
-sin clave; Hugging Face, Gemini y Azure AI Foundry (Flux) usan claves
-configuradas por el usuario. Las credenciales se envían por encabezado, nunca
-en la URL, se guardan en `settings.json` y no se incluyen en los respaldos.
+sin clave; Azure AI Foundry (Flux) y Azure gpt-image-2 usan claves configuradas
+por el usuario. Son **dos recursos distintos de Azure**, cada uno con su propia
+key y su propia API: Flux habla la ruta de Black Forest Labs
+(`/providers/blackforestlabs/`, `azure_image_service.dart`) y gpt-image-2 la
+ruta estilo OpenAI (`/openai/deployments/`, `azure_openai_image_service.dart`).
+Por eso son dos servicios y no un endpoint parametrizado.
+
+gpt-image-2 es el único proveedor que acepta imagen de referencia, vía
+`images/edits`. Hugging Face y Gemini fueron retirados; sus ids quedan en
+`retiredProviderIds` para que un `settings.json` viejo degrade a Pollinations,
+y la migración a la versión 4 de ajustes borra sus credenciales huérfanas.
+
+Las credenciales se envían por encabezado, nunca
+en la URL, se guardan en `settings.json` y no se incluyen en los respaldos
+(`portableCredentialKeys` las filtra por nombre, incluidas las de proveedores
+retirados).
 También se puede importar un retrato desde un archivo local mediante
 `file_picker`.
 

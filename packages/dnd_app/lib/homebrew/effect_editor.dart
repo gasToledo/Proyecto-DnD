@@ -30,7 +30,8 @@ String describeEffect(Effect e) => switch (e) {
     '${ability.abbr} ${amount >= 0 ? '+$amount' : '$amount'}',
   SkillProficiencyEffect(:final skill) => 'Competencia: $skill',
   SavingThrowProficiencyEffect(:final ability) => 'Salvación: ${ability.abbr}',
-  ResistanceEffect(:final damageType) => 'Resistencia: $damageType',
+  ResistanceEffect(:final damageType) =>
+    'Resistencia: ${DamageType.labelFor(damageType)}',
   DarkvisionEffect(:final range) => 'Visión en la oscuridad: $range ft',
   SpeedBonusEffect(:final feet) => 'Velocidad +$feet ft',
   SetSpeedEffect(:final feet) => 'Velocidad = $feet ft',

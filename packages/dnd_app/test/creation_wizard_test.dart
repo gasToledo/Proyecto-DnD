@@ -132,8 +132,12 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
     await tester.pumpAndSettle();
 
-    final list = find.descendant(
-      of: find.byType(Scrollbar),
+    // (ver también la prueba del modo dividido más abajo)
+    // El paso de Clase tiene dos listas con scroll propio: la de clases (panel
+    // izquierdo del modo dividido) y el checklist de maestrías. Esta prueba
+    // mira la segunda, así que se ancla en un CheckboxListTile.
+    final list = find.ancestor(
+      of: find.byType(CheckboxListTile).first,
       matching: find.byType(ListView),
     );
     expect(
@@ -224,5 +228,140 @@ void main() {
     await tester.tap(find.text('Descartar'));
     await tester.pumpAndSettle();
     expect(store.snapshot, isNull);
+  });
+
+  // --- Modo dividido de Especie / Clase / Trasfondo -------------------------
+  Future<void> pumpAt(WidgetTester tester, Size size) async {
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: CreationWizard(repo: repo, onCreate: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  const emptyHint = 'Elegí una especie para ver su detalle.';
+
+  testWidgets('con ancho de sobra la especie se muestra en dos columnas', (
+    tester,
+  ) async {
+    await pumpAt(tester, const Size(1500, 1400));
+
+    // Sin selección, el panel derecho existe igual y dice qué falta hacer.
+    expect(find.text(emptyHint), findsOneWidget);
+
+    await tester.tap(find.text('Humano'));
+    await tester.pumpAndSettle();
+
+    // Al elegir, el panel pasa a ser el detalle: la lista sigue a la izquierda.
+    expect(find.text(emptyHint), findsNothing);
+
+    final list = tester.getRect(find.text('Humano').first);
+    final detail = tester.getRect(find.text('TAMAÑO  '));
+    expect(
+      list.right,
+      lessThan(detail.left),
+      reason: 'la lista tiene que quedar a la izquierda del detalle',
+    );
+  });
+
+  testWidgets('la lista de especies sigue al alto de la ventana', (
+    tester,
+  ) async {
+    Future<double> listHeight(double windowHeight) async {
+      await pumpAt(tester, Size(1500, windowHeight));
+      final list = find.ancestor(
+        of: find.text('Humano'),
+        matching: find.byType(ListView),
+      );
+      return tester.getSize(list).height;
+    }
+
+    final short = await listHeight(900);
+    final tall = await listHeight(1500);
+
+    // Con una ventana más alta la lista tiene que crecer: un tope fijo dejaba
+    // media pantalla vacía.
+    expect(tall, greaterThan(short));
+    expect(tall, greaterThan(900));
+    // Y no puede desbordar la ventana que la contiene.
+    expect(tall, lessThan(1500));
+  });
+
+  testWidgets('en una ventana muy baja la lista no colapsa', (tester) async {
+    await pumpAt(tester, const Size(1500, 500));
+    final list = find.ancestor(
+      of: find.text('Humano'),
+      matching: find.byType(ListView),
+    );
+    expect(tester.getSize(list).height, greaterThanOrEqualTo(320.0));
+  });
+
+  testWidgets('la línea de sabor del trasfondo vive en el detalle', (
+    tester,
+  ) async {
+    await pumpAt(tester, const Size(1500, 1400));
+
+    Future<void> next() async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
+      await tester.pumpAndSettle();
+    }
+
+    await tester.tap(find.text('Humano'));
+    await tester.pumpAndSettle();
+    await next();
+
+    // El Guerrero es la clase por defecto y no deja avanzar sin estilo de
+    // combate ni las 3 maestrías.
+    await tester.tap(find.text('Estilo de Combate: Defensa'));
+    await tester.pumpAndSettle();
+    for (final w in ['Garrote', 'Daga', 'Clava']) {
+      final tile = find.widgetWithText(CheckboxListTile, w);
+      await tester.ensureVisible(tile);
+      await tester.pumpAndSettle();
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+    }
+    await next();
+
+    // Soldado es el primero de la lista, así que no hace falta scrollear.
+    const tagline = 'Disciplina forjada en el campo de batalla';
+    // En la lista solo van nombres: el sabor no se repite 33 veces.
+    expect(find.text(tagline), findsNothing);
+
+    await tester.tap(find.text('Soldado').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text(tagline), findsOneWidget);
+    final name = tester.getRect(find.text('Soldado').first);
+    expect(
+      name.right,
+      lessThan(tester.getRect(find.text(tagline)).left),
+      reason: 'el sabor tiene que quedar en el panel derecho',
+    );
+  });
+
+  testWidgets('en una ventana angosta vuelve al apilado', (tester) async {
+    await pumpAt(tester, const Size(700, 1400));
+
+    // Apilado: sin selección no hay panel derecho que llenar, así que tampoco
+    // hay marca de agua.
+    expect(find.text(emptyHint), findsNothing);
+
+    await tester.tap(find.text('Humano'));
+    await tester.pumpAndSettle();
+
+    final card = tester.getRect(find.text('Humano').first);
+    final detail = tester.getRect(find.text('TAMAÑO  '));
+    expect(
+      card.bottom,
+      lessThan(detail.top),
+      reason: 'el detalle tiene que quedar debajo de la grilla',
+    );
+    expect(tester.takeException(), isNull);
   });
 }

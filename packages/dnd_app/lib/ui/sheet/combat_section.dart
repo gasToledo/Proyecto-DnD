@@ -172,8 +172,10 @@ extension _SheetCombatSection on _SheetScreenState {
       armor?.name ?? 'Sin armadura',
       if (_c.shieldEquipped) 'escudo',
     ].join(' + ');
-    final resistances = [...s.resistances].map(_title).toList()..sort();
-    final immunities = [...s.immunities].map(_title).toList()..sort();
+    final resistances = [...s.resistances].map(DamageType.labelFor).toList()
+      ..sort();
+    final immunities = [...s.immunities].map(DamageType.labelFor).toList()
+      ..sort();
     return sheetCard(
       icon: Icons.shield,
       title: 'Defensa',
@@ -404,7 +406,7 @@ extension _SheetCombatSection on _SheetScreenState {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
-                      '${a.damage} ${_title(a.damageType)}',
+                      '${a.damage} ${DamageType.labelFor(a.damageType)}',
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
                     if (a.mastery != null) _masteryPill(a.mastery!),

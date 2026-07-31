@@ -4,64 +4,53 @@ import 'dart:io';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:path/path.dart' as p;
 
+import '../ai/portrait_provider.dart' show retiredProviderIds;
 import 'app_paths.dart';
 import 'atomic_json_file.dart';
 import 'data_recovery.dart';
 
-/// Ajustes de la app persistidos localmente. Por ahora, solo la API key de
-/// generación de imágenes. Se guarda en texto plano en el equipo del usuario
+/// Ajustes de la app persistidos localmente. Por ahora, solo la configuración
+/// de generación de imágenes. Se guarda en texto plano en el equipo del usuario
 /// (app personal); Claude nunca la ve ni la solicita.
-/// Modelo por defecto de Hugging Face servido hoy por el proveedor gratuito
-/// `hf-inference` (el catálogo gratuito cambia seguido; por eso es editable).
-const defaultHuggingFaceModel =
-    'stabilityai/stable-diffusion-3-medium-diffusers';
-
 class AppSettings {
-  static const int currentSchemaVersion = 3;
+  static const int currentSchemaVersion = 4;
 
   /// Proveedor de imágenes elegido:
-  /// 'pollinations' | 'huggingface' | 'gemini' | 'azure'.
+  /// 'pollinations' | 'azure-gpt-image' | 'azure'.
   String imageProvider;
-  String geminiApiKey;
-  String huggingFaceToken;
-  String huggingFaceModel;
+
+  /// Key del recurso de Azure AI Foundry que sirve Flux.
   String azureApiKey;
+
+  /// Key del recurso de Azure que sirve gpt-image-2. Es otro recurso, con su
+  /// propia key: no se pueden compartir.
+  String azureOpenAiApiKey;
 
   AppSettings({
     this.imageProvider = 'pollinations',
-    this.geminiApiKey = '',
-    this.huggingFaceToken = '',
-    this.huggingFaceModel = defaultHuggingFaceModel,
     this.azureApiKey = '',
+    this.azureOpenAiApiKey = '',
   });
 
   /// La key correspondiente al proveedor indicado (o '' si no aplica).
   String keyFor(String providerId) => switch (providerId) {
-    'gemini' => geminiApiKey,
-    'huggingface' => huggingFaceToken,
     'azure' => azureApiKey,
+    'azure-gpt-image' => azureOpenAiApiKey,
     _ => '',
   };
 
   Map<String, dynamic> toJson() => {
     'schemaVersion': currentSchemaVersion,
-    'preferences': {
-      'imageProvider': imageProvider,
-      'huggingFaceModel': huggingFaceModel,
-    },
+    'preferences': {'imageProvider': imageProvider},
     'credentials': {
-      'geminiApiKey': geminiApiKey,
-      'huggingFaceToken': huggingFaceToken,
       'azureApiKey': azureApiKey,
+      'azureOpenAiApiKey': azureOpenAiApiKey,
     },
   };
 
   /// Preferencias aptas para un respaldo compartible. Las credenciales quedan
   /// siempre en el equipo de origen.
-  Map<String, dynamic> toPortableJson() => {
-    'imageProvider': imageProvider,
-    'huggingFaceModel': huggingFaceModel,
-  };
+  Map<String, dynamic> toPortableJson() => {'imageProvider': imageProvider};
 
   static int schemaVersionOf(Map<String, dynamic> json) {
     final value = json['schemaVersion'] ?? 1;
@@ -92,9 +81,7 @@ class AppSettings {
             'preferences': {
               'imageProvider':
                   migrated['imageProvider'] as String? ?? 'pollinations',
-              'huggingFaceModel':
-                  migrated['huggingFaceModel'] as String? ??
-                  defaultHuggingFaceModel,
+              'huggingFaceModel': migrated['huggingFaceModel'] as String? ?? '',
             },
             'credentials': {
               'geminiApiKey': migrated['geminiApiKey'] as String? ?? '',
@@ -112,6 +99,30 @@ class AppSettings {
             'credentials': {...credentials, 'azureApiKey': ''},
           };
           version = 3;
+        case 3:
+          // Salen Hugging Face y Gemini, entra gpt-image-2. Sus credenciales se
+          // borran del archivo en vez de quedar huérfanas, y un proveedor
+          // retirado vuelve al que no necesita key.
+          final preferences =
+              (migrated['preferences'] as Map?)?.cast<String, dynamic>() ??
+              const {};
+          final credentials =
+              (migrated['credentials'] as Map?)?.cast<String, dynamic>() ??
+              const {};
+          final provider = preferences['imageProvider'] as String?;
+          migrated = {
+            'schemaVersion': 4,
+            'preferences': {
+              'imageProvider': retiredProviderIds.contains(provider)
+                  ? 'pollinations'
+                  : provider ?? 'pollinations',
+            },
+            'credentials': {
+              'azureApiKey': credentials['azureApiKey'] as String? ?? '',
+              'azureOpenAiApiKey': '',
+            },
+          };
+          version = 4;
       }
     }
     return migrated;
@@ -125,14 +136,8 @@ class AppSettings {
         (j['credentials'] as Map?)?.cast<String, dynamic>() ?? const {};
     return AppSettings(
       imageProvider: preferences['imageProvider'] as String? ?? 'pollinations',
-      geminiApiKey: credentials['geminiApiKey'] as String? ?? '',
-      huggingFaceToken: credentials['huggingFaceToken'] as String? ?? '',
-      huggingFaceModel:
-          (preferences['huggingFaceModel'] as String?)?.trim().isNotEmpty ==
-              true
-          ? preferences['huggingFaceModel'] as String
-          : defaultHuggingFaceModel,
       azureApiKey: credentials['azureApiKey'] as String? ?? '',
+      azureOpenAiApiKey: credentials['azureOpenAiApiKey'] as String? ?? '',
     );
   }
 }
@@ -218,18 +223,11 @@ class SettingsService {
   Future<void> restorePortable(Map<String, dynamic> preferences) async {
     final current = await load();
     final provider = preferences['imageProvider'];
-    final model = preferences['huggingFaceModel'];
+    // Un respaldo viejo puede traer un proveedor ya retirado: se ignora en vez
+    // de dejar los ajustes apuntando a algo que no existe.
     if (provider is String &&
-        const {
-          'pollinations',
-          'huggingface',
-          'gemini',
-          'azure',
-        }.contains(provider)) {
+        const {'pollinations', 'azure', 'azure-gpt-image'}.contains(provider)) {
       current.imageProvider = provider;
-    }
-    if (model is String && model.trim().isNotEmpty) {
-      current.huggingFaceModel = model.trim();
     }
     await save(current);
   }

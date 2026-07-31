@@ -6,9 +6,9 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../ai/gemini_image_service.dart' show savePortrait;
 import '../ai/portrait_prompt.dart';
 import '../ai/portrait_provider.dart';
+import '../ai/portrait_storage.dart' show savePortrait;
 import '../data/app_paths.dart';
 import '../data/settings_service.dart';
 import '../theme/app_widgets.dart';
@@ -68,9 +68,8 @@ class _PortraitScreenState extends State<PortraitScreen> {
       _providerId = s.imageProvider;
       _apiKey = s.keyFor(s.imageProvider);
       _provider = switch (s.imageProvider) {
-        'huggingface' => HuggingFaceProvider(model: s.huggingFaceModel),
-        'gemini' => GeminiProvider(),
         'azure' => AzureProvider(),
+        'azure-gpt-image' => AzureOpenAiProvider(),
         _ => PollinationsProvider(),
       };
       _loading = false;

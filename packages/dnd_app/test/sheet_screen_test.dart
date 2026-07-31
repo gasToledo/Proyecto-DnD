@@ -93,7 +93,7 @@ void main() {
     await tester.tap(find.text('Inventario'));
     await tester.pumpAndSettle();
     expect(find.text('ARMADURA EQUIPADA'), findsOneWidget);
-    expect(find.text('ARMA EQUIPADA'), findsOneWidget);
+    expect(find.text('ARMAS EQUIPADAS'), findsOneWidget);
 
     await tester.tap(find.text('Notas'));
     await tester.pumpAndSettle();
@@ -157,6 +157,33 @@ void main() {
     expect(find.text('Prestidigitación'), findsOneWidget);
     expect(find.textContaining('WIS'), findsOneWidget);
     expect(find.text('ESPACIOS DE CONJURO'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('resistencias y daño se muestran en español', (tester) async {
+    // Un Dracónido rojo: la resistencia sale de su linaje dracónico y antes
+    // se imprimía con la clave interna en inglés ("Fire").
+    final dragonborn = Character(
+      id: 'dragonborn-sheet',
+      name: 'Vharax',
+      raceId: 'dragonborn',
+      lineageId: 'dragonborn-red',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      equippedWeaponIds: const ['longsword'],
+      assignedScores: {for (final ability in Ability.values) ability: 12},
+      hpPerLevel: const [10],
+    );
+    await pumpSheet(tester, dragonborn);
+
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Resistencias: Fuego'), findsOneWidget);
+    expect(find.textContaining('Fire'), findsNothing);
+    // Y el tipo de daño del arma, que compartía el mismo defecto.
+    expect(find.textContaining('Cortante'), findsWidgets);
+    expect(find.textContaining('Slashing'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

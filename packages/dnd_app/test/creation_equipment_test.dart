@@ -119,6 +119,37 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('se pueden equipar dos armas y avisa por la mano secundaria', (
+    tester,
+  ) async {
+    await gotoEquipo(tester, 'Mago');
+
+    Future<void> tapWeapon(String name) async {
+      final chip = find.ancestor(
+        of: find.textContaining('$name ('),
+        matching: find.byType(FilterChip),
+      );
+      await tester.ensureVisible(chip.first);
+      await tester.pumpAndSettle();
+      await tester.tap(chip.first);
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.textContaining('combate con dos armas'), findsNothing);
+
+    await tapWeapon('Daga');
+    // Con una sola arma no hay nada que aclarar todavía.
+    expect(find.textContaining('combate con dos armas'), findsNothing);
+
+    await tapWeapon('Bastón');
+    expect(find.textContaining('combate con dos armas'), findsOneWidget);
+
+    // Destildar vuelve al estado anterior: es una selección múltiple real.
+    await tapWeapon('Bastón');
+    expect(find.textContaining('combate con dos armas'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('el selector de arma scrollea solo', (tester) async {
     await gotoEquipo(tester, 'Mago');
 

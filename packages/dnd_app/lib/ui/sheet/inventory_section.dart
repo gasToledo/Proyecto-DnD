@@ -41,31 +41,8 @@ extension _SheetInventorySection on _SheetScreenState {
               onChanged: (v) => _replace(_c.copyWith(shieldEquipped: v)),
             ),
             const SizedBox(height: 16),
-            const Eyebrow('Arma equipada'),
-            DropdownButtonFormField<String?>(
-              key: ValueKey(
-                'weapon-'
-                '${_c.equippedWeaponIds.isEmpty ? null : _c.equippedWeaponIds.first}',
-              ),
-              initialValue: _c.equippedWeaponIds.isEmpty
-                  ? null
-                  : _c.equippedWeaponIds.first,
-              isExpanded: true,
-              decoration: const InputDecoration(isDense: true),
-              items: [
-                const DropdownMenuItem(
-                  value: null,
-                  child: Text('Sin arma (puños)'),
-                ),
-                ...weapons.map(
-                  (w) => DropdownMenuItem(
-                    value: w.id,
-                    child: Text('${w.name} (${w.damageDice})'),
-                  ),
-                ),
-              ],
-              onChanged: (v) => _replace(_c.copyWith(equippedWeaponIds: [?v])),
-            ),
+            const Eyebrow('Armas equipadas'),
+            _equippedWeapons(weapons),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -86,6 +63,84 @@ extension _SheetInventorySection on _SheetScreenState {
           ],
         ),
       ),
+    );
+  }
+
+  /// Armas equipadas: las actuales como chips que se pueden quitar, más un
+  /// combo para sumar otra. El catálogo completo no entra como lista de chips,
+  /// y `equippedWeaponIds` admite varias (el motor arma un ataque por cada una).
+  Widget _equippedWeapons(List<Weapon> weapons) {
+    final equipped = _c.equippedWeaponIds;
+    final available = weapons.where((w) => !equipped.contains(w.id)).toList();
+
+    void setWeapons(List<String> ids) =>
+        _replace(_c.copyWith(equippedWeaponIds: ids));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (equipped.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Text(
+              'Sin arma (puños).',
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final id in equipped)
+                  InputChip(
+                    key: ValueKey('equipped-$id'),
+                    label: Text(repo.weapon(id)?.name ?? id),
+                    onDeleted: () => setWeapons([...equipped]..remove(id)),
+                  ),
+              ],
+            ),
+          ),
+        if (available.isNotEmpty)
+          DropdownButtonFormField<String>(
+            key: ValueKey('add-weapon-${equipped.length}'),
+            initialValue: null,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              isDense: true,
+              labelText: 'Agregar arma',
+            ),
+            items: [
+              for (final w in available)
+                DropdownMenuItem(
+                  value: w.id,
+                  child: Text('${w.name} (${w.damageDice})'),
+                ),
+            ],
+            onChanged: (v) {
+              if (v == null) return;
+              setWeapons([...equipped, v]);
+            },
+          ),
+        if (equipped.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              'Hay un ataque por arma. La regla de combate con dos armas '
+              '(acción adicional, arma Ligera, sin modificador al daño sin el '
+              'estilo de combate) todavía no se aplica sola.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -31,7 +31,7 @@ La última versión publicada está en
 - 13 clases y 53 subclases: 12 clases y 48 subclases del PHB 2024, más la
   clase Artífice y sus 5 subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
-  Artificer*), 8 linajes, 33 trasfondos, 110 dotes, 38 armas, 13 armaduras y
+  Artificer*), 24 linajes, 33 trasfondos, 110 dotes, 38 armas, 13 armaduras y
   392 conjuros.
 - Subida de nivel guiada paso a paso (resumen, puntos de golpe, subclase,
   mejora de característica, rasgos, conjuros y repaso), mostrando solo lo que
@@ -42,8 +42,8 @@ La última versión publicada está en
   espacios de conjuro.
 - Listado completo de habilidades y salvaciones con su modificador y
   competencia, inventario, notas, ataques y maestrías de armas.
-- Retratos generados por IA mediante Pollinations, Hugging Face, Gemini o
-  Azure AI Foundry (Flux), o importados desde un archivo local.
+- Retratos generados por IA mediante Pollinations, Azure AI Foundry (Flux) o
+  Azure gpt-image-2, o importados desde un archivo local.
 - Homebrew para armas, armaduras, dotes, especies, trasfondos y conjuros.
 - Exportación individual e importación compatible con formatos anteriores.
 - Respaldo ZIP completo de personajes, retratos, homebrew y preferencias, sin

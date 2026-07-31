@@ -367,5 +367,405 @@
         ]
       }
     ]
+  },
+  {
+    "id": "goliath-cloud",
+    "name": "Gigante de las Nubes",
+    "raceId": "goliath",
+    "source": "phb_2024",
+    "description": "Excursión de las nubes. Te desplazás por el aire un instante, como los gigantes de las nubes.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Excursión de las Nubes",
+        "description": "Como acción adicional, te teletransportás mágicamente hasta 9 m a un espacio sin ocupar que puedas ver.",
+        "effects": [
+          {
+            "type": "resource",
+            "id": "giant_ancestry",
+            "name": "Linaje Gigante",
+            "max": 0,
+            "maxFromProficiency": true,
+            "recharge": "long",
+            "description": "Excursión de las nubes: como acción adicional, te teletransportás hasta 9 m a un espacio sin ocupar que puedas ver."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "goliath-fire",
+    "name": "Gigante de Fuego",
+    "raceId": "goliath",
+    "source": "phb_2024",
+    "description": "Abrasión del fuego. Tus golpes arden como la forja de los gigantes de fuego.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Abrasión del Fuego",
+        "description": "Cuando acertás un ataque y causás daño, podés causar además 1d10 de daño de fuego.",
+        "effects": [
+          {
+            "type": "resource",
+            "id": "giant_ancestry",
+            "name": "Linaje Gigante",
+            "max": 0,
+            "maxFromProficiency": true,
+            "recharge": "long",
+            "description": "Abrasión del fuego: al acertar un ataque con daño, causás además 1d10 de daño de fuego."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "goliath-frost",
+    "name": "Gigante de Escarcha",
+    "raceId": "goliath",
+    "source": "phb_2024",
+    "description": "Frío de la escarcha. Tus golpes hielan y entorpecen, como los gigantes de escarcha.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Frío de la Escarcha",
+        "description": "Cuando acertás un ataque y causás daño, podés causar además 1d6 de daño de frío y reducir la velocidad del objetivo en 3 m hasta el principio de tu siguiente turno.",
+        "effects": [
+          {
+            "type": "resource",
+            "id": "giant_ancestry",
+            "name": "Linaje Gigante",
+            "max": 0,
+            "maxFromProficiency": true,
+            "recharge": "long",
+            "description": "Frío de la escarcha: al acertar un ataque con daño, causás además 1d6 de frío y reducís 3 m la velocidad del objetivo hasta el principio de tu siguiente turno."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "goliath-hill",
+    "name": "Gigante de las Colinas",
+    "raceId": "goliath",
+    "source": "phb_2024",
+    "description": "Caída de las colinas. Tu peso derriba, como los gigantes de las colinas.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Caída de las Colinas",
+        "description": "Cuando acertás un ataque con daño contra una criatura Grande o más pequeña, podés infligirle el estado de derribada.",
+        "effects": [
+          {
+            "type": "resource",
+            "id": "giant_ancestry",
+            "name": "Linaje Gigante",
+            "max": 0,
+            "maxFromProficiency": true,
+            "recharge": "long",
+            "description": "Caída de las colinas: al acertar un ataque con daño contra una criatura Grande o más pequeña, la derribás."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "goliath-stone",
+    "name": "Gigante de Piedra",
+    "raceId": "goliath",
+    "source": "phb_2024",
+    "description": "Resistencia de la piedra. Aguantás el golpe como los gigantes de piedra.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Resistencia de la Piedra",
+        "description": "Cuando recibís daño, podés usar una reacción para tirar 1d12, sumarle tu modificador por Constitución y reducir el daño en ese total.",
+        "effects": [
+          {
+            "type": "resource",
+            "id": "giant_ancestry",
+            "name": "Linaje Gigante",
+            "max": 0,
+            "maxFromProficiency": true,
+            "recharge": "long",
+            "description": "Resistencia de la piedra: como reacción al recibir daño, tirás 1d12 + tu modificador por Constitución y reducís el daño en ese total."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "goliath-storm",
+    "name": "Gigante de las Tormentas",
+    "raceId": "goliath",
+    "source": "phb_2024",
+    "description": "Trueno de la tormenta. Devolvés el golpe con un estallido, como los gigantes de las tormentas.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Trueno de la Tormenta",
+        "description": "Cuando una criatura a 18 m o menos te causa daño, podés usar una reacción para infligirle 1d8 de daño de trueno.",
+        "effects": [
+          {
+            "type": "resource",
+            "id": "giant_ancestry",
+            "name": "Linaje Gigante",
+            "max": 0,
+            "maxFromProficiency": true,
+            "recharge": "long",
+            "description": "Trueno de la tormenta: como reacción cuando una criatura a 18 m o menos te causa daño, le causás 1d8 de daño de trueno."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-black",
+    "name": "Dragón Negro",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era negro. Tu Ataque de Aliento causa daño de ácido y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Negro)",
+        "description": "Tu Ataque de Aliento causa daño de ácido y tenés resistencia al daño de ácido.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "acid"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Ácido",
+            "description": "El daño de tu Ataque de Aliento es de ácido, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-copper",
+    "name": "Dragón Cobre",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era cobre. Tu Ataque de Aliento causa daño de ácido y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Cobre)",
+        "description": "Tu Ataque de Aliento causa daño de ácido y tenés resistencia al daño de ácido.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "acid"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Ácido",
+            "description": "El daño de tu Ataque de Aliento es de ácido, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-blue",
+    "name": "Dragón Azul",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era azul. Tu Ataque de Aliento causa daño de relámpago y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Azul)",
+        "description": "Tu Ataque de Aliento causa daño de relámpago y tenés resistencia al daño de relámpago.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "lightning"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Relámpago",
+            "description": "El daño de tu Ataque de Aliento es de relámpago, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-bronze",
+    "name": "Dragón Bronce",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era bronce. Tu Ataque de Aliento causa daño de relámpago y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Bronce)",
+        "description": "Tu Ataque de Aliento causa daño de relámpago y tenés resistencia al daño de relámpago.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "lightning"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Relámpago",
+            "description": "El daño de tu Ataque de Aliento es de relámpago, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-white",
+    "name": "Dragón Blanco",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era blanco. Tu Ataque de Aliento causa daño de frío y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Blanco)",
+        "description": "Tu Ataque de Aliento causa daño de frío y tenés resistencia al daño de frío.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "cold"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Frío",
+            "description": "El daño de tu Ataque de Aliento es de frío, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-silver",
+    "name": "Dragón Plata",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era plata. Tu Ataque de Aliento causa daño de frío y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Plata)",
+        "description": "Tu Ataque de Aliento causa daño de frío y tenés resistencia al daño de frío.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "cold"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Frío",
+            "description": "El daño de tu Ataque de Aliento es de frío, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-green",
+    "name": "Dragón Verde",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era verde. Tu Ataque de Aliento causa daño de veneno y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Verde)",
+        "description": "Tu Ataque de Aliento causa daño de veneno y tenés resistencia al daño de veneno.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "poison"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Veneno",
+            "description": "El daño de tu Ataque de Aliento es de veneno, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-red",
+    "name": "Dragón Rojo",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era rojo. Tu Ataque de Aliento causa daño de fuego y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Rojo)",
+        "description": "Tu Ataque de Aliento causa daño de fuego y tenés resistencia al daño de fuego.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "fire"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Fuego",
+            "description": "El daño de tu Ataque de Aliento es de fuego, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-gold",
+    "name": "Dragón Oro",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era oro. Tu Ataque de Aliento causa daño de fuego y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Oro)",
+        "description": "Tu Ataque de Aliento causa daño de fuego y tenés resistencia al daño de fuego.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "fire"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Fuego",
+            "description": "El daño de tu Ataque de Aliento es de fuego, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dragonborn-brass",
+    "name": "Dragón Oropel",
+    "raceId": "dragonborn",
+    "source": "phb_2024",
+    "description": "Tu progenitor dragón era oropel. Tu Ataque de Aliento causa daño de fuego y tenés resistencia a ese tipo de daño.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Linaje Dracónico (Oropel)",
+        "description": "Tu Ataque de Aliento causa daño de fuego y tenés resistencia al daño de fuego.",
+        "effects": [
+          {
+            "type": "resistance",
+            "damageType": "fire"
+          },
+          {
+            "type": "passiveTrait",
+            "name": "Aliento de Fuego",
+            "description": "El daño de tu Ataque de Aliento es de fuego, determinado por tu linaje dracónico."
+          }
+        ]
+      }
+    ]
   }
 ]

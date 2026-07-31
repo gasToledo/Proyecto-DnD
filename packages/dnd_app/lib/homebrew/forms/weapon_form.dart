@@ -12,9 +12,7 @@ class _WeaponFormState extends State<WeaponForm> {
   late final _dice = TextEditingController(
     text: widget.initial?.damageDice ?? '1d6',
   );
-  late final _type = TextEditingController(
-    text: widget.initial?.damageType ?? 'slashing',
-  );
+  late String _type = widget.initial?.damageType ?? DamageType.slashing.id;
   late final _versatile = TextEditingController(
     text: widget.initial?.versatileDice ?? '',
   );
@@ -37,7 +35,7 @@ class _WeaponFormState extends State<WeaponForm> {
           (v) => setState(() => _category = v),
         ),
         _text(_dice, 'Dado de daño (p.ej. 1d8)'),
-        _text(_type, 'Tipo de daño (slashing/piercing/bludgeoning)'),
+        _damageTypeDropdown(_type, (v) => setState(() => _type = v)),
         _text(_versatile, 'Dado versátil (opcional, p.ej. 1d10)'),
         _text(_mastery, 'Maestría (opcional, p.ej. sap)'),
         const SizedBox(height: 8),
@@ -67,7 +65,7 @@ class _WeaponFormState extends State<WeaponForm> {
         source: ContentSource.homebrew,
         category: _category,
         damageDice: _dice.text.trim(),
-        damageType: _type.text.trim(),
+        damageType: _type,
         properties: _props.toList(),
         versatileDice: _versatile.text.trim().isEmpty
             ? null

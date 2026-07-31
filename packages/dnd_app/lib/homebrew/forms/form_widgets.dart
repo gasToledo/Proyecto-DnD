@@ -49,6 +49,38 @@ Widget _text(
   ),
 );
 
+/// Tipo de daño como desplegable en español. El valor persistido sigue siendo
+/// el id en inglés; escribirlo a mano obligaba a conocerlo y un tipeo hacía
+/// pasar un tipo desconocido sin aviso.
+Widget _damageTypeDropdown(String value, ValueChanged<String> onChanged) {
+  // Un arma homebrew vieja puede tener un tipo fuera del catálogo: se conserva
+  // como opción para que editarla no lo cambie por la espalda.
+  final ids = [
+    for (final t in DamageType.values) t.id,
+    if (DamageType.fromId(value) == null) value,
+  ];
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: 'Tipo de daño',
+        border: OutlineInputBorder(),
+      ),
+      items: ids
+          .map(
+            (id) => DropdownMenuItem(
+              value: id,
+              child: Text(DamageType.labelFor(id)),
+            ),
+          )
+          .toList(),
+      onChanged: (v) => onChanged(v ?? value),
+    ),
+  );
+}
+
 Widget _categoryDropdown(
   List<String> options,
   String value,

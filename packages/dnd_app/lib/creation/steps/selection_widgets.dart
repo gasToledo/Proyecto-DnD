@@ -51,7 +51,7 @@ String _weaponCategoryLabel(String category) =>
 
 /// Subtítulo con daño y (si aplica) la propiedad de maestría del arma.
 String _weaponSubtitle(Weapon w) {
-  final dmg = '${w.damageDice} ${titleCase(w.damageType)}';
+  final dmg = '${w.damageDice} ${DamageType.labelFor(w.damageType)}';
   return w.mastery == null
       ? dmg
       : '$dmg · Maestría: ${weaponMasteryName(w.mastery!)}';

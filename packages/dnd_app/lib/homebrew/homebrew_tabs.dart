@@ -76,7 +76,8 @@ extension _HomebrewTabs on _HomebrewScreenState {
         .map(
           (w) => _tile(
             w.name,
-            '${w.category} · ${w.damageDice} ${w.damageType}',
+            '${w.category} · ${w.damageDice} '
+            '${DamageType.labelFor(w.damageType)}',
             onEdit: () => _editWeapon(w),
             onDelete: () => _delete(
               () => store.deleteWeapon(w.id),

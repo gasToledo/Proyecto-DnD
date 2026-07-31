@@ -63,9 +63,11 @@ class SheetBuilder {
   /// efectos de bonus a características.
   List<CharacterResource> resolveResources(Map<Ability, int> mods, int level) {
     return _resources.values.map((e) {
-      final max = e.maxFromAbility != null
-          ? [e.max, mods[e.maxFromAbility]!].reduce((a, b) => a > b ? a : b)
-          : (e.maxPerLevel ? level : e.max);
+      final max = e.maxFromProficiency
+          ? proficiencyBonusForLevel(level)
+          : e.maxFromAbility != null
+              ? [e.max, mods[e.maxFromAbility]!].reduce((a, b) => a > b ? a : b)
+              : (e.maxPerLevel ? level : e.max);
       return CharacterResource(
         id: e.id,
         name: e.name,

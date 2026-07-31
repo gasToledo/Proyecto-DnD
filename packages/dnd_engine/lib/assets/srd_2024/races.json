@@ -180,19 +180,13 @@
         "range": 60
       },
       {
-        "type": "passiveTrait",
-        "name": "Ascendencia Dracónica",
-        "description": "Eliges un tipo de dragón, que determina el tipo de daño de tu Arma de Aliento y tu Resistencia al Daño: Negro o Cobre (ácido), Azul o Bronce (relámpago), Blanco o Plata (frío), Verde (veneno), Rojo, Oro u Oropel (fuego)."
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Arma de Aliento",
-        "description": "Al atacar, puedes exhalar daño en un cono de 15 pies o línea de 30 pies (salvación de DES). El daño escala con el nivel. Usos iguales a tu bonif. de competencia por descanso largo."
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Resistencia al Daño",
-        "description": "Tienes resistencia al tipo de daño determinado por tu Ascendencia Dracónica."
+        "type": "resource",
+        "id": "breath_weapon",
+        "name": "Ataque de Aliento",
+        "max": 0,
+        "maxFromProficiency": true,
+        "recharge": "long",
+        "description": "Al llevar a cabo la acción de Atacar podés sustituir un ataque por una exhalación en cono de 4,5 m o línea de 9 m (salvación de DES, CD 8 + mod. CON + bonif. por competencia). Causa 1d10 del tipo de daño de tu linaje dracónico, y sube a 2d10 en nivel 5, 3d10 en 11 y 4d10 en 17."
       },
       {
         "type": "passiveTrait",
@@ -266,11 +260,6 @@
     "size": "Mediano",
     "speed": 35,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Ascendencia de Gigante",
-        "description": "Eliges un beneficio sobrenatural asociado a un tipo de gigante (Nube, Fuego, Escarcha, Colina, Piedra o Tormenta). Usos iguales a tu bonif. de competencia por descanso largo."
-      },
       {
         "type": "passiveTrait",
         "name": "Constitución Poderosa",

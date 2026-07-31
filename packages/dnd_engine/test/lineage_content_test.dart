@@ -29,9 +29,91 @@ void main() {
     expect(repo.lineagesForRace('gnome').map((l) => l.id).toSet(),
         {'gnome-forest', 'gnome-rock'});
     expect(repo.lineagesForRace('tiefling').length, 3);
+    // Linaje gigante del Goliat y Linaje dracónico del Dracónido: el PHB los
+    // llama linajes igual que a los del Elfo, y son 6 gigantes y 10 dragones.
+    expect(repo.lineagesForRace('goliath').length, 6);
+    expect(repo.lineagesForRace('dragonborn').length, 10);
     // Las especies sin linaje no ofrecen ninguno.
     expect(repo.lineagesForRace('human'), isEmpty);
     expect(repo.lineagesForRace('dwarf'), isEmpty);
+  });
+
+  test('el Linaje gigante da un recurso con usos = bonif. por competencia', () {
+    for (final lineage in repo.lineagesForRace('goliath')) {
+      final sheet = CharacterCompiler(repo).compile(_pj('goliath', lineage.id));
+      final recurso = sheet.resources.singleWhere(
+        (r) => r.id == 'giant_ancestry',
+        orElse: () => throw StateError('${lineage.id} no da el recurso'),
+      );
+      // Nivel 5 → bonificador 3.
+      expect(recurso.max, 3, reason: lineage.id);
+      expect(recurso.recharge, RechargeOn.longRest, reason: lineage.id);
+    }
+
+    // Y escala con el bonificador, no con el nivel.
+    final nivel1 = CharacterCompiler(repo)
+        .compile(_pj('goliath', 'goliath-stone', level: 1));
+    expect(
+      nivel1.resources.firstWhere((r) => r.id == 'giant_ancestry').max,
+      2,
+    );
+    final nivel17 = CharacterCompiler(repo)
+        .compile(_pj('goliath', 'goliath-stone', level: 17));
+    expect(
+      nivel17.resources.firstWhere((r) => r.id == 'giant_ancestry').max,
+      6,
+    );
+  });
+
+  test('el Linaje dracónico fija la resistencia y el Ataque de Aliento', () {
+    const porDragon = {
+      'dragonborn-black': 'acid',
+      'dragonborn-copper': 'acid',
+      'dragonborn-blue': 'lightning',
+      'dragonborn-bronze': 'lightning',
+      'dragonborn-white': 'cold',
+      'dragonborn-silver': 'cold',
+      'dragonborn-green': 'poison',
+      'dragonborn-red': 'fire',
+      'dragonborn-gold': 'fire',
+      'dragonborn-brass': 'fire',
+    };
+    expect(
+      repo.lineagesForRace('dragonborn').map((l) => l.id).toSet(),
+      porDragon.keys.toSet(),
+    );
+
+    for (final entry in porDragon.entries) {
+      final sheet =
+          CharacterCompiler(repo).compile(_pj('dragonborn', entry.key));
+      // Antes la resistencia era solo texto: ahora se aplica de verdad.
+      expect(sheet.resistances, contains(entry.value), reason: entry.key);
+      expect(
+        sheet.resources.firstWhere((r) => r.id == 'breath_weapon').max,
+        3,
+        reason: entry.key,
+      );
+    }
+  });
+
+  test('sin elegir linaje, el Goliat recibe un aviso y no se rompe', () {
+    final sinLinaje = Character(
+      id: 'x',
+      name: 'P',
+      raceId: 'goliath',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      level: 5,
+      assignedScores: {for (final a in Ability.values) a: 12},
+      hpPerLevel: List.filled(5, 10),
+    );
+    final sheet = CharacterCompiler(repo).compile(sinLinaje);
+    expect(sheet.resources.where((r) => r.id == 'giant_ancestry'), isEmpty);
+
+    // Es una advertencia, no un bloqueo: un personaje guardado antes de que
+    // existieran estos linajes tiene que seguir abriéndose.
+    final avisos = CharacterValidator(repo).validate(sinLinaje);
+    expect(avisos.map((w) => w.code), contains('lineage_pending'));
   });
 
   test('todo conjuro que concede un linaje existe en el pack', () {

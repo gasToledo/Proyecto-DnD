@@ -307,6 +307,28 @@ void main() {
       }
     });
 
+    test('Goliat y Dracónido exigen linaje, pero sin aptitud mágica', () {
+      // Sus linajes no conceden conjuros, así que elegirlo alcanza: pedir una
+      // aptitud mágica ahí sería inventar una elección que el PHB no tiene.
+      const cases = {
+        'goliath': ('goliath-stone', 6),
+        'dragonborn': ('dragonborn-red', 10),
+      };
+
+      for (final entry in cases.entries) {
+        final d = newDraft()..raceId = entry.key;
+        expect(d.lineageOptions, hasLength(entry.value.$2));
+        expect(
+          d.pendingFor(CreationStep.raza),
+          contains('Elegí un linaje de especie.'),
+        );
+
+        d.lineageId = entry.value.$1;
+        expect(d.lineageUsesSpellcastingAbility, isFalse);
+        expect(d.pendingFor(CreationStep.raza), isEmpty);
+      }
+    });
+
     test('Clase (Guerrero) exige estilo de combate y maestrías', () {
       final d = newDraft(); // classId = fighter por defecto
       expect(d.pendingFor(CreationStep.clase), isNotEmpty);

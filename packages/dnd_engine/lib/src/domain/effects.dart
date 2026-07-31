@@ -90,6 +90,7 @@ sealed class Effect {
           maxFromAbility: json['maxFromAbility'] != null
               ? Ability.fromKey(json['maxFromAbility'] as String)
               : null,
+          maxFromProficiency: json['maxFromProficiency'] as bool? ?? false,
         ),
       'grantSpell' => GrantSpellEffect(
           spellId: json['spellId'] as String,
@@ -375,9 +376,12 @@ class SpellcastingEffect extends Effect {
 ///
 /// El máximo puede ser fijo ([max]), escalar con el nivel de personaje
 /// ([maxPerLevel] = true, p.ej. Puntos de Enfoque del Monje = nivel de Monje)
-/// o escalar con un modificador de característica ([maxFromAbility], p.ej.
-/// Magia de Manitas del Artífice = mod. de Inteligencia). En ese último caso
-/// [max] es el piso (normalmente 1, "mínimo una vez").
+/// escalar con un modificador de característica ([maxFromAbility], p.ej.
+/// Magia de Manitas del Artífice = mod. de Inteligencia) o escalar con el
+/// bonificador por competencia ([maxFromProficiency], p.ej. Linaje gigante del
+/// Goliat y Ataque de aliento del Dracónido). Con [maxFromAbility] el [max] es
+/// el piso (normalmente 1, "mínimo una vez"); con [maxFromProficiency] se
+/// ignora, porque el bonificador nunca baja de 2.
 /// Para recursos con tramos por nivel (p.ej. Furia del Bárbaro: 2/3/4/5/6) se
 /// declaran varios ResourceEffect con el mismo [id] a distintos niveles: el de
 /// mayor nivel aplicable sobrescribe a los previos.
@@ -390,6 +394,7 @@ class ResourceEffect extends Effect {
   final String description;
   final bool maxPerLevel;
   final Ability? maxFromAbility;
+  final bool maxFromProficiency;
   const ResourceEffect({
     required this.id,
     required this.name,
@@ -399,6 +404,7 @@ class ResourceEffect extends Effect {
     this.description = '',
     this.maxPerLevel = false,
     this.maxFromAbility,
+    this.maxFromProficiency = false,
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -411,5 +417,6 @@ class ResourceEffect extends Effect {
         'description': description,
         'maxPerLevel': maxPerLevel,
         if (maxFromAbility != null) 'maxFromAbility': maxFromAbility!.name,
+        if (maxFromProficiency) 'maxFromProficiency': true,
       };
 }

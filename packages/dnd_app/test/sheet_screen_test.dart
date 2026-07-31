@@ -93,7 +93,7 @@ void main() {
     await tester.tap(find.text('Inventario'));
     await tester.pumpAndSettle();
     expect(find.text('ARMADURA EQUIPADA'), findsOneWidget);
-    expect(find.text('ARMA EQUIPADA'), findsOneWidget);
+    expect(find.text('ARMAS EQUIPADAS'), findsOneWidget);
 
     await tester.tap(find.text('Notas'));
     await tester.pumpAndSettle();

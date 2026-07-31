@@ -14,8 +14,9 @@ class _RaceStep extends StatelessWidget {
       children: [
         const Eyebrow('Especie'),
         const SizedBox(height: 10),
-        _ChoiceGrid(
-          children: [
+        _SplitSelect(
+          emptyHint: 'Elegí una especie para ver su detalle.',
+          options: [
             for (final r in draft.repo.races.values)
               _ChoiceCard(
                 icon: raceIcon(r),
@@ -36,89 +37,88 @@ class _RaceStep extends StatelessWidget {
                 },
               ),
           ],
-        ),
-        if (race != null) ...[
-          const SizedBox(height: 18),
-          _DetailPanel(
-            title: race.name,
-            facts: [
-              ('Tamaño', race.size),
-              ('Velocidad', '${race.speed} ft'),
-              if (race.skillChoiceCount > 0)
-                ('Habilidades', '${race.skillChoiceCount} a elegir'),
-            ],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _TraitList(effects: race.effects),
-                if (draft.lineageOptions.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  const Eyebrow('Linaje de especie'),
-                  Text(
-                    'Esta especie requiere elegir un linaje.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 8),
-                  _SingleSelect(
-                    options: {
-                      for (final lineage in draft.lineageOptions)
-                        lineage.id: lineage.name,
-                    },
-                    sources: {
-                      for (final lineage in draft.lineageOptions)
-                        lineage.id: lineage.source,
-                    },
-                    selected: draft.lineageId,
-                    onSelect: (id) {
-                      draft.lineageId = id;
-                      draft.speciesSpellcastingAbility = null;
-                      onChanged();
-                    },
-                  ),
-                  if (draft.lineage case final lineage?) ...[
-                    const SizedBox(height: 12),
-                    Text(lineage.description),
-                    if (lineage.featuresUpTo(1).isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        'Nivel 1: '
-                        '${lineage.featuresUpTo(1).map((f) => f.name).join(", ")}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
+          detail: race == null
+              ? null
+              : _DetailPanel(
+                  title: race.name,
+                  facts: [
+                    ('Tamaño', race.size),
+                    ('Velocidad', '${race.speed} ft'),
+                    if (race.skillChoiceCount > 0)
+                      ('Habilidades', '${race.skillChoiceCount} a elegir'),
                   ],
-                  if (draft.lineageUsesSpellcastingAbility) ...[
-                    const SizedBox(height: 14),
-                    _AbilityDropdown(
-                      label: 'Aptitud mágica',
-                      value: draft.speciesSpellcastingAbility,
-                      options: const [
-                        Ability.intelligence,
-                        Ability.wisdom,
-                        Ability.charisma,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _TraitList(effects: race.effects),
+                      if (draft.lineageOptions.isNotEmpty) ...[
+                        const SizedBox(height: 18),
+                        const Eyebrow('Linaje de especie'),
+                        Text(
+                          'Esta especie requiere elegir un linaje.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        _SingleSelect(
+                          options: {
+                            for (final lineage in draft.lineageOptions)
+                              lineage.id: lineage.name,
+                          },
+                          sources: {
+                            for (final lineage in draft.lineageOptions)
+                              lineage.id: lineage.source,
+                          },
+                          selected: draft.lineageId,
+                          onSelect: (id) {
+                            draft.lineageId = id;
+                            draft.speciesSpellcastingAbility = null;
+                            onChanged();
+                          },
+                        ),
+                        if (draft.lineage case final lineage?) ...[
+                          const SizedBox(height: 12),
+                          Text(lineage.description),
+                          if (lineage.featuresUpTo(1).isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              'Nivel 1: '
+                              '${lineage.featuresUpTo(1).map((f) => f.name).join(", ")}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ],
+                        if (draft.lineageUsesSpellcastingAbility) ...[
+                          const SizedBox(height: 14),
+                          _AbilityDropdown(
+                            label: 'Aptitud mágica',
+                            value: draft.speciesSpellcastingAbility,
+                            options: const [
+                              Ability.intelligence,
+                              Ability.wisdom,
+                              Ability.charisma,
+                            ],
+                            onChanged: (ability) {
+                              draft.speciesSpellcastingAbility = ability;
+                              onChanged();
+                            },
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Se usa para la CD y los ataques de los conjuros del linaje.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
                       ],
-                      onChanged: (ability) {
-                        draft.speciesSpellcastingAbility = ability;
-                        onChanged();
-                      },
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Se usa para la CD y los ataques de los conjuros del linaje.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ],
-              ],
-            ),
-          ),
-        ],
+                    ],
+                  ),
+                ),
+        ),
       ],
     );
   }
 }
 
-/// Paso 2 · Clase. Grilla de clases y, debajo, el panel de detalle con lo que
+/// Paso 2 · Clase. Lista de clases y, al lado, el panel de detalle con lo que
 /// esa clase exige a nivel 1 (estilo de combate, maestrías de arma).
 class _ClassStep extends StatelessWidget {
   final CreationDraft draft;
@@ -139,8 +139,9 @@ class _ClassStep extends StatelessWidget {
       children: [
         const Eyebrow('Clase'),
         const SizedBox(height: 10),
-        _ChoiceGrid(
-          children: [
+        _SplitSelect(
+          emptyHint: 'Elegí una clase para ver su detalle.',
+          options: [
             for (final c in repo.classes.values)
               _ChoiceCard(
                 icon: classIcon(c),
@@ -162,52 +163,51 @@ class _ClassStep extends StatelessWidget {
                 },
               ),
           ],
+          detail: klass == null
+              ? null
+              : _DetailPanel(
+                  title: klass.name,
+                  facts: [
+                    ('Dado de golpe', 'd${klass.hitDie}'),
+                    (
+                      'Salvaciones',
+                      klass.savingThrows.map((a) => a.abbr).join(' · '),
+                    ),
+                  ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (draft.grantsFightingStyle) ...[
+                        const Eyebrow('Estilo de combate'),
+                        const SizedBox(height: 8),
+                        _SingleSelect(
+                          options: {for (final f in styles) f.id: f.name},
+                          selected: draft.fightingStyleId,
+                          onSelect: (id) {
+                            draft.fightingStyleId = id;
+                            onChanged();
+                          },
+                        ),
+                      ],
+                      if (slots > 0) ...[
+                        const SizedBox(height: 18),
+                        Eyebrow('Maestría de armas (elige $slots)'),
+                        Text(
+                          'Solo armas con las que ${klass.name} es competente.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 6),
+                        _WeaponChecklist(
+                          weapons: draft.proficientWeapons,
+                          selected: draft.weaponMasteries,
+                          max: slots,
+                          onChanged: onChanged,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
         ),
-        if (klass != null) ...[
-          const SizedBox(height: 18),
-          _DetailPanel(
-            title: klass.name,
-            facts: [
-              ('Dado de golpe', 'd${klass.hitDie}'),
-              (
-                'Salvaciones',
-                klass.savingThrows.map((a) => a.abbr).join(' · '),
-              ),
-            ],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (draft.grantsFightingStyle) ...[
-                  const Eyebrow('Estilo de combate'),
-                  const SizedBox(height: 8),
-                  _SingleSelect(
-                    options: {for (final f in styles) f.id: f.name},
-                    selected: draft.fightingStyleId,
-                    onSelect: (id) {
-                      draft.fightingStyleId = id;
-                      onChanged();
-                    },
-                  ),
-                ],
-                if (slots > 0) ...[
-                  const SizedBox(height: 18),
-                  Eyebrow('Maestría de armas (elige $slots)'),
-                  Text(
-                    'Solo armas con las que ${klass.name} es competente.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 6),
-                  _WeaponChecklist(
-                    weapons: draft.proficientWeapons,
-                    selected: draft.weaponMasteries,
-                    max: slots,
-                    onChanged: onChanged,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -230,13 +230,16 @@ class _BackgroundStep extends StatelessWidget {
       children: [
         const Eyebrow('Trasfondo'),
         const SizedBox(height: 10),
-        _ChoiceGrid(
-          children: [
+        _SplitSelect(
+          emptyHint: 'Elegí un trasfondo para ver su detalle.',
+          options: [
             for (final b in repo.backgrounds.values)
               _ChoiceCard(
                 icon: backgroundIcon(b),
                 title: b.name,
-                subtitle: b.tagline,
+                // La línea de sabor vive en el panel de detalle, no acá: la
+                // lista es para recorrer nombres y el detalle para leer.
+                subtitle: null,
                 source: b.source,
                 accent: context.palette.gold,
                 selected: draft.backgroundId == b.id,
@@ -259,56 +262,63 @@ class _BackgroundStep extends StatelessWidget {
                 },
               ),
           ],
-        ),
-        if (bg != null) ...[
-          const SizedBox(height: 18),
-          _DetailPanel(
-            title: bg.name,
-            facts: [
-              (
-                'Competencias',
-                bg.skillProficiencies.map(Skill.labelFor).join(', '),
-              ),
-              if (bg.originFeatId != null)
-                (
-                  'Dote de origen',
-                  repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!,
-                ),
-            ],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Eyebrow('Aumento de característica (2024)'),
-                const SizedBox(height: 8),
-                SegmentedButton<AbilitySpreadMode>(
-                  segments: const [
-                    ButtonSegment(
-                      value: AbilitySpreadMode.twoOne,
-                      label: Text('+2 / +1'),
+          detail: bg == null
+              ? null
+              : _DetailPanel(
+                  title: bg.name,
+                  facts: [
+                    (
+                      'Competencias',
+                      bg.skillProficiencies.map(Skill.labelFor).join(', '),
                     ),
-                    ButtonSegment(
-                      value: AbilitySpreadMode.oneOneOne,
-                      label: Text('+1 / +1 / +1'),
-                    ),
+                    if (bg.originFeatId != null)
+                      (
+                        'Dote de origen',
+                        repo.feat(bg.originFeatId!)?.name ?? bg.originFeatId!,
+                      ),
                   ],
-                  selected: {draft.spreadMode},
-                  onSelectionChanged: (s) {
-                    draft.spreadMode = s.first;
-                    onChanged();
-                  },
-                ),
-                const SizedBox(height: 12),
-                if (draft.spreadMode == AbilitySpreadMode.twoOne)
-                  _TwoOnePicker(draft: draft, onChanged: onChanged)
-                else
-                  Text(
-                    'Cada una de ${bg.abilityOptions.map((a) => a.abbr).join(", ")} '
-                    'recibe +1.',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (bg.tagline case final tagline?
+                          when tagline.trim().isNotEmpty) ...[
+                        Text(
+                          tagline,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 18),
+                      ],
+                      const Eyebrow('Aumento de característica (2024)'),
+                      const SizedBox(height: 8),
+                      SegmentedButton<AbilitySpreadMode>(
+                        segments: const [
+                          ButtonSegment(
+                            value: AbilitySpreadMode.twoOne,
+                            label: Text('+2 / +1'),
+                          ),
+                          ButtonSegment(
+                            value: AbilitySpreadMode.oneOneOne,
+                            label: Text('+1 / +1 / +1'),
+                          ),
+                        ],
+                        selected: {draft.spreadMode},
+                        onSelectionChanged: (s) {
+                          draft.spreadMode = s.first;
+                          onChanged();
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      if (draft.spreadMode == AbilitySpreadMode.twoOne)
+                        _TwoOnePicker(draft: draft, onChanged: onChanged)
+                      else
+                        Text(
+                          'Cada una de ${bg.abilityOptions.map((a) => a.abbr).join(", ")} '
+                          'recibe +1.',
+                        ),
+                    ],
                   ),
-              ],
-            ),
-          ),
-        ],
+                ),
+        ),
       ],
     );
   }

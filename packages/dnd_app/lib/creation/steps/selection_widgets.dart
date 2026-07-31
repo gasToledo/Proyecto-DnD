@@ -170,16 +170,19 @@ class _WeaponChecklistState extends State<_WeaponChecklist> {
   }
 }
 
-/// Selección única de arma con búsqueda y agrupación por categoría. Incluye una
-/// opción "Sin arma (puños)" que representa la ausencia de arma (selección null).
+/// Selección de armas con búsqueda y agrupación por categoría. Admite varias
+/// (un pícaro con dos dagas, por ejemplo); la opción "Sin arma (puños)" las
+/// quita todas.
 class _WeaponSelect extends StatefulWidget {
   final List<Weapon> weapons;
-  final String? selected;
-  final ValueChanged<String?> onSelect;
+  final List<String> selected;
+  final ValueChanged<String> onToggle;
+  final VoidCallback onClear;
   const _WeaponSelect({
     required this.weapons,
     required this.selected,
-    required this.onSelect,
+    required this.onToggle,
+    required this.onClear,
   });
 
   @override
@@ -215,8 +218,8 @@ class _WeaponSelectState extends State<_WeaponSelect> {
             alignment: Alignment.centerLeft,
             child: ChoiceChip(
               label: const Text('Sin arma (puños)'),
-              selected: widget.selected == null,
-              onSelected: (_) => widget.onSelect(null),
+              selected: widget.selected.isEmpty,
+              onSelected: (_) => widget.onClear(),
             ),
           ),
         ),
@@ -242,10 +245,10 @@ class _WeaponSelectState extends State<_WeaponSelect> {
                       runSpacing: 8,
                       children: group.$2
                           .map(
-                            (w) => ChoiceChip(
+                            (w) => FilterChip(
                               label: Text('${w.name} (${w.damageDice})'),
-                              selected: widget.selected == w.id,
-                              onSelected: (_) => widget.onSelect(w.id),
+                              selected: widget.selected.contains(w.id),
+                              onSelected: (_) => widget.onToggle(w.id),
                             ),
                           )
                           .toList(),

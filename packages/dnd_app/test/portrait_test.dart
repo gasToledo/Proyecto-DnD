@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/ai/azure_image_service.dart';
-import 'package:dnd_app/ai/gemini_image_service.dart';
+import 'package:dnd_app/ai/azure_openai_image_service.dart';
 import 'package:dnd_app/ai/portrait_prompt.dart';
 import 'package:dnd_app/ai/portrait_provider.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
@@ -48,53 +47,61 @@ void main() {
     );
   });
 
-  group('Gemini request/response (puro)', () {
-    test(
-      'el cuerpo pide modalidad de imagen y sin referencia no incluye inlineData',
-      () {
-        final body = GeminiImageService.buildRequestBody('un prompt');
-        final parts = (body['contents'] as List).first['parts'] as List;
-        expect(parts.first['text'], 'un prompt');
-        expect(parts.any((p) => (p as Map).containsKey('inlineData')), isFalse);
-        expect(body['generationConfig']['responseModalities'], ['IMAGE']);
-      },
-    );
-
-    test('con referencia agrega inlineData en base64', () {
-      final ref = Uint8List.fromList([1, 2, 3, 4]);
-      final body = GeminiImageService.buildRequestBody('p', reference: ref);
-      final parts = (body['contents'] as List).first['parts'] as List;
-      final inline = parts.firstWhere(
-        (p) => (p as Map).containsKey('inlineData'),
+  group('Azure gpt-image-2 request/response (puro)', () {
+    test('las URLs usan la ruta estilo OpenAI, no la de Black Forest Labs', () {
+      // Es la diferencia que obliga a tener dos servicios de Azure y no uno
+      // con el endpoint parametrizado.
+      expect(
+        AzureOpenAiImageService.generationsUri.toString(),
+        '$azureOpenAiEndpoint/openai/deployments/$azureImageDeployment/'
+        'images/generations?api-version=$azureOpenAiApiVersion',
       );
-      expect(inline['inlineData']['data'], base64Encode(ref));
+      expect(
+        AzureOpenAiImageService.editsUri.toString(),
+        contains('/images/edits?api-version='),
+      );
+      expect(AzureOpenAiImageService.generationsUri.host, isNot(contains('&')));
     });
 
-    test('extractImages decodifica inlineData e inline_data', () {
+    test('ninguna URL lleva la credencial', () {
+      // La key va siempre en el encabezado `api-key`.
+      for (final uri in [
+        AzureOpenAiImageService.generationsUri,
+        AzureOpenAiImageService.editsUri,
+      ]) {
+        expect(uri.queryParameters.keys, ['api-version']);
+        expect(uri.userInfo, isEmpty);
+      }
+    });
+
+    test('el cuerpo manda prompt, cantidad y tamaño', () {
+      final body = AzureOpenAiImageService.buildRequestBody('un prompt', 2);
+      expect(body['prompt'], 'un prompt');
+      expect(body['n'], 2);
+      expect(body['size'], '1024x1024');
+    });
+
+    test('extractImages decodifica data[].b64_json', () {
       final data = base64Encode([9, 8, 7]);
       final resp = {
-        'candidates': [
-          {
-            'content': {
-              'parts': [
-                {
-                  'inlineData': {'mimeType': 'image/png', 'data': data},
-                },
-              ],
-            },
-          },
+        'data': [
+          {'b64_json': data},
         ],
       };
-      final imgs = GeminiImageService.extractImages(resp);
+      final imgs = AzureOpenAiImageService.extractImages(resp);
       expect(imgs, hasLength(1));
       expect(imgs.first, [9, 8, 7]);
     });
 
-    test('parseError extrae el mensaje de la API', () {
+    test('parseError extrae el mensaje de la API y explica los 404', () {
       final body = jsonEncode({
         'error': {'message': 'clave inválida'},
       });
-      expect(GeminiImageService.parseError(body, 400), 'clave inválida');
+      expect(AzureOpenAiImageService.parseError(body, 400), 'clave inválida');
+      expect(
+        AzureOpenAiImageService.parseError('no es json', 404),
+        contains(azureImageDeployment),
+      );
     });
   });
 
@@ -150,11 +157,16 @@ void main() {
   });
 
   group('Proveedores enchufables', () {
-    test('Pollinations no requiere key; Gemini, HF y Azure sí', () {
+    test('Pollinations no requiere key; los dos de Azure sí', () {
       expect(PollinationsProvider().keyHint, isNull);
-      expect(HuggingFaceProvider().keyHint, isNotNull);
-      expect(GeminiProvider().keyHint, isNotNull);
       expect(AzureProvider().keyHint, isNotNull);
+      expect(AzureOpenAiProvider().keyHint, isNotNull);
+    });
+
+    test('gpt-image-2 es el único que acepta imagen de referencia', () {
+      // Al retirar Gemini la app se quedaba sin referencia; esto lo fija.
+      final withReference = buildProviders().where((p) => p.supportsReference);
+      expect(withReference.map((p) => p.id), ['azure-gpt-image']);
     });
 
     test('Pollinations arma la URL con prompt codificado y seed', () {
@@ -166,15 +178,14 @@ void main() {
       expect(uri.queryParameters['model'], 'flux');
     });
 
-    test('Hugging Face arma el cuerpo con el prompt', () {
-      expect(HuggingFaceProvider.buildBody('un prompt'), {
-        'inputs': 'un prompt',
-      });
-    });
-
-    test('providerById cae en Pollinations ante id desconocido', () {
+    test('providerById cae en Pollinations ante un id desconocido', () {
       expect(providerById('inexistente').id, 'pollinations');
-      expect(providerById('huggingface').id, 'huggingface');
+      // Los proveedores retirados degradan solo: un settings.json viejo no
+      // deja la app sin proveedor.
+      for (final retired in retiredProviderIds) {
+        expect(providerById(retired).id, 'pollinations');
+      }
+      expect(providerById('azure-gpt-image').id, 'azure-gpt-image');
     });
   });
 }

@@ -12,8 +12,15 @@ List<String> skillOptions(List<String> from) =>
 /// Modo de reparto del aumento de característica del trasfondo 2024.
 enum AbilitySpreadMode { twoOne, oneOneOne }
 
-/// Método de puntuación de características (brief §3.A.4).
-enum ScoreMethod { standardArray, roll4d6 }
+/// Método de puntuación de características (brief §3.A.4). `manual` no reparte
+/// un pool: el usuario
+/// escribe cada número, para digitalizar un personaje que ya existe en papel.
+enum ScoreMethod { standardArray, roll4d6, manual }
+
+/// Rango aceptado al escribir a mano. Es el rango absoluto de 5e, no el de
+/// generación: si el valor sale de 3-18 el motor ya avisa (sin bloquear).
+const manualScoreMin = 1;
+const manualScoreMax = 30;
 
 /// Pasos del wizard de creación, en orden. Fijos (ya no dependen de si la clase
 /// lanza conjuros: los conjuros viven dentro de [equipo]).
@@ -120,11 +127,19 @@ class CreationDraft {
 
     final rawScores = json['assignedScores'];
     if (rawScores is Map) {
-      final available = List<int>.of(draft.pool);
-      for (final ability in Ability.values) {
-        final value = rawScores[ability.name];
-        if (value is num && available.remove(value.toInt())) {
-          draft.assignedScores[ability] = value.toInt();
+      if (draft.scoreMethod == ScoreMethod.manual) {
+        // Sin pool que respetar: solo se acota el rango.
+        for (final ability in Ability.values) {
+          final value = rawScores[ability.name];
+          if (value is num) draft.setManualScore(ability, value.toInt());
+        }
+      } else {
+        final available = List<int>.of(draft.pool);
+        for (final ability in Ability.values) {
+          final value = rawScores[ability.name];
+          if (value is num && available.remove(value.toInt())) {
+            draft.assignedScores[ability] = value.toInt();
+          }
         }
       }
     }
@@ -134,9 +149,16 @@ class CreationDraft {
       draft.equippedArmorId = armorId;
     }
     draft.shieldEquipped = json['shieldEquipped'] == true;
-    final weaponId = json['weaponId'];
-    if (weaponId is String && repo.weapon(weaponId) != null) {
-      draft.weaponId = weaponId;
+    // `weaponId` (una sola arma) es el formato viejo del borrador; se lee para
+    // no perder borradores guardados antes de permitir varias armas.
+    final legacyWeaponId = json['weaponId'];
+    if (legacyWeaponId is String && repo.weapon(legacyWeaponId) != null) {
+      draft.weaponIds.add(legacyWeaponId);
+    }
+    for (final id in _stringList(json['weaponIds'])) {
+      if (repo.weapon(id) != null && !draft.weaponIds.contains(id)) {
+        draft.weaponIds.add(id);
+      }
     }
     final name = json['name'];
     if (name is String) draft.name = name;
@@ -182,7 +204,10 @@ class CreationDraft {
   // Equipo.
   String? equippedArmorId;
   bool shieldEquipped = false;
-  String? weaponId;
+
+  /// Armas equipadas, en orden. Varias son legítimas (por ejemplo un pícaro con
+  /// dos dagas): el motor genera un ataque por cada una.
+  final List<String> weaponIds = [];
 
   String name = '';
 
@@ -213,7 +238,7 @@ class CreationDraft {
     },
     'equippedArmorId': equippedArmorId,
     'shieldEquipped': shieldEquipped,
-    'weaponId': weaponId,
+    'weaponIds': weaponIds,
     'name': name,
     'alignment': alignment?.toJson(),
     'personalityTrait': personalityTrait,
@@ -319,13 +344,31 @@ class CreationDraft {
     return m;
   }
 
-  /// Fija el pool de puntuaciones según el método (array o tirada).
+  /// Fija el pool de puntuaciones según el método. En `manual` no hay pool que
+  /// repartir: se deja el anterior intacto (queda sin usar) para que volver a
+  /// un método con pool no obligue a tirar de nuevo sin querer.
   void applyScoreMethod(ScoreMethod method, {Dice? dice}) {
     scoreMethod = method;
     assignedScores.clear();
-    pool = method == ScoreMethod.standardArray
-        ? List.of(standardArray)
-        : (dice ?? Dice()).rollAbilityScoreSet();
+    switch (method) {
+      case ScoreMethod.standardArray:
+        pool = List.of(standardArray);
+      case ScoreMethod.roll4d6:
+        pool = (dice ?? Dice()).rollAbilityScoreSet();
+      case ScoreMethod.manual:
+        break;
+    }
+  }
+
+  /// Escribe [v] directamente en [a] (solo modo manual). `null` la deja sin
+  /// asignar. Fuera de [manualScoreMin]-[manualScoreMax] se ignora.
+  void setManualScore(Ability a, int? v) {
+    if (v == null) {
+      assignedScores.remove(a);
+      return;
+    }
+    if (v < manualScoreMin || v > manualScoreMax) return;
+    assignedScores[a] = v;
   }
 
   /// Valores del pool aún no asignados (para poblar los dropdowns).
@@ -339,6 +382,26 @@ class CreationDraft {
       remaining.remove(v);
     }
     return remaining..sort((x, y) => y.compareTo(x));
+  }
+
+  /// Qué otras características tienen tomado cada valor. Una tirada de 4d6
+  /// puede repetir valores, y dos "14" en la lista son indistinguibles: con
+  /// esto el paso 4 puede etiquetarlos ("14 · en DES") en vez de mostrar dos
+  /// entradas idénticas.
+  Map<int, List<Ability>> holdersExcept(Ability a) {
+    final m = <int, List<Ability>>{};
+    for (final e in assignedScores.entries) {
+      if (e.key == a) continue;
+      (m[e.value] ??= []).add(e.key);
+    }
+    return m;
+  }
+
+  /// Cuántas copias de [v] quedan libres en el pool, ignorando lo que tenga [a].
+  int freeCopiesOf(int v, Ability a) {
+    final total = pool.where((x) => x == v).length;
+    final taken = holdersExcept(a)[v]?.length ?? 0;
+    return total - taken;
   }
 
   /// Asigna [v] a la característica [a]. Si [v] ya está tomada por otra y no
@@ -536,7 +599,7 @@ class CreationDraft {
       hpPerLevel: [hitDie],
       equippedArmorId: equippedArmorId,
       shieldEquipped: shieldEquipped,
-      equippedWeaponIds: [?weaponId],
+      equippedWeaponIds: List.of(weaponIds),
       alignment: alignment,
       personalityTrait: personalityTrait.trim(),
     );

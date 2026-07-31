@@ -56,28 +56,35 @@ void main() {
     final service = SettingsService(dataRoot: sandbox.path);
     await service.save(
       AppSettings(
-        imageProvider: 'gemini',
-        geminiApiKey: 'clave-local',
-        huggingFaceToken: 'token-local',
-        huggingFaceModel: 'modelo/anterior',
+        imageProvider: 'azure',
+        azureApiKey: 'clave-local',
+        azureOpenAiApiKey: 'clave-local-gpt',
       ),
     );
 
     await service.restorePortable({
-      'imageProvider': 'huggingface',
-      'huggingFaceModel': 'modelo/restaurado',
-      'geminiApiKey': 'clave-del-respaldo',
-      'huggingFaceToken': 'token-del-respaldo',
+      'imageProvider': 'azure-gpt-image',
+      'azureApiKey': 'clave-del-respaldo',
+      'azureOpenAiApiKey': 'clave-del-respaldo-gpt',
     });
     final restored = await service.load();
 
-    expect(restored.imageProvider, 'huggingface');
-    expect(restored.huggingFaceModel, 'modelo/restaurado');
-    expect(restored.geminiApiKey, 'clave-local');
-    expect(restored.huggingFaceToken, 'token-local');
+    expect(restored.imageProvider, 'azure-gpt-image');
+    expect(restored.azureApiKey, 'clave-local');
+    expect(restored.azureOpenAiApiKey, 'clave-local-gpt');
   });
 
-  test('migra ajustes v1 al documento v2 y conserva una copia', () async {
+  test('restaurar un proveedor retirado no rompe los ajustes', () async {
+    final service = SettingsService(dataRoot: sandbox.path);
+    await service.save(AppSettings(imageProvider: 'azure'));
+
+    // Un respaldo hecho cuando Gemini todavía existía.
+    await service.restorePortable({'imageProvider': 'gemini'});
+
+    expect((await service.load()).imageProvider, 'azure');
+  });
+
+  test('migra ajustes v1 al documento actual y conserva una copia', () async {
     final root = Directory(fichasDir(null, sandbox.path));
     await root.create(recursive: true);
     final file = File(p.join(root.path, 'settings.json'));
@@ -88,8 +95,16 @@ void main() {
     final service = SettingsService(dataRoot: sandbox.path);
     final settings = await service.load();
 
-    expect(settings.imageProvider, 'gemini');
-    expect(settings.geminiApiKey, 'clave-historica');
+    // El fixture v1 usaba Gemini con su token: el proveedor ya no existe, así
+    // que la migración lo devuelve al que no necesita key y borra del archivo
+    // las credenciales que quedaron huérfanas.
+    expect(settings.imageProvider, 'pollinations');
+    final credentials =
+        jsonDecode(await file.readAsString())['credentials'] as Map;
+    expect(
+      credentials.keys,
+      unorderedEquals(['azureApiKey', 'azureOpenAiApiKey']),
+    );
     expect(service.migrationBackups, hasLength(1));
     expect(
       jsonDecode(await file.readAsString())['schemaVersion'],

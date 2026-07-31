@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
 import 'azure_image_service.dart';
-import 'gemini_image_service.dart';
+import 'azure_openai_image_service.dart';
 
 /// Error legible de un proveedor de imágenes.
 class ProviderException implements Exception {
@@ -101,90 +100,19 @@ class PollinationsProvider implements PortraitProvider {
   }
 }
 
-/// Hugging Face Inference (router actual) — token gratis (cuenta sin tarjeta).
-class HuggingFaceProvider implements PortraitProvider {
-  final http.Client _client;
-  final String model;
-  HuggingFaceProvider({
-    http.Client? client,
-    this.model = 'stabilityai/stable-diffusion-3-medium-diffusers',
-  }) : _client = client ?? http.Client();
+/// gpt-image-2 en Azure. Recurso y deployment fijos (ver
+/// `azure_openai_image_service.dart`); solo pide la API key. Es el único
+/// proveedor que acepta imagen de referencia.
+class AzureOpenAiProvider implements PortraitProvider {
+  final http.Client? _client;
+  AzureOpenAiProvider({this._client});
 
   @override
-  String get id => 'huggingface';
+  String get id => 'azure-gpt-image';
   @override
-  String get name => 'Hugging Face (token gratis)';
+  String get name => 'Azure · gpt-image-2 (requiere API key)';
   @override
-  String? get keyHint => 'Token de huggingface.co (empieza con "hf_")';
-  @override
-  bool get supportsReference => false;
-  @override
-  int get defaultCount => 1;
-
-  Uri get _uri =>
-      Uri.parse('https://router.huggingface.co/hf-inference/models/$model');
-
-  static Map<String, dynamic> buildBody(String prompt) => {'inputs': prompt};
-
-  @override
-  Future<List<Uint8List>> generate({
-    required String prompt,
-    String apiKey = '',
-    Uint8List? reference,
-    int? count,
-  }) async {
-    final resp = await _client
-        .post(
-          _uri,
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-            'Content-Type': 'application/json',
-            'Accept': 'image/png',
-          },
-          body: jsonEncode(buildBody(prompt)),
-        )
-        .timeout(const Duration(seconds: 120));
-    if (resp.statusCode == 503) {
-      throw ProviderException(
-        'El modelo se está cargando en Hugging Face; probá de nuevo en ~20 s.',
-      );
-    }
-    if (resp.statusCode != 200) {
-      throw ProviderException(_error(resp.body, resp.statusCode));
-    }
-    return [resp.bodyBytes];
-  }
-
-  static String _error(String body, int status) {
-    try {
-      final j = jsonDecode(body);
-      if (j is Map && j['error'] is String) return j['error'] as String;
-    } catch (_) {}
-    if (status == 401) return 'Token de Hugging Face inválido o ausente (401).';
-    if (status == 403) {
-      return 'El modelo requiere aceptar su licencia en huggingface.co con tu '
-          'cuenta (403).';
-    }
-    if (status == 404) {
-      return 'El modelo no está disponible en el proveedor gratuito (404). '
-          'Cambialo en Ajustes o usá Pollinations.';
-    }
-    return 'Hugging Face respondió con código $status.';
-  }
-}
-
-/// Gemini (Google AI Studio). Requiere key (y hoy, en general, billing).
-class GeminiProvider implements PortraitProvider {
-  final GeminiImageService _service;
-  GeminiProvider({GeminiImageService? service})
-    : _service = service ?? GeminiImageService();
-
-  @override
-  String get id => 'gemini';
-  @override
-  String get name => 'Gemini (requiere API key/billing)';
-  @override
-  String? get keyHint => 'API key de Google AI Studio';
+  String? get keyHint => 'API key del recurso de Azure';
   @override
   bool get supportsReference => true;
   @override
@@ -197,11 +125,15 @@ class GeminiProvider implements PortraitProvider {
     Uint8List? reference,
     int? count,
   }) {
-    return _service.generate(
-      apiKey: apiKey,
-      prompt: prompt,
-      reference: reference,
-    );
+    final service = AzureOpenAiImageService(client: _client);
+    return service
+        .generate(
+          apiKey: apiKey,
+          prompt: prompt,
+          count: count ?? defaultCount,
+          reference: reference,
+        )
+        .whenComplete(service.close);
   }
 }
 
@@ -239,10 +171,14 @@ class AzureProvider implements PortraitProvider {
 /// Todos los proveedores disponibles, en orden de preferencia.
 List<PortraitProvider> buildProviders() => [
   PollinationsProvider(),
-  HuggingFaceProvider(),
-  GeminiProvider(),
+  AzureOpenAiProvider(),
   AzureProvider(),
 ];
+
+/// Ids que existieron y ya no. Un ajuste guardado con uno de estos degrada a
+/// Pollinations sin avisar (ver [providerById]); la migración de `settings.json`
+/// lo reescribe la próxima vez que se guarden los ajustes.
+const retiredProviderIds = {'huggingface', 'gemini'};
 
 PortraitProvider providerById(String id) => buildProviders().firstWhere(
   (p) => p.id == id,

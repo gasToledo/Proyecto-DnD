@@ -17,10 +17,8 @@ class SettingsDialog extends StatefulWidget {
 
 class _SettingsDialogState extends State<SettingsDialog> {
   late final SettingsService _service = widget.service ?? SettingsService();
-  final _geminiCtrl = TextEditingController();
-  final _hfCtrl = TextEditingController();
-  final _hfModelCtrl = TextEditingController();
   final _azureCtrl = TextEditingController();
+  final _azureOpenAiCtrl = TextEditingController();
 
   final _providers = buildProviders();
   String _providerId = 'pollinations';
@@ -36,10 +34,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
       if (!mounted) return;
       setState(() {
         _providerId = s.imageProvider;
-        _geminiCtrl.text = s.geminiApiKey;
-        _hfCtrl.text = s.huggingFaceToken;
-        _hfModelCtrl.text = s.huggingFaceModel;
         _azureCtrl.text = s.azureApiKey;
+        _azureOpenAiCtrl.text = s.azureOpenAiApiKey;
         _loaded = true;
         final issue = _service.recoveryIssues.firstOrNull;
         _settingsLoadWarning = issue == null
@@ -55,25 +51,20 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   @override
   void dispose() {
-    _geminiCtrl.dispose();
-    _hfCtrl.dispose();
-    _hfModelCtrl.dispose();
     _azureCtrl.dispose();
+    _azureOpenAiCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     if (_saving) return;
     setState(() => _saving = true);
-    final model = _hfModelCtrl.text.trim();
     try {
       await _service.save(
         AppSettings(
           imageProvider: _providerId,
-          geminiApiKey: _geminiCtrl.text.trim(),
-          huggingFaceToken: _hfCtrl.text.trim(),
-          huggingFaceModel: model.isEmpty ? defaultHuggingFaceModel : model,
           azureApiKey: _azureCtrl.text.trim(),
+          azureOpenAiApiKey: _azureOpenAiCtrl.text.trim(),
         ),
       );
       if (!mounted) return;
@@ -172,19 +163,20 @@ class _SettingsDialogState extends State<SettingsDialog> {
   }
 
   Widget _keyField(PortraitProvider provider) {
+    // Los dos proveedores de Azure son recursos distintos, cada uno con su
+    // propia key: comparten pantalla pero no credencial.
     final ctrl = switch (provider.id) {
-      'gemini' => _geminiCtrl,
-      'azure' => _azureCtrl,
-      _ => _hfCtrl,
+      'azure-gpt-image' => _azureOpenAiCtrl,
+      _ => _azureCtrl,
     };
     final hint = switch (provider.id) {
-      'gemini' => 'Conseguila gratis en: aistudio.google.com/apikey',
-      'azure' =>
+      'azure-gpt-image' =>
+        'La generás en el recurso de Azure que sirve gpt-image-2 '
+            '(Keys and Endpoint).',
+      _ =>
         'La generás en tu recurso de Azure AI Foundry (Keys and '
             'Endpoint).',
-      _ => 'Conseguila gratis en: huggingface.co/settings/tokens',
     };
-    final needsMoreFields = provider.id == 'huggingface';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -202,22 +194,14 @@ class _SettingsDialogState extends State<SettingsDialog> {
               onPressed: () => setState(() => _obscure = !_obscure),
             ),
           ),
-          textInputAction: needsMoreFields
-              ? TextInputAction.next
-              : TextInputAction.done,
-          onSubmitted: needsMoreFields ? null : (_) => _save(),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _save(),
         ),
-        if (provider.id == 'huggingface') ...[
-          const SizedBox(height: 12),
-          TextField(
-            controller: _hfModelCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Modelo de Hugging Face',
-              helperText: 'El catálogo gratuito cambia; podés probar otro id.',
-              border: OutlineInputBorder(),
-            ),
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _save(),
+        if (provider.supportsReference) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Este proveedor acepta una imagen de referencia al generar.',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ],

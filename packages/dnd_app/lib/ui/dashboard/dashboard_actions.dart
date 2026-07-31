@@ -270,4 +270,75 @@ extension _DashboardActions on _DashboardScreenState {
       ),
     );
   }
+
+  Future<void> _checkForUpdates() async {
+    final service = widget.updateService;
+    if (service == null) return;
+    AppUpdate? update;
+    try {
+      update = await service.checkForUpdate();
+    } catch (_) {
+      return; // La aplicacion sigue siendo offline-first.
+    }
+    final available = update;
+    if (available == null || !mounted) return;
+
+    final download = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Nueva versión disponible'),
+        content: SizedBox(
+          width: 520,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Versión instalada: ${service.currentVersion}'),
+                Text('Nueva versión: ${available.version}'),
+                if (available.notes.trim().isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    available.title,
+                    style: Theme.of(ctx).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  SelectableText(available.notes),
+                ],
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Ahora no'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.download),
+            label: const Text('Descargar'),
+          ),
+        ],
+      ),
+    );
+    if (download != true || !mounted) return;
+    if (!_startOperation('Descargando actualización...')) return;
+    try {
+      final file = await service.download(available);
+      if (mounted) _showExported('Actualización descargada', file.path);
+    } catch (error) {
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo descargar la actualización: $error',
+          tone: AppMessageTone.error,
+        );
+      }
+    } finally {
+      _finishOperation();
+    }
+  }
+
+  // --------------------------------------------------------------------------
 }

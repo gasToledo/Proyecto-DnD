@@ -24,7 +24,8 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
   subclases están además en el SRD 5.2.1), más la clase Artífice y sus 5
   subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
-  Artificer*), 8 linajes, 33 trasfondos, 110 dotes (9 SRD, 73 PHB 2024, 28 FoA)
+  Artificer*), 24 linajes (8 SRD, 16 PHB 2024), 33 trasfondos, 110 dotes
+  (9 SRD, 73 PHB 2024, 28 FoA)
   y 392 conjuros (177 SRD, 214 PHB 2024, 1 FoA).
 - Creación guiada, subida de nivel con wizard multi-paso (resumen, puntos de
   golpe, subclase, mejora de característica, rasgos, conjuros y repaso, cada
@@ -97,6 +98,12 @@ la ficha por su cuenta.
   representa la consecuencia mecánica de un rasgo.
 - `domain/content.dart`: especies, clases, subclases, trasfondos, dotes, armas,
   armaduras y conjuros son contenido.
+- `domain/damage_type.dart`: los 13 tipos de daño con su nombre en español. El
+  contenido los referencia por su id en inglés, que es la clave estable que
+  viaja en JSON y en los personajes guardados; la traducción vive solo acá, no
+  en la UI. `ImmunityEffect` también se usa hoy para inmunidad a **estados**
+  (el Artífice es inmune a `poisoned`), así que `labelFor` los cubre y cae al
+  id capitalizado ante cualquier otra cosa, para tolerar homebrew.
 - `data/content_repository.dart`: reúne el contenido oficial y homebrew.
 - `engine/character_compiler.dart`: combina un `Character` con el repositorio y
   produce una `ComputedSheet` inmutable.

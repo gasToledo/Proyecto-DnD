@@ -131,7 +131,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 | Bloque | Estado | Hallazgos y alcance |
 | --- | --- | --- |
-| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. La Ascendencia Dracónica ahora nombra los diez dragones y su tipo de daño, como ya hacía el Goliat con los seis gigantes. Falta la elección de tamaño (Humano, Tiefling **y Aasimar**, que en el PHB son Mediano o Pequeño), las ascendencias de Dracónido y Goliat como elección persistida, y el cambio de truco del Alto Elfo. |
+| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. **El Linaje gigante del Goliat (6) y el Linaje dracónico del Dracónido (10) ya son elecciones persistidas y con efecto mecánico**, modeladas como linajes porque así los llama el PHB; el catálogo llega a 24 linajes. La resistencia del Dracónido dejó de ser texto y el Ataque de Aliento es un recurso con usos iguales al bonificador por competencia. Falta la elección de tamaño (Humano, Tiefling **y Aasimar**, que en el PHB son Mediano o Pequeño) y el cambio de truco del Alto Elfo. |
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` y `foa_2025` (antes degradaba a `homebrew` en silencio), con la procedencia visible en la app. Estado actual del etiquetado: subclases 12 SRD / 36 PHB / 5 FoA, dotes 9 / 73 / 28, trasfondos 4 / 12 / 17, conjuros 177 / 214 / 1, especies 9 / 1 / 5. Cerrado en todos los bloques salvo equipo, que sigue sin desglose por procedencia. |
 | Trasfondos | corregido | **Cierra Q3**: los 4 trasfondos que faltaban, cargados con los datos del bloque de características de cada uno en el capítulo 4 (más confiable que la tabla resumen de creación de personaje, que quedó cortada por columnas en la extracción). Acólito y Erudito son `srd_2024`; Guía y Marinero, `phb_2024`. Trajeron dos dotes de origen que no estaban: **Iniciado en la Magia (Druida)** y **Matón de Taberna**, con el mismo texto que las variantes de Mago y Clérigo ya cargadas. El catálogo llega a **16 trasfondos y 59 dotes**. Falta verificar las tres características ofrecidas y el equipo inicial de los 16. |
@@ -170,7 +170,15 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
   Aasimar también la tiene, así que es una elección a persistir.
 - Cambio de truco del Alto Elfo después de un descanso largo.
 - Lanzamiento explícito de conjuros innatos usando espacios desde la ficha.
-- Elecciones de ascendencia del Dracónido y del Goliat.
+- ~~Elecciones de ascendencia del Dracónido y del Goliat.~~ **Resuelto**: el
+  PHB las llama *Linaje gigante* y *Linaje dracónico*, así que se modelaron con
+  el mismo mecanismo que ya usaban Elfo, Gnomo y Tiefling. Son 6 linajes de
+  gigante y 10 de dragón, etiquetados `phb_2024` porque no se pudo verificar
+  que estén en el SRD 5.2.1. La resistencia del Dracónido, que antes era solo
+  texto descriptivo, ahora se aplica de verdad, y el Ataque de Aliento pasó a
+  ser un recurso con usos reales. Para eso `ResourceEffect` ganó
+  `maxFromProficiency`: sabía escalar por nivel y por característica, pero no
+  por bonificador por competencia.
 
 ## Qué contiene el SRD 5.2.1
 

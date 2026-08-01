@@ -17,6 +17,11 @@ registra la fuente de verdad, los hallazgos y el avance por bloque.
 La última versión publicada está en
 [Releases](https://github.com/gasToledo/Proyecto-DnD/releases/latest).
 
+La aplicación comprueba los Releases en segundo plano al iniciar y, cuando hay
+una versión nueva, ofrece descargar su ZIP en la carpeta de exportaciones. El
+alcance actual y el camino hacia una instalación automática están documentados
+en [docs/actualizaciones.md](docs/actualizaciones.md).
+
 1. Descargá el ZIP y extraelo completo.
 2. Ejecutá `dnd_app.exe`.
 3. Si SmartScreen avisa que el ejecutable no está firmado, elegí

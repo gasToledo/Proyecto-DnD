@@ -1509,6 +1509,9 @@
     "repeatable": false,
     "effects": [
       {
+        "type": "offHandAbilityDamage"
+      },
+      {
         "type": "passiveTrait",
         "name": "Combate con Dos Armas",
         "description": "Cuando haces el ataque extra de la propiedad Ligera, puedes sumar tu modificador por característica al daño si no lo sumabas ya."

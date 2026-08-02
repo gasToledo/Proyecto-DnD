@@ -566,6 +566,9 @@ class Weapon {
   bool get isRanged => properties.contains('ranged');
   bool get isFinesse => properties.contains('finesse');
 
+  /// Propiedad Ligera: requisito del ataque de mano secundaria (2024).
+  bool get isLight => properties.contains('light');
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,

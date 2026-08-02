@@ -78,6 +78,20 @@ class InnateSpell {
       };
 }
 
+/// Qué economía de acción consume un ataque.
+///
+/// La resuelve el motor y no la ficha: derivarla en la UI de `offHand` y la
+/// maestría sería reimplementar la regla fuera del motor.
+enum AttackAction {
+  action,
+  bonusAction;
+
+  static AttackAction fromJson(String? v) =>
+      v == 'bonusAction' ? AttackAction.bonusAction : AttackAction.action;
+
+  String toJson() => name;
+}
+
 /// Ataque calculado a partir del arma equipada.
 class Attack {
   final String weaponId;
@@ -91,6 +105,14 @@ class Attack {
   /// Maestría aplicada si el arma está entre las elegidas (2024).
   final String? mastery;
 
+  /// Si el arma está empuñada en la mano secundaria.
+  final bool offHand;
+
+  /// Acción que consume. El ataque de mano secundaria es acción adicional,
+  /// salvo que el arma aplique la maestría Mellar (Nick), que lo mete dentro
+  /// de la acción de Atacar.
+  final AttackAction action;
+
   const Attack({
     required this.weaponId,
     required this.name,
@@ -98,6 +120,8 @@ class Attack {
     required this.damage,
     required this.damageType,
     this.mastery,
+    this.offHand = false,
+    this.action = AttackAction.action,
   });
 
   Map<String, dynamic> toJson() => {
@@ -107,6 +131,8 @@ class Attack {
         'damage': damage,
         'damageType': damageType,
         'mastery': mastery,
+        'offHand': offHand,
+        'action': action.toJson(),
       };
 }
 

@@ -43,4 +43,23 @@ void main() {
       expect(identical(c.combat, base.combat), isTrue);
     });
   });
+
+  group('weaponOffHand', () {
+    test('marcar la mano secundaria preserva el CombatState', () {
+      final base = _base();
+      final c = base.copyWith(weaponOffHand: const {'dagger': true});
+      expect(c.weaponOffHand, {'dagger': true});
+      expect(identical(c.combat, base.combat), isTrue);
+    });
+
+    test('no pasarlo conserva lo que había', () {
+      final base = _base().copyWith(weaponOffHand: const {'dagger': true});
+      expect(base.copyWith(name: 'Otro').weaponOffHand, {'dagger': true});
+    });
+
+    test('sobrevive un round-trip por JSON', () {
+      final c = _base().copyWith(weaponOffHand: const {'dagger': true});
+      expect(Character.fromJson(c.toJson()).weaponOffHand, {'dagger': true});
+    });
+  });
 }

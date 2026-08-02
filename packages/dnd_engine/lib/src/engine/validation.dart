@@ -160,6 +160,8 @@ class CharacterValidator {
       }
     }
 
+    _validateOffHand(c, repo, w);
+
     for (final a in c.assignedScores.values) {
       if (a < 3 || a > 18) {
         w.add(ValidationWarning(
@@ -315,6 +317,46 @@ class CharacterValidator {
     }
 
     return w;
+  }
+
+  /// Chequeos del combate con dos armas (2024). Una entrada de [weaponOffHand]
+  /// que no esté equipada se ignora en silencio, igual que [weaponTwoHanded]:
+  /// desequipar un arma no debería ensuciar la ficha con advertencias.
+  void _validateOffHand(
+      Character c, ContentRepository repo, List<ValidationWarning> w) {
+    final offHandIds = c.equippedWeaponIds
+        .where((id) => c.weaponOffHand[id] ?? false)
+        .toList();
+    if (offHandIds.isEmpty) return;
+
+    if (offHandIds.length > 1) {
+      w.add(ValidationWarning(
+        'too_many_off_hands',
+        'Marcaste ${offHandIds.length} armas en la mano secundaria: solo se empuña una.',
+      ));
+    }
+
+    for (final id in offHandIds) {
+      final weapon = repo.weapon(id);
+      if (weapon != null && !weapon.isLight) {
+        w.add(ValidationWarning(
+          'off_hand_not_light',
+          '${weapon.name} no es Ligera: el ataque de mano secundaria exige un arma Ligera.',
+        ));
+      }
+    }
+
+    // El ataque extra sale de empuñar **dos** armas Ligeras: con una sola no hay
+    // nada que hacer en la mano secundaria.
+    final hasLightMainHand = c.equippedWeaponIds.any((id) =>
+        !(c.weaponOffHand[id] ?? false) && (repo.weapon(id)?.isLight ?? false));
+    if (!hasLightMainHand) {
+      w.add(ValidationWarning(
+        'off_hand_without_pair',
+        'No hay otra arma Ligera en la mano principal: el ataque de mano secundaria no se puede hacer.',
+        WarningSeverity.info,
+      ));
+    }
   }
 
   bool _lineageUsesSpellcasting(Lineage lineage) => lineage.features.any(

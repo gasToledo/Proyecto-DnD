@@ -494,6 +494,66 @@ void main() {
       );
     });
 
+    group('Combate con dos armas', () {
+      Character duelist({
+        List<String> equipped = const ['dagger', 'shortsword'],
+        Map<String, bool> offHand = const {'dagger': true},
+      }) =>
+          Character.fromJson(sagan().toJson()
+            ..['classId'] = 'rogue'
+            ..['fightingStyleId'] = null
+            ..['weaponMasteryChoices'] = const <String>[]
+            ..['chosenSkills'] = const ['stealth', 'acrobatics', 'perception']
+            ..['equippedWeaponIds'] = equipped
+            ..['weaponOffHand'] = offHand);
+
+      List<String> codesFor(Character c) =>
+          CharacterValidator(repo).validate(c).map((w) => w.code).toList();
+
+      test('dos armas Ligeras no disparan ninguna advertencia de mano', () {
+        final codes = codesFor(duelist());
+        expect(codes, isNot(contains('off_hand_not_light')));
+        expect(codes, isNot(contains('off_hand_without_pair')));
+        expect(codes, isNot(contains('too_many_off_hands')));
+      });
+
+      test('un arma no Ligera en la secundaria advierte', () {
+        // La espada larga es marcial y no es Ligera.
+        final codes = codesFor(duelist(
+          equipped: const ['dagger', 'longsword'],
+          offHand: const {'longsword': true},
+        ));
+        expect(codes, contains('off_hand_not_light'));
+      });
+
+      test('sin otra arma Ligera en la principal, el ataque no se puede hacer',
+          () {
+        final codes = codesFor(duelist(
+          equipped: const ['dagger', 'longsword'],
+          offHand: const {'dagger': true},
+        ));
+        expect(codes, contains('off_hand_without_pair'));
+      });
+
+      test('marcar dos armas como secundaria advierte', () {
+        final codes = codesFor(duelist(
+          offHand: const {'dagger': true, 'shortsword': true},
+        ));
+        expect(codes, contains('too_many_off_hands'));
+      });
+
+      test('una marca de un arma desequipada se ignora en silencio', () {
+        // Desequipar no debería ensuciar la ficha con advertencias.
+        final codes = codesFor(duelist(
+          equipped: const ['shortsword'],
+          offHand: const {'dagger': true},
+        ));
+        expect(codes, isNot(contains('off_hand_not_light')));
+        expect(codes, isNot(contains('too_many_off_hands')));
+        expect(codes, isNot(contains('off_hand_without_pair')));
+      });
+    });
+
     test('Bardo sigue rechazando un identificador de habilidad desconocido',
         () {
       final json = sagan().toJson()

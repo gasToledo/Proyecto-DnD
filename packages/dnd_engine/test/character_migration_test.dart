@@ -102,7 +102,9 @@ void main() {
 
     final migrated = Character.migrateJson(source);
 
-    expect(migrated['schemaVersion'], 5);
+    // La cadena sigue hasta la versión actual; lo que prueba este caso es que
+    // el paso v4 → v5 renombró los ids, no dónde termina la cadena.
+    expect(migrated['schemaVersion'], Character.currentSchemaVersion);
     expect(migrated['cantripIds'], ['toll-the-dead']);
     expect(migrated['spellIds'], [
       'befuddlement',
@@ -112,6 +114,63 @@ void main() {
       'shining-smite',
       'magic-missile',
     ]);
+  });
+
+  test('v5 → v6: la mano secundaria arranca vacía', () {
+    final source = {
+      'schemaVersion': 5,
+      'id': 'v5',
+      'name': 'Espadachín',
+      'raceId': 'human',
+      'classId': 'fighter',
+      'backgroundId': 'soldier',
+      'assignedScores': const <String, int>{},
+      'equippedWeaponIds': const ['dagger', 'shortsword'],
+    };
+
+    final migrated = Character.migrateJson(source);
+
+    expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+    expect(migrated['weaponOffHand'], isEmpty);
+    // Nadie queda con un arma en la secundaria por accidente: hasta que el
+    // jugador la marque, la ficha se compila igual que antes.
+    expect(Character.fromJson(source).weaponOffHand, isEmpty);
+  });
+
+  test('una bandera de equipo con basura se descarta sin perder la ficha', () {
+    // Las importaciones son datos no confiables: un valor de tipo equivocado
+    // no puede costar el personaje entero.
+    final source = {
+      'schemaVersion': 6,
+      'id': 'basura',
+      'name': 'Importado',
+      'raceId': 'human',
+      'classId': 'fighter',
+      'backgroundId': 'soldier',
+      'assignedScores': const <String, int>{},
+      'weaponOffHand': const {'dagger': 'sí', 'shortsword': true},
+      'weaponTwoHanded': const {'longsword': 3},
+    };
+
+    final c = Character.fromJson(source);
+
+    expect(c.weaponOffHand, {'shortsword': true});
+    expect(c.weaponTwoHanded, isEmpty);
+  });
+
+  test('weaponOffHand que no es un mapa se ignora', () {
+    final source = {
+      'schemaVersion': 6,
+      'id': 'basura2',
+      'name': 'Importado',
+      'raceId': 'human',
+      'classId': 'fighter',
+      'backgroundId': 'soldier',
+      'assignedScores': const <String, int>{},
+      'weaponOffHand': 7,
+    };
+
+    expect(Character.fromJson(source).weaponOffHand, isEmpty);
   });
 
   test('rechaza una versión futura con un error comprensible', () {

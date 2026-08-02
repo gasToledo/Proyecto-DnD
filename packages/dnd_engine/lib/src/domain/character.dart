@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 5;
+  static const int currentSchemaVersion = 6;
 
   final String id;
   String name;
@@ -220,6 +220,13 @@ class Character {
   /// Armas empuñadas a dos manos (para daño versátil). id de arma → dos manos.
   final Map<String, bool> weaponTwoHanded;
 
+  /// Armas empuñadas en la mano secundaria. id de arma → mano secundaria.
+  ///
+  /// Se marca explícitamente y no se infiere del orden de equipado: el ataque
+  /// de mano secundaria cambia el daño y la economía de acciones, así que
+  /// adivinarlo daría una ficha distinta sin que el jugador lo haya pedido.
+  final Map<String, bool> weaponOffHand;
+
   /// Rutas locales de retratos guardados. La primera es la activa.
   final List<String> portraitPaths;
 
@@ -260,6 +267,7 @@ class Character {
     this.shieldEquipped = false,
     this.equippedWeaponIds = const [],
     this.weaponTwoHanded = const {},
+    this.weaponOffHand = const {},
     this.portraitPaths = const [],
     this.notes = '',
     this.alignment,
@@ -294,12 +302,22 @@ class Character {
         'shieldEquipped': shieldEquipped,
         'equippedWeaponIds': equippedWeaponIds,
         'weaponTwoHanded': weaponTwoHanded,
+        'weaponOffHand': weaponOffHand,
         'portraitPaths': portraitPaths,
         'notes': notes,
         'alignment': alignment?.toJson(),
         'personalityTrait': personalityTrait,
         'tableConfig': tableConfig.toJson(),
         'combat': combat.toJson(),
+      };
+
+  /// Mapa "id de arma → bandera" tolerante: descarta las entradas cuyo tipo no
+  /// corresponde en vez de tirar. Las importaciones son datos no confiables y un
+  /// valor basura en una bandera de equipo no justifica perder la ficha entera.
+  static Map<String, bool> _boolMap(dynamic raw) => {
+        if (raw is Map)
+          for (final e in raw.entries)
+            if (e.key is String && e.value is bool) e.key as String: e.value,
       };
 
   static int schemaVersionOf(Map<String, dynamic> json) {
@@ -386,6 +404,10 @@ class Character {
           _renameSpellIds(migrated, _spellIdRenames4to5);
           version = 5;
           migrated['schemaVersion'] = version;
+        case 5:
+          migrated.putIfAbsent('weaponOffHand', () => <String, dynamic>{});
+          version = 6;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -435,10 +457,8 @@ class Character {
       equippedWeaponIds: (j['equippedWeaponIds'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
-      weaponTwoHanded: {
-        for (final e in (j['weaponTwoHanded'] as Map? ?? const {}).entries)
-          e.key as String: e.value as bool,
-      },
+      weaponTwoHanded: _boolMap(j['weaponTwoHanded']),
+      weaponOffHand: _boolMap(j['weaponOffHand']),
       portraitPaths: (j['portraitPaths'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -470,6 +490,7 @@ class Character {
     bool? shieldEquipped,
     List<String>? equippedWeaponIds,
     Map<String, bool>? weaponTwoHanded,
+    Map<String, bool>? weaponOffHand,
     List<String>? portraitPaths,
     String? notes,
     Object? alignment = _unset,
@@ -509,6 +530,7 @@ class Character {
       shieldEquipped: shieldEquipped ?? this.shieldEquipped,
       equippedWeaponIds: equippedWeaponIds ?? this.equippedWeaponIds,
       weaponTwoHanded: weaponTwoHanded ?? this.weaponTwoHanded,
+      weaponOffHand: weaponOffHand ?? this.weaponOffHand,
       portraitPaths: portraitPaths ?? this.portraitPaths,
       notes: notes ?? this.notes,
       // Centinela: pasar `alignment: null` sí lo limpia.

@@ -334,13 +334,30 @@ class CharacterCompiler {
         c.weaponMasteryChoices.contains(w.id) &&
         proficient;
 
+    final offHand = c.weaponOffHand[w.id] ?? false;
+
+    // 2024: el ataque de mano secundaria no suma el modificador al daño, pero
+    // solo cuando es **positivo**; un modificador negativo se sigue restando.
+    // El estilo Combate con Dos Armas lo devuelve, y llega acá como efecto
+    // ([OffHandAbilityDamageEffect]), no como el id de la dote.
+    final damageMod =
+        (offHand && !b.offHandAbilityDamage && abilityMod > 0) ? 0 : abilityMod;
+
+    // Mellar (Nick) no cambia el daño: cambia la economía de acciones, porque
+    // permite hacer el ataque extra dentro de la acción de Atacar.
+    final nick = hasMastery && w.mastery == 'nick';
+    final action =
+        (offHand && !nick) ? AttackAction.bonusAction : AttackAction.action;
+
     return Attack(
       weaponId: w.id,
       name: w.name,
       attackBonus: attackBonus,
-      damage: _damageString(dice, abilityMod),
+      damage: _damageString(dice, damageMod),
       damageType: w.damageType,
       mastery: hasMastery ? w.mastery : null,
+      offHand: offHand,
+      action: action,
     );
   }
 

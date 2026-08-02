@@ -92,6 +92,7 @@ sealed class Effect {
               : null,
           maxFromProficiency: json['maxFromProficiency'] as bool? ?? false,
         ),
+      'offHandAbilityDamage' => const OffHandAbilityDamageEffect(),
       'grantSpell' => GrantSpellEffect(
           spellId: json['spellId'] as String,
           ability: Ability.fromKey(json['ability'] as String),
@@ -239,6 +240,18 @@ class GrantSpellEffect extends Effect {
         'ability': ability.name,
         'use': use.toJson(),
       };
+}
+
+/// El ataque de mano secundaria suma el modificador de característica al daño.
+///
+/// Por la regla 2024 ese modificador se omite cuando es **positivo**; este
+/// efecto lo devuelve. Hoy solo lo concede el estilo Combate con Dos Armas,
+/// pero el motor no pregunta por esa dote: pregunta por el efecto, así un
+/// homebrew puede conceder lo mismo sin tocar código.
+class OffHandAbilityDamageEffect extends Effect {
+  const OffHandAbilityDamageEffect();
+  @override
+  Map<String, dynamic> toJson() => {'type': 'offHandAbilityDamage'};
 }
 
 /// Cantidad de armas en las que se puede elegir Maestría (Guerrero 2024: 3).

@@ -50,6 +50,10 @@ class SheetBuilder {
 
   int weaponMasterySlots = 0;
   int maxExtraAttack = 0;
+
+  /// El ataque de mano secundaria conserva el modificador de característica al
+  /// daño (estilo Combate con Dos Armas).
+  bool offHandAbilityDamage = false;
   int bonusMaxHpFlat = 0;
   int bonusMaxHpPerLevel = 0;
   int acBonus = 0;
@@ -129,6 +133,8 @@ class SheetBuilder {
                   use: e.use,
                 ),
         );
+      case OffHandAbilityDamageEffect():
+        offHandAbilityDamage = true;
       case WeaponMasterySlotsEffect(:final count):
         if (count > weaponMasterySlots) weaponMasterySlots = count;
       case ExtraAttackEffect(:final extra):

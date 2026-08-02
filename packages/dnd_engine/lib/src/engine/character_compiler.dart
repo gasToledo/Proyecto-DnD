@@ -167,6 +167,12 @@ class CharacterCompiler {
         ...innate.resources
       ],
       innateSpells: innate.spells,
+      // Un id que el catálogo no conoce se descarta acá, igual que en los
+      // innatos: contenido incompleto no debe romper la ficha.
+      alwaysPreparedSpellIds: {
+        for (final id in builder.alwaysPreparedSpellIds)
+          if (repo.spell(id) != null) id,
+      },
       featureChoiceSlots: [
         for (final e in builder.featureChoiceSlots.values)
           FeatureChoiceSlot(

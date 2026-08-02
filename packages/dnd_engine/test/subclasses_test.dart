@@ -67,10 +67,28 @@ void main() {
     });
 
     test('ninguna subclase repite el mismo rasgo en dos niveles', () {
+      // Excepción a propósito: las tablas de conjuros de subclase declaran una
+      // fila por nivel bajo el mismo nombre ("Conjuros de Alquimista"), que es
+      // como las presenta el manual. Solo se exceptúa si el rasgo es
+      // *únicamente* esa tabla; cualquier otro nombre repetido sigue siendo un
+      // error de copiado.
+      bool esTablaDeConjuros(ClassFeature f) =>
+          f.effects.isNotEmpty &&
+          f.effects.every((e) => e is AlwaysPreparedSpellEffect);
+
       for (final s in repo.subclasses.values) {
-        final names = s.features.map((f) => f.name).toList();
+        final names = s.features
+            .where((f) => !esTablaDeConjuros(f))
+            .map((f) => f.name)
+            .toList();
         expect(names.toSet().length, names.length,
             reason: '${s.id} tiene rasgos con nombre duplicado: $names');
+
+        // Y la tabla, cuando existe, no puede repetir nivel.
+        final niveles =
+            s.features.where(esTablaDeConjuros).map((f) => f.level).toList();
+        expect(niveles.toSet().length, niveles.length,
+            reason: '${s.id} declara dos tablas de conjuros al mismo nivel');
       }
     });
 

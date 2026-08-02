@@ -79,6 +79,29 @@ expone `offHand` y `action` ya resueltos para que la ficha no recalcule nada.
 `nick` es la única maestría con efecto mecánico: mete ese ataque dentro de la
 acción de Atacar. El resto del glosario sigue siendo descriptivo.
 
+## Conjuros que concede un rasgo
+
+Son **dos** efectos distintos y no hay que confundirlos:
+
+- `GrantSpellEffect` → conjuro **innato**. Se lanza sin gastar espacio, con CD
+  y bonificador propios y un límite de usos propio. Sale en
+  `ComputedSheet.innateSpells`.
+- `AlwaysPreparedSpellEffect` → conjuro **siempre preparado**. Se lanza con los
+  espacios normales de la clase, como cualquier preparado; lo único que lo
+  distingue es que no ocupa cupo de `preparedCount` y no se puede desmarcar.
+  Sale en `ComputedSheet.alwaysPreparedSpellIds`.
+
+Las dos listas se unen en un solo lugar: lo que un rasgo ya concede no se puede
+volver a elegir con la magia de clase. La selección los oculta y una ficha vieja
+que los traiga elegidos se poda al abrir el editor, para devolver el cupo en vez
+de dejarlos atrapados sin chip que los saque.
+
+Las tablas de conjuros de subclase se declaran **como un rasgo por nivel** bajo
+el mismo nombre ("Conjuros de Alquimista" a 3, 5, 9, 13 y 17). Así heredan el
+nivel de `featuresUpTo` sin campo extra. Es la única excepción permitida a la
+regla de que una subclase no repite nombre de rasgo, y el test que la vigila la
+acota a los rasgos cuyos efectos son *solo* esa tabla.
+
 ## Comandos
 
 Flutter está disponible en el `PATH` del usuario. Ejecutar cada grupo desde el
@@ -132,6 +155,10 @@ la ficha por su cuenta.
   en la UI. `ImmunityEffect` también se usa hoy para inmunidad a **estados**
   (el Artífice es inmune a `poisoned`), así que `labelFor` los cubre y cae al
   id capitalizado ante cualquier otra cosa, para tolerar homebrew.
+- `domain/proficiency_labels.dart`: lo mismo para entrenamiento con armadura,
+  categorías de arma y las 25 herramientas del capítulo 6. Un test recorre el
+  contenido oficial y falla si alguna competencia cae en la degradación al id
+  capitalizado, que es la red para el homebrew, no para el catálogo.
 - `data/content_repository.dart`: reúne el contenido oficial y homebrew.
 - `engine/character_compiler.dart`: combina un `Character` con el repositorio y
   produce una `ComputedSheet` inmutable.

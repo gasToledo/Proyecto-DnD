@@ -39,6 +39,7 @@ class _SummaryStep extends StatelessWidget {
 
     final spells = <String>{
       for (final spell in s.innateSpells) spell.name,
+      for (final id in s.alwaysPreparedSpellIds) repo.spell(id)?.name ?? id,
       for (final id in draft.cantrips) repo.spell(id)?.name ?? id,
       for (final id in draft.spells) repo.spell(id)?.name ?? id,
     };

@@ -257,6 +257,15 @@ class ComputedSheet {
   /// Conjuros concedidos por rasgos (linajes, dotes), fuera de la magia de clase.
   final List<InnateSpell> innateSpells;
 
+  /// Conjuros que un rasgo mantiene **siempre preparados** (los de subclase del
+  /// Artífice, los Conjuros de Juramento del Paladín).
+  ///
+  /// A diferencia de [innateSpells], se lanzan con los espacios normales de la
+  /// clase: lo único que los distingue de un preparado común es que no ocupan
+  /// cupo y no se pueden desmarcar. Van por id, igual que `Character.spellIds`;
+  /// el nombre lo resuelve quien tenga el catálogo.
+  final Set<String> alwaysPreparedSpellIds;
+
   /// Elecciones abiertas del personaje a este nivel (Estilo de Combate,
   /// Invocaciones Sobrenaturales…), con su cantidad ya resuelta.
   final List<FeatureChoiceSlot> featureChoiceSlots;
@@ -289,6 +298,7 @@ class ComputedSheet {
     required this.passives,
     required this.resources,
     this.innateSpells = const [],
+    this.alwaysPreparedSpellIds = const {},
     this.featureChoiceSlots = const [],
     this.spellcasting,
   });

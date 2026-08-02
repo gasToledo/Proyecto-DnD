@@ -2147,10 +2147,55 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con Suministros de Alquimista y el Útiles de Herborista. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad. Además, tenés siempre preparados Palabra de Curación y Rayo Nauseabundo, que a nivel 5 se suman a Esfera de Llamas y Flecha Ácida de Melf, a nivel 9 a Forma Gaseosa y Palabra de Curación en Masa, a nivel 13 a Guarda contra la Muerte y Esfera Vitriólica, y a nivel 17 a Nube Aniquiladora y Alzar a los Muertos.",
+        "description": "Competencia con Suministros de Alquimista y Útiles de Herborista. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad.",
         "effects": [
           { "type": "toolProficiency", "tool": "alchemists-supplies" },
           { "type": "toolProficiency", "tool": "herbalism-kit" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Alquimista",
+        "description": "Tenés Palabra de Curación y Rayo Nauseabundo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "healing-word" },
+          { "type": "alwaysPreparedSpell", "spellId": "ray-of-sickness" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros de Alquimista",
+        "description": "Tenés Esfera de Llamas y Flecha Ácida de Melf siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "flaming-sphere" },
+          { "type": "alwaysPreparedSpell", "spellId": "melfs-acid-arrow" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros de Alquimista",
+        "description": "Tenés Forma Gaseosa y Palabra de Curación en Masa siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "gaseous-form" },
+          { "type": "alwaysPreparedSpell", "spellId": "mass-healing-word" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros de Alquimista",
+        "description": "Tenés Guarda contra la Muerte y Esfera Vitriólica siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "death-ward" },
+          { "type": "alwaysPreparedSpell", "spellId": "vitriolic-sphere" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros de Alquimista",
+        "description": "Tenés Nube Aniquiladora y Alzar a los Muertos siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "cloudkill" },
+          { "type": "alwaysPreparedSpell", "spellId": "raise-dead" }
         ]
       },
       {
@@ -2201,10 +2246,55 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Entrenamiento con armadura pesada y competencia con Herramientas de Herrero. El tiempo para fabricar armadura, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Proyectil Mágico y Ola Atronadora, que a nivel 5 se suman a Imagen Múltiple y Hacer Añicos, a nivel 9 a Patrón Hipnótico y Relámpago, a nivel 13 a Escudo de Fuego e Invisibilidad Mejorada, y a nivel 17 a Pasamuros y Muro de Fuerza.",
+        "description": "Entrenamiento con armadura pesada y competencia con Herramientas de Herrero. El tiempo para fabricar armadura, mágica o no, se reduce a la mitad.",
         "effects": [
           { "type": "armorProficiency", "category": "heavy" },
           { "type": "toolProficiency", "tool": "smiths-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Armero",
+        "description": "Tenés Proyectil Mágico y Ola Atronadora siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "magic-missile" },
+          { "type": "alwaysPreparedSpell", "spellId": "thunderwave" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros de Armero",
+        "description": "Tenés Imagen Múltiple y Hacer Añicos siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "mirror-image" },
+          { "type": "alwaysPreparedSpell", "spellId": "shatter" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros de Armero",
+        "description": "Tenés Patrón Hipnótico y Relámpago siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "hypnotic-pattern" },
+          { "type": "alwaysPreparedSpell", "spellId": "lightning-bolt" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros de Armero",
+        "description": "Tenés Escudo de Fuego y Invisibilidad Mejorada siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fire-shield" },
+          { "type": "alwaysPreparedSpell", "spellId": "greater-invisibility" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros de Armero",
+        "description": "Tenés Pasamuros y Muro de Fuerza siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "passwall" },
+          { "type": "alwaysPreparedSpell", "spellId": "wall-of-force" }
         ]
       },
       {
@@ -2251,10 +2341,55 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con armas a distancia marciales y con Herramientas de Ebanista. El tiempo para fabricar una varita mágica se reduce a la mitad. Además, tenés siempre preparados Escudo y Ola Atronadora, que a nivel 5 se suman a Rayo Abrasador y Hacer Añicos, a nivel 9 a Bola de Fuego y Muro de Viento, a nivel 13 a Tormenta de Hielo y Muro de Fuego, y a nivel 17 a Cono de Frío y Muro de Fuerza.",
+        "description": "Competencia con armas marciales a distancia y con Herramientas de Ebanista. El tiempo para fabricar una varita mágica se reduce a la mitad.",
         "effects": [
           { "type": "weaponProficiency", "category": "martial-ranged" },
           { "type": "toolProficiency", "tool": "woodcarvers-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Artillero",
+        "description": "Tenés Escudo y Ola Atronadora siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "shield" },
+          { "type": "alwaysPreparedSpell", "spellId": "thunderwave" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros de Artillero",
+        "description": "Tenés Rayo Abrasador y Hacer Añicos siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "scorching-ray" },
+          { "type": "alwaysPreparedSpell", "spellId": "shatter" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros de Artillero",
+        "description": "Tenés Bola de Fuego y Muro de Viento siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fireball" },
+          { "type": "alwaysPreparedSpell", "spellId": "wind-wall" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros de Artillero",
+        "description": "Tenés Tormenta de Hielo y Muro de Fuego siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "ice-storm" },
+          { "type": "alwaysPreparedSpell", "spellId": "wall-of-fire" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros de Artillero",
+        "description": "Tenés Cono de Frío y Muro de Fuerza siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "cone-of-cold" },
+          { "type": "alwaysPreparedSpell", "spellId": "wall-of-force" }
         ]
       },
       {
@@ -2301,9 +2436,54 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con Herramientas de Herrero. El tiempo para fabricar un arma, mágica o no, se reduce a la mitad. Además, tenés siempre preparados Heroísmo y Escudo, que a nivel 5 se suman a Castigo Brillante y Vínculo Protector, a nivel 9 a Aura de Vitalidad y Conjurar Descarga de Proyectiles, a nivel 13 a Aura de Pureza y Escudo de Fuego, y a nivel 17 a Castigo Desterrador y Curar Heridas en Masa.",
+        "description": "Competencia con Herramientas de Herrero. El tiempo para fabricar un arma, mágica o no, se reduce a la mitad.",
         "effects": [
           { "type": "toolProficiency", "tool": "smiths-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Herrero de Batalla",
+        "description": "Tenés Heroísmo y Escudo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "heroism" },
+          { "type": "alwaysPreparedSpell", "spellId": "shield" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros de Herrero de Batalla",
+        "description": "Tenés Castigo Brillante y Vínculo Protector siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "shining-smite" },
+          { "type": "alwaysPreparedSpell", "spellId": "warding-bond" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros de Herrero de Batalla",
+        "description": "Tenés Aura de Vitalidad y Conjurar Descarga de Proyectiles siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "aura-of-vitality" },
+          { "type": "alwaysPreparedSpell", "spellId": "conjure-barrage" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros de Herrero de Batalla",
+        "description": "Tenés Aura de Pureza y Escudo de Fuego siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "aura-of-purity" },
+          { "type": "alwaysPreparedSpell", "spellId": "fire-shield" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros de Herrero de Batalla",
+        "description": "Tenés Castigo Desterrador y Curar Heridas en Masa siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "banishing-smite" },
+          { "type": "alwaysPreparedSpell", "spellId": "mass-cure-wounds" }
         ]
       },
       {
@@ -2359,10 +2539,56 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con Suministros de Calígrafo y Herramientas de Cartógrafo. El tiempo para copiar un pergamino de conjuro se reduce a la mitad. Además, tenés siempre preparados Fuego Feérico, Saeta Guía y Palabra de Curación, que a nivel 5 se suman a Localizar Objeto y Clavo Mental, a nivel 9 a Llamar al Relámpago y Clarividencia, a nivel 13 a Destierro y Localizar Criatura, y a nivel 17 a Escudriñar y Círculo de Teletransportación.",
+        "description": "Competencia con Suministros de Calígrafo y Herramientas de Cartógrafo. El tiempo para copiar un pergamino de conjuro se reduce a la mitad.",
         "effects": [
           { "type": "toolProficiency", "tool": "calligraphers-supplies" },
           { "type": "toolProficiency", "tool": "cartographers-tools" }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Cartógrafo",
+        "description": "Tenés Fuego Feérico, Saeta Guía y Palabra de Curación siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "faerie-fire" },
+          { "type": "alwaysPreparedSpell", "spellId": "guiding-bolt" },
+          { "type": "alwaysPreparedSpell", "spellId": "healing-word" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros de Cartógrafo",
+        "description": "Tenés Localizar Objeto y Clavo Mental siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "locate-object" },
+          { "type": "alwaysPreparedSpell", "spellId": "mind-spike" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros de Cartógrafo",
+        "description": "Tenés Llamar al Relámpago y Clarividencia siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "call-lightning" },
+          { "type": "alwaysPreparedSpell", "spellId": "clairvoyance" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros de Cartógrafo",
+        "description": "Tenés Destierro y Localizar Criatura siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "banishment" },
+          { "type": "alwaysPreparedSpell", "spellId": "locate-creature" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros de Cartógrafo",
+        "description": "Tenés Escudriñar y Círculo de Teletransportación siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "scrying" },
+          { "type": "alwaysPreparedSpell", "spellId": "teleportation-circle" }
         ]
       },
       {

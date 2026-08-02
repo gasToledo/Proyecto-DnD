@@ -106,6 +106,9 @@ sealed class Effect {
           ability: Ability.fromKey(json['ability'] as String),
           use: InnateSpellUse.fromJson(json['use'] as String?),
         ),
+      'alwaysPreparedSpell' => AlwaysPreparedSpellEffect(
+          spellId: json['spellId'] as String,
+        ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
   }
@@ -247,6 +250,24 @@ class GrantSpellEffect extends Effect {
         'spellId': spellId,
         'ability': ability.name,
         'use': use.toJson(),
+      };
+}
+
+/// Un conjuro que el personaje **siempre tiene preparado** por un rasgo: los
+/// Conjuros de Juramento del Paladín, los de subclase del Artífice.
+///
+/// No es lo mismo que [GrantSpellEffect], y por eso son dos efectos. Un conjuro
+/// innato se lanza sin gastar espacio, con su propia CD y un límite de usos
+/// propio. Este se lanza **con los espacios normales de la clase**, como
+/// cualquier conjuro preparado; lo único que cambia es que no ocupa un cupo de
+/// `preparedCount` y no se puede desmarcar.
+class AlwaysPreparedSpellEffect extends Effect {
+  final String spellId;
+  const AlwaysPreparedSpellEffect({required this.spellId});
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'alwaysPreparedSpell',
+        'spellId': spellId,
       };
 }
 

@@ -25,16 +25,18 @@ class SpellEditScreen extends StatefulWidget {
 }
 
 class _SpellEditScreenState extends State<SpellEditScreen> {
-  /// Ids de conjuros ya concedidos por rasgos (linaje, dote de origen), fuera
-  /// de la magia de clase. El rasgo ya los da siempre preparados y con un uso
-  /// gratis, así que no deben ocupar un cupo de truco ni de preparado: cubre
-  /// tanto trucos como conjuros con nivel (Detectar Magia, Paso Brumoso).
-  late final Set<String> _grantedSpellIds = {
-    for (final s in CharacterCompiler(
-      widget.repo,
-    ).compile(widget.character).innateSpells)
-      s.spellId,
-  };
+  /// Ids de conjuros que ya concede un rasgo y por eso no deben ocupar un cupo
+  /// de truco ni de preparado. Son dos casos distintos con la misma
+  /// consecuencia acá: el conjuro **innato** (linaje, dote de origen), que
+  /// además trae un uso gratis, y el **siempre preparado** de una subclase,
+  /// que se lanza con los espacios normales.
+  late final Set<String> _grantedSpellIds = () {
+    final sheet = CharacterCompiler(widget.repo).compile(widget.character);
+    return {
+      for (final s in sheet.innateSpells) s.spellId,
+      ...sheet.alwaysPreparedSpellIds,
+    };
+  }();
 
   // Una ficha guardada antes de que la selección los excluyera puede traerlos
   // elegidos: se podan al abrir para devolver el cupo desperdiciado, en vez de

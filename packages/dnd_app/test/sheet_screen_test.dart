@@ -189,6 +189,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('los conjuros siempre preparados de subclase llegan a la ficha', (
+    tester,
+  ) async {
+    // Antes vivían solo como texto en la descripción del rasgo: el jugador los
+    // tenía por regla y la ficha no los mostraba ni los dejaba lanzar.
+    final artillerist = Character(
+      id: 'artillerist-sheet',
+      name: 'Zil',
+      raceId: 'gnome',
+      lineageId: 'gnome-rock',
+      classId: 'artificer',
+      subclassId: 'artillerist',
+      backgroundId: 'artisan',
+      level: 5,
+      spellIds: const ['cure-wounds'],
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [8, 5, 5, 5, 5],
+    );
+    await pumpSheet(tester, artillerist);
+
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SIEMPRE PREPARADOS'), findsOneWidget);
+    // Nivel 3 de la tabla del Artillero, más los de nivel 5.
+    expect(find.text('Escudo'), findsOneWidget);
+    expect(find.text('Ola Atronadora'), findsOneWidget);
+    expect(find.text('Rayo Abrasador'), findsOneWidget);
+    // Y el elegido a mano sigue en su propia sección.
+    expect(find.text('CONJUROS PREPARADOS'), findsOneWidget);
+    expect(find.text('Curar Heridas'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('resistencias y daño se muestran en español', (tester) async {
     // Un Dracónido rojo: la resistencia sale de su linaje dracónico y antes
     // se imprimía con la clave interna en inglés ("Fire").

@@ -361,13 +361,14 @@ class CreationDraft {
   /// Bloque de lanzamiento derivado (cupos de trucos/preparados y CD).
   Spellcasting? get spellcasting => isCaster ? previewSheet.spellcasting : null;
 
-  /// Ids de conjuros ya concedidos por rasgos (linaje, dote de origen), fuera
-  /// de la magia de clase. No deben poder elegirse de nuevo: el rasgo ya los da
-  /// "siempre preparados" y gratis, así que gastar un cupo de clase en ellos no
-  /// suma nada. Cubre trucos (Prestidigitación del Alto Elfo) y conjuros con
-  /// nivel (Detectar Magia a nivel 3, Paso Brumoso a nivel 5).
+  /// Ids de conjuros ya concedidos por rasgos, fuera de lo que se elige con la
+  /// magia de clase. No deben poder elegirse de nuevo: el rasgo ya los da y
+  /// gastar un cupo de clase en ellos no suma nada. Cubre trucos
+  /// (Prestidigitación del Alto Elfo), conjuros innatos con nivel (Detectar
+  /// Magia a nivel 3) y los siempre preparados de una subclase.
   Set<String> get grantedSpellIds => {
     for (final s in previewSheet.innateSpells) s.spellId,
+    ...previewSheet.alwaysPreparedSpellIds,
   };
 
   int get hitDie => klass?.hitDie ?? 10;

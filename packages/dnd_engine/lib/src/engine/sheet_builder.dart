@@ -46,6 +46,10 @@ class SheetBuilder {
   /// el repositorio para armar los [InnateSpell]).
   final List<GrantSpellEffect> grantedSpells = [];
 
+  /// Conjuros siempre preparados por un rasgo. Se guardan por id: resolver
+  /// nombre y nivel necesita el repositorio, que vive en el compilador.
+  final Set<String> alwaysPreparedSpellIds = {};
+
   final Map<String, ResourceEffect> _resources = {};
 
   /// Elecciones abiertas declaradas por el contenido, por grupo. Gana la de
@@ -138,6 +142,8 @@ class SheetBuilder {
                   use: e.use,
                 ),
         );
+      case AlwaysPreparedSpellEffect(:final spellId):
+        alwaysPreparedSpellIds.add(spellId);
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
       case FeatureChoiceEffect(:final groupId, :final count):

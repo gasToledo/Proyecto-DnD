@@ -21,6 +21,20 @@ extension _SheetSpellsSection on _SheetScreenState {
                   : compareContentNames(a.name, b.name),
             ));
 
+    // Siempre preparados por un rasgo (subclase del Artífice, Conjuros de
+    // Juramento). Se lanzan con los espacios normales, así que van con los
+    // demás conjuros de clase y no con los innatos.
+    final alwaysPrepared =
+        sheetArg.alwaysPreparedSpellIds
+            .map((id) => repo.spell(id))
+            .whereType<Spell>()
+            .toList()
+          ..sort(
+            (a, b) => a.level != b.level
+                ? a.level.compareTo(b.level)
+                : compareContentNames(a.name, b.name),
+          );
+
     final slotLevels = sc?.slotsByLevel.keys.toList() ?? <int>[];
     slotLevels.sort();
 
@@ -135,6 +149,20 @@ extension _SheetSpellsSection on _SheetScreenState {
               DenseRows(children: [for (final s in cantrips) _spellRow(s)]),
             ],
 
+            if (alwaysPrepared.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              const Eyebrow('Siempre preparados'),
+              const SizedBox(height: 6),
+              Text(
+                'Los concede un rasgo y no ocupan cupo: se lanzan con tus '
+                'espacios de conjuro como cualquier preparado.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              DenseRows(
+                children: [for (final s in alwaysPrepared) _spellRow(s)],
+              ),
+            ],
+
             if (spells.isNotEmpty) ...[
               const SizedBox(height: 20),
               Eyebrow(
@@ -148,6 +176,7 @@ extension _SheetSpellsSection on _SheetScreenState {
             if (sc != null &&
                 cantrips.isEmpty &&
                 spells.isEmpty &&
+                alwaysPrepared.isEmpty &&
                 sheet.innateSpells.isEmpty) ...[
               const SizedBox(height: 20),
               Text(

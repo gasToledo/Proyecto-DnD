@@ -33,8 +33,8 @@ void main() {
 
     test('un id desconocido degrada al id capitalizado, no falla', () {
       // El mismo camino procesa homebrew e importaciones no confiables.
-      expect(toolProficiencyLabel('herramientas-de-mesa'),
-          'Herramientas De Mesa');
+      expect(
+          toolProficiencyLabel('herramientas-de-mesa'), 'Herramientas De Mesa');
       expect(armorTrainingLabel(''), '');
     });
   });
@@ -46,7 +46,8 @@ void main() {
       final ids = <String>{};
       void desdeEfectos(Iterable<Effect> efectos) {
         for (final e in efectos) {
-          if (tipo == 'armor' && e is ArmorProficiencyEffect) ids.add(e.category);
+          if (tipo == 'armor' && e is ArmorProficiencyEffect)
+            ids.add(e.category);
           if (tipo == 'weapon' && e is WeaponProficiencyEffect) {
             ids.add(e.category);
           }

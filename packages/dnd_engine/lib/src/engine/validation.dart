@@ -111,8 +111,7 @@ class CharacterValidator {
     for (final weaponId in c.weaponMasteryChoices) {
       final weapon = repo.weapon(weaponId);
       if (weapon == null) continue;
-      final proficient = sheet.weaponProficiencies.contains(weapon.category) ||
-          sheet.weaponProficiencies.contains(weapon.id);
+      final proficient = weapon.isProficientWith(sheet.weaponProficiencies);
       if (!proficient) {
         w.add(ValidationWarning(
           'mastery_not_proficient',
@@ -150,8 +149,7 @@ class CharacterValidator {
     for (final wid in c.equippedWeaponIds) {
       final weapon = repo.weapon(wid);
       if (weapon == null) continue;
-      final proficient = sheet.weaponProficiencies.contains(weapon.category) ||
-          sheet.weaponProficiencies.contains(weapon.id);
+      final proficient = weapon.isProficientWith(sheet.weaponProficiencies);
       if (!proficient) {
         w.add(ValidationWarning(
           'weapon_not_proficient',
@@ -431,9 +429,14 @@ class CharacterValidator {
     final list = repo.spellsForList(sc.spellList).map((s) => s.id).toSet();
     final maxSlotLevel =
         sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
-    // Un rasgo que concede un conjuro ya lo da "siempre preparado" y con un uso
-    // gratis: volver a elegirlo desde la clase no suma nada y gasta un cupo.
-    final grantedSpellIds = {for (final s in sheet.innateSpells) s.spellId};
+    // Un rasgo que concede un conjuro ya lo da "siempre preparado": volver a
+    // elegirlo desde la clase no suma nada y gasta un cupo. Vale tanto para el
+    // conjuro innato (que además trae un uso gratis) como para el siempre
+    // preparado de una subclase.
+    final grantedSpellIds = {
+      for (final s in sheet.innateSpells) s.spellId,
+      ...sheet.alwaysPreparedSpellIds,
+    };
 
     if (c.cantripIds.length > sc.cantripsKnown) {
       w.add(ValidationWarning(
@@ -453,7 +456,7 @@ class CharacterValidator {
             '${sp.name} no está en la lista de ${sc.spellList}.'));
       } else if (grantedSpellIds.contains(id)) {
         w.add(ValidationWarning('cantrip_already_granted',
-            '${sp.name} ya lo tenés por un rasgo de tu especie: elegilo de clase ocupa un cupo de más.'));
+            '${sp.name} ya lo tenés por otro rasgo: elegirlo de clase ocupa un cupo de más.'));
       }
     }
 
@@ -482,7 +485,7 @@ class CharacterValidator {
       }
       if (grantedSpellIds.contains(id)) {
         w.add(ValidationWarning('spell_already_granted',
-            '${sp.name} ya lo tenés siempre preparado por un rasgo de tu especie: prepararlo ocupa un cupo de más.'));
+            '${sp.name} ya lo tenés siempre preparado por otro rasgo: prepararlo ocupa un cupo de más.'));
       }
       if (maxSlotLevel > 0 && sp.level > maxSlotLevel) {
         w.add(ValidationWarning(

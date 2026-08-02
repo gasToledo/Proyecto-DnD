@@ -68,10 +68,3 @@ class _DismissViewerIntent extends Intent {
 }
 
 String _signed(int v) => v >= 0 ? '+$v' : '$v';
-
-String _title(String s) => s.isEmpty
-    ? s
-    : s
-          .split(RegExp(r'[-_ ]'))
-          .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-          .join(' ');

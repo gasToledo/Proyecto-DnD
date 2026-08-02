@@ -1772,7 +1772,8 @@
         "description": "Competencia con Herramientas de Ladrón, Herramientas de Manitas y un tipo de Herramientas de Artesano a elección.",
         "effects": [
           { "type": "toolProficiency", "tool": "thieves-tools" },
-          { "type": "toolProficiency", "tool": "tinkers-tools" }
+          { "type": "toolProficiency", "tool": "tinkers-tools" },
+          { "type": "toolProficiency", "tool": "artisans-tools" }
         ]
       },
       {

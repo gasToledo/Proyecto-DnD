@@ -83,11 +83,15 @@ extension _SheetGeneralSection on _SheetScreenState {
   }
 
   Widget _proficienciesCard(ComputedSheet s) {
-    final labels = [
-      ...s.armorProficiencies,
-      ...s.weaponProficiencies,
-      ...s.toolProficiencies,
-    ].map(_title).toList()..sort();
+    // Los ids viajan en inglés porque son la clave estable del contenido; la
+    // traducción la tiene el motor. Un id de arma concreta (el estoque del
+    // Bardo) no está en esa tabla: lo resuelve el catálogo.
+    final labels = <String>[
+      for (final id in s.armorProficiencies) armorTrainingLabel(id),
+      for (final id in s.weaponProficiencies)
+        repo.weapon(id)?.name ?? weaponProficiencyLabel(id),
+      for (final id in s.toolProficiencies) toolProficiencyLabel(id),
+    ]..sort(compareContentNames);
     return sheetCard(
       icon: Icons.verified_user,
       title: 'Competencias',

@@ -329,8 +329,7 @@ class CharacterCompiler {
       abilityMod = mods[Ability.strength]!;
     }
 
-    final proficient = b.weaponProficiencies.contains(w.category) ||
-        b.weaponProficiencies.contains(w.id);
+    final proficient = w.isProficientWith(b.weaponProficiencies);
     final attackBonus = abilityMod + (proficient ? profBonus : 0);
 
     final twoHanded = c.weaponTwoHanded[w.id] ?? false;

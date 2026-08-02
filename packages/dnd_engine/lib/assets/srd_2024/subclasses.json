@@ -2147,7 +2147,7 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con Herramientas de Alquimista y el Kit de Herbolario. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad. Además, tenés siempre preparados Palabra de Curación y Rayo Nauseabundo, que a nivel 5 se suman a Esfera de Llamas y Flecha Ácida de Melf, a nivel 9 a Forma Gaseosa y Palabra de Curación en Masa, a nivel 13 a Guarda contra la Muerte y Esfera Vitriólica, y a nivel 17 a Nube Aniquiladora y Alzar a los Muertos.",
+        "description": "Competencia con Suministros de Alquimista y el Útiles de Herborista. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad. Además, tenés siempre preparados Palabra de Curación y Rayo Nauseabundo, que a nivel 5 se suman a Esfera de Llamas y Flecha Ácida de Melf, a nivel 9 a Forma Gaseosa y Palabra de Curación en Masa, a nivel 13 a Guarda contra la Muerte y Esfera Vitriólica, y a nivel 17 a Nube Aniquiladora y Alzar a los Muertos.",
         "effects": [
           { "type": "toolProficiency", "tool": "alchemists-supplies" },
           { "type": "toolProficiency", "tool": "herbalism-kit" }
@@ -2156,7 +2156,7 @@
       {
         "level": 3,
         "name": "Elixir Experimental",
-        "description": "Tras un descanso largo, con Herramientas de Alquimista en mano, producís dos elixires (tres a nivel 5, cuatro a nivel 9, cinco a nivel 15) de efecto aleatorio o elegido (curación, celeridad, resiliencia, audacia o vuelo), que se beben como acción adicional y se pierden al terminar el próximo descanso largo. Podés crear un elixir adicional gastando un espacio de conjuro.",
+        "description": "Tras un descanso largo, con Suministros de Alquimista en mano, producís dos elixires (tres a nivel 5, cuatro a nivel 9, cinco a nivel 15) de efecto aleatorio o elegido (curación, celeridad, resiliencia, audacia o vuelo), que se beben como acción adicional y se pierden al terminar el próximo descanso largo. Podés crear un elixir adicional gastando un espacio de conjuro.",
         "effects": [
           { "type": "passiveTrait", "name": "Elixir Experimental", "description": "Dos elixires por descanso largo (tres a nivel 5, cuatro a nivel 9, cinco a nivel 15), de efecto elegido o aleatorio entre curación, celeridad, resiliencia, audacia y vuelo." }
         ]
@@ -2164,29 +2164,29 @@
       {
         "level": 5,
         "name": "Experto Alquímico",
-        "description": "Al lanzar un conjuro usando tus Herramientas de Alquimista como foco, sumás tu mod. de Inteligencia (mínimo +1) a una tirada de curación o de daño de ácido, fuego o veneno del conjuro.",
+        "description": "Al lanzar un conjuro usando tus Suministros de Alquimista como foco, sumás tu mod. de Inteligencia (mínimo +1) a una tirada de curación o de daño de ácido, fuego o veneno del conjuro.",
         "effects": [
-          { "type": "passiveTrait", "name": "Experto Alquímico", "description": "Suma tu mod. de Inteligencia (mínimo +1) a una tirada de curación o de daño de ácido, fuego o veneno de un conjuro lanzado con tus Herramientas de Alquimista." }
+          { "type": "passiveTrait", "name": "Experto Alquímico", "description": "Suma tu mod. de Inteligencia (mínimo +1) a una tirada de curación o de daño de ácido, fuego o veneno de un conjuro lanzado con tus Suministros de Alquimista." }
         ]
       },
       {
         "level": 9,
         "name": "Reactivos Restaurativos",
-        "description": "Podés lanzar Restablecimiento Menor sin gastar espacio de conjuro ni tenerlo preparado, usando Herramientas de Alquimista como foco, un número de veces igual a tu mod. de Inteligencia (mínimo una vez) por descanso largo.",
+        "description": "Podés lanzar Restablecimiento Menor sin gastar espacio de conjuro ni tenerlo preparado, usando Suministros de Alquimista como foco, un número de veces igual a tu mod. de Inteligencia (mínimo una vez) por descanso largo.",
         "effects": [
-          { "type": "resource", "id": "restorative_reagents", "name": "Reactivos Restaurativos", "max": 1, "maxFromAbility": "intelligence", "recharge": "long", "description": "Usos para lanzar Restablecimiento Menor sin espacio de conjuro ni preparación, con Herramientas de Alquimista." }
+          { "type": "resource", "id": "restorative_reagents", "name": "Reactivos Restaurativos", "max": 1, "maxFromAbility": "intelligence", "recharge": "long", "description": "Usos para lanzar Restablecimiento Menor sin espacio de conjuro ni preparación, con Suministros de Alquimista." }
         ]
       },
       {
         "level": 15,
         "name": "Maestría Química",
-        "description": "Ganás resistencia a daño de ácido y veneno e inmunidad a envenenado. Al causar daño de ácido, fuego o veneno con un conjuro de Artífice, podés sumar 2d8 de daño de fuerza (una vez por turno). Además podés lanzar Caldero Burbujeante de Tasha sin espacio de conjuro, preparación ni componentes materiales, con Herramientas de Alquimista, una vez por descanso largo.",
+        "description": "Ganás resistencia a daño de ácido y veneno e inmunidad a envenenado. Al causar daño de ácido, fuego o veneno con un conjuro de Artífice, podés sumar 2d8 de daño de fuerza (una vez por turno). Además podés lanzar Caldero Burbujeante de Tasha sin espacio de conjuro, preparación ni componentes materiales, con Suministros de Alquimista, una vez por descanso largo.",
         "effects": [
           { "type": "resistance", "damageType": "acid" },
           { "type": "resistance", "damageType": "poison" },
           { "type": "immunity", "damageType": "poisoned" },
           { "type": "passiveTrait", "name": "Erupción Química", "description": "Una vez por turno, al causar daño de ácido, fuego o veneno con un conjuro de Artífice, sumás 2d8 de daño de fuerza." },
-          { "type": "resource", "id": "conjured_cauldron", "name": "Caldero Conjurado", "max": 1, "recharge": "long", "description": "Lanzás Caldero Burbujeante de Tasha sin espacio de conjuro, preparación ni componentes materiales, usando Herramientas de Alquimista." }
+          { "type": "resource", "id": "conjured_cauldron", "name": "Caldero Conjurado", "max": 1, "recharge": "long", "description": "Lanzás Caldero Burbujeante de Tasha sin espacio de conjuro, preparación ni componentes materiales, usando Suministros de Alquimista." }
         ]
       }
     ]
@@ -2251,9 +2251,9 @@
       {
         "level": 3,
         "name": "Herramientas del Oficio",
-        "description": "Competencia con armas a distancia marciales y con Herramientas de Tallista. El tiempo para fabricar una varita mágica se reduce a la mitad. Además, tenés siempre preparados Escudo y Ola Atronadora, que a nivel 5 se suman a Rayo Abrasador y Hacer Añicos, a nivel 9 a Bola de Fuego y Muro de Viento, a nivel 13 a Tormenta de Hielo y Muro de Fuego, y a nivel 17 a Cono de Frío y Muro de Fuerza.",
+        "description": "Competencia con armas a distancia marciales y con Herramientas de Ebanista. El tiempo para fabricar una varita mágica se reduce a la mitad. Además, tenés siempre preparados Escudo y Ola Atronadora, que a nivel 5 se suman a Rayo Abrasador y Hacer Añicos, a nivel 9 a Bola de Fuego y Muro de Viento, a nivel 13 a Tormenta de Hielo y Muro de Fuego, y a nivel 17 a Cono de Frío y Muro de Fuerza.",
         "effects": [
-          { "type": "weaponProficiency", "category": "martial" },
+          { "type": "weaponProficiency", "category": "martial-ranged" },
           { "type": "toolProficiency", "tool": "woodcarvers-tools" }
         ]
       },
@@ -2268,7 +2268,7 @@
       {
         "level": 5,
         "name": "Arma de Fuego Arcana",
-        "description": "Tras un descanso largo, con Herramientas de Tallista, tallás sigilos en una vara, bastón, varita o arma a distancia marcial para convertirla en tu Arma de Fuego Arcana, que usás como foco de conjuro. Al lanzar un conjuro de Artífice a través de ella, tirás 1d8 y sumás el resultado a una de sus tiradas de daño.",
+        "description": "Tras un descanso largo, con Herramientas de Ebanista, tallás sigilos en una vara, bastón, varita o arma a distancia marcial para convertirla en tu Arma de Fuego Arcana, que usás como foco de conjuro. Al lanzar un conjuro de Artífice a través de ella, tirás 1d8 y sumás el resultado a una de sus tiradas de daño.",
         "effects": [
           { "type": "passiveTrait", "name": "Arma de Fuego Arcana", "description": "Foco de conjuro tallado; al lanzar un conjuro de Artífice a través de él, sumás 1d8 a una tirada de daño." }
         ]

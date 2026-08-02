@@ -563,6 +563,24 @@ class Weapon {
   /// Propiedad Ligera: requisito del ataque de mano secundaria (2024).
   bool get isLight => properties.contains('light');
 
+  /// Claves de competencia que habilitan esta arma: su id, su categoría y la
+  /// media categoría por alcance.
+  ///
+  /// La media categoría existe porque hay rasgos que no conceden la categoría
+  /// entera: el Artillero recibe las armas marciales **a distancia**. Vive en
+  /// el arma y no en cada consumidor para que el compilador y el wizard de
+  /// creación decidan lo mismo.
+  Set<String> get proficiencyKeys => {
+        id,
+        category,
+        '$category-${isRanged ? 'ranged' : 'melee'}',
+      };
+
+  /// Si [proficiencies] —las de una ficha compilada o las de una clase—
+  /// alcanzan para ser competente con esta arma.
+  bool isProficientWith(Iterable<String> proficiencies) =>
+      proficiencies.any(proficiencyKeys.contains);
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,

@@ -306,9 +306,8 @@ class CreationDraft {
   List<Weapon> get proficientWeapons {
     final k = klass;
     if (k == null) return const [];
-    final profs = k.weaponProficiencies.toSet();
     return repo.weaponsSorted
-        .where((w) => profs.contains(w.category) || profs.contains(w.id))
+        .where((w) => w.isProficientWith(k.weaponProficiencies))
         .toList();
   }
 

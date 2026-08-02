@@ -162,6 +162,33 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('las competencias se muestran en español', (tester) async {
+    // La tarjeta se armaba capitalizando el id en inglés, así que un Alquimista
+    // leía "Alchemists Supplies", "Light" y "Simple".
+    final artificer = Character(
+      id: 'artificer-sheet',
+      name: 'Merrix',
+      raceId: 'warforged',
+      classId: 'artificer',
+      subclassId: 'alchemist',
+      backgroundId: 'artisan',
+      level: 3,
+      assignedScores: {for (final ability in Ability.values) ability: 12},
+      hpPerLevel: const [8, 5, 5],
+    );
+    await pumpSheet(tester, artificer);
+
+    expect(find.text('Competencias'), findsOneWidget);
+    expect(find.text('Suministros de alquimista'), findsOneWidget);
+    expect(find.text('Herramientas de ladrón'), findsOneWidget);
+    expect(find.text('Herramientas de manitas'), findsOneWidget);
+    expect(find.text('Armadura ligera'), findsOneWidget);
+    expect(find.text('Armas simples'), findsOneWidget);
+    expect(find.textContaining('Supplies'), findsNothing);
+    expect(find.text('Light'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('resistencias y daño se muestran en español', (tester) async {
     // Un Dracónido rojo: la resistencia sale de su linaje dracónico y antes
     // se imprimía con la clave interna en inglés ("Fire").

@@ -25,8 +25,24 @@ class SpellEditScreen extends StatefulWidget {
 }
 
 class _SpellEditScreenState extends State<SpellEditScreen> {
-  late final Set<String> _cantrips = {...widget.character.cantripIds};
-  late final Set<String> _spells = {...widget.character.spellIds};
+  /// Ids de conjuros ya concedidos por rasgos (linaje, dote de origen), fuera
+  /// de la magia de clase. El rasgo ya los da siempre preparados y con un uso
+  /// gratis, así que no deben ocupar un cupo de truco ni de preparado: cubre
+  /// tanto trucos como conjuros con nivel (Detectar Magia, Paso Brumoso).
+  late final Set<String> _grantedSpellIds = {
+    for (final s in CharacterCompiler(
+      widget.repo,
+    ).compile(widget.character).innateSpells)
+      s.spellId,
+  };
+
+  // Una ficha guardada antes de que la selección los excluyera puede traerlos
+  // elegidos: se podan al abrir para devolver el cupo desperdiciado, en vez de
+  // quedar atrapados en la selección sin chip que los saque.
+  late final Set<String> _cantrips = {...widget.character.cantripIds}
+    ..removeAll(_grantedSpellIds);
+  late final Set<String> _spells = {...widget.character.spellIds}
+    ..removeAll(_grantedSpellIds);
 
   Spellcasting get _sc => widget.spellcasting;
   bool get _prepared => _sc.preparation == SpellPreparation.prepared;
@@ -37,10 +53,25 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
   @override
   Widget build(BuildContext context) {
     final all = widget.repo.spellsForList(_sc.spellList);
-    final cantrips = all.where((s) => s.isCantrip).toList();
-    final leveled = all
-        .where((s) => !s.isCantrip && s.level <= _maxSlotLevel)
+    final grantedSpellIds = _grantedSpellIds;
+    final cantrips = all
+        .where((s) => s.isCantrip && !grantedSpellIds.contains(s.id))
         .toList();
+    final grantedCantrips = all.any(
+      (s) => s.isCantrip && grantedSpellIds.contains(s.id),
+    );
+    final leveled = all
+        .where(
+          (s) =>
+              !s.isCantrip &&
+              s.level <= _maxSlotLevel &&
+              !grantedSpellIds.contains(s.id),
+        )
+        .toList();
+    final grantedLeveledNames = [
+      for (final s in all)
+        if (!s.isCantrip && grantedSpellIds.contains(s.id)) s.name,
+    ];
 
     return Scaffold(
       appBar: AppBar(title: const Text('Editar conjuros')),
@@ -48,6 +79,14 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
         children: [
           if (_sc.cantripsKnown > 0) ...[
             Eyebrow('Trucos (${_cantrips.length}/${_sc.cantripsKnown})'),
+            if (grantedCantrips) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Los trucos que ya tenés por un rasgo de tu especie no '
+                'aparecen acá: no ocupan un cupo de truco de clase.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
             const SizedBox(height: 6),
             CappedChipSelect(
               options: {for (final s in cantrips) s.id: s.name},
@@ -66,6 +105,12 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
             'Hasta nivel $_maxSlotLevel.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
+          if (grantedLeveledNames.isNotEmpty)
+            Text(
+              'Ya tenés ${grantedLeveledNames.join(', ')} siempre preparado '
+              'por un rasgo de tu especie: no ocupa un cupo.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           const SizedBox(height: 6),
           CappedChipSelect(
             options: {

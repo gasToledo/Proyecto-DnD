@@ -439,6 +439,61 @@ void main() {
       );
     });
 
+    // El Alto Elfo recibe Prestidigitación a nivel 1 y Detectar Magia a nivel
+    // 3, ambos por el linaje y ambos en la lista de Mago. Elegirlos otra vez
+    // desde la clase gasta un cupo sin ganar nada: el rasgo ya los da siempre
+    // preparados y con un uso gratis.
+    Character altoElfoMago({
+      List<String> cantrips = const [],
+      List<String> spells = const [],
+    }) =>
+        Character.fromJson(sagan(level: 3, hp: [6, 4, 4]).toJson()
+          ..['raceId'] = 'elf'
+          ..['lineageId'] = 'elf-high'
+          ..['classId'] = 'wizard'
+          ..['subclassId'] = 'evocation'
+          ..['fightingStyleId'] = null
+          ..['weaponMasteryChoices'] = const <String>[]
+          ..['chosenSkills'] = const ['arcana', 'investigation']
+          ..['cantripIds'] = cantrips
+          ..['spellIds'] = spells);
+
+    test('avisa si se elige un truco que el linaje ya concede', () {
+      final warnings = CharacterValidator(repo)
+          .validate(altoElfoMago(cantrips: const ['prestidigitation']));
+
+      expect(
+        warnings.map((w) => w.code),
+        contains('cantrip_already_granted'),
+      );
+    });
+
+    test('avisa si se prepara un conjuro que el linaje ya concede', () {
+      // Detectar Magia entra a nivel 3 por el linaje Alto Elfo.
+      final warnings = CharacterValidator(repo)
+          .validate(altoElfoMago(spells: const ['detect-magic']));
+
+      expect(
+        warnings.map((w) => w.code),
+        contains('spell_already_granted'),
+      );
+    });
+
+    test('no avisa por conjuros que el linaje no concede', () {
+      final warnings = CharacterValidator(repo).validate(
+        altoElfoMago(cantrips: const ['fire-bolt'], spells: const ['shield']),
+      );
+
+      expect(
+        warnings.map((w) => w.code),
+        isNot(contains('cantrip_already_granted')),
+      );
+      expect(
+        warnings.map((w) => w.code),
+        isNot(contains('spell_already_granted')),
+      );
+    });
+
     test('Bardo sigue rechazando un identificador de habilidad desconocido',
         () {
       final json = sagan().toJson()

@@ -248,10 +248,26 @@ class _SpellsSection extends StatelessWidget {
     if (sc == null) return const SizedBox.shrink();
     final all = draft.repo.spellsForList(sc.spellList);
     final maxLevel = sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
-    final cantrips = all.where((s) => s.isCantrip).toList();
-    final leveled = all
-        .where((s) => !s.isCantrip && s.level <= maxLevel)
+    final grantedSpellIds = draft.grantedSpellIds;
+    final cantrips = all
+        .where((s) => s.isCantrip && !grantedSpellIds.contains(s.id))
         .toList();
+    final grantedCantripNames = [
+      for (final s in all)
+        if (s.isCantrip && grantedSpellIds.contains(s.id)) s.name,
+    ];
+    final leveled = all
+        .where(
+          (s) =>
+              !s.isCantrip &&
+              s.level <= maxLevel &&
+              !grantedSpellIds.contains(s.id),
+        )
+        .toList();
+    final grantedLeveledNames = [
+      for (final s in all)
+        if (!s.isCantrip && grantedSpellIds.contains(s.id)) s.name,
+    ];
     final prepared = sc.preparation == SpellPreparation.prepared;
 
     return Column(
@@ -269,6 +285,14 @@ class _SpellsSection extends StatelessWidget {
             count: draft.cantrips.length,
             cap: sc.cantripsKnown,
           ),
+          if (grantedCantripNames.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Ya tenés ${grantedCantripNames.join(', ')} por un rasgo de tu '
+              'especie: no ocupa un cupo de truco de clase.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
           const SizedBox(height: 10),
           _SpellChips(
             spells: cantrips,
@@ -284,6 +308,12 @@ class _SpellsSection extends StatelessWidget {
           count: draft.spells.length,
           cap: prepared ? sc.preparedCount : null,
         ),
+        if (grantedLeveledNames.isNotEmpty)
+          Text(
+            'Ya tenés ${grantedLeveledNames.join(', ')} siempre preparado por '
+            'un rasgo de tu especie: no ocupa un cupo.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         Text(
           'Podés preparar conjuros de hasta nivel $maxLevel.',
           style: Theme.of(context).textTheme.bodySmall,

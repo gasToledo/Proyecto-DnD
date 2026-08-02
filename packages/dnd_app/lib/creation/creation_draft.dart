@@ -327,6 +327,24 @@ class CreationDraft {
     return _scCache;
   }
 
+  Set<String>? _grantedSpellCache;
+  String? _grantedSpellSig;
+
+  /// Ids de conjuros ya concedidos por rasgos (linaje, dote de origen), fuera
+  /// de la magia de clase. No deben poder elegirse de nuevo: el rasgo ya los da
+  /// "siempre preparados" y gratis, así que gastar un cupo de clase en ellos no
+  /// suma nada. Cubre trucos (Prestidigitación del Alto Elfo) y conjuros con
+  /// nivel (Detectar Magia a nivel 3, Paso Brumoso a nivel 5).
+  Set<String> get grantedSpellIds {
+    final sig = [raceId, lineageId, raceFeatId].join('|');
+    if (sig != _grantedSpellSig) {
+      final sheet = CharacterCompiler(repo).compile(build());
+      _grantedSpellCache = {for (final s in sheet.innateSpells) s.spellId};
+      _grantedSpellSig = sig;
+    }
+    return _grantedSpellCache!;
+  }
+
   int get hitDie => klass?.hitDie ?? 10;
 
   /// Reparto resultante según el modo elegido y las 3 opciones del trasfondo.

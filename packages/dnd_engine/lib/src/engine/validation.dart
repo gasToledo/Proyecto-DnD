@@ -339,6 +339,9 @@ class CharacterValidator {
     final list = repo.spellsForList(sc.spellList).map((s) => s.id).toSet();
     final maxSlotLevel =
         sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
+    // Un rasgo que concede un conjuro ya lo da "siempre preparado" y con un uso
+    // gratis: volver a elegirlo desde la clase no suma nada y gasta un cupo.
+    final grantedSpellIds = {for (final s in sheet.innateSpells) s.spellId};
 
     if (c.cantripIds.length > sc.cantripsKnown) {
       w.add(ValidationWarning(
@@ -356,6 +359,9 @@ class CharacterValidator {
       } else if (!list.contains(id)) {
         w.add(ValidationWarning('cantrip_wrong_list',
             '${sp.name} no está en la lista de ${sc.spellList}.'));
+      } else if (grantedSpellIds.contains(id)) {
+        w.add(ValidationWarning('cantrip_already_granted',
+            '${sp.name} ya lo tenés por un rasgo de tu especie: elegilo de clase ocupa un cupo de más.'));
       }
     }
 
@@ -381,6 +387,10 @@ class CharacterValidator {
       if (!list.contains(id)) {
         w.add(ValidationWarning('spell_wrong_list',
             '${sp.name} no está en la lista de ${sc.spellList}.'));
+      }
+      if (grantedSpellIds.contains(id)) {
+        w.add(ValidationWarning('spell_already_granted',
+            '${sp.name} ya lo tenés siempre preparado por un rasgo de tu especie: prepararlo ocupa un cupo de más.'));
       }
       if (maxSlotLevel > 0 && sp.level > maxSlotLevel) {
         w.add(ValidationWarning(

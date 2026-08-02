@@ -336,6 +336,39 @@ void main() {
       expect(d.pendingFor(CreationStep.clase), isEmpty);
     });
 
+    test('Clase (Brujo) exige la invocación de nivel 1', () {
+      // El mismo gating genérico, sin nombrar el grupo: el Brujo elige una
+      // invocación a nivel 1 igual que el Guerrero elige estilo.
+      final d = newDraft()..classId = 'warlock';
+
+      final slot = d.featureChoiceSlots.single;
+      expect(slot.groupId, 'warlock-invocation');
+      expect(slot.count, 1);
+      expect(d.pendingFor(CreationStep.clase), isNotEmpty);
+
+      d.featureChoices['warlock-invocation'] = ['pact-of-the-tome'];
+      expect(d.pendingFor(CreationStep.clase), isEmpty);
+
+      // Y la elección llega al personaje construido.
+      expect(d.build().featureChoices['warlock-invocation'], [
+        'pact-of-the-tome',
+      ]);
+    });
+
+    test('cambiar de clase suelta las elecciones de la anterior', () {
+      final d = newDraft();
+      completeClase(d);
+      expect(d.featureChoices, isNotEmpty);
+
+      // Lo hace la UI al tocar otra clase; acá se comprueba el efecto sobre el
+      // gating: un Brujo no arrastra el estilo de combate del Guerrero.
+      d
+        ..classId = 'warlock'
+        ..featureChoices.clear();
+      expect(d.featureChoiceSlots.single.groupId, 'warlock-invocation');
+      expect(d.pendingFor(CreationStep.clase), isNotEmpty);
+    });
+
     test('Aptitudes exige las habilidades y la dote de origen', () {
       final d = newDraft();
       final race = repo.races.values.first;

@@ -510,6 +510,56 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('un Brujo de 1 a 2 gana dos invocaciones y puede cambiarlas', (
+    tester,
+  ) async {
+    // A nivel 1 conoce 1 invocación y a nivel 2 pasa a 3: el paso tiene que
+    // pedir las dos que faltan.
+    Character? saved;
+    final brujo = Character(
+      id: 't-warlock',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: 'warlock',
+      backgroundId: 'sage',
+      level: 1,
+      assignedScores: {for (final a in Ability.values) a: 12},
+      hpPerLevel: const [8],
+      featureChoices: const {
+        'warlock-invocation': ['pact-of-the-tome'],
+      },
+    );
+    await pumpLevelUp(tester, brujo, onDone: (c) => saved = c);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tus elecciones de este nivel'), findsOneWidget);
+    expect(find.text('INVOCACIONES SOBRENATURALES (1/3)'), findsOneWidget);
+    expect(find.text('Te faltan 2 elecciones para continuar.'), findsOneWidget);
+
+    for (final nombre in ['Pacto de la Cadena', 'Pacto del Filo']) {
+      final chip = find.widgetWithText(InkWell, nombre);
+      await tester.ensureVisible(chip);
+      await tester.pumpAndSettle();
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('INVOCACIONES SOBRENATURALES (3/3)'), findsOneWidget);
+
+    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 2'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.featureChoices['warlock-invocation'], hasLength(3));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'un Paladín legado de nivel alto recupera la elección pendiente',
     (tester) async {

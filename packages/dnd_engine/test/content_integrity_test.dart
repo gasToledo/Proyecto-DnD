@@ -232,6 +232,9 @@ void main() {
       'fighting-style',
       'dragonmark',
       'epic-boon',
+      // No es una dote que se tome en un ASI: es el catálogo de opciones de una
+      // elección abierta, que reusa `Feat` para no duplicar prerrequisitos.
+      'warlock-invocation',
     };
     for (final f in repo.feats.values) {
       expect(validCategories, contains(f.category),
@@ -303,11 +306,21 @@ void main() {
   });
 
   test('las 75 dotes canónicas del PHB están representadas', () {
+    // Solo las categorías que son **dotes**: `warlock-invocation` reusa `Feat`
+    // como catálogo de una elección abierta, pero no es una dote y no entra en
+    // este conteo. Sin este filtro, cargar invocaciones rompería el test.
+    const featCategories = {
+      'origin',
+      'general',
+      'fighting-style',
+      'epic-boon',
+    };
     final phb = repo.feats.values
         .where(
           (f) =>
-              f.source == ContentSource.phb2024 ||
-              f.source == ContentSource.srd2024,
+              (f.source == ContentSource.phb2024 ||
+                  f.source == ContentSource.srd2024) &&
+              featCategories.contains(f.category),
         )
         .toList();
     // Son 90 registros porque Iniciado en la Magia se divide en 3 listas
@@ -320,6 +333,20 @@ void main() {
     expect(phb.where((f) => f.category == 'general'), hasLength(56));
     expect(phb.where((f) => f.category == 'fighting-style'), hasLength(10));
     expect(phb.where((f) => f.category == 'epic-boon'), hasLength(12));
+  });
+
+  test('las invocaciones cargadas son los tres pactos del PHB 2024', () {
+    // El Pacto del Talismán es de 2014 y no está en el capítulo 3 de 2024.
+    final invocations = repo.featsByCategory('warlock-invocation');
+    expect(invocations.map((f) => f.id), [
+      'pact-of-the-chain',
+      'pact-of-the-blade',
+      'pact-of-the-tome',
+    ]);
+    for (final f in invocations) {
+      expect(f.source, ContentSource.phb2024, reason: f.id);
+      expect(f.repeatable, isFalse, reason: f.id);
+    }
   });
 
   test('los diez estilos exigen el rasgo Estilo de Combate', () {

@@ -1,5 +1,53 @@
 [
   {
+    "id": "pact-of-the-chain",
+    "name": "Pacto de la Cadena",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "grantSpell",
+        "spellId": "find-familiar",
+        "ability": "charisma",
+        "use": "atWill"
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Pacto de la Cadena",
+        "description": "Aprendés Encontrar Familiar y podés lanzarlo como acción de magia sin gastar espacio. Al lanzarlo elegís una forma habitual o una especial: diablillo, duende, esfinge de las maravillas, esqueleto, pseudodragón, quasit, renacuajo slaad o serpiente venenosa. Además, al realizar la acción de Atacar podés renunciar a uno de tus ataques para que el familiar ataque con su reacción."
+      }
+    ]
+  },
+  {
+    "id": "pact-of-the-blade",
+    "name": "Pacto del Filo",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Pacto del Filo",
+        "description": "Como acción adicional conjurás un arma de pacto cuerpo a cuerpo, sencilla o marcial, o te vinculás con un arma mágica que toques. Mientras dure el vínculo tenés competencia con ella y podés usarla como canalizador mágico. Al atacar con ella podés usar Carisma en vez de Fuerza o Destreza para ataque y daño, y hacer que cause daño necrótico, psíquico o radiante en vez de su tipo normal."
+      }
+    ]
+  },
+  {
+    "id": "pact-of-the-tome",
+    "name": "Pacto del Grimorio",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "passiveTrait",
+        "name": "Pacto del Grimorio",
+        "description": "Al terminar un descanso conjurás tu Libro de las Sombras. Elegís tres trucos y dos conjuros de nivel 1 con la etiqueta ritual, de la lista de cualquier clase, que no tengas ya preparados: mientras lleves el libro los tenés preparados y funcionan como conjuros de Brujo. El libro también sirve de canalizador mágico."
+      }
+    ]
+  },
+  {
     "id": "savage-attacker",
     "name": "Atacante Salvaje",
     "source": "srd_2024",

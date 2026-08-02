@@ -215,15 +215,22 @@ Ordenados por costo, del más barato al más caro:
 2. **Nomenclatura**: el catálogo usa traducciones propias donde el SRD tiene
    nombre oficial (Aprendiz de Mucho, Sentir el Peligro, Truco Potente). Esta
    tanda solo alineó los rasgos que tocó.
-3. **Elección de característica en dotes** (+1 a X o Y): hoy está fija en el
-   dato y anotada en el texto. Requiere efecto nuevo, campo persistido,
-   migración y dos superficies de UI.
-4. **Estilo de Combate de Paladín y Explorador**: confirmado contra el PHB que
-   ambos lo obtienen en el **nivel 2**. Falta implementarlo: `grantsFightingStyle`
-   es un booleano sin noción de nivel y la pantalla de subida de nivel no tiene
-   dónde elegirlo, así que activarlo tal cual lo regalaría a nivel 1. Hace falta
-   un campo `fightingStyleLevel`, el gating del asistente y una sección nueva.
-   Hoy solo lo declara Guerrero, a nivel 1.
+3. ~~**Elección de característica en dotes**~~ — **resuelto**. No hizo falta el
+   efecto nuevo que se preveía acá: se dividieron en variantes por
+   característica con `exclusiveGroup`, el patrón que ya usaban Resiliente e
+   Iniciado en la Magia. Alcanzó a Tocado por la Sombra, Tocado por lo Feérico,
+   Cocinero, Triturador, Perforador y Tajador.
+4. ~~**Estilo de Combate de Paladín y Explorador**~~ — **resuelto**. Ambos lo
+   declaran a nivel 2 y el asistente de subida de nivel tiene un paso de
+   elecciones que lo pide. La solución que proponía este punto
+   (`fightingStyleLevel: int`) quedó superada: se hizo con
+   `FeatureChoiceEffect`, un efecto que vive dentro del rasgo de clase y hereda
+   el nivel de `featuresUpTo`, así que también resuelve cantidad y reemplazo.
+   `grantsFightingStyle` se eliminó y `Character.fightingStyleId` pasó a ser
+   `featureChoices`, con migración v6 → v7.
+
+   Consecuencia visible: un Paladín o Explorador guardado de nivel 2 o más
+   muestra `feature_choice_pending` hasta que elija, porque nunca lo hizo.
 5. **Compra de puntos**: es el tercer método oficial de puntuaciones y no existe.
    `ScoreMethod` solo tiene array estándar y 4d6. La tabla del capítulo 2 ya está
    verificada: 27 puntos, puntuaciones de 8 a 15, costes 0/1/2/3/4/5/7/9.
@@ -240,8 +247,17 @@ Ordenados por costo, del más barato al más caro:
    los valores de las 38 armas y 13 armaduras, y decidir si la ficha lleva
    carga. Los datos ya están en las tablas del capítulo 6. Se conecta con el
    equipo inicial: cada trasfondo ofrece un paquete de equipo **o 50 po**.
-8. **Invocaciones Sobrenaturales**: el sistema no existe en el motor, así que
-   los cuatro pactos del Brujo solo figuran como texto.
+8. **Invocaciones Sobrenaturales**: el mecanismo **ya existe** — es el mismo
+   `FeatureChoiceEffect` del punto 4, que soporta cantidad creciente por nivel,
+   prerrequisitos por opción y reemplazo. Falta solo el contenido: cargar las
+   invocaciones como dotes de categoría `warlock-invocation` y declarar en el
+   Brujo cuántas conoce a cada nivel. Es dato, no código.
+
+   Antes de cargarlo hay que verificar contra el PHB: la columna de invocaciones
+   conocidas por nivel, la redacción de la regla de reemplazo, los
+   prerrequisitos de los cuatro pactos y la procedencia SRD vs PHB de cada una.
+   `FeatPrerequisite` no puede expresar todavía "exige conocer un conjuro"
+   (haría falta un `requiredSpellId`, aditivo y sin migración).
 9. **Objetos mágicos temporales y compañeros con estadísticas propias**: no
    tienen modelo mecánico. Réplica de Objeto Mágico, Defensor de Acero y Cañón
    Arcano del Artífice, cargados en Q5, van como texto descriptivo por esto

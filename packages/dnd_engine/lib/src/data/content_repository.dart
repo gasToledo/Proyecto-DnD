@@ -109,6 +109,14 @@ class ContentRepository {
   List<Background> get backgroundsSorted =>
       sortedByName(backgrounds.values, (e) => e.name);
   List<Feat> get featsSorted => sortedByName(feats.values, (e) => e.name);
+
+  /// Opciones de una elección abierta: las dotes de [category], alfabéticas.
+  /// Es lo único que hace falta para que un catálogo nuevo (invocaciones,
+  /// estilos) sea puro dato: nadie lleva una lista de ids.
+  List<Feat> featsByCategory(String category) => sortedByName(
+        feats.values.where((f) => f.category == category),
+        (e) => e.name,
+      );
   List<Weapon> get weaponsSorted => sortedByName(weapons.values, (e) => e.name);
   List<Armor> get armorSorted => sortedByName(armor.values, (e) => e.name);
 

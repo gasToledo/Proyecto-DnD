@@ -19,7 +19,9 @@ Character demoSagan() => Character(
   },
   backgroundAbilityBonuses: {Ability.strength: 2, Ability.constitution: 1},
   chosenSkills: ['perception', 'survival', 'insight'],
-  fightingStyleId: 'fs-defense',
+  featureChoices: {
+    'fighting-style': ['fs-defense'],
+  },
   weaponMasteryChoices: ['longsword', 'greatsword', 'dagger'],
   featIds: ['skilled'],
   hpPerLevel: [10],

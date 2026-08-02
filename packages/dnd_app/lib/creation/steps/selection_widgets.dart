@@ -306,3 +306,71 @@ class _TraitList extends StatelessWidget {
     );
   }
 }
+
+/// Resuelve una elección abierta declarada por el contenido
+/// ([FeatureChoiceSlot]): Estilo de Combate, Invocaciones Sobrenaturales…
+///
+/// Las opciones son dotes de la categoría que nombra el slot, así que salen de
+/// `featsByCategory` y no de ninguna lista de ids en la aplicación. Los
+/// prerrequisitos los evalúa el validador del motor, el mismo que usa el
+/// selector de dotes de la subida de nivel.
+class _FeatureChoiceSelect extends StatelessWidget {
+  final FeatureChoiceSlot slot;
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _FeatureChoiceSelect({
+    required this.slot,
+    required this.draft,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = draft.repo;
+    final chosen = draft.featureChoices[slot.groupId] ?? const <String>[];
+    final base = draft.build();
+    final validator = CharacterValidator(repo);
+    final options = repo
+        .featsByCategory(slot.featCategory)
+        .where(
+          (f) =>
+              chosen.contains(f.id) ||
+              validator.unmetFeatPrerequisite(f, base, draft.previewSheet) ==
+                  null,
+        )
+        .toList();
+
+    if (options.isEmpty) {
+      return Text(
+        'No hay opciones disponibles todavía.',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+
+    void setChoices(List<String> ids) {
+      if (ids.isEmpty) {
+        draft.featureChoices.remove(slot.groupId);
+      } else {
+        draft.featureChoices[slot.groupId] = ids;
+      }
+      onChanged();
+    }
+
+    if (slot.count == 1) {
+      return _SingleSelect(
+        options: {for (final f in options) f.id: f.name},
+        selected: chosen.isEmpty ? null : chosen.first,
+        sources: {for (final f in options) f.id: f.source},
+        onSelect: (id) => setChoices([id]),
+      );
+    }
+
+    final selected = chosen.toSet();
+    return CappedChipSelect(
+      options: {for (final f in options) f.id: f.name},
+      selected: selected,
+      max: slot.count,
+      onChanged: () => setChoices(selected.toList()),
+    );
+  }
+}

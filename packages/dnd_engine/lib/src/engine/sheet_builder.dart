@@ -48,6 +48,11 @@ class SheetBuilder {
 
   final Map<String, ResourceEffect> _resources = {};
 
+  /// Elecciones abiertas declaradas por el contenido, por grupo. Gana la de
+  /// mayor [FeatureChoiceEffect.count], porque el contenido declara el
+  /// acumulado a cada nivel y no el incremento.
+  final Map<String, FeatureChoiceEffect> featureChoiceSlots = {};
+
   int weaponMasterySlots = 0;
   int maxExtraAttack = 0;
 
@@ -135,6 +140,11 @@ class SheetBuilder {
         );
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
+      case FeatureChoiceEffect(:final groupId, :final count):
+        final prev = featureChoiceSlots[groupId];
+        if (prev == null || count > prev.count) {
+          featureChoiceSlots[groupId] = e;
+        }
       case WeaponMasterySlotsEffect(:final count):
         if (count > weaponMasterySlots) weaponMasterySlots = count;
       case ExtraAttackEffect(:final extra):

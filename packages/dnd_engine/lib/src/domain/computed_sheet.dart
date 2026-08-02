@@ -78,6 +78,43 @@ class InnateSpell {
       };
 }
 
+/// Una elección abierta que el personaje tiene que resolver, ya resuelta a su
+/// cantidad final para el nivel actual.
+///
+/// Es el contrato entre el motor y la aplicación: la UI pregunta a la ficha
+/// compilada qué falta elegir en vez de recorrer los rasgos de la clase por su
+/// cuenta, así el nivel al que se concede cada elección vive solo en el
+/// contenido.
+class FeatureChoiceSlot {
+  final String groupId;
+  final String name;
+
+  /// Categoría de dote de la que salen las opciones.
+  final String featCategory;
+
+  /// Cuántas se pueden tener a este nivel.
+  final int count;
+
+  /// Si se puede cambiar una elección ya hecha al subir de nivel.
+  final bool replaceable;
+
+  const FeatureChoiceSlot({
+    required this.groupId,
+    required this.name,
+    required this.featCategory,
+    required this.count,
+    required this.replaceable,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'groupId': groupId,
+        'name': name,
+        'featCategory': featCategory,
+        'count': count,
+        'replaceable': replaceable,
+      };
+}
+
 /// Qué economía de acción consume un ataque.
 ///
 /// La resuelve el motor y no la ficha: derivarla en la UI de `offHand` y la
@@ -220,6 +257,10 @@ class ComputedSheet {
   /// Conjuros concedidos por rasgos (linajes, dotes), fuera de la magia de clase.
   final List<InnateSpell> innateSpells;
 
+  /// Elecciones abiertas del personaje a este nivel (Estilo de Combate,
+  /// Invocaciones Sobrenaturales…), con su cantidad ya resuelta.
+  final List<FeatureChoiceSlot> featureChoiceSlots;
+
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
 
@@ -248,6 +289,7 @@ class ComputedSheet {
     required this.passives,
     required this.resources,
     this.innateSpells = const [],
+    this.featureChoiceSlots = const [],
     this.spellcasting,
   });
 

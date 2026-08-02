@@ -16,13 +16,19 @@
     ],
     "subclassLevel": 3,
     "asiLevels": [4, 6, 8, 12, 14, 16, 19],
-    "grantsFightingStyle": true,
     "features": [
       {
         "level": 1,
         "name": "Estilo de Combate",
         "description": "Adoptas un estilo de combate como dote de estilo de combate.",
-        "effects": []
+        "effects": [
+          {
+            "type": "featureChoice",
+            "groupId": "fighting-style",
+            "name": "Estilo de Combate",
+            "count": 1
+          }
+        ]
       },
       {
         "level": 1,

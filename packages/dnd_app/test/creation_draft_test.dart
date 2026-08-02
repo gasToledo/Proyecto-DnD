@@ -16,7 +16,7 @@ void main() {
   test('un draft con las elecciones de Sagan compila correctamente', () {
     final d = CreationDraft(repo)
       ..classId = 'fighter'
-      ..fightingStyleId = 'fs-defense'
+      ..featureChoices['fighting-style'] = ['fs-defense']
       ..weaponMasteries.addAll(['longsword', 'greatsword', 'dagger'])
       ..raceId = 'human'
       ..raceFeatId = 'skilled'
@@ -258,7 +258,7 @@ void main() {
 
   /// Completa el paso de Clase (Guerrero: estilo de combate + 3 maestrías).
   void completeClase(CreationDraft d) {
-    d.fightingStyleId = 'fs-defense';
+    d.featureChoices['fighting-style'] = ['fs-defense'];
     d.weaponMasteries.addAll(
       d.proficientWeapons.take(d.weaponMasterySlots).map((w) => w.id),
     );

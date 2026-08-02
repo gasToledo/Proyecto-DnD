@@ -1,3 +1,4 @@
+import 'package:dnd_app/creation/creation_wizard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,20 +10,24 @@ import 'package:flutter_test/flutter_test.dart';
 /// tarjeta todavía no se construyó. Hay que scrollear la columna, no la página.
 Future<void> tapOption(WidgetTester tester, String label) async {
   final target = find.text(label);
-  if (target.evaluate().isEmpty) {
-    await tester.scrollUntilVisible(
-      target,
-      140,
-      // La columna de opciones es el único ListView envuelto en Scrollbar del
-      // paso; el scroll de la página es otro y no revela nada de esta lista.
-      scrollable: find
-          .descendant(
-            of: find.byType(Scrollbar),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
+  final column = find.byKey(optionColumnKey);
+
+  // En modo angosto las opciones son un `Wrap` que construye todo, así que solo
+  // hace falta scrollear cuando existe la columna del modo dividido y la
+  // tarjeta todavía no está construida.
+  if (target.evaluate().isEmpty && column.evaluate().isNotEmpty) {
+    // Se arrastra sobre la lista misma en vez de buscarle el `Scrollable`
+    // adentro: ese finder depende de la estructura interna del ListView y se
+    // vacía según cómo esté armado el paso.
+    await tester.dragUntilVisible(target, column, const Offset(0, -140));
+    await tester.pumpAndSettle();
   }
+
+  expect(
+    target,
+    findsWidgets,
+    reason: 'no apareció la opción "$label" para tocar',
+  );
   await tester.ensureVisible(target.first);
   await tester.pumpAndSettle();
   await tester.tap(target.first);

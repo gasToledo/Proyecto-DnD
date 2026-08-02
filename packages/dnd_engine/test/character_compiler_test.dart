@@ -24,7 +24,9 @@ Character sagan({int level = 1, List<int>? hp}) => Character(
         Ability.constitution: 1,
       },
       chosenSkills: ['perception', 'survival', 'insight'],
-      fightingStyleId: 'fs-defense',
+      featureChoices: const {
+        'fighting-style': ['fs-defense'],
+      },
       weaponMasteryChoices: ['longsword', 'greatsword', 'dagger'],
       featIds: ['skilled'],
       hpPerLevel: hp ?? [10],
@@ -317,7 +319,9 @@ void main() {
             Ability.wisdom: 12,
             Ability.charisma: 8,
           },
-          fightingStyleId: fightingStyleId,
+          featureChoices: {
+            if (fightingStyleId != null) 'fighting-style': [fightingStyleId],
+          },
           weaponMasteryChoices: masteries,
           hpPerLevel: const [10],
           equippedWeaponIds: [mainHand, offHand],

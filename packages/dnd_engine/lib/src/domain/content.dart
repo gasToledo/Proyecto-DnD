@@ -148,10 +148,6 @@ class CharacterClass {
   /// Niveles de Mejora de Característica (ASI). El Guerrero suma extras (6 y 14).
   final List<int> asiLevels;
 
-  /// Si la clase concede una elección de Estilo de Combate (Guerrero; en el
-  /// futuro Paladín/Explorador con su propia integración).
-  final bool grantsFightingStyle;
-
   /// Color de acento de la clase, en hex ("#RRGGBB"), para la personalización
   /// visual. Null = sin acento propio (la UI usa el color por defecto).
   final String? accentColor;
@@ -174,7 +170,6 @@ class CharacterClass {
     this.skillChoiceFrom = const [],
     this.subclassLevel = 3,
     this.asiLevels = const [4, 8, 12, 16, 19],
-    this.grantsFightingStyle = false,
     this.accentColor,
     this.iconId,
     this.features = const [],
@@ -211,7 +206,6 @@ class CharacterClass {
         subclassLevel: j['subclassLevel'] as int? ?? 3,
         asiLevels: (j['asiLevels'] as List?)?.map((e) => e as int).toList() ??
             const [4, 8, 12, 16, 19],
-        grantsFightingStyle: j['grantsFightingStyle'] as bool? ?? false,
         accentColor: j['accentColor'] as String?,
         iconId: j['iconId'] as String?,
         features: (j['features'] as List? ?? const [])

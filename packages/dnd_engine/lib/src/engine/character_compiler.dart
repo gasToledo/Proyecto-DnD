@@ -88,7 +88,9 @@ class CharacterCompiler {
     final featIds = <String?>[
       background?.originFeatId,
       ...c.featIds,
-      c.fightingStyleId,
+      // Las elecciones abiertas (Estilo de Combate, Invocaciones) son dotes:
+      // sus efectos se aplican por el mismo camino que el resto.
+      for (final chosen in c.featureChoices.values) ...chosen,
     ];
     final appliedOnce = <String>{};
     for (final id in featIds) {
@@ -165,6 +167,16 @@ class CharacterCompiler {
         ...innate.resources
       ],
       innateSpells: innate.spells,
+      featureChoiceSlots: [
+        for (final e in builder.featureChoiceSlots.values)
+          FeatureChoiceSlot(
+            groupId: e.groupId,
+            name: e.name,
+            featCategory: e.featCategory,
+            count: e.count,
+            replaceable: e.replaceable,
+          ),
+      ],
       spellcasting: spellcasting,
     );
   }

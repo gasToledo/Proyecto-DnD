@@ -377,16 +377,31 @@ void main() {
       );
     });
 
-    test('heldFeatIds junta las elegidas y el estilo de combate', () {
-      // `copyWith` no expone fightingStyleId (lo preserva), así que se fija
-      // por JSON.
-      final c = Character.fromJson(
-        _minimalCharacter(featIds: ['test-feat']).toJson()
-          ..['fightingStyleId'] = 'style-feat',
+    test('heldFeatIds junta las elegidas y las elecciones abiertas', () {
+      // Desde que el estilo de combate es una elección más, `copyWith` sí la
+      // expone: ya no hace falta fijarla por JSON.
+      final c = _minimalCharacter(featIds: ['test-feat']).copyWith(
+        featureChoices: const {
+          'fighting-style': ['style-feat'],
+        },
       );
       expect(
         CharacterValidator(repo).heldFeatIds(c),
         {'test-feat', 'style-feat'},
+      );
+    });
+
+    test('heldFeatIds alcanza a cualquier grupo, no solo al estilo', () {
+      // Es lo que hace que los prerrequisitos entre invocaciones funcionen sin
+      // que la validación conozca el grupo.
+      final c = _minimalCharacter().copyWith(
+        featureChoices: const {
+          'warlock-invocation': ['pact-a', 'pact-b'],
+        },
+      );
+      expect(
+        CharacterValidator(repo).heldFeatIds(c),
+        containsAll(<String>['pact-a', 'pact-b']),
       );
     });
   });

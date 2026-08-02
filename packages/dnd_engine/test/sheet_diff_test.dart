@@ -23,7 +23,9 @@ Character sagan(
       },
       backgroundAbilityBonuses: {Ability.strength: 2, Ability.constitution: 1},
       chosenSkills: const ['perception'],
-      fightingStyleId: 'fs-defense',
+      featureChoices: const {
+        'fighting-style': ['fs-defense'],
+      },
       weaponMasteryChoices: const ['longsword'],
       featIds: const ['skilled'],
       asiChoices: asi,

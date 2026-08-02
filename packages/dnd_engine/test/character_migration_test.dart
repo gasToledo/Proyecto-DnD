@@ -173,6 +173,77 @@ void main() {
     expect(Character.fromJson(source).weaponOffHand, isEmpty);
   });
 
+  group('v6 → v7: el estilo de combate pasa a ser una elección más', () {
+    Map<String, dynamic> v6(
+            {Object? fightingStyleId, Object? featureChoices}) =>
+        {
+          'schemaVersion': 6,
+          'id': 'v6',
+          'name': 'Espadachín',
+          'raceId': 'human',
+          'classId': 'fighter',
+          'backgroundId': 'soldier',
+          'assignedScores': const <String, int>{},
+          if (fightingStyleId != null) 'fightingStyleId': fightingStyleId,
+          if (featureChoices != null) 'featureChoices': featureChoices,
+        };
+
+    test('el estilo guardado se muda a su grupo', () {
+      final migrated = Character.migrateJson(v6(fightingStyleId: 'fs-defense'));
+
+      expect(migrated['featureChoices'], {
+        'fighting-style': ['fs-defense'],
+      });
+      // El campo viejo se va: dejarlo sería un dato muerto que contradice.
+      expect(migrated.containsKey('fightingStyleId'), isFalse);
+      expect(
+        Character.fromJson(v6(fightingStyleId: 'fs-defense')).fightingStyleId,
+        'fs-defense',
+      );
+    });
+
+    test('sin estilo no inventa una entrada vacía', () {
+      // Es el caso de todo personaje que no sea Guerrero: el campo existía y
+      // estaba en null. Un `['null']` acá rompería la ficha entera.
+      final migrated = Character.migrateJson(v6(fightingStyleId: null));
+
+      expect(migrated['featureChoices'], isEmpty);
+      expect(Character.fromJson(v6()).fightingStyleId, isNull);
+    });
+
+    test('si vienen los dos campos, gana el nuevo', () {
+      final migrated = Character.migrateJson(
+        v6(
+          fightingStyleId: 'fs-archery',
+          featureChoices: {
+            'fighting-style': ['fs-defense'],
+          },
+        ),
+      );
+
+      expect(migrated['featureChoices'], {
+        'fighting-style': ['fs-defense'],
+      });
+    });
+
+    test('un featureChoices basura no cuesta la ficha', () {
+      expect(Character.fromJson(v6(featureChoices: 3)).featureChoices, isEmpty);
+      expect(
+        Character.fromJson(
+          v6(
+            featureChoices: {
+              'fighting-style': [1, 'fs-defense', null],
+              'otro': 'no-es-lista',
+            },
+          ),
+        ).featureChoices,
+        {
+          'fighting-style': ['fs-defense'],
+        },
+      );
+    });
+  });
+
   test('rechaza una versión futura con un error comprensible', () {
     final future = {
       'schemaVersion': Character.currentSchemaVersion + 1,

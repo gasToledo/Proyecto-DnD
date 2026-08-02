@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 6;
+  static const int currentSchemaVersion = 7;
 
   final String id;
   String name;
@@ -190,8 +190,25 @@ class Character {
   /// Habilidades elegidas (de las opciones de raza/clase/trasfondo).
   final List<String> chosenSkills;
 
-  /// Estilo de combate (una dote con category 'fighting-style').
-  final String? fightingStyleId;
+  /// Elecciones abiertas resueltas: id de grupo → ids de opción elegidos.
+  ///
+  /// El grupo lo declara un `FeatureChoiceEffect` del contenido y las opciones
+  /// son dotes de la categoría que ese efecto nombra. Reemplaza al viejo
+  /// `fightingStyleId`, que era un único id sin noción de nivel ni cantidad y
+  /// por eso no servía para Paladín/Explorador (nivel 2) ni para las
+  /// Invocaciones del Brujo (varias, crecientes).
+  final Map<String, List<String>> featureChoices;
+
+  /// Grupo del Estilo de Combate. Es un id de contenido, pero vive acá porque
+  /// la migración desde `fightingStyleId` tiene que nombrarlo.
+  static const String fightingStyleGroup = 'fighting-style';
+
+  /// Lectura de conveniencia del estilo elegido. Para escribir va siempre por
+  /// [featureChoices].
+  String? get fightingStyleId {
+    final chosen = featureChoices[fightingStyleGroup];
+    return (chosen == null || chosen.isEmpty) ? null : chosen.first;
+  }
 
   /// Armas en las que se eligió Maestría (2024).
   final List<String> weaponMasteryChoices;
@@ -256,7 +273,7 @@ class Character {
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
     this.chosenSkills = const [],
-    this.fightingStyleId,
+    this.featureChoices = const {},
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
     this.spellIds = const [],
@@ -291,7 +308,7 @@ class Character {
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
         'chosenSkills': chosenSkills,
-        'fightingStyleId': fightingStyleId,
+        'featureChoices': featureChoices,
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
         'spellIds': spellIds,
@@ -318,6 +335,14 @@ class Character {
         if (raw is Map)
           for (final e in raw.entries)
             if (e.key is String && e.value is bool) e.key as String: e.value,
+      };
+
+  /// Mapa "grupo → ids elegidos" tolerante, por el mismo motivo que [_boolMap].
+  static Map<String, List<String>> _choiceMap(dynamic raw) => {
+        if (raw is Map)
+          for (final e in raw.entries)
+            if (e.key is String && e.value is List)
+              e.key as String: (e.value as List).whereType<String>().toList(),
       };
 
   static int schemaVersionOf(Map<String, dynamic> json) {
@@ -408,6 +433,20 @@ class Character {
           migrated.putIfAbsent('weaponOffHand', () => <String, dynamic>{});
           version = 6;
           migrated['schemaVersion'] = version;
+        case 6:
+          // El estilo de combate pasa a ser una elección más. Se quita el campo
+          // viejo para que no quede un dato muerto que contradiga al nuevo; si
+          // una importación trae los dos, gana `featureChoices`.
+          final legacy = migrated.remove('fightingStyleId');
+          final raw = migrated['featureChoices'];
+          final choices =
+              raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+          if (legacy is String && legacy.isNotEmpty) {
+            choices.putIfAbsent(fightingStyleGroup, () => [legacy]);
+          }
+          migrated['featureChoices'] = choices;
+          version = 7;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -436,7 +475,7 @@ class Character {
       chosenSkills: (j['chosenSkills'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
-      fightingStyleId: j['fightingStyleId'] as String?,
+      featureChoices: _choiceMap(j['featureChoices']),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -484,6 +523,7 @@ class Character {
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
     List<int>? hpPerLevel,
+    Map<String, List<String>>? featureChoices,
     List<String>? cantripIds,
     List<String>? spellIds,
     Object? equippedArmorId = _unset,
@@ -516,7 +556,7 @@ class Character {
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,
       chosenSkills: chosenSkills,
-      fightingStyleId: fightingStyleId,
+      featureChoices: featureChoices ?? this.featureChoices,
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,
       spellIds: spellIds ?? this.spellIds,

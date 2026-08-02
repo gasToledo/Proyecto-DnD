@@ -129,9 +129,6 @@ class _ClassStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final repo = draft.repo;
     final klass = draft.klass;
-    final styles = repo.featsSorted
-        .where((f) => f.category == 'fighting-style')
-        .toList();
     final slots = draft.weaponMasterySlots;
 
     return Column(
@@ -156,7 +153,7 @@ class _ClassStep extends StatelessWidget {
                   draft.classId = c.id;
                   draft.classSkills.clear();
                   draft.weaponMasteries.clear();
-                  draft.fightingStyleId = null;
+                  draft.featureChoices.clear();
                   draft.cantrips.clear();
                   draft.spells.clear();
                   onChanged();
@@ -177,17 +174,22 @@ class _ClassStep extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (draft.grantsFightingStyle) ...[
-                        const Eyebrow('Estilo de combate'),
-                        const SizedBox(height: 8),
-                        _SingleSelect(
-                          options: {for (final f in styles) f.id: f.name},
-                          selected: draft.fightingStyleId,
-                          onSelect: (id) {
-                            draft.fightingStyleId = id;
-                            onChanged();
-                          },
+                      // Genérico: lo que hay que elegir lo declara el contenido
+                      // (Estilo de Combate del Guerrero, Invocaciones del
+                      // Brujo). Sumar una clase con otra elección no toca esto.
+                      for (final slot in draft.featureChoiceSlots) ...[
+                        Eyebrow(
+                          slot.count == 1
+                              ? slot.name
+                              : '${slot.name} (elegí ${slot.count})',
                         ),
+                        const SizedBox(height: 8),
+                        _FeatureChoiceSelect(
+                          slot: slot,
+                          draft: draft,
+                          onChanged: onChanged,
+                        ),
+                        const SizedBox(height: 18),
                       ],
                       if (slots > 0) ...[
                         const SizedBox(height: 18),

@@ -161,6 +161,7 @@ class CharacterValidator {
     }
 
     _validateOffHand(c, repo, w);
+    _validateFeatureChoices(c, sheet, w);
 
     for (final a in c.assignedScores.values) {
       if (a < 3 || a > 18) {
@@ -266,7 +267,7 @@ class CharacterValidator {
     final heldList = <String?>[
       repo.background(c.backgroundId)?.originFeatId,
       ...c.featIds,
-      c.fightingStyleId,
+      for (final chosen in c.featureChoices.values) ...chosen,
     ].whereType<String>().toList();
     final held = heldList.toSet();
 
@@ -317,6 +318,55 @@ class CharacterValidator {
     }
 
     return w;
+  }
+
+  /// Chequeos de las elecciones abiertas (Estilo de Combate, Invocaciones).
+  ///
+  /// No hay código de duplicado propio: las opciones son dotes y ya entran en
+  /// `heldFeatIds`, así que `feat_duplicate`, `feat_exclusive_group` y
+  /// `feat_prerequisite` las cubren sin repetir la regla acá.
+  void _validateFeatureChoices(
+      Character c, ComputedSheet sheet, List<ValidationWarning> w) {
+    final slots = {for (final s in sheet.featureChoiceSlots) s.groupId: s};
+
+    for (final slot in sheet.featureChoiceSlots) {
+      final chosen = c.featureChoices[slot.groupId] ?? const <String>[];
+      if (chosen.length < slot.count) {
+        w.add(ValidationWarning(
+          'feature_choice_pending',
+          '${slot.name}: elegiste ${chosen.length} de ${slot.count}.',
+          WarningSeverity.info,
+        ));
+      } else if (chosen.length > slot.count) {
+        w.add(ValidationWarning(
+          'too_many_feature_choices',
+          '${slot.name}: elegiste ${chosen.length} pero tenés ${slot.count} espacios.',
+        ));
+      }
+
+      for (final id in chosen) {
+        final feat = repo.feat(id);
+        if (feat == null || feat.category != slot.featCategory) {
+          w.add(ValidationWarning(
+            'feature_choice_invalid',
+            '"$id" no es una opción de ${slot.name}.',
+          ));
+        }
+      }
+    }
+
+    // Elecciones guardadas de un rasgo que el personaje ya no tiene: pasa al
+    // cambiar de clase o si el contenido que las declaraba se retiró. No se
+    // borran solas, por si la pérdida es temporal.
+    for (final groupId in c.featureChoices.keys) {
+      if ((c.featureChoices[groupId] ?? const []).isEmpty) continue;
+      if (slots.containsKey(groupId)) continue;
+      w.add(ValidationWarning(
+        'feature_choice_orphan',
+        'Tenés elecciones guardadas de "$groupId", un rasgo que ya no tenés.',
+        WarningSeverity.info,
+      ));
+    }
   }
 
   /// Chequeos del combate con dos armas (2024). Una entrada de [weaponOffHand]
@@ -450,7 +500,10 @@ class CharacterValidator {
   Set<String> heldFeatIds(Character c) => <String?>[
         repo.background(c.backgroundId)?.originFeatId,
         ...c.featIds,
-        c.fightingStyleId,
+        // Todos los grupos, no solo el estilo de combate: es lo que hace que un
+        // prerrequisito entre opciones (una invocación que exige otra) funcione
+        // sin que la validación sepa de qué grupo se trata.
+        for (final chosen in c.featureChoices.values) ...chosen,
       ].whereType<String>().toSet();
 
   /// Descripción del primer prerrequisito de [feat] que [c] no cumple, o null

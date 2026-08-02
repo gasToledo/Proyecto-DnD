@@ -11,14 +11,14 @@ extension _SheetSpellsSection on _SheetScreenState {
     final cantrips = sc == null
         ? <Spell>[]
         : (_c.cantripIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
-            ..sort((a, b) => a.name.compareTo(b.name)));
+            ..sort((a, b) => compareContentNames(a.name, b.name)));
     final spells = sc == null
         ? <Spell>[]
         : (_c.spellIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
             ..sort(
               (a, b) => a.level != b.level
                   ? a.level.compareTo(b.level)
-                  : a.name.compareTo(b.name),
+                  : compareContentNames(a.name, b.name),
             ));
 
     final slotLevels = sc?.slotsByLevel.keys.toList() ?? <int>[];

@@ -17,7 +17,7 @@ class _RaceStep extends StatelessWidget {
         _SplitSelect(
           emptyHint: 'Elegí una especie para ver su detalle.',
           options: [
-            for (final r in draft.repo.races.values)
+            for (final r in draft.repo.racesSorted)
               _ChoiceCard(
                 icon: raceIcon(r),
                 title: r.name,
@@ -129,7 +129,7 @@ class _ClassStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final repo = draft.repo;
     final klass = draft.klass;
-    final styles = repo.feats.values
+    final styles = repo.featsSorted
         .where((f) => f.category == 'fighting-style')
         .toList();
     final slots = draft.weaponMasterySlots;
@@ -142,7 +142,7 @@ class _ClassStep extends StatelessWidget {
         _SplitSelect(
           emptyHint: 'Elegí una clase para ver su detalle.',
           options: [
-            for (final c in repo.classes.values)
+            for (final c in repo.classesSorted)
               _ChoiceCard(
                 icon: classIcon(c),
                 title: c.name,
@@ -233,7 +233,7 @@ class _BackgroundStep extends StatelessWidget {
         _SplitSelect(
           emptyHint: 'Elegí un trasfondo para ver su detalle.',
           options: [
-            for (final b in repo.backgrounds.values)
+            for (final b in repo.backgroundsSorted)
               _ChoiceCard(
                 icon: backgroundIcon(b),
                 title: b.name,

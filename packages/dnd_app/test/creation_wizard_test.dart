@@ -6,6 +6,8 @@ import 'package:dnd_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'creation_helpers.dart';
+
 class _MemoryDraftStore extends CreationDraftStore {
   CreationDraftSnapshot? snapshot;
 
@@ -127,8 +129,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Raza -> Clase (Guerrero es la clase por defecto y pide 3 maestrías).
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
     await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
     await tester.pumpAndSettle();
 
@@ -164,8 +165,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
     await tester.tap(find.byTooltip('Cancelar'));
     await tester.pumpAndSettle();
 
@@ -218,7 +218,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Humano'));
+    await tapOption(tester, 'Humano');
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump();
     expect(store.snapshot?.data['raceId'], 'human');
@@ -254,8 +254,7 @@ void main() {
     // Sin selección, el panel derecho existe igual y dice qué falta hacer.
     expect(find.text(emptyHint), findsOneWidget);
 
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
 
     // Al elegir, el panel pasa a ser el detalle: la lista sigue a la izquierda.
     expect(find.text(emptyHint), findsNothing);
@@ -274,8 +273,10 @@ void main() {
   ) async {
     Future<double> listHeight(double windowHeight) async {
       await pumpAt(tester, Size(1500, windowHeight));
+      // Se ancla en la primera especie: la lista es perezosa y una del medio
+      // puede no estar construida todavía, que es lo que se quiere medir acá.
       final list = find.ancestor(
-        of: find.text('Humano'),
+        of: find.text(primeraEspecie),
         matching: find.byType(ListView),
       );
       return tester.getSize(list).height;
@@ -295,7 +296,7 @@ void main() {
   testWidgets('en una ventana muy baja la lista no colapsa', (tester) async {
     await pumpAt(tester, const Size(1500, 500));
     final list = find.ancestor(
-      of: find.text('Humano'),
+      of: find.text(primeraEspecie),
       matching: find.byType(ListView),
     );
     expect(tester.getSize(list).height, greaterThanOrEqualTo(320.0));
@@ -311,8 +312,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
     await next();
 
     // El Guerrero es la clase por defecto y no deja avanzar sin estilo de
@@ -320,11 +320,7 @@ void main() {
     await tester.tap(find.text('Estilo de Combate: Defensa'));
     await tester.pumpAndSettle();
     for (final w in ['Garrote', 'Daga', 'Clava']) {
-      final tile = find.widgetWithText(CheckboxListTile, w);
-      await tester.ensureVisible(tile);
-      await tester.pumpAndSettle();
-      await tester.tap(tile);
-      await tester.pumpAndSettle();
+      await checkWeapon(tester, w);
     }
     await next();
 
@@ -333,8 +329,7 @@ void main() {
     // En la lista solo van nombres: el sabor no se repite 33 veces.
     expect(find.text(tagline), findsNothing);
 
-    await tester.tap(find.text('Soldado').first);
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Soldado');
 
     expect(find.text(tagline), findsOneWidget);
     final name = tester.getRect(find.text('Soldado').first);
@@ -352,8 +347,7 @@ void main() {
     // hay marca de agua.
     expect(find.text(emptyHint), findsNothing);
 
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
 
     final card = tester.getRect(find.text('Humano').first);
     final detail = tester.getRect(find.text('TAMAÑO  '));

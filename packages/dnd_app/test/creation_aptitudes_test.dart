@@ -4,6 +4,8 @@ import 'package:dnd_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'creation_helpers.dart';
+
 /// Paso de Aptitudes: competencias de clase/especie y dote de origen.
 void main() {
   late ContentRepository repo;
@@ -33,14 +35,11 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
     await next();
-    await tester.tap(find.text('Mago'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Mago');
     await next();
-    await tester.tap(find.text('Soldado'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Soldado');
     await tester.tap(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await next();

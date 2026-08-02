@@ -4,6 +4,8 @@ import 'package:dnd_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'creation_helpers.dart';
+
 /// Paso de Equipo y Conjuros.
 void main() {
   late ContentRepository repo;
@@ -33,30 +35,23 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
     await next();
 
     // El nombre puede figurar en la tarjeta y en el panel de detalle (si ya
     // está seleccionada): la tarjeta es la primera.
-    await tester.tap(find.text(className).first);
-    await tester.pumpAndSettle();
+    await tapOption(tester, className);
     // El Guerrero exige estilo de combate y 3 maestrías.
     if (className == 'Guerrero') {
       await tester.tap(find.text('Estilo de Combate: Defensa'));
       await tester.pumpAndSettle();
       for (final w in ['Garrote', 'Daga', 'Clava']) {
-        final tile = find.widgetWithText(CheckboxListTile, w);
-        await tester.ensureVisible(tile);
-        await tester.pumpAndSettle();
-        await tester.tap(tile);
-        await tester.pumpAndSettle();
+        await checkWeapon(tester, w);
       }
     }
     await next();
 
-    await tester.tap(find.text('Soldado'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Soldado');
     await tester.tap(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await next();

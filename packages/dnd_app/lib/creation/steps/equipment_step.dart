@@ -9,7 +9,7 @@ class _EquipmentStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final pal = context.palette;
     final repo = draft.repo;
-    final armors = repo.armor.values.where((a) => !a.isShield).toList();
+    final armors = repo.armorSorted.where((a) => !a.isShield).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -65,7 +65,7 @@ class _EquipmentStep extends StatelessWidget {
         const _SectionHeader(title: 'Armas equipadas'),
         const SizedBox(height: 12),
         _WeaponSelect(
-          weapons: repo.weapons.values.toList(),
+          weapons: repo.weaponsSorted,
           selected: draft.weaponIds,
           onToggle: (id) {
             if (!draft.weaponIds.remove(id)) draft.weaponIds.add(id);

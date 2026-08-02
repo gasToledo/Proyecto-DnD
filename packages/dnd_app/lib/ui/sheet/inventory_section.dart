@@ -4,8 +4,8 @@ extension _SheetInventorySection on _SheetScreenState {
   // ----------------------------------------------------------- Inventario
 
   Widget _buildInventory() {
-    final armors = repo.armor.values.where((a) => !a.isShield).toList();
-    final weapons = repo.weapons.values.toList();
+    final armors = repo.armorSorted.where((a) => !a.isShield).toList();
+    final weapons = repo.weaponsSorted;
     return sheetCard(
       icon: Icons.backpack,
       title: 'Inventario y equipo',

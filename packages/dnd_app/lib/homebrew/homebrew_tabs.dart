@@ -72,7 +72,7 @@ extension _HomebrewTabs on _HomebrewScreenState {
   Widget _weaponsTab() => _list(
     addLabel: 'Agregar arma',
     onAdd: () => _editWeapon(),
-    items: store.weapons.values
+    items: sortedByName(store.weapons.values, (e) => e.name)
         .map(
           (w) => _tile(
             w.name,
@@ -102,7 +102,7 @@ extension _HomebrewTabs on _HomebrewScreenState {
   Widget _armorTab() => _list(
     addLabel: 'Agregar armadura',
     onAdd: () => _editArmor(),
-    items: store.armor.values
+    items: sortedByName(store.armor.values, (e) => e.name)
         .map(
           (a) => _tile(
             a.name,
@@ -131,7 +131,7 @@ extension _HomebrewTabs on _HomebrewScreenState {
   Widget _featsTab() => _list(
     addLabel: 'Agregar dote',
     onAdd: () => _editFeat(),
-    items: store.feats.values
+    items: sortedByName(store.feats.values, (e) => e.name)
         .map(
           (f) => _tile(
             f.name,
@@ -160,7 +160,7 @@ extension _HomebrewTabs on _HomebrewScreenState {
   Widget _racesTab() => _list(
     addLabel: 'Agregar raza',
     onAdd: () => _editRace(),
-    items: store.races.values
+    items: sortedByName(store.races.values, (e) => e.name)
         .map(
           (r) => _tile(
             r.name,
@@ -189,7 +189,7 @@ extension _HomebrewTabs on _HomebrewScreenState {
   Widget _backgroundsTab() => _list(
     addLabel: 'Agregar trasfondo',
     onAdd: () => _editBackground(),
-    items: store.backgrounds.values
+    items: sortedByName(store.backgrounds.values, (e) => e.name)
         .map(
           (b) => _tile(
             b.name,
@@ -224,7 +224,7 @@ extension _HomebrewTabs on _HomebrewScreenState {
         (store.spells.values.toList()..sort(
               (a, b) => a.level != b.level
                   ? a.level.compareTo(b.level)
-                  : a.name.compareTo(b.name),
+                  : compareContentNames(a.name, b.name),
             ))
             .map(
               (s) => _tile(

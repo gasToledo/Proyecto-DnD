@@ -269,7 +269,7 @@ class CreationDraft {
     final k = klass;
     if (k == null) return const [];
     final profs = k.weaponProficiencies.toSet();
-    return repo.weapons.values
+    return repo.weaponsSorted
         .where((w) => profs.contains(w.category) || profs.contains(w.id))
         .toList();
   }

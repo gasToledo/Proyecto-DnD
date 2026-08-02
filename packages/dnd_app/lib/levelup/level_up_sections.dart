@@ -802,35 +802,30 @@ extension _LevelUpSections on _LevelUpScreenState {
     // estilo de combate, no solo `featIds`: con el catálogo oficial no hay
     // solapamiento porque acá solo se ofrecen dotes generales, pero un
     // trasfondo homebrew puede conceder cualquiera.
-    final allFeats =
-        widget.repo.feats.values
-            .where((f) => f.category == 'general')
-            // "Mejora de Característica" ya es la opción hermana de este
-            // selector y necesita registrar sus puntuaciones, no un featId.
-            .where((f) => f.id != 'ability-score-improvement')
-            .where((f) => f.repeatable || !held.contains(f.id))
-            .where((f) {
-              final group = f.effectiveExclusiveGroup;
-              return group == null ||
-                  !held.any(
-                    (id) =>
-                        id != f.id &&
-                        widget.repo.feat(id)?.effectiveExclusiveGroup == group,
-                  );
-            })
-            // Las reglas viven en el motor: la UI solo esconde lo inelegible.
-            .where(
-              (f) =>
-                  validator.unmetFeatPrerequisite(
-                    f,
-                    target,
-                    sheet,
-                    held: held,
-                  ) ==
-                  null,
-            )
-            .toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
+    final allFeats = widget.repo.featsSorted
+        .where((f) => f.category == 'general')
+        // "Mejora de Característica" ya es la opción hermana de este
+        // selector y necesita registrar sus puntuaciones, no un featId.
+        .where((f) => f.id != 'ability-score-improvement')
+        .where((f) => f.repeatable || !held.contains(f.id))
+        .where((f) {
+          final group = f.effectiveExclusiveGroup;
+          return group == null ||
+              !held.any(
+                (id) =>
+                    id != f.id &&
+                    widget.repo.feat(id)?.effectiveExclusiveGroup == group,
+              );
+        })
+        // Las reglas viven en el motor: la UI solo esconde lo inelegible.
+        .where(
+          (f) =>
+              validator.unmetFeatPrerequisite(f, target, sheet, held: held) ==
+              null,
+        )
+        // Ya viene alfabético de `featsSorted`: reordenar acá con
+        // `compareTo` crudo desharía el plegado de tildes.
+        .toList();
     if (allFeats.isEmpty) {
       return Text(
         'No quedan dotes disponibles.',

@@ -1427,6 +1427,19 @@
       },
       {
         "level": 2,
+        "name": "Estilo de Combate",
+        "description": "Adoptas un estilo de combate como dote de estilo de combate.",
+        "effects": [
+          {
+            "type": "featureChoice",
+            "groupId": "fighting-style",
+            "name": "Estilo de Combate",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "level": 2,
         "name": "Castigo de Paladín",
         "description": "Siempre tenés preparado el conjuro Castigo Divino y podés lanzarlo como acción adicional tras impactar.",
         "effects": [
@@ -1560,6 +1573,19 @@
         "description": "Puedes usar la propiedad de Maestría de 2 armas con las que seas competente.",
         "effects": [
           { "type": "weaponMasterySlots", "count": 2 }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Estilo de Combate",
+        "description": "Adoptas un estilo de combate como dote de estilo de combate.",
+        "effects": [
+          {
+            "type": "featureChoice",
+            "groupId": "fighting-style",
+            "name": "Estilo de Combate",
+            "count": 1
+          }
         ]
       },
       {

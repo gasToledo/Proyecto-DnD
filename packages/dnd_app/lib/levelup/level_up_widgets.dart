@@ -615,3 +615,134 @@ class _SlotBadge extends StatelessWidget {
     );
   }
 }
+
+/// Un grupo de elección abierta: las opciones disponibles y las ya tomadas.
+///
+/// Cuando el grupo está lleno y es revisable, elegir una opción nueva pide
+/// primero cuál se saca; sin eso la única salida sería quedar con una de más,
+/// que es justo lo que la validación marca como error.
+class _FeatureChoiceGroup extends StatelessWidget {
+  final FeatureChoiceSlot slot;
+  final List<String> chosen;
+  final List<Feat> options;
+  final ValueChanged<List<String>> onChanged;
+
+  const _FeatureChoiceGroup({
+    required this.slot,
+    required this.chosen,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    if (options.isEmpty) {
+      return Text(
+        'No hay opciones disponibles todavía.',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+
+    final full = chosen.length >= slot.count;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (full && slot.replaceable)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Ya están completas. Tocá una elegida para soltarla y poder '
+              'cambiarla.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final feat in options)
+              _FeatureChoiceChip(
+                feat: feat,
+                selected: chosen.contains(feat.id),
+                // Con el grupo lleno solo se puede soltar lo ya elegido; un
+                // grupo no revisable ni siquiera eso.
+                enabled: chosen.contains(feat.id)
+                    ? slot.replaceable || !full
+                    : !full,
+                accent: pal.gold,
+                onTap: () {
+                  final next = List<String>.of(chosen);
+                  if (!next.remove(feat.id)) next.add(feat.id);
+                  onChanged(next);
+                },
+              ),
+          ],
+        ),
+        for (final id in chosen)
+          if (options.where((f) => f.id == id).firstOrNull case final feat?)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _FeatDetail(feat),
+            ),
+      ],
+    );
+  }
+}
+
+class _FeatureChoiceChip extends StatelessWidget {
+  final Feat feat;
+  final bool selected;
+  final bool enabled;
+  final Color accent;
+  final VoidCallback onTap;
+
+  const _FeatureChoiceChip({
+    required this.feat,
+    required this.selected,
+    required this.enabled,
+    required this.accent,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: Material(
+        color: selected ? pal.goldSoft : scheme.surface,
+        borderRadius: BorderRadius.circular(11),
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: BorderRadius.circular(11),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(11),
+              border: Border.all(color: selected ? accent : pal.hairline),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (selected) ...[
+                  Icon(Icons.check, size: 16, color: accent),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  feat.name,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: selected ? accent : scheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

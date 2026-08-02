@@ -20,6 +20,10 @@ enum _LevelUpStepKind {
   hitPoints,
   subclass,
   abilityScore,
+  // Va después del ASI a propósito: la cantidad de espacios puede venir de la
+  // subclase recién elegida, y los prerrequisitos de una opción pueden depender
+  // de la característica que sube el ASI de este mismo nivel.
+  featureChoices,
   features,
   spells,
   review,
@@ -99,6 +103,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
         if (_featId == null) return false;
       }
     }
+    if (_pendingChoices > 0) return false;
     return true;
   }
 
@@ -116,6 +121,65 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   // Conjuros re-elegidos en este nivel (null = sin cambios respecto al actual).
   List<String>? _newCantrips;
   List<String>? _newSpells;
+
+  /// Elecciones abiertas re-resueltas en este nivel (null = sin cambios).
+  Map<String, List<String>>? _newFeatureChoices;
+
+  Map<String, List<String>> get _effectiveChoices =>
+      _newFeatureChoices ?? widget.character.featureChoices;
+
+  List<String> _choicesFor(String groupId) =>
+      _effectiveChoices[groupId] ?? const [];
+
+  void _setChoices(String groupId, List<String> ids) {
+    final next = {
+      for (final e in _effectiveChoices.entries)
+        e.key: List<String>.of(e.value),
+    };
+    if (ids.isEmpty) {
+      next.remove(groupId);
+    } else {
+      next[groupId] = ids;
+    }
+    setState(() => _newFeatureChoices = next);
+  }
+
+  List<FeatureChoiceSlot>? _slotCache;
+  String? _slotSig;
+
+  /// Elecciones abiertas al nivel nuevo. Se memoiza porque `_steps` corre en
+  /// cada build y compilar la ficha no es gratis.
+  List<FeatureChoiceSlot> get _choiceSlots {
+    final sig = [
+      _newLevel,
+      _subclassId,
+      _asiKind.name,
+      _featId,
+      _abilityA?.name,
+      _abilityB?.name,
+      _impMode.name,
+    ].join('|');
+    if (sig != _slotSig) {
+      _slotCache = CharacterCompiler(
+        widget.repo,
+      ).compile(_buildUpdated()).featureChoiceSlots;
+      _slotSig = sig;
+    }
+    return _slotCache!;
+  }
+
+  /// Cuántas elecciones faltan resolver. Solo esto bloquea el avance: revisar
+  /// una elección ya hecha es opcional, como el paso de conjuros.
+  int get _pendingChoices => _choiceSlots.fold(
+    0,
+    (n, s) => n + (s.count - _choicesFor(s.groupId).length).clamp(0, s.count),
+  );
+
+  /// El paso aparece si falta elegir algo o si algún grupo se puede revisar.
+  /// Un grupo completo y no revisable (el Estilo de Combate, que se elige una
+  /// vez) no vuelve a mostrarse en cada subida.
+  bool get _hasFeatureChoices =>
+      _pendingChoices > 0 || _choiceSlots.any((s) => s.replaceable);
 
   void _updateState(VoidCallback update) => setState(update);
 
@@ -138,6 +202,12 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           _LevelUpStepKind.abilityScore,
           'Mejora o dote',
           Icons.trending_up,
+        ),
+      if (_hasFeatureChoices)
+        const _LevelUpStep(
+          _LevelUpStepKind.featureChoices,
+          'Elecciones',
+          Icons.style,
         ),
       if (_gainedFeatures().isNotEmpty)
         const _LevelUpStep(
@@ -177,6 +247,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _hpMethod == _HpMethod.average || _rolledHp != null,
     _LevelUpStepKind.subclass => !_needsSubclass || _subclassId != null,
     _LevelUpStepKind.abilityScore => _asiComplete,
+    _LevelUpStepKind.featureChoices => _pendingChoices == 0,
     _ => true,
   };
 
@@ -216,6 +287,10 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       'Completá la mejora de características.',
     _LevelUpStepKind.abilityScore when _featId == null =>
       'Elegí una dote para continuar.',
+    _LevelUpStepKind.featureChoices when _pendingChoices > 0 =>
+      _pendingChoices == 1
+          ? 'Te falta una elección para continuar.'
+          : 'Te faltan $_pendingChoices elecciones para continuar.',
     _ => null,
   };
 
@@ -254,6 +329,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       featIds: featIds,
       cantripIds: _newCantrips,
       spellIds: _newSpells,
+      featureChoices: _newFeatureChoices,
     );
   }
 

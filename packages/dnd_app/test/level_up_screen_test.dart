@@ -34,6 +34,11 @@ void main() {
       Ability.charisma: 8,
     },
     hpPerLevel: [10, 6, 6],
+    // El Guerrero elige su Estilo de Combate a nivel 1: sin esto el asistente
+    // lo trata (con razón) como una elección pendiente y agrega un paso.
+    featureChoices: const {
+      'fighting-style': ['fs-defense'],
+    },
   );
 
   Future<void> goToAsi(WidgetTester tester) async {
@@ -184,6 +189,9 @@ void main() {
         Ability.charisma: 8,
       },
       hpPerLevel: [10, 6, 6, 6, 6],
+      featureChoices: const {
+        'fighting-style': ['fs-defense'],
+      },
       // Ya tomó esta dote general en un nivel de ASI anterior.
       featIds: const ['great-weapon-master'],
       asiChoices: const [AsiChoice(level: 4, featId: 'great-weapon-master')],
@@ -231,6 +239,9 @@ void main() {
           Ability.charisma: 8,
         },
         hpPerLevel: [10, 6, 6, 6, 6],
+        featureChoices: const {
+          'fighting-style': ['fs-defense'],
+        },
         featIds: featIds,
       );
 
@@ -412,4 +423,102 @@ void main() {
       findsNothing,
     );
   });
+
+  // --- Elecciones abiertas: Estilo de Combate de Paladín/Explorador --------
+
+  Character paladin({
+    int level = 1,
+    Map<String, List<String>> choices = const {},
+  }) => Character(
+    id: 't-paladin',
+    name: 'Prueba',
+    raceId: 'human',
+    classId: 'paladin',
+    backgroundId: 'soldier',
+    level: level,
+    assignedScores: {
+      Ability.strength: 16,
+      Ability.dexterity: 12,
+      Ability.constitution: 14,
+      Ability.intelligence: 10,
+      Ability.wisdom: 10,
+      Ability.charisma: 14,
+    },
+    hpPerLevel: List.filled(level, 10),
+    featureChoices: choices,
+  );
+
+  Future<void> pumpLevelUp(
+    WidgetTester tester,
+    Character c, {
+    void Function(Character)? onDone,
+  }) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: c, repo: repo, onDone: onDone ?? (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('un Paladín de 1 a 2 tiene que elegir su Estilo de Combate', (
+    tester,
+  ) async {
+    Character? saved;
+    await pumpLevelUp(tester, paladin(), onDone: (c) => saved = c);
+
+    expect(find.text('Elecciones'), findsWidgets);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tus elecciones de este nivel'), findsOneWidget);
+    // Bloquea hasta elegir, y dice por qué.
+    expect(find.text('Te falta una elección para continuar.'), findsOneWidget);
+
+    final chip = find.widgetWithText(InkWell, 'Estilo de Combate: Defensa');
+    await tester.ensureVisible(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(find.text('Te falta una elección para continuar.'), findsNothing);
+
+    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 2'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.featureChoices['fighting-style'], ['fs-defense']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('un Guerrero que ya eligió no vuelve a ver el paso', (
+    tester,
+  ) async {
+    // Su estilo no es revisable, así que subir a 4 no vuelve a preguntárselo.
+    await pumpLevelUp(tester, fighterL3());
+
+    expect(find.text('Elecciones'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'un Paladín legado de nivel alto recupera la elección pendiente',
+    (tester) async {
+      // Guardado antes de que la clase concediera el estilo: nunca eligió. El
+      // asistente se lo pide en la próxima subida en vez de dejarlo incompleto.
+      await pumpLevelUp(tester, paladin(level: 7));
+
+      expect(find.text('Elecciones'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

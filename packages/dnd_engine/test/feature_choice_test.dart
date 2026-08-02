@@ -474,6 +474,86 @@ void main() {
       expect(repo.featsByCategory(slot.featCategory), hasLength(10));
     });
 
+    test('Guerrero, Paladín y Explorador conceden el estilo, y a qué nivel',
+        () {
+      // El nivel sale del rasgo que declara el efecto: nivel 1 el Guerrero,
+      // nivel 2 los otros dos. Era justo lo que el booleano viejo no sabía.
+      const esperado = {'fighter': 1, 'paladin': 2, 'ranger': 2};
+
+      for (final entry in esperado.entries) {
+        final klass = repo.characterClass(entry.key)!;
+        final conElEfecto = klass.features.where(
+          (f) => f.effects.any(
+            (e) => e is FeatureChoiceEffect && e.groupId == 'fighting-style',
+          ),
+        );
+        expect(conElEfecto, hasLength(1), reason: entry.key);
+        expect(conElEfecto.single.level, entry.value, reason: entry.key);
+      }
+    });
+
+    test('el rasgo se llama igual que lo que exigen las diez dotes', () {
+      // `requiredClassFeature` compara contra el nombre del rasgo carácter por
+      // carácter. Un typo en el JSON no rompe nada visible: simplemente hace
+      // que las diez dotes queden inelegibles con una advertencia por cada una.
+      for (final id in ['fighter', 'paladin', 'ranger']) {
+        final klass = repo.characterClass(id)!;
+        expect(
+          klass.features.map((f) => f.name),
+          contains('Estilo de Combate'),
+          reason: id,
+        );
+      }
+      for (final feat in repo.featsByCategory('fighting-style')) {
+        expect(
+          feat.prerequisite?.requiredClassFeature,
+          'Estilo de Combate',
+          reason: feat.id,
+        );
+      }
+    });
+
+    test('un Paladín nivel 2 puede tomar cualquiera de los diez estilos', () {
+      final paladin = Character(
+        id: 'paladin',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'paladin',
+        backgroundId: 'soldier',
+        level: 2,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: const [10, 6],
+      );
+      final sheet = CharacterCompiler(repo).compile(paladin);
+      final validator = CharacterValidator(repo);
+
+      expect(sheet.featureChoiceSlots.single.groupId, 'fighting-style');
+      for (final feat in repo.featsByCategory('fighting-style')) {
+        expect(
+          validator.unmetFeatPrerequisite(feat, paladin, sheet),
+          isNull,
+          reason: feat.id,
+        );
+      }
+    });
+
+    test('un Paladín nivel 1 todavía no tiene la elección', () {
+      final paladin = Character(
+        id: 'paladin-1',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'paladin',
+        backgroundId: 'soldier',
+        level: 1,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: const [10],
+      );
+      expect(
+        CharacterCompiler(repo).compile(paladin).featureChoiceSlots,
+        isEmpty,
+      );
+    });
+
     test('el Mago no declara ninguna elección abierta', () {
       final mago = Character(
         id: 'mago',

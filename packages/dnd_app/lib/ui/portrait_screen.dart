@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 
 import '../ai/portrait_prompt.dart';
 import '../ai/portrait_provider.dart';
@@ -137,6 +138,24 @@ class _PortraitScreenState extends State<PortraitScreen> {
 
   void _fail(String msg) {
     if (mounted) setState(() => _error = msg);
+  }
+
+  /// Abre el selector nativo de archivos para elegir la imagen de referencia
+  /// que se manda al proveedor (solo gpt-image-2, vía `images/edits`). Antes
+  /// había que escribir la ruta a mano en un campo de texto.
+  Future<void> _pickReference() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: _importExtensions,
+        dialogTitle: 'Elegir imagen de referencia',
+      );
+      final path = result?.files.single.path;
+      if (path == null) return; // el usuario canceló el diálogo
+      setState(() => _refCtrl.text = path);
+    } catch (e) {
+      _fail('No se pudo elegir la imagen de referencia: $e');
+    }
   }
 
   /// Importa un retrato ya existente desde el disco, en vez de generarlo.
@@ -317,13 +336,32 @@ class _PortraitScreenState extends State<PortraitScreen> {
         ),
         if (_provider.supportsReference) ...[
           const SizedBox(height: 12),
-          TextField(
-            controller: _refCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Ruta de imagen de referencia (opcional)',
-              hintText: r'C:\...\referencia.png',
-              border: OutlineInputBorder(),
-            ),
+          Text(
+            'Imagen de referencia (opcional)',
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _pickReference,
+                  icon: const Icon(Icons.image_outlined),
+                  label: Text(
+                    _refCtrl.text.isEmpty
+                        ? 'Elegir imagen…'
+                        : p.basename(_refCtrl.text),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              if (_refCtrl.text.isNotEmpty)
+                IconButton(
+                  tooltip: 'Quitar referencia',
+                  icon: const Icon(Icons.close),
+                  onPressed: () => setState(() => _refCtrl.clear()),
+                ),
+            ],
           ),
         ],
         const SizedBox(height: 16),

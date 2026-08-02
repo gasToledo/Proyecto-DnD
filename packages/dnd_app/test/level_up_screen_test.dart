@@ -259,8 +259,11 @@ void main() {
       findsNothing,
     );
     // Pero el selector no queda vacío: Cocinero no pide característica.
-    await searchFeat(tester, 'Cocinero');
-    expect(find.widgetWithText(InkWell, 'Cocinero'), findsOneWidget);
+    await searchFeat(tester, 'Cocinero (Sabiduría)');
+    expect(
+      find.widgetWithText(InkWell, 'Cocinero (Sabiduría)'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('no ofrece una marca mayor sin la marca base', (tester) async {
@@ -351,14 +354,14 @@ void main() {
 
     // Cocinero y no Actor: Actor exige Carisma 13 y este guerrero tiene 8, así
     // que desde que el selector respeta los prerrequisitos no se ofrece.
-    await searchFeat(tester, 'Cocinero');
-    final chip = find.widgetWithText(InkWell, 'Cocinero');
+    await searchFeat(tester, 'Cocinero (Sabiduría)');
+    final chip = find.widgetWithText(InkWell, 'Cocinero (Sabiduría)');
     await tester.ensureVisible(chip);
     await tester.tap(chip);
     await tester.pumpAndSettle();
 
     // El texto sale de los rasgos pasivos de la dote, no de un literal.
-    final esperado = featSummary(repo.feat('chef')!);
+    final esperado = featSummary(repo.feat('chef-wisdom')!);
     expect(esperado, isNotEmpty);
     // La tarjeta y el panel de detalle comparten el resumen.
     expect(find.text(esperado), findsWidgets);

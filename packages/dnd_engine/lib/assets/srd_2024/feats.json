@@ -318,11 +318,33 @@
     }
   },
   {
-    "id": "chef",
-    "name": "Cocinero",
+    "id": "chef-constitution",
+    "name": "Cocinero (Constitución)",
     "source": "phb_2024",
     "category": "general",
-    "repeatable": false,
+    "exclusiveGroup": "chef",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "constitution",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Cocinero",
+        "description": "Cocinas comida que restaura PG extra tras un descanso corto y golosinas que dan PG temporales."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "chef-wisdom",
+    "name": "Cocinero (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "chef",
     "effects": [
       {
         "type": "abilityScoreBonus",
@@ -332,7 +354,7 @@
       {
         "type": "passiveTrait",
         "name": "Cocinero",
-        "description": "Cocinas comida que restaura PG extra tras un descanso corto y golosinas que dan PG temporales. (+1 a CON o SAB)"
+        "description": "Cocinas comida que restaura PG extra tras un descanso corto y golosinas que dan PG temporales."
       }
     ],
     "prerequisite": {
@@ -340,11 +362,33 @@
     }
   },
   {
-    "id": "crusher",
-    "name": "Triturador",
+    "id": "crusher-strength",
+    "name": "Triturador (Fuerza)",
     "source": "phb_2024",
     "category": "general",
-    "repeatable": false,
+    "exclusiveGroup": "crusher",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Triturador",
+        "description": "Al dañar con contundente puedes empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "crusher-constitution",
+    "name": "Triturador (Constitución)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "crusher",
     "effects": [
       {
         "type": "abilityScoreBonus",
@@ -354,7 +398,7 @@
       {
         "type": "passiveTrait",
         "name": "Triturador",
-        "description": "Al dañar con contundente puedes empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo. (+1 a FUE o CON)"
+        "description": "Al dañar con contundente puedes empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo."
       }
     ],
     "prerequisite": {
@@ -473,11 +517,33 @@
     }
   },
   {
-    "id": "fey-touched",
-    "name": "Tocado por lo Feérico",
+    "id": "fey-touched-intelligence",
+    "name": "Tocado por lo Feérico (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
-    "repeatable": false,
+    "exclusiveGroup": "fey-touched",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "intelligence",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tocado por lo Feérico",
+        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "fey-touched-wisdom",
+    "name": "Tocado por lo Feérico (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "fey-touched",
     "effects": [
       {
         "type": "abilityScoreBonus",
@@ -487,7 +553,29 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por lo Feérico",
-        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo. (+1 a INT, SAB o CAR)"
+        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "fey-touched-charisma",
+    "name": "Tocado por lo Feérico (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "fey-touched",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "charisma",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tocado por lo Feérico",
+        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -822,11 +910,33 @@
     }
   },
   {
-    "id": "piercer",
-    "name": "Perforador",
+    "id": "piercer-strength",
+    "name": "Perforador (Fuerza)",
     "source": "phb_2024",
     "category": "general",
-    "repeatable": false,
+    "exclusiveGroup": "piercer",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Perforador",
+        "description": "Una vez por turno puedes volver a tirar un dado de daño perforante; en un crítico perforante sumas un dado extra."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "piercer-dexterity",
+    "name": "Perforador (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "piercer",
     "effects": [
       {
         "type": "abilityScoreBonus",
@@ -836,7 +946,7 @@
       {
         "type": "passiveTrait",
         "name": "Perforador",
-        "description": "Una vez por turno puedes volver a tirar un dado de daño perforante; en un crítico perforante sumas un dado extra. (+1 a FUE o DES)"
+        "description": "Una vez por turno puedes volver a tirar un dado de daño perforante; en un crítico perforante sumas un dado extra."
       }
     ],
     "prerequisite": {
@@ -979,11 +1089,55 @@
     }
   },
   {
-    "id": "shadow-touched",
-    "name": "Tocado por la Sombra",
+    "id": "shadow-touched-intelligence",
+    "name": "Tocado por la Sombra (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
-    "repeatable": false,
+    "exclusiveGroup": "shadow-touched",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "intelligence",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tocado por la Sombra",
+        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "shadow-touched-wisdom",
+    "name": "Tocado por la Sombra (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "shadow-touched",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "wisdom",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tocado por la Sombra",
+        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "shadow-touched-charisma",
+    "name": "Tocado por la Sombra (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "shadow-touched",
     "effects": [
       {
         "type": "abilityScoreBonus",
@@ -993,7 +1147,7 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por la Sombra",
-        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo. (+1 a INT, SAB o CAR)"
+        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -1066,11 +1220,11 @@
     }
   },
   {
-    "id": "slasher",
-    "name": "Tajador",
+    "id": "slasher-strength",
+    "name": "Tajador (Fuerza)",
     "source": "phb_2024",
     "category": "general",
-    "repeatable": false,
+    "exclusiveGroup": "slasher",
     "effects": [
       {
         "type": "abilityScoreBonus",
@@ -1080,7 +1234,29 @@
       {
         "type": "passiveTrait",
         "name": "Tajador",
-        "description": "Al dañar con cortante reduces la velocidad del objetivo; en un crítico cortante le impones desventaja a sus ataques. (+1 a FUE o DES)"
+        "description": "Al dañar con cortante reduces la velocidad del objetivo; en un crítico cortante le impones desventaja a sus ataques."
+      }
+    ],
+    "prerequisite": {
+      "minLevel": 4
+    }
+  },
+  {
+    "id": "slasher-dexterity",
+    "name": "Tajador (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "slasher",
+    "effects": [
+      {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Tajador",
+        "description": "Al dañar con cortante reduces la velocidad del objetivo; en un crítico cortante le impones desventaja a sus ataques."
       }
     ],
     "prerequisite": {

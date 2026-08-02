@@ -310,11 +310,14 @@ void main() {
               f.source == ContentSource.srd2024,
         )
         .toList();
-    // Son 82 registros porque Iniciado en la Magia se divide en 3 listas
-    // (+2) y Resiliente en 6 características (+5).
-    expect(phb, hasLength(82));
+    // Son 90 registros porque Iniciado en la Magia se divide en 3 listas
+    // (+2), Resiliente en 6 características (+5), y Cocinero, Triturador,
+    // Perforador y Tajador en 2 características cada uno (+4) y Tocado por lo
+    // Feérico/la Sombra en 3 cada uno (+4): sus bonos de característica eran
+    // a elegir en el libro, no fijos.
+    expect(phb, hasLength(90));
     expect(phb.where((f) => f.category == 'origin'), hasLength(12));
-    expect(phb.where((f) => f.category == 'general'), hasLength(48));
+    expect(phb.where((f) => f.category == 'general'), hasLength(56));
     expect(phb.where((f) => f.category == 'fighting-style'), hasLength(10));
     expect(phb.where((f) => f.category == 'epic-boon'), hasLength(12));
   });

@@ -186,4 +186,96 @@ void main() {
     expect(find.textContaining('Slashing'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  group('Combate con dos armas desde la ficha', () {
+    Character dualWielder() => Character(
+      id: 'dual-sheet',
+      name: 'Ambidiestra',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      equippedWeaponIds: const ['dagger', 'shortsword'],
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [10],
+    );
+
+    testWidgets('marcar la mano secundaria cambia el ataque de la ficha', (
+      tester,
+    ) async {
+      await pumpSheet(tester, dualWielder());
+
+      // Antes de marcar nada, las dos armas suman el modificador al daño.
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d4 + 2'), findsOneWidget);
+      expect(find.text('Mano secundaria'), findsNothing);
+      expect(find.text('Acción adicional'), findsNothing);
+
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+      final offHand = find.byKey(const ValueKey('off-hand-dagger'));
+      await tester.ensureVisible(offHand);
+      await tester.pumpAndSettle();
+      await tester.tap(offHand);
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilterChip>(offHand).selected, isTrue);
+
+      // La ficha refleja la regla sin que la UI la calcule: el daño pierde el
+      // modificador y el ataque pasa a ser acción adicional.
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d4 + 2'), findsNothing);
+      expect(find.text('Mano secundaria'), findsOneWidget);
+      expect(find.text('Acción adicional'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el arma versátil por fin se puede empuñar a dos manos', (
+      tester,
+    ) async {
+      // El daño versátil estaba implementado en el motor desde siempre, pero
+      // no había ninguna UI que activara `weaponTwoHanded`.
+      final character = Character(
+        id: 'versatile-sheet',
+        name: 'Versátil',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        equippedWeaponIds: const ['longsword'],
+        assignedScores: {for (final ability in Ability.values) ability: 14},
+        hpPerLevel: const [10],
+      );
+      await pumpSheet(tester, character);
+
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d8 + 2'), findsOneWidget);
+
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+      final twoHanded = find.byKey(const ValueKey('two-handed-longsword'));
+      await tester.ensureVisible(twoHanded);
+      await tester.pumpAndSettle();
+      await tester.tap(twoHanded);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d10 + 2'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el arma no Ligera no ofrece mandarla a la secundaria', (
+      tester,
+    ) async {
+      await pumpSheet(tester, dualWielder());
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('off-hand-dagger')), findsOneWidget);
+      expect(find.byKey(const ValueKey('off-hand-longsword')), findsNothing);
+      // Y el aviso viejo de que la regla no se aplicaba sola ya no está.
+      expect(find.textContaining('todavía no se aplica'), findsNothing);
+    });
+  });
 }

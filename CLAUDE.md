@@ -45,11 +45,17 @@ pendientes mecánicos (Estilo de Combate de Paladín/Explorador a nivel 2,
 Invocaciones Sobrenaturales del Brujo, Agotamiento/Inspiración Heroica sin
 efecto mecánico, precio/peso de equipo, entre otros).
 
-Se pueden equipar varias armas y la ficha lista un ataque por cada una, pero el
-motor todavía **no** aplica la regla 2024 de combate con dos armas (arma Ligera,
-ataque de mano secundaria como acción adicional, sin modificador al daño salvo
-con el estilo de combate correspondiente, maestría Nick). La UI lo avisa; si se
-implementa, va junto con los estilos de combate pendientes.
+El motor aplica la regla 2024 de combate con dos armas. La mano secundaria se
+marca por arma (`Character.weaponOffHand`), no se infiere del orden de equipado:
+cambia el daño y la economía de acciones, así que adivinarla daría una ficha
+distinta sin que el jugador lo pida. El ataque de esa mano pierde el modificador
+al daño **solo si es positivo** —uno negativo se sigue restando— y lo recupera
+con el estilo Combate con Dos Armas, que el compilador lee como
+`OffHandAbilityDamageEffect` en vez de preguntar por el id de la dote. `Attack`
+expone `offHand` y `action` ya resueltos para que la ficha no recalcule nada.
+
+`nick` es la única maestría con efecto mecánico: mete ese ataque dentro de la
+acción de Atacar. El resto del glosario sigue siendo descriptivo.
 
 ## Comandos
 

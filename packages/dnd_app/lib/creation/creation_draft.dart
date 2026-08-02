@@ -160,6 +160,22 @@ class CreationDraft {
         draft.weaponIds.add(id);
       }
     }
+    // Cómo se empuña cada arma. Solo se leen banderas de armas realmente
+    // elegidas: un borrador viejo no las trae y un id suelto no debe colarse.
+    for (final entry in [
+      (json['weaponOffHand'], draft.weaponOffHand),
+      (json['weaponTwoHanded'], draft.weaponTwoHanded),
+    ]) {
+      final raw = entry.$1;
+      if (raw is! Map) continue;
+      for (final e in raw.entries) {
+        if (e.key is String &&
+            e.value is bool &&
+            draft.weaponIds.contains(e.key)) {
+          entry.$2[e.key as String] = e.value as bool;
+        }
+      }
+    }
     final name = json['name'];
     if (name is String) draft.name = name;
     final alignment = json['alignment'];
@@ -209,6 +225,11 @@ class CreationDraft {
   /// dos dagas): el motor genera un ataque por cada una.
   final List<String> weaponIds = [];
 
+  /// Cómo se empuña cada arma elegida. Cambian el ataque que produce el motor,
+  /// así que viajan con el borrador como cualquier otra elección.
+  final Map<String, bool> weaponOffHand = {};
+  final Map<String, bool> weaponTwoHanded = {};
+
   String name = '';
 
   // Detalles de sabor.
@@ -239,6 +260,8 @@ class CreationDraft {
     'equippedArmorId': equippedArmorId,
     'shieldEquipped': shieldEquipped,
     'weaponIds': weaponIds,
+    'weaponOffHand': weaponOffHand,
+    'weaponTwoHanded': weaponTwoHanded,
     'name': name,
     'alignment': alignment?.toJson(),
     'personalityTrait': personalityTrait,
@@ -618,6 +641,8 @@ class CreationDraft {
       equippedArmorId: equippedArmorId,
       shieldEquipped: shieldEquipped,
       equippedWeaponIds: List.of(weaponIds),
+      weaponOffHand: Map.of(weaponOffHand),
+      weaponTwoHanded: Map.of(weaponTwoHanded),
       alignment: alignment,
       personalityTrait: personalityTrait.trim(),
     );

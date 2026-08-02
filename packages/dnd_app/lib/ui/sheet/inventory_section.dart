@@ -66,9 +66,9 @@ extension _SheetInventorySection on _SheetScreenState {
     );
   }
 
-  /// Armas equipadas: las actuales como chips que se pueden quitar, más un
-  /// combo para sumar otra. El catálogo completo no entra como lista de chips,
-  /// y `equippedWeaponIds` admite varias (el motor arma un ataque por cada una).
+  /// Armas equipadas: una fila por arma con cómo se empuña, más un combo para
+  /// sumar otra. `equippedWeaponIds` admite varias (el motor arma un ataque por
+  /// cada una) y cómo se empuña cambia el ataque, así que se decide acá.
   Widget _equippedWeapons(List<Weapon> weapons) {
     final equipped = _c.equippedWeaponIds;
     final available = weapons.where((w) => !equipped.contains(w.id)).toList();
@@ -91,21 +91,8 @@ extension _SheetInventorySection on _SheetScreenState {
             ),
           )
         else
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final id in equipped)
-                  InputChip(
-                    key: ValueKey('equipped-$id'),
-                    label: Text(repo.weapon(id)?.name ?? id),
-                    onDeleted: () => setWeapons([...equipped]..remove(id)),
-                  ),
-              ],
-            ),
-          ),
+          for (final id in equipped)
+            _equippedWeaponRow(id, () => setWeapons([...equipped]..remove(id))),
         if (available.isNotEmpty)
           DropdownButtonFormField<String>(
             key: ValueKey('add-weapon-${equipped.length}'),
@@ -127,20 +114,61 @@ extension _SheetInventorySection on _SheetScreenState {
               setWeapons([...equipped, v]);
             },
           ),
-        if (equipped.length > 1)
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Text(
-              'Hay un ataque por arma. La regla de combate con dos armas '
-              '(acción adicional, arma Ligera, sin modificador al daño sin el '
-              'estilo de combate) todavía no se aplica sola.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ],
+    );
+  }
+
+  /// Una fila de arma equipada: nombre, cómo se empuña y quitarla.
+  ///
+  /// Los dos interruptores solo aparecen cuando el arma los admite: Secundaria
+  /// exige la propiedad Ligera y A dos manos exige daño versátil. Así la UI no
+  /// deja armar una combinación que el motor tendría que advertir.
+  Widget _equippedWeaponRow(String id, VoidCallback onRemove) {
+    final w = repo.weapon(id);
+    final offHand = _c.weaponOffHand[id] ?? false;
+    final twoHanded = _c.weaponTwoHanded[id] ?? false;
+
+    // Solo se empuña un arma en la secundaria: marcar una desmarca la anterior.
+    void setOffHand(bool value) =>
+        _replace(_c.copyWith(weaponOffHand: value ? {id: true} : const {}));
+
+    void setTwoHanded(bool value) => _replace(
+      _c.copyWith(weaponTwoHanded: {..._c.weaponTwoHanded, id: value}),
+    );
+
+    return Padding(
+      key: ValueKey('equipped-$id'),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text(w?.name ?? id)),
+          if (w != null && w.isLight)
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: FilterChip(
+                key: ValueKey('off-hand-$id'),
+                label: const Text('Secundaria'),
+                selected: offHand,
+                onSelected: setOffHand,
               ),
             ),
+          if (w?.versatileDice != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: FilterChip(
+                key: ValueKey('two-handed-$id'),
+                label: const Text('A dos manos'),
+                selected: twoHanded,
+                onSelected: setTwoHanded,
+              ),
+            ),
+          IconButton(
+            tooltip: 'Quitar',
+            icon: const Icon(Icons.close, size: 18),
+            onPressed: onRemove,
           ),
-      ],
+        ],
+      ),
     );
   }
 }

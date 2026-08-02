@@ -114,7 +114,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('se pueden equipar dos armas y avisa por la mano secundaria', (
+  testWidgets('se pueden equipar dos armas y elegir la mano secundaria', (
     tester,
   ) async {
     await gotoEquipo(tester, 'Mago');
@@ -130,18 +130,32 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    expect(find.textContaining('combate con dos armas'), findsNothing);
+    // El aviso de que la regla no se aplicaba sola ya no corresponde: ahora la
+    // aplica el motor y lo que hay que decidir es la mano.
+    expect(find.textContaining('todavía no aplica'), findsNothing);
+    expect(find.text('Cómo las empuñás'), findsNothing);
 
     await tapWeapon('Daga');
-    // Con una sola arma no hay nada que aclarar todavía.
-    expect(find.textContaining('combate con dos armas'), findsNothing);
-
     await tapWeapon('Bastón');
-    expect(find.textContaining('combate con dos armas'), findsOneWidget);
 
-    // Destildar vuelve al estado anterior: es una selección múltiple real.
-    await tapWeapon('Bastón');
-    expect(find.textContaining('combate con dos armas'), findsNothing);
+    // La daga es Ligera, el bastón es versátil: cada una ofrece lo suyo.
+    expect(find.text('Cómo las empuñás'), findsOneWidget);
+    final offHand = find.byKey(const ValueKey('off-hand-dagger'));
+    expect(offHand, findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('two-handed-quarterstaff')),
+      findsOneWidget,
+    );
+    // El bastón no es Ligero, así que no se puede mandar a la secundaria.
+    expect(find.byKey(const ValueKey('off-hand-quarterstaff')), findsNothing);
+
+    expect(tester.widget<FilterChip>(offHand).selected, isFalse);
+    await tester.ensureVisible(offHand);
+    await tester.pumpAndSettle();
+    await tester.tap(offHand);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilterChip>(offHand).selected, isTrue);
+
     expect(tester.takeException(), isNull);
   });
 

@@ -76,10 +76,7 @@ class _EquipmentStep extends StatelessWidget {
             onChanged();
           },
         ),
-        if (draft.weaponIds.length > 1) ...[
-          const SizedBox(height: 10),
-          const _TwoWeaponNotice(),
-        ],
+        _WeaponGripSection(draft: draft, onChanged: onChanged),
         const SizedBox(height: 26),
         const _SectionHeader(title: 'Conjuros'),
         const SizedBox(height: 12),
@@ -92,41 +89,73 @@ class _EquipmentStep extends StatelessWidget {
   }
 }
 
-/// Aviso al equipar más de un arma. La ficha lista un ataque por arma, pero
-/// todavía no aplica la regla 2024 de combate con dos armas (arma Ligera,
-/// ataque de mano secundaria como acción adicional y sin sumar el modificador
-/// al daño salvo con el estilo de combate correspondiente). Sin este cartel el
-/// segundo ataque se lee como si ya estuviera resuelto, y en la mesa no lo está.
-class _TwoWeaponNotice extends StatelessWidget {
-  const _TwoWeaponNotice();
+/// Cómo se empuña cada arma elegida.
+///
+/// Solo aparecen los interruptores que el arma admite: Secundaria exige la
+/// propiedad Ligera y A dos manos exige daño versátil. Antes acá había un
+/// cartel avisando que la regla de dos armas no se aplicaba sola; ahora el
+/// motor la aplica, así que lo que falta es decidir la mano.
+class _WeaponGripSection extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _WeaponGripSection({required this.draft, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    final pal = context.palette;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: BoxDecoration(
-        color: pal.goldSoft,
-        border: Border.all(color: pal.gold),
-        borderRadius: BorderRadius.circular(11),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline, size: 18, color: pal.gold),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'La ficha va a mostrar un ataque por cada arma equipada, pero '
-              'todavía no aplica sola la regla de combate con dos armas: el '
-              'ataque de la mano secundaria es una acción adicional, exige un '
-              'arma Ligera y no suma tu modificador al daño salvo que tengas '
-              'el estilo de combate Combate con Dos Armas. Ajustalo en la mesa.',
-              style: TextStyle(fontSize: 12, color: pal.gold),
-            ),
+    final grips = [
+      for (final id in draft.weaponIds)
+        if (draft.repo.weapon(id) case final w?)
+          if (w.isLight || w.versatileDice != null) w,
+    ];
+    if (grips.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text('Cómo las empuñás', style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          'El ataque de mano secundaria es una acción adicional y no suma tu '
+          'modificador al daño, salvo con el estilo Combate con Dos Armas.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 6),
+        for (final w in grips)
+          Row(
+            children: [
+              Expanded(child: Text(w.name)),
+              if (w.isLight)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: FilterChip(
+                    key: ValueKey('off-hand-${w.id}'),
+                    label: const Text('Secundaria'),
+                    selected: draft.weaponOffHand[w.id] ?? false,
+                    onSelected: (v) {
+                      // Solo se empuña un arma en la secundaria.
+                      draft.weaponOffHand
+                        ..clear()
+                        ..addAll(v ? {w.id: true} : const {});
+                      onChanged();
+                    },
+                  ),
+                ),
+              if (w.versatileDice != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: FilterChip(
+                    key: ValueKey('two-handed-${w.id}'),
+                    label: const Text('A dos manos'),
+                    selected: draft.weaponTwoHanded[w.id] ?? false,
+                    onSelected: (v) {
+                      draft.weaponTwoHanded[w.id] = v;
+                      onChanged();
+                    },
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
+      ],
     );
   }
 }

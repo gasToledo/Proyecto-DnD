@@ -340,7 +340,7 @@ class _SpellsSection extends StatelessWidget {
         if (grantedLeveledNames.isNotEmpty)
           Text(
             'Ya tenés ${grantedLeveledNames.join(', ')} siempre preparado por '
-            'un rasgo de tu especie: no ocupa un cupo.',
+            'otro rasgo: no ocupa un cupo.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         Text(

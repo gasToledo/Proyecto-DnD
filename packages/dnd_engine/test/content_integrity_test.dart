@@ -335,17 +335,68 @@ void main() {
     expect(phb.where((f) => f.category == 'epic-boon'), hasLength(12));
   });
 
-  test('las invocaciones cargadas son los tres pactos del PHB 2024', () {
-    // El Pacto del Talismán es de 2014 y no está en el capítulo 3 de 2024.
+  test('están las 28 invocaciones del capítulo 3', () {
     final invocations = repo.featsByCategory('warlock-invocation');
-    expect(invocations.map((f) => f.id), [
-      'pact-of-the-chain',
-      'pact-of-the-blade',
-      'pact-of-the-tome',
-    ]);
+    expect(invocations, hasLength(28));
+
+    // Los tres pactos. El del Talismán es de 2014 y no está en 2024.
+    expect(
+        invocations.map((f) => f.id),
+        containsAll(<String>[
+          'pact-of-the-chain',
+          'pact-of-the-blade',
+          'pact-of-the-tome',
+        ]));
+    expect(
+      invocations.map((f) => f.name).where((n) => n.contains('Talismán')),
+      isEmpty,
+    );
+
+    // Se etiquetan phb_2024: no está verificado cuáles cubre el SRD 5.2.1 y
+    // reclamar cobertura sin certeza es el error que la licencia no perdona.
     for (final f in invocations) {
       expect(f.source, ContentSource.phb2024, reason: f.id);
-      expect(f.repeatable, isFalse, reason: f.id);
+    }
+
+    // Las cuatro repetibles del capítulo, ni una más.
+    expect(
+      invocations.where((f) => f.repeatable).map((f) => f.id).toSet(),
+      {
+        'agonizing-blast',
+        'repelling-blast',
+        'eldritch-spear',
+        'lessons-of-the-first-ones',
+      },
+    );
+  });
+
+  test('los prerrequisitos entre invocaciones apuntan a ids reales', () {
+    // Una cadena rota no rompe nada visible: la opción simplemente nunca se
+    // ofrece, que es la clase de error que no avisa.
+    final invocations = repo.featsByCategory('warlock-invocation');
+    final ids = invocations.map((f) => f.id).toSet();
+    for (final f in invocations) {
+      for (final required in f.prerequisite?.requiredFeatIds ?? const []) {
+        expect(ids, contains(required), reason: '${f.id} exige "$required"');
+      }
+    }
+    // Y la cadena más larga del capítulo se sostiene.
+    expect(
+      repo.feat('devouring-blade')!.prerequisite!.requiredFeatIds,
+      ['thirsting-blade'],
+    );
+    expect(
+      repo.feat('thirsting-blade')!.prerequisite!.requiredFeatIds,
+      ['pact-of-the-blade'],
+    );
+  });
+
+  test('los conjuros que conceden las invocaciones existen', () {
+    for (final f in repo.featsByCategory('warlock-invocation')) {
+      for (final e in f.effects.whereType<GrantSpellEffect>()) {
+        expect(repo.spell(e.spellId), isNotNull,
+            reason: '${f.id} concede "${e.spellId}"');
+      }
     }
   });
 

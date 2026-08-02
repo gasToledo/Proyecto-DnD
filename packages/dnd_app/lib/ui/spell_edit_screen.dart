@@ -82,7 +82,7 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
             if (grantedCantrips) ...[
               const SizedBox(height: 4),
               Text(
-                'Los trucos que ya tenés por un rasgo de tu especie no '
+                'Los trucos que ya tenés por otro rasgo no '
                 'aparecen acá: no ocupan un cupo de truco de clase.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -108,7 +108,7 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
           if (grantedLeveledNames.isNotEmpty)
             Text(
               'Ya tenés ${grantedLeveledNames.join(', ')} siempre preparado '
-              'por un rasgo de tu especie: no ocupa un cupo.',
+              'por otro rasgo: no ocupa un cupo.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           const SizedBox(height: 6),

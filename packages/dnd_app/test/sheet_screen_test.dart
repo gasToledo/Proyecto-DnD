@@ -153,7 +153,9 @@ void main() {
     await tester.tap(find.text('Combate'));
     await tester.pumpAndSettle();
 
-    expect(find.text('CONJUROS DE ESPECIE Y LINAJE'), findsOneWidget);
+    // El rótulo dejó de nombrar a la especie: desde las invocaciones del Brujo
+    // también los concede una elección abierta.
+    expect(find.text('CONJUROS DE RASGOS'), findsOneWidget);
     expect(find.text('Prestidigitación'), findsOneWidget);
     expect(find.textContaining('WIS'), findsOneWidget);
     expect(find.text('ESPACIOS DE CONJURO'), findsNothing);

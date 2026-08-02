@@ -25,12 +25,12 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
   subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
   Artificer*), 24 linajes (8 SRD, 16 PHB 2024), 33 trasfondos, 110 dotes
-  (9 SRD, 73 PHB 2024, 28 FoA)
+  (9 SRD, 73 PHB 2024, 28 FoA), 28 Invocaciones Sobrenaturales del Brujo
   y 392 conjuros (177 SRD, 214 PHB 2024, 1 FoA).
 - Creación guiada, subida de nivel con wizard multi-paso (resumen, puntos de
-  golpe, subclase, mejora de característica, rasgos, conjuros y repaso, cada
-  paso mostrado solo si aplica al nivel), combate, inventario, notas y
-  retratos IA.
+  golpe, subclase, mejora de característica, elecciones abiertas, rasgos,
+  conjuros y repaso, cada paso mostrado solo si aplica al nivel), combate,
+  inventario, notas y retratos IA.
 - Retratos IA con Pollinations, Azure AI Foundry (Flux) o Azure gpt-image-2
   como proveedor, además de importar un retrato desde archivo local.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
@@ -41,9 +41,31 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 
 Limitaciones vigentes: cada personaje usa una sola clase; no hay sincronización
 en la nube ni Modo DM. `docs/auditoria-reglas-2024.md` mantiene el detalle de
-pendientes mecánicos (Estilo de Combate de Paladín/Explorador a nivel 2,
-Invocaciones Sobrenaturales del Brujo, Agotamiento/Inspiración Heroica sin
-efecto mecánico, precio/peso de equipo, entre otros).
+pendientes mecánicos (Agotamiento/Inspiración Heroica sin efecto mecánico,
+compra de puntos, precio/peso de equipo, objetos mágicos y compañeros con
+estadísticas propias, entre otros).
+
+## Elecciones abiertas
+
+Estilo de Combate e Invocaciones Sobrenaturales son el mismo problema —"elegí N
+opciones de un catálogo, con prerrequisitos, revisable al subir de nivel"— y los
+resuelve un solo mecanismo.
+
+El catálogo de opciones **son `Feat`s**, discriminadas por `category`: ya traen
+efectos, `exclusiveGroup` y prerrequisitos que el validador sabe evaluar. La
+declaración es `FeatureChoiceEffect`, un **marcador** (como `GrantFeatEffect`
+sin `featId`) que vive dentro de un rasgo de clase y por eso hereda el nivel de
+`featuresUpTo`. `count` es el total **acumulado** a ese nivel, no el incremento:
+gana el mayor, igual que `ResourceEffect` y `WeaponMasterySlotsEffect`.
+
+`ComputedSheet.featureChoiceSlots` es el contrato con la aplicación: la UI
+pregunta a la ficha compilada qué falta elegir y **nunca** recorre
+`klass.features` por su cuenta. Las elecciones se guardan en
+`Character.featureChoices` (grupo → ids).
+
+Agregar un catálogo nuevo es agregar dotes con su categoría: ni el motor ni la
+aplicación llevan lista de ids, y `feature_choice_test.dart` lo prueba con
+contenido inventado.
 
 El motor aplica la regla 2024 de combate con dos armas. La mano secundaria se
 marca por arma (`Character.weaponOffHand`), no se infiere del orden de equipado:

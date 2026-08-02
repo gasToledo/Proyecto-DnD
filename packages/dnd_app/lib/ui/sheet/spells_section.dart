@@ -78,7 +78,9 @@ extension _SheetSpellsSection on _SheetScreenState {
 
             if (sheet.innateSpells.isNotEmpty) ...[
               if (sc != null) const SizedBox(height: 20),
-              const Eyebrow('Conjuros de especie y linaje'),
+              // No solo de especie: desde las invocaciones del Brujo también
+              // los concede una elección abierta.
+              const Eyebrow('Conjuros de rasgos'),
               const SizedBox(height: 6),
               DenseRows(
                 children: [

@@ -1,5 +1,290 @@
 [
   {
+    "id": "armor-of-shadows",
+    "name": "Armadura de Sombras",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "mage-armor", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Armadura de Sombras", "description": "Podés lanzar Armadura de Mago sobre vos sin gastar un espacio de conjuro." }
+    ]
+  },
+  {
+    "id": "arcane-smite",
+    "name": "Castigo Arcano",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Castigo Arcano", "description": "Una vez por turno, al acertar con tu arma de pacto, podés gastar un espacio de Magia de Pacto para causar 1d8 de daño de fuerza adicional más 1d8 por cada nivel del espacio. Además podés derribar al objetivo si es Enorme o más pequeño." }
+    ],
+    "prerequisite": { "minLevel": 5, "requiredFeatIds": ["pact-of-the-blade"] }
+  },
+  {
+    "id": "agonizing-blast",
+    "name": "Descarga Agónica",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": true,
+    "effects": [
+      { "type": "passiveTrait", "name": "Descarga Agónica", "description": "Requiere conocer un truco de Brujo que cause daño. Elegís uno y sumás tu modificador por Carisma a sus tiradas de daño. Repetible: cada vez elegís un truco distinto." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "repelling-blast",
+    "name": "Descarga Ahuyentadora",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": true,
+    "effects": [
+      { "type": "passiveTrait", "name": "Descarga Ahuyentadora", "description": "Requiere conocer un truco de Brujo que cause daño con tirada de ataque. Al acertar a una criatura Grande o más pequeña podés empujarla hasta 10 pies en línea recta. Repetible: cada vez elegís un truco distinto." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "lifedrinker",
+    "name": "Devorador de Vida",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Devorador de Vida", "description": "Una vez por turno, al acertar con tu arma de pacto, causás 1d6 de daño necrótico, psíquico o radiante adicional y podés gastar un dado de puntos de golpe para recuperar el resultado más tu modificador por Constitución (mínimo 1)." }
+    ],
+    "prerequisite": { "minLevel": 9, "requiredFeatIds": ["pact-of-the-blade"] }
+  },
+  {
+    "id": "gift-of-the-depths",
+    "name": "Don de las Profundidades",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "water-breathing", "ability": "charisma", "use": "oncePerLongRest" },
+      { "type": "passiveTrait", "name": "Don de las Profundidades", "description": "Podés respirar bajo el agua y tenés velocidad nadando igual a tu velocidad. Además podés lanzar Respirar bajo el Agua una vez por descanso largo sin gastar espacio." }
+    ],
+    "prerequisite": { "minLevel": 5 }
+  },
+  {
+    "id": "gift-of-the-protectors",
+    "name": "Don de los Protectores",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Don de los Protectores", "description": "Aparece una página nueva en tu Libro de las Sombras. Con tu permiso, una criatura puede escribir su nombre en ella (hasta tu modificador por Carisma, mínimo uno). Si los PG de una criatura nombrada bajan a 0 sin morir, pasa a tener 1 PG. Una vez activado, hay que esperar a un descanso largo." }
+    ],
+    "prerequisite": { "minLevel": 9, "requiredFeatIds": ["pact-of-the-tome"] }
+  },
+  {
+    "id": "thirsting-blade",
+    "name": "Filo Sediento",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Filo Sediento", "description": "Obtenés Ataque Adicional, pero solo con tu arma de pacto: hacés dos ataques con ella en vez de uno al realizar la acción de Atacar." }
+    ],
+    "prerequisite": { "minLevel": 5, "requiredFeatIds": ["pact-of-the-blade"] }
+  },
+  {
+    "id": "devouring-blade",
+    "name": "Hoja Devoradora",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Hoja Devoradora", "description": "El Ataque Adicional de Filo Sediento otorga dos ataques adicionales en vez de uno." }
+    ],
+    "prerequisite": { "minLevel": 12, "requiredFeatIds": ["thirsting-blade"] }
+  },
+  {
+    "id": "investment-of-the-chain-master",
+    "name": "Inversión del Amo de las Cadenas",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Inversión del Amo de las Cadenas", "description": "Tu familiar gana velocidad nadando o volando de 40 pies; podés ordenarle atacar como acción adicional; su daño contundente, cortante o perforante puede pasar a necrótico o radiante; usa tu CD de salvación; y con una reacción podés darle resistencia al daño que reciba." }
+    ],
+    "prerequisite": { "minLevel": 5, "requiredFeatIds": ["pact-of-the-chain"] }
+  },
+  {
+    "id": "eldritch-spear",
+    "name": "Lanza Sobrenatural",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": true,
+    "effects": [
+      { "type": "passiveTrait", "name": "Lanza Sobrenatural", "description": "Requiere conocer un truco de Brujo que cause daño y tenga alcance de 10 pies o más. Su alcance aumenta en 30 pies por nivel de Brujo. Repetible: cada vez elegís un truco distinto." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "lessons-of-the-first-ones",
+    "name": "Lecciones de los Primeros",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": true,
+    "effects": [
+      { "type": "passiveTrait", "name": "Lecciones de los Primeros", "description": "Obtenés una dote de origen de tu elección. Repetible: cada vez elegís una dote de origen distinta. Anotá cuál tomaste: el catálogo todavía no la aplica sola." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "master-of-myriad-forms",
+    "name": "Maestro de las Formas Innumerables",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "alter-self", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Maestro de las Formas Innumerables", "description": "Podés lanzar Alterar el Propio Aspecto sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 5 }
+  },
+  {
+    "id": "mask-of-many-faces",
+    "name": "Máscara de los Mil Rostros",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "disguise-self", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Máscara de los Mil Rostros", "description": "Podés lanzar Disfrazarse sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "eldritch-mind",
+    "name": "Mente Sobrenatural",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Mente Sobrenatural", "description": "Tenés ventaja en las salvaciones de Constitución para mantener la concentración." }
+    ]
+  },
+  {
+    "id": "gaze-of-two-minds",
+    "name": "Mirada de las Dos Mentes",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Mirada de las Dos Mentes", "description": "Con una acción adicional tocás a una criatura voluntaria y percibís por sus sentidos hasta el final de tu siguiente turno, prorrogable con otra acción adicional. Te beneficiás de sus sentidos especiales y podés lanzar conjuros desde su espacio si está a 60 pies o menos." }
+    ],
+    "prerequisite": { "minLevel": 5 }
+  },
+  {
+    "id": "ascendant-step",
+    "name": "Paso Ascendente",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "levitate", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Paso Ascendente", "description": "Podés lanzar Levitar sobre vos sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 5 }
+  },
+  {
+    "id": "otherworldly-leap",
+    "name": "Salto Sobrenatural",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "jump", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Salto Sobrenatural", "description": "Podés lanzar Salto sobre vos sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "whispers-of-the-grave",
+    "name": "Susurros del Sepulcro",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "speak-with-dead", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Susurros del Sepulcro", "description": "Podés lanzar Hablar con los Muertos sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 7 }
+  },
+  {
+    "id": "one-with-shadows",
+    "name": "Uno con las Sombras",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "invisibility", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Uno con las Sombras", "description": "Mientras estés en luz tenue u oscuridad podés lanzar Invisibilidad sobre vos sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 5 }
+  },
+  {
+    "id": "fiendish-vigor",
+    "name": "Vigor Infernal",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "false-life", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Vigor Infernal", "description": "Podés lanzar Falsa Vida sobre vos sin gastar un espacio de conjuro. Lanzado así no tirás el dado de PG temporales: obtenés el resultado máximo." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "witch-sight",
+    "name": "Visión Bruja",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Visión Bruja", "description": "Tenés visión verdadera hasta 30 pies." }
+    ],
+    "prerequisite": { "minLevel": 15 }
+  },
+  {
+    "id": "misty-visions",
+    "name": "Visiones Brumosas",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "silent-image", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Visiones Brumosas", "description": "Podés lanzar Imagen Silenciosa sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
+    "id": "visions-of-distant-realms",
+    "name": "Visiones de Reinos Remotos",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "grantSpell", "spellId": "arcane-eye", "ability": "charisma", "use": "atWill" },
+      { "type": "passiveTrait", "name": "Visiones de Reinos Remotos", "description": "Podés lanzar Ojo Arcano sin gastar un espacio de conjuro." }
+    ],
+    "prerequisite": { "minLevel": 9 }
+  },
+  {
+    "id": "devils-sight",
+    "name": "Vista del Diablo",
+    "source": "phb_2024",
+    "category": "warlock-invocation",
+    "repeatable": false,
+    "effects": [
+      { "type": "darkvision", "range": 120 },
+      { "type": "passiveTrait", "name": "Vista del Diablo", "description": "Ves con normalidad en luz tenue y en la oscuridad, mágicas o no, hasta 120 pies." }
+    ],
+    "prerequisite": { "minLevel": 2 }
+  },
+  {
     "id": "pact-of-the-chain",
     "name": "Pacto de la Cadena",
     "source": "phb_2024",

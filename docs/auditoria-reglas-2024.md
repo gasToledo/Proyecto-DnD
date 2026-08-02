@@ -247,17 +247,25 @@ Ordenados por costo, del más barato al más caro:
    los valores de las 38 armas y 13 armaduras, y decidir si la ficha lleva
    carga. Los datos ya están en las tablas del capítulo 6. Se conecta con el
    equipo inicial: cada trasfondo ofrece un paquete de equipo **o 50 po**.
-8. **Invocaciones Sobrenaturales**: el mecanismo **ya existe** — es el mismo
-   `FeatureChoiceEffect` del punto 4, que soporta cantidad creciente por nivel,
-   prerrequisitos por opción y reemplazo. Falta solo el contenido: cargar las
-   invocaciones como dotes de categoría `warlock-invocation` y declarar en el
-   Brujo cuántas conoce a cada nivel. Es dato, no código.
+8. ~~**Invocaciones Sobrenaturales**~~ — **resuelto**. Las 28 del capítulo 3
+   están cargadas como dotes de categoría `warlock-invocation` y el Brujo
+   declara cuántas conoce a cada nivel (1, y sube en 2, 5, 7, 9, 12, 15 y 18
+   hasta 10), revisables en cada nivel como manda la regla.
 
-   Antes de cargarlo hay que verificar contra el PHB: la columna de invocaciones
-   conocidas por nivel, la redacción de la regla de reemplazo, los
-   prerrequisitos de los cuatro pactos y la procedencia SRD vs PHB de cada una.
-   `FeatPrerequisite` no puede expresar todavía "exige conocer un conjuro"
-   (haría falta un `requiredSpellId`, aditivo y sin migración).
+   Tres correcciones que salieron de verificar contra el manual:
+   - **Son tres pactos, no cuatro.** El Pacto del Talismán es de 2014; el
+     catálogo lo afirmaba y un test lo daba por bueno. El manual lo llama
+     Pacto del Filo, no Pacto de la Hoja.
+   - **Ninguna invocación exige un conjuro concreto**: los requisitos son nivel
+     de Brujo, otra invocación, o "un truco que cause daño". El
+     `requiredSpellId` que se preveía acá no hizo falta.
+   - Dos celdas de la tabla no estaban en la capa de texto del PDF y las
+     confirmó el usuario leyendo el manual.
+
+   Doce conceden conjuros o visión en la oscuridad y se aplican solas; el resto
+   —arma de pacto, familiar mejorado, trucos elegidos de cualquier lista— va
+   como texto, que es la convención del catálogo. Se etiquetan `phb_2024`: no
+   está verificado cuáles cubre el SRD 5.2.1.
 9. **Objetos mágicos temporales y compañeros con estadísticas propias**: no
    tienen modelo mecánico. Réplica de Objeto Mágico, Defensor de Acero y Cañón
    Arcano del Artífice, cargados en Q5, van como texto descriptivo por esto

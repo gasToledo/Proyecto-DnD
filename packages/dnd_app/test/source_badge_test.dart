@@ -20,10 +20,13 @@ void main() {
   });
 
   test('cada procedencia tiene una etiqueta legible', () {
-    expect(sourceLabel(ContentSource.srd2024), 'SRD');
+    // Los dos SRD se distinguen por versión, no por año: "SRD" a secas no dice
+    // cuál de las dos ediciones es, y eso cambia la regla además de la
+    // licencia.
+    expect(sourceLabel(ContentSource.srd2024), 'SRD 5.2.1');
     expect(sourceLabel(ContentSource.phb2024), 'PHB 2024');
     expect(sourceLabel(ContentSource.foa2025), 'Forge 2025');
-    expect(sourceLabel(ContentSource.srd2014), 'SRD 2014');
+    expect(sourceLabel(ContentSource.srd2014), 'SRD 5.1');
     expect(sourceLabel(ContentSource.homebrew), 'Propio');
   });
 
@@ -115,7 +118,7 @@ void main() {
 
     expect(find.text('Evocador'), findsOneWidget);
     // Una sola opción del SRD y tres del PHB.
-    expect(find.text('SRD'), findsOneWidget);
+    expect(find.text('SRD 5.2.1'), findsOneWidget);
     expect(find.text('PHB 2024'), findsNWidgets(3));
     expect(tester.takeException(), isNull);
   });

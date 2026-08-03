@@ -209,11 +209,11 @@ void main() {
     await goToAsi(tester);
     await tester.tap(find.text('Tomar dote'));
     await tester.pumpAndSettle();
-    await searchFeat(tester, 'Maestro de Armas Grandes');
+    await searchFeat(tester, 'Maestro en Armas Pesadas');
 
     // La dote ya tomada no debe ofrecerse de nuevo (no es repetible).
     expect(
-      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro en Armas Pesadas'),
       findsNothing,
     );
   });
@@ -261,20 +261,17 @@ void main() {
   testWidgets('no ofrece una dote cuya característica mínima no se cumple', (
     tester,
   ) async {
-    // Maestro de Armas Grandes exige Fuerza 13.
+    // Maestro en Armas Pesadas exige Fuerza 13.
     await openFeatPicker(tester, fighterL5(strength: 8));
-    await searchFeat(tester, 'Maestro de Armas Grandes');
+    await searchFeat(tester, 'Maestro en Armas Pesadas');
 
     expect(
-      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro en Armas Pesadas'),
       findsNothing,
     );
     // Pero el selector no queda vacío: Cocinero no pide característica.
-    await searchFeat(tester, 'Cocinero (Sabiduría)');
-    expect(
-      find.widgetWithText(InkWell, 'Cocinero (Sabiduría)'),
-      findsOneWidget,
-    );
+    await searchFeat(tester, 'Chef (Sabiduría)');
+    expect(find.widgetWithText(InkWell, 'Chef (Sabiduría)'), findsOneWidget);
   });
 
   testWidgets('no ofrece una marca mayor sin la marca base', (tester) async {
@@ -333,10 +330,10 @@ void main() {
     // a 4 debe verlas: comprobar contra el nivel viejo vaciaría el selector
     // justo en el ASI más común.
     await openFeatPicker(tester, fighterL3());
-    await searchFeat(tester, 'Maestro de Armas Grandes');
+    await searchFeat(tester, 'Maestro en Armas Pesadas');
 
     expect(
-      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro en Armas Pesadas'),
       findsOneWidget,
     );
   });
@@ -363,10 +360,10 @@ void main() {
     // Sin dote elegida, se explica qué hacer para ver la descripción.
     expect(find.text('Elegí una dote'), findsOneWidget);
 
-    // Cocinero y no Actor: Actor exige Carisma 13 y este guerrero tiene 8, así
+    // Chef y no Actor: Actor exige Carisma 13 y este guerrero tiene 8, así
     // que desde que el selector respeta los prerrequisitos no se ofrece.
-    await searchFeat(tester, 'Cocinero (Sabiduría)');
-    final chip = find.widgetWithText(InkWell, 'Cocinero (Sabiduría)');
+    await searchFeat(tester, 'Chef (Sabiduría)');
+    final chip = find.widgetWithText(InkWell, 'Chef (Sabiduría)');
     await tester.ensureVisible(chip);
     await tester.tap(chip);
     await tester.pumpAndSettle();
@@ -482,7 +479,7 @@ void main() {
     // Bloquea hasta elegir, y dice por qué.
     expect(find.text('Te falta una elección para continuar.'), findsOneWidget);
 
-    final chip = find.widgetWithText(InkWell, 'Estilo de Combate: Defensa');
+    final chip = find.widgetWithText(InkWell, 'Defensa');
     await tester.ensureVisible(chip);
     await tester.pumpAndSettle();
     await tester.tap(chip);

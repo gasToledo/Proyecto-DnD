@@ -125,7 +125,7 @@ void main() {
     // La sección existe y ofrece alternativas, así que la ausencia es del
     // filtro y no de un paso que no llegó a construirse.
     expect(find.text('Dote de origen'.toUpperCase()), findsOneWidget);
-    final otra = find.text('Robustez');
+    final otra = find.text('Duro');
     await tester.scrollUntilVisible(otra, 200);
     await tester.pumpAndSettle();
     expect(otra, findsOneWidget);

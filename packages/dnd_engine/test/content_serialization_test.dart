@@ -67,7 +67,7 @@ void main() {
       // sin preguntar por el id de la dote, así que un homebrew puede concederlo.
       const feat = Feat(
         id: 'hb-ambidiestro',
-        name: 'Ambidiestro',
+        name: 'Combatiente con Dos Armas',
         source: ContentSource.homebrew,
         category: 'general',
         effects: [OffHandAbilityDamageEffect()],

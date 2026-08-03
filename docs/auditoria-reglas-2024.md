@@ -202,19 +202,47 @@ Sin la etiqueta correcta, todo esto se confundiría bajo la misma atribución.
 
 Ordenados por costo, del más barato al más caro:
 
-1. **Texto de 2014 en Resistente** (`durable`): la descripción dice "al gastar
-   dados de golpe recuperas más PG y te estabilizas mejor", que es la dote de
-   2014. En 2024 son dos beneficios distintos: **Desafiar a la muerte**, ventaja
-   en las tiradas de salvación contra muerte, y **Recuperación rápida**, gastar
-   un dado de puntos de golpe **como acción adicional** y recuperar el resultado
-   —sin aumentar la cantidad—. Es un solo campo de texto y el PDF ya está
-   verificado. Ninguno de los dos beneficios tiene modelo mecánico, así que van
-   como descripción, misma convención que el resto de los rasgos sin efecto.
-   Vale revisar de paso si otras dotes arrastran texto de 2014: esta apareció
-   por casualidad, al desambiguar su nombre.
-2. **Nomenclatura**: el catálogo usa traducciones propias donde el SRD tiene
-   nombre oficial (Aprendiz de Mucho, Sentir el Peligro, Truco Potente). Esta
-   tanda solo alineó los rasgos que tocó.
+1. ~~**Texto de 2014 en Resistente**~~ — **resuelto**, y no era una sola dote.
+   Comparar las 75 dotes del capítulo 5 contra el catálogo, término a término,
+   encontró **diez descripciones que hablaban de otra edición**: Resistente
+   (`durable`), Mente Aguda, Azote de Magos, Acechador, Centinela, Atleta,
+   Combatiente con Dos Armas y las tres de entrenamiento con armadura. Todas
+   reescritas contra el manual.
+
+   Dos eran defectos mecánicos, no de texto: **los escudos estaban en la dote
+   equivocada** —el manual los concede con la armadura ligera, no con la
+   media— y **Experto en Ballestas y Maestro en Escudos no daban su Mejora de
+   Característica**. Hay un test que fija el reparto de armaduras.
+2. ~~**Nomenclatura de dotes**~~ — **resuelto**. Eran **33 dotes con nombre
+   inventado**, no las tres que estimaba este punto: Robustez era *Duro*,
+   Artesano era *Fabricante*, Cazamagos era *Azote de Magos*, Ambidiestro era
+   *Combatiente con Dos Armas*, Tirador de Élite era *Tirador de Primera*, y
+   así. Los cuatro estilos de combate llevaban un prefijo "Estilo de Combate:"
+   que el manual no usa, y solo cuatro de los diez.
+
+   El id no se toca —es el nombre en inglés y la clave que viaja en los
+   personajes guardados—, así que renombrar es seguro. Después del cambio las
+   75 entradas del capítulo emparejan con el catálogo **sin una sola
+   excepción**, que es lo que confirma que el mapeo está completo.
+
+   Dos pares se parecen lo bastante como para intercambiarse y se verificaron
+   por su texto y prerrequisito: *Maestro en Armaduras Pesadas* (reducción de
+   daño) contra *Maestro en Armas Pesadas* (propiedad Pesada), y *Combate con
+   Dos Armas* (estilo) contra *Combatiente con Dos Armas* (dote general).
+   Renombrar `crafter` deshizo además una colisión: el trasfondo Artesano y la
+   dote Artesano compartían nombre.
+
+   Queda pendiente la nomenclatura fuera de las dotes (Aprendiz de Mucho,
+   Sentir el Peligro, Truco Potente).
+2b. **Elección de característica en 16 dotes más**: el manual ofrece elegir
+   entre dos o tres características y el catálogo asigna una sola. Alcanza a
+   Atleta, Atacante a la Carga, Combatiente con Dos Armas, Apresador, Muy
+   Acorazado, Maestro en Armaduras Pesadas y Medias, Líder Inspirador,
+   Ligeramente y Moderadamente Acorazado, Combatiente Montado, Observador,
+   Veloz, Telequinético, Telepático y Experto en Habilidades. Diez dotes más
+   directamente **no dan su Mejora de Característica** porque su elección no
+   se podía expresar. Es el mismo defecto que ya se resolvió para Influencia
+   Feérica y compañía, y se arregla igual: variantes con `exclusiveGroup`.
 3. ~~**Elección de característica en dotes**~~ — **resuelto**. No hizo falta el
    efecto nuevo que se preveía acá: se dividieron en variantes por
    característica con `exclusiveGroup`, el patrón que ya usaban Resiliente e

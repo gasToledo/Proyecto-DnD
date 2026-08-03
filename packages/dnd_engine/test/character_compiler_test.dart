@@ -219,7 +219,7 @@ void main() {
     });
 
     test('una dote repetible sí acumula sus efectos', () {
-      // Robustez da +2 PG por nivel y no es repetible; Mejora de Característica
+      // Duro da +2 PG por nivel y no es repetible; Mejora de Característica
       // sí lo es, así que dos instancias deben sumar 2 puntos, no 1.
       final base = sagan().copyWith(featIds: const []);
       final unaVez = sagan().copyWith(featIds: ['tough']);
@@ -229,7 +229,7 @@ void main() {
       expect(
         compiler.compile(dosVeces).maxHp,
         compiler.compile(unaVez).maxHp,
-        reason: 'Robustez no es repetible: no debe acumular dos veces',
+        reason: 'Duro no es repetible: no debe acumular dos veces',
       );
     });
   });

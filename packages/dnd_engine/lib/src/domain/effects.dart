@@ -360,7 +360,7 @@ class BonusMaxHpFlatEffect extends Effect {
   Map<String, dynamic> toJson() => {'type': 'bonusMaxHpFlat', 'amount': amount};
 }
 
-/// PG máximos adicionales por nivel de personaje (p.ej. dote Robustez).
+/// PG máximos adicionales por nivel de personaje (p.ej. dote Duro).
 class BonusMaxHpPerLevelEffect extends Effect {
   final int perLevel;
   const BonusMaxHpPerLevelEffect(this.perLevel);

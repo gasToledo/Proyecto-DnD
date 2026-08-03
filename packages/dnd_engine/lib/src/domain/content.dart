@@ -49,7 +49,7 @@ class Race {
   final List<Effect> effects;
 
   /// Cantidad de competencias de habilidad a elegir libremente y de qué lista
-  /// (vacía = cualquiera). Ej.: Humano 2024 → 1 habilidad ("Hábil").
+  /// (vacía = cualquiera). Ej.: Humano 2024 → 1 habilidad ("Habilidoso").
   final int skillChoiceCount;
   final List<String> skillChoiceFrom;
 

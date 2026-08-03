@@ -347,7 +347,7 @@
   },
   {
     "id": "tough",
-    "name": "Robustez",
+    "name": "Duro",
     "source": "phb_2024",
     "category": "origin",
     "effects": [
@@ -359,7 +359,7 @@
   },
   {
     "id": "skilled",
-    "name": "Hábil",
+    "name": "Habilidoso",
     "source": "srd_2024",
     "category": "origin",
     "effects": [
@@ -399,13 +399,13 @@
   },
   {
     "id": "crafter",
-    "name": "Artesano",
+    "name": "Fabricante",
     "source": "phb_2024",
     "category": "origin",
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Artesano",
+        "name": "Fabricante",
         "description": "Ganas competencia con tres herramientas de artesano a tu elección, obtienes 20% de descuento al comprar objetos no mágicos y puedes fabricar más rápido durante un descanso."
       }
     ]
@@ -438,7 +438,7 @@
   },
   {
     "id": "fs-defense",
-    "name": "Estilo de Combate: Defensa",
+    "name": "Defensa",
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
@@ -453,7 +453,7 @@
   },
   {
     "id": "fs-dueling",
-    "name": "Estilo de Combate: Duelo",
+    "name": "Duelo",
     "source": "phb_2024",
     "category": "fighting-style",
     "effects": [
@@ -469,7 +469,7 @@
   },
   {
     "id": "fs-archery",
-    "name": "Estilo de Combate: Arquería",
+    "name": "Tiro con Arco",
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
@@ -485,7 +485,7 @@
   },
   {
     "id": "fs-great-weapon",
-    "name": "Estilo de Combate: Arma Grande",
+    "name": "Combate con Armas a Dos Manos",
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
@@ -501,7 +501,7 @@
   },
   {
     "id": "great-weapon-master",
-    "name": "Maestro de Armas Grandes",
+    "name": "Maestro en Armas Pesadas",
     "source": "phb_2024",
     "category": "general",
     "effects": [
@@ -512,7 +512,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Maestro de Armas Grandes",
+        "name": "Maestro en Armas Pesadas",
         "description": "Al reducir a 0 PG o impactar con crítico con un arma cuerpo a cuerpo pesada, puedes hacer un ataque adicional como acción adicional. Tus ataques con arma pesada suman tu bonif. de competencia al daño."
       }
     ],
@@ -525,7 +525,7 @@
   },
   {
     "id": "sharpshooter",
-    "name": "Tirador de Élite",
+    "name": "Tirador de Primera",
     "source": "phb_2024",
     "category": "general",
     "effects": [
@@ -536,7 +536,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Tirador de Élite",
+        "name": "Tirador de Primera",
         "description": "Ignorás la cobertura media y de tres cuartos, no tenés desventaja al disparar a largo alcance, y no tenés desventaja por atacar a distancia con un enemigo adyacente."
       }
     ],
@@ -613,7 +613,7 @@
       {
         "type": "passiveTrait",
         "name": "Atleta",
-        "description": "Levantarte cuesta solo 5 pies de movimiento; trepas sin coste extra y saltas con menos carrerilla. (+1 a FUE o DES)"
+        "description": "Ganás velocidad trepando igual a tu velocidad. Levantarte del estado derribado cuesta solo 5 pies de movimiento, y saltás de longitud o de altura con carrerilla tras moverte solo 5 pies."
       }
     ],
     "prerequisite": {
@@ -626,7 +626,7 @@
   },
   {
     "id": "charger",
-    "name": "Embestidor",
+    "name": "Atacante a la Carga",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -638,7 +638,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Embestidor",
+        "name": "Atacante a la Carga",
         "description": "Si te mueves al menos 10 pies en línea recta antes de atacar, ganas daño o empuje adicional. (+1 a FUE o DES)"
       }
     ],
@@ -652,7 +652,7 @@
   },
   {
     "id": "chef-constitution",
-    "name": "Cocinero (Constitución)",
+    "name": "Chef (Constitución)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "chef",
@@ -674,7 +674,7 @@
   },
   {
     "id": "chef-wisdom",
-    "name": "Cocinero (Sabiduría)",
+    "name": "Chef (Sabiduría)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "chef",
@@ -740,14 +740,19 @@
   },
   {
     "id": "crossbow-expert",
-    "name": "Experto con Ballesta",
+    "name": "Experto en Ballestas",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
       {
+        "type": "abilityScoreBonus",
+        "ability": "dexterity",
+        "amount": 1
+      },
+      {
         "type": "passiveTrait",
-        "name": "Experto con Ballesta",
+        "name": "Experto en Ballestas",
         "description": "Ignoras la propiedad de recarga; no tienes desventaja al disparar con enemigos adyacentes."
       }
     ],
@@ -785,7 +790,7 @@
   },
   {
     "id": "dual-wielder",
-    "name": "Ambidiestro",
+    "name": "Combatiente con Dos Armas",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -797,8 +802,8 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Ambidiestro",
-        "description": "Combates con dos armas incluso no ligeras, ganas +1 a la CA con dos armas y desenvainas más rápido. (+1 a FUE o DES)"
+        "name": "Combatiente con Dos Armas",
+        "description": "Manejo Doble Mejorado: al atacar con un arma Ligera, el ataque extra de acción adicional puede hacerse con cualquier arma cuerpo a cuerpo sin la propiedad A dos manos. Desenvainar Rápido: sacás o guardás dos armas sin A dos manos donde normalmente harías una sola."
       }
     ],
     "prerequisite": {
@@ -824,7 +829,7 @@
       {
         "type": "passiveTrait",
         "name": "Resistente",
-        "description": "Al gastar dados de golpe recuperas más PG y te estabilizas mejor."
+        "description": "Desafiar a la Muerte: ventaja en las tiradas de salvación contra muerte. Recuperación Rápida: como acción adicional gastás un dado de puntos de golpe y recuperás el resultado."
       }
     ],
     "prerequisite": {
@@ -833,14 +838,14 @@
   },
   {
     "id": "elemental-adept",
-    "name": "Adepto Elemental",
+    "name": "Versado en un Elemento",
     "source": "phb_2024",
     "category": "general",
     "repeatable": true,
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Adepto Elemental",
+        "name": "Versado en un Elemento",
         "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2."
       }
     ],
@@ -851,7 +856,7 @@
   },
   {
     "id": "fey-touched-intelligence",
-    "name": "Tocado por lo Feérico (Inteligencia)",
+    "name": "Influencia Feérica (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "fey-touched",
@@ -873,7 +878,7 @@
   },
   {
     "id": "fey-touched-wisdom",
-    "name": "Tocado por lo Feérico (Sabiduría)",
+    "name": "Influencia Feérica (Sabiduría)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "fey-touched",
@@ -895,7 +900,7 @@
   },
   {
     "id": "fey-touched-charisma",
-    "name": "Tocado por lo Feérico (Carisma)",
+    "name": "Influencia Feérica (Carisma)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "fey-touched",
@@ -943,7 +948,7 @@
   },
   {
     "id": "heavily-armored",
-    "name": "Fuertemente Acorazado",
+    "name": "Muy Acorazado",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -959,8 +964,8 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Fuertemente Acorazado",
-        "description": "Ganas competencia con armadura pesada."
+        "name": "Muy Acorazado",
+        "description": "Ganás entrenamiento con armadura pesada."
       }
     ],
     "prerequisite": {
@@ -970,7 +975,7 @@
   },
   {
     "id": "heavy-armor-master",
-    "name": "Maestro de Armadura Pesada",
+    "name": "Maestro en Armaduras Pesadas",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -982,7 +987,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Maestro de Armadura Pesada",
+        "name": "Maestro en Armaduras Pesadas",
         "description": "Con armadura pesada reduces el daño no mágico contundente, perforante y cortante. (+1 a FUE o CON)"
       }
     ],
@@ -1032,7 +1037,7 @@
       {
         "type": "passiveTrait",
         "name": "Mente Aguda",
-        "description": "Siempre sabes dónde está el norte y cuántas horas faltan para el amanecer o anochecer; recuerdas lo vivido en el último mes."
+        "description": "Sabiduría Popular: ganás competencia en Conocimiento Arcano, Historia, Investigación, Naturaleza o Religión, o pericia si ya eras competente. Estudio Rápido: hacés la acción de estudiar como acción adicional."
       }
     ],
     "prerequisite": {
@@ -1059,9 +1064,13 @@
         "category": "light"
       },
       {
+        "type": "armorProficiency",
+        "category": "shield"
+      },
+      {
         "type": "passiveTrait",
         "name": "Ligeramente Acorazado",
-        "description": "Ganas competencia con armadura ligera. (+1 a FUE o DES)"
+        "description": "Ganás entrenamiento con armadura ligera y con escudos."
       }
     ],
     "prerequisite": {
@@ -1070,15 +1079,15 @@
   },
   {
     "id": "mage-slayer",
-    "name": "Cazamagos",
+    "name": "Azote de Magos",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Cazamagos",
-        "description": "Cuando una criatura cercana lanza un conjuro, puedes reaccionar atacándola; tienes ventaja en salvaciones contra sus conjuros."
+        "name": "Azote de Magos",
+        "description": "Anticoncentración: cuando dañás a una criatura que se está concentrando, tiene desventaja en la salvación para mantenerla. Mente Robusta: podés convertir en éxito una salvación fallida de Inteligencia, Sabiduría o Carisma, una vez por descanso corto o largo."
       }
     ],
     "prerequisite": {
@@ -1142,7 +1151,7 @@
   },
   {
     "id": "medium-armor-master",
-    "name": "Maestro de Armadura Media",
+    "name": "Maestro en Armaduras Medias",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -1154,7 +1163,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Maestro de Armadura Media",
+        "name": "Maestro en Armaduras Medias",
         "description": "Con armadura media no tienes desventaja en Sigilo y sumas hasta +3 de DES a la CA. (+1 a FUE o DES)"
       }
     ],
@@ -1180,13 +1189,9 @@
         "category": "medium"
       },
       {
-        "type": "armorProficiency",
-        "category": "shield"
-      },
-      {
         "type": "passiveTrait",
         "name": "Moderadamente Acorazado",
-        "description": "Ganas competencia con armadura media y escudos. (+1 a FUE o DES)"
+        "description": "Ganás entrenamiento con armadura media."
       }
     ],
     "prerequisite": {
@@ -1305,14 +1310,14 @@
   },
   {
     "id": "polearm-master",
-    "name": "Maestro de Armas de Asta",
+    "name": "Maestro en Armas de Asta",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Maestro de Armas de Asta",
+        "name": "Maestro en Armas de Asta",
         "description": "Con un arma de asta ganas un ataque adicional con el extremo romo y provocas ataques de oportunidad cuando los enemigos entran en tu alcance."
       }
     ],
@@ -1380,14 +1385,14 @@
   },
   {
     "id": "ritual-caster",
-    "name": "Lanzador de Rituales",
+    "name": "Lanzador Ritual",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Lanzador de Rituales",
+        "name": "Lanzador Ritual",
         "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él."
       }
     ],
@@ -1410,7 +1415,7 @@
       {
         "type": "passiveTrait",
         "name": "Centinela",
-        "description": "Tus ataques de oportunidad reducen a 0 la velocidad del objetivo; puedes reaccionar atacando a quien golpee a un aliado cercano."
+        "description": "Guardián: podés hacer un ataque de oportunidad contra una criatura a 5 pies que se destrabe o acierte a un objetivo que no seas vos. Detener: al acertar con un ataque de oportunidad, la velocidad del objetivo pasa a 0 el resto del turno."
       }
     ],
     "prerequisite": {
@@ -1423,7 +1428,7 @@
   },
   {
     "id": "shadow-touched-intelligence",
-    "name": "Tocado por la Sombra (Inteligencia)",
+    "name": "Influencia Sombría (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "shadow-touched",
@@ -1445,7 +1450,7 @@
   },
   {
     "id": "shadow-touched-wisdom",
-    "name": "Tocado por la Sombra (Sabiduría)",
+    "name": "Influencia Sombría (Sabiduría)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "shadow-touched",
@@ -1467,7 +1472,7 @@
   },
   {
     "id": "shadow-touched-charisma",
-    "name": "Tocado por la Sombra (Carisma)",
+    "name": "Influencia Sombría (Carisma)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "shadow-touched",
@@ -1489,14 +1494,19 @@
   },
   {
     "id": "shield-master",
-    "name": "Maestro del Escudo",
+    "name": "Maestro en Escudos",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
       {
+        "type": "abilityScoreBonus",
+        "ability": "strength",
+        "amount": 1
+      },
+      {
         "type": "passiveTrait",
-        "name": "Maestro del Escudo",
+        "name": "Maestro en Escudos",
         "description": "Puedes empujar con el escudo como acción adicional y usarlo para reforzar tus salvaciones de Destreza."
       }
     ],
@@ -1542,7 +1552,7 @@
       {
         "type": "passiveTrait",
         "name": "Acechador",
-        "description": "Ganás visión ciega hasta 10 pies. Además, tenés ventaja en las pruebas de Sigilo si te movés como mucho la mitad de tu velocidad en ese turno."
+        "description": "Visión Ciega hasta 10 pies. Niebla de Guerra: ventaja en las pruebas de Destreza (Sigilo) que hagas como parte de la acción de esconderte en combate. En la Sombra: un ataque fallado desde el escondite no revela tu posición."
       }
     ],
     "prerequisite": {
@@ -1554,7 +1564,7 @@
   },
   {
     "id": "slasher-strength",
-    "name": "Tajador (Fuerza)",
+    "name": "Rebanador (Fuerza)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "slasher",
@@ -1576,7 +1586,7 @@
   },
   {
     "id": "slasher-dexterity",
-    "name": "Tajador (Destreza)",
+    "name": "Rebanador (Destreza)",
     "source": "phb_2024",
     "category": "general",
     "exclusiveGroup": "slasher",
@@ -1628,14 +1638,14 @@
   },
   {
     "id": "spell-sniper",
-    "name": "Francotirador Mágico",
+    "name": "Lanzador Preciso",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Francotirador Mágico",
+        "name": "Lanzador Preciso",
         "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos."
       }
     ],
@@ -1668,7 +1678,7 @@
   },
   {
     "id": "telepathic",
-    "name": "Telépata",
+    "name": "Telepático",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
@@ -1680,7 +1690,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Telépata",
+        "name": "Telepático",
         "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)"
       }
     ],
@@ -1690,14 +1700,14 @@
   },
   {
     "id": "war-caster",
-    "name": "Lanzador de Guerra",
+    "name": "Lanzador en Combate",
     "source": "phb_2024",
     "category": "general",
     "repeatable": false,
     "effects": [
       {
         "type": "passiveTrait",
-        "name": "Lanzador de Guerra",
+        "name": "Lanzador en Combate",
         "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad."
       }
     ],

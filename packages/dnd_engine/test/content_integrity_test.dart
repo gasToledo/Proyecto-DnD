@@ -324,15 +324,75 @@ void main() {
         )
         .toList();
     // Son 90 registros porque Iniciado en la Magia se divide en 3 listas
-    // (+2), Resiliente en 6 características (+5), y Cocinero, Triturador,
-    // Perforador y Tajador en 2 características cada uno (+4) y Tocado por lo
-    // Feérico/la Sombra en 3 cada uno (+4): sus bonos de característica eran
+    // (+2), Resiliente en 6 características (+5), y Chef, Triturador,
+    // Perforador y Rebanador en 2 características cada uno (+4) e Influencia
+    // Feérica/Sombría en 3 cada uno (+4): sus bonos de característica eran
     // a elegir en el libro, no fijos.
     expect(phb, hasLength(90));
     expect(phb.where((f) => f.category == 'origin'), hasLength(12));
     expect(phb.where((f) => f.category == 'general'), hasLength(56));
     expect(phb.where((f) => f.category == 'fighting-style'), hasLength(10));
     expect(phb.where((f) => f.category == 'epic-boon'), hasLength(12));
+  });
+
+  test('las dotes usan el nombre del capítulo 5, no una traducción propia', () {
+    // Una tanda de verificación contra el manual encontró 33 dotes con nombre
+    // inventado. El id sigue siendo el nombre en inglés y es la clave que viaja
+    // en los personajes guardados, así que renombrar es seguro; lo que hace
+    // falta es que no se vuelva a desviar.
+    //
+    // Se fijan los casos que estaban mal, incluidos los dos pares que se
+    // parecen lo bastante como para intercambiarse: Maestro en Armaduras
+    // Pesadas (Heavy Armor Master) y Maestro en Armas Pesadas (Great Weapon
+    // Master); Combate con Dos Armas (estilo) y Combatiente con Dos Armas
+    // (dote general).
+    const oficiales = <String, String>{
+      'tough': 'Duro',
+      'crafter': 'Fabricante',
+      'skilled': 'Habilidoso',
+      'charger': 'Atacante a la Carga',
+      'mage-slayer': 'Azote de Magos',
+      'dual-wielder': 'Combatiente con Dos Armas',
+      'crossbow-expert': 'Experto en Ballestas',
+      'war-caster': 'Lanzador en Combate',
+      'spell-sniper': 'Lanzador Preciso',
+      'ritual-caster': 'Lanzador Ritual',
+      'medium-armor-master': 'Maestro en Armaduras Medias',
+      'heavy-armor-master': 'Maestro en Armaduras Pesadas',
+      'polearm-master': 'Maestro en Armas de Asta',
+      'great-weapon-master': 'Maestro en Armas Pesadas',
+      'shield-master': 'Maestro en Escudos',
+      'heavily-armored': 'Muy Acorazado',
+      'telepathic': 'Telepático',
+      'sharpshooter': 'Tirador de Primera',
+      'elemental-adept': 'Versado en un Elemento',
+      'fs-great-weapon': 'Combate con Armas a Dos Manos',
+      'fs-two-weapon-fighting': 'Combate con Dos Armas',
+      'fs-defense': 'Defensa',
+      'fs-dueling': 'Duelo',
+      'fs-archery': 'Tiro con Arco',
+    };
+    for (final e in oficiales.entries) {
+      expect(repo.feat(e.key)?.name, e.value, reason: e.key);
+    }
+    // El trasfondo Artesano existía a la vez que una dote homónima; renombrar
+    // la dote a Fabricante deshizo esa colisión.
+    expect(repo.background('artisan')?.name, 'Artesano');
+  });
+
+  test('Ligeramente y Moderadamente Acorazado reparten bien los escudos', () {
+    // Los escudos estaban en la dote equivocada: el manual los da con la
+    // armadura ligera, no con la media.
+    List<String> armaduras(String id) => repo
+        .feat(id)!
+        .effects
+        .whereType<ArmorProficiencyEffect>()
+        .map((e) => e.category)
+        .toList();
+
+    expect(armaduras('lightly-armored'), containsAll(['light', 'shield']));
+    expect(armaduras('moderately-armored'), ['medium']);
+    expect(armaduras('heavily-armored'), ['heavy']);
   });
 
   test('están las 28 invocaciones del capítulo 3', () {

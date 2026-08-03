@@ -43,7 +43,7 @@ void main() {
     await tapOption(tester, className);
     // El Guerrero exige estilo de combate y 3 maestrías.
     if (className == 'Guerrero') {
-      await tester.tap(find.text('Estilo de Combate: Defensa'));
+      await tester.tap(find.text('Defensa'));
       await tester.pumpAndSettle();
       for (final w in ['Garrote', 'Daga', 'Clava']) {
         await checkWeapon(tester, w);
@@ -79,7 +79,7 @@ void main() {
         await tester.pumpAndSettle();
       }
     }
-    final feat = find.text('Hábil');
+    final feat = find.text('Habilidoso');
     if (feat.evaluate().isNotEmpty) {
       await tester.ensureVisible(feat);
       await tester.pumpAndSettle();

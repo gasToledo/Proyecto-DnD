@@ -155,7 +155,7 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
                         (a) => GoldPill('Salv. ${a.abbr}'),
                       ),
                       ...diff.newSkillProficiencies.map(
-                        (s) => GoldPill(_title2(s)),
+                        (s) => GoldPill(titleCaseId(s)),
                       ),
                     ],
                   ),
@@ -384,10 +384,3 @@ String _recharge(RechargeOn r) => switch (r) {
   RechargeOn.longRest => 'descanso largo',
   RechargeOn.none => '—',
 };
-
-String _title2(String s) => s.isEmpty
-    ? s
-    : s
-          .split(RegExp(r'[-_ ]'))
-          .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-          .join(' ');

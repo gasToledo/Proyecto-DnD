@@ -32,6 +32,9 @@ class TransferService {
   static String _safe(String s) =>
       s.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
 
+  static String _fileStamp() =>
+      DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
+
   static Character _characterFromJson(Map<String, dynamic> json) {
     final character = Character.fromJson(json);
     requireSafePathSegment(character.id, label: 'id de personaje');
@@ -86,12 +89,7 @@ class TransferService {
       homebrew: homebrew,
       preferences: preferences,
     );
-    final stamp = DateTime.now()
-        .toIso8601String()
-        .replaceAll(':', '-')
-        .split('.')
-        .first;
-    final file = File(p.join(dir.path, 'backup-$stamp.zip'));
+    final file = File(p.join(dir.path, 'backup-${_fileStamp()}.zip'));
     await writeBytesAtomic(file, bytes);
     return file.path;
   }
@@ -108,12 +106,7 @@ class TransferService {
       'exportedAt': DateTime.now().toIso8601String(),
       'content': content,
     };
-    final stamp = DateTime.now()
-        .toIso8601String()
-        .replaceAll(':', '-')
-        .split('.')
-        .first;
-    final file = File(p.join(dir.path, 'homebrew-$stamp.json'));
+    final file = File(p.join(dir.path, 'homebrew-${_fileStamp()}.json'));
     await writeJsonAtomic(file, envelope);
     return file.path;
   }

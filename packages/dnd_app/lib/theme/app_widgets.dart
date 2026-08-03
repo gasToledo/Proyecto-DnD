@@ -42,6 +42,50 @@ void showAppMessage(
     );
 }
 
+Widget appNavItem(
+  BuildContext context, {
+  required IconData icon,
+  required String label,
+  bool active = false,
+  VoidCallback? onTap,
+}) {
+  final palette = context.palette;
+  final foreground = active
+      ? palette.gold
+      : Theme.of(context).colorScheme.onSurfaceVariant;
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 3),
+    child: Material(
+      color: active ? palette.goldSoft : Colors.transparent,
+      borderRadius: BorderRadius.circular(9),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(9),
+        hoverColor: palette.plaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: foreground),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+                    color: foreground,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class AppBusyLabel extends StatelessWidget {
   final String label;
   final double indicatorSize;

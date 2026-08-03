@@ -1,3 +1,5 @@
+import 'name_sort.dart';
+
 /// Los 13 tipos de daño de 5e, con su nombre en español según la tabla "Tipos
 /// de daño" del PHB 2024.
 ///
@@ -35,7 +37,7 @@ enum DamageType {
   /// inmunidad a **estados** (el Artífice es inmune a `poisoned`), y el
   /// homebrew puede traer cualquier cosa.
   static String labelFor(String id) =>
-      fromId(id)?.label ?? _conditionLabels[id] ?? _titleCase(id);
+      fromId(id)?.label ?? _conditionLabels[id] ?? titleCaseId(id);
 }
 
 /// Estados que hoy viajan por el mismo campo que los tipos de daño. Separarlos
@@ -56,10 +58,3 @@ const _conditionLabels = <String, String>{
   'stunned': 'Aturdido',
   'unconscious': 'Inconsciente',
 };
-
-String _titleCase(String s) => s.isEmpty
-    ? s
-    : s
-        .split(RegExp(r'[-_ ]'))
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');

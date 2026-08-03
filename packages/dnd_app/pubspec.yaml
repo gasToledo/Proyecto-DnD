@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   path: ^1.9.0
   http: ^1.2.2
   dnd_engine:

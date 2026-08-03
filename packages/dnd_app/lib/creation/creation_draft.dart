@@ -12,10 +12,17 @@ List<String> skillOptions(List<String> from) =>
 /// Modo de reparto del aumento de característica del trasfondo 2024.
 enum AbilitySpreadMode { twoOne, oneOneOne }
 
-/// Método de puntuación de características (brief §3.A.4). `manual` no reparte
-/// un pool: el usuario
-/// escribe cada número, para digitalizar un personaje que ya existe en papel.
-enum ScoreMethod { standardArray, roll4d6, manual }
+/// Método de puntuación de características (brief §3.A.4).
+///
+/// Dos de los cuatro no reparten un pool y por eso escriben `assignedScores`
+/// directamente: `manual`, donde el usuario escribe cada número para digitalizar
+/// un personaje que ya existe en papel, y `pointBuy`, donde cada característica
+/// se sube y se baja contra un presupuesto compartido.
+enum ScoreMethod { standardArray, roll4d6, pointBuy, manual }
+
+/// Los métodos que no reparten [CreationDraft.pool].
+bool scoreMethodUsesPool(ScoreMethod method) =>
+    method == ScoreMethod.standardArray || method == ScoreMethod.roll4d6;
 
 /// Rango aceptado al escribir a mano. Es el rango absoluto de 5e, no el de
 /// generación: si el valor sale de 3-18 el motor ya avisa (sin bloquear).
@@ -148,6 +155,26 @@ class CreationDraft {
         for (final ability in Ability.values) {
           final value = rawScores[ability.name];
           if (value is num) draft.setManualScore(ability, value.toInt());
+        }
+      } else if (draft.scoreMethod == ScoreMethod.pointBuy) {
+        // Un borrador viejo no es confiable: se acepta solo si las seis están
+        // en rango y el reparto entero entra en el presupuesto. Si algo no
+        // cierra se vuelve al mínimo, que siempre es válido, en vez de dejar un
+        // reparto que la UI no podría haber producido.
+        final scores = <Ability, int>{};
+        for (final ability in Ability.values) {
+          final value = rawScores[ability.name];
+          if (value is num && pointBuyCost(value.toInt()) != null) {
+            scores[ability] = value.toInt();
+          }
+        }
+        final complete = scores.length == Ability.values.length;
+        if (complete && pointBuySpent(scores.values) <= pointBuyBudget) {
+          draft.assignedScores.addAll(scores);
+        } else {
+          for (final ability in Ability.values) {
+            draft.assignedScores[ability] = pointBuyMin;
+          }
         }
       } else {
         final available = List<int>.of(draft.pool);
@@ -435,9 +462,46 @@ class CreationDraft {
         pool = List.of(standardArray);
       case ScoreMethod.roll4d6:
         pool = (dice ?? Dice()).rollAbilityScoreSet();
+      case ScoreMethod.pointBuy:
+        // Arranca con las seis en el mínimo, que cuesta 0. Es el único punto de
+        // partida legal que no obliga a elegir antes de poder subir nada.
+        for (final a in Ability.values) {
+          assignedScores[a] = pointBuyMin;
+        }
       case ScoreMethod.manual:
         break;
     }
+  }
+
+  /// Puntos ya gastados en la compra de puntos.
+  int get pointsSpent => pointBuySpent(assignedScores.values);
+
+  /// Puntos que quedan del presupuesto de 27.
+  int get pointsRemaining => pointBuyBudget - pointsSpent;
+
+  /// Si [a] puede subir un escalón: hay techo por encima y alcanza el
+  /// presupuesto para pagar la diferencia.
+  bool canRaisePointBuy(Ability a) {
+    final current = assignedScores[a] ?? pointBuyMin;
+    if (current >= pointBuyMax) return false;
+    final delta = pointBuyCost(current + 1)! - pointBuyCost(current)!;
+    return delta <= pointsRemaining;
+  }
+
+  /// Si [a] puede bajar un escalón. Solo depende del piso: bajar siempre
+  /// devuelve puntos.
+  bool canLowerPointBuy(Ability a) =>
+      (assignedScores[a] ?? pointBuyMin) > pointBuyMin;
+
+  /// Mueve [a] en [delta] escalones dentro de la compra de puntos. Ignora el
+  /// pedido si sale del rango 8-15 o si no alcanza el presupuesto, para que la
+  /// UI nunca pueda dejar el reparto en un estado que el manual no permite.
+  void stepPointBuy(Ability a, int delta) {
+    if (delta > 0 && !canRaisePointBuy(a)) return;
+    if (delta < 0 && !canLowerPointBuy(a)) return;
+    final target = (assignedScores[a] ?? pointBuyMin) + delta;
+    if (pointBuyCost(target) == null) return;
+    assignedScores[a] = target;
   }
 
   /// Escribe [v] directamente en [a] (solo modo manual). `null` la deja sin
@@ -512,8 +576,17 @@ class CreationDraft {
   }
 
   /// Borra todas las asignaciones (conserva método y pool). Escape para
-  /// reordenar de cero.
-  void clearScores() => assignedScores.clear();
+  /// reordenar de cero. En compra de puntos no deja las seis vacías —eso no es
+  /// un estado alcanzable— sino de vuelta en el mínimo, con el presupuesto
+  /// entero disponible.
+  void clearScores() {
+    assignedScores.clear();
+    if (scoreMethod == ScoreMethod.pointBuy) {
+      for (final a in Ability.values) {
+        assignedScores[a] = pointBuyMin;
+      }
+    }
+  }
 
   /// Cuántas habilidades de [from] siguen elegibles tras excluir las ya tomadas
   /// en otro origen ([disabled]).

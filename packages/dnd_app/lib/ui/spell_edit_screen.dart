@@ -30,13 +30,14 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
   /// consecuencia acá: el conjuro **innato** (linaje, dote de origen), que
   /// además trae un uso gratis, y el **siempre preparado** de una subclase,
   /// que se lanza con los espacios normales.
-  late final Set<String> _grantedSpellIds = () {
-    final sheet = CharacterCompiler(widget.repo).compile(widget.character);
-    return {
-      for (final s in sheet.innateSpells) s.spellId,
-      ...sheet.alwaysPreparedSpellIds,
-    };
-  }();
+  late final ComputedSheet _sheet = CharacterCompiler(
+    widget.repo,
+  ).compile(widget.character);
+
+  late final Set<String> _grantedSpellIds = {
+    for (final s in _sheet.innateSpells) s.spellId,
+    ..._sheet.alwaysPreparedSpellIds,
+  };
 
   // Una ficha guardada antes de que la selección los excluyera puede traerlos
   // elegidos: se podan al abrir para devolver el cupo desperdiciado, en vez de
@@ -54,7 +55,10 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final all = widget.repo.spellsForList(_sc.spellList);
+    final all = widget.repo.spellsForList(
+      _sc.spellList,
+      extraSpellIds: _sheet.spellListAdditionIds,
+    );
     final grantedSpellIds = _grantedSpellIds;
     final cantrips = all
         .where((s) => s.isCantrip && !grantedSpellIds.contains(s.id))

@@ -109,6 +109,16 @@ sealed class Effect {
       'alwaysPreparedSpell' => AlwaysPreparedSpellEffect(
           spellId: json['spellId'] as String,
         ),
+      'spellListAddition' => SpellListAdditionEffect(
+          spellId: json['spellId'] as String,
+        ),
+      'proficiencyChoice' => ProficiencyChoiceEffect(
+          count: json['count'] as int? ?? 1,
+          skills: (json['skills'] as List? ?? const [])
+              .map((e) => e as String)
+              .toList(),
+          includeTools: json['includeTools'] as bool? ?? false,
+        ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
   }
@@ -268,6 +278,65 @@ class AlwaysPreparedSpellEffect extends Effect {
   Map<String, dynamic> toJson() => {
         'type': 'alwaysPreparedSpell',
         'spellId': spellId,
+      };
+}
+
+/// Un conjuro que se **suma a la lista** de la que el personaje elige: los
+/// Conjuros de la Marca de las dotes de marca dracónica.
+///
+/// Es el tercero y más débil de los efectos de conjuro, y por eso no alcanzaba
+/// con los otros dos. [GrantSpellEffect] lo hace lanzable sin espacio;
+/// [AlwaysPreparedSpellEffect] lo deja preparado sin ocupar cupo. Este **no
+/// concede nada**: solo habilita a elegirlo, gastando el cupo normal, como si
+/// figurara en la lista de la clase desde el principio.
+///
+/// Si el personaje no lanza conjuros, no hace nada, que es justo lo que dice la
+/// regla ("si tenés Lanzamiento de Conjuros o Magia de Pacto…").
+class SpellListAdditionEffect extends Effect {
+  final String spellId;
+  const SpellListAdditionEffect({required this.spellId});
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'spellListAddition',
+        'spellId': spellId,
+      };
+}
+
+/// Declara "elegí [count] competencias": Habilidoso (tres, entre habilidades y
+/// herramientas) y Mente Aguda (una, entre cinco habilidades).
+///
+/// Es un **marcador**, igual que [FeatureChoiceEffect]: el [SheetBuilder] lo
+/// acumula pero no aplica nada. La elección la resuelve la UI y la escribe en
+/// `Character.chosenProficiencies`; el compilador la aplica por separado.
+///
+/// No se mezcla con el `skillChoiceCount` de especie y clase a propósito. Esa
+/// elección es fija —siempre las mismas para un personaje— mientras que esta
+/// aparece y desaparece con la dote, y además puede caer sobre una herramienta,
+/// que `Character.chosenSkills` no sabe representar.
+class ProficiencyChoiceEffect extends Effect {
+  /// Cuántas competencias concede.
+  final int count;
+
+  /// Habilidades elegibles. **Vacío significa todas**, misma convención que
+  /// `skillChoiceFrom` en especie y clase.
+  final List<String> skills;
+
+  /// Si además se puede elegir cualquier herramienta. Habilidoso dice
+  /// "habilidades o herramientas"; Mente Aguda, solo habilidades.
+  final bool includeTools;
+
+  const ProficiencyChoiceEffect({
+    required this.count,
+    this.skills = const [],
+    this.includeTools = false,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'proficiencyChoice',
+        'count': count,
+        'skills': skills,
+        'includeTools': includeTools,
       };
 }
 

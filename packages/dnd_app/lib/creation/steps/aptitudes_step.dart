@@ -167,6 +167,120 @@ class _SkillPicker extends StatelessWidget {
   }
 }
 
+/// Competencias que concede una dote (Habilidoso, Mente Aguda). A diferencia de
+/// las de clase y especie, estas mezclan habilidades y herramientas y la lista
+/// sale de la ficha compilada, no de un campo del contenido.
+class _ProficiencyChoicePicker extends StatelessWidget {
+  final ProficiencyChoiceSlot slot;
+  final List<String> chosen;
+  final Set<String> already;
+  final int max;
+  final VoidCallback onChanged;
+  const _ProficiencyChoicePicker({
+    required this.slot,
+    required this.chosen,
+    required this.already,
+    required this.max,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final full = chosen.length >= max;
+    return LayoutBuilder(
+      builder: (context, box) {
+        final cols = (box.maxWidth / 172).floor().clamp(1, 6);
+        final w = (box.maxWidth - 8 * (cols - 1)) / cols;
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final id in slot.options)
+              SizedBox(
+                width: w,
+                child: _ProficiencyCard(
+                  id: id,
+                  isSkill: slot.skills.contains(id),
+                  selected: chosen.contains(id),
+                  // Tenerla ya por otra vía no la vuelve inválida, pero gastar
+                  // la dote en ella no suma nada: se muestra bloqueada.
+                  locked: already.contains(id) && !chosen.contains(id),
+                  onTap:
+                      (already.contains(id) && !chosen.contains(id)) ||
+                          (full && !chosen.contains(id))
+                      ? null
+                      : () {
+                          if (!chosen.remove(id)) chosen.add(id);
+                          onChanged();
+                        },
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Tarjeta de una competencia elegible por dote. Distingue habilidad de
+/// herramienta porque la misma lista mezcla las dos.
+class _ProficiencyCard extends StatelessWidget {
+  final String id;
+  final bool isSkill;
+  final bool selected;
+  final bool locked;
+  final VoidCallback? onTap;
+  const _ProficiencyCard({
+    required this.id,
+    required this.isSkill,
+    required this.selected,
+    required this.locked,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final name = isSkill ? Skill.labelFor(id) : toolProficiencyLabel(id);
+    return Opacity(
+      opacity: locked ? .45 : 1,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? p.goldSoft : p.plaque,
+            border: Border.all(color: selected ? p.gold : p.hairline),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                isSkill ? Icons.psychology_alt : Icons.handyman,
+                size: 15,
+                color: selected ? p.gold : p.textMuted,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: selected ? p.gold : p.textMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Paso 5 · Aptitudes: las competencias que se eligen (de clase y de especie) y
 /// la dote de origen que concede la especie. En 2024 no hay dotes libres a
 /// nivel 1: las que hay vienen del origen, así que la grilla de dotes del
@@ -283,6 +397,44 @@ class _AptitudesStep extends StatelessWidget {
             },
           ),
         ],
+        // Competencias que declara una dote: la de origen recién elegida o la
+        // que ya concede el trasfondo. Se pregunta a la ficha, así que sumar
+        // otra dote que las conceda no toca este paso.
+        ...() {
+          draft.pruneProficiencyChoices();
+          final slots = draft.proficiencyChoiceSlots;
+          if (slots.isEmpty) return <Widget>[];
+          // Lo que ya se tiene por otra vía, para no gastar la dote dos veces.
+          final sheet = draft.previewSheet;
+          final already = {
+            ...sheet.skillProficiencies,
+            ...sheet.toolProficiencies,
+          }..removeAll(draft.chosenProficiencies);
+          final total = slots.fold<int>(0, (n, s) => n + s.count);
+          return <Widget>[
+            const SizedBox(height: 26),
+            _SectionHeader(
+              title: 'Competencias por dote',
+              counter: '${draft.chosenProficiencies.length}/$total',
+            ),
+            const SizedBox(height: 6),
+            Text(
+              slots.map((s) => '${s.featName} (${s.count})').join(' · '),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            for (final slot in slots) ...[
+              _ProficiencyChoicePicker(
+                slot: slot,
+                chosen: draft.chosenProficiencies,
+                already: already,
+                max: total,
+                onChanged: onChanged,
+              ),
+              const SizedBox(height: 12),
+            ],
+          ];
+        }(),
       ],
     );
   }

@@ -68,11 +68,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
     setState(() {
       _providerId = s.imageProvider;
       _apiKey = s.keyFor(s.imageProvider);
-      _provider = switch (s.imageProvider) {
-        'azure' => AzureProvider(),
-        'azure-gpt-image' => AzureOpenAiProvider(),
-        _ => PollinationsProvider(),
-      };
+      _provider = providerById(s.imageProvider);
       _loading = false;
     });
   }

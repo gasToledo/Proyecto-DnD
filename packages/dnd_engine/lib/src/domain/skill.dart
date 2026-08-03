@@ -1,4 +1,5 @@
 import 'ability.dart';
+import 'name_sort.dart';
 
 /// Las 18 habilidades de 5e (SRD 5.2), con su nombre en español y la
 /// característica que las gobierna.
@@ -51,12 +52,5 @@ enum Skill {
 
   /// Nombre para mostrar. Si el id no está en el catálogo (homebrew), devuelve
   /// el id capitalizado en vez de fallar.
-  static String labelFor(String id) => fromId(id)?.label ?? _titleCase(id);
+  static String labelFor(String id) => fromId(id)?.label ?? titleCaseId(id);
 }
-
-String _titleCase(String s) => s.isEmpty
-    ? s
-    : s
-        .split(RegExp(r'[-_ ]'))
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');

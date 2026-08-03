@@ -19,13 +19,6 @@ part 'steps/scores_step.dart';
 part 'steps/selection_widgets.dart';
 part 'steps/summary_step.dart';
 
-String titleCase(String s) => s.isEmpty
-    ? s
-    : s
-          .split(RegExp(r'[-_ ]'))
-          .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-          .join(' ');
-
 String _draftDate(DateTime value) {
   final local = value.toLocal();
   String two(int number) => number.toString().padLeft(2, '0');

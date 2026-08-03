@@ -206,6 +206,8 @@ class CharacterValidator {
         }
       }
 
+      _validateProficiencyChoices(c, sheet, w);
+
       for (final level in klass.asiLevels) {
         if (level > c.level) continue;
         final hasChoice = c.asiChoices.any((a) => a.level == level);
@@ -426,7 +428,10 @@ class CharacterValidator {
       return;
     }
 
-    final list = repo.spellsForList(sc.spellList).map((s) => s.id).toSet();
+    final list = repo
+        .spellsForList(sc.spellList, extraSpellIds: sheet.spellListAdditionIds)
+        .map((s) => s.id)
+        .toSet();
     final maxSlotLevel =
         sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
     // Un rasgo que concede un conjuro ya lo da "siempre preparado": volver a
@@ -587,3 +592,47 @@ class CharacterValidator {
 /// contenido 2024 (por ejemplo, el Bardo), no "ninguna habilidad".
 Iterable<String> _skillChoiceOptions(int count, List<String> from) =>
     count > 0 && from.isEmpty ? Skill.allIds : from;
+
+/// Competencias elegidas por dote: cantidad, repetidos y que estén entre las
+/// opciones. No se mezcla con la elección de especie y clase porque la cuenta
+/// esperada sale de las dotes que el personaje tenga en ese momento.
+extension _ProficiencyChoiceChecks on CharacterValidator {
+  void _validateProficiencyChoices(
+    Character c,
+    ComputedSheet sheet,
+    List<ValidationWarning> w,
+  ) {
+    final slots = sheet.proficiencyChoiceSlots;
+    final expected = slots.fold<int>(0, (sum, s) => sum + s.count);
+    final chosen = c.chosenProficiencies;
+
+    if (chosen.length != expected) {
+      w.add(ValidationWarning(
+        'proficiency_choice_count',
+        expected == 0
+            ? 'Hay ${chosen.length} competencias elegidas pero ninguna dote '
+                'las concede.'
+            : 'Elegiste ${chosen.length} competencias por dote pero '
+                'corresponden $expected.',
+      ));
+    }
+    if (chosen.toSet().length != chosen.length) {
+      w.add(ValidationWarning(
+        'proficiency_choice_duplicate',
+        'Hay competencias de dote repetidas.',
+      ));
+    }
+
+    // Ya competente por otra vía: la dote se desperdicia, pero no es un error
+    // de datos, así que va como informativo.
+    final allowed = {for (final s in slots) ...s.options};
+    for (final id in chosen) {
+      if (!allowed.contains(id)) {
+        w.add(ValidationWarning(
+          'proficiency_choice_invalid',
+          'La competencia "$id" no está entre las opciones de tus dotes.',
+        ));
+      }
+    }
+  }
+}

@@ -50,6 +50,9 @@ class SheetBuilder {
   /// nombre y nivel necesita el repositorio, que vive en el compilador.
   final Set<String> alwaysPreparedSpellIds = {};
 
+  /// Conjuros que un rasgo suma a la lista elegible (Conjuros de la Marca).
+  final Set<String> spellListAdditionIds = {};
+
   final Map<String, ResourceEffect> _resources = {};
 
   /// Elecciones abiertas declaradas por el contenido, por grupo. Gana la de
@@ -144,6 +147,14 @@ class SheetBuilder {
         );
       case AlwaysPreparedSpellEffect(:final spellId):
         alwaysPreparedSpellIds.add(spellId);
+      case SpellListAdditionEffect(:final spellId):
+        spellListAdditionIds.add(spellId);
+      case ProficiencyChoiceEffect():
+        // Marcador: la competencia concreta ya está en
+        // Character.chosenProficiencies y el compilador la aplica. Los cupos
+        // los arma él también, porque necesita saber de qué dote sale cada uno
+        // y acá esa procedencia ya se perdió.
+        break;
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
       case FeatureChoiceEffect(:final groupId, :final count):

@@ -26,7 +26,7 @@ extension _SheetNavigation on _SheetScreenState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _navItem(
+          appNavItem(
             context,
             icon: Icons.arrow_back,
             label: 'Mis personajes',
@@ -88,7 +88,7 @@ extension _SheetNavigation on _SheetScreenState {
           ),
           const SizedBox(height: 18),
           for (final tab in _SheetTab.values)
-            _navItem(
+            appNavItem(
               context,
               icon: tab.icon,
               label: tab.label,
@@ -96,13 +96,13 @@ extension _SheetNavigation on _SheetScreenState {
               onTap: () => run(() => _selectTab(tab)),
             ),
           const Spacer(),
-          _navItem(
+          appNavItem(
             context,
             icon: Icons.face_retouching_natural,
             label: 'Retrato',
             onTap: () => run(_openPortrait),
           ),
-          _navItem(
+          appNavItem(
             context,
             icon: Icons.arrow_upward,
             label: 'Subir nivel',
@@ -120,50 +120,6 @@ extension _SheetNavigation on _SheetScreenState {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _navItem(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    bool active = false,
-    VoidCallback? onTap,
-  }) {
-    final pal = context.palette;
-    final fg = active
-        ? pal.gold
-        : Theme.of(context).colorScheme.onSurfaceVariant;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 3),
-      child: Material(
-        color: active ? pal.goldSoft : Colors.transparent,
-        borderRadius: BorderRadius.circular(9),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(9),
-          hoverColor: pal.plaque,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Icon(icon, size: 20, color: fg),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.normal,
-                      color: fg,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

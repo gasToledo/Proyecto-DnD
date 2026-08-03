@@ -25,6 +25,25 @@ cubierto por la atribución CC.
 Que algo falte en el SRD no es motivo para excluirlo ni para dejarlo sin
 corregir: es motivo para etiquetarlo bien.
 
+### Regla de descarte: nada de 2014
+
+Cualquier material de la edición **2014** —el PHB viejo, un SRD 5.1 o anterior,
+*Eberron: Rising from the Last War* (2019), o una página que no aclare de qué
+edición habla— **no es fuente válida**. Se ignora y se busca la versión 2024 del
+mismo contenido; si no existe, el contenido no entra. No se porta a mano.
+
+Esto sale de la evidencia de esta misma auditoría, no de una preferencia. Los
+defectos más caros que aparecieron no eran datos faltantes sino **texto de 2014
+bajo un nombre correcto de 2024**: Furia Implacable dejaba al Bárbaro en 1 PG,
+Golpes Potenciados volvía mágicos los golpes del Monje, el nivel 18 de
+Hechicería Dracónica seguía siendo Presencia Dracónica, `feeblemind` reducía
+Inteligencia a 1, y diez descripciones de dote hablaban de otra edición.
+Ninguno lo delataba una tabla: el id apuntaba bien y la progresión cuadraba.
+
+Consecuencia práctica: ante un rasgo que se lee raro, **sospechar del texto
+antes que del nombre**, y contrastarlo con el manual 2024 aunque la tabla diga
+que está bien.
+
 ### Expansión: Forge of the Artificer
 
 *Forge of the Artificer* (2025) suma la clase Artífice y contenido de Eberron.
@@ -341,6 +360,206 @@ Ordenados por costo, del más barato al más caro:
     subclases ("si ya tenías esta, elegí otra") quedan como texto. Resolverlo
     de verdad pide un mecanismo de elección propio, porque las herramientas no
     son dotes y no entran en `FeatureChoiceEffect`.
+12. **Conjuros de Marca sin efecto real** — **resuelto a medias**, y la mitad
+    que falta está bloqueada por dos mecanismos que no existen.
+
+    El diagnóstico era que de las 28 dotes `foa_2025`, 27 tenían **todos** sus
+    efectos como `passiveTrait` (solo texto), con Marca Aberrante Mayor como
+    única excepción. El texto de cada marca declara **tres** cosas distintas y
+    conviene no confundirlas, porque solo una necesitaba código nuevo.
+
+    **Hecho: los Conjuros de la Marca.** *"Si tenés Lanzamiento de Conjuros o
+    Magia de Pacto, estos conjuros se suman a la lista de esa aptitud"* era lo
+    único sin equivalente en el motor: no es conceder el conjuro sino
+    **habilitar a elegirlo**, gastando el cupo normal. `GrantSpellEffect` lo
+    haría lanzable sin espacio y `AlwaysPreparedSpellEffect` lo dejaría
+    preparado sin ocupar cupo; los dos conceden de más. Se agregó
+    `SpellListAdditionEffect`, el tercero y más débil de la familia, y las 12
+    marcas de casa llevan sus 9 conjuros cada una: **108 efectos**.
+
+    La lista elegible se arma en un solo lugar, `spellsForList`, que ahora
+    toma los ids extra. Eso importa más de lo que parece: la usan el wizard,
+    el editor de conjuros **y el validador**, y si una sola de las tres la
+    armara por su cuenta, un conjuro válido de la marca quedaría marcado como
+    error. `ComputedSheet.spellListAdditionIds` es el contrato con la app,
+    que pregunta a la ficha en vez de recorrer las dotes.
+
+    Los conjuros no se transcribieron: se resolvieron por nombre contra
+    `spells.json` y **los 108 emparejaron al primer intento**. La comprobación
+    que valida la transcripción no es contarlos —si uno se corre de grupo el
+    total no cambia— sino que **el nivel declarado en el texto coincida con el
+    nivel real del conjuro**; los 108 la pasan y hay un test que la vigila
+    cruzando texto y efecto nombre por nombre.
+
+    **Falta: los conjuros propios de la marca** (*"Tenés siempre preparados
+    Detectar Magia y Detectar Venenos y Enfermedades. Podés lanzar cada uno
+    gratis una vez por descanso largo"*). El efecto existe —es
+    `AlwaysPreparedSpellEffect` más `GrantSpellEffect`— pero el dato no se
+    puede escribir todavía, por dos huecos:
+
+    - **Aptitud mágica por dote**: el texto dice "Inteligencia, Sabiduría o
+      Carisma (se elige al tomar la dote)", y `GrantSpellEffect` exige una
+      `Ability` fija. `speciesSpellcastingAbility` resuelve lo mismo para
+      especie y linaje, pero es un campo de `Character` para *la especie*, no
+      por dote. El patrón de la casa para "dote que deja elegir" es dividirla
+      en variantes con `exclusiveGroup`, y acá serían 12 × 3 = 36 dotes más su
+      migración de ids.
+    - **Nivel dentro de una dote**: varias marcas dicen "a nivel 3 sumás X".
+      Los rasgos de clase heredan el nivel de `featuresUpTo`, pero una dote no
+      tiene niveles, así que hoy el conjuro se aplicaría desde el nivel 1.
+
+    Ninguno de los dos es difícil por separado; los dos juntos son un cambio
+    más grande que este, y por eso quedan acá y no se resolvieron a medias.
+
+13. **Barrido de rasgos que prometen una mecánica y no la aplican** — el mismo
+    defecto del punto 12, buscado en todo el catálogo en vez de una familia por
+    vez. Salió de una pregunta del usuario: por qué un Mago con trasfondo
+    Acólito ve "Iniciado en la Magia (Clérigo)" sin haberla elegido. **Eso no
+    era un defecto** —el trasfondo concede una dote de origen fija y la de
+    Acólito es esa— pero al verificarlo apareció que la dote **no concede sus
+    conjuros**: es solo texto.
+
+    Método: cruzar el texto de los 645 rasgos pasivos del catálogo contra los
+    efectos que declara cada uno, buscando el caso "el texto promete algo que
+    el motor sabe expresar y el efecto no está". Dio **41 candidatos**, todos
+    revisados a mano. Es una heurística sobre prosa: sirve para no depender de
+    leer 645 rasgos de corrido, no para dictar veredictos.
+
+    **Sin ningún bloqueo — falta solo el dato** → **corregidos en esta tanda**,
+    los cuatro con test de regresión:
+
+    - **Velocidad del Mensajero** (`mark-of-passage`): "tu velocidad aumenta 5
+      pies", sin condición → `SpeedBonusEffect`.
+    - **Don de la Tormenta** (`mark-of-storm`): "resistencia al daño de
+      relámpago", sin condición → `ResistanceEffect`.
+    - **Errante** (Explorador, nivel 6): "+10 pies si no llevás armadura
+      pesada". El **Bárbaro ya tenía esa misma regla aplicada** en Movimiento
+      Rápido (nivel 5) con `UnarmoredMovementEffect(10, heavyArmorOnly: true,
+      allowShield: true)`: mismo efecto, mismos números, misma condición. Al
+      Explorador le faltaba la línea, y el test lo comprueba igual que al
+      Bárbaro —media armadura y escudo lo conservan, la pesada lo anula—.
+    - **Don Feérico** del Khoravar → `GrantSpellEffect` de Amistad. Entró sin
+      mecanismo nuevo porque el truco es **concreto**, no a elección. La
+      aptitud del JSON es solo el valor por defecto: el compilador la
+      reemplaza por `speciesSpellcastingAbility`, igual que con el Tiefling,
+      así que la elección del jugador ya funciona. Queda pendiente lo único
+      que sí es una elección, cambiar el truco tras un descanso largo, que es
+      la misma deuda del Alto Elfo.
+
+    Las dos primeras son de las marcas que acaba de tocar el punto 12: se
+    cargaron las tablas de conjuros y quedaron sin aplicar los beneficios
+    pasivos de la misma dote. Vale como advertencia de método: cargar la parte
+    grande de un rasgo no garantiza haber mirado el resto.
+
+    **Bloqueados por elegir un conjuro dentro de una dote:**
+
+    - **Iniciado en la Magia** en sus tres listas (Mago, Druida, Clérigo).
+      Pesa más que el resto porque **Acólito, Erudito y Guía la conceden a
+      nivel 1**, así que afecta a cualquier personaje con esos trasfondos.
+    - **Magia Aberrante** (`aberrant-dragonmark`), con una diferencia útil: su
+      aptitud es **Constitución fija**, así que le falta solo la elección de
+      conjuro y no la de característica.
+    - **Preparación de la Marca** (`potent-dragonmark`) no se resuelve con
+      dato: "siempre preparados los conjuros de tu lista de Conjuros de la
+      Marca" depende de qué marca tenga el personaje, así que necesita leer
+      otra dote en tiempo de compilación.
+
+    **Elegir una competencia** no existía fuera del `skillChoiceCount` de
+    especie y clase. **Resuelto para dotes** con `ProficiencyChoiceEffect`:
+    Habilidoso (3, entre habilidades y herramientas) y Mente Aguda (1 de 5)
+    ya se eligen en el paso de Aptitudes y llegan a la ficha.
+
+    Es un mecanismo aparte del de especie y clase a propósito. Esa elección es
+    fija —las mismas para un personaje— y esta aparece y desaparece con la
+    dote; además puede caer sobre una **herramienta**, que `chosenSkills` no
+    sabe representar, así que las elegidas viven en
+    `Character.chosenProficiencies` con habilidades y herramientas mezcladas y
+    el compilador las separa contra el catálogo. `ProficiencyChoiceSlot` es el
+    contrato con la app, con las opciones ya expandidas.
+
+    Detalles que sí importan: el selector **no ofrece las entradas genéricas**
+    (`artisans-tools`, `gaming-set`, `musical-instrument`), porque son "una de
+    esta familia a tu elección" y elegirlas dejaría al personaje sin
+    competencia concreta; lo que ya se tiene por otra vía se muestra bloqueado,
+    para no gastar la dote dos veces; y cambiar de dote o de trasfondo **poda**
+    lo elegido, que si no quedaría concediendo algo que ninguna dote respalda.
+
+    Pesa más de lo que parece porque **Charlatán, Noble y Escriba conceden
+    Habilidoso**, así que alcanza a personajes de nivel 1 sin dote elegida.
+
+    Sigue pendiente **Conocimiento Primigenio** del Bárbaro (nivel 3): es una
+    habilidad extra por rasgo de clase, no por dote, y el efecto hoy solo lo
+    declaran las dotes. En Forjado y Khoravar la habilidad **sí** estaba
+    cubierta y lo que falta es la **herramienta**, que es el punto 11.
+
+    Y quedó a la vista un hueco mayor: **Pericia (Expertise) no existe en el
+    motor**. No es solo el "o pericia si ya eras competente" de Mente Aguda:
+    Pícaro (niveles 1 y 6) y Bardo (2 y 9) la tienen **solo como texto**, y son
+    rasgos de clase de nivel bajo. Ver el punto 14.
+14. **Pericia (Expertise) sin modelar**: duplicar el bonificador por
+    competencia en una habilidad elegida no tiene efecto en `effects.dart` ni
+    campo en `ComputedSheet`, que hoy guarda las competencias como un `Set` sin
+    grado. Lo declaran Pícaro 1 y 6, Bardo 2 y 9, y Mente Aguda como
+    alternativa. Necesita dos cosas: distinguir competencia de pericia en la
+    ficha y una elección de habilidad por rasgo de clase, que es la misma que
+    le falta a Conocimiento Primigenio.
+
+    **Lo que el barrido descartó**, y conviene dejar anotado para no volver a
+    levantarlo: los rasgos **condicionales o temporales** (Filo Sediento solo
+    con el arma de pacto, Forma Grande del Goliat, los del Gloom Stalker en el
+    primer turno), las **auras** que alcanzan a los aliados (Aura de Coraje,
+    de Entrega, de Salvaguarda), los **compañeros** (Defensor de Acero, el
+    familiar del Amo de las Cadenas), que son el punto 9, y los rasgos donde
+    otro efecto del mismo bloque ya aplica la regla —el Legado Diabólico del
+    Tiefling la aplica desde el linaje, y las seis especies que "eligen una
+    habilidad" lo hacen con `skillChoiceCount`—.
+
+    También descartó dos **falsos positivos de la búsqueda**: Maestro en Armas
+    Pesadas y Maestro en Armas de Asta dicen "ataque adicional" pero se
+    refieren a un ataque de acción adicional, no al rasgo Ataque Adicional.
+
+## Auditoría de contenido Eberron (RftLW + FoA) — 2026-08-03
+
+Origen: se agregaron `docs/Eberron_ Rising from the Last War.md` (2019, reglas
+2014, fuente original) y ya existía `docs/Eberron_ Forge of the Artificer.md`
+(2025, reglas 2024, la actualización oficial). El criterio es el mismo que
+rige todo el proyecto: **FoA manda sobre RftLW** para mecánica, porque es la
+versión vigente; RftLW solo aporta lo que FoA no repite.
+
+**Limitación de la fuente**: a diferencia del PHB, ninguno de los dos
+markdown trae el texto detallado de cada especie o cada dote — son índices o
+placeholders (`See the Changeling entry.`, `## Feats` con una lista de
+nombres). Por eso esta auditoría verificó **inventario y arquitectura
+declarada**, no el valor exacto de cada rasgo palabra por palabra.
+
+**Inventario: coincide exacto.** El capítulo 2 de FoA dice explícitamente
+"17 backgrounds", "veintiocho dotes nuevas" (13 Dragonmark + 14 General + 1
+Epic Boon) y "los cuatro especies introducidas en RftLW, más Khoravar" (5).
+Los tres números calzan letra por letra contra el catálogo: 17 trasfondos, 28
+dotes (13/14/1 por categoría) y 5 especies, mismos nombres, mismo id de
+categoría.
+
+**Casas y marcas: coincide exacto contra RftLW.** La tabla "Dragonmarks and
+Their Houses" de RftLW lista 12 marcas y 13 casas (Shadow la comparten
+Phiarlan y Thuranni) — son las 13 dotes `dragonmark` y los 13 trasfondos
+`house-*-heir` ya cargados, sin faltantes ni sobrantes.
+
+**Diseño de marcas como dotes: correcto, no es un defecto.** RftLW modela
+cada marca como **variante de raza/subraza** (2014); FoA lo reemplaza
+explícitamente por dotes — *"The benefits of each dragonmark now derive from
+feats rather than species options"*, sin prerrequisito de especie. El
+catálogo ya sigue el diseño de FoA (2024), que es el correcto.
+
+**Goblinoids: no es contenido faltante.** RftLW presenta bugbears, goblins y
+hobgoblins como raza jugable adicional (cap. 1, "Goblinoids"). FoA no la
+retoma porque su alcance está acotado por su propio texto a "las cuatro
+especies que introdujo RftLW" (Changeling, Kalashtar, Shifter, Warforged) más
+Khoravar — Goblinoids nunca fue una de esas cuatro, así que quedar afuera es
+la decisión de WotC en la actualización 2024, no un hueco del catálogo.
+
+**Hallazgo real, ver pendiente 12 arriba**: los "Conjuros de la Marca" de las
+28 dotes existen solo como texto (`passiveTrait`), no como efecto que la
+ficha compilada aplique.
 
 ## Criterio de cierre
 

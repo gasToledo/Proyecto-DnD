@@ -7,6 +7,17 @@
 /// usuario.
 library;
 
+/// Convierte un identificador separado por guiones, guiones bajos o espacios
+/// en un nombre legible: `mi-herramienta` → `Mi Herramienta`.
+String titleCaseId(String id) => id.isEmpty
+    ? id
+    : id
+        .split(RegExp(r'[-_ ]'))
+        .map((word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1)}')
+        .join(' ');
+
 /// Equivalencias para el plegado. Las vocales acentuadas valen por su vocal
 /// base porque en español la tilde es prosódica, no alfabética.
 ///

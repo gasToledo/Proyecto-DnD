@@ -42,6 +42,50 @@ void showAppMessage(
     );
 }
 
+Widget appNavItem(
+  BuildContext context, {
+  required IconData icon,
+  required String label,
+  bool active = false,
+  VoidCallback? onTap,
+}) {
+  final palette = context.palette;
+  final foreground = active
+      ? palette.gold
+      : Theme.of(context).colorScheme.onSurfaceVariant;
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 3),
+    child: Material(
+      color: active ? palette.goldSoft : Colors.transparent,
+      borderRadius: BorderRadius.circular(9),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(9),
+        hoverColor: palette.plaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: foreground),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+                    color: foreground,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class AppBusyLabel extends StatelessWidget {
   final String label;
   final double indicatorSize;
@@ -657,11 +701,16 @@ class GoldPill extends StatelessWidget {
 /// está cubierto por la atribución CC BY 4.0. Y *Forge of the Artificer* es una
 /// expansión aparte, que conviene reconocer antes de comprometer un personaje
 /// con una de sus opciones.
+///
+/// Los dos SRD llevan **su número de versión y no su año**, porque "SRD" a
+/// secas no dice cuál de los dos es y son ediciones distintas: 5.2.1 es el de
+/// las reglas 2024, con las que juega la mesa, y 5.1 el de 2014. Que un rasgo
+/// venga de uno o del otro cambia la regla, no solo la licencia.
 String sourceLabel(ContentSource source) => switch (source) {
-  ContentSource.srd2024 => 'SRD',
+  ContentSource.srd2024 => 'SRD 5.2.1',
   ContentSource.phb2024 => 'PHB 2024',
   ContentSource.foa2025 => 'Forge 2025',
-  ContentSource.srd2014 => 'SRD 2014',
+  ContentSource.srd2014 => 'SRD 5.1',
   ContentSource.homebrew => 'Propio',
 };
 

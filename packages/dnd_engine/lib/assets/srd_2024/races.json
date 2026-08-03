@@ -421,6 +421,7 @@
         "name": "Don Feérico",
         "description": "Conocés el truco Amistad. Al terminar un descanso largo podés cambiarlo por otro truco de la lista de Clérigo, Druida o Mago. Tu aptitud mágica para él es Inteligencia, Sabiduría o Carisma (se elige al tomar la especie)."
       },
+      { "type": "grantSpell", "spellId": "friends", "ability": "charisma", "use": "atWill" },
       {
         "type": "passiveTrait",
         "name": "Resistencia al Letargo",

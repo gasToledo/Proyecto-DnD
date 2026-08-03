@@ -364,6 +364,11 @@
     "category": "origin",
     "effects": [
       {
+        "type": "proficiencyChoice",
+        "count": 3,
+        "includeTools": true
+      },
+      {
         "type": "passiveTrait",
         "name": "Habilidoso",
         "description": "Ganás competencia en cualquier combinación de tres habilidades o herramientas a tu elección."
@@ -1058,6 +1063,11 @@
         "type": "abilityScoreBonus",
         "ability": "intelligence",
         "amount": 1
+      },
+      {
+        "type": "proficiencyChoice",
+        "count": 1,
+        "skills": ["arcana", "history", "investigation", "nature", "religion"]
       },
       {
         "type": "passiveTrait",
@@ -2444,7 +2454,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Detectar el Bien y el Mal, Identificar; Nivel 2: Detectar Pensamientos, Detectar Trampas; Nivel 3: Clarividencia, Indetectable; Nivel 4: Ojo Arcano, Adivinación; Nivel 5: Conocer las Leyendas."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "detect-evil-and-good" },
+      { "type": "spellListAddition", "spellId": "identify" },
+      { "type": "spellListAddition", "spellId": "detect-thoughts" },
+      { "type": "spellListAddition", "spellId": "find-traps" },
+      { "type": "spellListAddition", "spellId": "clairvoyance" },
+      { "type": "spellListAddition", "spellId": "nondetection" },
+      { "type": "spellListAddition", "spellId": "arcane-eye" },
+      { "type": "spellListAddition", "spellId": "divination" },
+      { "type": "spellListAddition", "spellId": "legend-lore" }
     ]
   },
   {
@@ -2468,7 +2487,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Fuego Feérico, Zancada Prodigiosa; Nivel 2: Localizar Animales o Plantas, Clavo Mental; Nivel 3: Clarividencia, Hablar con las Plantas; Nivel 4: Adivinación, Localizar Criatura; Nivel 5: Comunión con la Naturaleza."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "faerie-fire" },
+      { "type": "spellListAddition", "spellId": "longstrider" },
+      { "type": "spellListAddition", "spellId": "locate-animals-or-plants" },
+      { "type": "spellListAddition", "spellId": "mind-spike" },
+      { "type": "spellListAddition", "spellId": "clairvoyance" },
+      { "type": "spellListAddition", "spellId": "speak-with-plants" },
+      { "type": "spellListAddition", "spellId": "divination" },
+      { "type": "spellListAddition", "spellId": "locate-creature" },
+      { "type": "spellListAddition", "spellId": "commune-with-nature" }
     ]
   },
   {
@@ -2497,7 +2525,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Orden Imperiosa, Encontrar Familiar; Nivel 2: Sentidos de la Bestia, Calmar Emociones; Nivel 3: Señal de Esperanza, Conjurar Animales; Nivel 4: Aura de Vida, Dominar Bestia; Nivel 5: Despertar."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "command" },
+      { "type": "spellListAddition", "spellId": "find-familiar" },
+      { "type": "spellListAddition", "spellId": "beast-sense" },
+      { "type": "spellListAddition", "spellId": "calm-emotions" },
+      { "type": "spellListAddition", "spellId": "beacon-of-hope" },
+      { "type": "spellListAddition", "spellId": "conjure-animals" },
+      { "type": "spellListAddition", "spellId": "aura-of-life" },
+      { "type": "spellListAddition", "spellId": "dominate-beast" },
+      { "type": "spellListAddition", "spellId": "awaken" }
     ]
   },
   {
@@ -2521,7 +2558,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Falsa Vida, Palabra de Curación; Nivel 2: Vigor Arcano, Plegaria de Curación; Nivel 3: Aura de Vitalidad, Palabra de Curación en Masa; Nivel 4: Aura de Vida, Aura de Pureza; Nivel 5: Restablecimiento Mayor."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "false-life" },
+      { "type": "spellListAddition", "spellId": "healing-word" },
+      { "type": "spellListAddition", "spellId": "arcane-vigor" },
+      { "type": "spellListAddition", "spellId": "prayer-of-healing" },
+      { "type": "spellListAddition", "spellId": "aura-of-vitality" },
+      { "type": "spellListAddition", "spellId": "mass-healing-word" },
+      { "type": "spellListAddition", "spellId": "aura-of-life" },
+      { "type": "spellListAddition", "spellId": "aura-of-purity" },
+      { "type": "spellListAddition", "spellId": "greater-restoration" }
     ]
   },
   {
@@ -2545,7 +2591,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Buenas Bayas, Dormir; Nivel 2: Auxilio, Potenciar Característica; Nivel 3: Crear Comida y Agua, Pequeña Choza de Leomund; Nivel 4: Aura de Pureza, Sanctasanctórum Privado de Mordenkainen; Nivel 5: Consagrar."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "goodberry" },
+      { "type": "spellListAddition", "spellId": "sleep" },
+      { "type": "spellListAddition", "spellId": "aid" },
+      { "type": "spellListAddition", "spellId": "enhance-ability" },
+      { "type": "spellListAddition", "spellId": "create-food-and-water" },
+      { "type": "spellListAddition", "spellId": "leomunds-tiny-hut" },
+      { "type": "spellListAddition", "spellId": "aura-of-purity" },
+      { "type": "spellListAddition", "spellId": "mordenkainens-private-sanctum" },
+      { "type": "spellListAddition", "spellId": "hallow" }
     ]
   },
   {
@@ -2569,7 +2624,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Identificar, Disco Flotante de Tenser; Nivel 2: Llama Permanente, Arma Espiritual; Nivel 3: Conjurar Descarga de Proyectiles, Arma Elemental; Nivel 4: Fabricar, Moldear la Piedra; Nivel 5: Creación."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "identify" },
+      { "type": "spellListAddition", "spellId": "tensers-floating-disk" },
+      { "type": "spellListAddition", "spellId": "continual-flame" },
+      { "type": "spellListAddition", "spellId": "spiritual-weapon" },
+      { "type": "spellListAddition", "spellId": "conjure-barrage" },
+      { "type": "spellListAddition", "spellId": "elemental-weapon" },
+      { "type": "spellListAddition", "spellId": "fabricate" },
+      { "type": "spellListAddition", "spellId": "stone-shape" },
+      { "type": "spellListAddition", "spellId": "creation" }
     ]
   },
   {
@@ -2594,11 +2658,21 @@
         "name": "Velocidad del Mensajero",
         "description": "Tu velocidad aumenta 5 pies."
       },
+      { "type": "speedBonus", "feet": 5 },
       {
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Retirada Expeditiva, Salto; Nivel 2: Hallar Corcel, Pasar sin Rastro; Nivel 3: Desplazamiento, Corcel Fantasma; Nivel 4: Puerta Dimensional, Libertad de Movimiento; Nivel 5: Círculo de Teletransportación."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "expeditious-retreat" },
+      { "type": "spellListAddition", "spellId": "jump" },
+      { "type": "spellListAddition", "spellId": "find-steed" },
+      { "type": "spellListAddition", "spellId": "pass-without-trace" },
+      { "type": "spellListAddition", "spellId": "blink" },
+      { "type": "spellListAddition", "spellId": "phantom-steed" },
+      { "type": "spellListAddition", "spellId": "dimension-door" },
+      { "type": "spellListAddition", "spellId": "freedom-of-movement" },
+      { "type": "spellListAddition", "spellId": "teleportation-circle" }
     ]
   },
   {
@@ -2622,7 +2696,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Orden Imperiosa, Texto Ilusorio; Nivel 2: Mensajero Animal, Silencio; Nivel 3: Recado, Don de Lenguas; Nivel 4: Ojo Arcano, Confusión; Nivel 5: Ensueño."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "command" },
+      { "type": "spellListAddition", "spellId": "illusory-script" },
+      { "type": "spellListAddition", "spellId": "animal-messenger" },
+      { "type": "spellListAddition", "spellId": "silence" },
+      { "type": "spellListAddition", "spellId": "sending" },
+      { "type": "spellListAddition", "spellId": "tongues" },
+      { "type": "spellListAddition", "spellId": "arcane-eye" },
+      { "type": "spellListAddition", "spellId": "confusion" },
+      { "type": "spellListAddition", "spellId": "dream" }
     ]
   },
   {
@@ -2651,7 +2734,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Duelo Forzado, Escudo de Fe; Nivel 2: Vínculo Protector, Zona de la Verdad; Nivel 3: Contrahechizo, Protección contra Energía; Nivel 4: Guarda contra la Muerte, Guardián de la Fe; Nivel 5: Mano de Bigby."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "compelled-duel" },
+      { "type": "spellListAddition", "spellId": "shield-of-faith" },
+      { "type": "spellListAddition", "spellId": "warding-bond" },
+      { "type": "spellListAddition", "spellId": "zone-of-truth" },
+      { "type": "spellListAddition", "spellId": "counterspell" },
+      { "type": "spellListAddition", "spellId": "protection-from-energy" },
+      { "type": "spellListAddition", "spellId": "death-ward" },
+      { "type": "spellListAddition", "spellId": "guardian-of-faith" },
+      { "type": "spellListAddition", "spellId": "bigbys-hand" }
     ]
   },
   {
@@ -2675,7 +2767,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Disfrazarse, Imagen Silenciosa; Nivel 2: Oscuridad, Pasar sin Rastro; Nivel 3: Clarividencia, Imagen Mayor; Nivel 4: Invisibilidad Mejorada, Terreno Alucinatorio; Nivel 5: Engañar."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "disguise-self" },
+      { "type": "spellListAddition", "spellId": "silent-image" },
+      { "type": "spellListAddition", "spellId": "darkness" },
+      { "type": "spellListAddition", "spellId": "pass-without-trace" },
+      { "type": "spellListAddition", "spellId": "clairvoyance" },
+      { "type": "spellListAddition", "spellId": "major-image" },
+      { "type": "spellListAddition", "spellId": "greater-invisibility" },
+      { "type": "spellListAddition", "spellId": "hallucinatory-terrain" },
+      { "type": "spellListAddition", "spellId": "mislead" }
     ]
   },
   {
@@ -2700,11 +2801,21 @@
         "name": "Don de la Tormenta",
         "description": "Tenés resistencia al daño de relámpago."
       },
+      { "type": "resistance", "damageType": "lightning" },
       {
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Caída de Pluma, Nube de Oscurecimiento; Nivel 2: Levitar, Hacer Añicos; Nivel 3: Tormenta de Aguanieve, Muro de Viento; Nivel 4: Conjurar Elementales Menores, Controlar Agua; Nivel 5: Conjurar Elemental."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "feather-fall" },
+      { "type": "spellListAddition", "spellId": "fog-cloud" },
+      { "type": "spellListAddition", "spellId": "levitate" },
+      { "type": "spellListAddition", "spellId": "shatter" },
+      { "type": "spellListAddition", "spellId": "sleet-storm" },
+      { "type": "spellListAddition", "spellId": "wind-wall" },
+      { "type": "spellListAddition", "spellId": "conjure-minor-elementals" },
+      { "type": "spellListAddition", "spellId": "control-water" },
+      { "type": "spellListAddition", "spellId": "conjure-elemental" }
     ]
   },
   {
@@ -2728,7 +2839,16 @@
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
         "description": "Si tenés Lanzamiento de Conjuros o Magia de Pacto, estos conjuros se suman a la lista de esa aptitud. Nivel 1: Armadura de Agathys, Santuario; Nivel 2: Abrir, Aura Mágica de Nystul; Nivel 3: Glifo Custodio, Círculo Mágico; Nivel 4: Cofre Oculto de Leomund, Mastín Fiel de Mordenkainen; Nivel 5: Caparazón Antivida."
-      }
+      },
+      { "type": "spellListAddition", "spellId": "armor-of-agathys" },
+      { "type": "spellListAddition", "spellId": "sanctuary" },
+      { "type": "spellListAddition", "spellId": "knock" },
+      { "type": "spellListAddition", "spellId": "nystuls-magic-aura" },
+      { "type": "spellListAddition", "spellId": "glyph-of-warding" },
+      { "type": "spellListAddition", "spellId": "magic-circle" },
+      { "type": "spellListAddition", "spellId": "leomunds-secret-chest" },
+      { "type": "spellListAddition", "spellId": "mordenkainens-faithful-hound" },
+      { "type": "spellListAddition", "spellId": "antilife-shell" }
     ]
   },
   {

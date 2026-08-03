@@ -85,6 +85,34 @@ class InnateSpell {
 /// compilada qué falta elegir en vez de recorrer los rasgos de la clase por su
 /// cuenta, así el nivel al que se concede cada elección vive solo en el
 /// contenido.
+/// Una elección de competencia pendiente, con sus opciones ya resueltas: la
+/// ficha entrega ids concretos y la UI no vuelve a interpretar "vacío = todas".
+class ProficiencyChoiceSlot {
+  /// Dote que la concede. Habilidoso es repetible, así que puede repetirse.
+  final String featId;
+  final String featName;
+
+  /// Cuántas competencias concede esta dote.
+  final int count;
+
+  /// Habilidades elegibles, ya expandidas.
+  final List<String> skills;
+
+  /// Herramientas elegibles, ya expandidas (vacío si la dote no las admite).
+  final List<String> tools;
+
+  const ProficiencyChoiceSlot({
+    required this.featId,
+    required this.featName,
+    required this.count,
+    required this.skills,
+    required this.tools,
+  });
+
+  /// Todo lo elegible, en el orden en que se muestra.
+  List<String> get options => [...skills, ...tools];
+}
+
 class FeatureChoiceSlot {
   final String groupId;
   final String name;
@@ -266,9 +294,24 @@ class ComputedSheet {
   /// el nombre lo resuelve quien tenga el catálogo.
   final Set<String> alwaysPreparedSpellIds;
 
+  /// Conjuros que un rasgo **suma a la lista** de la que el personaje elige
+  /// (los Conjuros de la Marca de las dotes de marca dracónica).
+  ///
+  /// No están concedidos: elegirlos gasta el cupo normal, igual que cualquier
+  /// conjuro de la lista de clase. Es el contrato con la aplicación, que
+  /// pregunta a la ficha en vez de recorrer las dotes por su cuenta.
+  final Set<String> spellListAdditionIds;
+
   /// Elecciones abiertas del personaje a este nivel (Estilo de Combate,
   /// Invocaciones Sobrenaturales…), con su cantidad ya resuelta.
   final List<FeatureChoiceSlot> featureChoiceSlots;
+
+  /// Competencias que el personaje todavía tiene que elegir por una dote
+  /// (Habilidoso, Mente Aguda), con sus opciones ya resueltas.
+  ///
+  /// Es el contrato con la aplicación: pregunta a la ficha cuántas faltan y de
+  /// qué lista salen, en vez de recorrer las dotes por su cuenta.
+  final List<ProficiencyChoiceSlot> proficiencyChoiceSlots;
 
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
@@ -299,7 +342,9 @@ class ComputedSheet {
     required this.resources,
     this.innateSpells = const [],
     this.alwaysPreparedSpellIds = const {},
+    this.spellListAdditionIds = const {},
     this.featureChoiceSlots = const [],
+    this.proficiencyChoiceSlots = const [],
     this.spellcasting,
   });
 

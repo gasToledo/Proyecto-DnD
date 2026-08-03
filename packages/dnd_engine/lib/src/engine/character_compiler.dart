@@ -6,6 +6,8 @@ import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
 import '../domain/effects.dart';
+import '../domain/proficiency_labels.dart';
+import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
 import 'sheet_builder.dart';
 
@@ -104,6 +106,38 @@ class CharacterCompiler {
     // Habilidades elegidas en el wizard (raza/clase/trasfondo).
     builder.skillProficiencies.addAll(c.chosenSkills);
 
+    // Cupos de competencia que declaran las dotes (Habilidoso, Mente Aguda),
+    // con la dote de la que sale cada uno. Se recorre `featIds` de nuevo en vez
+    // de leerlo del builder porque ahí la procedencia ya se perdió, y Habilidoso
+    // es repetible: dos copias son dos cupos distintos.
+    final proficiencySlots = <ProficiencyChoiceSlot>[];
+    final slotSeen = <String>{};
+    for (final id in featIds) {
+      if (id == null) continue;
+      final feat = repo.feat(id);
+      if (feat == null) continue;
+      if (!feat.repeatable && !slotSeen.add(id)) continue;
+      for (final e in feat.effects.whereType<ProficiencyChoiceEffect>()) {
+        proficiencySlots.add(ProficiencyChoiceSlot(
+          featId: feat.id,
+          featName: feat.name,
+          count: e.count,
+          skills: e.skills.isEmpty ? Skill.allIds : e.skills,
+          tools: e.includeTools ? toolProficiencyIds : const [],
+        ));
+      }
+    }
+
+    // Lo elegido se aplica donde corresponda: Habilidoso mezcla habilidades y
+    // herramientas en una sola lista, así que se separan por el catálogo.
+    for (final id in c.chosenProficiencies) {
+      if (Skill.allIds.contains(id)) {
+        builder.skillProficiencies.add(id);
+      } else {
+        builder.toolProficiencies.add(id);
+      }
+    }
+
     // --- Finalización a valores derivados ---
     final scores = {for (final a in Ability.values) a: builder.finalScore(a)};
     final mods = {
@@ -173,6 +207,10 @@ class CharacterCompiler {
         for (final id in builder.alwaysPreparedSpellIds)
           if (repo.spell(id) != null) id,
       },
+      spellListAdditionIds: {
+        for (final id in builder.spellListAdditionIds)
+          if (repo.spell(id) != null) id,
+      },
       featureChoiceSlots: [
         for (final e in builder.featureChoiceSlots.values)
           FeatureChoiceSlot(
@@ -183,6 +221,7 @@ class CharacterCompiler {
             replaceable: e.replaceable,
           ),
       ],
+      proficiencyChoiceSlots: proficiencySlots,
       spellcasting: spellcasting,
     );
   }

@@ -10,6 +10,7 @@
 library;
 
 import 'damage_type.dart' show DamageType;
+import 'name_sort.dart';
 
 /// Entrenamiento con armadura: las tres categorías del PHB 2024 más escudos.
 const _armorLabels = <String, String>{
@@ -82,11 +83,16 @@ String weaponProficiencyLabel(String id) =>
 /// Nombre de la herramienta [id] ("thieves-tools" → "Herramientas de ladrón").
 String toolProficiencyLabel(String id) => _toolLabels[id] ?? titleCaseId(id);
 
-/// Último recurso ante un id desconocido: `mi-herramienta` → `Mi Herramienta`.
-/// Es la misma degradación que aplica [DamageType.labelFor].
-String titleCaseId(String id) => id.isEmpty
-    ? id
-    : id
-        .split(RegExp(r'[-_ ]'))
-        .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
-        .join(' ');
+/// Herramientas concretas que se pueden elegir, sin las entradas genéricas.
+///
+/// `artisans-tools`, `gaming-set` y `musical-instrument` quedan afuera a
+/// propósito: no son herramientas sino "una de esta familia a tu elección", y
+/// ofrecerlas como opción dejaría al personaje con una competencia que no
+/// nombra nada. Las usa el contenido, no el selector.
+List<String> get toolProficiencyIds => [
+      for (final id in _toolLabels.keys)
+        if (id != 'artisans-tools' &&
+            id != 'gaming-set' &&
+            id != 'musical-instrument')
+          id,
+    ];

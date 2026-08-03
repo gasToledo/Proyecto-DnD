@@ -364,6 +364,11 @@
     "category": "origin",
     "effects": [
       {
+        "type": "proficiencyChoice",
+        "count": 3,
+        "includeTools": true
+      },
+      {
         "type": "passiveTrait",
         "name": "Habilidoso",
         "description": "Ganás competencia en cualquier combinación de tres habilidades o herramientas a tu elección."
@@ -1058,6 +1063,11 @@
         "type": "abilityScoreBonus",
         "ability": "intelligence",
         "amount": 1
+      },
+      {
+        "type": "proficiencyChoice",
+        "count": 1,
+        "skills": ["arcana", "history", "investigation", "nature", "religion"]
       },
       {
         "type": "passiveTrait",

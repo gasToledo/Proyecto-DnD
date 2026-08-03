@@ -133,4 +133,49 @@ void main() {
     expect(find.text('Atacante Salvaje'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('Habilidoso abre la elección de tres competencias', (
+    tester,
+  ) async {
+    await gotoAptitudes(tester);
+
+    // Antes de tomarla, la sección no existe: la declara la dote, no el paso.
+    expect(find.text('Competencias por dote'.toUpperCase()), findsNothing);
+
+    final card = find.text('Habilidoso');
+    await tester.scrollUntilVisible(card, 200);
+    await tester.pumpAndSettle();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Competencias por dote'.toUpperCase()), findsOneWidget);
+    expect(find.text('0/3'), findsOneWidget);
+
+    // Ofrece herramientas además de habilidades, que es lo que la distingue de
+    // las competencias de clase y especie.
+    final tool = find.text('Herramientas de ladrón');
+    await tester.scrollUntilVisible(tool, 200);
+    await tester.pumpAndSettle();
+    await tester.tap(tool);
+    await tester.pumpAndSettle();
+    expect(find.text('1/3'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Habilidoso no ofrece las herramientas genéricas', (
+    tester,
+  ) async {
+    // "Herramientas de artesano" es "una de esta familia a tu elección", no
+    // una competencia: elegirla dejaría al personaje sin nada concreto.
+    await gotoAptitudes(tester);
+
+    final card = find.text('Habilidoso');
+    await tester.scrollUntilVisible(card, 200);
+    await tester.pumpAndSettle();
+    await tester.tap(card);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Herramientas de artesano'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

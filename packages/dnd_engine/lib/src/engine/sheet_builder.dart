@@ -149,6 +149,12 @@ class SheetBuilder {
         alwaysPreparedSpellIds.add(spellId);
       case SpellListAdditionEffect(:final spellId):
         spellListAdditionIds.add(spellId);
+      case ProficiencyChoiceEffect():
+        // Marcador: la competencia concreta ya está en
+        // Character.chosenProficiencies y el compilador la aplica. Los cupos
+        // los arma él también, porque necesita saber de qué dote sale cada uno
+        // y acá esa procedencia ya se perdió.
+        break;
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
       case FeatureChoiceEffect(:final groupId, :final count):

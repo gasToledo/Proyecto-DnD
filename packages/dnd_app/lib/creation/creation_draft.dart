@@ -105,6 +105,9 @@ class CreationDraft {
         json['weaponMasteries'],
       ).where((id) => repo.weapon(id) != null),
     );
+    // Se restauran sin filtrar contra las opciones vigentes: el borrador puede
+    // venir de antes de elegir la dote, y el paso las poda cuando se abre.
+    draft.chosenProficiencies.addAll(_stringList(json['chosenProficiencies']));
     final raceFeatId = json['raceFeatId'];
     if (raceFeatId is String && repo.feat(raceFeatId) != null) {
       draft.raceFeatId = raceFeatId;
@@ -210,6 +213,10 @@ class CreationDraft {
   final Set<String> classSkills = {};
   final List<String> weaponMasteries = [];
 
+  /// Competencias elegidas por dote (Habilidoso, Mente Aguda). Van mezcladas
+  /// habilidades y herramientas, igual que en `Character`.
+  final List<String> chosenProficiencies = [];
+
   // Orígenes.
   String? raceId;
   String? lineageId;
@@ -256,6 +263,7 @@ class CreationDraft {
     'featureChoices': featureChoices,
     'classSkills': classSkills.toList(),
     'weaponMasteries': weaponMasteries,
+    'chosenProficiencies': chosenProficiencies,
     'raceId': raceId,
     'lineageId': lineageId,
     'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
@@ -357,6 +365,30 @@ class CreationDraft {
   /// o un catálogo nuevo no toca este archivo.
   List<FeatureChoiceSlot> get featureChoiceSlots =>
       previewSheet.featureChoiceSlots;
+
+  /// Competencias a elegir por dote (Habilidoso, Mente Aguda). Cambian con la
+  /// dote de origen elegida y con la que concede el trasfondo, así que se
+  /// preguntan a la ficha en cada build en vez de guardarse.
+  List<ProficiencyChoiceSlot> get proficiencyChoiceSlots =>
+      previewSheet.proficiencyChoiceSlots;
+
+  /// Cuántas competencias por dote faltan elegir.
+  int get pendingProficiencyChoices {
+    final total = proficiencyChoiceSlots.fold<int>(0, (n, s) => n + s.count);
+    return total - chosenProficiencies.length;
+  }
+
+  /// Saca de la selección lo que dejó de ser elegible: cambiar de dote o de
+  /// trasfondo puede invalidar una elección ya hecha, y dejarla puesta daría
+  /// una competencia que ninguna dote concede.
+  void pruneProficiencyChoices() {
+    final allowed = {for (final s in proficiencyChoiceSlots) ...s.options};
+    chosenProficiencies.removeWhere((id) => !allowed.contains(id));
+    final total = proficiencyChoiceSlots.fold<int>(0, (n, s) => n + s.count);
+    if (chosenProficiencies.length > total) {
+      chosenProficiencies.removeRange(total, chosenProficiencies.length);
+    }
+  }
 
   /// Bloque de lanzamiento derivado (cupos de trucos/preparados y CD).
   Spellcasting? get spellcasting => isCaster ? previewSheet.spellcasting : null;
@@ -579,6 +611,20 @@ class CreationDraft {
             out.add('Elegí una dote de origen.');
           }
         }
+        // Competencias que declara una dote (Habilidoso del trasfondo o de la
+        // especie, Mente Aguda). Genérico: sumar otra dote que las conceda no
+        // toca este gating.
+        final faltan = pendingProficiencyChoices;
+        if (faltan > 0) {
+          final total = proficiencyChoiceSlots.fold<int>(
+            0,
+            (n, s) => n + s.count,
+          );
+          out.add(
+            'Competencias por dote: '
+            '${chosenProficiencies.length}/$total.',
+          );
+        }
         return out;
 
       case CreationStep.equipo:
@@ -644,6 +690,7 @@ class CreationDraft {
       },
       backgroundAbilityBonuses: abilitySpread,
       chosenSkills: [...classSkills, ...raceSkills],
+      chosenProficiencies: List.of(chosenProficiencies),
       cantripIds: cantrips.toList(),
       spellIds: spells.toList(),
       featureChoices: {

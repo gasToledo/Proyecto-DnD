@@ -464,11 +464,45 @@ Ordenados por costo, del más barato al más caro:
       Marca" depende de qué marca tenga el personaje, así que necesita leer
       otra dote en tiempo de compilación.
 
-    **Bloqueados por elegir una competencia**, que no existe fuera del
-    `skillChoiceCount` de especie y clase: Habilidoso (3 a elección), Mente
-    Aguda (1 de 5, o pericia) y Conocimiento Primigenio del Bárbaro (nivel 3).
-    En Forjado y Khoravar la habilidad **sí** está cubierta y lo que falta es
-    la **herramienta**, que es el punto 11.
+    **Elegir una competencia** no existía fuera del `skillChoiceCount` de
+    especie y clase. **Resuelto para dotes** con `ProficiencyChoiceEffect`:
+    Habilidoso (3, entre habilidades y herramientas) y Mente Aguda (1 de 5)
+    ya se eligen en el paso de Aptitudes y llegan a la ficha.
+
+    Es un mecanismo aparte del de especie y clase a propósito. Esa elección es
+    fija —las mismas para un personaje— y esta aparece y desaparece con la
+    dote; además puede caer sobre una **herramienta**, que `chosenSkills` no
+    sabe representar, así que las elegidas viven en
+    `Character.chosenProficiencies` con habilidades y herramientas mezcladas y
+    el compilador las separa contra el catálogo. `ProficiencyChoiceSlot` es el
+    contrato con la app, con las opciones ya expandidas.
+
+    Detalles que sí importan: el selector **no ofrece las entradas genéricas**
+    (`artisans-tools`, `gaming-set`, `musical-instrument`), porque son "una de
+    esta familia a tu elección" y elegirlas dejaría al personaje sin
+    competencia concreta; lo que ya se tiene por otra vía se muestra bloqueado,
+    para no gastar la dote dos veces; y cambiar de dote o de trasfondo **poda**
+    lo elegido, que si no quedaría concediendo algo que ninguna dote respalda.
+
+    Pesa más de lo que parece porque **Charlatán, Noble y Escriba conceden
+    Habilidoso**, así que alcanza a personajes de nivel 1 sin dote elegida.
+
+    Sigue pendiente **Conocimiento Primigenio** del Bárbaro (nivel 3): es una
+    habilidad extra por rasgo de clase, no por dote, y el efecto hoy solo lo
+    declaran las dotes. En Forjado y Khoravar la habilidad **sí** estaba
+    cubierta y lo que falta es la **herramienta**, que es el punto 11.
+
+    Y quedó a la vista un hueco mayor: **Pericia (Expertise) no existe en el
+    motor**. No es solo el "o pericia si ya eras competente" de Mente Aguda:
+    Pícaro (niveles 1 y 6) y Bardo (2 y 9) la tienen **solo como texto**, y son
+    rasgos de clase de nivel bajo. Ver el punto 14.
+14. **Pericia (Expertise) sin modelar**: duplicar el bonificador por
+    competencia en una habilidad elegida no tiene efecto en `effects.dart` ni
+    campo en `ComputedSheet`, que hoy guarda las competencias como un `Set` sin
+    grado. Lo declaran Pícaro 1 y 6, Bardo 2 y 9, y Mente Aguda como
+    alternativa. Necesita dos cosas: distinguir competencia de pericia en la
+    ficha y una elección de habilidad por rasgo de clase, que es la misma que
+    le falta a Conocimiento Primigenio.
 
     **Lo que el barrido descartó**, y conviene dejar anotado para no volver a
     levantarlo: los rasgos **condicionales o temporales** (Filo Sediento solo

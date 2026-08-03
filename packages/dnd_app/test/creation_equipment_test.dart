@@ -86,6 +86,22 @@ void main() {
       await tester.tap(feat);
       await tester.pumpAndSettle();
     }
+    // Habilidoso concede tres competencias a elegir y el paso no deja avanzar
+    // sin ellas. Se eligen herramientas y no habilidades a propósito: sus
+    // nombres solo aparecen en este selector, así que no chocan con los de
+    // clase y especie de más arriba.
+    for (final t in [
+      'Herramientas de ladrón',
+      'Suministros de alquimista',
+      'Suministros de cervecero',
+    ]) {
+      final f = find.text(t);
+      if (f.evaluate().isEmpty) continue;
+      await tester.ensureVisible(f.first);
+      await tester.pumpAndSettle();
+      await tester.tap(f.first);
+      await tester.pumpAndSettle();
+    }
     await next();
   }
 

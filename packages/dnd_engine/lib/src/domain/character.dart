@@ -190,6 +190,15 @@ class Character {
   /// Habilidades elegidas (de las opciones de raza/clase/trasfondo).
   final List<String> chosenSkills;
 
+  /// Competencias elegidas por una **dote** (Habilidoso, Mente Aguda). Van
+  /// mezcladas habilidades y herramientas, porque Habilidoso deja elegir entre
+  /// unas y otras; el compilador las separa mirando el catálogo de habilidades.
+  ///
+  /// Aparte de [chosenSkills] a propósito: esa lista es la elección fija de
+  /// especie y clase, y su cuenta esperada no depende de las dotes que tenga
+  /// el personaje.
+  final List<String> chosenProficiencies;
+
   /// Elecciones abiertas resueltas: id de grupo → ids de opción elegidos.
   ///
   /// El grupo lo declara un `FeatureChoiceEffect` del contenido y las opciones
@@ -273,6 +282,7 @@ class Character {
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
     this.chosenSkills = const [],
+    this.chosenProficiencies = const [],
     this.featureChoices = const {},
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
@@ -308,6 +318,7 @@ class Character {
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
         'chosenSkills': chosenSkills,
+        'chosenProficiencies': chosenProficiencies,
         'featureChoices': featureChoices,
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
@@ -535,6 +546,9 @@ class Character {
       chosenSkills: (j['chosenSkills'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
+      chosenProficiencies: (j['chosenProficiencies'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
       featureChoices: _choiceMap(j['featureChoices']),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
           .map((e) => e as String)
@@ -584,6 +598,7 @@ class Character {
     List<AsiChoice>? asiChoices,
     List<int>? hpPerLevel,
     Map<String, List<String>>? featureChoices,
+    List<String>? chosenProficiencies,
     List<String>? cantripIds,
     List<String>? spellIds,
     Object? equippedArmorId = _unset,
@@ -616,6 +631,7 @@ class Character {
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,
       chosenSkills: chosenSkills,
+      chosenProficiencies: chosenProficiencies ?? this.chosenProficiencies,
       featureChoices: featureChoices ?? this.featureChoices,
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,

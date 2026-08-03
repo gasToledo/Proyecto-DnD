@@ -77,9 +77,22 @@ class CreationDraft {
       draft.backgroundId = backgroundId;
     }
 
-    final fightingStyleId = json['fightingStyleId'];
-    if (fightingStyleId is String) {
-      draft.fightingStyleId = fightingStyleId;
+    // `fightingStyleId` es el formato viejo del borrador: se lee al grupo que
+    // le corresponde para no perder un borrador guardado antes del cambio.
+    final legacyStyle = json['fightingStyleId'];
+    if (legacyStyle is String && repo.feat(legacyStyle) != null) {
+      draft.featureChoices[Character.fightingStyleGroup] = [legacyStyle];
+    }
+    final rawChoices = json['featureChoices'];
+    if (rawChoices is Map) {
+      for (final e in rawChoices.entries) {
+        if (e.key is! String || e.value is! List) continue;
+        final ids = (e.value as List)
+            .whereType<String>()
+            .where((id) => repo.feat(id) != null)
+            .toList();
+        if (ids.isNotEmpty) draft.featureChoices[e.key as String] = ids;
+      }
     }
     draft.classSkills.addAll(
       _stringList(json['classSkills']).where(allSkills2024.contains),
@@ -160,6 +173,22 @@ class CreationDraft {
         draft.weaponIds.add(id);
       }
     }
+    // Cómo se empuña cada arma. Solo se leen banderas de armas realmente
+    // elegidas: un borrador viejo no las trae y un id suelto no debe colarse.
+    for (final entry in [
+      (json['weaponOffHand'], draft.weaponOffHand),
+      (json['weaponTwoHanded'], draft.weaponTwoHanded),
+    ]) {
+      final raw = entry.$1;
+      if (raw is! Map) continue;
+      for (final e in raw.entries) {
+        if (e.key is String &&
+            e.value is bool &&
+            draft.weaponIds.contains(e.key)) {
+          entry.$2[e.key as String] = e.value as bool;
+        }
+      }
+    }
     final name = json['name'];
     if (name is String) draft.name = name;
     final alignment = json['alignment'];
@@ -175,7 +204,9 @@ class CreationDraft {
 
   // Clase (por ahora, única del MVP).
   String classId = 'fighter';
-  String? fightingStyleId;
+
+  /// Elecciones abiertas resueltas: id de grupo → ids de opción.
+  final Map<String, List<String>> featureChoices = {};
   final Set<String> classSkills = {};
   final List<String> weaponMasteries = [];
 
@@ -209,6 +240,11 @@ class CreationDraft {
   /// dos dagas): el motor genera un ataque por cada una.
   final List<String> weaponIds = [];
 
+  /// Cómo se empuña cada arma elegida. Cambian el ataque que produce el motor,
+  /// así que viajan con el borrador como cualquier otra elección.
+  final Map<String, bool> weaponOffHand = {};
+  final Map<String, bool> weaponTwoHanded = {};
+
   String name = '';
 
   // Detalles de sabor.
@@ -217,7 +253,7 @@ class CreationDraft {
 
   Map<String, dynamic> toJson() => {
     'classId': classId,
-    'fightingStyleId': fightingStyleId,
+    'featureChoices': featureChoices,
     'classSkills': classSkills.toList(),
     'weaponMasteries': weaponMasteries,
     'raceId': raceId,
@@ -239,6 +275,8 @@ class CreationDraft {
     'equippedArmorId': equippedArmorId,
     'shieldEquipped': shieldEquipped,
     'weaponIds': weaponIds,
+    'weaponOffHand': weaponOffHand,
+    'weaponTwoHanded': weaponTwoHanded,
     'name': name,
     'alignment': alignment?.toJson(),
     'personalityTrait': personalityTrait,
@@ -268,29 +306,10 @@ class CreationDraft {
   List<Weapon> get proficientWeapons {
     final k = klass;
     if (k == null) return const [];
-    final profs = k.weaponProficiencies.toSet();
-    return repo.weapons.values
-        .where((w) => profs.contains(w.category) || profs.contains(w.id))
+    return repo.weaponsSorted
+        .where((w) => w.isProficientWith(k.weaponProficiencies))
         .toList();
   }
-
-  /// Espacios de Maestría de Armas que otorga la clase a nivel 1 (Guerrero 3,
-  /// Bárbaro/Pícaro 2, Monje 0…). Se lee de los efectos de la clase, no se
-  /// hardcodea.
-  int get weaponMasterySlots {
-    final k = klass;
-    if (k == null) return 0;
-    var slots = 0;
-    for (final f in k.featuresUpTo(1)) {
-      for (final e in f.effects) {
-        if (e is WeaponMasterySlotsEffect && e.count > slots) slots = e.count;
-      }
-    }
-    return slots;
-  }
-
-  /// Si la clase concede una elección de Estilo de Combate (dato de la clase).
-  bool get grantsFightingStyle => klass?.grantsFightingStyle ?? false;
 
   /// Si la clase elegida lanza conjuros (tiene un SpellcastingEffect a nivel 1).
   bool get isCaster =>
@@ -299,15 +318,16 @@ class CreationDraft {
           .any((f) => f.effects.any((e) => e is SpellcastingEffect)) ??
       false;
 
-  Spellcasting? _scCache;
-  String? _scSig;
+  ComputedSheet? _sheetCache;
+  String? _sheetSig;
 
-  /// Bloque de lanzamiento derivado de las elecciones actuales (para saber
-  /// cupos de trucos/preparados y CD en el paso de conjuros). Se memoiza según
-  /// las entradas que lo afectan (clase, características, trasfondo/dote): elegir
-  /// trucos/conjuros no cambia el bloque, así que no recompila la ficha.
-  Spellcasting? get spellcasting {
-    if (!isCaster) return null;
+  /// Ficha compilada de previsualización, memoizada según lo que la afecta.
+  ///
+  /// Es la única fuente de lo derivado que necesita el wizard: cupos de
+  /// conjuros, espacios de maestría y elecciones abiertas salen de acá, no de
+  /// recorrer los rasgos de la clase a mano. Antes había tres cachés que
+  /// compilaban por separado y cada consumidor rearmaba su propia regla.
+  ComputedSheet get previewSheet {
     final sig = [
       classId,
       raceId,
@@ -318,14 +338,38 @@ class CreationDraft {
       spreadMode.name,
       spreadPlusTwo?.name,
       spreadPlusOne?.name,
+      for (final e in featureChoices.entries) '${e.key}:${e.value.join(",")}',
       for (final a in Ability.values) assignedScores[a] ?? 10,
     ].join('|');
-    if (sig != _scSig) {
-      _scCache = CharacterCompiler(repo).compile(build()).spellcasting;
-      _scSig = sig;
+    if (sig != _sheetSig) {
+      _sheetCache = CharacterCompiler(repo).compile(build());
+      _sheetSig = sig;
     }
-    return _scCache;
+    return _sheetCache!;
   }
+
+  /// Espacios de Maestría de Armas que otorga la clase a nivel 1 (Guerrero 3,
+  /// Bárbaro/Pícaro 2, Monje 0…).
+  int get weaponMasterySlots => previewSheet.weaponMasterySlots;
+
+  /// Elecciones abiertas a resolver a nivel 1 (Estilo de Combate del Guerrero,
+  /// Invocaciones del Brujo). Las declara el contenido, así que sumar una clase
+  /// o un catálogo nuevo no toca este archivo.
+  List<FeatureChoiceSlot> get featureChoiceSlots =>
+      previewSheet.featureChoiceSlots;
+
+  /// Bloque de lanzamiento derivado (cupos de trucos/preparados y CD).
+  Spellcasting? get spellcasting => isCaster ? previewSheet.spellcasting : null;
+
+  /// Ids de conjuros ya concedidos por rasgos, fuera de lo que se elige con la
+  /// magia de clase. No deben poder elegirse de nuevo: el rasgo ya los da y
+  /// gastar un cupo de clase en ellos no suma nada. Cubre trucos
+  /// (Prestidigitación del Alto Elfo), conjuros innatos con nivel (Detectar
+  /// Magia a nivel 3) y los siempre preparados de una subclase.
+  Set<String> get grantedSpellIds => {
+    for (final s in previewSheet.innateSpells) s.spellId,
+    ...previewSheet.alwaysPreparedSpellIds,
+  };
 
   int get hitDie => klass?.hitDie ?? 10;
 
@@ -464,8 +508,13 @@ class CreationDraft {
         final k = klass;
         if (k == null) return const ['Elegí una clase.'];
         final out = <String>[];
-        if (grantsFightingStyle && fightingStyleId == null) {
-          out.add('Elegí un estilo de combate.');
+        // Genérico sobre lo que declara el contenido: sumar una clase con otra
+        // elección abierta no toca este gating.
+        for (final slot in featureChoiceSlots) {
+          final chosen = featureChoices[slot.groupId]?.length ?? 0;
+          if (chosen < slot.count) {
+            out.add('${slot.name}: $chosen/${slot.count}.');
+          }
         }
         final slots = weaponMasterySlots;
         if (slots > 0 && weaponMasteries.length < slots) {
@@ -593,13 +642,17 @@ class CreationDraft {
       chosenSkills: [...classSkills, ...raceSkills],
       cantripIds: cantrips.toList(),
       spellIds: spells.toList(),
-      fightingStyleId: fightingStyleId,
+      featureChoices: {
+        for (final e in featureChoices.entries) e.key: List.of(e.value),
+      },
       weaponMasteryChoices: List.of(weaponMasteries),
       featIds: [?raceFeatId],
       hpPerLevel: [hitDie],
       equippedArmorId: equippedArmorId,
       shieldEquipped: shieldEquipped,
       equippedWeaponIds: List.of(weaponIds),
+      weaponOffHand: Map.of(weaponOffHand),
+      weaponTwoHanded: Map.of(weaponTwoHanded),
       alignment: alignment,
       personalityTrait: personalityTrait.trim(),
     );

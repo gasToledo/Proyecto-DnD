@@ -16,13 +16,19 @@
     ],
     "subclassLevel": 3,
     "asiLevels": [4, 6, 8, 12, 14, 16, 19],
-    "grantsFightingStyle": true,
     "features": [
       {
         "level": 1,
         "name": "Estilo de Combate",
         "description": "Adoptas un estilo de combate como dote de estilo de combate.",
-        "effects": []
+        "effects": [
+          {
+            "type": "featureChoice",
+            "groupId": "fighting-style",
+            "name": "Estilo de Combate",
+            "count": 1
+          }
+        ]
       },
       {
         "level": 1,
@@ -1311,7 +1317,70 @@
         "name": "Invocaciones Sobrenaturales",
         "description": "Aprendés fragmentos de conocimiento prohibido que otorgan capacidades mágicas.",
         "effects": [
-          { "type": "passiveTrait", "name": "Invocaciones Sobrenaturales", "description": "Conocés invocaciones que podés cambiar al subir de nivel. En 2024 los pactos son invocaciones, no un rasgo aparte: Pacto de la Hoja, Pacto de la Cadena, Pacto del Grimorio y Pacto del Talismán se eligen desde esta lista." }
+          {
+            "type": "featureChoice",
+            "groupId": "warlock-invocation",
+            "name": "Invocaciones Sobrenaturales",
+            "count": 1,
+            "replaceable": true
+          },
+          { "type": "passiveTrait", "name": "Invocaciones Sobrenaturales", "description": "Cada vez que subís un nivel de Brujo podés sustituir una invocación por otra cuyos requisitos cumplas, salvo que sea requisito de otra que tengas. En 2024 los pactos son invocaciones, no un rasgo aparte: Pacto de la Cadena, Pacto del Filo y Pacto del Grimorio se eligen desde esta lista." }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Invocaciones Sobrenaturales (3 conocidas)",
+        "description": "Conocés 3 invocaciones sobrenaturales.",
+        "effects": [
+          { "type": "featureChoice", "groupId": "warlock-invocation", "name": "Invocaciones Sobrenaturales", "count": 3, "replaceable": true }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Invocaciones Sobrenaturales (5 conocidas)",
+        "description": "Conocés 5 invocaciones sobrenaturales.",
+        "effects": [
+          { "type": "featureChoice", "groupId": "warlock-invocation", "name": "Invocaciones Sobrenaturales", "count": 5, "replaceable": true }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Invocaciones Sobrenaturales (6 conocidas)",
+        "description": "Conocés 6 invocaciones sobrenaturales.",
+        "effects": [
+          { "type": "featureChoice", "groupId": "warlock-invocation", "name": "Invocaciones Sobrenaturales", "count": 6, "replaceable": true }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Invocaciones Sobrenaturales (7 conocidas)",
+        "description": "Conocés 7 invocaciones sobrenaturales.",
+        "effects": [
+          { "type": "featureChoice", "groupId": "warlock-invocation", "name": "Invocaciones Sobrenaturales", "count": 7, "replaceable": true }
+        ]
+      },
+      {
+        "level": 12,
+        "name": "Invocaciones Sobrenaturales (8 conocidas)",
+        "description": "Conocés 8 invocaciones sobrenaturales.",
+        "effects": [
+          { "type": "featureChoice", "groupId": "warlock-invocation", "name": "Invocaciones Sobrenaturales", "count": 8, "replaceable": true }
+        ]
+      },
+      {
+        "level": 15,
+        "name": "Invocaciones Sobrenaturales (9 conocidas)",
+        "description": "Conocés 9 invocaciones sobrenaturales.",
+        "effects": [
+          { "type": "featureChoice", "groupId": "warlock-invocation", "name": "Invocaciones Sobrenaturales", "count": 9, "replaceable": true }
+        ]
+      },
+      {
+        "level": 18,
+        "name": "Invocaciones Sobrenaturales (10 conocidas)",
+        "description": "Conocés 10 invocaciones sobrenaturales.",
+        "effects": [
+          { "type": "featureChoice", "groupId": "warlock-invocation", "name": "Invocaciones Sobrenaturales", "count": 10, "replaceable": true }
         ]
       },
       {
@@ -1417,6 +1486,19 @@
         "description": "Puedes usar la propiedad de Maestría de 2 armas con las que seas competente.",
         "effects": [
           { "type": "weaponMasterySlots", "count": 2 }
+        ]
+      },
+      {
+        "level": 2,
+        "name": "Estilo de Combate",
+        "description": "Adoptas un estilo de combate como dote de estilo de combate.",
+        "effects": [
+          {
+            "type": "featureChoice",
+            "groupId": "fighting-style",
+            "name": "Estilo de Combate",
+            "count": 1
+          }
         ]
       },
       {
@@ -1558,6 +1640,19 @@
       },
       {
         "level": 2,
+        "name": "Estilo de Combate",
+        "description": "Adoptas un estilo de combate como dote de estilo de combate.",
+        "effects": [
+          {
+            "type": "featureChoice",
+            "groupId": "fighting-style",
+            "name": "Estilo de Combate",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "level": 2,
         "name": "Explorador Hábil",
         "description": "Ganas Pericia y beneficios de movimiento y exploración.",
         "effects": [
@@ -1677,7 +1772,8 @@
         "description": "Competencia con Herramientas de Ladrón, Herramientas de Manitas y un tipo de Herramientas de Artesano a elección.",
         "effects": [
           { "type": "toolProficiency", "tool": "thieves-tools" },
-          { "type": "toolProficiency", "tool": "tinkers-tools" }
+          { "type": "toolProficiency", "tool": "tinkers-tools" },
+          { "type": "toolProficiency", "tool": "artisans-tools" }
         ]
       },
       {

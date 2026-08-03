@@ -305,7 +305,7 @@ List<Feat> _eligibleOriginFeats(CreationDraft draft) {
   final sheet = CharacterCompiler(repo).compile(base);
   final validator = CharacterValidator(repo);
   final grantedByBackground = draft.background?.originFeatId;
-  return repo.feats.values
+  return repo.featsSorted
       .where((f) => f.category == 'origin')
       .where((f) => f.repeatable || f.id != grantedByBackground)
       .where((f) => validator.unmetFeatPrerequisite(f, base, sheet) == null)

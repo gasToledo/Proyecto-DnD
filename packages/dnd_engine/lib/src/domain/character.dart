@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 5;
+  static const int currentSchemaVersion = 8;
 
   final String id;
   String name;
@@ -190,8 +190,25 @@ class Character {
   /// Habilidades elegidas (de las opciones de raza/clase/trasfondo).
   final List<String> chosenSkills;
 
-  /// Estilo de combate (una dote con category 'fighting-style').
-  final String? fightingStyleId;
+  /// Elecciones abiertas resueltas: id de grupo → ids de opción elegidos.
+  ///
+  /// El grupo lo declara un `FeatureChoiceEffect` del contenido y las opciones
+  /// son dotes de la categoría que ese efecto nombra. Reemplaza al viejo
+  /// `fightingStyleId`, que era un único id sin noción de nivel ni cantidad y
+  /// por eso no servía para Paladín/Explorador (nivel 2) ni para las
+  /// Invocaciones del Brujo (varias, crecientes).
+  final Map<String, List<String>> featureChoices;
+
+  /// Grupo del Estilo de Combate. Es un id de contenido, pero vive acá porque
+  /// la migración desde `fightingStyleId` tiene que nombrarlo.
+  static const String fightingStyleGroup = 'fighting-style';
+
+  /// Lectura de conveniencia del estilo elegido. Para escribir va siempre por
+  /// [featureChoices].
+  String? get fightingStyleId {
+    final chosen = featureChoices[fightingStyleGroup];
+    return (chosen == null || chosen.isEmpty) ? null : chosen.first;
+  }
 
   /// Armas en las que se eligió Maestría (2024).
   final List<String> weaponMasteryChoices;
@@ -219,6 +236,13 @@ class Character {
 
   /// Armas empuñadas a dos manos (para daño versátil). id de arma → dos manos.
   final Map<String, bool> weaponTwoHanded;
+
+  /// Armas empuñadas en la mano secundaria. id de arma → mano secundaria.
+  ///
+  /// Se marca explícitamente y no se infiere del orden de equipado: el ataque
+  /// de mano secundaria cambia el daño y la economía de acciones, así que
+  /// adivinarlo daría una ficha distinta sin que el jugador lo haya pedido.
+  final Map<String, bool> weaponOffHand;
 
   /// Rutas locales de retratos guardados. La primera es la activa.
   final List<String> portraitPaths;
@@ -249,7 +273,7 @@ class Character {
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
     this.chosenSkills = const [],
-    this.fightingStyleId,
+    this.featureChoices = const {},
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
     this.spellIds = const [],
@@ -260,6 +284,7 @@ class Character {
     this.shieldEquipped = false,
     this.equippedWeaponIds = const [],
     this.weaponTwoHanded = const {},
+    this.weaponOffHand = const {},
     this.portraitPaths = const [],
     this.notes = '',
     this.alignment,
@@ -283,7 +308,7 @@ class Character {
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
         'chosenSkills': chosenSkills,
-        'fightingStyleId': fightingStyleId,
+        'featureChoices': featureChoices,
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
         'spellIds': spellIds,
@@ -294,12 +319,30 @@ class Character {
         'shieldEquipped': shieldEquipped,
         'equippedWeaponIds': equippedWeaponIds,
         'weaponTwoHanded': weaponTwoHanded,
+        'weaponOffHand': weaponOffHand,
         'portraitPaths': portraitPaths,
         'notes': notes,
         'alignment': alignment?.toJson(),
         'personalityTrait': personalityTrait,
         'tableConfig': tableConfig.toJson(),
         'combat': combat.toJson(),
+      };
+
+  /// Mapa "id de arma → bandera" tolerante: descarta las entradas cuyo tipo no
+  /// corresponde en vez de tirar. Las importaciones son datos no confiables y un
+  /// valor basura en una bandera de equipo no justifica perder la ficha entera.
+  static Map<String, bool> _boolMap(dynamic raw) => {
+        if (raw is Map)
+          for (final e in raw.entries)
+            if (e.key is String && e.value is bool) e.key as String: e.value,
+      };
+
+  /// Mapa "grupo → ids elegidos" tolerante, por el mismo motivo que [_boolMap].
+  static Map<String, List<String>> _choiceMap(dynamic raw) => {
+        if (raw is Map)
+          for (final e in raw.entries)
+            if (e.key is String && e.value is List)
+              e.key as String: (e.value as List).whereType<String>().toList(),
       };
 
   static int schemaVersionOf(Map<String, dynamic> json) {
@@ -347,6 +390,62 @@ class Character {
     }
   }
 
+  /// Dotes que pasaron a tener una variante por característica, porque el
+  /// manual deja elegir el +1 y el catálogo lo asignaba solo.
+  ///
+  /// Cada id viejo apunta a la variante **con la característica que el catálogo
+  /// asignaba**, así la ficha de quien ya la tenía compila idéntica. Las que no
+  /// daban ninguna Mejora de Característica —su elección no se podía expresar,
+  /// así que el campo estaba vacío— van a la primera que ofrece el manual: ahí
+  /// la ficha sí cambia, porque gana el +1 que le correspondía.
+  ///
+  /// Las seis primeras se dividieron en una tanda anterior sin migración, así
+  /// que sus ids llevaban tiempo huérfanos: una ficha que las tuviera perdía la
+  /// dote en silencio. Se reparan acá.
+  static const Map<String, String> _featIdRenames7to8 = {
+    'chef': 'chef-wisdom',
+    'crusher': 'crusher-constitution',
+    'piercer': 'piercer-dexterity',
+    'slasher': 'slasher-strength',
+    'fey-touched': 'fey-touched-wisdom',
+    'shadow-touched': 'shadow-touched-charisma',
+    'athlete': 'athlete-dexterity',
+    'charger': 'charger-strength',
+    'dual-wielder': 'dual-wielder-dexterity',
+    'elemental-adept': 'elemental-adept-intelligence',
+    'grappler': 'grappler-strength',
+    'heavily-armored': 'heavily-armored-strength',
+    'heavy-armor-master': 'heavy-armor-master-constitution',
+    'inspiring-leader': 'inspiring-leader-charisma',
+    'lightly-armored': 'lightly-armored-dexterity',
+    'mage-slayer': 'mage-slayer-strength',
+    'martial-weapon-training': 'martial-weapon-training-strength',
+    'medium-armor-master': 'medium-armor-master-dexterity',
+    'moderately-armored': 'moderately-armored-dexterity',
+    'mounted-combatant': 'mounted-combatant-strength',
+    'observant': 'observant-wisdom',
+    'poisoner': 'poisoner-dexterity',
+    'polearm-master': 'polearm-master-dexterity',
+    'ritual-caster': 'ritual-caster-intelligence',
+    'sentinel': 'sentinel-strength',
+    'skill-expert': 'skill-expert-intelligence',
+    'speedy': 'speedy-dexterity',
+    'spell-sniper': 'spell-sniper-intelligence',
+    'telekinetic': 'telekinetic-intelligence',
+    'telepathic': 'telepathic-wisdom',
+    'war-caster': 'war-caster-intelligence',
+    'weapon-master': 'weapon-master-strength',
+  };
+
+  static void _renameFeatIds(
+      Map<String, dynamic> j, Map<String, String> renames) {
+    final list = j['featIds'];
+    if (list is! List) return;
+    j['featIds'] = [
+      for (final id in list) id is String ? (renames[id] ?? id) : id,
+    ];
+  }
+
   /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
   /// entrada. Cada paso se conserva explícito para que las próximas versiones
   /// puedan encadenarse sin saltos.
@@ -386,6 +485,28 @@ class Character {
           _renameSpellIds(migrated, _spellIdRenames4to5);
           version = 5;
           migrated['schemaVersion'] = version;
+        case 5:
+          migrated.putIfAbsent('weaponOffHand', () => <String, dynamic>{});
+          version = 6;
+          migrated['schemaVersion'] = version;
+        case 6:
+          // El estilo de combate pasa a ser una elección más. Se quita el campo
+          // viejo para que no quede un dato muerto que contradiga al nuevo; si
+          // una importación trae los dos, gana `featureChoices`.
+          final legacy = migrated.remove('fightingStyleId');
+          final raw = migrated['featureChoices'];
+          final choices =
+              raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+          if (legacy is String && legacy.isNotEmpty) {
+            choices.putIfAbsent(fightingStyleGroup, () => [legacy]);
+          }
+          migrated['featureChoices'] = choices;
+          version = 7;
+          migrated['schemaVersion'] = version;
+        case 7:
+          _renameFeatIds(migrated, _featIdRenames7to8);
+          version = 8;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -414,7 +535,7 @@ class Character {
       chosenSkills: (j['chosenSkills'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
-      fightingStyleId: j['fightingStyleId'] as String?,
+      featureChoices: _choiceMap(j['featureChoices']),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -435,10 +556,8 @@ class Character {
       equippedWeaponIds: (j['equippedWeaponIds'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
-      weaponTwoHanded: {
-        for (final e in (j['weaponTwoHanded'] as Map? ?? const {}).entries)
-          e.key as String: e.value as bool,
-      },
+      weaponTwoHanded: _boolMap(j['weaponTwoHanded']),
+      weaponOffHand: _boolMap(j['weaponOffHand']),
       portraitPaths: (j['portraitPaths'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -464,12 +583,14 @@ class Character {
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
     List<int>? hpPerLevel,
+    Map<String, List<String>>? featureChoices,
     List<String>? cantripIds,
     List<String>? spellIds,
     Object? equippedArmorId = _unset,
     bool? shieldEquipped,
     List<String>? equippedWeaponIds,
     Map<String, bool>? weaponTwoHanded,
+    Map<String, bool>? weaponOffHand,
     List<String>? portraitPaths,
     String? notes,
     Object? alignment = _unset,
@@ -495,7 +616,7 @@ class Character {
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,
       chosenSkills: chosenSkills,
-      fightingStyleId: fightingStyleId,
+      featureChoices: featureChoices ?? this.featureChoices,
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,
       spellIds: spellIds ?? this.spellIds,
@@ -509,6 +630,7 @@ class Character {
       shieldEquipped: shieldEquipped ?? this.shieldEquipped,
       equippedWeaponIds: equippedWeaponIds ?? this.equippedWeaponIds,
       weaponTwoHanded: weaponTwoHanded ?? this.weaponTwoHanded,
+      weaponOffHand: weaponOffHand ?? this.weaponOffHand,
       portraitPaths: portraitPaths ?? this.portraitPaths,
       notes: notes ?? this.notes,
       // Centinela: pasar `alignment: null` sí lo limpia.

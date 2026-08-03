@@ -4,6 +4,8 @@ import 'package:dnd_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'creation_helpers.dart';
+
 /// Recorrido completo del wizard: del primer paso al personaje creado.
 void main() {
   late ContentRepository repo;
@@ -41,7 +43,7 @@ void main() {
     }
 
     // Raza / Clase / Trasfondo
-    await tapText('Elfo');
+    await tapOption(tester, 'Elfo');
     final nextButton = find.widgetWithText(FilledButton, 'Siguiente');
     expect(tester.widget<FilledButton>(nextButton).onPressed, isNull);
     expect(
@@ -53,9 +55,9 @@ void main() {
     await tester.pumpAndSettle();
     await tapText('INT');
     await next();
-    await tapText('Mago');
+    await tapOption(tester, 'Mago');
     await next();
-    await tapText('Soldado');
+    await tapOption(tester, 'Soldado');
     await tapText('+1 / +1 / +1');
     await next();
 

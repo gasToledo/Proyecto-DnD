@@ -49,7 +49,7 @@ class Race {
   final List<Effect> effects;
 
   /// Cantidad de competencias de habilidad a elegir libremente y de qué lista
-  /// (vacía = cualquiera). Ej.: Humano 2024 → 1 habilidad ("Hábil").
+  /// (vacía = cualquiera). Ej.: Humano 2024 → 1 habilidad ("Habilidoso").
   final int skillChoiceCount;
   final List<String> skillChoiceFrom;
 
@@ -148,10 +148,6 @@ class CharacterClass {
   /// Niveles de Mejora de Característica (ASI). El Guerrero suma extras (6 y 14).
   final List<int> asiLevels;
 
-  /// Si la clase concede una elección de Estilo de Combate (Guerrero; en el
-  /// futuro Paladín/Explorador con su propia integración).
-  final bool grantsFightingStyle;
-
   /// Color de acento de la clase, en hex ("#RRGGBB"), para la personalización
   /// visual. Null = sin acento propio (la UI usa el color por defecto).
   final String? accentColor;
@@ -174,7 +170,6 @@ class CharacterClass {
     this.skillChoiceFrom = const [],
     this.subclassLevel = 3,
     this.asiLevels = const [4, 8, 12, 16, 19],
-    this.grantsFightingStyle = false,
     this.accentColor,
     this.iconId,
     this.features = const [],
@@ -211,7 +206,6 @@ class CharacterClass {
         subclassLevel: j['subclassLevel'] as int? ?? 3,
         asiLevels: (j['asiLevels'] as List?)?.map((e) => e as int).toList() ??
             const [4, 8, 12, 16, 19],
-        grantsFightingStyle: j['grantsFightingStyle'] as bool? ?? false,
         accentColor: j['accentColor'] as String?,
         iconId: j['iconId'] as String?,
         features: (j['features'] as List? ?? const [])
@@ -565,6 +559,27 @@ class Weapon {
 
   bool get isRanged => properties.contains('ranged');
   bool get isFinesse => properties.contains('finesse');
+
+  /// Propiedad Ligera: requisito del ataque de mano secundaria (2024).
+  bool get isLight => properties.contains('light');
+
+  /// Claves de competencia que habilitan esta arma: su id, su categoría y la
+  /// media categoría por alcance.
+  ///
+  /// La media categoría existe porque hay rasgos que no conceden la categoría
+  /// entera: el Artillero recibe las armas marciales **a distancia**. Vive en
+  /// el arma y no en cada consumidor para que el compilador y el wizard de
+  /// creación decidan lo mismo.
+  Set<String> get proficiencyKeys => {
+        id,
+        category,
+        '$category-${isRanged ? 'ranged' : 'melee'}',
+      };
+
+  /// Si [proficiencies] —las de una ficha compilada o las de una clase—
+  /// alcanzan para ser competente con esta arma.
+  bool isProficientWith(Iterable<String> proficiencies) =>
+      proficiencies.any(proficiencyKeys.contains);
 
   Map<String, dynamic> toJson() => {
         'id': id,

@@ -9,7 +9,7 @@ class _EquipmentStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final pal = context.palette;
     final repo = draft.repo;
-    final armors = repo.armor.values.where((a) => !a.isShield).toList();
+    final armors = repo.armorSorted.where((a) => !a.isShield).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -65,7 +65,7 @@ class _EquipmentStep extends StatelessWidget {
         const _SectionHeader(title: 'Armas equipadas'),
         const SizedBox(height: 12),
         _WeaponSelect(
-          weapons: repo.weapons.values.toList(),
+          weapons: repo.weaponsSorted,
           selected: draft.weaponIds,
           onToggle: (id) {
             if (!draft.weaponIds.remove(id)) draft.weaponIds.add(id);
@@ -76,10 +76,7 @@ class _EquipmentStep extends StatelessWidget {
             onChanged();
           },
         ),
-        if (draft.weaponIds.length > 1) ...[
-          const SizedBox(height: 10),
-          const _TwoWeaponNotice(),
-        ],
+        _WeaponGripSection(draft: draft, onChanged: onChanged),
         const SizedBox(height: 26),
         const _SectionHeader(title: 'Conjuros'),
         const SizedBox(height: 12),
@@ -92,41 +89,73 @@ class _EquipmentStep extends StatelessWidget {
   }
 }
 
-/// Aviso al equipar más de un arma. La ficha lista un ataque por arma, pero
-/// todavía no aplica la regla 2024 de combate con dos armas (arma Ligera,
-/// ataque de mano secundaria como acción adicional y sin sumar el modificador
-/// al daño salvo con el estilo de combate correspondiente). Sin este cartel el
-/// segundo ataque se lee como si ya estuviera resuelto, y en la mesa no lo está.
-class _TwoWeaponNotice extends StatelessWidget {
-  const _TwoWeaponNotice();
+/// Cómo se empuña cada arma elegida.
+///
+/// Solo aparecen los interruptores que el arma admite: Secundaria exige la
+/// propiedad Ligera y A dos manos exige daño versátil. Antes acá había un
+/// cartel avisando que la regla de dos armas no se aplicaba sola; ahora el
+/// motor la aplica, así que lo que falta es decidir la mano.
+class _WeaponGripSection extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _WeaponGripSection({required this.draft, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    final pal = context.palette;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-      decoration: BoxDecoration(
-        color: pal.goldSoft,
-        border: Border.all(color: pal.gold),
-        borderRadius: BorderRadius.circular(11),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline, size: 18, color: pal.gold),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'La ficha va a mostrar un ataque por cada arma equipada, pero '
-              'todavía no aplica sola la regla de combate con dos armas: el '
-              'ataque de la mano secundaria es una acción adicional, exige un '
-              'arma Ligera y no suma tu modificador al daño salvo que tengas '
-              'el estilo de combate Combate con Dos Armas. Ajustalo en la mesa.',
-              style: TextStyle(fontSize: 12, color: pal.gold),
-            ),
+    final grips = [
+      for (final id in draft.weaponIds)
+        if (draft.repo.weapon(id) case final w?)
+          if (w.isLight || w.versatileDice != null) w,
+    ];
+    if (grips.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Text('Cómo las empuñás', style: Theme.of(context).textTheme.titleSmall),
+        Text(
+          'El ataque de mano secundaria es una acción adicional y no suma tu '
+          'modificador al daño, salvo con el estilo Combate con Dos Armas.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 6),
+        for (final w in grips)
+          Row(
+            children: [
+              Expanded(child: Text(w.name)),
+              if (w.isLight)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: FilterChip(
+                    key: ValueKey('off-hand-${w.id}'),
+                    label: const Text('Secundaria'),
+                    selected: draft.weaponOffHand[w.id] ?? false,
+                    onSelected: (v) {
+                      // Solo se empuña un arma en la secundaria.
+                      draft.weaponOffHand
+                        ..clear()
+                        ..addAll(v ? {w.id: true} : const {});
+                      onChanged();
+                    },
+                  ),
+                ),
+              if (w.versatileDice != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: FilterChip(
+                    key: ValueKey('two-handed-${w.id}'),
+                    label: const Text('A dos manos'),
+                    selected: draft.weaponTwoHanded[w.id] ?? false,
+                    onSelected: (v) {
+                      draft.weaponTwoHanded[w.id] = v;
+                      onChanged();
+                    },
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
+      ],
     );
   }
 }
@@ -248,10 +277,26 @@ class _SpellsSection extends StatelessWidget {
     if (sc == null) return const SizedBox.shrink();
     final all = draft.repo.spellsForList(sc.spellList);
     final maxLevel = sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
-    final cantrips = all.where((s) => s.isCantrip).toList();
-    final leveled = all
-        .where((s) => !s.isCantrip && s.level <= maxLevel)
+    final grantedSpellIds = draft.grantedSpellIds;
+    final cantrips = all
+        .where((s) => s.isCantrip && !grantedSpellIds.contains(s.id))
         .toList();
+    final grantedCantripNames = [
+      for (final s in all)
+        if (s.isCantrip && grantedSpellIds.contains(s.id)) s.name,
+    ];
+    final leveled = all
+        .where(
+          (s) =>
+              !s.isCantrip &&
+              s.level <= maxLevel &&
+              !grantedSpellIds.contains(s.id),
+        )
+        .toList();
+    final grantedLeveledNames = [
+      for (final s in all)
+        if (!s.isCantrip && grantedSpellIds.contains(s.id)) s.name,
+    ];
     final prepared = sc.preparation == SpellPreparation.prepared;
 
     return Column(
@@ -269,6 +314,14 @@ class _SpellsSection extends StatelessWidget {
             count: draft.cantrips.length,
             cap: sc.cantripsKnown,
           ),
+          if (grantedCantripNames.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Ya tenés ${grantedCantripNames.join(', ')} por un rasgo de tu '
+              'especie: no ocupa un cupo de truco de clase.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
           const SizedBox(height: 10),
           _SpellChips(
             spells: cantrips,
@@ -284,6 +337,12 @@ class _SpellsSection extends StatelessWidget {
           count: draft.spells.length,
           cap: prepared ? sc.preparedCount : null,
         ),
+        if (grantedLeveledNames.isNotEmpty)
+          Text(
+            'Ya tenés ${grantedLeveledNames.join(', ')} siempre preparado por '
+            'otro rasgo: no ocupa un cupo.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         Text(
           'Podés preparar conjuros de hasta nivel $maxLevel.',
           style: Theme.of(context).textTheme.bodySmall,

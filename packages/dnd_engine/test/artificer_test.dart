@@ -16,12 +16,14 @@ void main() {
     compiler = CharacterCompiler(repo);
   });
 
-  ComputedSheet at(int level, {int intelligence = 15}) => compiler.compile(
+  ComputedSheet at(int level, {int intelligence = 15, String? subclassId}) =>
+      compiler.compile(
         Character(
           id: 'probe-artificer',
           name: 'Prueba',
           raceId: 'human',
           classId: 'artificer',
+          subclassId: subclassId,
           backgroundId: 'hermit',
           level: level,
           assignedScores: {
@@ -105,6 +107,71 @@ void main() {
     expect(at(13).spellcasting!.cantripsKnown, 3);
     expect(at(14).spellcasting!.cantripsKnown, 4);
     expect(at(20).spellcasting!.cantripsKnown, 4);
+  });
+
+  group('Conjuros siempre preparados de subclase', () {
+    Set<String> siempre(String subclassId, int level) =>
+        at(level, subclassId: subclassId).alwaysPreparedSpellIds;
+
+    test('aparecen recién al nivel del rasgo y se acumulan', () {
+      expect(siempre('alchemist', 2), isEmpty, reason: 'todavía sin subclase');
+      expect(siempre('alchemist', 3), {'healing-word', 'ray-of-sickness'});
+      expect(
+        siempre('alchemist', 5),
+        {
+          'healing-word',
+          'ray-of-sickness',
+          'flaming-sphere',
+          'melfs-acid-arrow'
+        },
+      );
+      expect(siempre('alchemist', 20), hasLength(10));
+    });
+
+    test('las cinco subclases traen su tabla completa a nivel 20', () {
+      // El Cartógrafo suma tres a nivel 3 en vez de dos, como en el manual.
+      expect(siempre('armorer', 20), hasLength(10));
+      expect(siempre('artillerist', 20), hasLength(10));
+      expect(siempre('battle-smith', 20), hasLength(10));
+      expect(siempre('cartographer', 20), hasLength(11));
+      expect(
+        siempre('cartographer', 3),
+        {'faerie-fire', 'guiding-bolt', 'healing-word'},
+      );
+    });
+
+    test('no ocupan cupo: el conteo de preparados no cambia', () {
+      // Es la diferencia con un preparado común, y el motivo de que sean un
+      // efecto aparte en vez de sumarse a Character.spellIds.
+      expect(at(9, subclassId: 'alchemist').spellcasting!.preparedCount,
+          at(9).spellcasting!.preparedCount);
+    });
+
+    test('tampoco son innatos: se lanzan con espacios, sin recurso propio', () {
+      final ficha = at(3, subclassId: 'alchemist');
+      expect(ficha.innateSpells.map((s) => s.spellId),
+          isNot(contains('healing-word')));
+      expect(ficha.resources.map((r) => r.id),
+          isNot(contains('innate-healing-word')));
+    });
+
+    test('prepararlo igual avisa que gasta un cupo de más', () {
+      final avisos = CharacterValidator(repo).validate(
+        Character(
+          id: 'dup',
+          name: 'Duplicado',
+          raceId: 'human',
+          classId: 'artificer',
+          subclassId: 'alchemist',
+          backgroundId: 'hermit',
+          level: 3,
+          spellIds: const ['healing-word'],
+          assignedScores: {for (final a in Ability.values) a: 14},
+          hpPerLevel: const [8, 5, 5],
+        ),
+      );
+      expect(avisos.map((a) => a.code), contains('spell_already_granted'));
+    });
   });
 
   group('Recursos escalados por modificador de característica', () {

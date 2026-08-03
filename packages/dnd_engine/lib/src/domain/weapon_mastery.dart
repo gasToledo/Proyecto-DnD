@@ -4,6 +4,10 @@
 /// `vex`), que es lo que usan los datos y las importaciones. Este glosario le
 /// pone nombre oficial y texto de regla para que la ficha no muestre el
 /// identificador crudo.
+///
+/// El glosario es **descriptivo** salvo por `nick`: el compilador la lee para
+/// meter el ataque de mano secundaria dentro de la acción de Atacar. Es la
+/// única con efecto mecánico; el resto vive solo en su descripción.
 library;
 
 /// Una propiedad de maestría: su nombre en español y qué hace.

@@ -61,6 +61,33 @@ void main() {
       );
       expect(Armor.fromJson(armor.toJson()).baseAc, 18);
     });
+
+    test('OffHandAbilityDamageEffect sobrevive el round-trip', () {
+      // Es el efecto por el que el motor sabe del estilo Combate con Dos Armas
+      // sin preguntar por el id de la dote, así que un homebrew puede concederlo.
+      const feat = Feat(
+        id: 'hb-ambidiestro',
+        name: 'Combatiente con Dos Armas',
+        source: ContentSource.homebrew,
+        category: 'general',
+        effects: [OffHandAbilityDamageEffect()],
+      );
+      expect(Feat.fromJson(feat.toJson()).effects.single,
+          isA<OffHandAbilityDamageEffect>());
+    });
+
+    test('AlwaysPreparedSpellEffect sobrevive el round-trip', () {
+      const feat = Feat(
+        id: 'hb-iniciado',
+        name: 'Iniciado homebrew',
+        source: ContentSource.homebrew,
+        category: 'general',
+        effects: [AlwaysPreparedSpellEffect(spellId: 'shield')],
+      );
+      final vuelta = Feat.fromJson(feat.toJson()).effects.single;
+      expect(vuelta, isA<AlwaysPreparedSpellEffect>());
+      expect((vuelta as AlwaysPreparedSpellEffect).spellId, 'shield');
+    });
   });
 
   test('una dote homebrew fusionada afecta la ficha compilada', () {

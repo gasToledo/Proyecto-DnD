@@ -78,6 +78,57 @@ class InnateSpell {
       };
 }
 
+/// Una elección abierta que el personaje tiene que resolver, ya resuelta a su
+/// cantidad final para el nivel actual.
+///
+/// Es el contrato entre el motor y la aplicación: la UI pregunta a la ficha
+/// compilada qué falta elegir en vez de recorrer los rasgos de la clase por su
+/// cuenta, así el nivel al que se concede cada elección vive solo en el
+/// contenido.
+class FeatureChoiceSlot {
+  final String groupId;
+  final String name;
+
+  /// Categoría de dote de la que salen las opciones.
+  final String featCategory;
+
+  /// Cuántas se pueden tener a este nivel.
+  final int count;
+
+  /// Si se puede cambiar una elección ya hecha al subir de nivel.
+  final bool replaceable;
+
+  const FeatureChoiceSlot({
+    required this.groupId,
+    required this.name,
+    required this.featCategory,
+    required this.count,
+    required this.replaceable,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'groupId': groupId,
+        'name': name,
+        'featCategory': featCategory,
+        'count': count,
+        'replaceable': replaceable,
+      };
+}
+
+/// Qué economía de acción consume un ataque.
+///
+/// La resuelve el motor y no la ficha: derivarla en la UI de `offHand` y la
+/// maestría sería reimplementar la regla fuera del motor.
+enum AttackAction {
+  action,
+  bonusAction;
+
+  static AttackAction fromJson(String? v) =>
+      v == 'bonusAction' ? AttackAction.bonusAction : AttackAction.action;
+
+  String toJson() => name;
+}
+
 /// Ataque calculado a partir del arma equipada.
 class Attack {
   final String weaponId;
@@ -91,6 +142,14 @@ class Attack {
   /// Maestría aplicada si el arma está entre las elegidas (2024).
   final String? mastery;
 
+  /// Si el arma está empuñada en la mano secundaria.
+  final bool offHand;
+
+  /// Acción que consume. El ataque de mano secundaria es acción adicional,
+  /// salvo que el arma aplique la maestría Mellar (Nick), que lo mete dentro
+  /// de la acción de Atacar.
+  final AttackAction action;
+
   const Attack({
     required this.weaponId,
     required this.name,
@@ -98,6 +157,8 @@ class Attack {
     required this.damage,
     required this.damageType,
     this.mastery,
+    this.offHand = false,
+    this.action = AttackAction.action,
   });
 
   Map<String, dynamic> toJson() => {
@@ -107,6 +168,8 @@ class Attack {
         'damage': damage,
         'damageType': damageType,
         'mastery': mastery,
+        'offHand': offHand,
+        'action': action.toJson(),
       };
 }
 
@@ -194,6 +257,19 @@ class ComputedSheet {
   /// Conjuros concedidos por rasgos (linajes, dotes), fuera de la magia de clase.
   final List<InnateSpell> innateSpells;
 
+  /// Conjuros que un rasgo mantiene **siempre preparados** (los de subclase del
+  /// Artífice, los Conjuros de Juramento del Paladín).
+  ///
+  /// A diferencia de [innateSpells], se lanzan con los espacios normales de la
+  /// clase: lo único que los distingue de un preparado común es que no ocupan
+  /// cupo y no se pueden desmarcar. Van por id, igual que `Character.spellIds`;
+  /// el nombre lo resuelve quien tenga el catálogo.
+  final Set<String> alwaysPreparedSpellIds;
+
+  /// Elecciones abiertas del personaje a este nivel (Estilo de Combate,
+  /// Invocaciones Sobrenaturales…), con su cantidad ya resuelta.
+  final List<FeatureChoiceSlot> featureChoiceSlots;
+
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
 
@@ -222,6 +298,8 @@ class ComputedSheet {
     required this.passives,
     required this.resources,
     this.innateSpells = const [],
+    this.alwaysPreparedSpellIds = const {},
+    this.featureChoiceSlots = const [],
     this.spellcasting,
   });
 

@@ -6,6 +6,8 @@ import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'creation_helpers.dart';
+
 /// Procedencia visible: solo el contenido del SRD 5.2.1 está cubierto por la
 /// atribución CC BY 4.0, así que el jugador tiene que poder distinguirlo.
 void main() {
@@ -52,8 +54,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // El Elfo tiene tres linajes, los tres del SRD.
-    await tester.tap(find.text('Elfo').first);
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Elfo');
 
     final chips = find.byType(ChoiceChip);
     expect(chips, findsWidgets, reason: 'premisa: el Elfo elige linaje');

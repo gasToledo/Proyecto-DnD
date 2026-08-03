@@ -46,10 +46,23 @@ class SheetBuilder {
   /// el repositorio para armar los [InnateSpell]).
   final List<GrantSpellEffect> grantedSpells = [];
 
+  /// Conjuros siempre preparados por un rasgo. Se guardan por id: resolver
+  /// nombre y nivel necesita el repositorio, que vive en el compilador.
+  final Set<String> alwaysPreparedSpellIds = {};
+
   final Map<String, ResourceEffect> _resources = {};
+
+  /// Elecciones abiertas declaradas por el contenido, por grupo. Gana la de
+  /// mayor [FeatureChoiceEffect.count], porque el contenido declara el
+  /// acumulado a cada nivel y no el incremento.
+  final Map<String, FeatureChoiceEffect> featureChoiceSlots = {};
 
   int weaponMasterySlots = 0;
   int maxExtraAttack = 0;
+
+  /// El ataque de mano secundaria conserva el modificador de característica al
+  /// daño (estilo Combate con Dos Armas).
+  bool offHandAbilityDamage = false;
   int bonusMaxHpFlat = 0;
   int bonusMaxHpPerLevel = 0;
   int acBonus = 0;
@@ -129,6 +142,15 @@ class SheetBuilder {
                   use: e.use,
                 ),
         );
+      case AlwaysPreparedSpellEffect(:final spellId):
+        alwaysPreparedSpellIds.add(spellId);
+      case OffHandAbilityDamageEffect():
+        offHandAbilityDamage = true;
+      case FeatureChoiceEffect(:final groupId, :final count):
+        final prev = featureChoiceSlots[groupId];
+        if (prev == null || count > prev.count) {
+          featureChoiceSlots[groupId] = e;
+        }
       case WeaponMasterySlotsEffect(:final count):
         if (count > weaponMasterySlots) weaponMasterySlots = count;
       case ExtraAttackEffect(:final extra):

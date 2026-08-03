@@ -92,10 +92,22 @@ sealed class Effect {
               : null,
           maxFromProficiency: json['maxFromProficiency'] as bool? ?? false,
         ),
+      'offHandAbilityDamage' => const OffHandAbilityDamageEffect(),
+      'featureChoice' => FeatureChoiceEffect(
+          groupId: json['groupId'] as String,
+          name: json['name'] as String,
+          featCategory:
+              json['featCategory'] as String? ?? json['groupId'] as String,
+          count: json['count'] as int? ?? 1,
+          replaceable: json['replaceable'] as bool? ?? false,
+        ),
       'grantSpell' => GrantSpellEffect(
           spellId: json['spellId'] as String,
           ability: Ability.fromKey(json['ability'] as String),
           use: InnateSpellUse.fromJson(json['use'] as String?),
+        ),
+      'alwaysPreparedSpell' => AlwaysPreparedSpellEffect(
+          spellId: json['spellId'] as String,
         ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
@@ -241,6 +253,89 @@ class GrantSpellEffect extends Effect {
       };
 }
 
+/// Un conjuro que el personaje **siempre tiene preparado** por un rasgo: los
+/// Conjuros de Juramento del Paladín, los de subclase del Artífice.
+///
+/// No es lo mismo que [GrantSpellEffect], y por eso son dos efectos. Un conjuro
+/// innato se lanza sin gastar espacio, con su propia CD y un límite de usos
+/// propio. Este se lanza **con los espacios normales de la clase**, como
+/// cualquier conjuro preparado; lo único que cambia es que no ocupa un cupo de
+/// `preparedCount` y no se puede desmarcar.
+class AlwaysPreparedSpellEffect extends Effect {
+  final String spellId;
+  const AlwaysPreparedSpellEffect({required this.spellId});
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'alwaysPreparedSpell',
+        'spellId': spellId,
+      };
+}
+
+/// Declara una elección abierta: "elegí [count] opciones del catálogo
+/// [featCategory]". Estilo de Combate e Invocaciones Sobrenaturales son el mismo
+/// problema y se resuelven con este efecto.
+///
+/// Es un **marcador**, igual que [GrantFeatEffect] sin `featId`: el
+/// [SheetBuilder] lo acumula pero no aplica nada. La UI resuelve la elección y
+/// la escribe en `Character.featureChoices`; los efectos de las opciones
+/// elegidas los aplica el compilador por separado.
+///
+/// Va dentro de un rasgo de clase, así hereda el nivel de `featuresUpTo` en vez
+/// de necesitar un campo aparte. [count] es el total **acumulado** a ese nivel,
+/// no el incremento: se declara un efecto por cada nivel en que la cantidad
+/// crece y gana el mayor, misma convención que [ResourceEffect] (los tramos de
+/// Furia) y [WeaponMasterySlotsEffect].
+///
+/// Agregar un catálogo nuevo es agregar dotes con la categoría que nombra
+/// [featCategory]: ni el motor ni la aplicación llevan lista de ids.
+class FeatureChoiceEffect extends Effect {
+  /// Identificador del grupo, la clave con la que se guarda la elección.
+  final String groupId;
+
+  /// Rótulo para la UI ("Estilo de Combate", "Invocaciones Sobrenaturales").
+  final String name;
+
+  /// Categoría de [Feat] que provee las opciones. Suele coincidir con
+  /// [groupId], y en ese caso el JSON puede omitirla.
+  final String featCategory;
+
+  /// Cantidad total de opciones a este nivel.
+  final int count;
+
+  /// Si al subir de nivel se puede cambiar una elección ya hecha.
+  final bool replaceable;
+
+  const FeatureChoiceEffect({
+    required this.groupId,
+    required this.name,
+    required this.featCategory,
+    this.count = 1,
+    this.replaceable = false,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'featureChoice',
+        'groupId': groupId,
+        'name': name,
+        'featCategory': featCategory,
+        'count': count,
+        'replaceable': replaceable,
+      };
+}
+
+/// El ataque de mano secundaria suma el modificador de característica al daño.
+///
+/// Por la regla 2024 ese modificador se omite cuando es **positivo**; este
+/// efecto lo devuelve. Hoy solo lo concede el estilo Combate con Dos Armas,
+/// pero el motor no pregunta por esa dote: pregunta por el efecto, así un
+/// homebrew puede conceder lo mismo sin tocar código.
+class OffHandAbilityDamageEffect extends Effect {
+  const OffHandAbilityDamageEffect();
+  @override
+  Map<String, dynamic> toJson() => {'type': 'offHandAbilityDamage'};
+}
+
 /// Cantidad de armas en las que se puede elegir Maestría (Guerrero 2024: 3).
 class WeaponMasterySlotsEffect extends Effect {
   final int count;
@@ -265,7 +360,7 @@ class BonusMaxHpFlatEffect extends Effect {
   Map<String, dynamic> toJson() => {'type': 'bonusMaxHpFlat', 'amount': amount};
 }
 
-/// PG máximos adicionales por nivel de personaje (p.ej. dote Robustez).
+/// PG máximos adicionales por nivel de personaje (p.ej. dote Duro).
 class BonusMaxHpPerLevelEffect extends Effect {
   final int perLevel;
   const BonusMaxHpPerLevelEffect(this.perLevel);

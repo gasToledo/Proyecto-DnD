@@ -111,8 +111,7 @@ class CharacterValidator {
     for (final weaponId in c.weaponMasteryChoices) {
       final weapon = repo.weapon(weaponId);
       if (weapon == null) continue;
-      final proficient = sheet.weaponProficiencies.contains(weapon.category) ||
-          sheet.weaponProficiencies.contains(weapon.id);
+      final proficient = weapon.isProficientWith(sheet.weaponProficiencies);
       if (!proficient) {
         w.add(ValidationWarning(
           'mastery_not_proficient',
@@ -150,8 +149,7 @@ class CharacterValidator {
     for (final wid in c.equippedWeaponIds) {
       final weapon = repo.weapon(wid);
       if (weapon == null) continue;
-      final proficient = sheet.weaponProficiencies.contains(weapon.category) ||
-          sheet.weaponProficiencies.contains(weapon.id);
+      final proficient = weapon.isProficientWith(sheet.weaponProficiencies);
       if (!proficient) {
         w.add(ValidationWarning(
           'weapon_not_proficient',
@@ -159,6 +157,9 @@ class CharacterValidator {
         ));
       }
     }
+
+    _validateOffHand(c, repo, w);
+    _validateFeatureChoices(c, sheet, w);
 
     for (final a in c.assignedScores.values) {
       if (a < 3 || a > 18) {
@@ -264,7 +265,7 @@ class CharacterValidator {
     final heldList = <String?>[
       repo.background(c.backgroundId)?.originFeatId,
       ...c.featIds,
-      c.fightingStyleId,
+      for (final chosen in c.featureChoices.values) ...chosen,
     ].whereType<String>().toList();
     final held = heldList.toSet();
 
@@ -317,6 +318,95 @@ class CharacterValidator {
     return w;
   }
 
+  /// Chequeos de las elecciones abiertas (Estilo de Combate, Invocaciones).
+  ///
+  /// No hay código de duplicado propio: las opciones son dotes y ya entran en
+  /// `heldFeatIds`, así que `feat_duplicate`, `feat_exclusive_group` y
+  /// `feat_prerequisite` las cubren sin repetir la regla acá.
+  void _validateFeatureChoices(
+      Character c, ComputedSheet sheet, List<ValidationWarning> w) {
+    final slots = {for (final s in sheet.featureChoiceSlots) s.groupId: s};
+
+    for (final slot in sheet.featureChoiceSlots) {
+      final chosen = c.featureChoices[slot.groupId] ?? const <String>[];
+      if (chosen.length < slot.count) {
+        w.add(ValidationWarning(
+          'feature_choice_pending',
+          '${slot.name}: elegiste ${chosen.length} de ${slot.count}.',
+          WarningSeverity.info,
+        ));
+      } else if (chosen.length > slot.count) {
+        w.add(ValidationWarning(
+          'too_many_feature_choices',
+          '${slot.name}: elegiste ${chosen.length} pero tenés ${slot.count} espacios.',
+        ));
+      }
+
+      for (final id in chosen) {
+        final feat = repo.feat(id);
+        if (feat == null || feat.category != slot.featCategory) {
+          w.add(ValidationWarning(
+            'feature_choice_invalid',
+            '"$id" no es una opción de ${slot.name}.',
+          ));
+        }
+      }
+    }
+
+    // Elecciones guardadas de un rasgo que el personaje ya no tiene: pasa al
+    // cambiar de clase o si el contenido que las declaraba se retiró. No se
+    // borran solas, por si la pérdida es temporal.
+    for (final groupId in c.featureChoices.keys) {
+      if ((c.featureChoices[groupId] ?? const []).isEmpty) continue;
+      if (slots.containsKey(groupId)) continue;
+      w.add(ValidationWarning(
+        'feature_choice_orphan',
+        'Tenés elecciones guardadas de "$groupId", un rasgo que ya no tenés.',
+        WarningSeverity.info,
+      ));
+    }
+  }
+
+  /// Chequeos del combate con dos armas (2024). Una entrada de [weaponOffHand]
+  /// que no esté equipada se ignora en silencio, igual que [weaponTwoHanded]:
+  /// desequipar un arma no debería ensuciar la ficha con advertencias.
+  void _validateOffHand(
+      Character c, ContentRepository repo, List<ValidationWarning> w) {
+    final offHandIds = c.equippedWeaponIds
+        .where((id) => c.weaponOffHand[id] ?? false)
+        .toList();
+    if (offHandIds.isEmpty) return;
+
+    if (offHandIds.length > 1) {
+      w.add(ValidationWarning(
+        'too_many_off_hands',
+        'Marcaste ${offHandIds.length} armas en la mano secundaria: solo se empuña una.',
+      ));
+    }
+
+    for (final id in offHandIds) {
+      final weapon = repo.weapon(id);
+      if (weapon != null && !weapon.isLight) {
+        w.add(ValidationWarning(
+          'off_hand_not_light',
+          '${weapon.name} no es Ligera: el ataque de mano secundaria exige un arma Ligera.',
+        ));
+      }
+    }
+
+    // El ataque extra sale de empuñar **dos** armas Ligeras: con una sola no hay
+    // nada que hacer en la mano secundaria.
+    final hasLightMainHand = c.equippedWeaponIds.any((id) =>
+        !(c.weaponOffHand[id] ?? false) && (repo.weapon(id)?.isLight ?? false));
+    if (!hasLightMainHand) {
+      w.add(ValidationWarning(
+        'off_hand_without_pair',
+        'No hay otra arma Ligera en la mano principal: el ataque de mano secundaria no se puede hacer.',
+        WarningSeverity.info,
+      ));
+    }
+  }
+
   bool _lineageUsesSpellcasting(Lineage lineage) => lineage.features.any(
         (feature) =>
             feature.effects.any((effect) => effect is GrantSpellEffect),
@@ -339,6 +429,14 @@ class CharacterValidator {
     final list = repo.spellsForList(sc.spellList).map((s) => s.id).toSet();
     final maxSlotLevel =
         sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
+    // Un rasgo que concede un conjuro ya lo da "siempre preparado": volver a
+    // elegirlo desde la clase no suma nada y gasta un cupo. Vale tanto para el
+    // conjuro innato (que además trae un uso gratis) como para el siempre
+    // preparado de una subclase.
+    final grantedSpellIds = {
+      for (final s in sheet.innateSpells) s.spellId,
+      ...sheet.alwaysPreparedSpellIds,
+    };
 
     if (c.cantripIds.length > sc.cantripsKnown) {
       w.add(ValidationWarning(
@@ -356,6 +454,9 @@ class CharacterValidator {
       } else if (!list.contains(id)) {
         w.add(ValidationWarning('cantrip_wrong_list',
             '${sp.name} no está en la lista de ${sc.spellList}.'));
+      } else if (grantedSpellIds.contains(id)) {
+        w.add(ValidationWarning('cantrip_already_granted',
+            '${sp.name} ya lo tenés por otro rasgo: elegirlo de clase ocupa un cupo de más.'));
       }
     }
 
@@ -382,6 +483,10 @@ class CharacterValidator {
         w.add(ValidationWarning('spell_wrong_list',
             '${sp.name} no está en la lista de ${sc.spellList}.'));
       }
+      if (grantedSpellIds.contains(id)) {
+        w.add(ValidationWarning('spell_already_granted',
+            '${sp.name} ya lo tenés siempre preparado por otro rasgo: prepararlo ocupa un cupo de más.'));
+      }
       if (maxSlotLevel > 0 && sp.level > maxSlotLevel) {
         w.add(ValidationWarning(
           'spell_level_too_high',
@@ -398,7 +503,10 @@ class CharacterValidator {
   Set<String> heldFeatIds(Character c) => <String?>[
         repo.background(c.backgroundId)?.originFeatId,
         ...c.featIds,
-        c.fightingStyleId,
+        // Todos los grupos, no solo el estilo de combate: es lo que hace que un
+        // prerrequisito entre opciones (una invocación que exige otra) funcione
+        // sin que la validación sepa de qué grupo se trata.
+        for (final chosen in c.featureChoices.values) ...chosen,
       ].whereType<String>().toSet();
 
   /// Descripción del primer prerrequisito de [feat] que [c] no cumple, o null

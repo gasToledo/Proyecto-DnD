@@ -4,6 +4,8 @@ import 'package:dnd_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'creation_helpers.dart';
+
 /// Paso de Equipo y Conjuros.
 void main() {
   late ContentRepository repo;
@@ -33,30 +35,23 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
     await next();
 
     // El nombre puede figurar en la tarjeta y en el panel de detalle (si ya
     // está seleccionada): la tarjeta es la primera.
-    await tester.tap(find.text(className).first);
-    await tester.pumpAndSettle();
+    await tapOption(tester, className);
     // El Guerrero exige estilo de combate y 3 maestrías.
     if (className == 'Guerrero') {
-      await tester.tap(find.text('Estilo de Combate: Defensa'));
+      await tester.tap(find.text('Defensa'));
       await tester.pumpAndSettle();
       for (final w in ['Garrote', 'Daga', 'Clava']) {
-        final tile = find.widgetWithText(CheckboxListTile, w);
-        await tester.ensureVisible(tile);
-        await tester.pumpAndSettle();
-        await tester.tap(tile);
-        await tester.pumpAndSettle();
+        await checkWeapon(tester, w);
       }
     }
     await next();
 
-    await tester.tap(find.text('Soldado'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Soldado');
     await tester.tap(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await next();
@@ -84,7 +79,7 @@ void main() {
         await tester.pumpAndSettle();
       }
     }
-    final feat = find.text('Hábil');
+    final feat = find.text('Habilidoso');
     if (feat.evaluate().isNotEmpty) {
       await tester.ensureVisible(feat);
       await tester.pumpAndSettle();
@@ -119,7 +114,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('se pueden equipar dos armas y avisa por la mano secundaria', (
+  testWidgets('se pueden equipar dos armas y elegir la mano secundaria', (
     tester,
   ) async {
     await gotoEquipo(tester, 'Mago');
@@ -135,18 +130,32 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    expect(find.textContaining('combate con dos armas'), findsNothing);
+    // El aviso de que la regla no se aplicaba sola ya no corresponde: ahora la
+    // aplica el motor y lo que hay que decidir es la mano.
+    expect(find.textContaining('todavía no aplica'), findsNothing);
+    expect(find.text('Cómo las empuñás'), findsNothing);
 
     await tapWeapon('Daga');
-    // Con una sola arma no hay nada que aclarar todavía.
-    expect(find.textContaining('combate con dos armas'), findsNothing);
-
     await tapWeapon('Bastón');
-    expect(find.textContaining('combate con dos armas'), findsOneWidget);
 
-    // Destildar vuelve al estado anterior: es una selección múltiple real.
-    await tapWeapon('Bastón');
-    expect(find.textContaining('combate con dos armas'), findsNothing);
+    // La daga es Ligera, el bastón es versátil: cada una ofrece lo suyo.
+    expect(find.text('Cómo las empuñás'), findsOneWidget);
+    final offHand = find.byKey(const ValueKey('off-hand-dagger'));
+    expect(offHand, findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('two-handed-quarterstaff')),
+      findsOneWidget,
+    );
+    // El bastón no es Ligero, así que no se puede mandar a la secundaria.
+    expect(find.byKey(const ValueKey('off-hand-quarterstaff')), findsNothing);
+
+    expect(tester.widget<FilterChip>(offHand).selected, isFalse);
+    await tester.ensureVisible(offHand);
+    await tester.pumpAndSettle();
+    await tester.tap(offHand);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilterChip>(offHand).selected, isTrue);
+
     expect(tester.takeException(), isNull);
   });
 

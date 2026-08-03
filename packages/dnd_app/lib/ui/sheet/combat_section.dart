@@ -410,6 +410,11 @@ extension _SheetCombatSection on _SheetScreenState {
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
                     if (a.mastery != null) _masteryPill(a.mastery!),
+                    // Mano y acción salen calculadas del motor: derivarlas acá
+                    // sería reimplementar la regla de dos armas en la ficha.
+                    if (a.offHand) const GoldPill('Mano secundaria'),
+                    if (a.action == AttackAction.bonusAction)
+                      const GoldPill('Acción adicional'),
                   ],
                 ),
               ],

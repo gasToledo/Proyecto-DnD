@@ -88,7 +88,9 @@ class CharacterCompiler {
     final featIds = <String?>[
       background?.originFeatId,
       ...c.featIds,
-      c.fightingStyleId,
+      // Las elecciones abiertas (Estilo de Combate, Invocaciones) son dotes:
+      // sus efectos se aplican por el mismo camino que el resto.
+      for (final chosen in c.featureChoices.values) ...chosen,
     ];
     final appliedOnce = <String>{};
     for (final id in featIds) {
@@ -165,6 +167,22 @@ class CharacterCompiler {
         ...innate.resources
       ],
       innateSpells: innate.spells,
+      // Un id que el catálogo no conoce se descarta acá, igual que en los
+      // innatos: contenido incompleto no debe romper la ficha.
+      alwaysPreparedSpellIds: {
+        for (final id in builder.alwaysPreparedSpellIds)
+          if (repo.spell(id) != null) id,
+      },
+      featureChoiceSlots: [
+        for (final e in builder.featureChoiceSlots.values)
+          FeatureChoiceSlot(
+            groupId: e.groupId,
+            name: e.name,
+            featCategory: e.featCategory,
+            count: e.count,
+            replaceable: e.replaceable,
+          ),
+      ],
       spellcasting: spellcasting,
     );
   }
@@ -317,8 +335,7 @@ class CharacterCompiler {
       abilityMod = mods[Ability.strength]!;
     }
 
-    final proficient = b.weaponProficiencies.contains(w.category) ||
-        b.weaponProficiencies.contains(w.id);
+    final proficient = w.isProficientWith(b.weaponProficiencies);
     final attackBonus = abilityMod + (proficient ? profBonus : 0);
 
     final twoHanded = c.weaponTwoHanded[w.id] ?? false;
@@ -334,13 +351,30 @@ class CharacterCompiler {
         c.weaponMasteryChoices.contains(w.id) &&
         proficient;
 
+    final offHand = c.weaponOffHand[w.id] ?? false;
+
+    // 2024: el ataque de mano secundaria no suma el modificador al daño, pero
+    // solo cuando es **positivo**; un modificador negativo se sigue restando.
+    // El estilo Combate con Dos Armas lo devuelve, y llega acá como efecto
+    // ([OffHandAbilityDamageEffect]), no como el id de la dote.
+    final damageMod =
+        (offHand && !b.offHandAbilityDamage && abilityMod > 0) ? 0 : abilityMod;
+
+    // Mellar (Nick) no cambia el daño: cambia la economía de acciones, porque
+    // permite hacer el ataque extra dentro de la acción de Atacar.
+    final nick = hasMastery && w.mastery == 'nick';
+    final action =
+        (offHand && !nick) ? AttackAction.bonusAction : AttackAction.action;
+
     return Attack(
       weaponId: w.id,
       name: w.name,
       attackBonus: attackBonus,
-      damage: _damageString(dice, abilityMod),
+      damage: _damageString(dice, damageMod),
       damageType: w.damageType,
       mastery: hasMastery ? w.mastery : null,
+      offHand: offHand,
+      action: action,
     );
   }
 

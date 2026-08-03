@@ -32,6 +32,20 @@ extension _LevelUpSections on _LevelUpScreenState {
         _buildAsi(),
       ],
     ),
+    _LevelUpStepKind.featureChoices => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _LevelUpIntro(
+          eyebrow: 'Elegís vos',
+          title: 'Tus elecciones de este nivel',
+          body:
+              'Algunos rasgos te dejan elegir entre varias opciones. Podés '
+              'revisarlas acá antes de confirmar la subida.',
+        ),
+        const SizedBox(height: 22),
+        _buildFeatureChoicesSection(),
+      ],
+    ),
     _LevelUpStepKind.features => _buildFeaturesStep(),
     _LevelUpStepKind.spells => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,6 +310,44 @@ extension _LevelUpSections on _LevelUpScreenState {
             );
           },
         ),
+      ],
+    );
+  }
+
+  /// Resuelve las elecciones abiertas del nivel nuevo.
+  ///
+  /// Las opciones salen de la categoría que declara cada espacio, y los
+  /// prerrequisitos los evalúa el validador del motor: el mismo camino que el
+  /// selector de dotes. Un grupo lleno y revisable deja cambiar la elección,
+  /// que es lo que pide la regla de las invocaciones.
+  Widget _buildFeatureChoicesSection() {
+    final target = _buildUpdated();
+    final sheet = CharacterCompiler(widget.repo).compile(target);
+    final validator = CharacterValidator(widget.repo);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final slot in _choiceSlots) ...[
+          Eyebrow(
+            '${slot.name} (${_choicesFor(slot.groupId).length}/${slot.count})',
+          ),
+          const SizedBox(height: 6),
+          _FeatureChoiceGroup(
+            slot: slot,
+            chosen: _choicesFor(slot.groupId),
+            options: widget.repo
+                .featsByCategory(slot.featCategory)
+                .where(
+                  (f) =>
+                      _choicesFor(slot.groupId).contains(f.id) ||
+                      validator.unmetFeatPrerequisite(f, target, sheet) == null,
+                )
+                .toList(),
+            onChanged: (ids) => _setChoices(slot.groupId, ids),
+          ),
+          const SizedBox(height: 22),
+        ],
       ],
     );
   }
@@ -802,35 +854,30 @@ extension _LevelUpSections on _LevelUpScreenState {
     // estilo de combate, no solo `featIds`: con el catálogo oficial no hay
     // solapamiento porque acá solo se ofrecen dotes generales, pero un
     // trasfondo homebrew puede conceder cualquiera.
-    final allFeats =
-        widget.repo.feats.values
-            .where((f) => f.category == 'general')
-            // "Mejora de Característica" ya es la opción hermana de este
-            // selector y necesita registrar sus puntuaciones, no un featId.
-            .where((f) => f.id != 'ability-score-improvement')
-            .where((f) => f.repeatable || !held.contains(f.id))
-            .where((f) {
-              final group = f.effectiveExclusiveGroup;
-              return group == null ||
-                  !held.any(
-                    (id) =>
-                        id != f.id &&
-                        widget.repo.feat(id)?.effectiveExclusiveGroup == group,
-                  );
-            })
-            // Las reglas viven en el motor: la UI solo esconde lo inelegible.
-            .where(
-              (f) =>
-                  validator.unmetFeatPrerequisite(
-                    f,
-                    target,
-                    sheet,
-                    held: held,
-                  ) ==
-                  null,
-            )
-            .toList()
-          ..sort((a, b) => a.name.compareTo(b.name));
+    final allFeats = widget.repo.featsSorted
+        .where((f) => f.category == 'general')
+        // "Mejora de Característica" ya es la opción hermana de este
+        // selector y necesita registrar sus puntuaciones, no un featId.
+        .where((f) => f.id != 'ability-score-improvement')
+        .where((f) => f.repeatable || !held.contains(f.id))
+        .where((f) {
+          final group = f.effectiveExclusiveGroup;
+          return group == null ||
+              !held.any(
+                (id) =>
+                    id != f.id &&
+                    widget.repo.feat(id)?.effectiveExclusiveGroup == group,
+              );
+        })
+        // Las reglas viven en el motor: la UI solo esconde lo inelegible.
+        .where(
+          (f) =>
+              validator.unmetFeatPrerequisite(f, target, sheet, held: held) ==
+              null,
+        )
+        // Ya viene alfabético de `featsSorted`: reordenar acá con
+        // `compareTo` crudo desharía el plegado de tildes.
+        .toList();
     if (allFeats.isEmpty) {
       return Text(
         'No quedan dotes disponibles.',

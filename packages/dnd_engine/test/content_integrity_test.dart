@@ -133,7 +133,9 @@ void main() {
       'skilled',
       'magic-initiate-wizard',
       'magic-initiate-cleric',
-      'grappler',
+      // Apresador se divide por característica, así que aporta dos entradas.
+      'grappler-strength',
+      'grappler-dexterity',
       'fs-defense',
       'fs-archery',
       'fs-great-weapon',
@@ -232,6 +234,9 @@ void main() {
       'fighting-style',
       'dragonmark',
       'epic-boon',
+      // No es una dote que se tome en un ASI: es el catálogo de opciones de una
+      // elección abierta, que reusa `Feat` para no duplicar prerrequisitos.
+      'warlock-invocation',
     };
     for (final f in repo.feats.values) {
       expect(validCategories, contains(f.category),
@@ -242,11 +247,11 @@ void main() {
   test('el catálogo incluye las 21 dotes del PHB que faltaban', () {
     const expected = {
       'ability-score-improvement': ('Mejora de Característica', 'general'),
-      'martial-weapon-training': (
-        'Entrenamiento con Armas Marciales',
+      'martial-weapon-training-strength': (
+        'Entrenamiento con Armas Marciales (Fuerza)',
         'general',
       ),
-      'weapon-master': ('Maestro de Armas', 'general'),
+      'weapon-master-strength': ('Maestro de Armas (Fuerza)', 'general'),
       'fs-blind-fighting': ('Lucha a Ciegas', 'fighting-style'),
       'fs-interception': ('Intercepción', 'fighting-style'),
       'fs-protection': ('Protección', 'fighting-style'),
@@ -303,20 +308,176 @@ void main() {
   });
 
   test('las 75 dotes canónicas del PHB están representadas', () {
+    // Solo las categorías que son **dotes**: `warlock-invocation` reusa `Feat`
+    // como catálogo de una elección abierta, pero no es una dote y no entra en
+    // este conteo. Sin este filtro, cargar invocaciones rompería el test.
+    const featCategories = {
+      'origin',
+      'general',
+      'fighting-style',
+      'epic-boon',
+    };
     final phb = repo.feats.values
         .where(
           (f) =>
-              f.source == ContentSource.phb2024 ||
-              f.source == ContentSource.srd2024,
+              (f.source == ContentSource.phb2024 ||
+                  f.source == ContentSource.srd2024) &&
+              featCategories.contains(f.category),
         )
         .toList();
-    // Son 82 registros porque Iniciado en la Magia se divide en 3 listas
-    // (+2) y Resiliente en 6 características (+5).
-    expect(phb, hasLength(82));
+    // Son 127 registros para 75 dotes del capítulo porque las que dejan elegir
+    // el bono de característica se cargan como una variante por opción, con el
+    // mismo `exclusiveGroup`: es la única forma de que el jugador elija sin
+    // inventar un efecto nuevo. Iniciado en la Magia aporta 3 por sus listas.
+    //
+    // El desglose: 33 familias con elección (Resiliente ×6, Experto en
+    // Habilidades ×6, siete ×3 y veinticuatro ×2) más Iniciado en la Magia ×3.
+    expect(phb, hasLength(127));
     expect(phb.where((f) => f.category == 'origin'), hasLength(12));
-    expect(phb.where((f) => f.category == 'general'), hasLength(48));
+    expect(phb.where((f) => f.category == 'general'), hasLength(93));
     expect(phb.where((f) => f.category == 'fighting-style'), hasLength(10));
     expect(phb.where((f) => f.category == 'epic-boon'), hasLength(12));
+
+    // Toda variante declara su grupo, que es lo que impide tomar dos.
+    final conVariantes = phb.where((f) => f.exclusiveGroup != null);
+    expect(conVariantes, hasLength(greaterThan(60)));
+    for (final grupo in conVariantes.map((f) => f.exclusiveGroup!).toSet()) {
+      final delGrupo = phb.where((f) => f.exclusiveGroup == grupo);
+      expect(delGrupo.length, greaterThan(1), reason: 'grupo $grupo con una');
+      // Cada variante concede exactamente el +1 que la distingue.
+      for (final f in delGrupo.where((f) => f.category == 'general')) {
+        final asi = f.effects.whereType<AbilityScoreBonusEffect>();
+        expect(asi, hasLength(1), reason: f.id);
+        expect(f.id, endsWith(asi.first.ability.name), reason: f.id);
+      }
+    }
+  });
+
+  test('las dotes usan el nombre del capítulo 5, no una traducción propia', () {
+    // Una tanda de verificación contra el manual encontró 33 dotes con nombre
+    // inventado. El id sigue siendo el nombre en inglés y es la clave que viaja
+    // en los personajes guardados, así que renombrar es seguro; lo que hace
+    // falta es que no se vuelva a desviar.
+    //
+    // Se fijan los casos que estaban mal, incluidos los dos pares que se
+    // parecen lo bastante como para intercambiarse: Maestro en Armaduras
+    // Pesadas (Heavy Armor Master) y Maestro en Armas Pesadas (Great Weapon
+    // Master); Combate con Dos Armas (estilo) y Combatiente con Dos Armas
+    // (dote general).
+    const oficiales = <String, String>{
+      'tough': 'Duro',
+      'crafter': 'Fabricante',
+      'skilled': 'Habilidoso',
+      'charger-strength': 'Atacante a la Carga (Fuerza)',
+      'mage-slayer-strength': 'Azote de Magos (Fuerza)',
+      'dual-wielder-strength': 'Combatiente con Dos Armas (Fuerza)',
+      'crossbow-expert': 'Experto en Ballestas',
+      'war-caster-intelligence': 'Lanzador en Combate (Inteligencia)',
+      'spell-sniper-intelligence': 'Lanzador Preciso (Inteligencia)',
+      'ritual-caster-intelligence': 'Lanzador Ritual (Inteligencia)',
+      'medium-armor-master-strength': 'Maestro en Armaduras Medias (Fuerza)',
+      'heavy-armor-master-constitution':
+          'Maestro en Armaduras Pesadas (Constitución)',
+      'polearm-master-dexterity': 'Maestro en Armas de Asta (Destreza)',
+      'great-weapon-master': 'Maestro en Armas Pesadas',
+      'shield-master': 'Maestro en Escudos',
+      'heavily-armored-constitution': 'Muy Acorazado (Constitución)',
+      'telepathic-intelligence': 'Telepático (Inteligencia)',
+      'sharpshooter': 'Tirador de Primera',
+      'elemental-adept-intelligence': 'Versado en un Elemento (Inteligencia)',
+      'fs-great-weapon': 'Combate con Armas a Dos Manos',
+      'fs-two-weapon-fighting': 'Combate con Dos Armas',
+      'fs-defense': 'Defensa',
+      'fs-dueling': 'Duelo',
+      'fs-archery': 'Tiro con Arco',
+    };
+    for (final e in oficiales.entries) {
+      expect(repo.feat(e.key)?.name, e.value, reason: e.key);
+    }
+    // El trasfondo Artesano existía a la vez que una dote homónima; renombrar
+    // la dote a Fabricante deshizo esa colisión.
+    expect(repo.background('artisan')?.name, 'Artesano');
+  });
+
+  test('Ligeramente y Moderadamente Acorazado reparten bien los escudos', () {
+    // Los escudos estaban en la dote equivocada: el manual los da con la
+    // armadura ligera, no con la media.
+    List<String> armaduras(String id) => repo
+        .feat(id)!
+        .effects
+        .whereType<ArmorProficiencyEffect>()
+        .map((e) => e.category)
+        .toList();
+
+    expect(armaduras('lightly-armored-strength'),
+        containsAll(['light', 'shield']));
+    expect(armaduras('moderately-armored-strength'), ['medium']);
+    expect(armaduras('heavily-armored-constitution'), ['heavy']);
+  });
+
+  test('están las 28 invocaciones del capítulo 3', () {
+    final invocations = repo.featsByCategory('warlock-invocation');
+    expect(invocations, hasLength(28));
+
+    // Los tres pactos. El del Talismán es de 2014 y no está en 2024.
+    expect(
+        invocations.map((f) => f.id),
+        containsAll(<String>[
+          'pact-of-the-chain',
+          'pact-of-the-blade',
+          'pact-of-the-tome',
+        ]));
+    expect(
+      invocations.map((f) => f.name).where((n) => n.contains('Talismán')),
+      isEmpty,
+    );
+
+    // Se etiquetan phb_2024: no está verificado cuáles cubre el SRD 5.2.1 y
+    // reclamar cobertura sin certeza es el error que la licencia no perdona.
+    for (final f in invocations) {
+      expect(f.source, ContentSource.phb2024, reason: f.id);
+    }
+
+    // Las cuatro repetibles del capítulo, ni una más.
+    expect(
+      invocations.where((f) => f.repeatable).map((f) => f.id).toSet(),
+      {
+        'agonizing-blast',
+        'repelling-blast',
+        'eldritch-spear',
+        'lessons-of-the-first-ones',
+      },
+    );
+  });
+
+  test('los prerrequisitos entre invocaciones apuntan a ids reales', () {
+    // Una cadena rota no rompe nada visible: la opción simplemente nunca se
+    // ofrece, que es la clase de error que no avisa.
+    final invocations = repo.featsByCategory('warlock-invocation');
+    final ids = invocations.map((f) => f.id).toSet();
+    for (final f in invocations) {
+      for (final required in f.prerequisite?.requiredFeatIds ?? const []) {
+        expect(ids, contains(required), reason: '${f.id} exige "$required"');
+      }
+    }
+    // Y la cadena más larga del capítulo se sostiene.
+    expect(
+      repo.feat('devouring-blade')!.prerequisite!.requiredFeatIds,
+      ['thirsting-blade'],
+    );
+    expect(
+      repo.feat('thirsting-blade')!.prerequisite!.requiredFeatIds,
+      ['pact-of-the-blade'],
+    );
+  });
+
+  test('los conjuros que conceden las invocaciones existen', () {
+    for (final f in repo.featsByCategory('warlock-invocation')) {
+      for (final e in f.effects.whereType<GrantSpellEffect>()) {
+        expect(repo.spell(e.spellId), isNotNull,
+            reason: '${f.id} concede "${e.spellId}"');
+      }
+    }
   });
 
   test('los diez estilos exigen el rasgo Estilo de Combate', () {
@@ -376,7 +537,7 @@ void main() {
 
   test('las dotes repetibles respetan sus elecciones internas', () {
     expect(repo.feat('ability-score-improvement')!.repeatable, isTrue);
-    expect(repo.feat('elemental-adept')!.repeatable, isTrue);
+    expect(repo.feat('elemental-adept-intelligence')!.repeatable, isTrue);
     expect(repo.feat('skilled')!.repeatable, isTrue);
     for (final id in [
       'magic-initiate-cleric',
@@ -398,10 +559,13 @@ void main() {
 
     expect(and('great-weapon-master'), {Ability.strength: 13});
     expect(and('keen-mind'), {Ability.intelligence: 13});
-    expect(or('athlete'), {Ability.strength: 13, Ability.dexterity: 13});
-    expect(or('observant'), {Ability.intelligence: 13, Ability.wisdom: 13});
-    expect(or('speedy'), {Ability.dexterity: 13, Ability.constitution: 13});
-    expect(or('ritual-caster'), {
+    expect(
+        or('athlete-strength'), {Ability.strength: 13, Ability.dexterity: 13});
+    expect(or('observant-intelligence'),
+        {Ability.intelligence: 13, Ability.wisdom: 13});
+    expect(or('speedy-dexterity'),
+        {Ability.dexterity: 13, Ability.constitution: 13});
+    expect(or('ritual-caster-intelligence'), {
       Ability.intelligence: 13,
       Ability.wisdom: 13,
       Ability.charisma: 13,

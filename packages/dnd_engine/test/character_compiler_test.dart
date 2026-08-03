@@ -24,7 +24,9 @@ Character sagan({int level = 1, List<int>? hp}) => Character(
         Ability.constitution: 1,
       },
       chosenSkills: ['perception', 'survival', 'insight'],
-      fightingStyleId: 'fs-defense',
+      featureChoices: const {
+        'fighting-style': ['fs-defense'],
+      },
       weaponMasteryChoices: ['longsword', 'greatsword', 'dagger'],
       featIds: ['skilled'],
       hpPerLevel: hp ?? [10],
@@ -217,7 +219,7 @@ void main() {
     });
 
     test('una dote repetible sí acumula sus efectos', () {
-      // Robustez da +2 PG por nivel y no es repetible; Mejora de Característica
+      // Duro da +2 PG por nivel y no es repetible; Mejora de Característica
       // sí lo es, así que dos instancias deben sumar 2 puntos, no 1.
       final base = sagan().copyWith(featIds: const []);
       final unaVez = sagan().copyWith(featIds: ['tough']);
@@ -227,7 +229,7 @@ void main() {
       expect(
         compiler.compile(dosVeces).maxHp,
         compiler.compile(unaVez).maxHp,
-        reason: 'Robustez no es repetible: no debe acumular dos veces',
+        reason: 'Duro no es repetible: no debe acumular dos veces',
       );
     });
   });
@@ -281,6 +283,102 @@ void main() {
       final warnings = CharacterValidator(repo).validate(rogue('rapier'));
       expect(warnings.map((w) => w.code),
           isNot(contains('mastery_not_proficient')));
+    });
+  });
+
+  group('Combate con dos armas (2024)', () {
+    late ContentRepository repo;
+    late CharacterCompiler compiler;
+    setUpAll(() async {
+      repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+      compiler = CharacterCompiler(repo);
+    });
+
+    /// Guerrero con dos armas equipadas. `dexterity` se parametriza para poder
+    /// probar el caso de modificador negativo, que la regla trata distinto.
+    Character dualWielder({
+      required String mainHand,
+      required String offHand,
+      String? fightingStyleId,
+      List<String> masteries = const [],
+      int dexterity = 14,
+      int strength = 16,
+    }) =>
+        Character(
+          id: 'probe-dual',
+          name: 'Prueba',
+          raceId: 'human',
+          classId: 'fighter',
+          backgroundId: 'soldier',
+          level: 1,
+          assignedScores: {
+            Ability.strength: strength,
+            Ability.dexterity: dexterity,
+            Ability.constitution: 14,
+            Ability.intelligence: 10,
+            Ability.wisdom: 12,
+            Ability.charisma: 8,
+          },
+          featureChoices: {
+            if (fightingStyleId != null) 'fighting-style': [fightingStyleId],
+          },
+          weaponMasteryChoices: masteries,
+          hpPerLevel: const [10],
+          equippedWeaponIds: [mainHand, offHand],
+          weaponOffHand: {offHand: true},
+        );
+
+    Attack attackFor(ComputedSheet s, String weaponId) =>
+        s.attacks.firstWhere((a) => a.weaponId == weaponId);
+
+    test('la mano secundaria no suma el modificador al daño', () {
+      // Hacha de mano: Ligera, FUE 16 (+3). El ataque sí suma el mod; el daño no.
+      final s = compiler.compile(
+        dualWielder(mainHand: 'handaxe', offHand: 'handaxe'),
+      );
+      final off = attackFor(s, 'handaxe');
+      expect(off.offHand, isTrue);
+      expect(off.damage, '1d6', reason: 'el +3 de Fuerza no va al daño');
+      expect(off.attackBonus, 5, reason: 'el ataque sí lo suma: 3 + 2');
+    });
+
+    test('el estilo Combate con Dos Armas devuelve el modificador', () {
+      final s = compiler.compile(dualWielder(
+        mainHand: 'handaxe',
+        offHand: 'handaxe',
+        fightingStyleId: 'fs-two-weapon-fighting',
+      ));
+      expect(attackFor(s, 'handaxe').damage, '1d6 + 3');
+    });
+
+    test('un modificador negativo sí se resta, aunque no haya estilo', () {
+      // La regla omite el modificador solo cuando es positivo. Daga con DES 8
+      // (−1) y FUE 8 (−1): sutil es finesse, así que toma el mayor de los dos.
+      final s = compiler.compile(dualWielder(
+        mainHand: 'dagger',
+        offHand: 'dagger',
+        dexterity: 8,
+        strength: 8,
+      ));
+      expect(attackFor(s, 'dagger').damage, '1d4 - 1');
+    });
+
+    test('el arma sin marcar es de mano principal y usa la acción de Atacar',
+        () {
+      final s = compiler.compile(
+        dualWielder(mainHand: 'longsword', offHand: 'handaxe'),
+      );
+      final main = attackFor(s, 'longsword');
+      expect(main.offHand, isFalse);
+      expect(main.action, AttackAction.action);
+      expect(main.damage, '1d8 + 3', reason: 'la mano principal no cambia');
+    });
+
+    test('sin la maestría Mellar, la mano secundaria es acción adicional', () {
+      final s = compiler.compile(
+        dualWielder(mainHand: 'handaxe', offHand: 'handaxe'),
+      );
+      expect(attackFor(s, 'handaxe').action, AttackAction.bonusAction);
     });
   });
 }

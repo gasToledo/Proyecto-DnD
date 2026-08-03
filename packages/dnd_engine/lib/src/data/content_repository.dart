@@ -3,6 +3,7 @@ import 'dart:io';
 
 import '../domain/content.dart';
 import '../domain/data_version.dart';
+import '../domain/name_sort.dart';
 
 class ContentPackManifest {
   static const int currentFormatVersion = 1;
@@ -98,27 +99,54 @@ class ContentRepository {
   Armor? armorPiece(String id) => armor[id];
   Spell? spell(String id) => spells[id];
 
+  /// Catálogos completos en orden alfabético, que es como los lista la UI. Los
+  /// mapas conservan el orden de carga del JSON, que no le sirve a nadie para
+  /// buscar una opción: ordenar acá evita que cada pantalla se arme su propio
+  /// criterio (y se olvide de las tildes).
+  List<Race> get racesSorted => sortedByName(races.values, (e) => e.name);
+  List<CharacterClass> get classesSorted =>
+      sortedByName(classes.values, (e) => e.name);
+  List<Background> get backgroundsSorted =>
+      sortedByName(backgrounds.values, (e) => e.name);
+  List<Feat> get featsSorted => sortedByName(feats.values, (e) => e.name);
+
+  /// Opciones de una elección abierta: las dotes de [category], alfabéticas.
+  /// Es lo único que hace falta para que un catálogo nuevo (invocaciones,
+  /// estilos) sea puro dato: nadie lleva una lista de ids.
+  List<Feat> featsByCategory(String category) => sortedByName(
+        feats.values.where((f) => f.category == category),
+        (e) => e.name,
+      );
+  List<Weapon> get weaponsSorted => sortedByName(weapons.values, (e) => e.name);
+  List<Armor> get armorSorted => sortedByName(armor.values, (e) => e.name);
+
   /// Subclases que pertenecen a una clase (id de clase), ordenadas por nombre.
-  List<Subclass> subclassesForClass(String classId) =>
-      subclasses.values.where((s) => s.classId == classId).toList()
-        ..sort((a, b) => a.name.compareTo(b.name));
+  List<Subclass> subclassesForClass(String classId) => sortedByName(
+        subclasses.values.where((s) => s.classId == classId),
+        (e) => e.name,
+      );
 
   /// Linajes que pertenecen a una especie, ordenados por nombre. Vacío = esa
   /// especie no exige elegir linaje.
-  List<Lineage> lineagesForRace(String raceId) =>
-      lineages.values.where((l) => l.raceId == raceId).toList()
-        ..sort((a, b) => a.name.compareTo(b.name));
+  List<Lineage> lineagesForRace(String raceId) => sortedByName(
+        lineages.values.where((l) => l.raceId == raceId),
+        (e) => e.name,
+      );
 
-  /// Conjuros de la lista de una clase (id de clase), ordenados por nivel y nombre.
-  List<Spell> spellsForList(String classId) {
-    final list = spells.values
-        .where((s) => s.classes.contains(classId))
-        .toList()
-      ..sort((a, b) => a.level != b.level
-          ? a.level.compareTo(b.level)
-          : a.name.compareTo(b.name));
-    return list;
-  }
+  /// Conjuros de la lista de una clase (id de clase), ordenados por nivel y
+  /// después por nombre: el nivel manda porque es como se leen en la ficha.
+  List<Spell> spellsForList(String classId) =>
+      spells.values.where((s) => s.classes.contains(classId)).toList()
+        ..sort((a, b) => a.level != b.level
+            ? a.level.compareTo(b.level)
+            : compareContentNames(a.name, b.name));
+
+  /// Todos los conjuros por nivel y nombre (catálogo homebrew, que no filtra
+  /// por lista de clase).
+  List<Spell> get spellsSorted => spells.values.toList()
+    ..sort((a, b) => a.level != b.level
+        ? a.level.compareTo(b.level)
+        : compareContentNames(a.name, b.name));
 
   /// Incorpora contenido homebrew (mismo esquema) sobre el oficial.
   void addAll(ContentRepository other) {

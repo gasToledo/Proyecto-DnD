@@ -4,6 +4,8 @@ import 'package:dnd_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'creation_helpers.dart';
+
 /// Cubre el paso de Puntuaciones ya rediseñado: se llega navegando el wizard
 /// real (lo que además ejercita el gating y el stepper).
 void main() {
@@ -36,19 +38,16 @@ void main() {
     }
 
     // Raza
-    await tester.tap(find.text('Humano'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Humano');
     await next();
 
     // Clase
-    await tester.tap(find.text('Mago'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Mago');
     await next();
 
     // Trasfondo (+1/+1/+1 no necesita elegir características). El reparto vive
     // debajo de la grilla, que ya tiene 33 trasfondos: hay que scrollear.
-    await tester.tap(find.text('Soldado'));
-    await tester.pumpAndSettle();
+    await tapOption(tester, 'Soldado');
     await tester.ensureVisible(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('+1 / +1 / +1'));

@@ -377,16 +377,31 @@ void main() {
       );
     });
 
-    test('heldFeatIds junta las elegidas y el estilo de combate', () {
-      // `copyWith` no expone fightingStyleId (lo preserva), así que se fija
-      // por JSON.
-      final c = Character.fromJson(
-        _minimalCharacter(featIds: ['test-feat']).toJson()
-          ..['fightingStyleId'] = 'style-feat',
+    test('heldFeatIds junta las elegidas y las elecciones abiertas', () {
+      // Desde que el estilo de combate es una elección más, `copyWith` sí la
+      // expone: ya no hace falta fijarla por JSON.
+      final c = _minimalCharacter(featIds: ['test-feat']).copyWith(
+        featureChoices: const {
+          'fighting-style': ['style-feat'],
+        },
       );
       expect(
         CharacterValidator(repo).heldFeatIds(c),
         {'test-feat', 'style-feat'},
+      );
+    });
+
+    test('heldFeatIds alcanza a cualquier grupo, no solo al estilo', () {
+      // Es lo que hace que los prerrequisitos entre invocaciones funcionen sin
+      // que la validación conozca el grupo.
+      final c = _minimalCharacter().copyWith(
+        featureChoices: const {
+          'warlock-invocation': ['pact-a', 'pact-b'],
+        },
+      );
+      expect(
+        CharacterValidator(repo).heldFeatIds(c),
+        containsAll(<String>['pact-a', 'pact-b']),
       );
     });
   });
@@ -437,6 +452,121 @@ void main() {
         warnings.map((warning) => warning.code),
         isNot(contains('skill_choice_count')),
       );
+    });
+
+    // El Alto Elfo recibe Prestidigitación a nivel 1 y Detectar Magia a nivel
+    // 3, ambos por el linaje y ambos en la lista de Mago. Elegirlos otra vez
+    // desde la clase gasta un cupo sin ganar nada: el rasgo ya los da siempre
+    // preparados y con un uso gratis.
+    Character altoElfoMago({
+      List<String> cantrips = const [],
+      List<String> spells = const [],
+    }) =>
+        Character.fromJson(sagan(level: 3, hp: [6, 4, 4]).toJson()
+          ..['raceId'] = 'elf'
+          ..['lineageId'] = 'elf-high'
+          ..['classId'] = 'wizard'
+          ..['subclassId'] = 'evocation'
+          ..['fightingStyleId'] = null
+          ..['weaponMasteryChoices'] = const <String>[]
+          ..['chosenSkills'] = const ['arcana', 'investigation']
+          ..['cantripIds'] = cantrips
+          ..['spellIds'] = spells);
+
+    test('avisa si se elige un truco que el linaje ya concede', () {
+      final warnings = CharacterValidator(repo)
+          .validate(altoElfoMago(cantrips: const ['prestidigitation']));
+
+      expect(
+        warnings.map((w) => w.code),
+        contains('cantrip_already_granted'),
+      );
+    });
+
+    test('avisa si se prepara un conjuro que el linaje ya concede', () {
+      // Detectar Magia entra a nivel 3 por el linaje Alto Elfo.
+      final warnings = CharacterValidator(repo)
+          .validate(altoElfoMago(spells: const ['detect-magic']));
+
+      expect(
+        warnings.map((w) => w.code),
+        contains('spell_already_granted'),
+      );
+    });
+
+    test('no avisa por conjuros que el linaje no concede', () {
+      final warnings = CharacterValidator(repo).validate(
+        altoElfoMago(cantrips: const ['fire-bolt'], spells: const ['shield']),
+      );
+
+      expect(
+        warnings.map((w) => w.code),
+        isNot(contains('cantrip_already_granted')),
+      );
+      expect(
+        warnings.map((w) => w.code),
+        isNot(contains('spell_already_granted')),
+      );
+    });
+
+    group('Combate con dos armas', () {
+      Character duelist({
+        List<String> equipped = const ['dagger', 'shortsword'],
+        Map<String, bool> offHand = const {'dagger': true},
+      }) =>
+          Character.fromJson(sagan().toJson()
+            ..['classId'] = 'rogue'
+            ..['fightingStyleId'] = null
+            ..['weaponMasteryChoices'] = const <String>[]
+            ..['chosenSkills'] = const ['stealth', 'acrobatics', 'perception']
+            ..['equippedWeaponIds'] = equipped
+            ..['weaponOffHand'] = offHand);
+
+      List<String> codesFor(Character c) =>
+          CharacterValidator(repo).validate(c).map((w) => w.code).toList();
+
+      test('dos armas Ligeras no disparan ninguna advertencia de mano', () {
+        final codes = codesFor(duelist());
+        expect(codes, isNot(contains('off_hand_not_light')));
+        expect(codes, isNot(contains('off_hand_without_pair')));
+        expect(codes, isNot(contains('too_many_off_hands')));
+      });
+
+      test('un arma no Ligera en la secundaria advierte', () {
+        // La espada larga es marcial y no es Ligera.
+        final codes = codesFor(duelist(
+          equipped: const ['dagger', 'longsword'],
+          offHand: const {'longsword': true},
+        ));
+        expect(codes, contains('off_hand_not_light'));
+      });
+
+      test('sin otra arma Ligera en la principal, el ataque no se puede hacer',
+          () {
+        final codes = codesFor(duelist(
+          equipped: const ['dagger', 'longsword'],
+          offHand: const {'dagger': true},
+        ));
+        expect(codes, contains('off_hand_without_pair'));
+      });
+
+      test('marcar dos armas como secundaria advierte', () {
+        final codes = codesFor(duelist(
+          offHand: const {'dagger': true, 'shortsword': true},
+        ));
+        expect(codes, contains('too_many_off_hands'));
+      });
+
+      test('una marca de un arma desequipada se ignora en silencio', () {
+        // Desequipar no debería ensuciar la ficha con advertencias.
+        final codes = codesFor(duelist(
+          equipped: const ['shortsword'],
+          offHand: const {'dagger': true},
+        ));
+        expect(codes, isNot(contains('off_hand_not_light')));
+        expect(codes, isNot(contains('too_many_off_hands')));
+        expect(codes, isNot(contains('off_hand_without_pair')));
+      });
     });
 
     test('Bardo sigue rechazando un identificador de habilidad desconocido',

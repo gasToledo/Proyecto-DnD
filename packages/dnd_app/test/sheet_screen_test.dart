@@ -153,10 +153,102 @@ void main() {
     await tester.tap(find.text('Combate'));
     await tester.pumpAndSettle();
 
-    expect(find.text('CONJUROS DE ESPECIE Y LINAJE'), findsOneWidget);
+    // El rótulo dejó de nombrar a la especie: desde las invocaciones del Brujo
+    // también los concede una elección abierta.
+    expect(find.text('CONJUROS DE RASGOS'), findsOneWidget);
     expect(find.text('Prestidigitación'), findsOneWidget);
     expect(find.textContaining('WIS'), findsOneWidget);
     expect(find.text('ESPACIOS DE CONJURO'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('las competencias se muestran en español', (tester) async {
+    // La tarjeta se armaba capitalizando el id en inglés, así que un Alquimista
+    // leía "Alchemists Supplies", "Light" y "Simple".
+    final artificer = Character(
+      id: 'artificer-sheet',
+      name: 'Merrix',
+      raceId: 'warforged',
+      classId: 'artificer',
+      subclassId: 'alchemist',
+      backgroundId: 'artisan',
+      level: 3,
+      assignedScores: {for (final ability in Ability.values) ability: 12},
+      hpPerLevel: const [8, 5, 5],
+    );
+    await pumpSheet(tester, artificer);
+
+    expect(find.text('Competencias'), findsOneWidget);
+    expect(find.text('Suministros de alquimista'), findsOneWidget);
+    expect(find.text('Herramientas de ladrón'), findsOneWidget);
+    expect(find.text('Herramientas de manitas'), findsOneWidget);
+    expect(find.text('Armadura ligera'), findsOneWidget);
+    expect(find.text('Armas simples'), findsOneWidget);
+    expect(find.textContaining('Supplies'), findsNothing);
+    expect(find.text('Light'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('los conjuros siempre preparados de subclase llegan a la ficha', (
+    tester,
+  ) async {
+    // Antes vivían solo como texto en la descripción del rasgo: el jugador los
+    // tenía por regla y la ficha no los mostraba ni los dejaba lanzar.
+    final artillerist = Character(
+      id: 'artillerist-sheet',
+      name: 'Zil',
+      raceId: 'gnome',
+      lineageId: 'gnome-rock',
+      classId: 'artificer',
+      subclassId: 'artillerist',
+      backgroundId: 'artisan',
+      level: 5,
+      spellIds: const ['cure-wounds'],
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [8, 5, 5, 5, 5],
+    );
+    await pumpSheet(tester, artillerist);
+
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SIEMPRE PREPARADOS'), findsOneWidget);
+    // Nivel 3 de la tabla del Artillero, más los de nivel 5.
+    expect(find.text('Escudo'), findsOneWidget);
+    expect(find.text('Ola Atronadora'), findsOneWidget);
+    expect(find.text('Rayo Abrasador'), findsOneWidget);
+    // Y el elegido a mano sigue en su propia sección.
+    expect(find.text('CONJUROS PREPARADOS'), findsOneWidget);
+    expect(find.text('Curar Heridas'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('un Paladín de Entrega ve sus Conjuros de Juramento', (
+    tester,
+  ) async {
+    // El caso que más gente juega de las 19 subclases del PHB que ganaron su
+    // tabla: hasta ahora los dos conjuros de nivel 3 eran texto en el rasgo.
+    final paladin = Character(
+      id: 'paladin-sheet',
+      name: 'Aurelia',
+      raceId: 'human',
+      classId: 'paladin',
+      subclassId: 'oath-devotion',
+      backgroundId: 'soldier',
+      level: 5,
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [10, 6, 6, 6, 6],
+    );
+    await pumpSheet(tester, paladin);
+
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SIEMPRE PREPARADOS'), findsOneWidget);
+    expect(find.text('Escudo de Fe'), findsOneWidget);
+    expect(find.text('Protección contra el Bien y el Mal'), findsOneWidget);
+    // Nivel 5 del juramento.
+    expect(find.text('Zona de la Verdad'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -185,5 +277,97 @@ void main() {
     expect(find.textContaining('Cortante'), findsWidgets);
     expect(find.textContaining('Slashing'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  group('Combate con dos armas desde la ficha', () {
+    Character dualWielder() => Character(
+      id: 'dual-sheet',
+      name: 'Ambidiestra',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      equippedWeaponIds: const ['dagger', 'shortsword'],
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [10],
+    );
+
+    testWidgets('marcar la mano secundaria cambia el ataque de la ficha', (
+      tester,
+    ) async {
+      await pumpSheet(tester, dualWielder());
+
+      // Antes de marcar nada, las dos armas suman el modificador al daño.
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d4 + 2'), findsOneWidget);
+      expect(find.text('Mano secundaria'), findsNothing);
+      expect(find.text('Acción adicional'), findsNothing);
+
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+      final offHand = find.byKey(const ValueKey('off-hand-dagger'));
+      await tester.ensureVisible(offHand);
+      await tester.pumpAndSettle();
+      await tester.tap(offHand);
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilterChip>(offHand).selected, isTrue);
+
+      // La ficha refleja la regla sin que la UI la calcule: el daño pierde el
+      // modificador y el ataque pasa a ser acción adicional.
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d4 + 2'), findsNothing);
+      expect(find.text('Mano secundaria'), findsOneWidget);
+      expect(find.text('Acción adicional'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el arma versátil por fin se puede empuñar a dos manos', (
+      tester,
+    ) async {
+      // El daño versátil estaba implementado en el motor desde siempre, pero
+      // no había ninguna UI que activara `weaponTwoHanded`.
+      final character = Character(
+        id: 'versatile-sheet',
+        name: 'Versátil',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        equippedWeaponIds: const ['longsword'],
+        assignedScores: {for (final ability in Ability.values) ability: 14},
+        hpPerLevel: const [10],
+      );
+      await pumpSheet(tester, character);
+
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d8 + 2'), findsOneWidget);
+
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+      final twoHanded = find.byKey(const ValueKey('two-handed-longsword'));
+      await tester.ensureVisible(twoHanded);
+      await tester.pumpAndSettle();
+      await tester.tap(twoHanded);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('1d10 + 2'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el arma no Ligera no ofrece mandarla a la secundaria', (
+      tester,
+    ) async {
+      await pumpSheet(tester, dualWielder());
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('off-hand-dagger')), findsOneWidget);
+      expect(find.byKey(const ValueKey('off-hand-longsword')), findsNothing);
+      // Y el aviso viejo de que la regla no se aplicaba sola ya no está.
+      expect(find.textContaining('todavía no se aplica'), findsNothing);
+    });
   });
 }

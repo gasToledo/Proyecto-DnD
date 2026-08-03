@@ -20,7 +20,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
 
   @override
   Widget build(BuildContext context) {
-    final feats = widget.repo.feats.values.toList();
+    final feats = widget.repo.featsSorted;
     return _FormScaffold(
       title: 'Trasfondo',
       onSave: _name.text.trim().isEmpty ? null : _save,

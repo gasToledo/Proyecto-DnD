@@ -24,13 +24,19 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
   subclases están además en el SRD 5.2.1), más la clase Artífice y sus 5
   subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
-  Artificer*), 24 linajes (8 SRD, 16 PHB 2024), 33 trasfondos, 110 dotes
-  (9 SRD, 73 PHB 2024, 28 FoA)
+  Artificer*), 24 linajes (8 SRD, 16 PHB 2024), 33 trasfondos, 183 dotes
+  (10 SRD, 145 PHB 2024, 28 FoA), 28 Invocaciones Sobrenaturales del Brujo
   y 392 conjuros (177 SRD, 214 PHB 2024, 1 FoA).
+
+  Las 183 dotes representan las 75 del capítulo 5: **una dote que deja elegir
+  el bono de característica se carga como una variante por opción**, todas con
+  el mismo `exclusiveGroup`, que es lo que impide tomar dos. Son 33 familias
+  así. Nombrarlas es el nombre del manual más la característica entre
+  paréntesis, y el id es el id base más la característica en inglés.
 - Creación guiada, subida de nivel con wizard multi-paso (resumen, puntos de
-  golpe, subclase, mejora de característica, rasgos, conjuros y repaso, cada
-  paso mostrado solo si aplica al nivel), combate, inventario, notas y
-  retratos IA.
+  golpe, subclase, mejora de característica, elecciones abiertas, rasgos,
+  conjuros y repaso, cada paso mostrado solo si aplica al nivel), combate,
+  inventario, notas y retratos IA.
 - Retratos IA con Pollinations, Azure AI Foundry (Flux) o Azure gpt-image-2
   como proveedor, además de importar un retrato desde archivo local.
 - Persistencia atómica, recuperación de archivos dañados y migraciones
@@ -41,15 +47,71 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
 
 Limitaciones vigentes: cada personaje usa una sola clase; no hay sincronización
 en la nube ni Modo DM. `docs/auditoria-reglas-2024.md` mantiene el detalle de
-pendientes mecánicos (Estilo de Combate de Paladín/Explorador a nivel 2,
-Invocaciones Sobrenaturales del Brujo, Agotamiento/Inspiración Heroica sin
-efecto mecánico, precio/peso de equipo, entre otros).
+pendientes mecánicos (Agotamiento/Inspiración Heroica sin efecto mecánico,
+compra de puntos, precio/peso de equipo, objetos mágicos y compañeros con
+estadísticas propias, entre otros).
 
-Se pueden equipar varias armas y la ficha lista un ataque por cada una, pero el
-motor todavía **no** aplica la regla 2024 de combate con dos armas (arma Ligera,
-ataque de mano secundaria como acción adicional, sin modificador al daño salvo
-con el estilo de combate correspondiente, maestría Nick). La UI lo avisa; si se
-implementa, va junto con los estilos de combate pendientes.
+## Elecciones abiertas
+
+Estilo de Combate e Invocaciones Sobrenaturales son el mismo problema —"elegí N
+opciones de un catálogo, con prerrequisitos, revisable al subir de nivel"— y los
+resuelve un solo mecanismo.
+
+El catálogo de opciones **son `Feat`s**, discriminadas por `category`: ya traen
+efectos, `exclusiveGroup` y prerrequisitos que el validador sabe evaluar. La
+declaración es `FeatureChoiceEffect`, un **marcador** (como `GrantFeatEffect`
+sin `featId`) que vive dentro de un rasgo de clase y por eso hereda el nivel de
+`featuresUpTo`. `count` es el total **acumulado** a ese nivel, no el incremento:
+gana el mayor, igual que `ResourceEffect` y `WeaponMasterySlotsEffect`.
+
+`ComputedSheet.featureChoiceSlots` es el contrato con la aplicación: la UI
+pregunta a la ficha compilada qué falta elegir y **nunca** recorre
+`klass.features` por su cuenta. Las elecciones se guardan en
+`Character.featureChoices` (grupo → ids).
+
+Agregar un catálogo nuevo es agregar dotes con su categoría: ni el motor ni la
+aplicación llevan lista de ids, y `feature_choice_test.dart` lo prueba con
+contenido inventado.
+
+El motor aplica la regla 2024 de combate con dos armas. La mano secundaria se
+marca por arma (`Character.weaponOffHand`), no se infiere del orden de equipado:
+cambia el daño y la economía de acciones, así que adivinarla daría una ficha
+distinta sin que el jugador lo pida. El ataque de esa mano pierde el modificador
+al daño **solo si es positivo** —uno negativo se sigue restando— y lo recupera
+con el estilo Combate con Dos Armas, que el compilador lee como
+`OffHandAbilityDamageEffect` en vez de preguntar por el id de la dote. `Attack`
+expone `offHand` y `action` ya resueltos para que la ficha no recalcule nada.
+
+`nick` es la única maestría con efecto mecánico: mete ese ataque dentro de la
+acción de Atacar. El resto del glosario sigue siendo descriptivo.
+
+## Conjuros que concede un rasgo
+
+Son **dos** efectos distintos y no hay que confundirlos:
+
+- `GrantSpellEffect` → conjuro **innato**. Se lanza sin gastar espacio, con CD
+  y bonificador propios y un límite de usos propio. Sale en
+  `ComputedSheet.innateSpells`.
+- `AlwaysPreparedSpellEffect` → conjuro **siempre preparado**. Se lanza con los
+  espacios normales de la clase, como cualquier preparado; lo único que lo
+  distingue es que no ocupa cupo de `preparedCount` y no se puede desmarcar.
+  Sale en `ComputedSheet.alwaysPreparedSpellIds`.
+
+Las dos listas se unen en un solo lugar: lo que un rasgo ya concede no se puede
+volver a elegir con la magia de clase. La selección los oculta y una ficha vieja
+que los traiga elegidos se poda al abrir el editor, para devolver el cupo en vez
+de dejarlos atrapados sin chip que los saque.
+
+Las tablas de conjuros de subclase se declaran **como un rasgo por nivel** bajo
+el mismo nombre ("Conjuros de Alquimista" a 3, 5, 9, 13 y 17). Así heredan el
+nivel de `featuresUpTo` sin campo extra. Es la única excepción permitida a la
+regla de que una subclase no repite nombre de rasgo, y el test que la vigila la
+acota a los rasgos cuyos efectos son *solo* esa tabla.
+
+Los tramos los fija la progresión: lanzador completo 3/5/7/9, semi-lanzador
+3/5/9/13/17. Las tienen 24 subclases. Que un conjuro sea **truco** en la tabla
+es legítimo —el Patrón Celestial concede Llama Sagrada y Luz— y tampoco ocupa
+cupo de trucos de clase.
 
 ## Comandos
 
@@ -104,6 +166,10 @@ la ficha por su cuenta.
   en la UI. `ImmunityEffect` también se usa hoy para inmunidad a **estados**
   (el Artífice es inmune a `poisoned`), así que `labelFor` los cubre y cae al
   id capitalizado ante cualquier otra cosa, para tolerar homebrew.
+- `domain/proficiency_labels.dart`: lo mismo para entrenamiento con armadura,
+  categorías de arma y las 25 herramientas del capítulo 6. Un test recorre el
+  contenido oficial y falla si alguna competencia cae en la degradación al id
+  capitalizado, que es la red para el homebrew, no para el catálogo.
 - `data/content_repository.dart`: reúne el contenido oficial y homebrew.
 - `engine/character_compiler.dart`: combina un `Character` con el repositorio y
   produce una `ComputedSheet` inmutable.

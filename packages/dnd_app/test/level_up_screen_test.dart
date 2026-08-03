@@ -34,6 +34,11 @@ void main() {
       Ability.charisma: 8,
     },
     hpPerLevel: [10, 6, 6],
+    // El Guerrero elige su Estilo de Combate a nivel 1: sin esto el asistente
+    // lo trata (con razón) como una elección pendiente y agrega un paso.
+    featureChoices: const {
+      'fighting-style': ['fs-defense'],
+    },
   );
 
   Future<void> goToAsi(WidgetTester tester) async {
@@ -184,6 +189,9 @@ void main() {
         Ability.charisma: 8,
       },
       hpPerLevel: [10, 6, 6, 6, 6],
+      featureChoices: const {
+        'fighting-style': ['fs-defense'],
+      },
       // Ya tomó esta dote general en un nivel de ASI anterior.
       featIds: const ['great-weapon-master'],
       asiChoices: const [AsiChoice(level: 4, featId: 'great-weapon-master')],
@@ -201,11 +209,11 @@ void main() {
     await goToAsi(tester);
     await tester.tap(find.text('Tomar dote'));
     await tester.pumpAndSettle();
-    await searchFeat(tester, 'Maestro de Armas Grandes');
+    await searchFeat(tester, 'Maestro en Armas Pesadas');
 
     // La dote ya tomada no debe ofrecerse de nuevo (no es repetible).
     expect(
-      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro en Armas Pesadas'),
       findsNothing,
     );
   });
@@ -231,6 +239,9 @@ void main() {
           Ability.charisma: 8,
         },
         hpPerLevel: [10, 6, 6, 6, 6],
+        featureChoices: const {
+          'fighting-style': ['fs-defense'],
+        },
         featIds: featIds,
       );
 
@@ -250,17 +261,17 @@ void main() {
   testWidgets('no ofrece una dote cuya característica mínima no se cumple', (
     tester,
   ) async {
-    // Maestro de Armas Grandes exige Fuerza 13.
+    // Maestro en Armas Pesadas exige Fuerza 13.
     await openFeatPicker(tester, fighterL5(strength: 8));
-    await searchFeat(tester, 'Maestro de Armas Grandes');
+    await searchFeat(tester, 'Maestro en Armas Pesadas');
 
     expect(
-      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro en Armas Pesadas'),
       findsNothing,
     );
     // Pero el selector no queda vacío: Cocinero no pide característica.
-    await searchFeat(tester, 'Cocinero');
-    expect(find.widgetWithText(InkWell, 'Cocinero'), findsOneWidget);
+    await searchFeat(tester, 'Chef (Sabiduría)');
+    expect(find.widgetWithText(InkWell, 'Chef (Sabiduría)'), findsOneWidget);
   });
 
   testWidgets('no ofrece una marca mayor sin la marca base', (tester) async {
@@ -319,10 +330,10 @@ void main() {
     // a 4 debe verlas: comprobar contra el nivel viejo vaciaría el selector
     // justo en el ASI más común.
     await openFeatPicker(tester, fighterL3());
-    await searchFeat(tester, 'Maestro de Armas Grandes');
+    await searchFeat(tester, 'Maestro en Armas Pesadas');
 
     expect(
-      find.widgetWithText(InkWell, 'Maestro de Armas Grandes'),
+      find.widgetWithText(InkWell, 'Maestro en Armas Pesadas'),
       findsOneWidget,
     );
   });
@@ -349,16 +360,16 @@ void main() {
     // Sin dote elegida, se explica qué hacer para ver la descripción.
     expect(find.text('Elegí una dote'), findsOneWidget);
 
-    // Cocinero y no Actor: Actor exige Carisma 13 y este guerrero tiene 8, así
+    // Chef y no Actor: Actor exige Carisma 13 y este guerrero tiene 8, así
     // que desde que el selector respeta los prerrequisitos no se ofrece.
-    await searchFeat(tester, 'Cocinero');
-    final chip = find.widgetWithText(InkWell, 'Cocinero');
+    await searchFeat(tester, 'Chef (Sabiduría)');
+    final chip = find.widgetWithText(InkWell, 'Chef (Sabiduría)');
     await tester.ensureVisible(chip);
     await tester.tap(chip);
     await tester.pumpAndSettle();
 
     // El texto sale de los rasgos pasivos de la dote, no de un literal.
-    final esperado = featSummary(repo.feat('chef')!);
+    final esperado = featSummary(repo.feat('chef-wisdom')!);
     expect(esperado, isNotEmpty);
     // La tarjeta y el panel de detalle comparten el resumen.
     expect(find.text(esperado), findsWidgets);
@@ -409,4 +420,152 @@ void main() {
       findsNothing,
     );
   });
+
+  // --- Elecciones abiertas: Estilo de Combate de Paladín/Explorador --------
+
+  Character paladin({
+    int level = 1,
+    Map<String, List<String>> choices = const {},
+  }) => Character(
+    id: 't-paladin',
+    name: 'Prueba',
+    raceId: 'human',
+    classId: 'paladin',
+    backgroundId: 'soldier',
+    level: level,
+    assignedScores: {
+      Ability.strength: 16,
+      Ability.dexterity: 12,
+      Ability.constitution: 14,
+      Ability.intelligence: 10,
+      Ability.wisdom: 10,
+      Ability.charisma: 14,
+    },
+    hpPerLevel: List.filled(level, 10),
+    featureChoices: choices,
+  );
+
+  Future<void> pumpLevelUp(
+    WidgetTester tester,
+    Character c, {
+    void Function(Character)? onDone,
+  }) async {
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: c, repo: repo, onDone: onDone ?? (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('un Paladín de 1 a 2 tiene que elegir su Estilo de Combate', (
+    tester,
+  ) async {
+    Character? saved;
+    await pumpLevelUp(tester, paladin(), onDone: (c) => saved = c);
+
+    expect(find.text('Elecciones'), findsWidgets);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tus elecciones de este nivel'), findsOneWidget);
+    // Bloquea hasta elegir, y dice por qué.
+    expect(find.text('Te falta una elección para continuar.'), findsOneWidget);
+
+    final chip = find.widgetWithText(InkWell, 'Defensa');
+    await tester.ensureVisible(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(find.text('Te falta una elección para continuar.'), findsNothing);
+
+    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 2'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.featureChoices['fighting-style'], ['fs-defense']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('un Guerrero que ya eligió no vuelve a ver el paso', (
+    tester,
+  ) async {
+    // Su estilo no es revisable, así que subir a 4 no vuelve a preguntárselo.
+    await pumpLevelUp(tester, fighterL3());
+
+    expect(find.text('Elecciones'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('un Brujo de 1 a 2 gana dos invocaciones y puede cambiarlas', (
+    tester,
+  ) async {
+    // A nivel 1 conoce 1 invocación y a nivel 2 pasa a 3: el paso tiene que
+    // pedir las dos que faltan.
+    Character? saved;
+    final brujo = Character(
+      id: 't-warlock',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: 'warlock',
+      backgroundId: 'sage',
+      level: 1,
+      assignedScores: {for (final a in Ability.values) a: 12},
+      hpPerLevel: const [8],
+      featureChoices: const {
+        'warlock-invocation': ['pact-of-the-tome'],
+      },
+    );
+    await pumpLevelUp(tester, brujo, onDone: (c) => saved = c);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tus elecciones de este nivel'), findsOneWidget);
+    expect(find.text('INVOCACIONES SOBRENATURALES (1/3)'), findsOneWidget);
+    expect(find.text('Te faltan 2 elecciones para continuar.'), findsOneWidget);
+
+    for (final nombre in ['Pacto de la Cadena', 'Pacto del Filo']) {
+      final chip = find.widgetWithText(InkWell, nombre);
+      await tester.ensureVisible(chip);
+      await tester.pumpAndSettle();
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('INVOCACIONES SOBRENATURALES (3/3)'), findsOneWidget);
+
+    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 2'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.featureChoices['warlock-invocation'], hasLength(3));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'un Paladín legado de nivel alto recupera la elección pendiente',
+    (tester) async {
+      // Guardado antes de que la clase concediera el estilo: nunca eligió. El
+      // asistente se lo pide en la próxima subida en vez de dejarlo incompleto.
+      await pumpLevelUp(tester, paladin(level: 7));
+
+      expect(find.text('Elecciones'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

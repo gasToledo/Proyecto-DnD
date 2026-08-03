@@ -198,6 +198,10 @@ class _SplitSelect extends StatelessWidget {
   }
 }
 
+/// Llave de la columna de opciones del modo dividido (especie, clase,
+/// trasfondo). Solo la usan las pruebas, para scrollear la lista correcta.
+const optionColumnKey = Key('option-column');
+
 /// Las opciones apiladas una por fila, con scroll propio.
 class _OptionColumn extends StatefulWidget {
   final List<Widget> options;
@@ -234,6 +238,10 @@ class _OptionColumnState extends State<_OptionColumn> {
         controller: _scroll,
         thumbVisibility: true,
         child: ListView(
+          // La lista es perezosa: una opción del medio no está construida hasta
+          // que se scrollea. La llave le da a las pruebas un asidero estable
+          // para scrollear **esta** lista, y no la del paso o la del detalle.
+          key: optionColumnKey,
           controller: _scroll,
           primary: false,
           shrinkWrap: true,

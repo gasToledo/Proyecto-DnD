@@ -16,7 +16,7 @@ void main() {
   test('un draft con las elecciones de Sagan compila correctamente', () {
     final d = CreationDraft(repo)
       ..classId = 'fighter'
-      ..fightingStyleId = 'fs-defense'
+      ..featureChoices['fighting-style'] = ['fs-defense']
       ..weaponMasteries.addAll(['longsword', 'greatsword', 'dagger'])
       ..raceId = 'human'
       ..raceFeatId = 'skilled'
@@ -258,7 +258,7 @@ void main() {
 
   /// Completa el paso de Clase (Guerrero: estilo de combate + 3 maestrías).
   void completeClase(CreationDraft d) {
-    d.fightingStyleId = 'fs-defense';
+    d.featureChoices['fighting-style'] = ['fs-defense'];
     d.weaponMasteries.addAll(
       d.proficientWeapons.take(d.weaponMasterySlots).map((w) => w.id),
     );
@@ -334,6 +334,39 @@ void main() {
       expect(d.pendingFor(CreationStep.clase), isNotEmpty);
       completeClase(d);
       expect(d.pendingFor(CreationStep.clase), isEmpty);
+    });
+
+    test('Clase (Brujo) exige la invocación de nivel 1', () {
+      // El mismo gating genérico, sin nombrar el grupo: el Brujo elige una
+      // invocación a nivel 1 igual que el Guerrero elige estilo.
+      final d = newDraft()..classId = 'warlock';
+
+      final slot = d.featureChoiceSlots.single;
+      expect(slot.groupId, 'warlock-invocation');
+      expect(slot.count, 1);
+      expect(d.pendingFor(CreationStep.clase), isNotEmpty);
+
+      d.featureChoices['warlock-invocation'] = ['pact-of-the-tome'];
+      expect(d.pendingFor(CreationStep.clase), isEmpty);
+
+      // Y la elección llega al personaje construido.
+      expect(d.build().featureChoices['warlock-invocation'], [
+        'pact-of-the-tome',
+      ]);
+    });
+
+    test('cambiar de clase suelta las elecciones de la anterior', () {
+      final d = newDraft();
+      completeClase(d);
+      expect(d.featureChoices, isNotEmpty);
+
+      // Lo hace la UI al tocar otra clase; acá se comprueba el efecto sobre el
+      // gating: un Brujo no arrastra el estilo de combate del Guerrero.
+      d
+        ..classId = 'warlock'
+        ..featureChoices.clear();
+      expect(d.featureChoiceSlots.single.groupId, 'warlock-invocation');
+      expect(d.pendingFor(CreationStep.clase), isNotEmpty);
     });
 
     test('Aptitudes exige las habilidades y la dote de origen', () {

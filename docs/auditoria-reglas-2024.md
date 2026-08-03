@@ -411,6 +411,79 @@ Ordenados por costo, del más barato al más caro:
     Ninguno de los dos es difícil por separado; los dos juntos son un cambio
     más grande que este, y por eso quedan acá y no se resolvieron a medias.
 
+13. **Barrido de rasgos que prometen una mecánica y no la aplican** — el mismo
+    defecto del punto 12, buscado en todo el catálogo en vez de una familia por
+    vez. Salió de una pregunta del usuario: por qué un Mago con trasfondo
+    Acólito ve "Iniciado en la Magia (Clérigo)" sin haberla elegido. **Eso no
+    era un defecto** —el trasfondo concede una dote de origen fija y la de
+    Acólito es esa— pero al verificarlo apareció que la dote **no concede sus
+    conjuros**: es solo texto.
+
+    Método: cruzar el texto de los 645 rasgos pasivos del catálogo contra los
+    efectos que declara cada uno, buscando el caso "el texto promete algo que
+    el motor sabe expresar y el efecto no está". Dio **41 candidatos**, todos
+    revisados a mano. Es una heurística sobre prosa: sirve para no depender de
+    leer 645 rasgos de corrido, no para dictar veredictos.
+
+    **Sin ningún bloqueo — falta solo el dato** → **corregidos en esta tanda**,
+    los cuatro con test de regresión:
+
+    - **Velocidad del Mensajero** (`mark-of-passage`): "tu velocidad aumenta 5
+      pies", sin condición → `SpeedBonusEffect`.
+    - **Don de la Tormenta** (`mark-of-storm`): "resistencia al daño de
+      relámpago", sin condición → `ResistanceEffect`.
+    - **Errante** (Explorador, nivel 6): "+10 pies si no llevás armadura
+      pesada". El **Bárbaro ya tenía esa misma regla aplicada** en Movimiento
+      Rápido (nivel 5) con `UnarmoredMovementEffect(10, heavyArmorOnly: true,
+      allowShield: true)`: mismo efecto, mismos números, misma condición. Al
+      Explorador le faltaba la línea, y el test lo comprueba igual que al
+      Bárbaro —media armadura y escudo lo conservan, la pesada lo anula—.
+    - **Don Feérico** del Khoravar → `GrantSpellEffect` de Amistad. Entró sin
+      mecanismo nuevo porque el truco es **concreto**, no a elección. La
+      aptitud del JSON es solo el valor por defecto: el compilador la
+      reemplaza por `speciesSpellcastingAbility`, igual que con el Tiefling,
+      así que la elección del jugador ya funciona. Queda pendiente lo único
+      que sí es una elección, cambiar el truco tras un descanso largo, que es
+      la misma deuda del Alto Elfo.
+
+    Las dos primeras son de las marcas que acaba de tocar el punto 12: se
+    cargaron las tablas de conjuros y quedaron sin aplicar los beneficios
+    pasivos de la misma dote. Vale como advertencia de método: cargar la parte
+    grande de un rasgo no garantiza haber mirado el resto.
+
+    **Bloqueados por elegir un conjuro dentro de una dote:**
+
+    - **Iniciado en la Magia** en sus tres listas (Mago, Druida, Clérigo).
+      Pesa más que el resto porque **Acólito, Erudito y Guía la conceden a
+      nivel 1**, así que afecta a cualquier personaje con esos trasfondos.
+    - **Magia Aberrante** (`aberrant-dragonmark`), con una diferencia útil: su
+      aptitud es **Constitución fija**, así que le falta solo la elección de
+      conjuro y no la de característica.
+    - **Preparación de la Marca** (`potent-dragonmark`) no se resuelve con
+      dato: "siempre preparados los conjuros de tu lista de Conjuros de la
+      Marca" depende de qué marca tenga el personaje, así que necesita leer
+      otra dote en tiempo de compilación.
+
+    **Bloqueados por elegir una competencia**, que no existe fuera del
+    `skillChoiceCount` de especie y clase: Habilidoso (3 a elección), Mente
+    Aguda (1 de 5, o pericia) y Conocimiento Primigenio del Bárbaro (nivel 3).
+    En Forjado y Khoravar la habilidad **sí** está cubierta y lo que falta es
+    la **herramienta**, que es el punto 11.
+
+    **Lo que el barrido descartó**, y conviene dejar anotado para no volver a
+    levantarlo: los rasgos **condicionales o temporales** (Filo Sediento solo
+    con el arma de pacto, Forma Grande del Goliat, los del Gloom Stalker en el
+    primer turno), las **auras** que alcanzan a los aliados (Aura de Coraje,
+    de Entrega, de Salvaguarda), los **compañeros** (Defensor de Acero, el
+    familiar del Amo de las Cadenas), que son el punto 9, y los rasgos donde
+    otro efecto del mismo bloque ya aplica la regla —el Legado Diabólico del
+    Tiefling la aplica desde el linaje, y las seis especies que "eligen una
+    habilidad" lo hacen con `skillChoiceCount`—.
+
+    También descartó dos **falsos positivos de la búsqueda**: Maestro en Armas
+    Pesadas y Maestro en Armas de Asta dicen "ataque adicional" pero se
+    refieren a un ataque de acción adicional, no al rasgo Ataque Adicional.
+
 ## Auditoría de contenido Eberron (RftLW + FoA) — 2026-08-03
 
 Origen: se agregaron `docs/Eberron_ Rising from the Last War.md` (2019, reglas

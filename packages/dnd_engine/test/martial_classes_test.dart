@@ -104,6 +104,31 @@ void main() {
     });
   });
 
+  group('Explorador', () {
+    test('Errante (nivel 6) se comporta como el Movimiento Rápido del Bárbaro',
+        () {
+      // Es la misma regla del manual con los mismos números, y la tenía el
+      // Bárbaro y no el Explorador: el rasgo estaba cargado solo como texto.
+      Character ranger({String? armorId, bool shield = false}) => _char(
+          classId: 'ranger',
+          level: 6,
+          hp: [10, 6, 6, 6, 6, 6],
+          armorId: armorId,
+          shield: shield);
+
+      expect(compiler.compile(ranger()).speed, 40); // 30 + 10
+      // Media y escudo lo conservan; solo la pesada lo anula.
+      expect(compiler.compile(ranger(armorId: 'chain-shirt')).speed, 40);
+      expect(compiler.compile(ranger(shield: true)).speed, 40);
+      expect(compiler.compile(ranger(armorId: 'chain-mail')).speed, 30);
+    });
+
+    test('antes del nivel 6 no hay bono de velocidad', () {
+      final l5 = _char(classId: 'ranger', level: 5, hp: [10, 6, 6, 6, 6]);
+      expect(compiler.compile(l5).speed, 30);
+    });
+  });
+
   group('Pícaro', () {
     test('competente con estoque (marcial sutil) pero no con mandoble', () {
       final s = compiler.compile(_char(classId: 'rogue', level: 1, hp: [8]));

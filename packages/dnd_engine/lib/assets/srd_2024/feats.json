@@ -2648,6 +2648,7 @@
         "name": "Velocidad del Mensajero",
         "description": "Tu velocidad aumenta 5 pies."
       },
+      { "type": "speedBonus", "feet": 5 },
       {
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",
@@ -2790,6 +2791,7 @@
         "name": "Don de la Tormenta",
         "description": "Tenés resistencia al daño de relámpago."
       },
+      { "type": "resistance", "damageType": "lightning" },
       {
         "type": "passiveTrait",
         "name": "Conjuros de la Marca",

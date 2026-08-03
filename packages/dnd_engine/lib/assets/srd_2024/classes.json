@@ -1672,6 +1672,7 @@
         "name": "Errante",
         "description": "Sin armadura pesada tu velocidad sube 10 pies, y ganás velocidad nadando y trepando.",
         "effects": [
+          { "type": "unarmoredMovement", "feet": 10, "allowShield": true, "heavyArmorOnly": true },
           { "type": "passiveTrait", "name": "Errante", "description": "Si no llevás armadura pesada, tu velocidad aumenta en 10 pies. Además tenés velocidad nadando y trepando iguales a tu velocidad." }
         ]
       },

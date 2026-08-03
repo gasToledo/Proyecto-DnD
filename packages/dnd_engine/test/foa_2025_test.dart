@@ -210,6 +210,25 @@ void main() {
       // El manual está en pies, no en metros: la casa lo mantiene así.
       expect(texto('mark-of-passage', 'Velocidad del Mensajero'),
           contains('5 pies'));
+
+      // Y lo aplican, que es lo que el texto solo no hace: las dos tablas de
+      // conjuros se cargaron y estos dos pasivos habían quedado sin efecto.
+      expect(
+        feat('mark-of-storm')
+            .effects
+            .whereType<ResistanceEffect>()
+            .single
+            .damageType,
+        'lightning',
+      );
+      expect(
+        feat('mark-of-passage')
+            .effects
+            .whereType<SpeedBonusEffect>()
+            .single
+            .feet,
+        5,
+      );
     });
   });
 
@@ -332,6 +351,31 @@ void main() {
         expect(race(id).effects.whereType<DarkvisionEffect>(), isEmpty,
             reason: id);
       }
+    });
+
+    test('el Don Feérico del Khoravar concede Amistad de verdad', () {
+      // El truco es concreto, no a elección, así que no hacía falta ningún
+      // mecanismo nuevo: había quedado como texto por descuido.
+      final don = race('khoravar').effects.whereType<GrantSpellEffect>().single;
+      expect(don.spellId, 'friends');
+      expect(repo.spell(don.spellId)!.isCantrip, isTrue);
+
+      // La aptitud del JSON es solo el valor por defecto: el compilador la
+      // reemplaza por la que el jugador eligió para la especie, igual que en
+      // el Tiefling.
+      final c = Character(
+        id: 'k',
+        name: 'Khoravar',
+        raceId: 'khoravar',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        speciesSpellcastingAbility: Ability.wisdom,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: const [10],
+      );
+      final innato = CharacterCompiler(repo).compile(c).innateSpells.single;
+      expect(innato.spellId, 'friends');
+      expect(innato.ability, Ability.wisdom);
     });
 
     test('Cambiante elige entre las cuatro habilidades bestiales', () {

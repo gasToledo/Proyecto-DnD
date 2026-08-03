@@ -271,13 +271,36 @@ Ordenados por costo, del más barato al más caro:
    Arcano del Artífice, cargados en Q5, van como texto descriptivo por esto
    mismo; sistematizarlo alcanzaría también a las invocaciones del Druida y del
    Explorador.
-10. **Conjuros siempre preparados fuera del Artífice**: el efecto ya existe
-    (`AlwaysPreparedSpellEffect`) y las 5 subclases del Artífice lo usan, pero
-    las demás tablas del catálogo siguen como texto en la descripción del
-    rasgo: los 4 juramentos del Paladín, el Círculo de la Tierra, las dos
-    estirpes de Hechicero que las tienen y el Abjurador. Cargarlas es puro
-    dato —ni el motor ni la app llevan lista de ids—, lo que cuesta es
-    transcribir y verificar cada fila contra el PHB.
+10. ~~**Conjuros siempre preparados fuera del Artífice**~~ — **resuelto**. Las
+    19 subclases del PHB 2024 que tienen tabla la tienen cargada: 4 patrones de
+    Brujo, 4 dominios de Clérigo, 2 círculos de Druida, 2 subclases de
+    Explorador, 3 estirpes de Hechicero y los 4 juramentos de Paladín. Con las
+    5 del Artífice son **24 subclases y 232 conjuros**.
+
+    Se resolvió con un extractor sobre `pdftotext -raw` en vez de a mano. La
+    columna de nivel no es de fiar —el OCR lee el 9 como `e)`, `ol` o `)`—
+    pero el orden de las filas sí, y los tramos son fijos por progresión
+    (completo 3/5/7/9, semi 3/5/9/13/17), así que los niveles se asignan por
+    posición. Los nombres se resuelven contra `spells.json` y lo que no
+    empareja se lee del PDF: la tabla del Errante Feérico quedó como
+    excepción escrita a mano porque una ilustración le parte el orden de
+    lectura.
+
+    **La comprobación que valida la transcripción no es contar conjuros**, sino
+    que cada uno entre en los espacios de su clase a ese nivel: un conjuro
+    corrido de fila casi siempre rompe esa condición. Los 232 la pasan. Hay un
+    test que la vigila, junto con los tramos y que ninguna subclase repita
+    conjuro.
+
+    Dos correcciones de contenido salieron de la carga: `aberrant-sorcery` y
+    `clockwork-sorcery` traían la tabla pegada a otro rasgo en un solo nombre
+    ("Conjuros Psiónicos / Habla Telepática"), y se separaron. Ojo con el
+    Patrón Primigenio: su rasgo *Conjuros Psíquicos* es un rasgo de verdad
+    —cambia el tipo de daño a psíquico—, no una tabla; la tabla es *Conjuros
+    del Primigenio*.
+
+    Queda fuera el **Círculo de la Tierra**, que tiene cuatro tablas según el
+    terreno elegido; esa elección no existe en el motor y sigue como texto.
 11. **Elección de herramientas**: ningún rasgo que diga "una a tu elección"
     deja elegir. El Artífice recibe `artisans-tools`, la misma entrada
     genérica que ya usan los trasfondos, y las cláusulas condicionales de sus

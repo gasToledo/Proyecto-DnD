@@ -223,6 +223,35 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('un Paladín de Entrega ve sus Conjuros de Juramento', (
+    tester,
+  ) async {
+    // El caso que más gente juega de las 19 subclases del PHB que ganaron su
+    // tabla: hasta ahora los dos conjuros de nivel 3 eran texto en el rasgo.
+    final paladin = Character(
+      id: 'paladin-sheet',
+      name: 'Aurelia',
+      raceId: 'human',
+      classId: 'paladin',
+      subclassId: 'oath-devotion',
+      backgroundId: 'soldier',
+      level: 5,
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [10, 6, 6, 6, 6],
+    );
+    await pumpSheet(tester, paladin);
+
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SIEMPRE PREPARADOS'), findsOneWidget);
+    expect(find.text('Escudo de Fe'), findsOneWidget);
+    expect(find.text('Protección contra el Bien y el Mal'), findsOneWidget);
+    // Nivel 5 del juramento.
+    expect(find.text('Zona de la Verdad'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('resistencias y daño se muestran en español', (tester) async {
     // Un Dracónido rojo: la resistencia sale de su linaje dracónico y antes
     // se imprimía con la clave interna en inglés ("Fire").

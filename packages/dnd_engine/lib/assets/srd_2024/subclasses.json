@@ -578,6 +578,44 @@
         ]
       },
       {
+        "level": 3,
+        "name": "Conjuros del Dominio de la Vida",
+        "description": "Tenés Auxilio, Bendición, Curar Heridas y Restablecimiento Menor siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "aid" },
+          { "type": "alwaysPreparedSpell", "spellId": "bless" },
+          { "type": "alwaysPreparedSpell", "spellId": "cure-wounds" },
+          { "type": "alwaysPreparedSpell", "spellId": "lesser-restoration" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Dominio de la Vida",
+        "description": "Tenés Palabra de Curación en Masa y Revivir siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "mass-healing-word" },
+          { "type": "alwaysPreparedSpell", "spellId": "revivify" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Dominio de la Vida",
+        "description": "Tenés Aura de Vida y Guarda contra la Muerte siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "aura-of-life" },
+          { "type": "alwaysPreparedSpell", "spellId": "death-ward" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Dominio de la Vida",
+        "description": "Tenés Curar Heridas en Masa y Restablecimiento Mayor siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "mass-cure-wounds" },
+          { "type": "alwaysPreparedSpell", "spellId": "greater-restoration" }
+        ]
+      },
+      {
         "level": 6,
         "name": "Sanador Bendito",
         "description": "Cuando curas a otra criatura con un conjuro, también recuperas puntos de golpe.",
@@ -619,6 +657,44 @@
         ]
       },
       {
+        "level": 3,
+        "name": "Conjuros del Dominio de la Luz",
+        "description": "Tenés Fuego Feérico, Manos Ardientes, Rayo Abrasador y Ver Invisibilidad siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "faerie-fire" },
+          { "type": "alwaysPreparedSpell", "spellId": "burning-hands" },
+          { "type": "alwaysPreparedSpell", "spellId": "scorching-ray" },
+          { "type": "alwaysPreparedSpell", "spellId": "see-invisibility" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Dominio de la Luz",
+        "description": "Tenés Bola de Fuego y Luz del Día siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fireball" },
+          { "type": "alwaysPreparedSpell", "spellId": "daylight" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Dominio de la Luz",
+        "description": "Tenés Muro de Fuego y Ojo Arcano siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "wall-of-fire" },
+          { "type": "alwaysPreparedSpell", "spellId": "arcane-eye" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Dominio de la Luz",
+        "description": "Tenés Escudriñar y Golpe Flamígero siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "scrying" },
+          { "type": "alwaysPreparedSpell", "spellId": "flame-strike" }
+        ]
+      },
+      {
         "level": 6,
         "name": "Fulgor Protector Mejorado",
         "description": "Puedes usar Destello Protector para proteger también a otras criaturas cercanas.",
@@ -657,6 +733,44 @@
         "description": "Gastas Canalizar Divinidad para crear una ilusión perfecta de ti mismo que puedes mover y usar para engañar.",
         "effects": [
           { "type": "passiveTrait", "name": "Invocar Duplicidad", "description": "Creas una duplicación ilusoria móvil; te da ventaja al atacar cerca de ella." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros del Dominio del Engaño",
+        "description": "Tenés Disfrazarse, Hechizar Persona, Invisibilidad y Pasar sin Rastro siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "disguise-self" },
+          { "type": "alwaysPreparedSpell", "spellId": "charm-person" },
+          { "type": "alwaysPreparedSpell", "spellId": "invisibility" },
+          { "type": "alwaysPreparedSpell", "spellId": "pass-without-trace" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Dominio del Engaño",
+        "description": "Tenés Indetectable y Patrón Hipnótico siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "nondetection" },
+          { "type": "alwaysPreparedSpell", "spellId": "hypnotic-pattern" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Dominio del Engaño",
+        "description": "Tenés Confusión y Puerta Dimensional siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "confusion" },
+          { "type": "alwaysPreparedSpell", "spellId": "dimension-door" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Dominio del Engaño",
+        "description": "Tenés Alterar los Recuerdos y Dominar Persona siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "modify-memory" },
+          { "type": "alwaysPreparedSpell", "spellId": "dominate-person" }
         ]
       },
       {
@@ -707,6 +821,44 @@
         "description": "Gastas Canalizar Divinidad para sumar +10 a una tirada de ataque tuya.",
         "effects": [
           { "type": "passiveTrait", "name": "Golpe Guiado", "description": "+10 a una tirada de ataque gastando Canalizar Divinidad." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros del Dominio de la Guerra",
+        "description": "Tenés Arma Espiritual, Arma Mágica, Escudo de Fe y Saeta Guía siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "spiritual-weapon" },
+          { "type": "alwaysPreparedSpell", "spellId": "magic-weapon" },
+          { "type": "alwaysPreparedSpell", "spellId": "shield-of-faith" },
+          { "type": "alwaysPreparedSpell", "spellId": "guiding-bolt" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Dominio de la Guerra",
+        "description": "Tenés Espíritus Guardianes y Manto del Cruzado siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "spirit-guardians" },
+          { "type": "alwaysPreparedSpell", "spellId": "crusaders-mantle" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Dominio de la Guerra",
+        "description": "Tenés Escudo de Fuego y Libertad de Movimiento siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fire-shield" },
+          { "type": "alwaysPreparedSpell", "spellId": "freedom-of-movement" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Dominio de la Guerra",
+        "description": "Tenés Golpe de Viento Acerado y Inmovilizar Monstruo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "steel-wind-strike" },
+          { "type": "alwaysPreparedSpell", "spellId": "hold-monster" }
         ]
       },
       {
@@ -793,6 +945,40 @@
         ]
       },
       {
+        "level": 3,
+        "name": "Conjuros del Círculo de la Luna",
+        "description": "Tenés Curar Heridas, Rayo de Luna y Voluta Estelar siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "cure-wounds" },
+          { "type": "alwaysPreparedSpell", "spellId": "moonbeam" },
+          { "type": "alwaysPreparedSpell", "spellId": "starry-wisp" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Círculo de la Luna",
+        "description": "Tenés Conjurar Animales siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "conjure-animals" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Círculo de la Luna",
+        "description": "Tenés Fuente de Luz Lunar siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fount-of-moonlight" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Círculo de la Luna",
+        "description": "Tenés Curar Heridas en Masa siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "mass-cure-wounds" }
+        ]
+      },
+      {
         "level": 6,
         "name": "Formas de Círculo Mejoradas",
         "description": "Tus ataques en Forma Salvaje cuentan como mágicos y puedes reforzar tu CA con Sabiduría.",
@@ -831,6 +1017,45 @@
         "description": "Gastas Forma Salvaje para invocar un aura tormentosa que empuja y daña a los enemigos que la tocan.",
         "effects": [
           { "type": "passiveTrait", "name": "Ira de los Mares", "description": "Aura de tormenta: daño frío/relámpago y empuje a enemigos cercanos." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros del Círculo del Mar",
+        "description": "Tenés Hacer Añicos, Nube de Oscurecimiento, Ola Atronadora, Ráfaga de Viento y Rayo de Escarcha siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "shatter" },
+          { "type": "alwaysPreparedSpell", "spellId": "fog-cloud" },
+          { "type": "alwaysPreparedSpell", "spellId": "thunderwave" },
+          { "type": "alwaysPreparedSpell", "spellId": "gust-of-wind" },
+          { "type": "alwaysPreparedSpell", "spellId": "ray-of-frost" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Círculo del Mar",
+        "description": "Tenés Relámpago y Respirar bajo el Agua siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "lightning-bolt" },
+          { "type": "alwaysPreparedSpell", "spellId": "water-breathing" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Círculo del Mar",
+        "description": "Tenés Controlar Agua y Tormenta de Hielo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "control-water" },
+          { "type": "alwaysPreparedSpell", "spellId": "ice-storm" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Círculo del Mar",
+        "description": "Tenés Conjurar Elemental y Inmovilizar Monstruo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "conjure-elemental" },
+          { "type": "alwaysPreparedSpell", "spellId": "hold-monster" }
         ]
       },
       {
@@ -1085,10 +1310,47 @@
       },
       {
         "level": 3,
-        "name": "Conjuros de Juramento",
-        "description": "Tienes siempre preparados conjuros ligados a tu juramento (Protección contra el Bien y el Mal, Santuario, etc.).",
+        "name": "Conjuros del Juramento de Entrega",
+        "description": "Tenés Escudo de Fe y Protección contra el Bien y el Mal siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a la Devoción." }
+          { "type": "alwaysPreparedSpell", "spellId": "shield-of-faith" },
+          { "type": "alwaysPreparedSpell", "spellId": "protection-from-evil-and-good" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Juramento de Entrega",
+        "description": "Tenés Auxilio y Zona de la Verdad siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "aid" },
+          { "type": "alwaysPreparedSpell", "spellId": "zone-of-truth" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Juramento de Entrega",
+        "description": "Tenés Disipar Magia y Señal de Esperanza siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "dispel-magic" },
+          { "type": "alwaysPreparedSpell", "spellId": "beacon-of-hope" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros del Juramento de Entrega",
+        "description": "Tenés Guardián de la Fe y Libertad de Movimiento siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "guardian-of-faith" },
+          { "type": "alwaysPreparedSpell", "spellId": "freedom-of-movement" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros del Juramento de Entrega",
+        "description": "Tenés Comunión y Golpe Flamígero siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "commune" },
+          { "type": "alwaysPreparedSpell", "spellId": "flame-strike" }
         ]
       },
       {
@@ -1134,10 +1396,47 @@
       },
       {
         "level": 3,
-        "name": "Conjuros de Juramento",
-        "description": "Tienes siempre preparados conjuros de naturaleza y protección.",
+        "name": "Conjuros del Juramento de los Antiguos",
+        "description": "Tenés Golpe Apresador y Hablar con los Animales siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a los Antiguos." }
+          { "type": "alwaysPreparedSpell", "spellId": "ensnaring-strike" },
+          { "type": "alwaysPreparedSpell", "spellId": "speak-with-animals" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Juramento de los Antiguos",
+        "description": "Tenés Paso Brumoso y Rayo de Luna siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "misty-step" },
+          { "type": "alwaysPreparedSpell", "spellId": "moonbeam" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Juramento de los Antiguos",
+        "description": "Tenés Crecimiento Vegetal y Protección contra Energía siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "plant-growth" },
+          { "type": "alwaysPreparedSpell", "spellId": "protection-from-energy" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros del Juramento de los Antiguos",
+        "description": "Tenés Piel Pétrea y Tormenta de Hielo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "stoneskin" },
+          { "type": "alwaysPreparedSpell", "spellId": "ice-storm" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros del Juramento de los Antiguos",
+        "description": "Tenés Comunión con la Naturaleza y Paso Arbóreo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "commune-with-nature" },
+          { "type": "alwaysPreparedSpell", "spellId": "tree-stride" }
         ]
       },
       {
@@ -1183,10 +1482,47 @@
       },
       {
         "level": 3,
-        "name": "Conjuros de Juramento",
-        "description": "Tienes siempre preparados conjuros de velocidad y heroísmo.",
+        "name": "Conjuros del Juramento de Gloria",
+        "description": "Tenés Heroísmo y Saeta Guía siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a la Gloria." }
+          { "type": "alwaysPreparedSpell", "spellId": "heroism" },
+          { "type": "alwaysPreparedSpell", "spellId": "guiding-bolt" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Juramento de Gloria",
+        "description": "Tenés Arma Mágica y Potenciar Característica siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "magic-weapon" },
+          { "type": "alwaysPreparedSpell", "spellId": "enhance-ability" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Juramento de Gloria",
+        "description": "Tenés Acelerar y Protección contra Energía siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "haste" },
+          { "type": "alwaysPreparedSpell", "spellId": "protection-from-energy" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros del Juramento de Gloria",
+        "description": "Tenés Compulsión y Libertad de Movimiento siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "compulsion" },
+          { "type": "alwaysPreparedSpell", "spellId": "freedom-of-movement" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros del Juramento de Gloria",
+        "description": "Tenés Conocer las Leyendas y Presencia Regia de Yolande siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "legend-lore" },
+          { "type": "alwaysPreparedSpell", "spellId": "yolandes-regal-presence" }
         ]
       },
       {
@@ -1232,10 +1568,47 @@
       },
       {
         "level": 3,
-        "name": "Conjuros de Juramento",
-        "description": "Tienes siempre preparados conjuros de caza y castigo.",
+        "name": "Conjuros del Juramento de Venganza",
+        "description": "Tenés Marca del Cazador y Perdición siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Conjuros de Juramento", "description": "Conjuros preparados fijos ligados a la Venganza." }
+          { "type": "alwaysPreparedSpell", "spellId": "hunters-mark" },
+          { "type": "alwaysPreparedSpell", "spellId": "bane" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Juramento de Venganza",
+        "description": "Tenés Inmovilizar Persona y Paso Brumoso siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "hold-person" },
+          { "type": "alwaysPreparedSpell", "spellId": "misty-step" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Juramento de Venganza",
+        "description": "Tenés Acelerar y Protección contra Energía siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "haste" },
+          { "type": "alwaysPreparedSpell", "spellId": "protection-from-energy" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros del Juramento de Venganza",
+        "description": "Tenés Destierro y Puerta Dimensional siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "banishment" },
+          { "type": "alwaysPreparedSpell", "spellId": "dimension-door" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros del Juramento de Venganza",
+        "description": "Tenés Escudriñar y Inmovilizar Monstruo siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "scrying" },
+          { "type": "alwaysPreparedSpell", "spellId": "hold-monster" }
         ]
       },
       {
@@ -1363,6 +1736,46 @@
         ]
       },
       {
+        "level": 3,
+        "name": "Conjuros de Errante Feérico",
+        "description": "Tenés Hechizar Persona siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "charm-person" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros de Errante Feérico",
+        "description": "Tenés Paso Brumoso siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "misty-step" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros de Errante Feérico",
+        "description": "Tenés Invocar Feérico siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "summon-fey" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros de Errante Feérico",
+        "description": "Tenés Puerta Dimensional siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "dimension-door" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros de Errante Feérico",
+        "description": "Tenés Engañar siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "mislead" }
+        ]
+      },
+      {
         "level": 7,
         "name": "Giro Cautivador",
         "description": "Cuando superas una salvación contra ser hechizado puedes desviar el efecto a otra criatura.",
@@ -1402,6 +1815,46 @@
         "effects": [
           { "type": "darkvision", "range": 90 },
           { "type": "passiveTrait", "name": "Emboscador Temible", "description": "Primer turno: +velocidad, un ataque adicional con daño extra. Vista Umbral: eres invisible para criaturas que dependen de la visión en la oscuridad." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros de Acechador en la Penumbra",
+        "description": "Tenés Disfrazarse siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "disguise-self" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros de Acechador en la Penumbra",
+        "description": "Tenés Truco de la Cuerda siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "rope-trick" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros de Acechador en la Penumbra",
+        "description": "Tenés Terror siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fear" }
+        ]
+      },
+      {
+        "level": 13,
+        "name": "Conjuros de Acechador en la Penumbra",
+        "description": "Tenés Invisibilidad Mejorada siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "greater-invisibility" }
+        ]
+      },
+      {
+        "level": 17,
+        "name": "Conjuros de Acechador en la Penumbra",
+        "description": "Tenés Apariencia siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "seeming" }
         ]
       },
       {
@@ -1647,6 +2100,44 @@
         ]
       },
       {
+        "level": 3,
+        "name": "Conjuros Dracónicos",
+        "description": "Tenés Aliento de Dragón, Alterar el Propio Aspecto, Orbe Cromático y Orden Imperiosa siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "dragons-breath" },
+          { "type": "alwaysPreparedSpell", "spellId": "alter-self" },
+          { "type": "alwaysPreparedSpell", "spellId": "chromatic-orb" },
+          { "type": "alwaysPreparedSpell", "spellId": "command" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros Dracónicos",
+        "description": "Tenés Terror y Volar siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fear" },
+          { "type": "alwaysPreparedSpell", "spellId": "fly" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros Dracónicos",
+        "description": "Tenés Hechizar Monstruo y Ojo Arcano siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "charm-monster" },
+          { "type": "alwaysPreparedSpell", "spellId": "arcane-eye" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros Dracónicos",
+        "description": "Tenés Conocer las Leyendas y Invocar Dragón siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "legend-lore" },
+          { "type": "alwaysPreparedSpell", "spellId": "summon-dragon" }
+        ]
+      },
+      {
         "level": 6,
         "name": "Afinidad Elemental",
         "description": "Cuando lanzas un conjuro de tu tipo de daño dracónico puedes ganar resistencia temporal a ese daño.",
@@ -1681,10 +2172,49 @@
     "features": [
       {
         "level": 3,
-        "name": "Conjuros Psiónicos / Habla Telepática",
-        "description": "Ganas telepatía y conjuros psiónicos siempre preparados que puedes lanzar con Puntos de Hechicería.",
+        "name": "Habla Telepática",
+        "description": "Como acción adicional, creás un vínculo telepático con una criatura que puedas ver a 30 pies; podés hablarle mentalmente y ella responderte, mientras estéis en el mismo plano.",
         "effects": [
           { "type": "passiveTrait", "name": "Mente Aberrante", "description": "Telepatía a corta distancia y conjuros psiónicos preparados que puedes canjear por Puntos de Hechicería." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros Psiónicos",
+        "description": "Tenés Brazos de Hadar, Calmar Emociones, Detectar Pensamientos, Fragmento Mental y Susurros Discordantes siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "arms-of-hadar" },
+          { "type": "alwaysPreparedSpell", "spellId": "calm-emotions" },
+          { "type": "alwaysPreparedSpell", "spellId": "detect-thoughts" },
+          { "type": "alwaysPreparedSpell", "spellId": "mind-sliver" },
+          { "type": "alwaysPreparedSpell", "spellId": "dissonant-whispers" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros Psiónicos",
+        "description": "Tenés Hambre de Hadar y Recado siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "hunger-of-hadar" },
+          { "type": "alwaysPreparedSpell", "spellId": "sending" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros Psiónicos",
+        "description": "Tenés Invocar Aberración y Tentáculos Negros de Evard siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "summon-aberration" },
+          { "type": "alwaysPreparedSpell", "spellId": "evards-black-tentacles" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros Psiónicos",
+        "description": "Tenés Enlace Telepático de Rary y Telequinesis siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "rarys-telepathic-bond" },
+          { "type": "alwaysPreparedSpell", "spellId": "telekinesis" }
         ]
       },
       {
@@ -1723,10 +2253,48 @@
     "features": [
       {
         "level": 3,
-        "name": "Restablecer Equilibrio / Conjuros Mecánicos",
-        "description": "Como reacción anulas ventaja o desventaja en una tirada cercana; ganas conjuros del orden siempre preparados.",
+        "name": "Restablecer Equilibrio",
+        "description": "Como reacción, cuando una criatura a 60 pies vaya a tirar con ventaja o desventaja, podés anular esa ventaja o desventaja. Podés hacerlo un número de veces igual a tu bonificador por competencia, y recuperás los usos tras un descanso largo.",
         "effects": [
           { "type": "passiveTrait", "name": "Restablecer Equilibrio", "description": "Reacción: cancelas ventaja o desventaja en una tirada de una criatura cercana." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros Mecánicos",
+        "description": "Tenés Alarma, Auxilio, Protección contra el Bien y el Mal y Restablecimiento Menor siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "alarm" },
+          { "type": "alwaysPreparedSpell", "spellId": "aid" },
+          { "type": "alwaysPreparedSpell", "spellId": "protection-from-evil-and-good" },
+          { "type": "alwaysPreparedSpell", "spellId": "lesser-restoration" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros Mecánicos",
+        "description": "Tenés Disipar Magia y Protección contra Energía siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "dispel-magic" },
+          { "type": "alwaysPreparedSpell", "spellId": "protection-from-energy" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros Mecánicos",
+        "description": "Tenés Invocar Autómata y Libertad de Movimiento siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "summon-construct" },
+          { "type": "alwaysPreparedSpell", "spellId": "freedom-of-movement" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros Mecánicos",
+        "description": "Tenés Muro de Fuerza y Restablecimiento Mayor siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "wall-of-force" },
+          { "type": "alwaysPreparedSpell", "spellId": "greater-restoration" }
         ]
       },
       {
@@ -1813,6 +2381,44 @@
         ]
       },
       {
+        "level": 3,
+        "name": "Conjuros del Infernal",
+        "description": "Tenés Manos Ardientes, Orden Imperiosa, Rayo Abrasador y Sugestión siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "burning-hands" },
+          { "type": "alwaysPreparedSpell", "spellId": "command" },
+          { "type": "alwaysPreparedSpell", "spellId": "scorching-ray" },
+          { "type": "alwaysPreparedSpell", "spellId": "suggestion" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Infernal",
+        "description": "Tenés Bola de Fuego y Nube Apestosa siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fireball" },
+          { "type": "alwaysPreparedSpell", "spellId": "stinking-cloud" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Infernal",
+        "description": "Tenés Escudo de Fuego y Muro de Fuego siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "fire-shield" },
+          { "type": "alwaysPreparedSpell", "spellId": "wall-of-fire" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Infernal",
+        "description": "Tenés Geas y Plaga de Insectos siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "geas" },
+          { "type": "alwaysPreparedSpell", "spellId": "insect-plague" }
+        ]
+      },
+      {
         "level": 6,
         "name": "La Suerte del Oscuro",
         "description": "Puedes sumar 1d10 a una prueba de característica o salvación una vez por descanso corto.",
@@ -1851,6 +2457,45 @@
         "description": "Puedes teletransportarte como acción adicional y aplicar un efecto feérico (miedo o encanto) al llegar.",
         "effects": [
           { "type": "passiveTrait", "name": "Pasos del Feérico", "description": "Teletransporte de 10 pies como acción adicional; asusta o encanta a criaturas cercanas al destino." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros del Señor Feérico",
+        "description": "Tenés Calmar Emociones, Dormir, Fuego Feérico, Fuerza Fantasmal y Paso Brumoso siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "calm-emotions" },
+          { "type": "alwaysPreparedSpell", "spellId": "sleep" },
+          { "type": "alwaysPreparedSpell", "spellId": "faerie-fire" },
+          { "type": "alwaysPreparedSpell", "spellId": "phantasmal-force" },
+          { "type": "alwaysPreparedSpell", "spellId": "misty-step" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Señor Feérico",
+        "description": "Tenés Crecimiento Vegetal y Desplazamiento siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "plant-growth" },
+          { "type": "alwaysPreparedSpell", "spellId": "blink" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Señor Feérico",
+        "description": "Tenés Dominar Bestia y Invisibilidad Mejorada siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "dominate-beast" },
+          { "type": "alwaysPreparedSpell", "spellId": "greater-invisibility" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Señor Feérico",
+        "description": "Tenés Apariencia y Dominar Persona siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "seeming" },
+          { "type": "alwaysPreparedSpell", "spellId": "dominate-person" }
         ]
       },
       {
@@ -1896,6 +2541,46 @@
         ]
       },
       {
+        "level": 3,
+        "name": "Conjuros del Celestial",
+        "description": "Tenés Auxilio, Curar Heridas, Llama Sagrada, Luz, Restablecimiento Menor y Saeta Guía siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "aid" },
+          { "type": "alwaysPreparedSpell", "spellId": "cure-wounds" },
+          { "type": "alwaysPreparedSpell", "spellId": "sacred-flame" },
+          { "type": "alwaysPreparedSpell", "spellId": "light" },
+          { "type": "alwaysPreparedSpell", "spellId": "lesser-restoration" },
+          { "type": "alwaysPreparedSpell", "spellId": "guiding-bolt" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Celestial",
+        "description": "Tenés Luz del Día y Revivir siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "daylight" },
+          { "type": "alwaysPreparedSpell", "spellId": "revivify" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Celestial",
+        "description": "Tenés Guardián de la Fe y Muro de Fuego siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "guardian-of-faith" },
+          { "type": "alwaysPreparedSpell", "spellId": "wall-of-fire" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Celestial",
+        "description": "Tenés Invocar Celestial y Restablecimiento Mayor siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "summon-celestial" },
+          { "type": "alwaysPreparedSpell", "spellId": "greater-restoration" }
+        ]
+      },
+      {
         "level": 6,
         "name": "Alma Radiante",
         "description": "Ganas resistencia al daño radiante y sumas tu Carisma al daño de un conjuro radiante o de fuego por turno.",
@@ -1935,6 +2620,44 @@
         "description": "Ganas telepatía y tus conjuros de encantamiento y adivinación infligen o usan daño psíquico de forma sutil.",
         "effects": [
           { "type": "passiveTrait", "name": "Mente Despierta", "description": "Telepatía a distancia; conjuros de encanto/adivinación lanzados sin componente verbal, con daño psíquico." }
+        ]
+      },
+      {
+        "level": 3,
+        "name": "Conjuros del Primigenio",
+        "description": "Tenés Detectar Pensamientos, Fuerza Fantasmal, Risa Horrible de Tasha y Susurros Discordantes siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "detect-thoughts" },
+          { "type": "alwaysPreparedSpell", "spellId": "phantasmal-force" },
+          { "type": "alwaysPreparedSpell", "spellId": "tashas-hideous-laughter" },
+          { "type": "alwaysPreparedSpell", "spellId": "dissonant-whispers" }
+        ]
+      },
+      {
+        "level": 5,
+        "name": "Conjuros del Primigenio",
+        "description": "Tenés Clarividencia y Hambre de Hadar siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "clairvoyance" },
+          { "type": "alwaysPreparedSpell", "spellId": "hunger-of-hadar" }
+        ]
+      },
+      {
+        "level": 7,
+        "name": "Conjuros del Primigenio",
+        "description": "Tenés Confusión y Invocar Aberración siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "confusion" },
+          { "type": "alwaysPreparedSpell", "spellId": "summon-aberration" }
+        ]
+      },
+      {
+        "level": 9,
+        "name": "Conjuros del Primigenio",
+        "description": "Tenés Alterar los Recuerdos y Telequinesis siempre preparados. No cuentan contra la cantidad de conjuros que podés preparar.",
+        "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "modify-memory" },
+          { "type": "alwaysPreparedSpell", "spellId": "telekinesis" }
         ]
       },
       {

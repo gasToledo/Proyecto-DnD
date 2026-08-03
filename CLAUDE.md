@@ -102,6 +102,11 @@ nivel de `featuresUpTo` sin campo extra. Es la única excepción permitida a la
 regla de que una subclase no repite nombre de rasgo, y el test que la vigila la
 acota a los rasgos cuyos efectos son *solo* esa tabla.
 
+Los tramos los fija la progresión: lanzador completo 3/5/7/9, semi-lanzador
+3/5/9/13/17. Las tienen 24 subclases. Que un conjuro sea **truco** en la tabla
+es legítimo —el Patrón Celestial concede Llama Sagrada y Luz— y tampoco ocupa
+cupo de trucos de clase.
+
 ## Comandos
 
 Flutter está disponible en el `PATH` del usuario. Ejecutar cada grupo desde el

@@ -173,6 +173,10 @@ class CharacterCompiler {
         for (final id in builder.alwaysPreparedSpellIds)
           if (repo.spell(id) != null) id,
       },
+      spellListAdditionIds: {
+        for (final id in builder.spellListAdditionIds)
+          if (repo.spell(id) != null) id,
+      },
       featureChoiceSlots: [
         for (final e in builder.featureChoiceSlots.values)
           FeatureChoiceSlot(

@@ -50,6 +50,9 @@ class SheetBuilder {
   /// nombre y nivel necesita el repositorio, que vive en el compilador.
   final Set<String> alwaysPreparedSpellIds = {};
 
+  /// Conjuros que un rasgo suma a la lista elegible (Conjuros de la Marca).
+  final Set<String> spellListAdditionIds = {};
+
   final Map<String, ResourceEffect> _resources = {};
 
   /// Elecciones abiertas declaradas por el contenido, por grupo. Gana la de
@@ -144,6 +147,8 @@ class SheetBuilder {
         );
       case AlwaysPreparedSpellEffect(:final spellId):
         alwaysPreparedSpellIds.add(spellId);
+      case SpellListAdditionEffect(:final spellId):
+        spellListAdditionIds.add(spellId);
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
       case FeatureChoiceEffect(:final groupId, :final count):

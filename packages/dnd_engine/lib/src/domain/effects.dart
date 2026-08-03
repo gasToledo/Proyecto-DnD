@@ -109,6 +109,9 @@ sealed class Effect {
       'alwaysPreparedSpell' => AlwaysPreparedSpellEffect(
           spellId: json['spellId'] as String,
         ),
+      'spellListAddition' => SpellListAdditionEffect(
+          spellId: json['spellId'] as String,
+        ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
   }
@@ -267,6 +270,27 @@ class AlwaysPreparedSpellEffect extends Effect {
   @override
   Map<String, dynamic> toJson() => {
         'type': 'alwaysPreparedSpell',
+        'spellId': spellId,
+      };
+}
+
+/// Un conjuro que se **suma a la lista** de la que el personaje elige: los
+/// Conjuros de la Marca de las dotes de marca dracónica.
+///
+/// Es el tercero y más débil de los efectos de conjuro, y por eso no alcanzaba
+/// con los otros dos. [GrantSpellEffect] lo hace lanzable sin espacio;
+/// [AlwaysPreparedSpellEffect] lo deja preparado sin ocupar cupo. Este **no
+/// concede nada**: solo habilita a elegirlo, gastando el cupo normal, como si
+/// figurara en la lista de la clase desde el principio.
+///
+/// Si el personaje no lanza conjuros, no hace nada, que es justo lo que dice la
+/// regla ("si tenés Lanzamiento de Conjuros o Magia de Pacto…").
+class SpellListAdditionEffect extends Effect {
+  final String spellId;
+  const SpellListAdditionEffect({required this.spellId});
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'spellListAddition',
         'spellId': spellId,
       };
 }

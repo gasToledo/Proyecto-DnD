@@ -275,7 +275,10 @@ class _SpellsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final sc = draft.spellcasting;
     if (sc == null) return const SizedBox.shrink();
-    final all = draft.repo.spellsForList(sc.spellList);
+    final all = draft.repo.spellsForList(
+      sc.spellList,
+      extraSpellIds: draft.spellListAdditionIds,
+    );
     final maxLevel = sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
     final grantedSpellIds = draft.grantedSpellIds;
     final cantrips = all

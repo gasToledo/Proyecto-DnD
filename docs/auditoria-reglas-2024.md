@@ -25,6 +25,25 @@ cubierto por la atribución CC.
 Que algo falte en el SRD no es motivo para excluirlo ni para dejarlo sin
 corregir: es motivo para etiquetarlo bien.
 
+### Regla de descarte: nada de 2014
+
+Cualquier material de la edición **2014** —el PHB viejo, un SRD 5.1 o anterior,
+*Eberron: Rising from the Last War* (2019), o una página que no aclare de qué
+edición habla— **no es fuente válida**. Se ignora y se busca la versión 2024 del
+mismo contenido; si no existe, el contenido no entra. No se porta a mano.
+
+Esto sale de la evidencia de esta misma auditoría, no de una preferencia. Los
+defectos más caros que aparecieron no eran datos faltantes sino **texto de 2014
+bajo un nombre correcto de 2024**: Furia Implacable dejaba al Bárbaro en 1 PG,
+Golpes Potenciados volvía mágicos los golpes del Monje, el nivel 18 de
+Hechicería Dracónica seguía siendo Presencia Dracónica, `feeblemind` reducía
+Inteligencia a 1, y diez descripciones de dote hablaban de otra edición.
+Ninguno lo delataba una tabla: el id apuntaba bien y la progresión cuadraba.
+
+Consecuencia práctica: ante un rasgo que se lee raro, **sospechar del texto
+antes que del nombre**, y contrastarlo con el manual 2024 aunque la tabla diga
+que está bien.
+
 ### Expansión: Forge of the Artificer
 
 *Forge of the Artificer* (2025) suma la clase Artífice y contenido de Eberron.
@@ -341,6 +360,99 @@ Ordenados por costo, del más barato al más caro:
     subclases ("si ya tenías esta, elegí otra") quedan como texto. Resolverlo
     de verdad pide un mecanismo de elección propio, porque las herramientas no
     son dotes y no entran en `FeatureChoiceEffect`.
+12. **Conjuros de Marca sin efecto real** — **resuelto a medias**, y la mitad
+    que falta está bloqueada por dos mecanismos que no existen.
+
+    El diagnóstico era que de las 28 dotes `foa_2025`, 27 tenían **todos** sus
+    efectos como `passiveTrait` (solo texto), con Marca Aberrante Mayor como
+    única excepción. El texto de cada marca declara **tres** cosas distintas y
+    conviene no confundirlas, porque solo una necesitaba código nuevo.
+
+    **Hecho: los Conjuros de la Marca.** *"Si tenés Lanzamiento de Conjuros o
+    Magia de Pacto, estos conjuros se suman a la lista de esa aptitud"* era lo
+    único sin equivalente en el motor: no es conceder el conjuro sino
+    **habilitar a elegirlo**, gastando el cupo normal. `GrantSpellEffect` lo
+    haría lanzable sin espacio y `AlwaysPreparedSpellEffect` lo dejaría
+    preparado sin ocupar cupo; los dos conceden de más. Se agregó
+    `SpellListAdditionEffect`, el tercero y más débil de la familia, y las 12
+    marcas de casa llevan sus 9 conjuros cada una: **108 efectos**.
+
+    La lista elegible se arma en un solo lugar, `spellsForList`, que ahora
+    toma los ids extra. Eso importa más de lo que parece: la usan el wizard,
+    el editor de conjuros **y el validador**, y si una sola de las tres la
+    armara por su cuenta, un conjuro válido de la marca quedaría marcado como
+    error. `ComputedSheet.spellListAdditionIds` es el contrato con la app,
+    que pregunta a la ficha en vez de recorrer las dotes.
+
+    Los conjuros no se transcribieron: se resolvieron por nombre contra
+    `spells.json` y **los 108 emparejaron al primer intento**. La comprobación
+    que valida la transcripción no es contarlos —si uno se corre de grupo el
+    total no cambia— sino que **el nivel declarado en el texto coincida con el
+    nivel real del conjuro**; los 108 la pasan y hay un test que la vigila
+    cruzando texto y efecto nombre por nombre.
+
+    **Falta: los conjuros propios de la marca** (*"Tenés siempre preparados
+    Detectar Magia y Detectar Venenos y Enfermedades. Podés lanzar cada uno
+    gratis una vez por descanso largo"*). El efecto existe —es
+    `AlwaysPreparedSpellEffect` más `GrantSpellEffect`— pero el dato no se
+    puede escribir todavía, por dos huecos:
+
+    - **Aptitud mágica por dote**: el texto dice "Inteligencia, Sabiduría o
+      Carisma (se elige al tomar la dote)", y `GrantSpellEffect` exige una
+      `Ability` fija. `speciesSpellcastingAbility` resuelve lo mismo para
+      especie y linaje, pero es un campo de `Character` para *la especie*, no
+      por dote. El patrón de la casa para "dote que deja elegir" es dividirla
+      en variantes con `exclusiveGroup`, y acá serían 12 × 3 = 36 dotes más su
+      migración de ids.
+    - **Nivel dentro de una dote**: varias marcas dicen "a nivel 3 sumás X".
+      Los rasgos de clase heredan el nivel de `featuresUpTo`, pero una dote no
+      tiene niveles, así que hoy el conjuro se aplicaría desde el nivel 1.
+
+    Ninguno de los dos es difícil por separado; los dos juntos son un cambio
+    más grande que este, y por eso quedan acá y no se resolvieron a medias.
+
+## Auditoría de contenido Eberron (RftLW + FoA) — 2026-08-03
+
+Origen: se agregaron `docs/Eberron_ Rising from the Last War.md` (2019, reglas
+2014, fuente original) y ya existía `docs/Eberron_ Forge of the Artificer.md`
+(2025, reglas 2024, la actualización oficial). El criterio es el mismo que
+rige todo el proyecto: **FoA manda sobre RftLW** para mecánica, porque es la
+versión vigente; RftLW solo aporta lo que FoA no repite.
+
+**Limitación de la fuente**: a diferencia del PHB, ninguno de los dos
+markdown trae el texto detallado de cada especie o cada dote — son índices o
+placeholders (`See the Changeling entry.`, `## Feats` con una lista de
+nombres). Por eso esta auditoría verificó **inventario y arquitectura
+declarada**, no el valor exacto de cada rasgo palabra por palabra.
+
+**Inventario: coincide exacto.** El capítulo 2 de FoA dice explícitamente
+"17 backgrounds", "veintiocho dotes nuevas" (13 Dragonmark + 14 General + 1
+Epic Boon) y "los cuatro especies introducidas en RftLW, más Khoravar" (5).
+Los tres números calzan letra por letra contra el catálogo: 17 trasfondos, 28
+dotes (13/14/1 por categoría) y 5 especies, mismos nombres, mismo id de
+categoría.
+
+**Casas y marcas: coincide exacto contra RftLW.** La tabla "Dragonmarks and
+Their Houses" de RftLW lista 12 marcas y 13 casas (Shadow la comparten
+Phiarlan y Thuranni) — son las 13 dotes `dragonmark` y los 13 trasfondos
+`house-*-heir` ya cargados, sin faltantes ni sobrantes.
+
+**Diseño de marcas como dotes: correcto, no es un defecto.** RftLW modela
+cada marca como **variante de raza/subraza** (2014); FoA lo reemplaza
+explícitamente por dotes — *"The benefits of each dragonmark now derive from
+feats rather than species options"*, sin prerrequisito de especie. El
+catálogo ya sigue el diseño de FoA (2024), que es el correcto.
+
+**Goblinoids: no es contenido faltante.** RftLW presenta bugbears, goblins y
+hobgoblins como raza jugable adicional (cap. 1, "Goblinoids"). FoA no la
+retoma porque su alcance está acotado por su propio texto a "las cuatro
+especies que introdujo RftLW" (Changeling, Kalashtar, Shifter, Warforged) más
+Khoravar — Goblinoids nunca fue una de esas cuatro, así que quedar afuera es
+la decisión de WotC en la actualización 2024, no un hueco del catálogo.
+
+**Hallazgo real, ver pendiente 12 arriba**: los "Conjuros de la Marca" de las
+28 dotes existen solo como texto (`passiveTrait`), no como efecto que la
+ficha compilada aplique.
 
 ## Criterio de cierre
 

@@ -217,6 +217,26 @@ es motivo para excluirlo del catálogo: es motivo para etiquetarlo `phb_2024`.
 El detalle y el avance de la comprobación están en
 `docs/auditoria-reglas-2024.md`.
 
+**Nada de 2014.** Este proyecto es de reglas 2024 y punto. Cualquier material
+que sea de la edición 2014 —el PHB viejo, un SRD 5.1 o anterior, *Eberron:
+Rising from the Last War* (2019), un wiki o un blog que no diga de qué edición
+habla— **no es fuente válida**: se ignora y se busca la versión 2024 del mismo
+contenido. Si esa versión no existe, el contenido no entra; no se porta a mano
+desde 2014.
+
+Esto no es purismo: es la causa concreta de los peores defectos que encontró la
+auditoría. Furia Implacable, Golpes Potenciados, Presencia Dracónica,
+`feeblemind` y diez descripciones de dote llegaron al catálogo con el **nombre
+correcto de 2024 y el texto de 2014**, que es justo lo que ninguna verificación
+por tabla puede ver: el id apunta bien, la tabla cuadra, y lo que está mal es la
+regla. Por eso la sospecha va sobre el texto y no sobre el nombre.
+
+Al leer una fuente de Eberron esto se vuelve el criterio de desempate: manda
+*Forge of the Artificer* (2025), y RftLW (2019) solo aporta lo que FoA no
+contradiga —ambientación, casas, nombres—, nunca mecánica. Las marcas
+dracónicas son el ejemplo: en RftLW son variantes de raza y en FoA son dotes
+sin prerrequisito de especie. Gana FoA.
+
 *Forge of the Artificer* (2025) es una tercera procedencia, `foa_2025`. No está
 en el SRD y no es el PHB, pero la razón de distinguirlo no es de licencia: no
 todas las mesas usan esa expansión, así que el jugador tiene que reconocer que

@@ -266,6 +266,14 @@ class ComputedSheet {
   /// el nombre lo resuelve quien tenga el catálogo.
   final Set<String> alwaysPreparedSpellIds;
 
+  /// Conjuros que un rasgo **suma a la lista** de la que el personaje elige
+  /// (los Conjuros de la Marca de las dotes de marca dracónica).
+  ///
+  /// No están concedidos: elegirlos gasta el cupo normal, igual que cualquier
+  /// conjuro de la lista de clase. Es el contrato con la aplicación, que
+  /// pregunta a la ficha en vez de recorrer las dotes por su cuenta.
+  final Set<String> spellListAdditionIds;
+
   /// Elecciones abiertas del personaje a este nivel (Estilo de Combate,
   /// Invocaciones Sobrenaturales…), con su cantidad ya resuelta.
   final List<FeatureChoiceSlot> featureChoiceSlots;
@@ -299,6 +307,7 @@ class ComputedSheet {
     required this.resources,
     this.innateSpells = const [],
     this.alwaysPreparedSpellIds = const {},
+    this.spellListAdditionIds = const {},
     this.featureChoiceSlots = const [],
     this.spellcasting,
   });

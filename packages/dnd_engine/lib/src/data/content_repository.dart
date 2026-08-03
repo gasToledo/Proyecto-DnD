@@ -135,8 +135,20 @@ class ContentRepository {
 
   /// Conjuros de la lista de una clase (id de clase), ordenados por nivel y
   /// después por nombre: el nivel manda porque es como se leen en la ficha.
-  List<Spell> spellsForList(String classId) =>
-      spells.values.where((s) => s.classes.contains(classId)).toList()
+  ///
+  /// [extraSpellIds] son los que un rasgo suma a esa lista
+  /// (`ComputedSheet.spellListAdditionIds`, hoy los Conjuros de la Marca). Van
+  /// acá y no en cada pantalla porque la lista elegible tiene que ser la misma
+  /// para el wizard, el editor de conjuros y el validador: si una sola de las
+  /// tres la arma por su cuenta, un conjuro válido queda marcado como error.
+  List<Spell> spellsForList(
+    String classId, {
+    Set<String> extraSpellIds = const {},
+  }) =>
+      spells.values
+          .where((s) =>
+              s.classes.contains(classId) || extraSpellIds.contains(s.id))
+          .toList()
         ..sort((a, b) => a.level != b.level
             ? a.level.compareTo(b.level)
             : compareContentNames(a.name, b.name));

@@ -426,7 +426,10 @@ class CharacterValidator {
       return;
     }
 
-    final list = repo.spellsForList(sc.spellList).map((s) => s.id).toSet();
+    final list = repo
+        .spellsForList(sc.spellList, extraSpellIds: sheet.spellListAdditionIds)
+        .map((s) => s.id)
+        .toSet();
     final maxSlotLevel =
         sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
     // Un rasgo que concede un conjuro ya lo da "siempre preparado": volver a

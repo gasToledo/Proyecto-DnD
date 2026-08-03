@@ -371,6 +371,10 @@ class CreationDraft {
     ...previewSheet.alwaysPreparedSpellIds,
   };
 
+  /// Ids que un rasgo suma a la lista elegible sin concederlos (Conjuros de la
+  /// Marca). A diferencia de [grantedSpellIds], estos **sí** gastan cupo.
+  Set<String> get spellListAdditionIds => previewSheet.spellListAdditionIds;
+
   int get hitDie => klass?.hitDie ?? 10;
 
   /// Reparto resultante según el modo elegido y las 3 opciones del trasfondo.

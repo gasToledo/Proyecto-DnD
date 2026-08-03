@@ -599,56 +599,56 @@
     }
   },
   {
-    "id": "athlete",
-    "name": "Atleta",
+    "id": "athlete-strength",
+    "name": "Atleta (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "athlete",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "dexterity",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Atleta",
-        "description": "Ganás velocidad trepando igual a tu velocidad. Levantarte del estado derribado cuesta solo 5 pies de movimiento, y saltás de longitud o de altura con carrerilla tras moverte solo 5 pies."
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Atleta", "description": "Ganás velocidad trepando igual a tu velocidad. Levantarte del estado derribado cuesta solo 5 pies de movimiento, y saltás de longitud o de altura con carrerilla tras moverte solo 5 pies." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "strength": 13,
-        "dexterity": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
   {
-    "id": "charger",
-    "name": "Atacante a la Carga",
+    "id": "athlete-dexterity",
+    "name": "Atleta (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "athlete",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "strength",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Atacante a la Carga",
-        "description": "Si te mueves al menos 10 pies en línea recta antes de atacar, ganas daño o empuje adicional. (+1 a FUE o DES)"
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Atleta", "description": "Ganás velocidad trepando igual a tu velocidad. Levantarte del estado derribado cuesta solo 5 pies de movimiento, y saltás de longitud o de altura con carrerilla tras moverte solo 5 pies." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "strength": 13,
-        "dexterity": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
+  },
+  {
+    "id": "charger-strength",
+    "name": "Atacante a la Carga (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "charger",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Atacante a la Carga", "description": "Si te mueves al menos 10 pies en línea recta antes de atacar, ganas daño o empuje adicional. (+1 a FUE o DES)" }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
+  },
+  {
+    "id": "charger-dexterity",
+    "name": "Atacante a la Carga (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "charger",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Atacante a la Carga", "description": "Si te mueves al menos 10 pies en línea recta antes de atacar, ganas daño o empuje adicional. (+1 a FUE o DES)" }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
   {
     "id": "chef-constitution",
@@ -789,30 +789,30 @@
     }
   },
   {
-    "id": "dual-wielder",
-    "name": "Combatiente con Dos Armas",
+    "id": "dual-wielder-strength",
+    "name": "Combatiente con Dos Armas (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "dual-wielder",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "dexterity",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Combatiente con Dos Armas",
-        "description": "Manejo Doble Mejorado: al atacar con un arma Ligera, el ataque extra de acción adicional puede hacerse con cualquier arma cuerpo a cuerpo sin la propiedad A dos manos. Desenvainar Rápido: sacás o guardás dos armas sin A dos manos donde normalmente harías una sola."
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Combatiente con Dos Armas", "description": "Manejo Doble Mejorado: al atacar con un arma Ligera, el ataque extra de acción adicional puede hacerse con cualquier arma cuerpo a cuerpo sin la propiedad A dos manos. Desenvainar Rápido: sacás o guardás dos armas sin A dos manos donde normalmente harías una sola." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "strength": 13,
-        "dexterity": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
+  },
+  {
+    "id": "dual-wielder-dexterity",
+    "name": "Combatiente con Dos Armas (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "dual-wielder",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Combatiente con Dos Armas", "description": "Manejo Doble Mejorado: al atacar con un arma Ligera, el ataque extra de acción adicional puede hacerse con cualquier arma cuerpo a cuerpo sin la propiedad A dos manos. Desenvainar Rápido: sacás o guardás dos armas sin A dos manos donde normalmente harías una sola." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
   {
     "id": "durable",
@@ -837,22 +837,43 @@
     }
   },
   {
-    "id": "elemental-adept",
-    "name": "Versado en un Elemento",
+    "id": "elemental-adept-intelligence",
+    "name": "Versado en un Elemento (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "elemental-adept",
     "repeatable": true,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Versado en un Elemento",
-        "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2."
-      }
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "requiredProficiency": "spellcasting"
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
+  },
+  {
+    "id": "elemental-adept-wisdom",
+    "name": "Versado en un Elemento (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "elemental-adept",
+    "repeatable": true,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
+    ],
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
+  },
+  {
+    "id": "elemental-adept-charisma",
+    "name": "Versado en un Elemento (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "elemental-adept",
+    "repeatable": true,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
+    ],
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
   {
     "id": "fey-touched-intelligence",
@@ -921,106 +942,110 @@
     }
   },
   {
-    "id": "grappler",
-    "name": "Apresador",
+    "id": "grappler-strength",
+    "name": "Apresador (Fuerza)",
     "source": "srd_2024",
     "category": "general",
+    "exclusiveGroup": "grappler",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "strength",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Apresador",
-        "description": "Al acertar con un ataque sin armas durante la acción de Atacar podés usar a la vez las opciones de daño y agarre (una vez por turno). Tenés ventaja al atacar a una criatura que estés agarrando y no gastás movimiento extra por arrastrarla si es de tu tamaño o menor. (+1 a FUE o DES)"
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Apresador", "description": "Al acertar con un ataque sin armas durante la acción de Atacar podés usar a la vez las opciones de daño y agarre (una vez por turno). Tenés ventaja al atacar a una criatura que estés agarrando y no gastás movimiento extra por arrastrarla si es de tu tamaño o menor. (+1 a FUE o DES)" }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "strength": 13,
-        "dexterity": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
   {
-    "id": "heavily-armored",
-    "name": "Muy Acorazado",
-    "source": "phb_2024",
+    "id": "grappler-dexterity",
+    "name": "Apresador (Destreza)",
+    "source": "srd_2024",
     "category": "general",
+    "exclusiveGroup": "grappler",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "strength",
-        "amount": 1
-      },
-      {
-        "type": "armorProficiency",
-        "category": "heavy"
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Muy Acorazado",
-        "description": "Ganás entrenamiento con armadura pesada."
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Apresador", "description": "Al acertar con un ataque sin armas durante la acción de Atacar podés usar a la vez las opciones de daño y agarre (una vez por turno). Tenés ventaja al atacar a una criatura que estés agarrando y no gastás movimiento extra por arrastrarla si es de tu tamaño o menor. (+1 a FUE o DES)" }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "requiredProficiency": "medium"
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
   {
-    "id": "heavy-armor-master",
-    "name": "Maestro en Armaduras Pesadas",
+    "id": "heavily-armored-constitution",
+    "name": "Muy Acorazado (Constitución)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "heavily-armored",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "constitution",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Maestro en Armaduras Pesadas",
-        "description": "Con armadura pesada reduces el daño no mágico contundente, perforante y cortante. (+1 a FUE o CON)"
-      }
+      { "type": "abilityScoreBonus", "ability": "constitution", "amount": 1 },
+      { "type": "armorProficiency", "category": "heavy" },
+      { "type": "passiveTrait", "name": "Muy Acorazado", "description": "Ganás entrenamiento con armadura pesada." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "requiredProficiency": "heavy"
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "medium" }
   },
   {
-    "id": "inspiring-leader",
-    "name": "Líder Inspirador",
+    "id": "heavily-armored-strength",
+    "name": "Muy Acorazado (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "heavily-armored",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "charisma",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Líder Inspirador",
-        "description": "Tras un descanso, una arenga da PG temporales a ti y a aliados cercanos. (+1 a SAB o CAR)"
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "armorProficiency", "category": "heavy" },
+      { "type": "passiveTrait", "name": "Muy Acorazado", "description": "Ganás entrenamiento con armadura pesada." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "wisdom": 13,
-        "charisma": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "medium" }
+  },
+  {
+    "id": "heavy-armor-master-constitution",
+    "name": "Maestro en Armaduras Pesadas (Constitución)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "heavy-armor-master",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "constitution", "amount": 1 },
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Pesadas", "description": "Con armadura pesada reduces el daño no mágico contundente, perforante y cortante. (+1 a FUE o CON)" }
+    ],
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "heavy" }
+  },
+  {
+    "id": "heavy-armor-master-strength",
+    "name": "Maestro en Armaduras Pesadas (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "heavy-armor-master",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Pesadas", "description": "Con armadura pesada reduces el daño no mágico contundente, perforante y cortante. (+1 a FUE o CON)" }
+    ],
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "heavy" }
+  },
+  {
+    "id": "inspiring-leader-wisdom",
+    "name": "Líder Inspirador (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "inspiring-leader",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Líder Inspirador", "description": "Tras un descanso, una arenga da PG temporales a ti y a aliados cercanos. (+1 a SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "wisdom": 13, "charisma": 13 } }
+  },
+  {
+    "id": "inspiring-leader-charisma",
+    "name": "Líder Inspirador (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "inspiring-leader",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Líder Inspirador", "description": "Tras un descanso, una arenga da PG temporales a ti y a aliados cercanos. (+1 a SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "wisdom": 13, "charisma": 13 } }
   },
   {
     "id": "keen-mind",
@@ -1048,51 +1073,60 @@
     }
   },
   {
-    "id": "lightly-armored",
-    "name": "Ligeramente Acorazado",
+    "id": "lightly-armored-strength",
+    "name": "Ligeramente Acorazado (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "lightly-armored",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "dexterity",
-        "amount": 1
-      },
-      {
-        "type": "armorProficiency",
-        "category": "light"
-      },
-      {
-        "type": "armorProficiency",
-        "category": "shield"
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Ligeramente Acorazado",
-        "description": "Ganás entrenamiento con armadura ligera y con escudos."
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "armorProficiency", "category": "light" },
+      { "type": "armorProficiency", "category": "shield" },
+      { "type": "passiveTrait", "name": "Ligeramente Acorazado", "description": "Ganás entrenamiento con armadura ligera y con escudos." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4 }
   },
   {
-    "id": "mage-slayer",
-    "name": "Azote de Magos",
+    "id": "lightly-armored-dexterity",
+    "name": "Ligeramente Acorazado (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "lightly-armored",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Azote de Magos",
-        "description": "Anticoncentración: cuando dañás a una criatura que se está concentrando, tiene desventaja en la salvación para mantenerla. Mente Robusta: podés convertir en éxito una salvación fallida de Inteligencia, Sabiduría o Carisma, una vez por descanso corto o largo."
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "armorProficiency", "category": "light" },
+      { "type": "armorProficiency", "category": "shield" },
+      { "type": "passiveTrait", "name": "Ligeramente Acorazado", "description": "Ganás entrenamiento con armadura ligera y con escudos." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "mage-slayer-strength",
+    "name": "Azote de Magos (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "mage-slayer",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Azote de Magos", "description": "Anticoncentración: cuando dañás a una criatura que se está concentrando, tiene desventaja en la salvación para mantenerla. Mente Robusta: podés convertir en éxito una salvación fallida de Inteligencia, Sabiduría o Carisma, una vez por descanso corto o largo." }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "mage-slayer-dexterity",
+    "name": "Azote de Magos (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "mage-slayer",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Azote de Magos", "description": "Anticoncentración: cuando dañás a una criatura que se está concentrando, tiene desventaja en la salvación para mantenerla. Mente Robusta: podés convertir en éxito una salvación fallida de Inteligencia, Sabiduría o Carisma, una vez por descanso corto o largo." }
+    ],
+    "prerequisite": { "minLevel": 4 }
   },
   {
     "id": "magic-initiate-wizard",
@@ -1150,102 +1184,123 @@
     ]
   },
   {
-    "id": "medium-armor-master",
-    "name": "Maestro en Armaduras Medias",
+    "id": "medium-armor-master-strength",
+    "name": "Maestro en Armaduras Medias (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "medium-armor-master",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "dexterity",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Maestro en Armaduras Medias",
-        "description": "Con armadura media no tienes desventaja en Sigilo y sumas hasta +3 de DES a la CA. (+1 a FUE o DES)"
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Medias", "description": "Con armadura media no tienes desventaja en Sigilo y sumas hasta +3 de DES a la CA. (+1 a FUE o DES)" }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "requiredProficiency": "medium"
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "medium" }
   },
   {
-    "id": "moderately-armored",
-    "name": "Moderadamente Acorazado",
+    "id": "medium-armor-master-dexterity",
+    "name": "Maestro en Armaduras Medias (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "medium-armor-master",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "dexterity",
-        "amount": 1
-      },
-      {
-        "type": "armorProficiency",
-        "category": "medium"
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Moderadamente Acorazado",
-        "description": "Ganás entrenamiento con armadura media."
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Medias", "description": "Con armadura media no tienes desventaja en Sigilo y sumas hasta +3 de DES a la CA. (+1 a FUE o DES)" }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "requiredProficiency": "light"
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "medium" }
   },
   {
-    "id": "mounted-combatant",
-    "name": "Combatiente Montado",
+    "id": "moderately-armored-strength",
+    "name": "Moderadamente Acorazado (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "moderately-armored",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "strength",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Combatiente Montado",
-        "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)"
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "armorProficiency", "category": "medium" },
+      { "type": "passiveTrait", "name": "Moderadamente Acorazado", "description": "Ganás entrenamiento con armadura media." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "light" }
   },
   {
-    "id": "observant",
-    "name": "Observador",
+    "id": "moderately-armored-dexterity",
+    "name": "Moderadamente Acorazado (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "moderately-armored",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "wisdom",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Observador",
-        "description": "Sumas +5 a tu Percepción e Investigación pasivas y puedes leer los labios."
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "armorProficiency", "category": "medium" },
+      { "type": "passiveTrait", "name": "Moderadamente Acorazado", "description": "Ganás entrenamiento con armadura media." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "intelligence": 13,
-        "wisdom": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "light" }
+  },
+  {
+    "id": "mounted-combatant-strength",
+    "name": "Combatiente Montado (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "mounted-combatant",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "mounted-combatant-dexterity",
+    "name": "Combatiente Montado (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "mounted-combatant",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "mounted-combatant-wisdom",
+    "name": "Combatiente Montado (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "mounted-combatant",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "observant-intelligence",
+    "name": "Observador (Inteligencia)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "observant",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Observador", "description": "Sumas +5 a tu Percepción e Investigación pasivas y puedes leer los labios." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13 } }
+  },
+  {
+    "id": "observant-wisdom",
+    "name": "Observador (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "observant",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Observador", "description": "Sumas +5 a tu Percepción e Investigación pasivas y puedes leer los labios." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13 } }
   },
   {
     "id": "piercer-strength",
@@ -1292,42 +1347,56 @@
     }
   },
   {
-    "id": "poisoner",
-    "name": "Envenenador",
+    "id": "poisoner-dexterity",
+    "name": "Envenenador (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "poisoner",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Envenenador",
-        "description": "Aplicas veneno potente como acción adicional; tus venenos ignoran la resistencia al veneno."
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Envenenador", "description": "Aplicas veneno potente como acción adicional; tus venenos ignoran la resistencia al veneno." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4 }
   },
   {
-    "id": "polearm-master",
-    "name": "Maestro en Armas de Asta",
+    "id": "poisoner-intelligence",
+    "name": "Envenenador (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "poisoner",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Maestro en Armas de Asta",
-        "description": "Con un arma de asta ganas un ataque adicional con el extremo romo y provocas ataques de oportunidad cuando los enemigos entran en tu alcance."
-      }
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Envenenador", "description": "Aplicas veneno potente como acción adicional; tus venenos ignoran la resistencia al veneno." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "strength": 13,
-        "dexterity": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "polearm-master-dexterity",
+    "name": "Maestro en Armas de Asta (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "polearm-master",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Maestro en Armas de Asta", "description": "Con un arma de asta ganas un ataque adicional con el extremo romo y provocas ataques de oportunidad cuando los enemigos entran en tu alcance." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
+  },
+  {
+    "id": "polearm-master-strength",
+    "name": "Maestro en Armas de Asta (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "polearm-master",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Maestro en Armas de Asta", "description": "Con un arma de asta ganas un ataque adicional con el extremo romo y provocas ataques de oportunidad cuando los enemigos entran en tu alcance." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
   {
     "id": "resilient-constitution",
@@ -1384,47 +1453,69 @@
     }
   },
   {
-    "id": "ritual-caster",
-    "name": "Lanzador Ritual",
+    "id": "ritual-caster-intelligence",
+    "name": "Lanzador Ritual (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "ritual-caster",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Lanzador Ritual",
-        "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él."
-      }
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "intelligence": 13,
-        "wisdom": 13,
-        "charisma": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13, "charisma": 13 } }
   },
   {
-    "id": "sentinel",
-    "name": "Centinela",
+    "id": "ritual-caster-wisdom",
+    "name": "Lanzador Ritual (Sabiduría)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "ritual-caster",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Centinela",
-        "description": "Guardián: podés hacer un ataque de oportunidad contra una criatura a 5 pies que se destrabe o acierte a un objetivo que no seas vos. Detener: al acertar con un ataque de oportunidad, la velocidad del objetivo pasa a 0 el resto del turno."
-      }
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "strength": 13,
-        "dexterity": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13, "charisma": 13 } }
+  },
+  {
+    "id": "ritual-caster-charisma",
+    "name": "Lanzador Ritual (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "ritual-caster",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13, "charisma": 13 } }
+  },
+  {
+    "id": "sentinel-strength",
+    "name": "Centinela (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "sentinel",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Centinela", "description": "Guardián: podés hacer un ataque de oportunidad contra una criatura a 5 pies que se destrabe o acierte a un objetivo que no seas vos. Detener: al acertar con un ataque de oportunidad, la velocidad del objetivo pasa a 0 el resto del turno." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
+  },
+  {
+    "id": "sentinel-dexterity",
+    "name": "Centinela (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "sentinel",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Centinela", "description": "Guardián: podés hacer un ataque de oportunidad contra una criatura a 5 pies que se destrabe o acierte a un objetivo que no seas vos. Detener: al acertar con un ataque de oportunidad, la velocidad del objetivo pasa a 0 el resto del turno." }
+    ],
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
   {
     "id": "shadow-touched-intelligence",
@@ -1516,26 +1607,82 @@
     }
   },
   {
-    "id": "skill-expert",
-    "name": "Experto en Habilidades",
+    "id": "skill-expert-strength",
+    "name": "Experto en Habilidades (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "skill-expert",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "intelligence",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Experto en Habilidades",
-        "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente."
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "skill-expert-dexterity",
+    "name": "Experto en Habilidades (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "skill-expert",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "skill-expert-constitution",
+    "name": "Experto en Habilidades (Constitución)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "skill-expert",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "constitution", "amount": 1 },
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "skill-expert-intelligence",
+    "name": "Experto en Habilidades (Inteligencia)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "skill-expert",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "skill-expert-wisdom",
+    "name": "Experto en Habilidades (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "skill-expert",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "skill-expert-charisma",
+    "name": "Experto en Habilidades (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "skill-expert",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+    ],
+    "prerequisite": { "minLevel": 4 }
   },
   {
     "id": "skulker",
@@ -1607,114 +1754,188 @@
     }
   },
   {
-    "id": "speedy",
-    "name": "Veloz",
+    "id": "speedy-dexterity",
+    "name": "Veloz (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "speedy",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "dexterity",
-        "amount": 1
-      },
-      {
-        "type": "speedBonus",
-        "feet": 10
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Veloz",
-        "description": "Correr ignora el terreno difícil y no provocas ataques de oportunidad al Correr. (+1 a DES o CON)"
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "speedBonus", "feet": 10 },
+      { "type": "passiveTrait", "name": "Veloz", "description": "Correr ignora el terreno difícil y no provocas ataques de oportunidad al Correr. (+1 a DES o CON)" }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "anyAbilityScores": {
-        "dexterity": 13,
-        "constitution": 13
-      }
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "dexterity": 13, "constitution": 13 } }
   },
   {
-    "id": "spell-sniper",
-    "name": "Lanzador Preciso",
+    "id": "speedy-constitution",
+    "name": "Veloz (Constitución)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "speedy",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Lanzador Preciso",
-        "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos."
-      }
+      { "type": "abilityScoreBonus", "ability": "constitution", "amount": 1 },
+      { "type": "speedBonus", "feet": 10 },
+      { "type": "passiveTrait", "name": "Veloz", "description": "Correr ignora el terreno difícil y no provocas ataques de oportunidad al Correr. (+1 a DES o CON)" }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "requiredProficiency": "spellcasting"
-    }
+    "prerequisite": { "minLevel": 4, "anyAbilityScores": { "dexterity": 13, "constitution": 13 } }
   },
   {
-    "id": "telekinetic",
-    "name": "Telequinético",
+    "id": "spell-sniper-intelligence",
+    "name": "Lanzador Preciso (Inteligencia)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "spell-sniper",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "intelligence",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Telequinético",
-        "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)"
-      }
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
   {
-    "id": "telepathic",
-    "name": "Telepático",
+    "id": "spell-sniper-wisdom",
+    "name": "Lanzador Preciso (Sabiduría)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "spell-sniper",
     "repeatable": false,
     "effects": [
-      {
-        "type": "abilityScoreBonus",
-        "ability": "wisdom",
-        "amount": 1
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Telepático",
-        "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)"
-      }
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
   {
-    "id": "war-caster",
-    "name": "Lanzador en Combate",
+    "id": "spell-sniper-charisma",
+    "name": "Lanzador Preciso (Carisma)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "spell-sniper",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Lanzador en Combate",
-        "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad."
-      }
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos." }
     ],
-    "prerequisite": {
-      "minLevel": 4,
-      "requiredProficiency": "spellcasting"
-    }
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
+  },
+  {
+    "id": "telekinetic-intelligence",
+    "name": "Telequinético (Inteligencia)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "telekinetic",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "telekinetic-wisdom",
+    "name": "Telequinético (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "telekinetic",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "telekinetic-charisma",
+    "name": "Telequinético (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "telekinetic",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "telepathic-intelligence",
+    "name": "Telepático (Inteligencia)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "telepathic",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Telepático", "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "telepathic-wisdom",
+    "name": "Telepático (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "telepathic",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Telepático", "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "telepathic-charisma",
+    "name": "Telepático (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "telepathic",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Telepático", "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "war-caster-intelligence",
+    "name": "Lanzador en Combate (Inteligencia)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "war-caster",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad." }
+    ],
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
+  },
+  {
+    "id": "war-caster-wisdom",
+    "name": "Lanzador en Combate (Sabiduría)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "war-caster",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad." }
+    ],
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
+  },
+  {
+    "id": "war-caster-charisma",
+    "name": "Lanzador en Combate (Carisma)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "war-caster",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
+      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad." }
+    ],
+    "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
   {
     "id": "ability-score-improvement",
@@ -1734,47 +1955,60 @@
     }
   },
   {
-    "id": "martial-weapon-training",
-    "name": "Entrenamiento con Armas Marciales",
+    "id": "martial-weapon-training-strength",
+    "name": "Entrenamiento con Armas Marciales (Fuerza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "martial-weapon-training",
     "repeatable": false,
     "effects": [
-      {
-        "type": "weaponProficiency",
-        "category": "martial"
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Mejora de Característica",
-        "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20."
-      }
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "weaponProficiency", "category": "martial" },
+      { "type": "passiveTrait", "name": "Mejora de Característica", "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4 }
   },
   {
-    "id": "weapon-master",
-    "name": "Maestro de Armas",
+    "id": "martial-weapon-training-dexterity",
+    "name": "Entrenamiento con Armas Marciales (Destreza)",
     "source": "phb_2024",
     "category": "general",
+    "exclusiveGroup": "martial-weapon-training",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Mejora de Característica",
-        "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20."
-      },
-      {
-        "type": "passiveTrait",
-        "name": "Propiedad de Maestría",
-        "description": "Puedes usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Puedes cambiar el tipo de arma tras un descanso largo."
-      }
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "weaponProficiency", "category": "martial" },
+      { "type": "passiveTrait", "name": "Mejora de Característica", "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20." }
     ],
-    "prerequisite": {
-      "minLevel": 4
-    }
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "weapon-master-strength",
+    "name": "Maestro de Armas (Fuerza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "weapon-master",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
+      { "type": "passiveTrait", "name": "Mejora de Característica", "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20." },
+      { "type": "passiveTrait", "name": "Propiedad de Maestría", "description": "Puedes usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Puedes cambiar el tipo de arma tras un descanso largo." }
+    ],
+    "prerequisite": { "minLevel": 4 }
+  },
+  {
+    "id": "weapon-master-dexterity",
+    "name": "Maestro de Armas (Destreza)",
+    "source": "phb_2024",
+    "category": "general",
+    "exclusiveGroup": "weapon-master",
+    "repeatable": false,
+    "effects": [
+      { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
+      { "type": "passiveTrait", "name": "Mejora de Característica", "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20." },
+      { "type": "passiveTrait", "name": "Propiedad de Maestría", "description": "Puedes usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Puedes cambiar el tipo de arma tras un descanso largo." }
+    ],
+    "prerequisite": { "minLevel": 4 }
   },
   {
     "id": "fs-blind-fighting",

@@ -116,6 +116,56 @@ void main() {
     ]);
   });
 
+  test('v7 → v8: las dotes divididas apuntan a su variante', () {
+    // Dividir una dote en variantes hace desaparecer su id, y una ficha que la
+    // tuviera perdería la dote en silencio. La variante de destino es la que
+    // el catálogo asignaba sola, así que la ficha compila igual que antes.
+    final source = {
+      'schemaVersion': 7,
+      'id': 'v7',
+      'name': 'Veterana',
+      'raceId': 'human',
+      'classId': 'fighter',
+      'backgroundId': 'soldier',
+      'assignedScores': const <String, int>{},
+      'featIds': const [
+        'athlete',
+        'sentinel',
+        // Ésta se dividió en una tanda anterior sin migración: su id llevaba
+        // tiempo huérfano.
+        'shadow-touched',
+        // Una que no se dividió no se toca.
+        'lucky',
+      ],
+    };
+
+    final migrated = Character.migrateJson(source);
+
+    expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+    expect(migrated['featIds'], [
+      'athlete-dexterity',
+      'sentinel-strength',
+      'shadow-touched-charisma',
+      'lucky',
+    ]);
+  });
+
+  test('v7 → v8: tolera un featIds con basura', () {
+    // El mismo camino procesa importaciones, que no son datos confiables.
+    final source = {
+      'schemaVersion': 7,
+      'id': 'v7b',
+      'name': 'Importada',
+      'raceId': 'human',
+      'classId': 'fighter',
+      'backgroundId': 'soldier',
+      'assignedScores': const <String, int>{},
+      'featIds': const ['athlete', 42, null],
+    };
+    final migrated = Character.migrateJson(source);
+    expect(migrated['featIds'], ['athlete-dexterity', 42, null]);
+  });
+
   test('v5 → v6: la mano secundaria arranca vacía', () {
     final source = {
       'schemaVersion': 5,

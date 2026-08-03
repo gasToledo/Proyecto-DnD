@@ -24,9 +24,15 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
   subclases están además en el SRD 5.2.1), más la clase Artífice y sus 5
   subclases de *Forge of the Artificer*.
 - 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
-  Artificer*), 24 linajes (8 SRD, 16 PHB 2024), 33 trasfondos, 110 dotes
-  (9 SRD, 73 PHB 2024, 28 FoA), 28 Invocaciones Sobrenaturales del Brujo
+  Artificer*), 24 linajes (8 SRD, 16 PHB 2024), 33 trasfondos, 183 dotes
+  (10 SRD, 145 PHB 2024, 28 FoA), 28 Invocaciones Sobrenaturales del Brujo
   y 392 conjuros (177 SRD, 214 PHB 2024, 1 FoA).
+
+  Las 183 dotes representan las 75 del capítulo 5: **una dote que deja elegir
+  el bono de característica se carga como una variante por opción**, todas con
+  el mismo `exclusiveGroup`, que es lo que impide tomar dos. Son 33 familias
+  así. Nombrarlas es el nombre del manual más la característica entre
+  paréntesis, y el id es el id base más la característica en inglés.
 - Creación guiada, subida de nivel con wizard multi-paso (resumen, puntos de
   golpe, subclase, mejora de característica, elecciones abiertas, rasgos,
   conjuros y repaso, cada paso mostrado solo si aplica al nivel), combate,

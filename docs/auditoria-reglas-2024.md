@@ -234,15 +234,21 @@ Ordenados por costo, del más barato al más caro:
 
    Queda pendiente la nomenclatura fuera de las dotes (Aprendiz de Mucho,
    Sentir el Peligro, Truco Potente).
-2b. **Elección de característica en 16 dotes más**: el manual ofrece elegir
-   entre dos o tres características y el catálogo asigna una sola. Alcanza a
-   Atleta, Atacante a la Carga, Combatiente con Dos Armas, Apresador, Muy
-   Acorazado, Maestro en Armaduras Pesadas y Medias, Líder Inspirador,
-   Ligeramente y Moderadamente Acorazado, Combatiente Montado, Observador,
-   Veloz, Telequinético, Telepático y Experto en Habilidades. Diez dotes más
-   directamente **no dan su Mejora de Característica** porque su elección no
-   se podía expresar. Es el mismo defecto que ya se resolvió para Influencia
-   Feérica y compañía, y se arregla igual: variantes con `exclusiveGroup`.
+2b. ~~**Elección de característica en el resto de las dotes**~~ — **resuelto**.
+   Eran **26 familias**: dieciséis que asignaban una sola característica donde
+   el manual ofrece dos o tres, y diez que directamente **no daban ninguna
+   Mejora de Característica** porque su elección no se podía expresar y el
+   campo se había quedado vacío. Divididas en variantes con `exclusiveGroup`,
+   el catálogo pasa de 146 a **183 dotes** y las 75 del capítulo quedan
+   representadas por 127 registros.
+
+   Lo que faltaba y ahora está: **una migración de ids de dote** (v7 → v8).
+   Dividir hace desaparecer el id viejo, y sin migración una ficha guardada
+   pierde la dote en silencio. Cada id apunta a la variante con la
+   característica que el catálogo asignaba, así que la ficha compila idéntica;
+   las diez que no daban ASI sí cambian, porque ganan el +1 que les
+   correspondía. La migración repara además las **seis dotes divididas en la
+   tanda anterior**, cuyos ids llevaban tiempo huérfanos.
 3. ~~**Elección de característica en dotes**~~ — **resuelto**. No hizo falta el
    efecto nuevo que se preveía acá: se dividieron en variantes por
    característica con `exclusiveGroup`, el patrón que ya usaban Resiliente e

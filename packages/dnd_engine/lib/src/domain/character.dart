@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 7;
+  static const int currentSchemaVersion = 8;
 
   final String id;
   String name;
@@ -390,6 +390,62 @@ class Character {
     }
   }
 
+  /// Dotes que pasaron a tener una variante por característica, porque el
+  /// manual deja elegir el +1 y el catálogo lo asignaba solo.
+  ///
+  /// Cada id viejo apunta a la variante **con la característica que el catálogo
+  /// asignaba**, así la ficha de quien ya la tenía compila idéntica. Las que no
+  /// daban ninguna Mejora de Característica —su elección no se podía expresar,
+  /// así que el campo estaba vacío— van a la primera que ofrece el manual: ahí
+  /// la ficha sí cambia, porque gana el +1 que le correspondía.
+  ///
+  /// Las seis primeras se dividieron en una tanda anterior sin migración, así
+  /// que sus ids llevaban tiempo huérfanos: una ficha que las tuviera perdía la
+  /// dote en silencio. Se reparan acá.
+  static const Map<String, String> _featIdRenames7to8 = {
+    'chef': 'chef-wisdom',
+    'crusher': 'crusher-constitution',
+    'piercer': 'piercer-dexterity',
+    'slasher': 'slasher-strength',
+    'fey-touched': 'fey-touched-wisdom',
+    'shadow-touched': 'shadow-touched-charisma',
+    'athlete': 'athlete-dexterity',
+    'charger': 'charger-strength',
+    'dual-wielder': 'dual-wielder-dexterity',
+    'elemental-adept': 'elemental-adept-intelligence',
+    'grappler': 'grappler-strength',
+    'heavily-armored': 'heavily-armored-strength',
+    'heavy-armor-master': 'heavy-armor-master-constitution',
+    'inspiring-leader': 'inspiring-leader-charisma',
+    'lightly-armored': 'lightly-armored-dexterity',
+    'mage-slayer': 'mage-slayer-strength',
+    'martial-weapon-training': 'martial-weapon-training-strength',
+    'medium-armor-master': 'medium-armor-master-dexterity',
+    'moderately-armored': 'moderately-armored-dexterity',
+    'mounted-combatant': 'mounted-combatant-strength',
+    'observant': 'observant-wisdom',
+    'poisoner': 'poisoner-dexterity',
+    'polearm-master': 'polearm-master-dexterity',
+    'ritual-caster': 'ritual-caster-intelligence',
+    'sentinel': 'sentinel-strength',
+    'skill-expert': 'skill-expert-intelligence',
+    'speedy': 'speedy-dexterity',
+    'spell-sniper': 'spell-sniper-intelligence',
+    'telekinetic': 'telekinetic-intelligence',
+    'telepathic': 'telepathic-wisdom',
+    'war-caster': 'war-caster-intelligence',
+    'weapon-master': 'weapon-master-strength',
+  };
+
+  static void _renameFeatIds(
+      Map<String, dynamic> j, Map<String, String> renames) {
+    final list = j['featIds'];
+    if (list is! List) return;
+    j['featIds'] = [
+      for (final id in list) id is String ? (renames[id] ?? id) : id,
+    ];
+  }
+
   /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
   /// entrada. Cada paso se conserva explícito para que las próximas versiones
   /// puedan encadenarse sin saltos.
@@ -446,6 +502,10 @@ class Character {
           }
           migrated['featureChoices'] = choices;
           version = 7;
+          migrated['schemaVersion'] = version;
+        case 7:
+          _renameFeatIds(migrated, _featIdRenames7to8);
+          version = 8;
           migrated['schemaVersion'] = version;
       }
     }

@@ -98,6 +98,22 @@ extension _DashboardNavigation on _DashboardScreenState {
               textStyle: const TextStyle(fontSize: 12),
             ),
           ),
+          // La versión sale del mismo servicio que compara contra el último
+          // Release, así que el rótulo no puede contradecir al aviso de
+          // actualización. Es null solo en tests, donde no hay servicio.
+          if (widget.updateService?.currentVersion case final version?) ...[
+            const SizedBox(height: 10),
+            Text(
+              'v$version',
+              key: const ValueKey('app-version'),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                letterSpacing: 0.3,
+                color: pal.gold,
+              ),
+            ),
+          ],
         ],
       ),
     );

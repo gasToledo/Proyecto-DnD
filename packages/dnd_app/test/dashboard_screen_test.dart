@@ -8,7 +8,10 @@ import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/ui/dashboard_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:dnd_app/data/update_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 /// Almacén en memoria: evita tocar el sistema de archivos en tests.
 class _FakeStore implements CharacterStore {
@@ -43,15 +46,17 @@ void main() {
     );
   });
 
-  Widget harness(CharactersController ctrl) => MaterialApp(
-    theme: AppTheme.dark,
-    home: DashboardScreen(
-      repo: repo,
-      controller: ctrl,
-      homebrew: HomebrewStore(),
-      onToggleTheme: () {},
-    ),
-  );
+  Widget harness(CharactersController ctrl, {UpdateService? updates}) =>
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: DashboardScreen(
+          repo: repo,
+          controller: ctrl,
+          homebrew: HomebrewStore(),
+          updateService: updates,
+          onToggleTheme: () {},
+        ),
+      );
 
   /// Monta el dashboard con un roster de prueba en un viewport dado y deja
   /// vencer el debounce de guardado (400 ms) para no dejar timers pendientes.
@@ -64,6 +69,45 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 500));
   }
+
+  testWidgets('el panel lateral muestra la versión instalada', (tester) async {
+    // Sale del mismo servicio que compara contra el último Release, así que el
+    // rótulo no puede quedar desfasado del aviso de actualización.
+    tester.view.physicalSize = const Size(1400, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final ctrl = CharactersController(_FakeStore())..add(demoSagan());
+    await tester.pumpWidget(
+      harness(
+        ctrl,
+        updates: UpdateService(
+          currentVersion: '1.2.3',
+          // Sin red: la comprobación de actualizaciones falla y se ignora.
+          client: MockClient((_) async => http.Response('', 500)),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final version = find.byKey(const ValueKey('app-version'));
+    expect(version, findsOneWidget);
+    expect(tester.widget<Text>(version).data, 'v1.2.3');
+    expect(tester.widget<Text>(version).style?.color, AppPalette.dark.gold);
+    // Va debajo del cambio de tema, no encima.
+    expect(
+      tester.getTopLeft(version).dy,
+      greaterThan(tester.getTopLeft(find.text('Cambiar tema')).dy),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sin servicio de actualizaciones no se muestra versión', (
+    tester,
+  ) async {
+    await pumpDashboard(tester, const Size(1400, 900));
+    expect(find.byKey(const ValueKey('app-version')), findsNothing);
+  });
 
   testWidgets('layout ancho: panel lateral + tarjeta con datos de combate', (
     tester,

@@ -224,6 +224,12 @@ extension _SheetSpellsSection on _SheetScreenState {
               ),
             ),
           ),
+          if (innate.isReplaceable)
+            IconButton(
+              onPressed: () => _openInnateCantripPicker(innate),
+              icon: const Icon(Icons.swap_horiz, size: 20),
+              tooltip: 'Cambiar tras un descanso largo',
+            ),
           if (spell?.concentration == true)
             TextButton(
               onPressed: () => _mutateCombat(
@@ -234,6 +240,102 @@ extension _SheetSpellsSection on _SheetScreenState {
         ],
       ),
     );
+  }
+
+  /// Cambia un truco innato que el rasgo declara reemplazable (Alto Elfo, Don
+  /// Feérico del Khoravar).
+  ///
+  /// Las opciones salen de las listas que declara el rasgo, acotadas al nivel
+  /// del truco original: la regla es cambiar un truco por otro truco, no por un
+  /// conjuro. La elección se guarda contra `grantedSpellId` —el conjuro del
+  /// contenido— para que volver al original sea sacar la entrada.
+  void _openInnateCantripPicker(InnateSpell innate) {
+    final granted = repo.spell(innate.grantedSpellId);
+    final options =
+        <String, Spell>{
+            for (final listId in innate.replaceableFrom)
+              for (final spell in repo.spellsForList(listId))
+                if (spell.level == innate.level) spell.id: spell,
+          }.values.toList()
+          // El del rasgo primero y el resto alfabético: volver al original es la
+          // acción más frecuente y en una lista de más de treinta trucos quedaba
+          // enterrada donde cayera por nombre.
+          ..sort((a, b) {
+            if (a.id == innate.grantedSpellId) return -1;
+            if (b.id == innate.grantedSpellId) return 1;
+            return compareContentNames(a.name, b.name);
+          });
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Cambiar ${granted?.name ?? innate.grantedSpellId}'),
+        content: SizedBox(
+          width: 420,
+          height: 420,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Al terminar un descanso largo podés cambiarlo por otro truco '
+                'de ${_listNames(innate.replaceableFrom)}.',
+                style: Theme.of(dialogContext).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: RadioGroup<String>(
+                  groupValue: innate.spellId,
+                  onChanged: (id) {
+                    if (id != null) _setInnateCantrip(innate, id);
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: ListView(
+                    children: [
+                      for (final spell in options)
+                        RadioListTile<String>(
+                          value: spell.id,
+                          title: Text(spell.name),
+                          subtitle: spell.id == innate.grantedSpellId
+                              ? const Text('El del rasgo')
+                              : null,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Guarda el reemplazo. Volver al truco del rasgo **borra** la entrada en vez
+  /// de escribirla apuntando a sí misma, para que el mapa no acumule ruido.
+  void _setInnateCantrip(InnateSpell innate, String spellId) {
+    final choices = Map<String, String>.from(_c.innateCantripChoices);
+    if (spellId == innate.grantedSpellId) {
+      choices.remove(innate.grantedSpellId);
+    } else {
+      choices[innate.grantedSpellId] = spellId;
+    }
+    _replace(_c.copyWith(innateCantripChoices: choices));
+  }
+
+  /// Nombres de las listas de las que se puede tomar el reemplazo, para el
+  /// texto del diálogo ("la lista de Mago", "Clérigo, Druida o Mago").
+  String _listNames(List<String> classIds) {
+    final names = [
+      for (final id in classIds) repo.characterClass(id)?.name ?? id,
+    ];
+    if (names.length == 1) return 'la lista de ${names.single}';
+    return '${names.sublist(0, names.length - 1).join(", ")} o ${names.last}';
   }
 
   void _openSpellEditor(Spellcasting sc) {

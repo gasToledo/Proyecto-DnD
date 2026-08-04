@@ -185,6 +185,15 @@ class Character {
   /// vieja siga compilando igual sin migración.
   final String? chosenSize;
 
+  /// Trucos innatos reemplazados tras un descanso largo: id del truco que
+  /// concede el rasgo → id del que se lanza en su lugar.
+  ///
+  /// La clave es el conjuro **del contenido**, no el elegido, para que el
+  /// reemplazo se pueda deshacer y para que cambiar de linaje deje la entrada
+  /// huérfana en vez de pisar otra. Un rasgo que no declare
+  /// `GrantSpellEffect.replaceableFrom` ignora lo que haya acá.
+  final Map<String, String> innateCantripChoices;
+
   int level;
 
   /// Puntuaciones asignadas por el método elegido (4d6 o array), antes de
@@ -286,6 +295,7 @@ class Character {
     this.lineageId,
     this.speciesSpellcastingAbility,
     this.chosenSize,
+    this.innateCantripChoices = const {},
     this.level = 1,
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
@@ -323,6 +333,7 @@ class Character {
         'lineageId': lineageId,
         'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
         'chosenSize': chosenSize,
+        'innateCantripChoices': innateCantripChoices,
         'level': level,
         'assignedScores': _abilityMapToJson(assignedScores),
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
@@ -549,6 +560,11 @@ class Character {
       speciesSpellcastingAbility:
           _abilityFromJson(j['speciesSpellcastingAbility']),
       chosenSize: j['chosenSize'] as String?,
+      innateCantripChoices: {
+        for (final e in (j['innateCantripChoices'] as Map? ?? const {}).entries)
+          if (e.key is String && e.value is String)
+            e.key as String: e.value as String,
+      },
       level: j['level'] as int? ?? 1,
       assignedScores: _abilityMapFromJson(j['assignedScores']),
       backgroundAbilityBonuses:
@@ -604,6 +620,7 @@ class Character {
     Object? lineageId = _unset,
     Object? speciesSpellcastingAbility = _unset,
     Object? chosenSize = _unset,
+    Map<String, String>? innateCantripChoices,
     int? level,
     List<String>? featIds,
     List<AsiChoice>? asiChoices,
@@ -641,6 +658,7 @@ class Character {
       chosenSize: identical(chosenSize, _unset)
           ? this.chosenSize
           : chosenSize as String?,
+      innateCantripChoices: innateCantripChoices ?? this.innateCantripChoices,
       level: level ?? this.level,
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,

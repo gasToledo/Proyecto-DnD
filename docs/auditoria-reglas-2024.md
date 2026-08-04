@@ -150,7 +150,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 | Bloque | Estado | Hallazgos y alcance |
 | --- | --- | --- |
-| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. **El Linaje gigante del Goliat (6) y el Linaje dracónico del Dracónido (10) ya son elecciones persistidas y con efecto mecánico**, modeladas como linajes porque así los llama el PHB; el catálogo llega a 24 linajes. La resistencia del Dracónido dejó de ser texto y el Ataque de Aliento es un recurso con usos iguales al bonificador por competencia. **La elección de tamaño ya es una elección persistida** en Humano, Tiefling y Aasimar (Mediano o Pequeño), con `Race.sizeOptions` en el catálogo, `Character.chosenSize` en la ficha y `ComputedSheet.size` resolviéndola; no necesitó migración porque ausente significa "sin elegir" y compila al tamaño de la especie. Falta la misma elección en las 5 especies de FoA —dato, no mecanismo: las fuentes locales no traen su rasgo Tamaño— y el cambio de truco del Alto Elfo. |
+| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. **El Linaje gigante del Goliat (6) y el Linaje dracónico del Dracónido (10) ya son elecciones persistidas y con efecto mecánico**, modeladas como linajes porque así los llama el PHB; el catálogo llega a 24 linajes. La resistencia del Dracónido dejó de ser texto y el Ataque de Aliento es un recurso con usos iguales al bonificador por competencia. **La elección de tamaño ya es una elección persistida** en Humano, Tiefling y Aasimar (Mediano o Pequeño), con `Race.sizeOptions` en el catálogo, `Character.chosenSize` en la ficha y `ComputedSheet.size` resolviéndola; no necesitó migración porque ausente significa "sin elegir" y compila al tamaño de la especie. Falta la misma elección en las 5 especies de FoA —dato, no mecanismo: las fuentes locales no traen su rasgo Tamaño—. **El cambio de truco tras un descanso largo también está**, con `GrantSpellEffect.replaceableFrom` declarando de qué listas sale el reemplazo (Alto Elfo de Mago; Don Feérico del Khoravar de Clérigo, Druida o Mago) y `Character.innateCantripChoices` guardando la elección. |
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` y `foa_2025` (antes degradaba a `homebrew` en silencio), con la procedencia visible en la app. Estado actual del etiquetado: subclases 12 SRD / 36 PHB / 5 FoA, dotes 9 / 73 / 28, trasfondos 4 / 12 / 17, conjuros 177 / 214 / 1, especies 9 / 1 / 5. Cerrado en todos los bloques salvo equipo, que sigue sin desglose por procedencia. |
 | Trasfondos | corregido | **Cierra Q3**: los 4 trasfondos que faltaban, cargados con los datos del bloque de características de cada uno en el capítulo 4 (más confiable que la tabla resumen de creación de personaje, que quedó cortada por columnas en la extracción). Acólito y Erudito son `srd_2024`; Guía y Marinero, `phb_2024`. Trajeron dos dotes de origen que no estaban: **Iniciado en la Magia (Druida)** y **Matón de Taberna**, con el mismo texto que las variantes de Mago y Clérigo ya cargadas. El catálogo llega a **16 trasfondos y 59 dotes**. Falta verificar las tres características ofrecidas y el equipo inicial de los 16. |
@@ -168,8 +168,9 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 - Elfo: tres linajes; los conjuros de nivel 3 y 5 tienen un uso gratuito por
   descanso largo y admiten espacios apropiados.
-- Alto Elfo: Prestidigitación, Detectar Magia y Paso Brumoso. Queda pendiente
-  modelar el reemplazo del truco tras cada descanso largo.
+- Alto Elfo: Prestidigitación, Detectar Magia y Paso Brumoso. El reemplazo del
+  truco tras cada descanso largo ya está modelado; los conjuros de nivel 3 y 5
+  siguen siendo fijos, que es lo que dice el manual, y hay un test que lo fija.
 - Drow: visión en la oscuridad de 120 pies, Luces Danzantes, Fuego Feérico y
   Oscuridad.
 - Elfo de los Bosques: velocidad de 35 pies, Artificio Druídico, Zancada
@@ -206,7 +207,29 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
   markdown del PHB ni el de FoA traen el rasgo Tamaño —los capítulos de especie
   son índices, como ya advertía la nota de fuentes— y los PDF no están. Es
   dato, no mecanismo: agregarlas es completar `sizeOptions`.
-- Cambio de truco del Alto Elfo después de un descanso largo.
+- ~~Cambio de truco del Alto Elfo después de un descanso largo.~~ **Resuelto**,
+  y con él el Don Feérico del Khoravar, que es la misma regla.
+
+  `GrantSpellEffect.replaceableFrom` declara **de qué listas** se puede tomar el
+  reemplazo, y vacío —el caso normal— significa que el conjuro es fijo. Es una
+  lista y no un id porque el Khoravar elige entre tres (Clérigo, Druida o Mago)
+  y el Alto Elfo entre una (Mago). Se declara por id de clase y no enumerando
+  conjuros, así que sumar contenido no toca el motor: las opciones salen de
+  `spellsForList`, la misma consulta que usa la magia de clase.
+
+  El reemplazo vive en `Character.innateCantripChoices`, indexado por el
+  conjuro **del contenido** y no por el elegido: así volver al original es
+  borrar la entrada, y cambiar de linaje deja el dato huérfano en vez de pisar
+  otro rasgo. `InnateSpell` expone `grantedSpellId` y `replaceableFrom` para
+  que la UI no recorra los efectos del linaje por su cuenta.
+
+  Tampoco necesitó migración: ausente es "sin cambios".
+
+  El compilador revalida en cada compilación, como con el tamaño. El reemplazo
+  tiene que existir, **tener el mismo nivel** que el original —un truco se
+  cambia por otro truco, no por un conjuro de nivel 1— y estar en alguna de las
+  listas declaradas; si no, se ignora en silencio. El recurso de usos se indexa
+  por el conjuro original, para que cambiar el truco no devuelva usos gastados.
 - Lanzamiento explícito de conjuros innatos usando espacios desde la ficha.
 - ~~Elecciones de ascendencia del Dracónido y del Goliat.~~ **Resuelto**: el
   PHB las llama *Linaje gigante* y *Linaje dracónico*, así que se modelaron con
@@ -478,9 +501,11 @@ Ordenados por costo, del más barato al más caro:
       mecanismo nuevo porque el truco es **concreto**, no a elección. La
       aptitud del JSON es solo el valor por defecto: el compilador la
       reemplaza por `speciesSpellcastingAbility`, igual que con el Tiefling,
-      así que la elección del jugador ya funciona. Queda pendiente lo único
-      que sí es una elección, cambiar el truco tras un descanso largo, que es
-      la misma deuda del Alto Elfo.
+      así que la elección del jugador ya funciona. Lo único que sí era una
+      elección —cambiar el truco tras un descanso largo, la misma deuda del
+      Alto Elfo— **también se cerró**: ver el pendiente derivado de la primera
+      pasada. El Khoravar es el caso que obligó a que `replaceableFrom` fuera
+      una lista, porque toma el reemplazo de tres listas y no de una.
 
     Las dos primeras son de las marcas que acaba de tocar el punto 12: se
     cargaron las tablas de conjuros y quedaron sin aplicar los beneficios

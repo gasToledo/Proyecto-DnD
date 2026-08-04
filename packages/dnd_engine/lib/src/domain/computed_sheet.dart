@@ -53,6 +53,19 @@ class InnateSpell {
   /// Rasgo que lo concede, para mostrarlo en la ficha (p.ej. "Alto Elfo").
   final String source;
 
+  /// Conjuro que declara el contenido, cuando [spellId] es un reemplazo
+  /// elegido. Igual a [spellId] mientras no se haya cambiado nada.
+  ///
+  /// Es la clave de `Character.innateCantripChoices`: la UI la necesita para
+  /// guardar o deshacer el cambio, porque el mapa se indexa por el conjuro
+  /// original y no por el que se está lanzando.
+  final String grantedSpellId;
+
+  /// Clases de cuyas listas se puede reemplazar este truco tras un descanso
+  /// largo; vacío si es fijo. Es el contrato con la aplicación: pregunta a la
+  /// ficha en vez de mirar los efectos del linaje por su cuenta.
+  final List<String> replaceableFrom;
+
   const InnateSpell({
     required this.spellId,
     required this.name,
@@ -62,9 +75,17 @@ class InnateSpell {
     required this.saveDc,
     required this.attackBonus,
     this.source = '',
-  });
+    String? grantedSpellId,
+    this.replaceableFrom = const [],
+  }) : grantedSpellId = grantedSpellId ?? spellId;
 
   bool get isCantrip => level == 0;
+
+  /// Si el jugador puede cambiarlo tras un descanso largo.
+  bool get isReplaceable => replaceableFrom.isNotEmpty;
+
+  /// Si lo que se lanza no es lo que declara el contenido.
+  bool get isReplaced => spellId != grantedSpellId;
 
   Map<String, dynamic> toJson() => {
         'spellId': spellId,
@@ -75,6 +96,8 @@ class InnateSpell {
         'saveDc': saveDc,
         'attackBonus': attackBonus,
         'source': source,
+        'grantedSpellId': grantedSpellId,
+        'replaceableFrom': replaceableFrom,
       };
 }
 

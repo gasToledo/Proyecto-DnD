@@ -105,6 +105,9 @@ sealed class Effect {
           spellId: json['spellId'] as String,
           ability: Ability.fromKey(json['ability'] as String),
           use: InnateSpellUse.fromJson(json['use'] as String?),
+          replaceableFrom: (json['replaceableFrom'] as List? ?? const [])
+              .whereType<String>()
+              .toList(),
         ),
       'alwaysPreparedSpell' => AlwaysPreparedSpellEffect(
           spellId: json['spellId'] as String,
@@ -249,10 +252,28 @@ class GrantSpellEffect extends Effect {
   final String spellId;
   final Ability ability;
   final InnateSpellUse use;
+
+  /// Clases de cuyas listas se puede **reemplazar** este truco tras un descanso
+  /// largo. Vacío —el caso normal— significa que el conjuro es fijo.
+  ///
+  /// Es el mecanismo del Alto Elfo ("conocés Prestidigitación; al terminar un
+  /// descanso largo podés cambiarlo por otro truco de la lista de Mago") y del
+  /// Don Feérico del Khoravar, que puede cambiarlo por uno de **tres** listas
+  /// —Clérigo, Druida o Mago— y por eso esto es una lista y no un solo id.
+  ///
+  /// Se declara por id de clase y no enumerando conjuros para que agregar
+  /// contenido no toque el motor: las opciones salen de `spellsForList`, la
+  /// misma consulta que usa la magia de clase.
+  ///
+  /// El reemplazo elegido vive en `Character.innateCantripChoices`, no acá:
+  /// esto es contenido y aquello es la elección del jugador.
+  final List<String> replaceableFrom;
+
   const GrantSpellEffect({
     required this.spellId,
     required this.ability,
     this.use = InnateSpellUse.atWill,
+    this.replaceableFrom = const [],
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -260,6 +281,7 @@ class GrantSpellEffect extends Effect {
         'spellId': spellId,
         'ability': ability.name,
         'use': use.toJson(),
+        'replaceableFrom': replaceableFrom,
       };
 }
 

@@ -2,8 +2,7 @@ import '../domain/content.dart';
 import '../domain/data_version.dart';
 import '../domain/name_sort.dart';
 import 'content_pack_loader_stub.dart'
-    if (dart.library.io) 'content_pack_loader_io.dart'
-    as _loader;
+    if (dart.library.io) 'content_pack_loader_io.dart' as _loader;
 
 class ContentPackManifest {
   static const int currentFormatVersion = 1;
@@ -79,15 +78,15 @@ class ContentRepository {
     Map<String, Weapon>? weapons,
     Map<String, Armor>? armor,
     Map<String, Spell>? spells,
-  }) : races = races ?? {},
-       classes = classes ?? {},
-       subclasses = subclasses ?? {},
-       lineages = lineages ?? {},
-       backgrounds = backgrounds ?? {},
-       feats = feats ?? {},
-       weapons = weapons ?? {},
-       armor = armor ?? {},
-       spells = spells ?? {};
+  })  : races = races ?? {},
+        classes = classes ?? {},
+        subclasses = subclasses ?? {},
+        lineages = lineages ?? {},
+        backgrounds = backgrounds ?? {},
+        feats = feats ?? {},
+        weapons = weapons ?? {},
+        armor = armor ?? {},
+        spells = spells ?? {};
 
   Race? race(String id) => races[id];
   CharacterClass? characterClass(String id) => classes[id];
@@ -114,33 +113,34 @@ class ContentRepository {
   /// Es lo único que hace falta para que un catálogo nuevo (invocaciones,
   /// estilos) sea puro dato: nadie lleva una lista de ids.
   List<Feat> featsByCategory(String category) => sortedByName(
-    feats.values.where((f) => f.category == category),
-    (e) => e.name,
-  );
+        feats.values.where((f) => f.category == category),
+        (e) => e.name,
+      );
   List<Weapon> get weaponsSorted => sortedByName(weapons.values, (e) => e.name);
   List<Armor> get armorSorted => sortedByName(armor.values, (e) => e.name);
 
   /// Subclases que pertenecen a una clase (id de clase), ordenadas por nombre.
   List<Subclass> subclassesForClass(String classId) => sortedByName(
-    subclasses.values.where((s) => s.classId == classId),
-    (e) => e.name,
-  );
+        subclasses.values.where((s) => s.classId == classId),
+        (e) => e.name,
+      );
 
   /// Linajes que pertenecen a una especie, ordenados por nombre. Vacío = esa
   /// especie no exige elegir linaje.
   List<Lineage> lineagesForRace(String raceId) => sortedByName(
-    lineages.values.where((l) => l.raceId == raceId),
-    (e) => e.name,
-  );
+        lineages.values.where((l) => l.raceId == raceId),
+        (e) => e.name,
+      );
 
   /// Conjuros de la lista de una clase (id de clase), ordenados por nivel y
   /// después por nombre: el nivel manda porque es como se leen en la ficha.
   List<Spell> spellsForList(String classId) =>
-      spells.values.where((s) => s.classes.contains(classId)).toList()..sort(
-        (a, b) => a.level != b.level
-            ? a.level.compareTo(b.level)
-            : compareContentNames(a.name, b.name),
-      );
+      spells.values.where((s) => s.classes.contains(classId)).toList()
+        ..sort(
+          (a, b) => a.level != b.level
+              ? a.level.compareTo(b.level)
+              : compareContentNames(a.name, b.name),
+        );
 
   /// Todos los conjuros por nivel y nombre (catálogo homebrew, que no filtra
   /// por lista de clase).

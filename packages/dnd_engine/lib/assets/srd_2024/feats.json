@@ -409,6 +409,14 @@
     "category": "origin",
     "effects": [
       {
+        "type": "proficiencyChoice",
+        "groupId": "feat:crafter:tools",
+        "name": "Fabricante: herramientas",
+        "count": 3,
+        "includeSkills": false,
+        "tools": ["artisans-tools"]
+      },
+      {
         "type": "passiveTrait",
         "name": "Fabricante",
         "description": "Ganas competencia con tres herramientas de artesano a tu elección, obtienes 20% de descuento al comprar objetos no mágicos y puedes fabricar más rápido durante un descanso."

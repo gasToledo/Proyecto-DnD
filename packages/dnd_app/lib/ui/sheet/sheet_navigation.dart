@@ -238,11 +238,14 @@ extension _SheetNavigation on _SheetScreenState {
               children: [
                 Icon(icon, size: 18, color: pal.gold),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(fontFamily: 'Georgia', fontSize: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontFamily: 'Georgia', fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                if (trailing != null) ...[const Spacer(), trailing],
+                ?trailing,
               ],
             ),
           ),

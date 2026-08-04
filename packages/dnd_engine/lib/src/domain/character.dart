@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 8;
+  static const int currentSchemaVersion = 9;
 
   final String id;
   String name;
@@ -214,6 +214,9 @@ class Character {
   /// especie y clase, y su cuenta esperada no depende de las dotes que tenga
   /// el personaje.
   final List<String> chosenProficiencies;
+
+  /// Elecciones de competencia por origen estable.
+  final Map<String, List<String>> proficiencyChoices;
 
   /// Elecciones abiertas resueltas: id de grupo → ids de opción elegidos.
   ///
@@ -301,6 +304,7 @@ class Character {
     this.backgroundAbilityBonuses = const {},
     this.chosenSkills = const [],
     this.chosenProficiencies = const [],
+    this.proficiencyChoices = const {},
     this.featureChoices = const {},
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
@@ -339,6 +343,7 @@ class Character {
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
         'chosenSkills': chosenSkills,
         'chosenProficiencies': chosenProficiencies,
+        'proficiencyChoices': proficiencyChoices,
         'featureChoices': featureChoices,
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
@@ -538,6 +543,10 @@ class Character {
           _renameFeatIds(migrated, _featIdRenames7to8);
           version = 8;
           migrated['schemaVersion'] = version;
+        case 8:
+          migrated.putIfAbsent('proficiencyChoices', () => {});
+          version = 9;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -575,6 +584,7 @@ class Character {
       chosenProficiencies: (j['chosenProficiencies'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
+      proficiencyChoices: _choiceMap(j['proficiencyChoices']),
       featureChoices: _choiceMap(j['featureChoices']),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
           .map((e) => e as String)
@@ -627,6 +637,7 @@ class Character {
     List<int>? hpPerLevel,
     Map<String, List<String>>? featureChoices,
     List<String>? chosenProficiencies,
+    Map<String, List<String>>? proficiencyChoices,
     List<String>? cantripIds,
     List<String>? spellIds,
     Object? equippedArmorId = _unset,
@@ -664,6 +675,7 @@ class Character {
       backgroundAbilityBonuses: backgroundAbilityBonuses,
       chosenSkills: chosenSkills,
       chosenProficiencies: chosenProficiencies ?? this.chosenProficiencies,
+      proficiencyChoices: proficiencyChoices ?? this.proficiencyChoices,
       featureChoices: featureChoices ?? this.featureChoices,
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,

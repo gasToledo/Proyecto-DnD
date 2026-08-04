@@ -6,10 +6,49 @@ extension _SheetGeneralSection on _SheetScreenState {
   Widget _buildPersonaje() {
     final s = sheet;
     final warnings = CharacterValidator(repo).validate(_c);
+    final choiceSlots = s.proficiencyChoiceSlots;
+    final hasPending = choiceSlots.any((slot) => slot.pending > 0);
+    final canReplace = choiceSlots.any((slot) => slot.replaceable);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (hasPending || canReplace) ...[
+          sheetCard(
+            icon: Icons.handyman,
+            title: hasPending
+                ? 'Elecciones de competencia pendientes'
+                : 'Competencia reemplazable',
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasPending
+                        ? 'Resolv\u00e9 las elecciones sin recrear el personaje.'
+                        : 'Este rasgo permite cambiar la elecci\u00f3n.',
+                  ),
+                  if (hasPending) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      choiceSlots
+                          .where((slot) => slot.pending > 0)
+                          .map((slot) => slot.name)
+                          .join(' \u00b7 '),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: _resolveProficiencyChoices,
+                    child: Text(hasPending ? 'Resolver' : 'Cambiar'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         if (warnings.isNotEmpty) ...[
           sheetCard(
             icon: Icons.warning_amber,
@@ -36,6 +75,128 @@ extension _SheetGeneralSection on _SheetScreenState {
           [_passivesCard(s)],
         ]),
       ],
+    );
+  }
+
+  Future<void> _resolveProficiencyChoices() async {
+    final initial = sheet.proficiencyChoiceSlots;
+    final choices = <String, List<String>>{
+      for (final slot in initial) slot.groupId: List.of(slot.chosen),
+    };
+
+    final result = await showDialog<Map<String, List<String>>>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final previewCharacter = _c.copyWith(
+            chosenProficiencies: const [],
+            proficiencyChoices: choices,
+          );
+          final preview = CharacterCompiler(repo).compile(previewCharacter);
+          final slots = preview.proficiencyChoiceSlots;
+          final fixed = <String>{
+            ...preview.skillProficiencies,
+            ...preview.toolProficiencies,
+          };
+          for (final selected in choices.values) {
+            fixed.removeAll(selected);
+          }
+
+          bool complete() => slots.every((slot) {
+            final selected = choices[slot.groupId] ?? const <String>[];
+            return selected.length == slot.count &&
+                selected.every(slot.options.contains);
+          });
+
+          return AlertDialog(
+            title: const Text('Elegir competencias'),
+            content: SizedBox(
+              width: 720,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Las opciones que ya ten\u00e9s por otra v\u00eda quedan bloqueadas.',
+                    ),
+                    const SizedBox(height: 16),
+                    for (final slot in slots) ...[
+                      Text(
+                        slot.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        '${choices[slot.groupId]?.length ?? 0}/${slot.count}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final id in slot.options)
+                            Builder(
+                              builder: (context) {
+                                final selected =
+                                    choices[slot.groupId]?.contains(id) ??
+                                    false;
+                                final selectedElsewhere = choices.entries
+                                    .where((entry) => entry.key != slot.groupId)
+                                    .expand((entry) => entry.value)
+                                    .contains(id);
+                                final locked =
+                                    !selected &&
+                                    (fixed.contains(id) || selectedElsewhere);
+                                return FilterChip(
+                                  label: Text(
+                                    slot.skills.contains(id)
+                                        ? Skill.labelFor(id)
+                                        : toolProficiencyLabel(id),
+                                  ),
+                                  selected: selected,
+                                  onSelected: locked
+                                      ? null
+                                      : (value) => setDialogState(() {
+                                          final current =
+                                              choices[slot.groupId] ??= [];
+                                          if (!value) {
+                                            current.remove(id);
+                                          } else if (current.length <
+                                              slot.count) {
+                                            current.add(id);
+                                          }
+                                        }),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: complete()
+                    ? () => Navigator.pop(dialogContext, choices)
+                    : null,
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (result == null || !mounted) return;
+    _replace(
+      _c.copyWith(chosenProficiencies: const [], proficiencyChoices: result),
     );
   }
 

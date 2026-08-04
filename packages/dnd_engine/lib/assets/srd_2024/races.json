@@ -402,7 +402,7 @@
     "tagline": "Hijos de Khorvaire, el puente entre",
     "size": "Mediano",
     "speed": 30,
-    "skillChoiceCount": 1,
+    "skillChoiceCount": 0,
     "skillChoiceFrom": [],
     "effects": [
       {
@@ -435,6 +435,14 @@
         "type": "passiveTrait",
         "name": "Resistencia al Letargo",
         "description": "Cuando fallás una salvación para evitar o terminar el estado inconsciente, podés tener éxito en su lugar. No podés volver a usarlo hasta terminar 1d4 descansos largos."
+      },
+      {
+        "type": "proficiencyChoice",
+        "groupId": "race:khoravar:skill-versatility",
+        "name": "Versatilidad de Habilidad",
+        "count": 1,
+        "includeTools": true,
+        "replaceable": true
       },
       {
         "type": "passiveTrait",
@@ -523,6 +531,14 @@
         "type": "passiveTrait",
         "name": "Descanso del Centinela",
         "description": "No necesitás dormir y la magia no puede dormirte. Podés terminar un descanso largo en 6 horas si las pasás inactivo e inmóvil: parecés inerte pero seguís consciente."
+      },
+      {
+        "type": "proficiencyChoice",
+        "groupId": "race:warforged:specialized-design-tool",
+        "name": "Dise\u00f1o Especializado: herramienta",
+        "count": 1,
+        "includeSkills": false,
+        "includeTools": true
       },
       {
         "type": "passiveTrait",

@@ -279,6 +279,40 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('resuelve herramientas pendientes sin recrear el personaje', (
+    tester,
+  ) async {
+    final character = Character(
+      id: 'legacy-soldier',
+      name: 'Veterano',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      assignedScores: {for (final ability in Ability.values) ability: 12},
+      hpPerLevel: const [10],
+    );
+    final controller = await pumpSheet(tester, character);
+
+    expect(find.text('Elecciones de competencia pendientes'), findsOneWidget);
+    final resolve = find.widgetWithText(FilledButton, 'Resolver');
+    await tester.ensureVisible(resolve);
+    await tester.tap(resolve);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Juego de dados'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elecciones de competencia pendientes'), findsNothing);
+    expect(controller.characters.single.id, character.id);
+    expect(
+      controller.characters.single.proficiencyChoices.values.single,
+      contains('dice-set'),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   group('Combate con dos armas desde la ficha', () {
     Character dualWielder() => Character(
       id: 'dual-sheet',

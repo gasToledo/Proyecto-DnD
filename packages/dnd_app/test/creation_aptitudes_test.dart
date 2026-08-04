@@ -140,8 +140,9 @@ void main() {
   ) async {
     await gotoAptitudes(tester);
 
-    // Antes de tomarla, la sección no existe: la declara la dote, no el paso.
-    expect(find.text('Competencias por dote'.toUpperCase()), findsNothing);
+    // Soldado ya declara una elección de set de juego.
+    expect(find.text('Competencias a elecci\u00f3n'.toUpperCase()), findsOneWidget);
+    expect(find.text('0/1'), findsOneWidget);
 
     final card = find.text('Habilidoso');
     await tester.scrollUntilVisible(card, 200);
@@ -149,8 +150,8 @@ void main() {
     await tester.tap(card);
     await tester.pumpAndSettle();
 
-    expect(find.text('Competencias por dote'.toUpperCase()), findsOneWidget);
-    expect(find.text('0/3'), findsOneWidget);
+    expect(find.text('Competencias a elecci\u00f3n'.toUpperCase()), findsOneWidget);
+    expect(find.text('0/4'), findsOneWidget);
 
     // Ofrece herramientas además de habilidades, que es lo que la distingue de
     // las competencias de clase y especie.
@@ -159,7 +160,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(tool);
     await tester.pumpAndSettle();
-    expect(find.text('1/3'), findsOneWidget);
+    expect(find.text('1/4'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

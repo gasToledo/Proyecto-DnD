@@ -206,6 +206,7 @@ extension _SheetGeneralSection on _SheetScreenState {
         ),
         box(_acPlaque(s.armorClass)),
         box(StatPlaque(label: 'Velocidad', value: '${s.speed}')),
+        box(StatPlaque(label: 'Tamaño', value: s.size)),
         box(StatPlaque(label: 'Iniciativa', value: _signed(s.initiative))),
         box(StatPlaque(label: 'Perc. pasiva', value: '${s.passivePerception}')),
         box(StatPlaque(label: 'Competencia', value: '+${s.proficiencyBonus}')),

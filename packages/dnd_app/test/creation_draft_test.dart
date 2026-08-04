@@ -427,10 +427,14 @@ void main() {
       expect(d.pendingFor(CreationStep.puntuaciones), isEmpty);
     });
 
-    test('Raza sin linajes solo exige elegir especie', () {
+    test('Raza sin linajes ni elección de tamaño solo exige la especie', () {
+      // El Enano no tiene linajes y es Mediano y punto. El Humano ya no sirve
+      // de ejemplo: además de no tener linajes, elige tamaño.
       final d = newDraft();
       expect(d.pendingFor(CreationStep.raza), isNotEmpty);
-      d.raceId = 'human';
+      d.raceId = 'dwarf';
+      expect(d.lineageOptions, isEmpty);
+      expect(d.sizeOptions, isEmpty);
       expect(d.pendingFor(CreationStep.raza), isEmpty);
     });
 
@@ -455,6 +459,14 @@ void main() {
           contains('Elegí la aptitud mágica del linaje.'),
         );
         d.speciesSpellcastingAbility = Ability.charisma;
+        // El Tiefling además elige tamaño; el Elfo y el Gnomo no.
+        if (d.sizeOptions.isNotEmpty) {
+          expect(
+            d.pendingFor(CreationStep.raza),
+            contains('Elegí el tamaño de la especie.'),
+          );
+          d.chosenSize = d.sizeOptions.first;
+        }
         expect(d.pendingFor(CreationStep.raza), isEmpty);
       }
     });
@@ -588,7 +600,10 @@ void main() {
 
     test('completar habilita el siguiente, y volver atrás sigue permitido', () {
       final d = newDraft();
-      d.raceId = repo.races.values.first.id;
+      // Una especie que no pide nada más: el orden del catálogo no garantiza
+      // que la primera esté completa con solo elegirla (Aasimar elige tamaño).
+      d.raceId = 'dwarf';
+      expect(d.pendingFor(CreationStep.raza), isEmpty);
       expect(d.canGoTo(CreationStep.clase), isTrue);
       expect(
         d.canGoTo(CreationStep.trasfondo),

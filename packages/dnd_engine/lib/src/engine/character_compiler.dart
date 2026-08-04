@@ -156,6 +156,7 @@ class CharacterCompiler {
 
     final ac = _armorClass(c, builder, mods);
     final speed = _speed(c, builder);
+    final size = _size(c, race);
 
     final passivePerception = 10 +
         wisMod +
@@ -186,6 +187,7 @@ class CharacterCompiler {
       maxHp: maxHp,
       hitDie: klass?.hitDie ?? 8,
       armorClass: ac,
+      size: size,
       speed: speed,
       initiative: dexMod,
       passivePerception: passivePerception,
@@ -331,6 +333,21 @@ class CharacterCompiler {
       if (!voided) speed += b.unarmoredMovementBonus;
     }
     return speed;
+  }
+
+  /// Tamaño final: el elegido si la especie ofrece la elección y el valor sigue
+  /// siendo una de sus opciones; si no, el de la especie.
+  ///
+  /// Se revalida contra el catálogo en cada compilación a propósito: un
+  /// personaje guardado puede traer un tamaño que la especie ya no ofrece
+  /// —porque cambió de especie, o porque el homebrew que lo declaraba
+  /// desapareció— y en ese caso vale más caer al valor de la especie que
+  /// mostrar un tamaño que nada respalda.
+  String _size(Character c, Race? race) {
+    if (race == null) return c.chosenSize ?? 'Mediano';
+    final chosen = c.chosenSize;
+    if (chosen != null && race.sizeOptions.contains(chosen)) return chosen;
+    return race.size;
   }
 
   int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {

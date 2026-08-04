@@ -44,7 +44,19 @@ class Race {
   final String id;
   final String name;
   final ContentSource source;
+
+  /// Tamaño de la especie. Cuando [sizeOptions] no está vacío es solo el valor
+  /// por defecto: el que manda es el elegido por el personaje.
   final String size;
+
+  /// Tamaños entre los que elige el jugador al seleccionar la especie. Vacío
+  /// —el caso de las 12 especies restantes— significa "sin elección": el
+  /// tamaño es [size] y no hay nada que preguntar.
+  ///
+  /// El PHB 2024 la declara explícita en Humano, Tiefling y Aasimar, que son
+  /// Mediano o Pequeño.
+  final List<String> sizeOptions;
+
   final int speed;
   final List<Effect> effects;
 
@@ -65,6 +77,7 @@ class Race {
     required this.name,
     required this.source,
     this.size = 'Mediano',
+    this.sizeOptions = const [],
     this.speed = 30,
     this.effects = const [],
     this.skillChoiceCount = 0,
@@ -78,6 +91,7 @@ class Race {
         'name': name,
         'source': source.toJson(),
         'size': size,
+        'sizeOptions': sizeOptions,
         'speed': speed,
         'skillChoiceCount': skillChoiceCount,
         'skillChoiceFrom': skillChoiceFrom,
@@ -91,6 +105,9 @@ class Race {
         name: j['name'] as String,
         source: ContentSource.fromJson(j['source'] as String?),
         size: j['size'] as String? ?? 'Mediano',
+        sizeOptions: (j['sizeOptions'] as List? ?? const [])
+            .whereType<String>()
+            .toList(),
         speed: j['speed'] as int? ?? 30,
         effects: Effect.listFromJson(j['effects']),
         skillChoiceCount: j['skillChoiceCount'] as int? ?? 0,

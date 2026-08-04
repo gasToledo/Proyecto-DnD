@@ -150,7 +150,7 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 | Bloque | Estado | Hallazgos y alcance |
 | --- | --- | --- |
-| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. **El Linaje gigante del Goliat (6) y el Linaje dracónico del Dracónido (10) ya son elecciones persistidas y con efecto mecánico**, modeladas como linajes porque así los llama el PHB; el catálogo llega a 24 linajes. La resistencia del Dracónido dejó de ser texto y el Ataque de Aliento es un recurso con usos iguales al bonificador por competencia. Falta la elección de tamaño (Humano, Tiefling **y Aasimar**, que en el PHB son Mediano o Pequeño) y el cambio de truco del Alto Elfo. |
+| Especies y linajes | en revisión | **Las 10 especies del catálogo son exactamente las 10 del PHB**, y coinciden los linajes de Elfo (3) y Gnomo (2), la ausencia de linaje en Orco y Aasimar, y la velocidad de 35 pies del Goliat. **El Linaje gigante del Goliat (6) y el Linaje dracónico del Dracónido (10) ya son elecciones persistidas y con efecto mecánico**, modeladas como linajes porque así los llama el PHB; el catálogo llega a 24 linajes. La resistencia del Dracónido dejó de ser texto y el Ataque de Aliento es un recurso con usos iguales al bonificador por competencia. **La elección de tamaño ya es una elección persistida** en Humano, Tiefling y Aasimar (Mediano o Pequeño), con `Race.sizeOptions` en el catálogo, `Character.chosenSize` en la ficha y `ComputedSheet.size` resolviéndola; no necesitó migración porque ausente significa "sin elegir" y compila al tamaño de la especie. Falta la misma elección en las 5 especies de FoA —dato, no mecanismo: las fuentes locales no traen su rasgo Tamaño— y el cambio de truco del Alto Elfo. |
 | Magia de linaje | corregido | INT/SAB/CAR ahora es una elección persistida. Se agregó Artificio Druídico al Elfo de los Bosques y se corrigieron los usos de Hablar con los Animales del Gnomo de los Bosques. |
 | Procedencia del catálogo | en revisión | `ContentSource` ya conoce `phb_2024` y `foa_2025` (antes degradaba a `homebrew` en silencio), con la procedencia visible en la app. Estado actual del etiquetado: subclases 12 SRD / 36 PHB / 5 FoA, dotes 9 / 73 / 28, trasfondos 4 / 12 / 17, conjuros 177 / 214 / 1, especies 9 / 1 / 5. Cerrado en todos los bloques salvo equipo, que sigue sin desglose por procedencia. |
 | Trasfondos | corregido | **Cierra Q3**: los 4 trasfondos que faltaban, cargados con los datos del bloque de características de cada uno en el capítulo 4 (más confiable que la tabla resumen de creación de personaje, que quedó cortada por columnas en la extracción). Acólito y Erudito son `srd_2024`; Guía y Marinero, `phb_2024`. Trajeron dos dotes de origen que no estaban: **Iniciado en la Magia (Druida)** y **Matón de Taberna**, con el mismo texto que las variantes de Mago y Clérigo ya cargadas. El catálogo llega a **16 trasfondos y 59 dotes**. Falta verificar las tres características ofrecidas y el equipo inicial de los 16. |
@@ -184,9 +184,28 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 
 ### Pendientes derivados
 
-- Elección Pequeño/Mediano para Humano, Tiefling y Aasimar. El SRD la declara
-  explícita ("elegido al seleccionar la especie"), y el PHB confirma que el
-  Aasimar también la tiene, así que es una elección a persistir.
+- ~~Elección Pequeño/Mediano para Humano, Tiefling y Aasimar.~~ **Resuelto**.
+  `Race.sizeOptions` declara los tamaños entre los que se elige y vacío
+  significa "sin elección", que es el caso de las otras 12 especies;
+  `Character.chosenSize` persiste la elección y `ComputedSheet.size` la
+  resuelve, así que la UI nunca lee `Race.size` —que para estas tres es solo el
+  valor por defecto—.
+
+  **No hizo falta migración**: ausente se lee como null y null significa "sin
+  elegir", que compila al tamaño de la especie. Una ficha vieja da exactamente
+  la misma ficha que antes.
+
+  El compilador **revalida contra el catálogo en cada compilación** en vez de
+  confiar en el dato guardado: un personaje puede traer un tamaño que su
+  especie ya no ofrece —cambió de especie, o desapareció el homebrew que lo
+  declaraba— y ahí vale más caer al de la especie que mostrar un tamaño que
+  nada respalda. El validador avisa en los tres casos: falta elegir, el valor
+  no es una opción, y la especie no elige tamaño.
+
+  Queda fuera la elección de tamaño de las **5 especies de FoA**: ni el
+  markdown del PHB ni el de FoA traen el rasgo Tamaño —los capítulos de especie
+  son índices, como ya advertía la nota de fuentes— y los PDF no están. Es
+  dato, no mecanismo: agregarlas es completar `sizeOptions`.
 - Cambio de truco del Alto Elfo después de un descanso largo.
 - Lanzamiento explícito de conjuros innatos usando espacios desde la ficha.
 - ~~Elecciones de ascendencia del Dracónido y del Goliat.~~ **Resuelto**: el

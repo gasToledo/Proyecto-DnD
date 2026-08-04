@@ -267,6 +267,12 @@ class ComputedSheet {
   final int maxHp;
   final int hitDie;
   final int armorClass;
+
+  /// Tamaño ya resuelto: el elegido por el personaje si la especie ofrece la
+  /// elección, y si no el de la especie. La UI lee esto y nunca `Race.size`,
+  /// que para Humano, Tiefling y Aasimar es solo el valor por defecto.
+  final String size;
+
   final int speed;
   final int initiative;
   final int passivePerception;
@@ -329,6 +335,7 @@ class ComputedSheet {
     required this.maxHp,
     required this.hitDie,
     required this.armorClass,
+    this.size = 'Mediano',
     required this.speed,
     required this.initiative,
     required this.passivePerception,

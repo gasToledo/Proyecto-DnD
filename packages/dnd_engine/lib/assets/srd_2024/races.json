@@ -6,6 +6,7 @@
     "iconId": "person",
     "tagline": "Ambiciosos y adaptables",
     "size": "Mediano",
+    "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
     "skillChoiceCount": 1,
     "skillChoiceFrom": [],
@@ -227,6 +228,7 @@
     "iconId": "whatshot",
     "tagline": "Marcados por un legado de otro plano",
     "size": "Mediano",
+    "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
     "effects": [
       {
@@ -279,6 +281,7 @@
     "iconId": "auto_awesome",
     "tagline": "Tocados por la luz celestial",
     "size": "Mediano",
+    "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
     "effects": [
       {

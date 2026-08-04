@@ -36,6 +36,7 @@ void main() {
     }
 
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
     await next();
     await tapOption(tester, 'Mago');
     await next();

@@ -79,6 +79,12 @@ class CreationDraft {
     }.contains(speciesSpellcastingAbility)) {
       draft.speciesSpellcastingAbility = speciesSpellcastingAbility;
     }
+    // Se acepta solo si sigue siendo una opción de la especie restaurada: al
+    // cambiar de especie el tamaño viejo deja de valer.
+    final chosenSize = json['chosenSize'];
+    if (chosenSize is String && draft.sizeOptions.contains(chosenSize)) {
+      draft.chosenSize = chosenSize;
+    }
     final backgroundId = json['backgroundId'];
     if (backgroundId is String && repo.background(backgroundId) != null) {
       draft.backgroundId = backgroundId;
@@ -248,6 +254,10 @@ class CreationDraft {
   String? raceId;
   String? lineageId;
   Ability? speciesSpellcastingAbility;
+
+  /// Tamaño elegido, para las especies que lo ofrecen. Null = sin elegir.
+  String? chosenSize;
+
   final Set<String> raceSkills = {};
   String? raceFeatId; // dote de origen de la especie (p.ej. Humano "Versátil")
   String? backgroundId;
@@ -294,6 +304,7 @@ class CreationDraft {
     'raceId': raceId,
     'lineageId': lineageId,
     'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
+    'chosenSize': chosenSize,
     'raceSkills': raceSkills.toList(),
     'raceFeatId': raceFeatId,
     'backgroundId': backgroundId,
@@ -325,6 +336,9 @@ class CreationDraft {
     final value = lineageId == null ? null : repo.lineage(lineageId!);
     return value?.raceId == raceId ? value : null;
   }
+
+  /// Tamaños que ofrece la especie elegida. Vacío = no hay nada que elegir.
+  List<String> get sizeOptions => race?.sizeOptions ?? const [];
 
   bool get lineageUsesSpellcastingAbility =>
       lineage?.features.any(
@@ -368,6 +382,7 @@ class CreationDraft {
       raceId,
       lineageId,
       speciesSpellcastingAbility?.name,
+      chosenSize,
       backgroundId,
       raceFeatId,
       spreadMode.name,
@@ -611,6 +626,9 @@ class CreationDraft {
             speciesSpellcastingAbility == null) {
           return const ['Elegí la aptitud mágica del linaje.'];
         }
+        if (sizeOptions.isNotEmpty && !sizeOptions.contains(chosenSize)) {
+          return const ['Elegí el tamaño de la especie.'];
+        }
         return const [];
 
       case CreationStep.clase:
@@ -755,6 +773,9 @@ class CreationDraft {
       raceId: raceId ?? '',
       lineageId: lineage?.id,
       speciesSpellcastingAbility: speciesSpellcastingAbility,
+      // Solo viaja si la especie realmente lo ofrece: así un tamaño que quedó
+      // de una especie anterior no llega al personaje.
+      chosenSize: sizeOptions.contains(chosenSize) ? chosenSize : null,
       classId: classId,
       backgroundId: backgroundId ?? '',
       level: 1,

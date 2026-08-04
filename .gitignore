@@ -28,3 +28,9 @@ Thumbs.db
 
 # Manuales locales (copyright, no versionar)
 d&d-data/
+
+# Despliegue autoalojado: secretos reales, nunca versionar (ver
+# `.env.example` y `cloudflared/config.example.yml`)
+.env
+cloudflared/config.yml
+cloudflared/creds.json

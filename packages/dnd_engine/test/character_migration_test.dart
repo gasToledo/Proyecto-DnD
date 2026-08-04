@@ -294,6 +294,99 @@ void main() {
     });
   });
 
+  group('v8 → v9: los retratos pasan de ruta absoluta a clave opaca', () {
+    test('una ruta de Windows se convierte en characterId/archivo', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'con-retratos',
+        'name': 'Retratada',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const [
+          r'C:\Users\jugador\FichasDnD\portraits\con-retratos\111.png',
+          r'C:\Users\jugador\FichasDnD\portraits\con-retratos\222.png',
+        ],
+      };
+
+      final migrated = Character.migrateJson(source);
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['portraitPaths'], [
+        'con-retratos/111.png',
+        'con-retratos/222.png',
+      ]);
+      final character = Character.fromJson(source);
+      expect(character.portraitPaths, [
+        'con-retratos/111.png',
+        'con-retratos/222.png',
+      ]);
+      // Ninguna clave conserva nada que identifique la máquina de origen.
+      for (final key in character.portraitPaths) {
+        expect(key.contains(':'), isFalse);
+        expect(key.contains(r'\'), isFalse);
+        expect(key.contains('Users'), isFalse);
+      }
+    });
+
+    test('una ruta POSIX también se reduce a la clave', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'posix',
+        'name': 'Retratada',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const [
+          '/home/jugador/FichasDnD/portraits/posix/333.png',
+        ],
+      };
+
+      expect(
+        Character.fromJson(source).portraitPaths,
+        ['posix/333.png'],
+      );
+    });
+
+    test('sin retratos no agrega nada', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'sin-retratos',
+        'name': 'Sin retrato',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+      };
+
+      expect(Character.fromJson(source).portraitPaths, isEmpty);
+    });
+
+    test('una entrada que no es String se descarta sin perder la ficha', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'basura-retrato',
+        'name': 'Importada',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const [
+          r'C:\Users\jugador\FichasDnD\portraits\basura-retrato\1.png',
+          42,
+          null,
+        ],
+      };
+
+      expect(
+        Character.fromJson(source).portraitPaths,
+        ['basura-retrato/1.png'],
+      );
+    });
+  });
+
   test('rechaza una versión futura con un error comprensible', () {
     final future = {
       'schemaVersion': Character.currentSchemaVersion + 1,

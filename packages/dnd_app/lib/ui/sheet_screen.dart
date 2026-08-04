@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +7,7 @@ import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
+import 'portrait_image.dart';
 import 'portrait_screen.dart';
 import 'spell_edit_screen.dart';
 
@@ -202,12 +201,12 @@ class _SheetScreenState extends State<SheetScreen> {
     );
   }
 
-  void _openPortraitViewer(String path) {
+  void _openPortraitViewer(String portraitKey) {
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black87,
-        pageBuilder: (_, _, _) => _PortraitViewer(path: path),
+        pageBuilder: (_, _, _) => _PortraitViewer(portraitKey: portraitKey),
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
@@ -217,8 +216,12 @@ class _SheetScreenState extends State<SheetScreen> {
   void _openPortrait() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) =>
-            PortraitScreen(character: _c, repo: repo, onUpdated: _replace),
+        builder: (_) => PortraitScreen(
+          character: _c,
+          repo: repo,
+          api: ctrl.api,
+          onUpdated: _replace,
+        ),
       ),
     );
   }

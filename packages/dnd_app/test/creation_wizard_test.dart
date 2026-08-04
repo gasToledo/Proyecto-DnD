@@ -1,34 +1,11 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/creation/creation_draft.dart';
 import 'package:dnd_app/creation/creation_wizard.dart';
-import 'package:dnd_app/data/creation_draft_store.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'creation_helpers.dart';
-
-class _MemoryDraftStore extends CreationDraftStore {
-  CreationDraftSnapshot? snapshot;
-
-  @override
-  Future<CreationDraftSnapshot?> load() async => snapshot;
-
-  @override
-  Future<void> save({
-    required CreationStep step,
-    required Map<String, dynamic> data,
-  }) async {
-    snapshot = CreationDraftSnapshot(
-      step: step,
-      savedAt: DateTime(2026, 7, 24, 20, 30),
-      data: data,
-    );
-  }
-
-  @override
-  Future<void> clear() async => snapshot = null;
-}
 
 void main() {
   late ContentRepository repo;
@@ -179,55 +156,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('¿Descartar este personaje?'), findsNothing);
     expect(find.text('Crear personaje'), findsOneWidget);
-  });
-
-  testWidgets('ofrece continuar un borrador guardado', (tester) async {
-    final draft = CreationDraft(repo)..raceId = 'human';
-    final store = _MemoryDraftStore()
-      ..snapshot = CreationDraftSnapshot(
-        step: CreationStep.clase,
-        savedAt: DateTime(2026, 7, 24, 20, 30),
-        data: draft.toJson(),
-      );
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.dark,
-        home: CreationWizard(repo: repo, onCreate: (_) {}, draftStore: store),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Borrador encontrado'), findsOneWidget);
-    await tester.tap(find.text('Continuar'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Borrador encontrado'), findsNothing);
-    expect(find.text('CLASE'), findsNWidgets(2));
-  });
-
-  testWidgets('guarda elecciones y limpia el borrador al descartarlo', (
-    tester,
-  ) async {
-    final store = _MemoryDraftStore();
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.dark,
-        home: CreationWizard(repo: repo, onCreate: (_) {}, draftStore: store),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tapOption(tester, 'Humano');
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pump();
-    expect(store.snapshot?.data['raceId'], 'human');
-
-    await tester.tap(find.byTooltip('Cancelar'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Descartar'));
-    await tester.pumpAndSettle();
-    expect(store.snapshot, isNull);
   });
 
   // --- Modo dividido de Especie / Clase / Trasfondo -------------------------

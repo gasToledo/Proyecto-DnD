@@ -3,28 +3,37 @@ import 'dart:async';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/foundation.dart';
 
-import 'character_store.dart';
-import 'data_recovery.dart';
+import '../api/api_client.dart';
+import '../api/api_exception.dart';
 
 enum CharacterSaveState { saved, saving, error }
 
-/// Fuente de verdad en memoria de los personajes, respaldada por
-/// [CharacterStore]. Notifica a la UI y persiste con **debounce** ante cada
-/// cambio relevante (brief §3.C.4 / §8).
+/// Fuente de verdad en memoria de los personajes, respaldada por la API del
+/// servidor (ver `design.md`, decisión D6: reemplaza al `CharacterStore` de
+/// archivos, no lo porta). Notifica a la UI y persiste con **debounce** ante
+/// cada cambio relevante, igual que la versión de escritorio: el debounce y
+/// la cola de guardado serializada por personaje ya funcionan como el buffer
+/// local con envío periódico que pide la capacidad `web-client` para el
+/// estado de combate, sin necesidad de un mecanismo aparte.
 class CharactersController extends ChangeNotifier {
-  final CharacterStore store;
+  final ApiClient api;
   final List<Character> characters = [];
   final Map<String, Timer> _debouncers = {};
   final Map<String, Future<void>> _saveQueues = {};
   static const _debounce = Duration(milliseconds: 400);
-  Object? _lastSaveError;
+  ApiException? _lastSaveError;
   bool _disposed = false;
 
-  CharactersController(this.store);
+  CharactersController(this.api);
 
-  List<DataRecoveryIssue> get recoveryIssues => store.recoveryIssues;
-  List<DataMigrationBackup> get migrationBackups => store.migrationBackups;
-  Object? get lastSaveError => _lastSaveError;
+  /// Sin equivalente en el servidor: un documento corrupto no existe como
+  /// concepto en Postgres. Se conservan vacías para no obligar a la UI del
+  /// dashboard a distinguir entre "no hay avisos" y "esta plataforma no los
+  /// tiene".
+  List<Object> get recoveryIssues => const [];
+  List<Object> get migrationBackups => const [];
+
+  ApiException? get lastSaveError => _lastSaveError;
   bool get isSaving => _debouncers.isNotEmpty || _saveQueues.isNotEmpty;
   CharacterSaveState get saveState => isSaving
       ? CharacterSaveState.saving
@@ -32,17 +41,31 @@ class CharactersController extends ChangeNotifier {
       ? CharacterSaveState.error
       : CharacterSaveState.saved;
 
+  /// `true` si la carga falló por falta de conexión (no confundir con una
+  /// cuenta que simplemente no tiene personajes, ver capacidad
+  /// `web-client`).
+  bool loadFailedOffline = false;
+
   Future<void> load() async {
-    final loaded = await store.loadAll();
-    characters
-      ..clear()
-      ..addAll(loaded);
+    loadFailedOffline = false;
+    try {
+      final loaded = await api.listCharacters();
+      characters
+        ..clear()
+        ..addAll(loaded);
+    } on ApiException catch (e) {
+      if (e.isOffline) {
+        loadFailedOffline = true;
+      } else {
+        rethrow;
+      }
+    }
     notifyListeners();
   }
 
   void add(Character c) {
     characters.add(c);
-    _scheduleSave(c);
+    _scheduleSave(c, isNew: true);
     notifyListeners();
   }
 
@@ -64,64 +87,48 @@ class CharactersController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Importa personajes. Si un id ya existe, se le asigna uno nuevo (no
-  /// sobrescribe datos existentes). Persiste el lote antes de cambiar la
-  /// memoria, para no mostrar personajes que no llegaron a guardarse.
-  Future<List<Character>> importCharactersDetailed(
-    List<Character> incoming,
-  ) async {
-    final existingIds = characters.map((c) => c.id).toSet();
-    final resolved = <Character>[];
-    for (var i = 0; i < incoming.length; i++) {
-      var c = incoming[i];
-      if (existingIds.contains(c.id)) {
-        var attempt = i;
-        late String newId;
-        do {
-          newId = '${DateTime.now().microsecondsSinceEpoch}-${attempt++}';
-        } while (existingIds.contains(newId));
-        c = Character.fromJson(c.toJson()..['id'] = newId);
-      }
-      existingIds.add(c.id);
-      resolved.add(c);
-    }
-    await store.saveAll(resolved);
-    characters.addAll(resolved);
-    notifyListeners();
-    return resolved;
-  }
-
-  Future<int> importCharacters(List<Character> incoming) async {
-    return (await importCharactersDetailed(incoming)).length;
-  }
-
   Future<void> remove(Character c) async {
     _debouncers.remove(c.id)?.cancel();
     await (_saveQueues[c.id] ?? Future<void>.value());
-    await store.delete(c.id);
+    await api.deleteCharacter(c.id);
     characters.removeWhere((x) => x.id == c.id);
     notifyListeners();
   }
 
-  void _scheduleSave(Character c) {
+  void _scheduleSave(Character c, {bool isNew = false}) {
     _debouncers[c.id]?.cancel();
     _debouncers[c.id] = Timer(_debounce, () {
       _debouncers.remove(c.id);
-      _enqueueSave(c);
+      _enqueueSave(c, isNew: isNew);
       notifyListeners();
     });
   }
 
-  Future<void> _enqueueSave(Character c) {
+  /// El primer guardado de un personaje recién creado usa `create` (el
+  /// servidor puede reasignarle el id si choca); los siguientes usan
+  /// `upsert` sobre el id ya asignado. Si el servidor reasignó el id, el
+  /// personaje en memoria se actualiza para que los guardados posteriores
+  /// apunten al id correcto.
+  Future<void> _enqueueSave(Character c, {bool isNew = false}) {
     final previous = _saveQueues[c.id] ?? Future<void>.value();
     late final Future<void> queued;
     queued = previous
         .then((_) async {
-          await store.save(c);
+          if (isNew) {
+            final stored = await api.createCharacter(c);
+            if (stored.id != c.id) {
+              final i = characters.indexWhere((x) => identical(x, c));
+              if (i >= 0) characters[i] = stored;
+            }
+          } else {
+            await api.upsertCharacter(c);
+          }
           _lastSaveError = null;
         })
         .catchError((Object error) {
-          _lastSaveError = error;
+          _lastSaveError = error is ApiException
+              ? error
+              : ApiException(null, error.toString());
         })
         .whenComplete(() {
           if (identical(_saveQueues[c.id], queued)) {
@@ -133,7 +140,7 @@ class CharactersController extends ChangeNotifier {
     return queued;
   }
 
-  /// Fuerza el guardado inmediato de lo pendiente (p.ej. al cerrar la app).
+  /// Fuerza el guardado inmediato de lo pendiente.
   Future<void> flush() async {
     for (final t in _debouncers.values) {
       t.cancel();
@@ -150,12 +157,6 @@ class CharactersController extends ChangeNotifier {
     _disposed = true;
     for (final t in _debouncers.values) {
       t.cancel();
-    }
-    // ChangeNotifier.dispose no puede esperar I/O. El ciclo de vida de la app
-    // llama flush antes; esta red adicional evita descartar cambios si otro
-    // consumidor desecha el controlador directamente.
-    for (final c in characters) {
-      _enqueueSave(c);
     }
     super.dispose();
   }

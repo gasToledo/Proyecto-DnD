@@ -1,9 +1,9 @@
-import 'dart:convert';
-import 'dart:io';
-
 import '../domain/content.dart';
 import '../domain/data_version.dart';
 import '../domain/name_sort.dart';
+import 'content_pack_loader_stub.dart'
+    if (dart.library.io) 'content_pack_loader_io.dart'
+    as _loader;
 
 class ContentPackManifest {
   static const int currentFormatVersion = 1;
@@ -79,15 +79,15 @@ class ContentRepository {
     Map<String, Weapon>? weapons,
     Map<String, Armor>? armor,
     Map<String, Spell>? spells,
-  })  : races = races ?? {},
-        classes = classes ?? {},
-        subclasses = subclasses ?? {},
-        lineages = lineages ?? {},
-        backgrounds = backgrounds ?? {},
-        feats = feats ?? {},
-        weapons = weapons ?? {},
-        armor = armor ?? {},
-        spells = spells ?? {};
+  }) : races = races ?? {},
+       classes = classes ?? {},
+       subclasses = subclasses ?? {},
+       lineages = lineages ?? {},
+       backgrounds = backgrounds ?? {},
+       feats = feats ?? {},
+       weapons = weapons ?? {},
+       armor = armor ?? {},
+       spells = spells ?? {};
 
   Race? race(String id) => races[id];
   CharacterClass? characterClass(String id) => classes[id];
@@ -114,39 +114,42 @@ class ContentRepository {
   /// Es lo único que hace falta para que un catálogo nuevo (invocaciones,
   /// estilos) sea puro dato: nadie lleva una lista de ids.
   List<Feat> featsByCategory(String category) => sortedByName(
-        feats.values.where((f) => f.category == category),
-        (e) => e.name,
-      );
+    feats.values.where((f) => f.category == category),
+    (e) => e.name,
+  );
   List<Weapon> get weaponsSorted => sortedByName(weapons.values, (e) => e.name);
   List<Armor> get armorSorted => sortedByName(armor.values, (e) => e.name);
 
   /// Subclases que pertenecen a una clase (id de clase), ordenadas por nombre.
   List<Subclass> subclassesForClass(String classId) => sortedByName(
-        subclasses.values.where((s) => s.classId == classId),
-        (e) => e.name,
-      );
+    subclasses.values.where((s) => s.classId == classId),
+    (e) => e.name,
+  );
 
   /// Linajes que pertenecen a una especie, ordenados por nombre. Vacío = esa
   /// especie no exige elegir linaje.
   List<Lineage> lineagesForRace(String raceId) => sortedByName(
-        lineages.values.where((l) => l.raceId == raceId),
-        (e) => e.name,
-      );
+    lineages.values.where((l) => l.raceId == raceId),
+    (e) => e.name,
+  );
 
   /// Conjuros de la lista de una clase (id de clase), ordenados por nivel y
   /// después por nombre: el nivel manda porque es como se leen en la ficha.
   List<Spell> spellsForList(String classId) =>
-      spells.values.where((s) => s.classes.contains(classId)).toList()
-        ..sort((a, b) => a.level != b.level
+      spells.values.where((s) => s.classes.contains(classId)).toList()..sort(
+        (a, b) => a.level != b.level
             ? a.level.compareTo(b.level)
-            : compareContentNames(a.name, b.name));
+            : compareContentNames(a.name, b.name),
+      );
 
   /// Todos los conjuros por nivel y nombre (catálogo homebrew, que no filtra
   /// por lista de clase).
   List<Spell> get spellsSorted => spells.values.toList()
-    ..sort((a, b) => a.level != b.level
-        ? a.level.compareTo(b.level)
-        : compareContentNames(a.name, b.name));
+    ..sort(
+      (a, b) => a.level != b.level
+          ? a.level.compareTo(b.level)
+          : compareContentNames(a.name, b.name),
+    );
 
   /// Incorpora contenido homebrew (mismo esquema) sobre el oficial.
   void addAll(ContentRepository other) {
@@ -160,9 +163,6 @@ class ContentRepository {
     armor.addAll(other.armor);
     spells.addAll(other.spells);
   }
-
-  static List<Map<String, dynamic>> _list(dynamic decoded) =>
-      (decoded as List).cast<Map<String, dynamic>>();
 
   /// Construye un repositorio desde mapas JSON ya decodificados (una lista por
   /// tipo de entidad). Útil para tests y para carga desde assets de Flutter.
@@ -180,16 +180,16 @@ class ContentRepository {
     return ContentRepository(
       races: {for (final j in races) j['id'] as String: Race.fromJson(j)},
       classes: {
-        for (final j in classes) j['id'] as String: CharacterClass.fromJson(j)
+        for (final j in classes) j['id'] as String: CharacterClass.fromJson(j),
       },
       subclasses: {
-        for (final j in subclasses) j['id'] as String: Subclass.fromJson(j)
+        for (final j in subclasses) j['id'] as String: Subclass.fromJson(j),
       },
       lineages: {
-        for (final j in lineages) j['id'] as String: Lineage.fromJson(j)
+        for (final j in lineages) j['id'] as String: Lineage.fromJson(j),
       },
       backgrounds: {
-        for (final j in backgrounds) j['id'] as String: Background.fromJson(j)
+        for (final j in backgrounds) j['id'] as String: Background.fromJson(j),
       },
       feats: {for (final j in feats) j['id'] as String: Feat.fromJson(j)},
       weapons: {for (final j in weapons) j['id'] as String: Weapon.fromJson(j)},
@@ -202,34 +202,10 @@ class ContentRepository {
   /// races.json / classes.json / backgrounds.json / feats.json /
   /// weapons.json / armor.json (cada uno una lista JSON). Los faltantes se
   /// tratan como vacíos.
-  static Future<ContentRepository> loadFromDirectory(String dirPath) async {
-    Future<List<Map<String, dynamic>>> read(String file) async {
-      final f = File('$dirPath/$file');
-      if (!await f.exists()) return const [];
-      return _list(jsonDecode(await f.readAsString()));
-    }
-
-    final manifestFile = File('$dirPath/manifest.json');
-    if (!await manifestFile.exists()) {
-      throw const FormatException(
-        'El paquete de contenido no contiene manifest.json.',
-      );
-    }
-    ContentPackManifest.fromJson(
-      (jsonDecode(await manifestFile.readAsString()) as Map)
-          .cast<String, dynamic>(),
-    );
-
-    return ContentRepository.fromJsonPacks(
-      races: await read('races.json'),
-      classes: await read('classes.json'),
-      subclasses: await read('subclasses.json'),
-      lineages: await read('lineages.json'),
-      backgrounds: await read('backgrounds.json'),
-      feats: await read('feats.json'),
-      weapons: await read('weapons.json'),
-      armor: await read('armor.json'),
-      spells: await read('spells.json'),
-    );
-  }
+  ///
+  /// Requiere `dart:io` y por eso se resuelve mediante importación
+  /// condicional: en web queda inalcanzable en tiempo de compilación en vez
+  /// de solo fallar en tiempo de ejecución.
+  static Future<ContentRepository> loadFromDirectory(String dirPath) =>
+      _loader.loadContentRepositoryFromDirectory(dirPath);
 }

@@ -1,0 +1,179 @@
+# Composición del stack autoalojado completo (ver capacidad
+# `self-hosted-deployment` y design.md). Un único `docker compose up -d`
+# levanta todo lo que hace falta: API + cliente web (misma imagen, ver
+# `packages/dnd_server/Dockerfile`), la base de la aplicación, Zitadel con su
+# propia base (API + UI de login, que Zitadel v4 separa en dos contenedores),
+# el volumen de retratos y `cloudflared`.
+#
+# Ningún servicio publica puertos al host: `cloudflared` es el único punto de
+# salida hacia internet (un túnel saliente, no un puerto entrante) y llega al
+# resto por la red interna de Docker usando el nombre del servicio. La base de
+# datos y los retratos nunca son alcanzables desde fuera de esta red (ver
+# requisito "Publicación sin puertos entrantes").
+#
+# Variables de entorno: copiar `.env.example` a `.env` y completarlo. Ninguna
+# credencial real vive en este archivo ni en las imágenes construidas (ver
+# requisito "Secretos fuera de las imágenes y del repositorio").
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${APP_DB_NAME}
+      POSTGRES_USER: ${APP_DB_USER}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER} -d ${APP_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  zitadel-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: zitadel
+      POSTGRES_USER: zitadel
+      POSTGRES_PASSWORD: ${ZITADEL_DB_PASSWORD}
+    volumes:
+      - zitadel-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zitadel -d zitadel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Zitadel v4 separa la UI de login en su propio contenedor (`zitadel-login`,
+  # Next.js) y la sirve bajo `/ui/v2/login` del mismo hostname del emisor; la
+  # API (`zitadel`) sigue el resto de las rutas OIDC. Ver
+  # `cloudflared/config.example.yml`, que replica esa misma partición de
+  # rutas para el hostname del emisor.
+  zitadel:
+    image: ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}
+    restart: unless-stopped
+    command: start-from-init --masterkey "${ZITADEL_MASTERKEY}"
+    environment:
+      ZITADEL_PORT: "8080"
+      # MUST coincidir exactamente con el hostname del túnel para Zitadel
+      # (ver cloudflared/config.example.yml y design.md, decisión D5): si
+      # difiere, el descubrimiento OIDC falla.
+      ZITADEL_EXTERNALDOMAIN: ${ZITADEL_EXTERNAL_DOMAIN}
+      ZITADEL_EXTERNALPORT: "443"
+      ZITADEL_EXTERNALSECURE: "true"
+      # TLS lo termina Cloudflare en el borde; adentro de la red de Docker el
+      # tráfico es HTTP simple.
+      ZITADEL_TLS_ENABLED: "false"
+      ZITADEL_DATABASE_POSTGRES_DSN: postgresql://zitadel:${ZITADEL_DB_PASSWORD}@zitadel-db:5432/zitadel?sslmode=disable
+      # Arranque no interactivo de la primera instancia: crea la organización
+      # y el usuario admin sin pasos manuales en el navegador (el registro de
+      # la aplicación cliente OIDC sí sigue siendo manual, ver tarea 5.1).
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: ${ZITADEL_ADMIN_USERNAME}
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: ${ZITADEL_ADMIN_PASSWORD}
+      # `zitadel-login` se autentica contra la API con este token de servicio,
+      # que la propia API escribe en el volumen compartido al arrancar.
+      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Login client inicializado automáticamente
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: ${ZITADEL_LOGIN_CLIENT_PAT_EXPIRATION}
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: "true"
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/
+      ZITADEL_OIDC_DEFAULTLOGINURLV2: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/login?authRequest=
+      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/logout?post_logout_redirect=
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:rw
+    depends_on:
+      zitadel-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/zitadel", "ready"]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+      start_period: 20s
+
+  zitadel-login:
+    image: ghcr.io/zitadel/zitadel-login:${ZITADEL_VERSION}
+    restart: unless-stopped
+    environment:
+      ZITADEL_API_URL: http://zitadel:8080
+      NEXT_PUBLIC_BASE_PATH: /ui/v2/login
+      ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel/bootstrap/login-client.pat
+      CUSTOM_REQUEST_HEADERS: Host:${ZITADEL_EXTERNAL_DOMAIN},X-Forwarded-Proto:https
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:ro
+    depends_on:
+      zitadel:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/bin/sh", "-c", "node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy"]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+      start_period: 20s
+
+  server:
+    build:
+      context: .
+      dockerfile: packages/dnd_server/Dockerfile
+    restart: unless-stopped
+    environment:
+      DND_DB_HOST: db
+      DND_DB_PORT: "5432"
+      DND_DB_NAME: ${APP_DB_NAME}
+      DND_DB_USER: ${APP_DB_USER}
+      DND_DB_PASSWORD: ${APP_DB_PASSWORD}
+      DND_OIDC_ISSUER_URL: https://${ZITADEL_EXTERNAL_DOMAIN}
+      DND_OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
+      DND_OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      DND_PUBLIC_BASE_URL: https://${APP_PUBLIC_DOMAIN}
+      DND_PORTRAITS_ROOT: /app/data/portraits
+      DND_AZURE_FLUX_API_KEY: ${AZURE_FLUX_API_KEY:-}
+      DND_AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
+    volumes:
+      - portraits-data:/app/data/portraits
+    depends_on:
+      db:
+        condition: service_healthy
+      zitadel:
+        condition: service_healthy
+      zitadel-login:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    # Túnel administrado localmente (no por token): `config.yml` versiona los
+    # dos nombres públicos como IaC en vez de dejarlos solo en el dashboard
+    # de Cloudflare, que no queda registrado en este repositorio (ver tarea
+    # 10.5). `creds.json` es el secreto que emite `cloudflared tunnel
+    # create`; nunca se versiona (ver `cloudflared/config.example.yml`).
+    command: tunnel --metrics 0.0.0.0:2000 --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/creds.json:/etc/cloudflared/creds.json:ro
+    depends_on:
+      server:
+        condition: service_healthy
+      zitadel-login:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "cloudflared", "tunnel", "--metrics", "0.0.0.0:2000", "ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  app-db-data:
+  zitadel-db-data:
+  portraits-data:
+  zitadel-bootstrap:

@@ -1,10 +1,13 @@
+import 'dart:convert';
+
 import 'package:dnd_engine/dnd_engine.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../data/homebrew_store.dart';
 import '../data/transfer_service.dart';
 import '../theme/app_widgets.dart';
-import '../ui/import_dialog.dart';
+import '../web/browser.dart' as browser;
 import 'effect_editor.dart';
 
 part 'forms/armor_form.dart';
@@ -91,36 +94,33 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       showAppMessage(context, 'No hay contenido homebrew para exportar.');
       return;
     }
-    try {
-      final path = await TransferService().exportHomebrew(content);
-      if (mounted) {
-        showAppMessage(
-          context,
-          'Homebrew exportado ($total) en:\n$path',
-          tone: AppMessageTone.success,
-          duration: const Duration(seconds: 4),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        showAppMessage(
-          context,
-          'No se pudo exportar el homebrew: $e',
-          tone: AppMessageTone.error,
-        );
-      }
-    }
+    final transfer = TransferService(store.api);
+    browser.downloadBytes(
+      transfer.exportHomebrew(content),
+      fileName: transfer.homebrewExportFileName(),
+      mimeType: 'application/json',
+    );
+    showAppMessage(
+      context,
+      'Homebrew exportado ($total entrada(s)).',
+      tone: AppMessageTone.success,
+      duration: const Duration(seconds: 4),
+    );
   }
 
   Future<void> _importHomebrew() async {
-    final transfer = TransferService();
-    final path = await showDialog<String>(
-      context: context,
-      builder: (_) => ImportDialog(transfer: transfer),
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      withData: true,
+      dialogTitle: 'Elegí un pack homebrew (.json)',
     );
-    if (path == null || !mounted) return;
+    final file = picked?.files.singleOrNull;
+    if (file?.bytes == null || !mounted) return;
     try {
-      final content = await transfer.importHomebrewFromFile(path);
+      final content = TransferService.parseHomebrewImport(
+        utf8.decode(file!.bytes!),
+      );
       if (!mounted) return;
       // No pisar homebrew existente sin avisar: si hay ids en colisión, pedir
       // confirmación antes de sobrescribir.

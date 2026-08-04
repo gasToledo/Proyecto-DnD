@@ -5,8 +5,8 @@ part of '../sheet_screen.dart';
 /// Visor de retrato a pantalla completa, con zoom/pan y cierre con Escape,
 /// clic afuera o el botón de cerrar.
 class _PortraitViewer extends StatelessWidget {
-  final String path;
-  const _PortraitViewer({required this.path});
+  final String portraitKey;
+  const _PortraitViewer({required this.portraitKey});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,10 @@ class _PortraitViewer extends StatelessWidget {
                         child: InteractiveViewer(
                           minScale: 1,
                           maxScale: 4,
-                          child: Image.file(File(path), fit: BoxFit.contain),
+                          child: PortraitImage(
+                            portraitKey: portraitKey,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),

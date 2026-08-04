@@ -1,3 +1,4 @@
+import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:dnd_app/homebrew/homebrew_screen.dart';
 import 'package:dnd_app/theme/app_theme.dart';
@@ -24,7 +25,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: HomebrewScreen(repo: repo, store: HomebrewStore()),
+          home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
         ),
       );
       await tester.pumpAndSettle();

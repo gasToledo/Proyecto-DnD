@@ -5,14 +5,29 @@ este repositorio.
 
 ## Producto
 
-Aplicación personal y offline-first para crear, administrar y usar fichas de
-personaje de **D&D 5e con reglas 2024 (SRD 5.2.1)**.
+Aplicación web autoalojada, con cuenta por jugador, para crear, administrar y
+usar fichas de personaje de **D&D 5e con reglas 2024 (SRD 5.2.1)**. Dejó de
+ser offline-first: el cliente necesita conexión con el servidor propio para
+leer y escribir fichas (ver `openspec/changes/migrate-to-self-hosted-webapp/`,
+la migración que llevó el producto de escritorio local a este modelo).
 
-Es un monorepo con dos paquetes:
+Es un monorepo con tres paquetes:
 
-- `packages/dnd_engine`: motor de reglas en Dart puro, sin Flutter.
-- `packages/dnd_app`: aplicación Flutter. El producto distribuido actualmente
-  tiene como plataforma principal Windows.
+- `packages/dnd_engine`: motor de reglas en Dart puro, sin Flutter. Sin
+  dependencias de ejecución; lo comparten el cliente y el servidor.
+- `packages/dnd_app`: cliente Flutter, compilado para navegador. Es la
+  plataforma que se mantiene activamente.
+- `packages/dnd_server`: API en Dart (persistencia en PostgreSQL,
+  autenticación OIDC contra Zitadel, almacenamiento y generación de
+  retratos). Sirve además el build web del cliente desde el mismo origen (ver
+  `Arquitectura de la aplicación`, `Retratos IA` y `docs/despliegue.md`).
+
+La **aplicación de escritorio de Windows quedó congelada** en su último
+release publicado: no recibe funcionalidad nueva. Su única responsabilidad
+restante es generar el respaldo ZIP que un jugador sube para migrar sus datos
+a una cuenta del servidor (`docs/despliegue.md`, "Primer arranque"). Los
+comandos `flutter run -d windows` / `flutter build windows --release` siguen
+existiendo en el código pero ya no son la ruta de desarrollo activa.
 
 El brief funcional original está en `brief-app-dnd5e.md`. Algunas secciones de
 ese documento describen el alcance inicial; el código actual ya incluye clases
@@ -39,14 +54,23 @@ lanzadoras, conjuros, subclases, homebrew, respaldos y migraciones.
   inventario, notas y retratos IA.
 - Retratos IA con Pollinations, Azure AI Foundry (Flux) o Azure gpt-image-2
   como proveedor, además de importar un retrato desde archivo local.
-- Persistencia atómica, recuperación de archivos dañados y migraciones
-  secuenciales de datos.
+- Persistencia en el servidor con migraciones secuenciales de esquema y
+  escritura multi-documento transaccional (recuperación de archivos dañados
+  era un concepto del almacenamiento local de la versión de escritorio; no
+  tiene equivalente en Postgres, ver `### Persistencia y ciclo de datos`).
 - Exportación individual y respaldos ZIP completos.
 - Wizard de creación y ficha divididos en módulos durante la fase de
   mantenibilidad actual.
+- Migración a webapp autoalojada completa a nivel de código: cliente web,
+  servidor propio con persistencia en PostgreSQL, autenticación OIDC contra
+  Zitadel y despliegue en contenedores (ver `docker-compose.yml` y
+  `docs/despliegue.md`). El arranque en limpio de ese stack no se ejecutó
+  todavía contra un dominio real; queda como siguiente paso operativo, no de
+  código.
 
-Limitaciones vigentes: cada personaje usa una sola clase; no hay sincronización
-en la nube ni Modo DM. `docs/auditoria-reglas-2024.md` mantiene el detalle de
+Limitaciones vigentes: cada personaje usa una sola clase; no hay Modo DM ni
+funcionamiento sin conexión (ver el párrafo anterior: el cliente requiere el
+servidor propio). `docs/auditoria-reglas-2024.md` mantiene el detalle de
 pendientes mecánicos (Agotamiento/Inspiración Heroica sin efecto mecánico,
 compra de puntos, precio/peso de equipo, objetos mágicos y compañeros con
 estadísticas propias, entre otros).
@@ -135,7 +159,7 @@ dart test test/character_compiler_test.dart
 dart test -n "Sagan nivel 1"
 ```
 
-Aplicación:
+Aplicación (cliente web, plataforma mantenida):
 
 ```sh
 cd packages/dnd_app
@@ -143,13 +167,40 @@ flutter pub get
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
-flutter run -d windows
-flutter build windows --release
+flutter run -d chrome
+flutter build web --release
+```
+
+`flutter run -d windows` y `flutter build windows --release` siguen
+funcionando pero corresponden a la aplicación de escritorio **congelada**: no
+es la ruta de desarrollo activa, ver `## Producto`.
+
+Servidor (`packages/dnd_server`, API + autenticación + persistencia; también
+sirve el build web del cliente, ver `Arquitectura de la aplicación`):
+
+```sh
+cd packages/dnd_server
+dart pub get
+dart format --output=none --set-exit-if-changed lib bin test
+dart analyze
+dart test
+dart run bin/server.dart
+```
+
+Despliegue autoalojado completo (los tres paquetes, contenedores y túnel de
+Cloudflare; ver `docs/despliegue.md` para el procedimiento paso a paso):
+
+```sh
+cp .env.example .env               # completar secretos, nunca versionar
+cp cloudflared/config.example.yml cloudflared/config.yml
+docker compose up -d --build
 ```
 
 Antes de cerrar un cambio de código, como mínimo deben pasar el análisis y los
 tests del paquete afectado. Para cambios de UI, persistencia, dependencias o
-integración, también generar el build release de Windows.
+integración del cliente web, generar además `flutter build web --release`; el
+build de Windows ya no es parte del criterio de cierre porque esa plataforma
+está congelada.
 
 ## Arquitectura del motor
 
@@ -197,9 +248,13 @@ uno nuevo. No romper esta propiedad al editar equipo, conjuros o nivel.
 
 ### Inicio y contenido
 
-`main.dart` carga el pack oficial mediante `AssetContentLoader`, incorpora el
-contenido de `HomebrewStore` al mismo `ContentRepository` y luego inicia
-`CharactersController`.
+`main.dart` primero resuelve la sesión contra `ApiClient.currentUserId()`; sin
+sesión válida, redirige a `/auth/login` (ver capacidad `user-accounts`) y no
+sigue arrancando. Con sesión, carga el pack oficial mediante
+`AssetContentLoader` (sigue siendo un asset empaquetado en el cliente, no
+viaja por red), incorpora el homebrew de la cuenta autenticada
+(`HomebrewStore`, respaldado por `ApiClient` en vez de disco) al mismo
+`ContentRepository` y luego inicia `CharactersController`.
 
 El contenido oficial vive en
 `packages/dnd_engine/lib/assets/srd_2024/`. Su `manifest.json` declara la versión
@@ -249,52 +304,73 @@ o en el módulo de widgets; no crear cálculos de reglas dentro de las pestañas
 
 ### Persistencia y ciclo de datos
 
-Los datos se guardan bajo `<perfil>/FichasDnD/`, usando `app_paths.dart` y
-`package:path`:
+`lib/data/` ya no toca disco: reemplaza a la capa de almacenamiento local de
+la versión de escritorio en vez de portarla (ver `design.md`, decisión D6).
+Todo pasa por `lib/api/api_client.dart`, que llama al mismo origen que sirvió
+el cliente (`baseUrl` vacío) para que la cookie de sesión `httpOnly` viaje
+sola:
 
-- `characters/`: un JSON por personaje.
-- `homebrew/`: contenido creado por el usuario.
-- `portraits/<characterId>/`: retratos.
-- `exports/`: exportaciones y respaldos.
-- `recovery/`: archivos dañados apartados.
-- `recovery/migrations/`: copia exacta previa a cada migración.
-- `settings.json`: preferencias y configuración de retratos.
+- `CharactersController`: fuente de verdad en memoria de los personajes,
+  respaldada por `GET/POST/PUT/DELETE /api/characters`. Mantiene el mismo
+  patrón de **debounce de 400 ms** y cola de guardado serializada por
+  personaje que tenía la versión de escritorio.
+- `HomebrewStore` y `SettingsService`: análogos contra `/api/homebrew` y
+  `/api/settings`.
+- `backup_bundle.dart` / `transfer_service.dart`: siguen armando y leyendo el
+  ZIP de respaldo, ahora resolviendo los retratos vía
+  `GET /api/portraits/<key>` en lugar de leerlos de disco; el ZIP se
+  descarga o sube desde el navegador (`lib/web/browser.dart`), el servidor no
+  produce el archivo.
 
-Las escrituras importantes usan reemplazo atómico. `CharactersController`
-mantiene la fuente de verdad en memoria, guarda con debounce de 400 ms y hace
-`flush` cuando la aplicación pasa a segundo plano o se cierra ordenadamente.
+El servidor (`packages/dnd_server`) es quien persiste de verdad: personajes,
+homebrew y ajustes viven en PostgreSQL como documentos `jsonb` con propiedad
+por cuenta (clave primaria compuesta `(user_id, id)`, ver `design.md`,
+decisión D3), migración secuencial de esquemas históricos y escritura
+multi-documento transaccional. El detalle está en
+`packages/dnd_server/lib/src/repositories/` y `lib/src/db/`, no en este
+documento.
 
-Personajes, ajustes, homebrew, borradores y paquetes declaran versión. Los datos
-históricos compatibles se migran de forma secuencial; una versión futura debe
-rechazarse sin modificar ni sobrescribir el archivo.
+La aplicación de escritorio **congelada** seguía el modelo anterior
+(`<perfil>/FichasDnD/` con reemplazo atómico y migración local); ese código
+ya no existe en `lib/data/` porque no hace falta mantener las dos rutas a la
+vez (D6). Quien necesite ese historial lo encuentra en el control de
+versiones, no en este documento.
 
-Las importaciones se tratan como datos no confiables: validar versiones, tipos,
-identificadores y segmentos de ruta. Los respaldos ZIP no deben permitir que una
-ruta escape de `FichasDnD`.
+Las importaciones se siguen tratando como datos no confiables: el servidor
+valida versiones, tipos, identificadores y segmentos de ruta antes de tocar
+la cuenta (ver capacidad `account-data-import`).
 
 ### Retratos IA
 
-`PortraitProvider` es intercambiable. Pollinations es la opción predeterminada
-sin clave; Azure AI Foundry (Flux) y Azure gpt-image-2 usan claves configuradas
-por el usuario. Son **dos recursos distintos de Azure**, cada uno con su propia
-key y su propia API: Flux habla la ruta de Black Forest Labs
-(`/providers/blackforestlabs/`, `azure_image_service.dart`) y gpt-image-2 la
-ruta estilo OpenAI (`/openai/deployments/`, `azure_openai_image_service.dart`).
-Por eso son dos servicios y no un endpoint parametrizado.
+La generación con IA se mudó entera a `packages/dnd_server` (ver `design.md`,
+decisión D9): el navegador nunca habla con Pollinations ni con Azure, y
+`dnd_app` ya no tiene servicios de proveedor propios. `PortraitProvider` sigue
+siendo intercambiable, pero ahora del lado del servidor
+(`lib/src/ai/portrait_provider.dart`); `GET /api/portraits/providers` le
+informa al cliente qué proveedores están disponibles, ya filtrados a los que
+tienen credenciales configuradas en el servidor (`AiProvidersConfig`, ver
+`config.dart`) — un proveedor sin clave nunca aparece como opción.
 
-gpt-image-2 es el único proveedor que acepta imagen de referencia, vía
-`images/edits`. Hugging Face y Gemini fueron retirados; sus ids quedan en
-`retiredProviderIds` para que un `settings.json` viejo degrade a Pollinations,
-y la migración a la versión 4 de ajustes borra sus credenciales huérfanas.
+Azure AI Foundry (Flux) y Azure gpt-image-2 siguen siendo **dos recursos
+distintos de Azure**, cada uno con su propia key y su propia API: Flux habla
+la ruta de Black Forest Labs (`/providers/blackforestlabs/`) y gpt-image-2 la
+ruta estilo OpenAI (`/openai/deployments/`). gpt-image-2 es el único que
+acepta imagen de referencia, vía `images/edits`.
 
-Las credenciales se envían por encabezado, nunca
-en la URL, se guardan en `settings.json` y no se incluyen en los respaldos
-(`portableCredentialKeys` las filtra por nombre, incluidas las de proveedores
-retirados).
-También se puede importar un retrato desde un archivo local mediante
-`file_picker`.
+Las credenciales viven en variables de entorno del servidor
+(`DND_AZURE_FLUX_API_KEY`, `DND_AZURE_OPENAI_API_KEY`, ver `.env.example`),
+nunca en el cliente ni en un respaldo: `AppSettings` (`settings_service.dart`)
+solo guarda la preferencia de qué proveedor usar por defecto, no
+credenciales.
+
+También se puede subir un retrato propio desde un archivo local
+(`POST /api/characters/<id>/portraits`), disponible aunque el servidor no
+tenga ningún proveedor de IA configurado.
 
 ## Restricciones del entorno Windows
+
+Esta sección solo aplica a quien necesite tocar la aplicación de escritorio
+**congelada**; el cliente mantenido es el build web, ver `## Producto`.
 
 - La ruta del proyecto no puede contener `&`; Flutter rechaza ese carácter al
   construir para Windows. El nombre correcto de la carpeta es `Proyecto DnD`.
@@ -317,7 +393,9 @@ También se puede importar un retrato desde un archivo local mediante
 3. Preservar compatibilidad de datos o agregar una migración versionada.
 4. Agregar una prueba de regresión para cada comportamiento corregido.
 5. No incluir credenciales, builds, datos personales ni contenido de
-   `~/FichasDnD/` en Git.
+   `~/FichasDnD/` en Git. Esto incluye `.env`, `cloudflared/config.yml` y
+   `cloudflared/creds.json` (ver `.env.example` y
+   `cloudflared/config.example.yml` para las versiones sin secretos).
 6. Formatear, analizar y probar antes del commit.
 7. Mantener los commits acotados y actualizar este documento o el README cuando
    cambien arquitectura, alcance, comandos o formatos.

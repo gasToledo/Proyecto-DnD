@@ -453,7 +453,14 @@ class Medallion extends StatelessWidget {
           border: Border.all(color: hasEmblem ? accent : p.gold, width: 2),
           image: image == null
               ? null
-              : DecorationImage(image: image!, fit: BoxFit.cover),
+              : DecorationImage(
+                  image: image!,
+                  fit: BoxFit.cover,
+                  // El retrato viene de una petición de red (`PortraitImage`):
+                  // un 404 (clave borrada) no debe tirar un error sin manejar,
+                  // solo dejar el medallón sin imagen.
+                  onError: (_, _) {},
+                ),
         ),
         alignment: Alignment.center,
         child: image != null

@@ -186,7 +186,10 @@ extension _SheetGeneralSection on _SheetScreenState {
   Widget _statPlaques(ComputedSheet s) {
     final pal = context.palette;
     final c = _c.combat;
-    Widget box(Widget child) => SizedBox(width: 108, child: child);
+    // 108 alcanza para las placas numéricas. Tamaño es la única cuyo valor es
+    // una palabra ("Mediano" a Georgia 24 no entra) y por eso pide más ancho.
+    Widget box(Widget child, {double width = 108}) =>
+        SizedBox(width: width, child: child);
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -206,6 +209,7 @@ extension _SheetGeneralSection on _SheetScreenState {
         ),
         box(_acPlaque(s.armorClass)),
         box(StatPlaque(label: 'Velocidad', value: '${s.speed}')),
+        box(StatPlaque(label: 'Tamaño', value: s.size), width: 152),
         box(StatPlaque(label: 'Iniciativa', value: _signed(s.initiative))),
         box(StatPlaque(label: 'Perc. pasiva', value: '${s.passivePerception}')),
         box(StatPlaque(label: 'Competencia', value: '+${s.proficiencyBonus}')),

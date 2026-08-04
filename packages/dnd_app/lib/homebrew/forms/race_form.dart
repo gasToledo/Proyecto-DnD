@@ -44,6 +44,9 @@ class _RaceFormState extends State<RaceForm> {
         name: _name.text.trim(),
         source: ContentSource.homebrew,
         size: _size.text.trim(),
+        // El formulario no edita la elección de tamaño, así que se conserva la
+        // que traiga el original: editar la velocidad no debería borrarla.
+        sizeOptions: widget.initial?.sizeOptions ?? const [],
         speed: int.tryParse(_speed.text.trim()) ?? 30,
         skillChoiceCount: int.tryParse(_skillCount.text.trim()) ?? 0,
         effects: _effects,

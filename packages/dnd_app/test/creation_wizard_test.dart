@@ -130,6 +130,7 @@ void main() {
 
     // Raza -> Clase (Guerrero es la clase por defecto y pide 3 maestrías).
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
     await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
     await tester.pumpAndSettle();
 
@@ -166,6 +167,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
     await tester.tap(find.byTooltip('Cancelar'));
     await tester.pumpAndSettle();
 
@@ -182,7 +184,11 @@ void main() {
   });
 
   testWidgets('ofrece continuar un borrador guardado', (tester) async {
-    final draft = CreationDraft(repo)..raceId = 'human';
+    // El paso guardado es Clase, así que Raza tiene que estar completo: el
+    // Humano no lo está sin tamaño y el wizard retrocedería a Raza.
+    final draft = CreationDraft(repo)
+      ..raceId = 'human'
+      ..chosenSize = 'Mediano';
     final store = _MemoryDraftStore()
       ..snapshot = CreationDraftSnapshot(
         step: CreationStep.clase,
@@ -219,6 +225,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump();
     expect(store.snapshot?.data['raceId'], 'human');
@@ -255,6 +262,7 @@ void main() {
     expect(find.text(emptyHint), findsOneWidget);
 
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
 
     // Al elegir, el panel pasa a ser el detalle: la lista sigue a la izquierda.
     expect(find.text(emptyHint), findsNothing);
@@ -313,6 +321,7 @@ void main() {
     }
 
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
     await next();
 
     // El Guerrero es la clase por defecto y no deja avanzar sin estilo de
@@ -348,6 +357,7 @@ void main() {
     expect(find.text(emptyHint), findsNothing);
 
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
 
     final card = tester.getRect(find.text('Humano').first);
     final detail = tester.getRect(find.text('TAMAÑO  '));

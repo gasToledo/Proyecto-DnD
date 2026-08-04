@@ -143,6 +143,7 @@ class SheetBuilder {
                   spellId: e.spellId,
                   ability: spellAbilityOverride,
                   use: e.use,
+                  replaceableFrom: e.replaceableFrom,
                 ),
         );
       case AlwaysPreparedSpellEffect(:final spellId):

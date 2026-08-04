@@ -36,6 +36,15 @@ class _ScoresStep extends StatelessWidget {
               },
             ),
             _MethodTab(
+              icon: Icons.calculate,
+              label: 'Compra de puntos',
+              selected: draft.scoreMethod == ScoreMethod.pointBuy,
+              onTap: () {
+                draft.applyScoreMethod(ScoreMethod.pointBuy);
+                onChanged();
+              },
+            ),
+            _MethodTab(
               icon: Icons.keyboard,
               label: 'Escribir a mano',
               selected: draft.scoreMethod == ScoreMethod.manual,
@@ -49,6 +58,8 @@ class _ScoresStep extends StatelessWidget {
         const SizedBox(height: 18),
         if (draft.scoreMethod == ScoreMethod.manual)
           const _ManualHint()
+        else if (draft.scoreMethod == ScoreMethod.pointBuy)
+          _PointBuyBar(draft: draft, onChanged: onChanged)
         else
           _PoolBar(draft: draft, unassigned: unassigned, onChanged: onChanged),
         const SizedBox(height: 16),
@@ -215,6 +226,154 @@ class _PoolBar extends StatelessWidget {
   }
 }
 
+/// Reemplaza a `_PoolBar` en compra de puntos: acá no hay valores que repartir
+/// sino un presupuesto que se gasta. Muestra lo que queda y avisa cuando el
+/// reparto todavía tiene puntos sin usar, que es un error fácil de cometer
+/// porque el paso deja avanzar igual (seis puntuaciones válidas ya están).
+class _PointBuyBar extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _PointBuyBar({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final remaining = draft.pointsRemaining;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 10,
+            children: [
+              Text(
+                'Puntos restantes',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 15,
+                  color: scheme.onSurface,
+                ),
+              ),
+              GoldPill('$remaining de $pointBuyBudget'),
+              if (remaining == 0)
+                Text(
+                  'Presupuesto completo.',
+                  style: TextStyle(fontSize: 12, color: pal.textMuted),
+                ),
+              if (draft.pointsSpent > 0)
+                TextButton.icon(
+                  onPressed: () {
+                    draft.clearScores();
+                    onChanged();
+                  },
+                  icon: const Icon(Icons.restart_alt, size: 18),
+                  label: const Text('Limpiar'),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Cada característica va de $pointBuyMin a $pointBuyMax. Los últimos '
+            'dos escalones cuestan el doble: 14 vale 7 puntos y 15 vale 9, no 6 '
+            'y 7.',
+            style: TextStyle(fontSize: 12, color: pal.textMuted),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Reemplaza al combo de valores en compra de puntos. El coste del próximo
+/// escalón va a la vista porque no es lineal: sin eso, subir de 13 a 14 parece
+/// costar lo mismo que de 9 a 10.
+class _PointBuyStepper extends StatelessWidget {
+  final CreationDraft draft;
+  final Ability ability;
+  final VoidCallback onChanged;
+  const _PointBuyStepper({
+    required this.draft,
+    required this.ability,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final value = draft.assignedScores[ability] ?? pointBuyMin;
+    final canRaise = draft.canRaisePointBuy(ability);
+    final canLower = draft.canLowerPointBuy(ability);
+    final nextCost = value < pointBuyMax
+        ? pointBuyCost(value + 1)! - pointBuyCost(value)!
+        : null;
+
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: pal.plaque,
+            border: Border.all(color: pal.hairline),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: canLower
+                    ? () {
+                        draft.stepPointBuy(ability, -1);
+                        onChanged();
+                      }
+                    : null,
+                icon: const Icon(Icons.remove, size: 18),
+                tooltip: 'Bajar ${ability.abbr}',
+                visualDensity: VisualDensity.compact,
+              ),
+              Text(
+                '$value',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+              IconButton(
+                onPressed: canRaise
+                    ? () {
+                        draft.stepPointBuy(ability, 1);
+                        onChanged();
+                      }
+                    : null,
+                icon: const Icon(Icons.add, size: 18),
+                tooltip: 'Subir ${ability.abbr}',
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          nextCost == null
+              ? 'al máximo · gastados ${pointBuyCost(value)}'
+              : 'subir cuesta $nextCost · gastados ${pointBuyCost(value)}',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 11, color: pal.textMuted),
+        ),
+      ],
+    );
+  }
+}
+
 /// Tarjeta de una característica: total grande, aumento del trasfondo,
 /// selector de valor y modificador resultante.
 class _ScoreCard extends StatelessWidget {
@@ -311,6 +470,12 @@ class _ScoreCard extends StatelessWidget {
                 draft.setManualScore(ability, v);
                 onChanged();
               },
+            )
+          else if (draft.scoreMethod == ScoreMethod.pointBuy)
+            _PointBuyStepper(
+              draft: draft,
+              ability: ability,
+              onChanged: onChanged,
             )
           else
             DropdownButtonFormField<int>(

@@ -254,6 +254,158 @@ void main() {
     });
   });
 
+  // --- Compra de puntos ------------------------------------------------------
+
+  group('compra de puntos', () {
+    CreationDraft pointBuyDraft() =>
+        CreationDraft(repo)..applyScoreMethod(ScoreMethod.pointBuy);
+
+    test('arranca con las seis en el mínimo y el presupuesto entero', () {
+      final d = pointBuyDraft();
+      expect(d.assignedScores.values, everyElement(pointBuyMin));
+      expect(d.allScoresAssigned, isTrue);
+      expect(d.pointsSpent, 0);
+      expect(d.pointsRemaining, pointBuyBudget);
+    });
+
+    test('subir descuenta según la tabla, no de a uno', () {
+      final d = pointBuyDraft();
+      for (var i = 0; i < 5; i++) {
+        d.stepPointBuy(Ability.strength, 1);
+      }
+      expect(d.assignedScores[Ability.strength], 13);
+      expect(d.pointsSpent, 5);
+
+      // El sexto escalón (13 → 14) cuesta 2, no 1.
+      d.stepPointBuy(Ability.strength, 1);
+      expect(d.assignedScores[Ability.strength], 14);
+      expect(d.pointsSpent, 7);
+    });
+
+    test('no se puede pasar de 15 ni bajar de 8', () {
+      final d = pointBuyDraft();
+      for (var i = 0; i < 10; i++) {
+        d.stepPointBuy(Ability.strength, 1);
+      }
+      expect(d.assignedScores[Ability.strength], pointBuyMax);
+      expect(d.canRaisePointBuy(Ability.strength), isFalse);
+
+      for (var i = 0; i < 10; i++) {
+        d.stepPointBuy(Ability.dexterity, -1);
+      }
+      expect(d.assignedScores[Ability.dexterity], pointBuyMin);
+      expect(d.canLowerPointBuy(Ability.dexterity), isFalse);
+    });
+
+    test('el presupuesto frena la subida antes de pasarse', () {
+      final d = pointBuyDraft();
+      // 15/15/15 gasta los 27 justos: nada más puede subir.
+      for (final a in [
+        Ability.strength,
+        Ability.dexterity,
+        Ability.constitution,
+      ]) {
+        for (var i = 0; i < 7; i++) {
+          d.stepPointBuy(a, 1);
+        }
+      }
+      expect(d.pointsSpent, pointBuyBudget);
+      expect(d.pointsRemaining, 0);
+      expect(d.canRaisePointBuy(Ability.wisdom), isFalse);
+
+      d.stepPointBuy(Ability.wisdom, 1);
+      expect(d.assignedScores[Ability.wisdom], pointBuyMin);
+      expect(d.pointsSpent, pointBuyBudget);
+    });
+
+    test('quedan 2 puntos y un escalón de 2 todavía entra', () {
+      final d = pointBuyDraft();
+      // 25 gastados exactos: 15 (9) + 14 (7) + 13 (5) + 12 (4).
+      for (var i = 0; i < 7; i++) {
+        d.stepPointBuy(Ability.strength, 1);
+      }
+      for (var i = 0; i < 6; i++) {
+        d.stepPointBuy(Ability.dexterity, 1);
+      }
+      for (var i = 0; i < 5; i++) {
+        d.stepPointBuy(Ability.constitution, 1);
+      }
+      for (var i = 0; i < 4; i++) {
+        d.stepPointBuy(Ability.intelligence, 1);
+      }
+      expect(d.pointsSpent, 25);
+
+      // Sabiduría está en 8: subir cuesta 1 y entra dos veces.
+      expect(d.canRaisePointBuy(Ability.wisdom), isTrue);
+      d.stepPointBuy(Ability.wisdom, 1);
+      d.stepPointBuy(Ability.wisdom, 1);
+      expect(d.assignedScores[Ability.wisdom], 10);
+      expect(d.pointsRemaining, 0);
+    });
+
+    test('un reparto válido sobrevive al guardado', () {
+      final d = pointBuyDraft();
+      for (var i = 0; i < 7; i++) {
+        d.stepPointBuy(Ability.strength, 1);
+      }
+      for (var i = 0; i < 4; i++) {
+        d.stepPointBuy(Ability.constitution, 1);
+      }
+      final spent = d.pointsSpent;
+
+      final restored = CreationDraft.fromJson(repo, d.toJson());
+      expect(restored.scoreMethod, ScoreMethod.pointBuy);
+      expect(restored.assignedScores[Ability.strength], pointBuyMax);
+      expect(restored.assignedScores[Ability.constitution], 12);
+      expect(restored.pointsSpent, spent);
+    });
+
+    test('un borrador que se pasa del presupuesto vuelve al mínimo', () {
+      // No es alcanzable desde la UI: simula un archivo editado a mano.
+      final d = pointBuyDraft();
+      final json = d.toJson();
+      json['assignedScores'] = {
+        for (final a in Ability.values) a.name: pointBuyMax,
+      };
+
+      final restored = CreationDraft.fromJson(repo, json);
+      expect(restored.assignedScores.values, everyElement(pointBuyMin));
+      expect(restored.pointsSpent, 0);
+    });
+
+    test('un borrador con una puntuación fuera de rango vuelve al mínimo', () {
+      final d = pointBuyDraft();
+      final json = d.toJson();
+      json['assignedScores'] = {
+        for (final a in Ability.values) a.name: pointBuyMin,
+        Ability.strength.name: 18,
+      };
+
+      final restored = CreationDraft.fromJson(repo, json);
+      expect(restored.assignedScores.values, everyElement(pointBuyMin));
+    });
+
+    test('limpiar devuelve el presupuesto entero, no deja las seis vacías', () {
+      final d = pointBuyDraft();
+      for (var i = 0; i < 7; i++) {
+        d.stepPointBuy(Ability.strength, 1);
+      }
+      d.clearScores();
+      expect(d.assignedScores.values, everyElement(pointBuyMin));
+      expect(d.allScoresAssigned, isTrue);
+      expect(d.pointsRemaining, pointBuyBudget);
+    });
+
+    test('cambiar a compra de puntos descarta lo asignado por pool', () {
+      final d = CreationDraft(repo)
+        ..applyScoreMethod(ScoreMethod.standardArray);
+      d.assignScore(Ability.strength, 15);
+      d.applyScoreMethod(ScoreMethod.pointBuy);
+      expect(d.assignedScores[Ability.strength], pointBuyMin);
+      expect(d.pointsSpent, 0);
+    });
+  });
+
   // --- Gating por paso -----------------------------------------------------
 
   /// Completa el paso de Clase (Guerrero: estilo de combate + 3 maestrías).
@@ -275,10 +427,14 @@ void main() {
       expect(d.pendingFor(CreationStep.puntuaciones), isEmpty);
     });
 
-    test('Raza sin linajes solo exige elegir especie', () {
+    test('Raza sin linajes ni elección de tamaño solo exige la especie', () {
+      // El Enano no tiene linajes y es Mediano y punto. El Humano ya no sirve
+      // de ejemplo: además de no tener linajes, elige tamaño.
       final d = newDraft();
       expect(d.pendingFor(CreationStep.raza), isNotEmpty);
-      d.raceId = 'human';
+      d.raceId = 'dwarf';
+      expect(d.lineageOptions, isEmpty);
+      expect(d.sizeOptions, isEmpty);
       expect(d.pendingFor(CreationStep.raza), isEmpty);
     });
 
@@ -303,6 +459,14 @@ void main() {
           contains('Elegí la aptitud mágica del linaje.'),
         );
         d.speciesSpellcastingAbility = Ability.charisma;
+        // El Tiefling además elige tamaño; el Elfo y el Gnomo no.
+        if (d.sizeOptions.isNotEmpty) {
+          expect(
+            d.pendingFor(CreationStep.raza),
+            contains('Elegí el tamaño de la especie.'),
+          );
+          d.chosenSize = d.sizeOptions.first;
+        }
         expect(d.pendingFor(CreationStep.raza), isEmpty);
       }
     });
@@ -436,7 +600,10 @@ void main() {
 
     test('completar habilita el siguiente, y volver atrás sigue permitido', () {
       final d = newDraft();
-      d.raceId = repo.races.values.first.id;
+      // Una especie que no pide nada más: el orden del catálogo no garantiza
+      // que la primera esté completa con solo elegirla (Aasimar elige tamaño).
+      d.raceId = 'dwarf';
+      expect(d.pendingFor(CreationStep.raza), isEmpty);
       expect(d.canGoTo(CreationStep.clase), isTrue);
       expect(
         d.canGoTo(CreationStep.trasfondo),

@@ -35,4 +35,39 @@ void main() {
       expect(d.roll(20), inInclusiveRange(1, 20));
     }
   });
+
+  group('compra de puntos', () {
+    test('la tabla de costes es la del capítulo 2', () {
+      expect(pointBuyBudget, 27);
+      expect(pointBuyMin, 8);
+      expect(pointBuyMax, 15);
+      expect(pointBuyCosts,
+          {8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9});
+    });
+
+    test('los dos últimos escalones cuestan doble', () {
+      // Lo que hace no lineal a la tabla: de 12 a 13 cuesta 1, de 13 a 14
+      // cuesta 2. Es la regla que desalienta concentrar todo en una sola.
+      expect(pointBuyCost(13)! - pointBuyCost(12)!, 1);
+      expect(pointBuyCost(14)! - pointBuyCost(13)!, 2);
+      expect(pointBuyCost(15)! - pointBuyCost(14)!, 2);
+    });
+
+    test('fuera de rango no cuesta 0: no se puede comprar', () {
+      expect(pointBuyCost(7), isNull);
+      expect(pointBuyCost(16), isNull);
+      expect(pointBuyCost(0), isNull);
+    });
+
+    test('un reparto clásico de 27 entra justo', () {
+      // 15/15/15/8/8/8 gasta exactamente el presupuesto.
+      expect(pointBuySpent([15, 15, 15, 8, 8, 8]), 27);
+      // 14/14/14/12/10/8 también, por otro camino.
+      expect(pointBuySpent([14, 14, 14, 12, 10, 8]), 27);
+    });
+
+    test('las seis en el mínimo no gastan nada', () {
+      expect(pointBuySpent([8, 8, 8, 8, 8, 8]), 0);
+    });
+  });
 }

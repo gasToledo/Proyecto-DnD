@@ -30,6 +30,7 @@ class _RaceStep extends StatelessWidget {
                     draft.raceId = r.id;
                     draft.lineageId = null;
                     draft.speciesSpellcastingAbility = null;
+                    draft.chosenSize = null;
                     draft.raceSkills.clear();
                     draft.raceFeatId = null;
                   }
@@ -42,7 +43,12 @@ class _RaceStep extends StatelessWidget {
               : _DetailPanel(
                   title: race.name,
                   facts: [
-                    ('Tamaño', race.size),
+                    (
+                      'Tamaño',
+                      race.sizeOptions.isEmpty
+                          ? race.size
+                          : draft.chosenSize ?? 'a elegir',
+                    ),
                     ('Velocidad', '${race.speed} ft'),
                     if (race.skillChoiceCount > 0)
                       ('Habilidades', '${race.skillChoiceCount} a elegir'),
@@ -51,6 +57,26 @@ class _RaceStep extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _TraitList(effects: race.effects),
+                      if (race.sizeOptions.isNotEmpty) ...[
+                        const SizedBox(height: 18),
+                        const Eyebrow('Tamaño'),
+                        Text(
+                          'Esta especie abarca cuerpos de tamaños distintos: '
+                          'elegí el de tu personaje.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        _SingleSelect(
+                          options: {
+                            for (final size in race.sizeOptions) size: size,
+                          },
+                          selected: draft.chosenSize,
+                          onSelect: (size) {
+                            draft.chosenSize = size;
+                            onChanged();
+                          },
+                        ),
+                      ],
                       if (draft.lineageOptions.isNotEmpty) ...[
                         const SizedBox(height: 18),
                         const Eyebrow('Linaje de especie'),

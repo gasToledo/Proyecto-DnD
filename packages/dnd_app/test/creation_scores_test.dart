@@ -39,6 +39,7 @@ void main() {
 
     // Raza
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
     await next();
 
     // Clase

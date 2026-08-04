@@ -156,6 +156,7 @@ class CharacterCompiler {
 
     final ac = _armorClass(c, builder, mods);
     final speed = _speed(c, builder);
+    final size = _size(c, race);
 
     final passivePerception = 10 +
         wisMod +
@@ -171,7 +172,7 @@ class CharacterCompiler {
     }
 
     final spellcasting = _spellcasting(builder, c.level, mods, profBonus);
-    final innate = _resolveInnate(builder, mods, profBonus);
+    final innate = _resolveInnate(c, builder, mods, profBonus);
 
     return ComputedSheet(
       level: c.level,
@@ -186,6 +187,7 @@ class CharacterCompiler {
       maxHp: maxHp,
       hitDie: klass?.hitDie ?? 8,
       armorClass: ac,
+      size: size,
       speed: speed,
       initiative: dexMod,
       passivePerception: passivePerception,
@@ -229,7 +231,27 @@ class CharacterCompiler {
   /// Resuelve los conjuros concedidos por rasgos contra el repositorio y, para
   /// los de uso gratuito, crea el recurso que registra ese uso por descanso
   /// largo (así la ficha lo muestra y lo gasta como cualquier otro).
+  /// Truco que realmente se lanza: el reemplazo elegido si el rasgo lo permite
+  /// y la elección sigue siendo válida, y si no el que declara el contenido.
+  ///
+  /// Se revalida en cada compilación, igual que el tamaño: el reemplazo tiene
+  /// que existir, tener el mismo nivel que el original —un truco se cambia por
+  /// otro truco— y pertenecer a la lista declarada. Una elección que dejó de
+  /// cumplir eso se ignora en silencio en vez de conceder algo que la regla no
+  /// respalda.
+  Spell _replacementFor(Character c, GrantSpellEffect g, Spell granted) {
+    if (g.replaceableFrom.isEmpty) return granted;
+    final chosenId = c.innateCantripChoices[g.spellId];
+    if (chosenId == null || chosenId == granted.id) return granted;
+    final chosen = repo.spell(chosenId);
+    if (chosen == null) return granted;
+    if (chosen.level != granted.level) return granted;
+    if (!g.replaceableFrom.any(chosen.classes.contains)) return granted;
+    return chosen;
+  }
+
   _InnateResult _resolveInnate(
+    Character c,
     SheetBuilder builder,
     Map<Ability, int> mods,
     int proficiencyBonus,
@@ -237,8 +259,9 @@ class CharacterCompiler {
     final spells = <InnateSpell>[];
     final resources = <CharacterResource>[];
     for (final g in builder.grantedSpells) {
-      final spell = repo.spell(g.spellId);
-      if (spell == null) continue; // contenido incompleto: se ignora
+      final granted = repo.spell(g.spellId);
+      if (granted == null) continue; // contenido incompleto: se ignora
+      final spell = _replacementFor(c, g, granted);
       final mod = mods[g.ability] ?? 0;
       spells.add(InnateSpell(
         spellId: spell.id,
@@ -248,10 +271,14 @@ class CharacterCompiler {
         use: g.use,
         saveDc: 8 + proficiencyBonus + mod,
         attackBonus: proficiencyBonus + mod,
+        grantedSpellId: granted.id,
+        replaceableFrom: g.replaceableFrom,
       ));
       if (g.use != InnateSpellUse.atWill) {
         resources.add(CharacterResource(
-          id: 'innate-${spell.id}',
+          // Se indexa por el conjuro del contenido, no por el reemplazo: si no,
+          // cambiar el truco devolvería los usos ya gastados.
+          id: 'innate-${granted.id}',
           name: spell.name,
           max: g.use == InnateSpellUse.proficiencyBonusPerLongRest
               ? proficiencyBonus
@@ -331,6 +358,21 @@ class CharacterCompiler {
       if (!voided) speed += b.unarmoredMovementBonus;
     }
     return speed;
+  }
+
+  /// Tamaño final: el elegido si la especie ofrece la elección y el valor sigue
+  /// siendo una de sus opciones; si no, el de la especie.
+  ///
+  /// Se revalida contra el catálogo en cada compilación a propósito: un
+  /// personaje guardado puede traer un tamaño que la especie ya no ofrece
+  /// —porque cambió de especie, o porque el homebrew que lo declaraba
+  /// desapareció— y en ese caso vale más caer al valor de la especie que
+  /// mostrar un tamaño que nada respalda.
+  String _size(Character c, Race? race) {
+    if (race == null) return c.chosenSize ?? 'Mediano';
+    final chosen = c.chosenSize;
+    if (chosen != null && race.sizeOptions.contains(chosen)) return chosen;
+    return race.size;
   }
 
   int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {

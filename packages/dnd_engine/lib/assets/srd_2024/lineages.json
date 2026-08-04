@@ -67,7 +67,8 @@
             "type": "grantSpell",
             "spellId": "prestidigitation",
             "ability": "intelligence",
-            "use": "atWill"
+            "use": "atWill",
+            "replaceableFrom": ["wizard"]
           }
         ]
       },

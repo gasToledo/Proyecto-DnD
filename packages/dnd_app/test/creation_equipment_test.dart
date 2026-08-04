@@ -36,6 +36,7 @@ void main() {
     }
 
     await tapOption(tester, 'Humano');
+    await pickSize(tester);
     await next();
 
     // El nombre puede figurar en la tarjeta y en el panel de detalle (si ya

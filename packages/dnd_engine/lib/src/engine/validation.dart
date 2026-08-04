@@ -68,6 +68,31 @@ class CharacterValidator {
           ));
         }
       }
+
+      // Tamaño: solo lo piden las especies que ofrecen la elección. Sin ella el
+      // personaje no queda roto —la ficha cae al tamaño por defecto— pero es
+      // una elección del jugador que quedó sin hacer.
+      final sizes = race.sizeOptions;
+      final chosenSize = c.chosenSize;
+      if (sizes.isNotEmpty) {
+        if (chosenSize == null) {
+          w.add(ValidationWarning(
+            'size_pending',
+            'Falta elegir el tamaño de ${race.name} (${sizes.join(", ")}).',
+          ));
+        } else if (!sizes.contains(chosenSize)) {
+          w.add(ValidationWarning(
+            'size_invalid',
+            'El tamaño "$chosenSize" no es una opción de ${race.name} '
+                '(${sizes.join(", ")}).',
+          ));
+        }
+      } else if (chosenSize != null && chosenSize != race.size) {
+        w.add(ValidationWarning(
+          'size_not_choosable',
+          '${race.name} no elige tamaño: es ${race.size}.',
+        ));
+      }
     }
     final klass = repo.characterClass(c.classId);
     if (klass == null) {

@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 9;
+  static const int currentSchemaVersion = 10;
 
   final String id;
   String name;
@@ -482,6 +482,40 @@ class Character {
     ];
   }
 
+  /// Grupo de Versatilidad de Habilidad del Khoravar.
+  static const String _khoravarVersatilityGroup =
+      'race:khoravar:skill-versatility';
+
+  /// Versatilidad de Habilidad del Khoravar dejó de ser un `skillChoiceCount`
+  /// de la especie y pasó a ser un `proficiencyChoice`, porque ahora también
+  /// puede gastarse en una herramienta. Las fichas viejas quedaron con esa
+  /// habilidad todavía dentro de `chosenSkills`: la cuenta esperada baja a la
+  /// de la clase sola y sobra una, que además seguía dando competencia.
+  ///
+  /// El wizard construye `chosenSkills` como `[...clase, ...especie]`, así que
+  /// la de la especie es la última. Se la mueve a su grupo si todavía no eligió
+  /// nada; si ya eligió por la interfaz nueva, se descarta la vieja para no
+  /// dejar dos competencias donde la especie da una.
+  static void _migrateKhoravarSkillVersatility(Map<String, dynamic> j) {
+    if (j['raceId'] != 'khoravar') return;
+    final skills = j['chosenSkills'];
+    if (skills is! List || skills.isEmpty) return;
+
+    final remaining = List<dynamic>.from(skills);
+    final legacy = remaining.removeLast();
+    j['chosenSkills'] = remaining;
+
+    if (legacy is! String || legacy.isEmpty) return;
+    final raw = j['proficiencyChoices'];
+    final choices =
+        raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    final existing = choices[_khoravarVersatilityGroup];
+    if (existing is! List || existing.isEmpty) {
+      choices[_khoravarVersatilityGroup] = [legacy];
+    }
+    j['proficiencyChoices'] = choices;
+  }
+
   /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
   /// entrada. Cada paso se conserva explícito para que las próximas versiones
   /// puedan encadenarse sin saltos.
@@ -546,6 +580,10 @@ class Character {
         case 8:
           migrated.putIfAbsent('proficiencyChoices', () => {});
           version = 9;
+          migrated['schemaVersion'] = version;
+        case 9:
+          _migrateKhoravarSkillVersatility(migrated);
+          version = 10;
           migrated['schemaVersion'] = version;
       }
     }

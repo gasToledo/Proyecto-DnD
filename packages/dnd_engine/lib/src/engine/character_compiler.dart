@@ -45,7 +45,6 @@ class CharacterCompiler {
       proficiencySources.add((id: id, name: name, effects: effects));
     }
 
-
     if (race != null) builder.speed = race.speed;
 
     // Bonos de característica explícitos (trasfondo 2024 + ASI).
@@ -70,7 +69,10 @@ class CharacterCompiler {
     if (lineage != null && lineage.raceId == c.raceId) {
       for (final f in lineage.featuresUpTo(c.level)) {
         applySource(
-          'lineage:' + lineage.id + ':' + lineage.features.indexOf(f).toString(),
+          'lineage:' +
+              lineage.id +
+              ':' +
+              lineage.features.indexOf(f).toString(),
           f.name,
           f.effects,
           spellAbilityOverride: c.speciesSpellcastingAbility,
@@ -96,14 +98,18 @@ class CharacterCompiler {
     if (subclass != null && subclass.classId == c.classId) {
       for (final f in subclass.featuresUpTo(c.level)) {
         applySource(
-          'subclass:' + subclass.id + ':' + subclass.features.indexOf(f).toString(),
+          'subclass:' +
+              subclass.id +
+              ':' +
+              subclass.features.indexOf(f).toString(),
           f.name,
           f.effects,
         );
       }
     }
     if (background != null) {
-      applySource('background:' + background.id, background.name, background.effects);
+      applySource(
+          'background:' + background.id, background.name, background.effects);
       builder.skillProficiencies.addAll(background.skillProficiencies);
       for (final tool in background.toolProficiencies) {
         if (const {
@@ -150,10 +156,14 @@ class CharacterCompiler {
       if (feat == null) continue;
       if (!feat.repeatable && !appliedOnce.add(id)) continue;
       final occurrence = featSourceCounts.update(
-        feat.id, (count) => count + 1, ifAbsent: () => 0,
+        feat.id,
+        (count) => count + 1,
+        ifAbsent: () => 0,
       );
       applySource(
-        'feat:' + feat.id + (feat.repeatable ? ':' + occurrence.toString() : ''),
+        'feat:' +
+            feat.id +
+            (feat.repeatable ? ':' + occurrence.toString() : ''),
         feat.name,
         feat.effects,
       );
@@ -212,8 +222,7 @@ class CharacterCompiler {
         final chosenElsewhere = c.proficiencyChoices.entries
             .where((entry) => entry.key != groupId)
             .expand((entry) => entry.value);
-        final alreadyHadIt =
-            builder.toolProficiencies.contains(fallbackFor) ||
+        final alreadyHadIt = builder.toolProficiencies.contains(fallbackFor) ||
             chosenElsewhere.contains(fallbackFor) ||
             legacy.contains(fallbackFor);
         if (!alreadyHadIt) {

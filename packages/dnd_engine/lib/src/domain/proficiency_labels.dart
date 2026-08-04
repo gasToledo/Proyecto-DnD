@@ -144,12 +144,12 @@ String toolProficiencyLabel(String id) => _toolLabels[id] ?? titleCaseId(id);
 /// ofrecerlas como opción dejaría al personaje con una competencia que no
 /// nombra nada. Las usa el contenido, no el selector.
 List<String> get toolProficiencyIds => [
-  for (final id in _toolLabels.keys)
-    if (id != 'artisans-tools' &&
-        id != 'gaming-set' &&
-        id != 'musical-instrument')
-      id,
-];
+      for (final id in _toolLabels.keys)
+        if (id != 'artisans-tools' &&
+            id != 'gaming-set' &&
+            id != 'musical-instrument')
+          id,
+    ];
 
 /// Expande las entradas de familia que usa el contenido a herramientas reales.
 List<String> expandToolProficiencyChoices(Iterable<String> ids) {

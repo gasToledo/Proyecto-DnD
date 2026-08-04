@@ -151,6 +151,7 @@ class ProficiencyChoiceSlot {
     final suffix = base.substring(occurrence + 1);
     return int.tryParse(suffix) == null ? base : base.substring(0, occurrence);
   }
+
   String get featName => name;
 }
 

@@ -104,8 +104,7 @@ void main() {
   });
 
   test('subclase de Artifice ofrece reemplazo si ya tenia la herramienta', () {
-    const backgroundGroup =
-        'background:artisan:artisans-tools:proficiency';
+    const backgroundGroup = 'background:artisan:artisans-tools:proficiency';
     final sheet = compiler.compile(
       character(
         klass: 'artificer',
@@ -149,6 +148,6 @@ void main() {
     final migrated = Character.fromJson(json);
     expect(migrated.chosenProficiencies, ['arcana']);
     expect(migrated.proficiencyChoices, isEmpty);
-    expect(migrated.toJson()['schemaVersion'], 9);
+    expect(migrated.toJson()['schemaVersion'], Character.currentSchemaVersion);
   });
 }

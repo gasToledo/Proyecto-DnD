@@ -166,6 +166,85 @@ void main() {
     expect(migrated['featIds'], ['athlete-dexterity', 42, null]);
   });
 
+  group('v9 → v10: Versatilidad de Habilidad del Khoravar', () {
+    Map<String, dynamic> khoravar({
+      required List<dynamic> chosenSkills,
+      Map<String, dynamic> proficiencyChoices = const {},
+    }) =>
+        {
+          'schemaVersion': 9,
+          'id': 'v9',
+          'name': 'Mediorco de Khorvaire',
+          'raceId': 'khoravar',
+          'classId': 'artificer',
+          'backgroundId': 'artisan',
+          'assignedScores': const <String, int>{},
+          'chosenSkills': chosenSkills,
+          'proficiencyChoices': proficiencyChoices,
+        };
+
+    test('la habilidad de la especie se muda a su grupo', () {
+      final migrated = Character.migrateJson(
+        khoravar(chosenSkills: ['arcana', 'sleight-of-hand', 'perception']),
+      );
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      // Quedan las dos de la clase; la de la especie, que el wizard agrega
+      // última, pasa a ser una elección de competencia.
+      expect(migrated['chosenSkills'], ['arcana', 'sleight-of-hand']);
+      expect(
+        (migrated['proficiencyChoices']
+            as Map)['race:khoravar:skill-versatility'],
+        ['perception'],
+      );
+    });
+
+    test('si ya eligió con la interfaz nueva, la vieja se descarta', () {
+      // Es el caso de una ficha que se abrió después del cambio de contenido:
+      // eligió por el grupo nuevo y la vieja quedó duplicando la competencia.
+      final migrated = Character.migrateJson(
+        khoravar(
+          chosenSkills: ['arcana', 'sleight-of-hand', 'perception'],
+          proficiencyChoices: {
+            'race:khoravar:skill-versatility': ['stealth'],
+          },
+        ),
+      );
+
+      expect(migrated['chosenSkills'], ['arcana', 'sleight-of-hand']);
+      expect(
+        (migrated['proficiencyChoices']
+            as Map)['race:khoravar:skill-versatility'],
+        ['stealth'],
+      );
+    });
+
+    test('otra especie no pierde ninguna habilidad', () {
+      final source = khoravar(chosenSkills: ['arcana', 'sleight-of-hand'])
+        ..['raceId'] = 'shifter';
+
+      final migrated = Character.migrateJson(source);
+
+      expect(migrated['chosenSkills'], ['arcana', 'sleight-of-hand']);
+    });
+
+    test('tolera un chosenSkills vacío o con basura', () {
+      expect(
+        Character.migrateJson(khoravar(chosenSkills: []))['chosenSkills'],
+        isEmpty,
+      );
+      final basura = Character.migrateJson(
+        khoravar(chosenSkills: ['arcana', 42]),
+      );
+      expect(basura['chosenSkills'], ['arcana']);
+      expect(
+        (basura['proficiencyChoices'] as Map)
+            .containsKey('race:khoravar:skill-versatility'),
+        isFalse,
+      );
+    });
+  });
+
   test('v5 → v6: la mano secundaria arranca vacía', () {
     final source = {
       'schemaVersion': 5,

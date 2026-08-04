@@ -141,7 +141,10 @@ void main() {
     await gotoAptitudes(tester);
 
     // Soldado ya declara una elección de set de juego.
-    expect(find.text('Competencias a elecci\u00f3n'.toUpperCase()), findsOneWidget);
+    expect(
+      find.text('Competencias a elecci\u00f3n'.toUpperCase()),
+      findsOneWidget,
+    );
     expect(find.text('0/1'), findsOneWidget);
 
     final card = find.text('Habilidoso');
@@ -150,7 +153,10 @@ void main() {
     await tester.tap(card);
     await tester.pumpAndSettle();
 
-    expect(find.text('Competencias a elecci\u00f3n'.toUpperCase()), findsOneWidget);
+    expect(
+      find.text('Competencias a elecci\u00f3n'.toUpperCase()),
+      findsOneWidget,
+    );
     expect(find.text('0/4'), findsOneWidget);
 
     // Ofrece herramientas además de habilidades, que es lo que la distingue de

@@ -166,6 +166,51 @@ de Azure**, que en un cliente web puro habrían quedado inviables.
 ya sabe consumirlo, validar rutas y reescribir retratos. El servidor reutiliza
 esa lógica en vez de inventar un formato de importación.
 
+### D11. Una sola instancia de PostgreSQL con dos bases, no dos instancias
+
+**Por qué:** Zitadel no exige una instancia dedicada; exige **una base**
+PostgreSQL 14–18. Dos instancias del mismo motor duplican volumen, respaldo,
+comprobación de salud y versión a mantener, que es la mitad exacta del costo que
+D2 invoca para descartar Mongo ("elegir Mongo significa operar **dos**
+motores"). El aislamiento que se pierde es nominal: es un host único con un solo
+`docker compose`, así que si el motor cae, la identidad y los datos caen juntos
+de todos modos.
+
+La topología es un contenedor `db` con dos bases y dos roles: `dnd`, creada por
+`POSTGRES_DB`, y `zitadel`, creada por un script montado en
+`/docker-entrypoint-initdb.d/`. Ese script corre contra el servidor temporal
+local de la inicialización, **antes** de que Postgres acepte conexiones
+externas, de modo que cuando `pg_isready` pasa la base de Zitadel ya existe y
+`depends_on: db: service_healthy` sigue siendo la única sincronización
+necesaria. El DSN de Zitadel solo cambia de host (`zitadel-db` → `db`).
+
+El aislamiento entre bases se declara, no se hereda del proceso, y es
+**asimétrico**: `postgres-init/init-zitadel-db.sh` revoca `CONNECT` de
+`PUBLIC` sobre cada base, porque PostgreSQL se lo concede por omisión, pero
+eso solo le cierra el paso al rol `zitadel` hacia la base de la aplicación.
+La imagen oficial crea `$APP_DB_USER` como **superusuario** de la instancia
+(es el comportamiento documentado de `POSTGRES_USER`, no algo que este
+proyecto configure); un superusuario salta todo chequeo de privilegios,
+`CONNECT` incluido. La aplicación ya tenía acceso a toda la instancia antes
+de que hubiera una segunda base — D11 no reduce ese alcance, solo le da un
+destino nuevo. Ver Risks/Trade-offs.
+
+**Cuándo:** antes de la tarea 5.1. El *stack* nunca arrancó en limpio, así que
+hoy el cambio es editar la composición y no hay datos que migrar; después del
+primer arranque real pasa a ser un volcado y restauración de dos bases sobre una
+instancia compartida, con el init de Zitadel corriendo contra datos
+preexistentes. No vuelve a ser tan barato.
+
+**Alternativas consideradas:** (a) **dos instancias**, que es de dónde se parte,
+heredado del `docker-compose.yml` de ejemplo de Zitadel sin una decisión que lo
+respalde; su única ventaja real es desacoplar la actualización mayor de
+PostgreSQL, libertad que el proyecto no usa —las dos imágenes se subieron de 16
+a 18 en la misma edición—. (b) **Una sola base con esquemas separados**: Zitadel
+se despliega sobre varios esquemas propios (`eventstore`, `projections`,
+`system`, `auth`) y el servidor usa `public`; funcionaría, pero rompe la
+granularidad del respaldo y ensucia los permisos sin ahorrar nada frente a dos
+bases.
+
 ## Risks / Trade-offs
 
 - **`CombatState` se guarda con *debounce* de 400 ms** → sobre la red, en
@@ -179,6 +224,19 @@ esa lógica en vez de inventar un formato de importación.
 - **Zitadel es un IdP completo para un grupo pequeño** → mucha superficie
   operativa y otra cosa que mantener parcheada. Mitigación: respaldo
   documentado de su base y una ruta de recuperación probada.
+- **La instancia única de PostgreSQL acopla la actualización mayor del motor**
+  (D11) → subir de versión mayor obliga a volcar y restaurar las dos bases a la
+  vez. Mitigación: ya se tratan como una unidad; el respaldo documentado cubre
+  ambas y el procedimiento es el mismo, con un contenedor menos.
+- **El aislamiento entre la base de la aplicación y la de Zitadel es
+  asimétrico** (D11) → `$APP_DB_USER` es superusuario de la instancia (así
+  crea la imagen oficial a `POSTGRES_USER`) y por lo tanto salta el `REVOKE
+  CONNECT` que protege a la base de Zitadel; solo el sentido inverso
+  (`zitadel` no puede leer la base de la aplicación) queda garantizado. No es
+  una regresión — la aplicación ya tenía ese alcance sobre toda la instancia
+  cuando era la única base — pero hay que verificar en el arranque desde
+  cero (10.12) que el rol `zitadel` efectivamente no puede conectarse a la
+  base de la aplicación.
 - **El volumen de retratos ata el contenedor de la API a un host** → aceptable
   en una instalación de una sola máquina. Mitigación: la interfaz de D4.
 - **Validación en servidor con motor compartido acopla los despliegues** → si el

@@ -1,0 +1,5 @@
+# Los scripts de shell se montan tal cual dentro de contenedores Linux
+# (`postgres-init/`, ver docker-compose.yml). Un checkout de Windows con
+# `core.autocrlf=true` los convertiría a CRLF y el intérprete del
+# contenedor fallaría en la primera línea.
+*.sh text eol=lf

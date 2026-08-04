@@ -16,32 +16,27 @@
 # requisito "Secretos fuera de las imágenes y del repositorio").
 
 services:
+  # Instancia única de PostgreSQL para la base de la aplicación y la de
+  # Zitadel (ver design.md, decisión D11): dos motores de la misma versión no
+  # aportaban aislamiento real en un host único y duplicaban volumen,
+  # respaldo y comprobación de salud. `postgres-init/` crea el rol y la base
+  # de Zitadel al inicializar el volumen (solo corre la primera vez, con el
+  # volumen vacío) y revoca `CONNECT` de `PUBLIC` en ambas bases, así que el
+  # aislamiento entre ellas queda declarado por permisos.
   db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${APP_DB_NAME}
       POSTGRES_USER: ${APP_DB_USER}
       POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
+      # Solo la lee `postgres-init/init-zitadel-db.sh`; Postgres no la usa.
+      ZITADEL_DB_PASSWORD: ${ZITADEL_DB_PASSWORD}
     volumes:
       - app-db-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER} -d ${APP_DB_NAME}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  zitadel-db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: zitadel
-      POSTGRES_USER: zitadel
-      POSTGRES_PASSWORD: ${ZITADEL_DB_PASSWORD}
-    volumes:
-      - zitadel-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U zitadel -d zitadel"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -66,7 +61,7 @@ services:
       # TLS lo termina Cloudflare en el borde; adentro de la red de Docker el
       # tráfico es HTTP simple.
       ZITADEL_TLS_ENABLED: "false"
-      ZITADEL_DATABASE_POSTGRES_DSN: postgresql://zitadel:${ZITADEL_DB_PASSWORD}@zitadel-db:5432/zitadel?sslmode=disable
+      ZITADEL_DATABASE_POSTGRES_DSN: postgresql://zitadel:${ZITADEL_DB_PASSWORD}@db:5432/zitadel?sslmode=disable
       # Arranque no interactivo de la primera instancia: crea la organización
       # y el usuario admin sin pasos manuales en el navegador (el registro de
       # la aplicación cliente OIDC sí sigue siendo manual, ver tarea 5.1).
@@ -85,7 +80,7 @@ services:
     volumes:
       - zitadel-bootstrap:/zitadel/bootstrap:rw
     depends_on:
-      zitadel-db:
+      db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "/app/zitadel", "ready"]
@@ -108,7 +103,13 @@ services:
       zitadel:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "/bin/sh", "-c", "node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy"]
+      test:
+        [
+          "CMD",
+          "/bin/sh",
+          "-c",
+          "node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy",
+        ]
       interval: 10s
       timeout: 30s
       retries: 12
@@ -166,7 +167,8 @@ services:
       zitadel-login:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "cloudflared", "tunnel", "--metrics", "0.0.0.0:2000", "ready"]
+      test:
+        ["CMD", "cloudflared", "tunnel", "--metrics", "0.0.0.0:2000", "ready"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -174,6 +176,5 @@ services:
 
 volumes:
   app-db-data:
-  zitadel-db-data:
   portraits-data:
   zitadel-bootstrap:

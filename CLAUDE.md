@@ -202,6 +202,15 @@ integración del cliente web, generar además `flutter build web --release`; el
 build de Windows ya no es parte del criterio de cierre porque esa plataforma
 está congelada.
 
+`.github/workflows/ci.yml` corre estos mismos comandos (los tres paquetes) en
+cada push y pull request, en runners alojados por GitHub: es una red de
+seguridad, no un reemplazo de correrlos localmente antes de pushear.
+`.github/workflows/cd.yml` reconstruye y levanta el stack en el runner
+autoalojado ante un push a `main`/`webapp` que toque una ruta relevante para
+lo desplegado; ver `docs/despliegue.md` para el aprovisionamiento del runner
+y `openspec/changes/add-ci-cd-pipeline/design.md` para las decisiones detrás
+de ambos pipelines.
+
 ## Arquitectura del motor
 
 El motor está dirigido por datos. La UI nunca debe duplicar reglas ni recalcular

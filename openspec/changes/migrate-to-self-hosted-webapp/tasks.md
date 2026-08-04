@@ -190,10 +190,11 @@
 - [x] 10.3 Hacer que la API espere a que la base esté disponible en lugar de
       terminar en fallo permanente (ya implementado en `bin/server.dart`,
       `_runMigrationsWithRetry`, antes de esta sesión — sin cambios)
-- [x] 10.4 Añadir comprobaciones de salud a cada servicio (`db`, `zitadel-db`,
-      `zitadel`, `zitadel-login`, `server` y `cloudflared` tienen
-      `healthcheck` en `docker-compose.yml`; `server` reutiliza `/health`,
-      que ya existía)
+- [x] 10.4 Añadir comprobaciones de salud a cada servicio (`db`, `zitadel`,
+      `zitadel-login`, `server` y `cloudflared` tienen `healthcheck` en
+      `docker-compose.yml`; `server` reutiliza `/health`, que ya existía.
+      `zitadel-db` tenía la suya propia hasta que 10.11 unificó las dos
+      instancias)
 - [x] 10.5 Configurar los dos nombres públicos del túnel y hacer coincidir el
       dominio externo de Zitadel con el del emisor
       (`cloudflared/config.example.yml` mapea `fichas.*` a `server` y
@@ -217,12 +218,33 @@
       `docs/despliegue.md`, no se corrió — sin Docker en este entorno)
 - [ ] 10.9 Documentar y probar el respaldo y la restauración de todo el estado
       persistente en una instalación limpia (documentado en
-      `docs/despliegue.md` con los tres `pg_dump`/`tar` necesarios; la prueba
-      real contra una instalación limpia queda pendiente, sin Docker acá)
+      `docs/despliegue.md` con un `pg_dumpall`/`tar` desde que 10.11 unificó
+      las dos bases en una instancia; la prueba real contra una instalación
+      limpia queda pendiente, sin Docker acá)
 - [ ] 10.10 Probar un arranque desde cero: levantar, iniciar sesión y crear un
       personaje (checklist escrito en `docs/despliegue.md`, "Arranque desde
       cero"; no ejecutado en este entorno, que no tiene Docker ni un dominio
       real detrás de Cloudflare)
+- [x] 10.11 Unificar las dos instancias de PostgreSQL en una sola con dos bases
+      (D11): `postgres-init/init-zitadel-db.sh`, montado en
+      `/docker-entrypoint-initdb.d/`, crea el rol y la base `zitadel` y
+      revoca `CONNECT` de `PUBLIC` en las dos bases; DSN de Zitadel apunta a
+      `db`; `zitadel-db-data` y el servicio `zitadel-db` se eliminaron;
+      `.env.example` y `docs/despliegue.md` actualizados (respaldo con un
+      solo `pg_dumpall`). Hecho antes de 5.1, sin datos que migrar. El
+      aislamiento resultante es asimétrico — ver design.md, decisión D11 y
+      Risks/Trade-offs — porque `$APP_DB_USER` es superusuario de la
+      instancia (comportamiento de la imagen oficial de postgres, no algo
+      configurado acá) y por lo tanto no queda bloqueado por el `REVOKE
+      CONNECT` de la base de Zitadel; solo el sentido inverso queda
+      garantizado. No se ejecutó contra Docker real, ver 10.12
+- [ ] 10.12 Verificar en el arranque desde cero (D11) que `start-from-init` de
+      Zitadel funciona con el rol y la base pre-creados por
+      `postgres-init/init-zitadel-db.sh`, y confirmar la asimetría del
+      aislamiento documentada en 10.11: el rol `zitadel` NO puede conectarse
+      a la base de la aplicación; el rol de la aplicación SÍ puede conectarse
+      a la base de Zitadel (checklist en `docs/despliegue.md`, "Arranque
+      desde cero", pasos 6)
 
 ## 11. Cierre
 

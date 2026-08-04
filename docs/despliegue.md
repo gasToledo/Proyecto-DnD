@@ -54,11 +54,14 @@ y `design.md` para las decisiones detrás de cada elección).
    docker compose ps
    ```
 
-   Esperar a que `zitadel`, `zitadel-login`, `db`, `zitadel-db` y `server`
-   queden `healthy` (ver sección "Comprobación de salud" en cada servicio
-   del `docker-compose.yml`). `server` no queda sano hasta que `zitadel` y
+   Esperar a que `db`, `zitadel`, `zitadel-login` y `server` queden `healthy`
+   (ver sección "Comprobación de salud" en cada servicio del
+   `docker-compose.yml`). `server` no queda sano hasta que `zitadel` y
    `zitadel-login` lo estén: si se cuelga ahí, revisar `docker compose logs
-   zitadel` primero.
+   zitadel` primero. `db` sirve las dos bases (aplicación y Zitadel, ver
+   design.md, decisión D11); si `zitadel` no arranca, revisar también
+   `docker compose logs db` para confirmar que
+   `postgres-init/init-zitadel-db.sh` corrió sin error.
 
 4. **Registrar la aplicación cliente en Zitadel** (tarea 5.1, manual: Zitadel
    no tiene forma de declarar esto por configuración de arranque). Entrar a
@@ -82,6 +85,63 @@ y `design.md` para las decisiones detrás de cada elección).
    personaje de prueba (ver requisito "Arranque desde cero" — sección más
    abajo).
 
+## Integración y despliegue continuo
+
+Ver `openspec/changes/add-ci-cd-pipeline/` para el *why* y las decisiones
+(`design.md`). Dos workflows en `.github/workflows/`:
+
+- `ci.yml`: formato, análisis y pruebas de los tres paquetes en runners
+  alojados por GitHub, en cada push y cada pull request. No necesita
+  configuración en el host.
+- `cd.yml`: reconstruye y levanta el stack (`docker compose up -d --build`)
+  en el **runner autoalojado**, disparado solo por `push` a `main` o
+  `webapp` que toque una ruta relevante. Necesita el runner de esta sección.
+
+### Registrar el runner autoalojado
+
+El runner corre en el mismo host que `docker compose`, nunca en una máquina
+aparte (ver design.md, D1): así el despliegue es `docker compose up -d
+--build` local, sin SSH ni socket Docker expuesto hacia afuera.
+
+1. En GitHub: *Settings → Actions → Runners → New self-hosted runner*, a
+   **nivel de repositorio** (no de organización, para que ningún otro
+   repositorio pueda encolarle trabajo). Seguir las instrucciones que
+   GitHub genera para el sistema operativo del host (descargar, configurar
+   con el token de registro, instalar como servicio para que sobreviva a un
+   reinicio).
+2. **Colocar los secretos reales en el directorio de trabajo del runner**
+   (el que `actions/checkout` usa, normalmente
+   `_work/Proyecto-DnD/Proyecto-DnD` bajo la carpeta de instalación del
+   runner): copiar ahí el `.env` completo y `cloudflared/config.yml` +
+   `cloudflared/creds.json` ya configurados, igual que en un arranque manual
+   (ver "Primer arranque" arriba). `cd.yml` usa `clean: false` en el
+   checkout precisamente para no borrar estos archivos —no versionados—
+   antes de cada despliegue; sin este paso manual único, el primer
+   despliegue automático falla por falta de configuración.
+3. Confirmar que el runner queda `Idle` en *Settings → Actions → Runners*.
+
+### Protección de rama
+
+Configurar en *Settings → Branches* para `main` y, mientras siga activa,
+`webapp`:
+
+- Requerir pull request antes de mergear.
+- Requerir que los jobs de `ci.yml` pasen.
+- Sin *force-push* ni borrado de la rama.
+- Restringir quién puede pushear directo a quienes deben poder disparar un
+  despliegue: es el único control de acceso sobre `cd.yml` (ver design.md,
+  D5 — sin aprobación adicional por decisión del proyecto).
+
+### Verificar el pipeline
+
+- Un push a `main`/`webapp` que solo toque `docs/**` u otra ruta fuera de la
+  lista de `cd.yml` no debe disparar ningún job de despliegue.
+- Un push a `main`/`webapp` que toque `packages/dnd_server/**` (por ejemplo)
+  debe reconstruir el stack y terminar en éxito una vez que `server` quede
+  `healthy`.
+- Un pull request abierto desde un fork no debe disparar ningún workflow en
+  el runner autoalojado — solo los jobs de `ci.yml`, en runners de GitHub.
+
 ## Aislamiento de red (requisito "Publicación sin puertos entrantes")
 
 Ningún servicio de `docker-compose.yml` declara `ports:`. Verificar en cada
@@ -93,9 +153,9 @@ docker compose ps --format '{{.Name}}: {{.Ports}}'
 
 Ninguna fila debe mostrar un mapeo `0.0.0.0:<puerto>->...`: `cloudflared` es
 el único servicio con salida a internet, y es saliente (un túnel, no un
-puerto escuchando). `db`, `zitadel-db` y `portraits-data` solo son
-alcanzables desde dentro de la red interna de Docker que arma `docker
-compose` para este proyecto.
+puerto escuchando). `db` (que sirve las dos bases, aplicación y Zitadel) y
+`portraits-data` solo son alcanzables desde dentro de la red interna de
+Docker que arma `docker compose` para este proyecto.
 
 ## Sin credenciales en la imagen (requisito "Secretos fuera de las imágenes")
 
@@ -111,26 +171,34 @@ docker history --no-trunc dnd-server:check | grep -i -E 'password|secret|key' ||
 
 ## Respaldo y restauración
 
-Todo el estado persistente vive en tres volúmenes con nombre (más
+Todo el estado persistente vive en dos volúmenes con nombre (más
 `zitadel-bootstrap`, que es recreable y no hace falta respaldar: es solo el
-token de servicio entre `zitadel` y `zitadel-login`).
+token de servicio entre `zitadel` y `zitadel-login`). Las dos bases —
+aplicación y Zitadel— comparten una sola instancia de PostgreSQL (ver
+design.md, decisión D11), así que un solo `pg_dump` con `--create` alcanza
+para las dos.
 
 ```sh
 # Respaldo
-docker compose exec -T db pg_dump -U "$APP_DB_USER" "$APP_DB_NAME" > respaldo-app-db.sql
-docker compose exec -T zitadel-db pg_dump -U zitadel zitadel > respaldo-zitadel-db.sql
+docker compose exec -T db pg_dumpall -U "$APP_DB_USER" > respaldo-db.sql
 docker run --rm -v proyecto-dnd_portraits-data:/data -v "$PWD":/backup alpine \
   tar czf /backup/respaldo-retratos.tar.gz -C /data .
 ```
 
 ```sh
 # Restauración en una instalación limpia (stack levantado, sin datos)
-cat respaldo-app-db.sql | docker compose exec -T db psql -U "$APP_DB_USER" "$APP_DB_NAME"
-cat respaldo-zitadel-db.sql | docker compose exec -T zitadel-db psql -U zitadel zitadel
+cat respaldo-db.sql | docker compose exec -T db psql -U "$APP_DB_USER" postgres
 docker run --rm -v proyecto-dnd_portraits-data:/data -v "$PWD":/backup alpine \
   sh -c "cd /data && tar xzf /backup/respaldo-retratos.tar.gz"
 docker compose restart server
 ```
+
+`pg_dumpall` requiere un rol con permiso para leer roles y todas las bases.
+`$APP_DB_USER` alcanza: la imagen oficial de postgres crea a `POSTGRES_USER`
+como **superusuario de la instancia**, no como un rol acotado a su propia
+base (ver design.md, decisión D11, y el comentario en
+`postgres-init/init-zitadel-db.sh`) — es lo mismo que le permite a la
+aplicación llegar a la base de Zitadel pese al `REVOKE CONNECT` de esa base.
 
 El nombre del volumen (`proyecto-dnd_portraits-data` arriba) depende del
 nombre del proyecto de Compose (por defecto, el nombre de la carpeta):
@@ -144,15 +212,23 @@ ejecutado:
 
 1. `docker compose up -d --build` en una máquina limpia, sin volúmenes
    previos.
-2. Confirmar que los cinco servicios con healthcheck (`db`, `zitadel-db`,
-   `zitadel`, `zitadel-login`, `server`) llegan a `healthy` sin intervención
-   manual, y que `cloudflared` también.
+2. Confirmar que los cuatro servicios con healthcheck (`db`, `zitadel`,
+   `zitadel-login`, `server`) llegan a `healthy` sin intervención manual, y
+   que `cloudflared` también.
 3. Completar el registro manual de Zitadel (paso 4 de "Primer arranque").
 4. Iniciar sesión desde `https://fichas.tu-dominio.com` y crear un personaje.
 5. `docker compose down && docker compose up -d` y confirmar que el
    personaje y la sesión de cuenta siguen ahí (los datos sobreviven al
    reinicio; la sesión de navegador expira a las 12 h, ver
    `session_cookie.dart`, así que puede pedir volver a iniciar sesión).
+6. Verificar la unificación de bases (tarea 10.12, D11):
+   - `docker compose exec -T db psql -U zitadel -d "$APP_DB_NAME" -c '\q'`
+     MUST fallar (`FATAL: permission denied for database`).
+   - `docker compose exec -T db psql -U "$APP_DB_USER" -d zitadel -c '\q'`
+     SHALL funcionar: es el lado asimétrico documentado en design.md,
+     decisión D11 — la aplicación llega a la base de Zitadel porque
+     `$APP_DB_USER` es superusuario de la instancia, no una excepción a
+     corregir acá.
 
 Cualquier paso que no funcione como está descrito acá es una corrección para
 este documento, no un bloqueo del despliegue: registrarlo y ajustar.

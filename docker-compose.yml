@@ -2,8 +2,10 @@
 # `self-hosted-deployment` y design.md). Un único `docker compose up -d`
 # levanta todo lo que hace falta: API + cliente web (misma imagen, ver
 # `packages/dnd_server/Dockerfile`), la base de la aplicación, Zitadel con su
-# propia base (API + UI de login, que Zitadel v4 separa en dos contenedores),
-# el volumen de retratos y `cloudflared`.
+# propia base (API + UI de login, que Zitadel v4 separa en dos contenedores,
+# más dos contenedores de una sola vez para `init` y `setup` — ver el comentario
+# largo sobre por qué el arranque de Zitadel va partido), el volumen de retratos
+# y `cloudflared`.
 #
 # Ningún servicio publica puertos al host: `cloudflared` es el único punto de
 # salida hacia internet (un túnel saliente, no un puerto entrante) y llega al
@@ -14,6 +16,38 @@
 # Variables de entorno: copiar `.env.example` a `.env` y completarlo. Ninguna
 # credencial real vive en este archivo ni en las imágenes construidas (ver
 # requisito "Secretos fuera de las imágenes y del repositorio").
+
+# Configuración compartida por los tres contenedores de Zitadel (`zitadel-init`,
+# `zitadel-setup` y `zitadel`). Un solo bloque para que las tres no se
+# desincronicen: cada subcomando ignora lo que no le toca (`start` no lee
+# `FIRSTINSTANCE`, `init` no lee la configuración de OIDC).
+x-zitadel-env: &zitadel-env
+  ZITADEL_PORT: "8080"
+  # MUST coincidir exactamente con el hostname del túnel para Zitadel
+  # (ver cloudflared/config.example.yml y design.md, decisión D5): si
+  # difiere, el descubrimiento OIDC falla.
+  ZITADEL_EXTERNALDOMAIN: ${ZITADEL_EXTERNAL_DOMAIN}
+  ZITADEL_EXTERNALPORT: "443"
+  ZITADEL_EXTERNALSECURE: "true"
+  # TLS lo termina Cloudflare en el borde; adentro de la red de Docker el
+  # tráfico es HTTP simple.
+  ZITADEL_TLS_ENABLED: "false"
+  ZITADEL_DATABASE_POSTGRES_DSN: postgresql://zitadel:${ZITADEL_DB_PASSWORD}@db:5432/zitadel?sslmode=disable
+  # Arranque no interactivo de la primera instancia: crea la organización
+  # y el usuario admin sin pasos manuales en el navegador (el registro de
+  # la aplicación cliente OIDC sí sigue siendo manual, ver tarea 5.1).
+  ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: ${ZITADEL_ADMIN_USERNAME}
+  ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: ${ZITADEL_ADMIN_PASSWORD}
+  # `zitadel-login` se autentica contra la API con este token de servicio,
+  # que `zitadel-setup` escribe en el volumen compartido.
+  ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
+  ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
+  ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Login client inicializado automáticamente
+  ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: ${ZITADEL_LOGIN_CLIENT_PAT_EXPIRATION}
+  ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: "true"
+  ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/
+  ZITADEL_OIDC_DEFAULTLOGINURLV2: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/login?authRequest=
+  ZITADEL_OIDC_DEFAULTLOGOUTURLV2: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/logout?post_logout_redirect=
 
 services:
   # Instancia única de PostgreSQL para la base de la aplicación y la de
@@ -46,42 +80,67 @@ services:
   # API (`zitadel`) sigue el resto de las rutas OIDC. Ver
   # `cloudflared/config.example.yml`, que replica esa misma partición de
   # rutas para el hostname del emisor.
-  zitadel:
+  #
+  # El arranque de Zitadel está partido en tres contenedores a propósito
+  # (`init` → `setup` → `start`) en vez del `start-from-init` de un solo
+  # contenedor que trae el compose de ejemplo de Zitadel. La razón es que
+  # `setup` NO es idempotente frente al eventstore: el paso
+  # `03_default_instance` inserta el dominio de la instancia en
+  # `unique_constraints`, y si el paso se corta a mitad (host reiniciado,
+  # `docker compose down` durante el arranque, un despliegue interrumpido)
+  # Zitadel lo marca `failed` y lo REINTENTA en el siguiente arranque. El
+  # reintento choca contra la fila que ya quedó escrita:
+  #
+  #   duplicate key value violates unique constraint "unique_constraints_pkey"
+  #   Key (instance_id, unique_type, unique_field)=(, instance_domain, auth...)
+  #
+  # Con `start-from-init` dentro del contenedor de servicio, que además tiene
+  # `restart: unless-stopped`, eso es un ciclo de reinicios infinito del que la
+  # base nunca sale sola. Separado, la migración corre en un contenedor de una
+  # sola vez con `restart: "no"`: si falla, falla ruidosamente y se queda
+  # quieto, y el contenedor de servicio —que solo hace `start`— no puede volver
+  # a disparar una migración por reiniciarse. Ver docs/despliegue.md,
+  # "Recuperar Zitadel de un arranque a medias", para el reset cuando ya pasó.
+  #
+  # En despliegues posteriores los dos contenedores de una sola vez vuelven a
+  # correr, ven todo hecho y salen 0 en segundos: `docker compose up -d` sigue
+  # siendo el único comando de despliegue (ver .github/workflows/cd.yml).
+
+  # Crea/verifica el rol, la base y los permisos que Zitadel necesita. Es
+  # idempotente y no toca el eventstore.
+  zitadel-init:
     image: ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}
-    restart: unless-stopped
-    command: start-from-init --masterkey "${ZITADEL_MASTERKEY}"
-    environment:
-      ZITADEL_PORT: "8080"
-      # MUST coincidir exactamente con el hostname del túnel para Zitadel
-      # (ver cloudflared/config.example.yml y design.md, decisión D5): si
-      # difiere, el descubrimiento OIDC falla.
-      ZITADEL_EXTERNALDOMAIN: ${ZITADEL_EXTERNAL_DOMAIN}
-      ZITADEL_EXTERNALPORT: "443"
-      ZITADEL_EXTERNALSECURE: "true"
-      # TLS lo termina Cloudflare en el borde; adentro de la red de Docker el
-      # tráfico es HTTP simple.
-      ZITADEL_TLS_ENABLED: "false"
-      ZITADEL_DATABASE_POSTGRES_DSN: postgresql://zitadel:${ZITADEL_DB_PASSWORD}@db:5432/zitadel?sslmode=disable
-      # Arranque no interactivo de la primera instancia: crea la organización
-      # y el usuario admin sin pasos manuales en el navegador (el registro de
-      # la aplicación cliente OIDC sí sigue siendo manual, ver tarea 5.1).
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: ${ZITADEL_ADMIN_USERNAME}
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: ${ZITADEL_ADMIN_PASSWORD}
-      # `zitadel-login` se autentica contra la API con este token de servicio,
-      # que la propia API escribe en el volumen compartido al arrancar.
-      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Login client inicializado automáticamente
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: ${ZITADEL_LOGIN_CLIENT_PAT_EXPIRATION}
-      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: "true"
-      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/
-      ZITADEL_OIDC_DEFAULTLOGINURLV2: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/login?authRequest=
-      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: https://${ZITADEL_EXTERNAL_DOMAIN}/ui/v2/login/logout?post_logout_redirect=
-    volumes:
-      - zitadel-bootstrap:/zitadel/bootstrap:rw
+    restart: "no"
+    command: init
+    environment: *zitadel-env
     depends_on:
       db:
         condition: service_healthy
+
+  # Migraciones de esquema y creación de la primera instancia. Es el paso que
+  # puede quedar a medias; por eso corre solo, con `restart: "no"`.
+  zitadel-setup:
+    image: ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}
+    restart: "no"
+    command: setup --masterkey "${ZITADEL_MASTERKEY}"
+    environment: *zitadel-env
+    # `rw`: acá es donde se escribe el PAT del login client.
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:rw
+    depends_on:
+      zitadel-init:
+        condition: service_completed_successfully
+
+  zitadel:
+    image: ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}
+    restart: unless-stopped
+    command: start --masterkey "${ZITADEL_MASTERKEY}"
+    environment: *zitadel-env
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:ro
+    depends_on:
+      zitadel-setup:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "/app/zitadel", "ready"]
       interval: 10s

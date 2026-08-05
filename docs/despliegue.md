@@ -56,11 +56,14 @@ y `design.md` para las decisiones detrás de cada elección).
 
    Esperar a que `db`, `zitadel`, `zitadel-login` y `server` queden `healthy`
    (ver sección "Comprobación de salud" en cada servicio del
+   `docker-compose.yml`). `zitadel-init` y `zitadel-setup` son contenedores de
+   una sola vez: lo correcto es que aparezcan como `exited (0)`, no como
+   `healthy` (ver el comentario sobre el arranque partido en
    `docker-compose.yml`). `server` no queda sano hasta que `zitadel` y
    `zitadel-login` lo estén: si se cuelga ahí, revisar `docker compose logs
-   zitadel` primero. `db` sirve las dos bases (aplicación y Zitadel, ver
-   design.md, decisión D11); si `zitadel` no arranca, revisar también
-   `docker compose logs db` para confirmar que
+   zitadel-setup` y `docker compose logs zitadel`, en ese orden. `db` sirve las
+   dos bases (aplicación y Zitadel, ver design.md, decisión D11); si `zitadel`
+   no arranca, revisar también `docker compose logs db` para confirmar que
    `postgres-init/init-zitadel-db.sh` corrió sin error.
 
 4. **Registrar la aplicación cliente en Zitadel** (tarea 5.1, manual: Zitadel
@@ -142,6 +145,85 @@ Configurar en *Settings → Branches* para `main` y, mientras siga activa,
 - Un pull request abierto desde un fork no debe disparar ningún workflow en
   el runner autoalojado — solo los jobs de `ci.yml`, en runners de GitHub.
 
+## Recuperar Zitadel de un arranque a medias
+
+Síntoma, en `docker compose logs zitadel-setup`:
+
+```
+migration failed ... name=03_default_instance err.message=Errors.Instance.Domain.AlreadyExists
+duplicate key value violates unique constraint "unique_constraints_pkey"
+detail: Key (instance_id, unique_type, unique_field)=(, instance_domain, auth.tu-dominio.com) already exists.
+```
+
+Qué significa: `setup` ya había escrito los eventos de la primera instancia en
+un intento anterior y después se cortó. Zitadel marca ese paso como `failed` y
+lo **reintenta** en cada arranque, pero `03_default_instance` no es idempotente
+contra el eventstore, así que el reintento siempre choca contra la fila que ya
+está. No se arregla reintentando ni borrando el contenedor: hay que dejar la
+base de Zitadel vacía y volver a correr `setup`.
+
+Antes de resetear, buscar **la falla original**, que está más arriba en el log y
+es la que hay que corregir; el `duplicate key` es solo su eco:
+
+```sh
+docker compose logs zitadel-setup zitadel | grep -iE 'level=(ERROR|FATAL)' | head -40
+```
+
+Dos causas frecuentes: el arranque interrumpido a mano o por reinicio del host,
+y un `permission denied` al escribir `/zitadel/bootstrap/login-client.pat` — un
+volumen con nombre se crea vacío y propiedad de `root`, y la imagen de Zitadel
+no corre como `root`. La segunda se corrige durante el reset (paso 3).
+
+Reset de la base de Zitadel **sin tocar la de la aplicación** (las dos comparten
+instancia de PostgreSQL, ver design.md, decisión D11, y
+`postgres-init/init-zitadel-db.sh` solo corre con el volumen vacío, así que
+recrear el contenedor no alcanza):
+
+```sh
+# 1. Bajar todo lo de Zitadel y resolver el nombre real del volumen.
+vol="$(docker compose config --format json | jq -r '.name')_zitadel-bootstrap"
+docker compose rm -sf zitadel zitadel-login zitadel-setup zitadel-init
+
+# 2. Vaciar la base de Zitadel y el volumen del PAT.
+docker compose exec -T db psql -U "$APP_DB_USER" -d postgres <<'SQL'
+DROP DATABASE IF EXISTS zitadel WITH (FORCE);
+CREATE DATABASE zitadel OWNER zitadel;
+REVOKE CONNECT ON DATABASE zitadel FROM PUBLIC;
+SQL
+docker volume rm "$vol"
+
+# 3. Solo si la falla original fue `permission denied` sobre el PAT: recrear el
+#    volumen ya con el dueño correcto, tomando el UID que declara la imagen en
+#    vez de adivinarlo.
+uid="$(docker image inspect "ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}" \
+  --format '{{.Config.User}}')"
+docker volume create "$vol"
+docker run --rm -v "$vol:/b" alpine chown -R "${uid:-1000}" /b
+
+# 4. Volver a levantar: `zitadel-setup` corre de nuevo contra una base vacía.
+docker compose up -d
+```
+
+`WITH (FORCE)` (PostgreSQL 13+) corta las conexiones abiertas; sin él,
+`DROP DATABASE` falla si quedó algún cliente colgado. El rol `zitadel` no se
+recrea: lo creó `postgres-init/init-zitadel-db.sh` la primera vez y sobrevive al
+`DROP DATABASE`. El volumen `zitadel-bootstrap` se borra junto con la base
+porque el PAT que guarda queda huérfano: pertenece a la instancia que se acaba
+de eliminar. Si no está `jq` a mano, resolver `$vol` con
+`docker volume ls | grep zitadel-bootstrap`.
+
+Después del reset hay que **volver a hacer el paso 4 de "Primer arranque"**: el
+`OIDC_CLIENT_ID` y el `OIDC_CLIENT_SECRET` de `.env` apuntaban a una aplicación
+de la instancia vieja y ya no existen.
+
+Este procedimiento borra las cuentas de los jugadores (viven en Zitadel), no sus
+fichas (viven en la base de la aplicación). Con el mismo
+`ZITADEL_ADMIN_USERNAME`, cada jugador vuelve a entrar registrándose de nuevo,
+pero **con un `sub` distinto**: las fichas quedan asociadas a la cuenta anterior.
+Si ya hay datos de jugadores en juego, respaldar antes (ver "Respaldo y
+restauración") y planificar la reasignación; en una instalación que todavía no
+se usó, no hay nada que reasignar.
+
 ## Aislamiento de red (requisito "Publicación sin puertos entrantes")
 
 Ningún servicio de `docker-compose.yml` declara `ports:`. Verificar en cada
@@ -214,7 +296,9 @@ ejecutado:
    previos.
 2. Confirmar que los cuatro servicios con healthcheck (`db`, `zitadel`,
    `zitadel-login`, `server`) llegan a `healthy` sin intervención manual, y
-   que `cloudflared` también.
+   que `cloudflared` también. `zitadel-init` y `zitadel-setup` deben quedar
+   en `exited (0)`; si alguno sale con código distinto de 0, el arranque se
+   detiene ahí a propósito (ver "Recuperar Zitadel de un arranque a medias").
 3. Completar el registro manual de Zitadel (paso 4 de "Primer arranque").
 4. Iniciar sesión desde `https://fichas.tu-dominio.com` y crear un personaje.
 5. `docker compose down && docker compose up -d` y confirmar que el

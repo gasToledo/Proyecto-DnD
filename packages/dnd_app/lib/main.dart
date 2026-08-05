@@ -8,7 +8,6 @@ import 'app_version.dart';
 import 'data/asset_content_loader.dart';
 import 'data/characters_controller.dart';
 import 'data/homebrew_store.dart';
-import 'demo/demo_characters.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_widgets.dart';
 import 'ui/dashboard_screen.dart';
@@ -92,12 +91,11 @@ class _BootstrapState extends State<_Bootstrap> {
     await homebrew.load();
     repo.addAll(homebrew.toRepository());
 
+    // Una cuenta nueva arranca con la biblioteca vacía: sembrar un personaje
+    // de ejemplo le deja al jugador algo ajeno que borrar antes de empezar.
+    // `demoSagan()` sigue existiendo como fixture de las pruebas.
     final controller = CharactersController(_api);
     await controller.load();
-    // Primera sesión de la cuenta: sembramos el personaje de ejemplo.
-    if (!controller.loadFailedOffline && controller.characters.isEmpty) {
-      controller.add(demoSagan());
-    }
 
     final version = await currentAppVersion();
     return _AppData(repo, controller, homebrew, version);

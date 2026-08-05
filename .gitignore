@@ -41,6 +41,9 @@ docs/Eberron_ Forge of the Artificer.md
 # Extractos por clase del PHB 2024: mismo copyright que el manual entero.
 docs/Datos de Clases/
 docs.zip
+# Informe de trabajo sobre esos extractos; sus hallazgos se vuelcan en
+# docs/auditoria-reglas-2024.md, que sí se versiona.
+docs/auditoria-clases-2024.md
 
 # El SRD 5.2.1 sí es redistribuible (CC BY 4.0), pero son 8,8 MB de PDF que no
 # aportan nada al repo: la URL de descarga está en docs/auditoria-reglas-2024.md.

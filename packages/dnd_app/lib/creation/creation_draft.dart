@@ -402,6 +402,11 @@ class CreationDraft {
       for (final e in featureChoices.entries) '${e.key}:${e.value.join(",")}',
       for (final e in proficiencyChoices.entries)
         '${e.key}:${e.value.join(",")}',
+      // Las habilidades elegidas viajan en `build()`, así que también son parte
+      // de lo derivado: sin ellas acá la ficha compilada quedaba una elección
+      // atrás y las competencias de una dote no veían lo recién tomado.
+      (classSkills.toList()..sort()).join(','),
+      (raceSkills.toList()..sort()).join(','),
       for (final a in Ability.values) assignedScores[a] ?? 10,
     ].join('|');
     if (sig != _sheetSig) {

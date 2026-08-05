@@ -277,9 +277,21 @@ services:
     volumes:
       - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
       - ./cloudflared/creds.json:/etc/cloudflared/creds.json:ro
+    # `cloudflared` NO espera a `server`, a propósito. Es un proxy inverso: un
+    # origen caído es un 502 en ese hostname, no una razón para no abrir el
+    # túnel. Condicionarlo a `server: service_healthy` creaba un bloqueo
+    # circular en el primer arranque, cuando `.env` todavía no tiene
+    # `OIDC_CLIENT_ID`:
+    #
+    #   server sin OIDC_CLIENT_ID -> nunca queda healthy
+    #   -> cloudflared nunca arranca
+    #   -> https://${ZITADEL_EXTERNAL_DOMAIN} es inalcanzable
+    #   -> no se puede registrar la aplicación y obtener OIDC_CLIENT_ID
+    #
+    # Sin esa arista, el túnel abre igual y la consola de Zitadel queda
+    # accesible para hacer el paso 4 de "Primer arranque"
+    # (docs/despliegue.md), que es lo que desbloquea a `server`.
     depends_on:
-      server:
-        condition: service_healthy
       zitadel-login:
         condition: service_healthy
     healthcheck:

@@ -78,4 +78,8 @@ jobs:
             sleep 10
           done
           echo "El servicio no quedó saludable a tiempo (último estado: ${status:-desconocido})" >&2
+          echo "--- docker compose ps ---" >&2
+          docker compose ps >&2 || true
+          echo "--- docker compose logs --tail=50 server ---" >&2
+          docker compose logs --tail=50 server >&2 || true
           exit 1

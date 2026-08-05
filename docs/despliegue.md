@@ -54,18 +54,27 @@ y `design.md` para las decisiones detrás de cada elección).
    docker compose ps
    ```
 
-   Esperar a que `db`, `zitadel`, `zitadel-login` y `server` queden `healthy`
-   (ver sección "Comprobación de salud" en cada servicio del
+   Esperar a que `db`, `zitadel`, `zitadel-login` y `cloudflared` queden
+   `healthy` (ver sección "Comprobación de salud" en cada servicio del
    `docker-compose.yml`). `zitadel-init`, `zitadel-bootstrap-perms`,
    `zitadel-setup` y `zitadel-bootstrap-share` son contenedores de una sola
    vez: lo correcto es que aparezcan como `exited (0)`, no como `healthy` (ver
-   el comentario sobre el arranque partido en
-   `docker-compose.yml`). `server` no queda sano hasta que `zitadel` y
-   `zitadel-login` lo estén: si se cuelga ahí, revisar `docker compose logs
-   zitadel-setup` y `docker compose logs zitadel`, en ese orden. `db` sirve las
-   dos bases (aplicación y Zitadel, ver design.md, decisión D11); si `zitadel`
-   no arranca, revisar también `docker compose logs db` para confirmar que
-   `postgres-init/init-zitadel-db.sh` corrió sin error.
+   el comentario sobre el arranque partido en `docker-compose.yml`).
+
+   **En este arranque `server` NO queda sano, y es lo esperado**: `.env`
+   todavía no tiene `OIDC_CLIENT_ID`, así que el proceso frena con `Falta la
+   variable de entorno "DND_OIDC_CLIENT_ID"` (ver
+   `ServerConfig.fromEnvironment`) y el contenedor reintenta en bucle. Se
+   arregla solo en el paso 4. El resto del stack no depende de él —
+   `cloudflared` a propósito no lo espera, justamente para que la consola de
+   Zitadel sea alcanzable y se pueda hacer el paso 4 (ver el comentario en
+   `docker-compose.yml`).
+
+   Si el que se cuelga es `zitadel` o `zitadel-login`, revisar `docker compose
+   logs zitadel-setup` y `docker compose logs zitadel`, en ese orden. `db`
+   sirve las dos bases (aplicación y Zitadel, ver design.md, decisión D11); si
+   `zitadel` no arranca, revisar también `docker compose logs db` para
+   confirmar que `postgres-init/init-zitadel-db.sh` corrió sin error.
 
 4. **Registrar la aplicación cliente en Zitadel** (tarea 5.1, manual: Zitadel
    no tiene forma de declarar esto por configuración de arranque). Entrar a
@@ -145,6 +154,15 @@ Configurar en *Settings → Branches* para `main` y, mientras siga activa,
   `healthy`.
 - Un pull request abierto desde un fork no debe disparar ningún workflow en
   el runner autoalojado — solo los jobs de `ci.yml`, en runners de GitHub.
+
+Un despliegue disparado **antes** de completar el paso 4 de "Primer arranque"
+termina en rojo: `server` no puede quedar `healthy` sin `OIDC_CLIENT_ID` y el
+paso "Esperar a que el servicio quede saludable" agota su espera. Es correcto
+que falle —un despliegue que deja la API caída no es un despliegue exitoso— y
+no deja el stack a medias: `docker compose up -d` ya levantó todo lo demás,
+incluido `cloudflared`, así que la consola de Zitadel queda accesible para
+hacer el registro. Después de completarlo, volver a disparar el workflow (o
+`docker compose up -d server` en el host) lo pone en verde.
 
 ## Recuperar Zitadel de un arranque a medias
 
@@ -294,14 +312,16 @@ ejecutado:
 
 1. `docker compose up -d --build` en una máquina limpia, sin volúmenes
    previos.
-2. Confirmar que los cuatro servicios con healthcheck (`db`, `zitadel`,
-   `zitadel-login`, `server`) llegan a `healthy` sin intervención manual, y
-   que `cloudflared` también. Los cuatro contenedores de una sola vez
+2. Confirmar que `db`, `zitadel`, `zitadel-login` y `cloudflared` llegan a
+   `healthy` sin intervención manual. `server` **no**: reinicia en bucle
+   hasta el paso 3, porque `OIDC_CLIENT_ID` todavía está vacío (ver paso 3 de
+   "Primer arranque"). Los cuatro contenedores de una sola vez
    (`zitadel-init`, `zitadel-bootstrap-perms`, `zitadel-setup`,
    `zitadel-bootstrap-share`) deben quedar en `exited (0)`; si alguno sale con
    código distinto de 0, el arranque se detiene ahí a propósito (ver
    "Recuperar Zitadel de un arranque a medias").
-3. Completar el registro manual de Zitadel (paso 4 de "Primer arranque").
+3. Completar el registro manual de Zitadel (paso 4 de "Primer arranque") y
+   confirmar que ahí sí `server` queda `healthy`.
 4. Iniciar sesión desde `https://fichas.tu-dominio.com` y crear un personaje.
 5. `docker compose down && docker compose up -d` y confirmar que el
    personaje y la sesión de cuenta siguen ahí (los datos sobreviven al

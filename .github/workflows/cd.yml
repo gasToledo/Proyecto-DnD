@@ -17,6 +17,7 @@ on:
       - "packages/dnd_engine/**"
       - "docker-compose.yml"
       - "postgres-init/**"
+      - ".github/workflows/cd.yml"
   workflow_dispatch: # Enables manual triggering
 
 # No cancela un despliegue en curso ante un push nuevo: dejar que termine

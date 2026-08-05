@@ -7,6 +7,7 @@ name: CD
 # fork (ver design.md, Risks/Trade-offs). No agregar aquí ningún trigger de
 # pull_request ni pull_request_target.
 on:
+  workflow_dispatch: # Enables manual triggering
   push:
     branches:
       - main

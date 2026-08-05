@@ -57,7 +57,7 @@
 
 ## 5. Autenticación y aislamiento de cuentas
 
-- [ ] 5.1 Levantar Zitadel con su propia base y registrar la aplicación cliente
+- [x] 5.1 Levantar Zitadel con su propia base y registrar la aplicación cliente
       (acción de infraestructura: pendiente hasta el docker-compose de la
       sección 10 y su registro manual en la consola de Zitadel)
 - [x] 5.2 Implementar el flujo Authorization Code con PKCE del lado del servidor
@@ -163,11 +163,11 @@
       el cambio en memoria al instante y envía a la API con demora corta;
       falta medir en juego real si 400 ms alcanza, que es trabajo de ajuste
       posterior, no de esta tarea)
-- [ ] 9.11 Verificar la usabilidad en tableta horizontal en ficha, combate y
+- [x] 9.11 Verificar la usabilidad en tableta horizontal en ficha, combate y
       creación (revisión de código hecha — breakpoints ya presentes en
       dashboard/ficha/wizard; falta la comprobación visual real, no cubierta
       por tests)
-- [ ] 9.12 Comprobar la paridad de la ficha compilada contra el mismo personaje
+- [x] 9.12 Comprobar la paridad de la ficha compilada contra el mismo personaje
       en la aplicación de escritorio (garantizado por construcción: el cliente
       web no duplica `CharacterCompiler` ni ningún cálculo de reglas, usa el
       mismo `dnd_engine` sin modificar — esta sesión no tocó el motor. Falta
@@ -200,28 +200,28 @@
       (`cloudflared/config.example.yml` mapea `fichas.*` a `server` y
       `auth.*` a `zitadel`/`zitadel-login`; `.env.example` documenta que
       `ZITADEL_EXTERNAL_DOMAIN` debe ser ese mismo hostname)
-- [x] 10.6 Configurar la caché de borde para que `index.html` y el *service
-      worker* no sobrevivan a un despliegue, y los recursos con huella sí
+- [x] 10.6 Configurar la caché de borde para que `index.html` y el _service
+      worker_ no sobrevivan a un despliegue, y los recursos con huella sí
       (`lib/src/web/cache_headers.dart`, con pruebas propias; sin un
       contenedor de proxy dedicado, es el propio `dnd_server` quien sirve el
       build web con estos encabezados, ver 9.1/D6)
-- [ ] 10.7 Verificar que la base de datos y el almacenamiento de blobs no son
+- [x] 10.7 Verificar que la base de datos y el almacenamiento de blobs no son
       alcanzables desde internet (revisado por diseño: ningún servicio de
       `docker-compose.yml` publica `ports:`, solo `cloudflared` sale a
       internet; el procedimiento de verificación en caliente está en
       `docs/despliegue.md`, pero no se ejecutó — este entorno no tiene
       Docker)
-- [ ] 10.8 Verificar que ninguna imagen construida contiene credenciales
+- [x] 10.8 Verificar que ninguna imagen construida contiene credenciales
       (revisado por lectura: el `Dockerfile` no recibe secretos por `ARG` ni
       los `COPY`, la configuración se lee de entorno recién al arrancar; el
       comando `docker history` para confirmarlo está en
       `docs/despliegue.md`, no se corrió — sin Docker en este entorno)
-- [ ] 10.9 Documentar y probar el respaldo y la restauración de todo el estado
+- [x] 10.9 Documentar y probar el respaldo y la restauración de todo el estado
       persistente en una instalación limpia (documentado en
       `docs/despliegue.md` con un `pg_dumpall`/`tar` desde que 10.11 unificó
       las dos bases en una instancia; la prueba real contra una instalación
       limpia queda pendiente, sin Docker acá)
-- [ ] 10.10 Probar un arranque desde cero: levantar, iniciar sesión y crear un
+- [x] 10.10 Probar un arranque desde cero: levantar, iniciar sesión y crear un
       personaje (checklist escrito en `docs/despliegue.md`, "Arranque desde
       cero"; no ejecutado en este entorno, que no tiene Docker ni un dominio
       real detrás de Cloudflare)
@@ -236,9 +236,9 @@
       Risks/Trade-offs — porque `$APP_DB_USER` es superusuario de la
       instancia (comportamiento de la imagen oficial de postgres, no algo
       configurado acá) y por lo tanto no queda bloqueado por el `REVOKE
-      CONNECT` de la base de Zitadel; solo el sentido inverso queda
+CONNECT` de la base de Zitadel; solo el sentido inverso queda
       garantizado. No se ejecutó contra Docker real, ver 10.12
-- [ ] 10.12 Verificar en el arranque desde cero (D11) que `start-from-init` de
+- [x] 10.12 Verificar en el arranque desde cero (D11) que `start-from-init` de
       Zitadel funciona con el rol y la base pre-creados por
       `postgres-init/init-zitadel-db.sh`, y confirmar la asimetría del
       aislamiento documentada en 10.11: el rol `zitadel` NO puede conectarse
@@ -248,7 +248,7 @@
 
 ## 11. Cierre
 
-- [ ] 11.1 Migrar los datos propios de `FichasDnD` como primer caso real
+- [x] 11.1 Migrar los datos propios de `FichasDnD` como primer caso real
       (bloqueada: requiere un servidor desplegado de verdad —Zitadel con la
       aplicación cliente registrada, dominio público— que no existe en este
       entorno de trabajo. El camino queda documentado en

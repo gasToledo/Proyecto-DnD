@@ -7,7 +7,6 @@ name: CD
 # fork (ver design.md, Risks/Trade-offs). No agregar aquí ningún trigger de
 # pull_request ni pull_request_target.
 on:
-  workflow_dispatch: # Enables manual triggering
   push:
     branches:
       - main
@@ -18,6 +17,7 @@ on:
       - "packages/dnd_engine/**"
       - "docker-compose.yml"
       - "postgres-init/**"
+  workflow_dispatch: # Enables manual triggering
 
 # No cancela un despliegue en curso ante un push nuevo: dejar que termine
 # `docker compose up --build` en vez de interrumpirlo a mitad de camino.
@@ -42,7 +42,18 @@ jobs:
           clean: false
 
       - name: Reconstruir y levantar el stack
-        run: docker compose up -d --build
+        # `docker compose up --build` reutiliza cualquier imagen base ya
+        # cacheada en el runner para las etapas `FROM` del Dockerfile
+        # (ghcr.io/cirruslabs/flutter:stable, dart:stable), aunque esas
+        # etiquetas floten en el registro. Eso hizo fallar el build cuando
+        # `dnd_app` subió su cota de SDK y el `stable` de Flutter cacheado
+        # localmente quedó atrás. `--pull` en `up` solo afecta a servicios con
+        # `image:`, no a las etapas de build; `compose build --pull` es lo que
+        # fuerza a repreguntar el registro por esas imágenes base antes de
+        # construir.
+        run: |
+          docker compose build --pull
+          docker compose up -d
 
       - name: Esperar a que el servicio quede saludable
         # No hay puertos publicados al host (ver capacidad

@@ -259,6 +259,66 @@ conjuros, 391 vienen del capítulo 7 del PHB (177 dentro del SRD, 214 fuera) y
 el único que lo excede es Sirviente Homúnculo, de *Forge of the Artificer*.
 Sin la etiqueta correcta, todo esto se confundiría bajo la misma atribución.
 
+## Invocaciones del Brujo — 2026-08-05
+
+Revisadas las 28 contra `docs/Datos de Clases/Brujo.md` (texto del PHB 2024).
+Las descripciones son todas 2024 legítimo; no apareció ningún resto de 2014.
+
+- **Los pactos no son exclusivos entre sí y no hace falta ninguna regla que los
+  limite.** En 2024 la Dádiva de Pacto dejó de ser un rasgo aparte: Cadena, Filo
+  y Grimorio son invocaciones normales, sin prerrequisito, y tener más de una es
+  legal —cada una gasta su invocación—. Lo que la regla prohíbe es repetir la
+  *misma* invocación "salvo que su descripción lo diga", y ninguno de los tres
+  lo dice. El catálogo ya lo modelaba bien (sin `exclusiveGroup`) y el validador
+  ya cubría el duplicado con `feat_duplicate`. **Sin cambios.**
+- **Corregido un nombre inventado**: `arcane-smite` / "Castigo Arcano" era
+  *Eldritch Smite*, ahora `eldritch-smite` / "Castigo Sobrenatural". El texto de
+  la regla siempre fue el correcto, así que es el defecto inverso al habitual:
+  falla el nombre, no el contenido. Migración de personajes 10 → 11.
+- **Corregido**: las 4 invocaciones repetibles (Descarga Agónica, Descarga
+  Ahuyentadora, Lanza Sobrenatural, Lecciones de los Primeros) no se podían
+  repetir desde la interfaz, así que el brujo perdía una invocación que las
+  reglas le permiten. El dato, el modelo y el compilador ya lo soportaban; el
+  chip de la subida de nivel ahora lleva contador.
+
+Deuda que queda anotada, sin efecto en la ficha:
+
+- **A qué truco se ata cada copia de una repetible** no se registra. Las cuatro
+  son sólo descriptivas hoy (Descarga Agónica no suma el modificador por Carisma
+  al daño, porque el motor no modela el daño de un truco elegido), así que
+  repetirlas es contabilidad de invocaciones. Modelarlo pide un `Effect` nuevo.
+- **Filo y Grimorio no tienen mecánica**: no hay arma de pacto, ni competencia
+  con ella, ni ataque con Carisma, ni los trucos y rituales del Libro de las
+  Sombras. Cadena es el único con efecto real (`find-familiar` a voluntad).
+- **Vista del Diablo** se modela como visión en la oscuridad de 120 pies, que es
+  una aproximación: la regla ve con normalidad en oscuridad **mágica**, y la
+  visión en la oscuridad no.
+
+## Advertencias que ahora se pueden resolver — 2026-08-05
+
+La arquitectura ya asumía "migrar → dejar hueco → advertir", pero faltaba el
+tramo final: no había edición post-creación, así que una ficha de nivel alto que
+quedaba con una elección pendiente tras una actualización de contenido sólo se
+arreglaba recreando el personaje.
+
+Las advertencias de la ficha traen ahora un botón **Resolver** cuando hay editor.
+El mapeo `code` → editor vive en la aplicación (`ui/sheet/general_section.dart`)
+y no en el motor: `code` ya es el identificador estable que fijan los tests, y un
+código sin editor simplemente no muestra botón. Cubre `size_pending`,
+`size_invalid`, `lineage_pending`, `lineage_missing`, `lineage_wrong_race`,
+`species_spellcasting_ability_pending`, `feature_choice_pending` y
+`proficiency_choice_count`. Los editores encadenan solos: elegir un linaje que
+lanza conjuros destapa la advertencia de la aptitud mágica, con su propio botón.
+
+La tarjeta de advertencias además distingue `info` de `warning`, que el motor ya
+diferenciaba y la interfaz ignoraba: lo pendiente salía en carmesí como si la
+ficha estuviera rota.
+
+Siguen sin editor `asi_pending` y `subclass_pending`, que son los caros: viven
+pegados al asistente de subida de nivel, que siempre asume nivel+1. No los pide
+una actualización de contenido —los niveles de mejora y de subclase son estables
+por clase—, así que sólo aparecen en fichas ya inconsistentes.
+
 ## Pendientes abiertos al cierre de esta tanda
 
 Ordenados por costo, del más barato al más caro:

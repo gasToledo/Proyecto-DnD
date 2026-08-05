@@ -83,7 +83,7 @@ extension _DashboardNavigation on _DashboardScreenState {
             onTap: () => run(
               () => showDialog<bool>(
                 context: this.context,
-                builder: (_) => const SettingsDialog(),
+                builder: (_) => SettingsDialog(api: controller.api),
               ),
             ),
           ),
@@ -98,10 +98,8 @@ extension _DashboardNavigation on _DashboardScreenState {
               textStyle: const TextStyle(fontSize: 12),
             ),
           ),
-          // La versión sale del mismo servicio que compara contra el último
-          // Release, así que el rótulo no puede contradecir al aviso de
-          // actualización. Es null solo en tests, donde no hay servicio.
-          if (widget.updateService?.currentVersion case final version?) ...[
+          // Null solo en tests, donde no se resuelve `PackageInfo`.
+          if (widget.appVersion case final version?) ...[
             const SizedBox(height: 10),
             Text(
               'v$version',

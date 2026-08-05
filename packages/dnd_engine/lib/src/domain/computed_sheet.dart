@@ -112,8 +112,8 @@ class InnateSpell {
 /// ficha entrega ids concretos y la UI no vuelve a interpretar "vacío = todas".
 class ProficiencyChoiceSlot {
   /// Dote que la concede. Habilidoso es repetible, así que puede repetirse.
-  final String featId;
-  final String featName;
+  final String groupId;
+  final String name;
 
   /// Cuántas competencias concede esta dote.
   final int count;
@@ -123,17 +123,36 @@ class ProficiencyChoiceSlot {
 
   /// Herramientas elegibles, ya expandidas (vacío si la dote no las admite).
   final List<String> tools;
+  final List<String> chosen;
+  final bool replaceable;
 
   const ProficiencyChoiceSlot({
-    required this.featId,
-    required this.featName,
+    required this.groupId,
+    required this.name,
     required this.count,
     required this.skills,
     required this.tools,
+    this.chosen = const [],
+    this.replaceable = false,
   });
 
   /// Todo lo elegible, en el orden en que se muestra.
   List<String> get options => [...skills, ...tools];
+
+  int get pending => (count - chosen.length).clamp(0, count);
+
+  String get featId {
+    if (!groupId.startsWith('feat:')) return groupId;
+    final value = groupId.substring(5);
+    final proficiency = value.indexOf(':proficiency');
+    final base = proficiency < 0 ? value : value.substring(0, proficiency);
+    final occurrence = base.lastIndexOf(':');
+    if (occurrence < 0) return base;
+    final suffix = base.substring(occurrence + 1);
+    return int.tryParse(suffix) == null ? base : base.substring(0, occurrence);
+  }
+
+  String get featName => name;
 }
 
 class FeatureChoiceSlot {

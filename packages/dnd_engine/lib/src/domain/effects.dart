@@ -116,11 +116,19 @@ sealed class Effect {
           spellId: json['spellId'] as String,
         ),
       'proficiencyChoice' => ProficiencyChoiceEffect(
+          groupId: json['groupId'] as String?,
+          name: json['name'] as String?,
           count: json['count'] as int? ?? 1,
+          includeSkills: json['includeSkills'] as bool? ?? true,
           skills: (json['skills'] as List? ?? const [])
               .map((e) => e as String)
               .toList(),
           includeTools: json['includeTools'] as bool? ?? false,
+          tools: (json['tools'] as List? ?? const [])
+              .map((e) => e as String)
+              .toList(),
+          replaceable: json['replaceable'] as bool? ?? false,
+          fallbackFor: json['fallbackFor'] as String?,
         ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
@@ -336,8 +344,12 @@ class SpellListAdditionEffect extends Effect {
 /// aparece y desaparece con la dote, y además puede caer sobre una herramienta,
 /// que `Character.chosenSkills` no sabe representar.
 class ProficiencyChoiceEffect extends Effect {
+  final String? groupId;
+  final String? name;
+
   /// Cuántas competencias concede.
   final int count;
+  final bool includeSkills;
 
   /// Habilidades elegibles. **Vacío significa todas**, misma convención que
   /// `skillChoiceFrom` en especie y clase.
@@ -346,19 +358,34 @@ class ProficiencyChoiceEffect extends Effect {
   /// Si además se puede elegir cualquier herramienta. Habilidoso dice
   /// "habilidades o herramientas"; Mente Aguda, solo habilidades.
   final bool includeTools;
+  final List<String> tools;
+  final bool replaceable;
+  final String? fallbackFor;
 
   const ProficiencyChoiceEffect({
+    this.groupId,
+    this.name,
     required this.count,
+    this.includeSkills = true,
     this.skills = const [],
     this.includeTools = false,
+    this.tools = const [],
+    this.replaceable = false,
+    this.fallbackFor,
   });
 
   @override
   Map<String, dynamic> toJson() => {
         'type': 'proficiencyChoice',
+        if (groupId != null) 'groupId': groupId,
+        if (name != null) 'name': name,
         'count': count,
+        'includeSkills': includeSkills,
         'skills': skills,
         'includeTools': includeTools,
+        'tools': tools,
+        'replaceable': replaceable,
+        if (fallbackFor != null) 'fallbackFor': fallbackFor,
       };
 }
 

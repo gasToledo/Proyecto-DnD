@@ -1774,7 +1774,7 @@
         "effects": [
           { "type": "toolProficiency", "tool": "thieves-tools" },
           { "type": "toolProficiency", "tool": "tinkers-tools" },
-          { "type": "toolProficiency", "tool": "artisans-tools" }
+          { "type": "proficiencyChoice", "groupId": "class:artificer:artisan-tool", "name": "Herramientas de Art\u00edfice", "count": 1, "includeSkills": false, "tools": ["artisans-tools"] }
         ]
       },
       {

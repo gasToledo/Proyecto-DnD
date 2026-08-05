@@ -1,33 +1,32 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:dnd_app/data/backup_bundle.dart';
-import 'package:dnd_app/data/transfer_service.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:path/path.dart' as p;
 
 void main() {
-  late Directory sandbox;
+  Map<String, dynamic> manifestOf(Uint8List bytes) {
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final content = archive.findFile('manifest.json')!.content as List<int>;
+    return (jsonDecode(utf8.decode(content)) as Map).cast<String, dynamic>();
+  }
 
-  setUp(() async {
-    sandbox = await Directory.systemTemp.createTemp('dnd-bundle-test-');
-  });
-
-  tearDown(() async {
-    if (await sandbox.exists()) await sandbox.delete(recursive: true);
-  });
-
-  test('respaldo completo conserva personajes, retratos y contenido', () async {
-    final portrait = File(p.join(sandbox.path, 'retrato.png'));
-    await portrait.writeAsBytes([0x89, 0x50, 0x4e, 0x47]);
-    final character = demoSagan().copyWith(portraitPaths: [portrait.path]);
+  test('respaldo completo conserva personajes, retratos y contenido, sin '
+      'ninguna ruta de la máquina que exportó', () async {
+    final character = demoSagan().copyWith(
+      portraitPaths: ['sagan/retrato.png'],
+    );
+    final portraitBytes = Uint8List.fromList([0x89, 0x50, 0x4e, 0x47]);
 
     final bytes = await BackupBundleCodec.encode(
       scope: BackupScope.full,
       characters: [character],
+      readPortrait: (key) async {
+        expect(key, 'sagan/retrato.png');
+        return portraitBytes;
+      },
       homebrew: {
         'weapons': [
           {'id': 'hb-espada', 'name': 'Espada casera'},
@@ -42,114 +41,105 @@ void main() {
         'huggingFaceToken': 'no-exportar',
       },
     );
-    final decoded = BackupBundleCodec.decode(bytes);
 
-    expect(decoded.scope, BackupScope.full);
-    expect(decoded.characters.single.character.id, character.id);
-    expect(decoded.characters.single.character.portraitPaths, isEmpty);
-    expect(
-      decoded.characters.single.portraits.single.bytes,
-      await portrait.readAsBytes(),
-    );
-    expect(decoded.homebrew!['weapons']!.single['id'], 'hb-espada');
-    expect(decoded.preferences!['imageProvider'], 'azure-gpt-image');
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final manifest = manifestOf(bytes);
+    expect(manifest['scope'], 'full');
+    expect(manifest['characters'], [
+      {
+        'id': 'sagan',
+        'file': 'characters/sagan.json',
+        'portraits': ['portraits/sagan/0.png'],
+      },
+    ]);
+
+    final portraitEntry = archive.findFile('portraits/sagan/0.png')!;
+    expect(portraitEntry.content, portraitBytes);
+
+    final characterJson =
+        jsonDecode(
+              utf8.decode(
+                archive.findFile('characters/sagan.json')!.content as List<int>,
+              ),
+            )
+            as Map;
+    // El documento tal cual queda en el ZIP no arrastra ninguna clave de
+    // retrato del sistema de archivos de origen: el original ya era una
+    // clave opaca, y acá se conserva sin reescritura porque encode() no
+    // toca portraitPaths (eso lo hace la migración de esquema, no el
+    // codec de respaldo).
+    expect(characterJson['portraitPaths'], ['sagan/retrato.png']);
+
+    final homebrewJson =
+        jsonDecode(
+              utf8.decode(
+                archive.findFile('homebrew/content.json')!.content as List<int>,
+              ),
+            )
+            as Map;
+    expect(homebrewJson['weapons'], [
+      {'id': 'hb-espada', 'name': 'Espada casera'},
+    ]);
+
+    final preferencesJson =
+        jsonDecode(
+              utf8.decode(
+                archive.findFile('settings/preferences.json')!.content
+                    as List<int>,
+              ),
+            )
+            as Map;
+    expect(preferencesJson['imageProvider'], 'azure-gpt-image');
     for (final key in portableCredentialKeys) {
-      expect(decoded.preferences, isNot(contains(key)));
+      expect(preferencesJson, isNot(contains(key)));
     }
   });
 
-  test('exportación individual genera ZIP importable', () async {
-    final transfer = TransferService(dataRoot: sandbox.path);
-    final path = await transfer.exportCharacter(demoSagan());
-
-    expect(p.extension(path), '.zip');
-    final bundle = await transfer.readBundleOrLegacy(path);
-    expect(bundle.scope, BackupScope.character);
-    expect(bundle.characters.single.character.id, 'sagan');
-  });
-
-  test('sigue leyendo exportaciones JSON antiguas', () async {
-    final file = File(p.join(sandbox.path, 'anterior.json'));
-    await file.writeAsString(
-      jsonEncode({
-        'type': 'dnd_character',
-        'formatVersion': 1,
-        'character': demoSagan().toJson(),
-      }),
-    );
-
-    final bundle = await TransferService(
-      dataRoot: sandbox.path,
-    ).readBundleOrLegacy(file.path);
-    expect(bundle.scope, BackupScope.legacy);
-    expect(bundle.characters.single.character.id, 'sagan');
-  });
-
-  test('rechaza rutas internas que intentan salir del respaldo', () {
-    final archive = Archive()
-      ..add(
-        ArchiveFile.string(
-          'manifest.json',
-          jsonEncode({
-            'type': BackupBundleCodec.type,
-            'formatVersion': BackupBundleCodec.formatVersion,
-            'scope': 'full',
-            'characters': <Object>[],
-          }),
-        ),
-      )
-      ..add(ArchiveFile.string('../fuera.txt', 'peligro'));
-    final bytes = ZipEncoder().encodeBytes(archive);
-
-    expect(() => BackupBundleCodec.decode(bytes), throwsFormatException);
-  });
-
-  test('rechaza versiones futuras del formato', () {
-    final archive = Archive()
-      ..add(
-        ArchiveFile.string(
-          'manifest.json',
-          jsonEncode({
-            'type': BackupBundleCodec.type,
-            'formatVersion': 999,
-            'scope': 'full',
-            'characters': <Object>[],
-          }),
-        ),
+  test(
+    'un alcance de personaje no incluye archivos de homebrew ni ajustes',
+    () async {
+      final bytes = await BackupBundleCodec.encode(
+        scope: BackupScope.character,
+        characters: [demoSagan()],
+        readPortrait: (_) async => null,
       );
 
-    expect(
-      () => BackupBundleCodec.decode(ZipEncoder().encodeBytes(archive)),
-      throwsFormatException,
+      final manifest = manifestOf(bytes);
+      expect(manifest['homebrewFile'], isNull);
+      expect(manifest['preferencesFile'], isNull);
+      final archive = ZipDecoder().decodeBytes(bytes);
+      expect(archive.findFile('homebrew/content.json'), isNull);
+      expect(archive.findFile('settings/preferences.json'), isNull);
+    },
+  );
+
+  test('una clave de retrato que ya no resuelve a nada se omite sin fallar '
+      'el respaldo entero', () async {
+    final character = demoSagan().copyWith(
+      portraitPaths: ['sagan/borrado.png'],
     );
+
+    final bytes = await BackupBundleCodec.encode(
+      scope: BackupScope.character,
+      characters: [character],
+      readPortrait: (_) async => null,
+    );
+
+    final manifest = manifestOf(bytes);
+    expect(manifest['characters'], [
+      {'id': 'sagan', 'file': 'characters/sagan.json', 'portraits': []},
+    ]);
   });
 
-  test('materializa retratos y cambia ids que ya existen', () async {
-    final original = demoSagan();
-    final bundle = BackupBundle(
-      formatVersion: BackupBundleCodec.formatVersion,
-      scope: BackupScope.character,
-      characters: [
-        BundleCharacter(
-          character: original,
-          portraits: [
-            BundlePortrait(
-              fileName: 'retrato.png',
-              bytes: Uint8List.fromList([1, 2, 3]),
-            ),
-          ],
-        ),
-      ],
+  test('no se puede exportar dos veces el mismo personaje', () async {
+    final character = demoSagan();
+    expect(
+      () => BackupBundleCodec.encode(
+        scope: BackupScope.full,
+        characters: [character, character],
+        readPortrait: (_) async => null,
+      ),
+      throwsFormatException,
     );
-    final prepared = await TransferService(
-      dataRoot: sandbox.path,
-    ).prepareCharacterImport(bundle, {'sagan'});
-
-    expect(prepared.characters.single.id, isNot('sagan'));
-    final restoredPath = prepared.characters.single.portraitPaths.single;
-    expect(await File(restoredPath).readAsBytes(), [1, 2, 3]);
-
-    await prepared.rollbackPortraits();
-    expect(File(restoredPath).existsSync(), isFalse);
   });
 }

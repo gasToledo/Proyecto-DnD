@@ -628,23 +628,38 @@ extension _ProficiencyChoiceChecks on CharacterValidator {
     List<ValidationWarning> w,
   ) {
     final slots = sheet.proficiencyChoiceSlots;
-    final expected = slots.fold<int>(0, (sum, s) => sum + s.count);
-    final chosen = c.chosenProficiencies;
-
-    if (chosen.length != expected) {
+    final chosen = [for (final slot in slots) ...slot.chosen];
+    for (final slot in slots) {
+      if (slot.chosen.length < slot.count) {
+        w.add(ValidationWarning(
+          'proficiency_choice_count',
+          slot.name +
+              ': elegiste ' +
+              slot.chosen.length.toString() +
+              ' de ' +
+              slot.count.toString() +
+              '.',
+          WarningSeverity.info,
+        ));
+      } else if (slot.chosen.length > slot.count) {
+        w.add(ValidationWarning(
+          'too_many_proficiency_choices',
+          slot.name + ': hay m\u00e1s elecciones que espacios disponibles.',
+        ));
+      }
+    }
+    if (slots.isEmpty && c.chosenProficiencies.isNotEmpty) {
       w.add(ValidationWarning(
         'proficiency_choice_count',
-        expected == 0
-            ? 'Hay ${chosen.length} competencias elegidas pero ninguna dote '
-                'las concede.'
-            : 'Elegiste ${chosen.length} competencias por dote pero '
-                'corresponden $expected.',
+        'Hay competencias elegidas pero ning\u00fan rasgo las concede.',
       ));
     }
-    if (chosen.toSet().length != chosen.length) {
+
+    if (chosen.toSet().length != chosen.length ||
+        chosen.any((id) => c.chosenSkills.contains(id))) {
       w.add(ValidationWarning(
         'proficiency_choice_duplicate',
-        'Hay competencias de dote repetidas.',
+        'Hay competencias elegidas m\u00e1s de una vez.',
       ));
     }
 

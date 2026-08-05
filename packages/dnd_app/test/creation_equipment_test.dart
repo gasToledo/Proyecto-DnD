@@ -92,6 +92,7 @@ void main() {
     // nombres solo aparecen en este selector, así que no chocan con los de
     // clase y especie de más arriba.
     for (final t in [
+      'Juego de dados',
       'Herramientas de ladrón',
       'Suministros de alquimista',
       'Suministros de cervecero',

@@ -29,6 +29,21 @@ class CharacterCompiler {
       },
       level: c.level,
     );
+    final proficiencySources =
+        <({String id, String name, List<Effect> effects})>[];
+
+    void applySource(
+      String id,
+      String name,
+      List<Effect> effects, {
+      Ability? spellAbilityOverride,
+    }) {
+      builder.applyAll(
+        effects,
+        spellAbilityOverride: spellAbilityOverride,
+      );
+      proficiencySources.add((id: id, name: name, effects: effects));
+    }
 
     if (race != null) builder.speed = race.speed;
 
@@ -40,7 +55,9 @@ class CharacterCompiler {
 
     // Efectos de raza, clase (por nivel), trasfondo y dotes.
     if (race != null) {
-      builder.applyAll(
+      applySource(
+        'race:' + race.id,
+        race.name,
         race.effects,
         spellAbilityOverride: c.speciesSpellcastingAbility,
       );
@@ -51,7 +68,12 @@ class CharacterCompiler {
     final lineage = c.lineageId == null ? null : repo.lineage(c.lineageId!);
     if (lineage != null && lineage.raceId == c.raceId) {
       for (final f in lineage.featuresUpTo(c.level)) {
-        builder.applyAll(
+        applySource(
+          'lineage:' +
+              lineage.id +
+              ':' +
+              lineage.features.indexOf(f).toString(),
+          f.name,
           f.effects,
           spellAbilityOverride: c.speciesSpellcastingAbility,
         );
@@ -60,7 +82,11 @@ class CharacterCompiler {
 
     if (klass != null) {
       for (final f in klass.featuresUpTo(c.level)) {
-        builder.applyAll(f.effects);
+        applySource(
+          'class:' + klass.id + ':' + klass.features.indexOf(f).toString(),
+          f.name,
+          f.effects,
+        );
       }
       builder.saveProficiencies.addAll(klass.savingThrows);
       builder.armorProficiencies.addAll(klass.armorProficiencies);
@@ -71,13 +97,41 @@ class CharacterCompiler {
     final subclass = c.subclassId == null ? null : repo.subclass(c.subclassId!);
     if (subclass != null && subclass.classId == c.classId) {
       for (final f in subclass.featuresUpTo(c.level)) {
-        builder.applyAll(f.effects);
+        applySource(
+          'subclass:' +
+              subclass.id +
+              ':' +
+              subclass.features.indexOf(f).toString(),
+          f.name,
+          f.effects,
+        );
       }
     }
     if (background != null) {
-      builder.applyAll(background.effects);
+      applySource(
+          'background:' + background.id, background.name, background.effects);
       builder.skillProficiencies.addAll(background.skillProficiencies);
-      builder.toolProficiencies.addAll(background.toolProficiencies);
+      for (final tool in background.toolProficiencies) {
+        if (const {
+          'artisans-tools',
+          'gaming-set',
+          'musical-instrument',
+        }.contains(tool)) {
+          proficiencySources.add((
+            id: 'background:' + background.id + ':' + tool,
+            name: background.name,
+            effects: <Effect>[
+              ProficiencyChoiceEffect(
+                count: 1,
+                includeSkills: false,
+                tools: [tool],
+              ),
+            ],
+          ));
+        } else {
+          builder.toolProficiencies.add(tool);
+        }
+      }
     }
 
     // Dotes: la de origen del trasfondo + las elegidas + estilo de combate.
@@ -95,12 +149,24 @@ class CharacterCompiler {
       for (final chosen in c.featureChoices.values) ...chosen,
     ];
     final appliedOnce = <String>{};
+    final featSourceCounts = <String, int>{};
     for (final id in featIds) {
       if (id == null) continue;
       final feat = repo.feat(id);
       if (feat == null) continue;
       if (!feat.repeatable && !appliedOnce.add(id)) continue;
-      builder.applyAll(feat.effects);
+      final occurrence = featSourceCounts.update(
+        feat.id,
+        (count) => count + 1,
+        ifAbsent: () => 0,
+      );
+      applySource(
+        'feat:' +
+            feat.id +
+            (feat.repeatable ? ':' + occurrence.toString() : ''),
+        feat.name,
+        feat.effects,
+      );
     }
 
     // Habilidades elegidas en el wizard (raza/clase/trasfondo).
@@ -111,30 +177,99 @@ class CharacterCompiler {
     // de leerlo del builder porque ahí la procedencia ya se perdió, y Habilidoso
     // es repetible: dos copias son dos cupos distintos.
     final proficiencySlots = <ProficiencyChoiceSlot>[];
-    final slotSeen = <String>{};
-    for (final id in featIds) {
-      if (id == null) continue;
-      final feat = repo.feat(id);
-      if (feat == null) continue;
-      if (!feat.repeatable && !slotSeen.add(id)) continue;
-      for (final e in feat.effects.whereType<ProficiencyChoiceEffect>()) {
-        proficiencySlots.add(ProficiencyChoiceSlot(
-          featId: feat.id,
-          featName: feat.name,
-          count: e.count,
-          skills: e.skills.isEmpty ? Skill.allIds : e.skills,
-          tools: e.includeTools ? toolProficiencyIds : const [],
-        ));
+    final slotNames = <String, String>{};
+    final slotCounts = <String, int>{};
+    final slotSkills = <String, List<String>>{};
+    final slotTools = <String, List<String>>{};
+    final slotReplaceable = <String, bool>{};
+    final slotFallback = <String, String?>{};
+
+    for (final source in proficiencySources) {
+      for (final effect
+          in source.effects.whereType<ProficiencyChoiceEffect>()) {
+        final groupId = effect.groupId ?? source.id + ':proficiency';
+        slotNames[groupId] = effect.name ?? source.name;
+        slotCounts[groupId] = (slotCounts[groupId] ?? 0) + effect.count;
+        slotReplaceable[groupId] =
+            (slotReplaceable[groupId] ?? false) || effect.replaceable;
+        slotFallback[groupId] ??= effect.fallbackFor;
+
+        final skills = slotSkills.putIfAbsent(groupId, () => <String>[]);
+        if (effect.includeSkills) {
+          final options = effect.skills.isEmpty ? Skill.allIds : effect.skills;
+          for (final id in options) {
+            if (!skills.contains(id)) skills.add(id);
+          }
+        }
+
+        final tools = slotTools.putIfAbsent(groupId, () => <String>[]);
+        final options = effect.includeTools
+            ? toolProficiencyIds
+            : expandToolProficiencyChoices(effect.tools);
+        for (final id in options) {
+          if (!tools.contains(id)) tools.add(id);
+        }
       }
     }
 
     // Lo elegido se aplica donde corresponda: Habilidoso mezcla habilidades y
     // herramientas en una sola lista, así que se separan por el catálogo.
-    for (final id in c.chosenProficiencies) {
-      if (Skill.allIds.contains(id)) {
-        builder.skillProficiencies.add(id);
-      } else {
-        builder.toolProficiencies.add(id);
+    final legacy = List<String>.of(c.chosenProficiencies);
+    for (final groupId in slotCounts.keys) {
+      var tools = slotTools[groupId] ?? const <String>[];
+      final fallbackFor = slotFallback[groupId];
+      if (fallbackFor != null) {
+        final chosenElsewhere = c.proficiencyChoices.entries
+            .where((entry) => entry.key != groupId)
+            .expand((entry) => entry.value);
+        final alreadyHadIt = builder.toolProficiencies.contains(fallbackFor) ||
+            chosenElsewhere.contains(fallbackFor) ||
+            legacy.contains(fallbackFor);
+        if (!alreadyHadIt) {
+          builder.toolProficiencies.add(fallbackFor);
+          continue;
+        }
+        tools = tools.where((id) => id != fallbackFor).toList();
+      }
+
+      final options = <String>[
+        ...slotSkills[groupId] ?? const <String>[],
+        ...tools,
+      ];
+      final stored = c.proficiencyChoices[groupId];
+      final chosen = stored == null ? <String>[] : List<String>.of(stored);
+      if (stored == null) {
+        for (final id in List<String>.of(legacy)) {
+          if (chosen.length >= slotCounts[groupId]!) break;
+          if (!options.contains(id)) continue;
+          chosen.add(id);
+          legacy.remove(id);
+        }
+        if (slotCounts.length == 1) {
+          while (chosen.length < slotCounts[groupId]! && legacy.isNotEmpty) {
+            chosen.add(legacy.removeAt(0));
+          }
+        }
+      }
+
+      proficiencySlots.add(
+        ProficiencyChoiceSlot(
+          groupId: groupId,
+          name: slotNames[groupId] ?? groupId,
+          count: slotCounts[groupId]!,
+          skills: slotSkills[groupId] ?? const [],
+          tools: tools,
+          chosen: chosen,
+          replaceable: slotReplaceable[groupId] ?? false,
+        ),
+      );
+
+      for (final id in chosen.where(options.contains)) {
+        if (Skill.allIds.contains(id)) {
+          builder.skillProficiencies.add(id);
+        } else {
+          builder.toolProficiencies.add(id);
+        }
       }
     }
 

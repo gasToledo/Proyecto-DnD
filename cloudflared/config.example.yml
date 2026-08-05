@@ -1,0 +1,37 @@
+# Copiar a cloudflared/config.yml (gitignored) y completar con el túnel real.
+#
+# 1. `cloudflared tunnel login` (una vez, autoriza esta máquina contra la
+#    cuenta de Cloudflare).
+# 2. `cloudflared tunnel create dnd-app` genera el id del túnel y un archivo
+#    de credenciales JSON.
+# 3. Copiar ese JSON a `cloudflared/creds.json` (gitignored, es un secreto:
+#    ver requisito "Secretos fuera de las imágenes y del repositorio").
+# 4. Reemplazar los marcadores de abajo y crear los dos registros DNS
+#    (`cloudflared tunnel route dns dnd-app fichas.tu-dominio.com` y de
+#    nuevo con `auth.tu-dominio.com`).
+#
+# Los dos nombres públicos MUST ser distintos (ver requisito "Nombres
+# públicos requeridos"): uno para la aplicación, otro para el emisor OIDC. El
+# de Zitadel MUST coincidir exactamente con `ZITADEL_EXTERNAL_DOMAIN` en
+# `.env`, o el descubrimiento OIDC falla (ver design.md, decisión D5).
+
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/creds.json
+
+ingress:
+  # Aplicación (cliente web + API, mismo origen, ver Dockerfile de dnd_server).
+  - hostname: fichas.tu-dominio.com
+    service: http://server:8080
+  # Emisor OIDC. Debe ser un hostname distinto al de arriba. Zitadel v4 sirve
+  # la UI de login desde un contenedor aparte (`zitadel-login`) bajo
+  # `/ui/v2/login`; el resto de las rutas (descubrimiento OIDC, token,
+  # userinfo) las sirve la API. Esta partición replica la que arma Traefik en
+  # el docker-compose oficial de Zitadel.
+  - hostname: auth.tu-dominio.com
+    path: ^/ui/v2/login(/.*)?$
+    service: http://zitadel-login:3000
+  - hostname: auth.tu-dominio.com
+    service: http://zitadel:8080
+  # Regla de cierre obligatoria: cualquier otro hostname que llegue al túnel
+  # se rechaza en vez de exponer un servicio no declarado.
+  - service: http_status:404

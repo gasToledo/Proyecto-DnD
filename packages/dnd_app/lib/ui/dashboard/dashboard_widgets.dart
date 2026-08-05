@@ -1,104 +1,5 @@
 part of '../dashboard_screen.dart';
 
-class ImportPreviewDialog extends StatelessWidget {
-  final BackupBundle bundle;
-  final int characterCollisions;
-  final int homebrewTotal;
-  final int homebrewCollisions;
-
-  const ImportPreviewDialog({
-    super.key,
-    required this.bundle,
-    required this.characterCollisions,
-    required this.homebrewTotal,
-    required this.homebrewCollisions,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final hasAdditionalData =
-        bundle.homebrew != null || bundle.preferences != null;
-    final names = bundle.characters
-        .take(6)
-        .map((entry) => '• ${entry.character.name}')
-        .join('\n');
-    final remaining = bundle.characters.length - 6;
-    return AlertDialog(
-      title: const Text('Revisar importación'),
-      content: SizedBox(
-        width: 520,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${bundle.characters.length} personaje(s) y '
-                '${bundle.portraitCount} retrato(s).',
-              ),
-              if (names.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(names),
-                if (remaining > 0) Text('…y $remaining más.'),
-              ],
-              if (characterCollisions > 0) ...[
-                const SizedBox(height: 12),
-                Text(
-                  '$characterCollisions personaje(s) ya existen. Se '
-                  'importarán como copias nuevas; no se sobrescribirán.',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
-              if (bundle.homebrew != null) ...[
-                const SizedBox(height: 16),
-                Text('Homebrew: $homebrewTotal elemento(s).'),
-                if (homebrewCollisions > 0)
-                  Text(
-                    '$homebrewCollisions elemento(s) existentes serán '
-                    'reemplazados al restaurar todo.',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-              ],
-              if (bundle.preferences != null) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  'Preferencias: proveedor y modelo de imágenes. '
-                  'Las credenciales locales se conservarán.',
-                ),
-              ],
-              const SizedBox(height: 18),
-              Text(
-                hasAdditionalData
-                    ? 'Elegí qué parte del respaldo querés restaurar.'
-                    : 'Confirmá para importar este contenido.',
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        if (hasAdditionalData)
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Solo personajes'),
-          ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, hasAdditionalData),
-          child: Text(hasAdditionalData ? 'Restaurar todo' : 'Importar'),
-        ),
-      ],
-    );
-  }
-}
-
 class _SaveStatusIndicator extends StatelessWidget {
   final CharactersController controller;
 
@@ -194,7 +95,6 @@ class _CharacterCardState extends State<_CharacterCard> {
     final race = widget.repo.race(c.raceId)?.name ?? c.raceId;
     final background = widget.repo.background(c.backgroundId)?.name;
     final portrait = c.portraitPaths.isNotEmpty ? c.portraitPaths.first : null;
-    final hasPortrait = portrait != null && File(portrait).existsSync();
     final hp = c.combat.currentHp;
 
     return MouseRegion(
@@ -232,7 +132,9 @@ class _CharacterCardState extends State<_CharacterCard> {
                     children: [
                       ClassMedallion(
                         klass: klassObj,
-                        image: hasPortrait ? FileImage(File(portrait)) : null,
+                        image: portrait == null
+                            ? null
+                            : PortraitImage.provider(portrait),
                         fallback: c.name.characters.first,
                         size: 56,
                       ),

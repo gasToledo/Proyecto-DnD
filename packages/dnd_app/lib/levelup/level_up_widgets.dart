@@ -644,7 +644,10 @@ class _FeatureChoiceGroup extends StatelessWidget {
       );
     }
 
+    // Las copias de una repetible cuentan, así que `length` sigue siendo el
+    // total gastado del grupo.
     final full = chosen.length >= slot.count;
+    final canDrop = slot.replaceable || !full;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -663,24 +666,39 @@ class _FeatureChoiceGroup extends StatelessWidget {
           runSpacing: 8,
           children: [
             for (final feat in options)
-              _FeatureChoiceChip(
-                feat: feat,
-                selected: chosen.contains(feat.id),
-                // Con el grupo lleno solo se puede soltar lo ya elegido; un
-                // grupo no revisable ni siquiera eso.
-                enabled: chosen.contains(feat.id)
-                    ? slot.replaceable || !full
-                    : !full,
-                accent: pal.gold,
-                onTap: () {
-                  final next = List<String>.of(chosen);
-                  if (!next.remove(feat.id)) next.add(feat.id);
-                  onChanged(next);
-                },
-              ),
+              // Una opción repetible puede tomarse varias veces, cada vez para
+              // un truco distinto: tocarla suma una copia y el "−" resta. La
+              // que no lo es sigue siendo un interruptor.
+              if (feat.repeatable)
+                _FeatureChoiceChip(
+                  feat: feat,
+                  count: chosen.where((id) => id == feat.id).length,
+                  enabled: !full,
+                  accent: pal.gold,
+                  onTap: () => onChanged([...chosen, feat.id]),
+                  onRemove: chosen.contains(feat.id) && canDrop
+                      ? () =>
+                            onChanged(List<String>.of(chosen)..remove(feat.id))
+                      : null,
+                )
+              else
+                _FeatureChoiceChip(
+                  feat: feat,
+                  count: chosen.contains(feat.id) ? 1 : 0,
+                  // Con el grupo lleno solo se puede soltar lo ya elegido; un
+                  // grupo no revisable ni siquiera eso.
+                  enabled: chosen.contains(feat.id) ? canDrop : !full,
+                  accent: pal.gold,
+                  onTap: () {
+                    final next = List<String>.of(chosen);
+                    if (!next.remove(feat.id)) next.add(feat.id);
+                    onChanged(next);
+                  },
+                ),
           ],
         ),
-        for (final id in chosen)
+        // Una repetible aparece varias veces en `chosen`; su descripción, una.
+        for (final id in chosen.toSet())
           if (options.where((f) => f.id == id).firstOrNull case final feat?)
             Padding(
               padding: const EdgeInsets.only(top: 10),
@@ -691,27 +709,34 @@ class _FeatureChoiceGroup extends StatelessWidget {
   }
 }
 
+/// Chip de una opción. [count] son las copias tomadas: una opción repetible
+/// puede llevar más de una, y entonces muestra "×N" y un botón para restar.
 class _FeatureChoiceChip extends StatelessWidget {
   final Feat feat;
-  final bool selected;
+  final int count;
   final bool enabled;
   final Color accent;
   final VoidCallback onTap;
+  final VoidCallback? onRemove;
 
   const _FeatureChoiceChip({
     required this.feat,
-    required this.selected,
+    required this.count,
     required this.enabled,
     required this.accent,
     required this.onTap,
+    this.onRemove,
   });
 
   @override
   Widget build(BuildContext context) {
     final pal = context.palette;
     final scheme = Theme.of(context).colorScheme;
+    final selected = count > 0;
     return Opacity(
-      opacity: enabled ? 1 : 0.45,
+      // Restar sigue disponible aunque no se pueda sumar: si no, un grupo lleno
+      // dejaría la opción repetible atrapada.
+      opacity: enabled || onRemove != null ? 1 : 0.45,
       child: Material(
         color: selected ? pal.goldSoft : scheme.surface,
         borderRadius: BorderRadius.circular(11),
@@ -738,6 +763,31 @@ class _FeatureChoiceChip extends StatelessWidget {
                     color: selected ? accent : scheme.onSurface,
                   ),
                 ),
+                if (count > 1) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    '×$count',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: accent,
+                    ),
+                  ),
+                ],
+                if (onRemove case final remove?) ...[
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: remove,
+                    borderRadius: BorderRadius.circular(9),
+                    child: Tooltip(
+                      message: 'Quitar una de ${feat.name}',
+                      child: Padding(
+                        padding: const EdgeInsets.all(2),
+                        child: Icon(Icons.remove, size: 16, color: accent),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

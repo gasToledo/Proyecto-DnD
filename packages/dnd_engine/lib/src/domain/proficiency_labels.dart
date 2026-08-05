@@ -60,12 +60,66 @@ const _toolLabels = <String, String>{
   'disguise-kit': 'Útiles para disfrazarse',
   'forgery-kit': 'Útiles para falsificar',
   'gaming-set': 'Juego',
+  'dice-set': 'Juego de dados',
+  'dragonchess-set': 'Ajedrez drag\u00f3n',
+  'playing-card-set': 'Baraja de cartas',
+  'three-dragon-ante-set': 'Tres Dragones',
   'herbalism-kit': 'Útiles de herborista',
   'musical-instrument': 'Instrumento musical',
+  'bagpipes': 'Gaita',
+  'drum': 'Tambor',
+  'dulcimer': 'Dulc\u00e9mele',
+  'flute': 'Flauta',
+  'horn': 'Cuerno',
+  'lute': 'La\u00fad',
+  'lyre': 'Lira',
+  'pan-flute': 'Flauta de pan',
+  'shawm': 'Chirim\u00eda',
+  'viol': 'Viola',
   'navigators-tools': 'Herramientas de navegante',
   'poisoner-kit': 'Útiles de envenenador',
   'thieves-tools': 'Herramientas de ladrón',
 };
+
+const artisanToolProficiencyIds = <String>[
+  'alchemists-supplies',
+  'brewers-supplies',
+  'calligraphers-supplies',
+  'carpenters-tools',
+  'cartographers-tools',
+  'cobblers-tools',
+  'cooks-utensils',
+  'glassblowers-tools',
+  'jewelers-tools',
+  'leatherworkers-tools',
+  'masons-tools',
+  'painters-supplies',
+  'potters-tools',
+  'smiths-tools',
+  'tinkers-tools',
+  'weavers-tools',
+  'woodcarvers-tools',
+];
+
+const gamingSetProficiencyIds = <String>[
+  'dice-set',
+  'dragonchess-set',
+  'playing-card-set',
+  'three-dragon-ante-set',
+];
+
+const musicalInstrumentProficiencyIds = <String>[
+  'bagpipes',
+  'drum',
+  'dulcimer',
+  'flute',
+  'horn',
+  'lute',
+  'lyre',
+  'pan-flute',
+  'shawm',
+  'viol',
+];
 
 /// Nombre del entrenamiento con armadura [id] ("light" → "Armadura ligera").
 String armorTrainingLabel(String id) => _armorLabels[id] ?? titleCaseId(id);
@@ -96,3 +150,20 @@ List<String> get toolProficiencyIds => [
             id != 'musical-instrument')
           id,
     ];
+
+/// Expande las entradas de familia que usa el contenido a herramientas reales.
+List<String> expandToolProficiencyChoices(Iterable<String> ids) {
+  final result = <String>[];
+  for (final id in ids) {
+    final expanded = switch (id) {
+      'artisans-tools' => artisanToolProficiencyIds,
+      'gaming-set' => gamingSetProficiencyIds,
+      'musical-instrument' => musicalInstrumentProficiencyIds,
+      _ => [id],
+    };
+    for (final option in expanded) {
+      if (!result.contains(option)) result.add(option);
+    }
+  }
+  return result;
+}

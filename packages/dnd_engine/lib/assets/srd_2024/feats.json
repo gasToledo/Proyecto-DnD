@@ -11,13 +11,13 @@
     ]
   },
   {
-    "id": "arcane-smite",
-    "name": "Castigo Arcano",
+    "id": "eldritch-smite",
+    "name": "Castigo Sobrenatural",
     "source": "phb_2024",
     "category": "warlock-invocation",
     "repeatable": false,
     "effects": [
-      { "type": "passiveTrait", "name": "Castigo Arcano", "description": "Una vez por turno, al acertar con tu arma de pacto, podés gastar un espacio de Magia de Pacto para causar 1d8 de daño de fuerza adicional más 1d8 por cada nivel del espacio. Además podés derribar al objetivo si es Enorme o más pequeño." }
+      { "type": "passiveTrait", "name": "Castigo Sobrenatural", "description": "Una vez por turno, al acertar con tu arma de pacto, podés gastar un espacio de Magia de Pacto para causar 1d8 de daño de fuerza adicional más 1d8 por cada nivel del espacio. Además podés derribar al objetivo si es Enorme o más pequeño." }
     ],
     "prerequisite": { "minLevel": 5, "requiredFeatIds": ["pact-of-the-blade"] }
   },
@@ -408,6 +408,14 @@
     "source": "phb_2024",
     "category": "origin",
     "effects": [
+      {
+        "type": "proficiencyChoice",
+        "groupId": "feat:crafter:tools",
+        "name": "Fabricante: herramientas",
+        "count": 3,
+        "includeSkills": false,
+        "tools": ["artisans-tools"]
+      },
       {
         "type": "passiveTrait",
         "name": "Fabricante",

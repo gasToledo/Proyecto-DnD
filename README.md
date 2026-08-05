@@ -1,157 +1,145 @@
 # Fichas D&D 5e
 
-Aplicación de escritorio para crear y usar personajes de **D&D 5.ª edición con las reglas de 2024**.
+Aplicación web autoalojada para crear y llevar personajes de **D&D 5.ª
+edición con las reglas de 2024 (SRD 5.2.1)**, con una cuenta por jugador.
 
-La app funciona sin cuentas y sin conexión para todo lo relacionado con la ficha. Los personajes se guardan en tu equipo. Solo necesitás internet si querés generar retratos con IA o consultar si hay una versión nueva.
+Ya no es offline: el asistente guía la creación y el motor calcula la ficha
+igual que siempre, pero la ficha se guarda en un servidor propio, no en el
+equipo del usuario. Se despliega como contenedores Docker sobre
+infraestructura propia, publicado por Cloudflare Tunnel sin abrir puertos
+entrantes — ver [Despliegue](#despliegue).
 
-> La versión distribuida actualmente está pensada para **Windows**.
+El [brief funcional](brief-app-dnd5e.md) conserva la visión original del
+producto. La [auditoría de reglas 2024](docs/auditoria-reglas-2024.md) registra
+la fuente de verdad, los hallazgos y el avance por bloque. El
+[despliegue](docs/despliegue.md) documenta el procedimiento paso a paso.
 
-## Descargar e instalar
+## Aplicación de escritorio (congelada)
 
-1. Abrí la página de [últimas versiones publicadas](https://github.com/gasToledo/Proyecto-DnD/releases/latest).
-2. Descargá el archivo ZIP que termina en `-windows.zip`.
-3. Extraé el ZIP completo en una carpeta de tu elección. No ejecutes el programa directamente desde dentro del ZIP.
-4. Abrí `dnd_app.exe`.
+La aplicación de escritorio de Windows dejó de recibir funcionalidad nueva: el
+último release publicado sigue disponible en
+[Releases](https://github.com/gasToledo/Proyecto-DnD/releases/latest), pero su
+única razón de ser hoy es la migración de datos (ver
+[Migrar desde la aplicación de escritorio](#migrar-desde-la-aplicación-de-escritorio)).
+No comprueba versiones nuevas ni las va a comprobar: `update_service.dart` se
+retiró del cliente web.
 
-Windows puede mostrar una advertencia de SmartScreen porque el ejecutable todavía no tiene firma digital. En ese caso, elegí **Más información → Ejecutar de todas formas**.
+1. Descargá el ZIP y extraelo completo.
+2. Ejecutá `dnd_app.exe`.
+3. Si SmartScreen avisa que el ejecutable no está firmado, elegí
+   **Más información → Ejecutar de todas formas**.
+4. Si no abre, instalá
+   [Visual C++ Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe).
 
-Si la aplicación no inicia, instalá el [Microsoft Visual C++ Redistributable x64](https://aka.ms/vs/17/release/vc_redist.x64.exe) y volvé a abrirla.
+## Funcionalidades
 
-La aplicación no necesita un instalador: la carpeta extraída contiene todo lo necesario. Para desinstalarla, cerrala y eliminá esa carpeta. Tus personajes se guardan en otra ubicación y no se eliminan al quitar el programa.
+- Creación guiada en ocho pasos.
+- 13 clases y 53 subclases: 12 clases y 48 subclases del PHB 2024, más la
+  clase Artífice y sus 5 subclases de *Forge of the Artificer*.
+- 15 especies (9 del SRD, Aasimar del PHB 2024 y 5 de *Forge of the
+  Artificer*), 24 linajes, 33 trasfondos, 183 dotes, 38 armas, 13 armaduras y
+  392 conjuros.
+- Subida de nivel guiada paso a paso (resumen, puntos de golpe, subclase,
+  mejora de característica, rasgos, conjuros y repaso), mostrando solo lo que
+  aplica en cada nivel, con resumen final de cambios.
+- Ficha con panel lateral fijo (Personaje, Combate, Inventario, Notas) y
+  contenido en tarjetas por sección, con daño, curación, PG temporales,
+  descansos, condiciones, salvaciones de muerte, recursos, concentración y
+  espacios de conjuro.
+- Listado completo de habilidades y salvaciones con su modificador y
+  competencia, inventario, notas, ataques y maestrías de armas.
+- Retratos generados por IA mediante Pollinations, Azure AI Foundry (Flux) o
+  Azure gpt-image-2 (generados por el servidor, sin que el navegador vea
+  ninguna clave), o subidos desde un archivo local.
+- Homebrew para armas, armaduras, dotes, especies, trasfondos y conjuros, por
+  cuenta.
+- Exportación individual e importación compatible con formatos anteriores.
+- Respaldo ZIP completo de personajes, retratos, homebrew y preferencias, sin
+  incluir credenciales.
 
-## Qué podés hacer
+La validación de reglas avisa cuando encuentra una inconsistencia, pero no
+bloquea la partida: el DM conserva la última palabra.
 
-### Crear personajes
+## Datos, privacidad y cuentas
 
-El asistente te guía paso a paso para elegir:
+Los datos viven en el servidor propio, no en el dispositivo del jugador:
+personajes, homebrew y ajustes se guardan en PostgreSQL, con propiedad por
+cuenta (una cuenta nunca ve ni puede tocar los datos de otra, ver
+`docs/despliegue.md` y la sección "Aislamiento de red" de esa guía). Los
+retratos se guardan como blobs en un volumen del servidor, servidos con la
+misma autorización de sesión que el resto de la API.
 
-- especie, linaje, clase y trasfondo;
-- puntuaciones de características mediante tiradas o array estándar;
-- equipo inicial, armas y armadura;
-- aptitudes, dotes, maestrías y conjuros cuando corresponda;
-- nombre y datos finales del personaje.
+La sesión de navegador es una cookie `httpOnly` y `Secure`: el cliente nunca
+recibe ni guarda un token del proveedor de identidad (Zitadel), y las claves
+de los proveedores de retratos IA viven solo en la configuración del
+servidor, nunca en el navegador ni en un respaldo.
 
-El borrador se guarda mientras avanzás. Si cerrás el asistente, podés retomarlo después, y la aplicación pide confirmación antes de descartar elecciones sin terminar.
+Personajes, homebrew y ajustes tienen formatos versionados. Los documentos
+históricos compatibles se migran al esquema vigente al leerlos; un documento
+de una versión futura se rechaza sin modificarlo.
 
-La app incluye las opciones disponibles del catálogo 2024, la clase Artífice y contenido de *Forge of the Artificer*. Cada opción muestra su procedencia para que sepas qué material está usando tu mesa.
+## Despliegue
 
-### Consultar y usar la ficha
+El stack completo (API + cliente web, PostgreSQL, autenticación con Zitadel
+autoalojado, almacenamiento de retratos y publicación por Cloudflare Tunnel)
+se levanta con `docker compose up -d --build` a partir de `docker-compose.yml`
+y `.env.example`. El procedimiento paso a paso —incluido el registro manual de
+la aplicación cliente en Zitadel, que no tiene forma de automatizarse— está en
+[docs/despliegue.md](docs/despliegue.md), junto con respaldo/restauración y
+las comprobaciones de seguridad antes de publicar un dominio.
 
-Desde el dashboard podés ver todos tus personajes, buscarlos, abrirlos, renombrarlos, archivarlos o marcarlos como muertos sin perder sus datos.
+## Migrar desde la aplicación de escritorio
 
-La ficha está dividida en secciones para encontrar rápido lo que necesitás durante una partida:
+1. Abrir la aplicación de escritorio y generar un respaldo ZIP completo desde
+   el menú de exportación.
+2. Crear una cuenta en el servidor autoalojado (iniciar sesión redirige a
+   Zitadel).
+3. Subir el ZIP desde el dashboard del cliente web (`Importar respaldo`): sube
+   el archivo tal cual, sin decodificarlo en el navegador, y el servidor lo
+   valida e importa en una única transacción por cuenta.
 
-- **Personaje:** características, habilidades, salvaciones, rasgos y datos generales.
-- **Combate:** puntos de golpe, daño, curación, puntos de golpe temporales, condiciones, salvaciones contra muerte, concentración y recursos.
-- **Inventario:** armas, armaduras, equipo, ataques y maestrías.
-- **Conjuros:** conjuros conocidos o preparados, espacios disponibles y conjuros concedidos por rasgos.
-- **Notas:** información libre del personaje o de la partida.
+Un id de personaje que ya exista en la cuenta se reasigna a uno libre en vez
+de sobrescribirse; importar el mismo respaldo dos veces no duplica ni pierde
+personajes.
 
-Los valores derivados —como clase de armadura, modificadores, ataques, daño, velocidad y espacios de conjuro— se calculan automáticamente a partir de tus elecciones.
+## Arquitectura
 
-### Llevar el combate
+El repositorio contiene tres paquetes:
 
-Durante la partida podés registrar daño, curación, descansos, recursos gastados, condiciones, concentración, conjuros lanzados y salvaciones contra muerte. También podés elegir qué arma está en cada mano y cambiar el equipo usado.
+- `packages/dnd_engine`: motor de reglas en Dart puro. Define los modelos, los
+  efectos serializables, el contenido, el combate, la validación y el compilador
+  que produce una `ComputedSheet`. Sin dependencias de ejecución: lo comparten
+  el cliente y el servidor.
+- `packages/dnd_app`: cliente Flutter compilado para navegador. Contiene la
+  interfaz, el cliente de API, importación y respaldos vía descarga del
+  navegador, y editores de homebrew. También compila para Windows (la
+  aplicación de escritorio congelada), pero esa no es la plataforma mantenida.
+- `packages/dnd_server`: API en Dart. Persistencia en PostgreSQL,
+  autenticación OIDC contra Zitadel, almacenamiento y generación de retratos
+  con IA, e importación de respaldos. Sirve además el build web del cliente
+  desde el mismo origen.
 
-Los cambios se guardan automáticamente con un pequeño retraso para no perder información mientras jugás. Todo este módulo funciona offline.
+El motor está dirigido por datos: especies, clases, subclases, trasfondos, dotes
+y equipo declaran efectos que el compilador interpreta. El contenido oficial y
+el homebrew recorren la misma maquinaria. La UI consume la ficha calculada y no
+duplica las reglas; el servidor reutiliza el mismo motor, así que valida con
+las mismas reglas que el cliente.
 
-### Subir de nivel
+El código actual también incorpora una fase de mantenibilidad: los ocho pasos
+del asistente, las secciones de la ficha, el flujo de subida de nivel, el
+dashboard y los formularios de homebrew están separados por responsabilidad,
+con pruebas de regresión para preservar sus flujos.
 
-La subida de nivel se inicia manualmente desde la ficha. Un asistente muestra únicamente los pasos que corresponden al nuevo nivel, por ejemplo:
+La ficha y el dashboard comparten el mismo patrón de navegación: panel lateral
+fijo en ventanas anchas, que se colapsa a un menú desplegable en las angostas.
 
-- elegir puntos de golpe tirando el dado o usando el valor promedio;
-- elegir subclase cuando corresponda;
-- mejorar características o elegir una dote;
-- resolver elecciones de clase, maestrías o invocaciones;
-- actualizar conjuros y espacios;
-- revisar un resumen de todos los cambios antes de confirmarlos.
+## Desarrollo
 
-### Crear contenido propio
+Requiere Dart y Flutter disponibles en el `PATH`. Docker y Docker Compose
+hacen falta solo para levantar el stack completo (ver [Despliegue](#despliegue)),
+no para trabajar en un paquete individual.
 
-La sección **Homebrew** permite agregar contenido personalizado para tu mesa:
-
-- armas y armaduras;
-- dotes;
-- especies;
-- trasfondos;
-- conjuros.
-
-El contenido propio se mezcla con el catálogo oficial, pero queda identificado por separado. También podés exportarlo e importarlo en otra instalación.
-
-### Generar o importar retratos
-
-Desde la ficha podés:
-
-- generar retratos a partir de los datos del personaje;
-- agregar una descripción, estilo o imagen de referencia;
-- elegir entre Pollinations, Azure AI Foundry o Azure `gpt-image-2`;
-- importar una imagen desde tu equipo;
-- guardar las imágenes elegidas junto al personaje.
-
-Pollinations no requiere API key. Los proveedores de Azure requieren que configures tu propia clave en **Ajustes**.
-
-La generación de retratos necesita conexión y envía la descripción o imagen de referencia al proveedor que elijas. La ficha y el resto de la aplicación siguen funcionando sin internet.
-
-### Exportar, importar y respaldar
-
-Desde el dashboard podés exportar un personaje individual o crear un respaldo completo de la aplicación.
-
-Un respaldo completo puede incluir:
-
-- personajes;
-- retratos guardados;
-- contenido Homebrew;
-- preferencias de la aplicación.
-
-Las claves de servicios de imágenes nunca se incluyen en los respaldos. Al importar, la app muestra una vista previa y evita sobrescribir personajes existentes sin avisarte.
-
-### Actualizaciones
-
-Al iniciar, la aplicación consulta en segundo plano si existe una versión nueva. Si la encuentra, te ofrece descargar el ZIP en la carpeta de exportaciones.
-
-La actualización actual es manual: descargás el ZIP, lo extraés y abrís la nueva versión. La aplicación no reemplaza sus propios archivos mientras está abierta.
-
-## Datos, privacidad y recuperación
-
-No hay servidor ni base de datos online. Los datos se guardan localmente en:
-
-```text
-<perfil>/FichasDnD/
-  characters/       personajes
-  homebrew/         contenido propio
-  portraits/        retratos
-  exports/          archivos exportados y respaldos
-  recovery/         archivos apartados para recuperación
-  settings.json     preferencias locales
-```
-
-Los personajes se escriben de forma atómica para reducir el riesgo de corrupción. La aplicación conserva copias antes de migrar datos antiguos y no sobrescribe documentos creados por una versión futura.
-
-## Limitaciones actuales
-
-- Cada personaje usa una sola clase; todavía no hay multiclase.
-- No hay sincronización en la nube.
-- No hay Modo DM para administrar personajes o criaturas de una partida.
-- Algunas reglas avanzadas todavía se muestran como información, pero no tienen automatización completa: objetos mágicos, compañeros con estadísticas propias, compra de puntos, precio y peso detallados del equipo, entre otras.
-- La validación avisa sobre inconsistencias, pero no bloquea las decisiones: el DM conserva la última palabra.
-
-## Mejoras previstas
-
-El proyecto tiene previstas, entre otras, estas mejoras:
-
-- instalador de Windows firmado y actualización automática segura;
-- automatización completa de build, publicación y verificación de versiones;
-- compra de puntos y más reglas de equipo;
-- efectos mecánicos para objetos mágicos, compañeros y reglas avanzadas pendientes;
-- soporte para multiclase;
-- sincronización entre dispositivos;
-- Modo DM para gestionar personajes, NPC y referencias de la mesa.
-
-## Compilar desde el código
-
-Para trabajar con el repositorio necesitás Dart, Flutter y las herramientas de compilación de Windows.
-
-Motor de reglas:
+Motor:
 
 ```sh
 cd packages/dnd_engine
@@ -160,21 +148,79 @@ dart analyze
 dart test
 ```
 
-Aplicación:
+Aplicación (cliente web, plataforma mantenida):
 
 ```sh
 cd packages/dnd_app
 flutter pub get
 flutter analyze
 flutter test
-flutter run -d windows
-flutter build windows --release
+flutter run -d chrome
+flutter build web --release
 ```
 
-La guía técnica para contribuir está en [CLAUDE.md](CLAUDE.md). El detalle del avance y las verificaciones de reglas está en [docs/auditoria-reglas-2024.md](docs/auditoria-reglas-2024.md).
+Servidor:
+
+```sh
+cd packages/dnd_server
+dart pub get
+dart analyze
+dart test
+dart run bin/server.dart
+```
+
+Antes de enviar cambios, formateá el paquete afectado y verificá que el
+análisis y los tests terminen correctamente; para cambios de UI, persistencia
+o integración del cliente web, generá además `flutter build web --release`.
+`flutter build windows --release` sigue existiendo pero corresponde a la
+aplicación de escritorio congelada: no es criterio de cierre.
+
+## Estructura principal
+
+```text
+brief-app-dnd5e.md
+docker-compose.yml       composición del stack autoalojado
+.env.example             configuración de ejemplo, sin secretos
+cloudflared/              config.example.yml del túnel de Cloudflare
+docs/despliegue.md        runbook de despliegue, respaldo y restauración
+packages/
+  dnd_engine/
+    lib/assets/srd_2024/  contenido oficial
+    lib/src/domain/       modelos y efectos
+    lib/src/engine/       compilador, combate, dados y validación
+    lib/src/data/         repositorio de contenido
+    test/                 pruebas del motor
+  dnd_app/
+    lib/creation/         asistente y sus pasos
+    lib/api/               cliente de API (reemplaza a la persistencia local)
+    lib/homebrew/         catálogo y formularios de contenido propio
+    lib/levelup/          subida de nivel
+    lib/ui/               dashboard, ficha y módulos de cada pantalla
+    lib/theme/            tema y componentes visuales
+    test/                 pruebas de la aplicación
+  dnd_server/
+    lib/src/repositories/  personajes, homebrew y ajustes en PostgreSQL
+    lib/src/auth/          sesión y flujo OIDC contra Zitadel
+    lib/src/portraits/     almacenamiento de blobs de retrato
+    lib/src/ai/             generación de retratos con IA
+    lib/src/import/         importación de respaldos ZIP
+    test/                   pruebas del servidor
+```
+
+## Alcance actual
+
+Cada personaje usa una sola clase. Todavía no hay multiclase ni Modo DM. La
+arquitectura dirigida por efectos y contenido permite sumar esas capacidades
+más adelante sin reescribir la ficha.
 
 ## Reglas y licencia
 
-El proyecto utiliza como referencia de reglas el material de 2024 y contiene material del [SRD 5.2.1](https://www.dndbeyond.com/srd), publicado bajo [Creative Commons BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
+Esta obra incluye material procedente del documento de referencia del sistema
+5.2.1 ("SRD 5.2.1") de Wizards of the Coast LLC, disponible en
+<https://www.dndbeyond.com/srd>. La licencia sobre el SRD 5.2.1 se concede de
+acuerdo con la licencia internacional de atribución/reconocimiento 4.0 de
+Creative Commons, disponible en
+<https://creativecommons.org/licenses/by/4.0/legalcode>.
 
-El catálogo también puede incluir contenido del PHB 2024 y de *Forge of the Artificer* que no forma parte del SRD. La aplicación identifica la procedencia de cada opción y ese contenido no se presenta como material cubierto por la licencia del SRD.
+El catálogo ampliado puede contener opciones del PHB 2024 que no forman parte
+del SRD. Se identifican por separado y no se presentan como contenido CC.

@@ -1,6 +1,5 @@
-import 'package:dnd_app/data/character_store.dart';
+import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/data/characters_controller.dart';
-import 'package:dnd_app/data/data_recovery.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
@@ -8,35 +7,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class _MemoryStore implements CharacterStore {
-  final Map<String, Character> saved = {};
-
-  @override
-  final List<DataRecoveryIssue> recoveryIssues = [];
-  @override
-  final List<DataMigrationBackup> migrationBackups = [];
-
-  @override
-  Future<void> delete(String id) async => saved.remove(id);
-
-  @override
-  Future<String> directoryPath() async => '/memory';
-
-  @override
-  Future<List<Character>> loadAll() async => saved.values.toList();
-
-  @override
-  Future<void> save(Character character) async {
-    saved[character.id] = character;
-  }
-
-  @override
-  Future<void> saveAll(Iterable<Character> characters) async {
-    for (final character in characters) {
-      saved[character.id] = character;
-    }
-  }
-}
+import 'fakes/fake_api_server.dart';
 
 void main() {
   late ContentRepository repo;
@@ -54,7 +25,9 @@ void main() {
     tester.view.physicalSize = const Size(900, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final controller = CharactersController(_MemoryStore());
+    final controller = CharactersController(
+      ApiClient(client: FakeApiServer().client),
+    );
     addTearDown(controller.dispose);
     await tester.pumpWidget(
       MaterialApp(
@@ -277,6 +250,190 @@ void main() {
     expect(find.textContaining('Cortante'), findsWidgets);
     expect(find.textContaining('Slashing'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  group('Resolver advertencias sin recrear el personaje', () {
+    // Un Humano/Guerrero/Soldado recién migrado deja pendientes las tres cosas
+    // que la ficha sabe resolver —tamaño, estilo de combate y la herramienta
+    // del trasfondo— más dos que no.
+    Character legacySoldier() => Character(
+      id: 'legacy-soldier',
+      name: 'Veterano',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      assignedScores: {for (final ability in Ability.values) ability: 12},
+      hpPerLevel: const [10],
+    );
+
+    /// El botón de la advertencia cuyo mensaje es [message]. Hay varias en
+    /// pantalla, así que hay que anclar por su fila.
+    Finder resolverDe(String message) => find.descendant(
+      of: find.widgetWithText(ListTile, message),
+      matching: find.widgetWithText(TextButton, 'Resolver'),
+    );
+
+    testWidgets('la herramienta del trasfondo', (tester) async {
+      final character = legacySoldier();
+      final controller = await pumpSheet(tester, character);
+
+      final resolve = resolverDe('Soldado: elegiste 0 de 1.');
+      await tester.ensureVisible(resolve);
+      await tester.tap(resolve);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilterChip, 'Juego de dados'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Soldado: elegiste 0 de 1.'), findsNothing);
+      expect(controller.characters.single.id, character.id);
+      expect(
+        controller.characters.single.proficiencyChoices.values.single,
+        contains('dice-set'),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el tamaño, y la Identidad queda de acuerdo', (tester) async {
+      final controller = await pumpSheet(tester, legacySoldier());
+
+      final resolve = resolverDe(
+        'Falta elegir el tamaño de Humano (Mediano, Pequeño).',
+      );
+      await tester.ensureVisible(resolve);
+      await tester.tap(resolve);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Pequeño'));
+      await tester.pumpAndSettle();
+
+      expect(controller.characters.single.chosenSize, 'Pequeño');
+      expect(find.textContaining('Falta elegir el tamaño'), findsNothing);
+      // La tarjeta Identidad leía el tamaño de la especie, no el elegido.
+      expect(
+        find.descendant(
+          of: find.widgetWithText(Card, 'Identidad'),
+          matching: find.text('Pequeño'),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el estilo de combate, conservando los grupos ajenos', (
+      tester,
+    ) async {
+      // El grupo huérfano no se toca: el motor no lo limpia solo y borrarlo
+      // sería perder una elección del jugador.
+      final controller = await pumpSheet(
+        tester,
+        legacySoldier().copyWith(
+          featureChoices: const {
+            'grupo-viejo': ['algo'],
+          },
+        ),
+      );
+
+      final resolve = resolverDe('Estilo de Combate: elegiste 0 de 1.');
+      await tester.ensureVisible(resolve);
+      await tester.tap(resolve);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilterChip, 'Defensa'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+
+      final saved = controller.characters.single;
+      expect(saved.featureChoices['fighting-style'], ['fs-defense']);
+      expect(saved.featureChoices['grupo-viejo'], ['algo']);
+      expect(find.text('Estilo de Combate: elegiste 0 de 1.'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el linaje, y después la aptitud mágica que destapa', (
+      tester,
+    ) async {
+      // Resolver el linaje puede hacer aparecer una advertencia nueva: el Elfo
+      // Alto lanza conjuros y hay que elegirle la aptitud. Encadena solo.
+      final controller = await pumpSheet(
+        tester,
+        Character(
+          id: 'legacy-elf',
+          name: 'Sin linaje',
+          raceId: 'elf',
+          classId: 'fighter',
+          backgroundId: 'soldier',
+          assignedScores: {for (final ability in Ability.values) ability: 12},
+          hpPerLevel: const [10],
+        ),
+      );
+
+      final resolveLinaje = resolverDe(
+        'Falta elegir el linaje de Elfo '
+        '(Alto Elfo, Elfo del Bosque, Elfo Oscuro (Drow)).',
+      );
+      await tester.ensureVisible(resolveLinaje);
+      await tester.tap(resolveLinaje);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Alto Elfo'));
+      await tester.pumpAndSettle();
+
+      expect(controller.characters.single.lineageId, 'elf-high');
+
+      final resolveAptitud = resolverDe(
+        'Falta elegir la aptitud mágica del linaje (INT, SAB o CAR).',
+      );
+      await tester.ensureVisible(resolveAptitud);
+      await tester.tap(resolveAptitud);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Inteligencia'));
+      await tester.pumpAndSettle();
+
+      expect(
+        controller.characters.single.speciesSpellcastingAbility,
+        Ability.intelligence,
+      );
+      expect(find.textContaining('Falta elegir'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('una advertencia sin editor no ofrece botón', (tester) async {
+      await pumpSheet(tester, legacySoldier());
+
+      expect(
+        find.widgetWithText(ListTile, 'No hay arma equipada.'),
+        findsOneWidget,
+      );
+      expect(resolverDe('No hay arma equipada.'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('lo pendiente se distingue de lo roto', (tester) async {
+      await pumpSheet(tester, legacySoldier());
+
+      // "No hay arma equipada" es info; "Elegiste 0 habilidades", advertencia.
+      expect(
+        find.descendant(
+          of: find.widgetWithText(ListTile, 'No hay arma equipada.'),
+          matching: find.byIcon(Icons.info_outline),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.widgetWithText(
+            ListTile,
+            'Elegiste 0 habilidades pero corresponden 3.',
+          ),
+          matching: find.byIcon(Icons.warning_amber),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('Combate con dos armas desde la ficha', () {

@@ -26,12 +26,31 @@ Thumbs.db
 # Logs
 *.log
 
+# Material interno de desarrollo/agentes (no forma parte del producto)
+CLAUDE.md
+**/CLAUDE.md
+.claude/
+.codex/
+openspec/
+
 # Manuales locales (copyright, no versionar)
 d&d-data/
 docs/Player's Handbook (2024).md
 docs/Eberron_ Rising from the Last War.md
 docs/Eberron_ Forge of the Artificer.md
+# Extractos por clase del PHB 2024: mismo copyright que el manual entero.
+docs/Datos de Clases/
+docs.zip
+# Informe de trabajo sobre esos extractos; sus hallazgos se vuelcan en
+# docs/auditoria-reglas-2024.md, que sí se versiona.
+docs/auditoria-clases-2024.md
 
 # El SRD 5.2.1 sí es redistribuible (CC BY 4.0), pero son 8,8 MB de PDF que no
 # aportan nada al repo: la URL de descarga está en docs/auditoria-reglas-2024.md.
 docs/SP_SRD_CC_v5.2.1.pdf
+
+# Despliegue autoalojado: secretos reales, nunca versionar (ver
+# `.env.example` y `cloudflared/config.example.yml`)
+.env
+cloudflared/config.yml
+cloudflared/creds.json

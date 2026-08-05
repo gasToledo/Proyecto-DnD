@@ -9,7 +9,7 @@ extension _SheetNavigation on _SheetScreenState {
     final portrait = _c.portraitPaths.isNotEmpty
         ? _c.portraitPaths.first
         : null;
-    final hasPortrait = portrait != null && File(portrait).existsSync();
+    final hasPortrait = portrait != null;
 
     void run(VoidCallback action) {
       if (inDrawer) Navigator.of(context).pop();
@@ -52,7 +52,9 @@ extension _SheetNavigation on _SheetScreenState {
                         : SystemMouseCursors.basic,
                     child: ClassMedallion(
                       klass: klassObj,
-                      image: hasPortrait ? FileImage(File(portrait)) : null,
+                      image: hasPortrait
+                          ? PortraitImage.provider(portrait)
+                          : null,
                       fallback: _c.name.characters.first,
                       size: 42,
                     ),
@@ -238,11 +240,14 @@ extension _SheetNavigation on _SheetScreenState {
               children: [
                 Icon(icon, size: 18, color: pal.gold),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(fontFamily: 'Georgia', fontSize: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontFamily: 'Georgia', fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                if (trailing != null) ...[const Spacer(), trailing],
+                ?trailing,
               ],
             ),
           ),

@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 8;
+  static const int currentSchemaVersion = 12;
 
   final String id;
   String name;
@@ -215,6 +215,9 @@ class Character {
   /// el personaje.
   final List<String> chosenProficiencies;
 
+  /// Elecciones de competencia por origen estable.
+  final Map<String, List<String>> proficiencyChoices;
+
   /// Elecciones abiertas resueltas: id de grupo → ids de opción elegidos.
   ///
   /// El grupo lo declara un `FeatureChoiceEffect` del contenido y las opciones
@@ -269,7 +272,11 @@ class Character {
   /// adivinarlo daría una ficha distinta sin que el jugador lo haya pedido.
   final Map<String, bool> weaponOffHand;
 
-  /// Rutas locales de retratos guardados. La primera es la activa.
+  /// Claves opacas de retrato guardado, resueltas por la plataforma que las
+  /// muestra (disco local en la aplicación de escritorio, blob de la cuenta
+  /// en el cliente web). MUST NOT contener rutas absolutas del sistema de
+  /// archivos: el documento tiene que ser portable entre máquinas y cuentas.
+  /// La primera es la que se muestra como retrato activo.
   final List<String> portraitPaths;
 
   /// Notas libres del jugador (autoguardadas).
@@ -301,6 +308,7 @@ class Character {
     this.backgroundAbilityBonuses = const {},
     this.chosenSkills = const [],
     this.chosenProficiencies = const [],
+    this.proficiencyChoices = const {},
     this.featureChoices = const {},
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
@@ -339,6 +347,7 @@ class Character {
         'backgroundAbilityBonuses': _abilityMapToJson(backgroundAbilityBonuses),
         'chosenSkills': chosenSkills,
         'chosenProficiencies': chosenProficiencies,
+        'proficiencyChoices': proficiencyChoices,
         'featureChoices': featureChoices,
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
@@ -468,13 +477,94 @@ class Character {
     'weapon-master': 'weapon-master-strength',
   };
 
+  /// El PHB 2024 llama *Eldritch Smite* a esta invocación; el catálogo la había
+  /// cargado como "Castigo Arcano". El texto de la regla siempre fue el de 2024,
+  /// así que la ficha compila igual: sólo cambian el id y el nombre.
+  static const Map<String, String> _featIdRenames10to11 = {
+    'arcane-smite': 'eldritch-smite',
+  };
+
+  /// Renombra ids de dote en **los dos lugares donde se guardan**: `featIds`
+  /// (las que se toman con una Mejora de Característica) y las listas de
+  /// `featureChoices` (estilo de combate, invocaciones… que también son dotes).
+  ///
+  /// Recorrer sólo `featIds` dejaba las elecciones abiertas afuera, así que una
+  /// invocación renombrada se perdía en silencio. El paso 7→8, que ya usaba este
+  /// helper, produce lo mismo que antes: ninguno de sus 32 ids es una opción de
+  /// elección abierta.
   static void _renameFeatIds(
       Map<String, dynamic> j, Map<String, String> renames) {
-    final list = j['featIds'];
+    List<dynamic> renamed(List<dynamic> list) => [
+          for (final id in list) id is String ? (renames[id] ?? id) : id,
+        ];
+
+    final feats = j['featIds'];
+    if (feats is List) j['featIds'] = renamed(feats);
+
+    final choices = j['featureChoices'];
+    if (choices is Map) {
+      j['featureChoices'] = {
+        for (final entry in choices.entries)
+          entry.key: entry.value is List ? renamed(entry.value) : entry.value,
+      };
+    }
+  }
+
+  /// Grupo de Versatilidad de Habilidad del Khoravar.
+  static const String _khoravarVersatilityGroup =
+      'race:khoravar:skill-versatility';
+
+  /// Versatilidad de Habilidad del Khoravar dejó de ser un `skillChoiceCount`
+  /// de la especie y pasó a ser un `proficiencyChoice`, porque ahora también
+  /// puede gastarse en una herramienta. Las fichas viejas quedaron con esa
+  /// habilidad todavía dentro de `chosenSkills`: la cuenta esperada baja a la
+  /// de la clase sola y sobra una, que además seguía dando competencia.
+  ///
+  /// El wizard construye `chosenSkills` como `[...clase, ...especie]`, así que
+  /// la de la especie es la última. Se la mueve a su grupo si todavía no eligió
+  /// nada; si ya eligió por la interfaz nueva, se descarta la vieja para no
+  /// dejar dos competencias donde la especie da una.
+  static void _migrateKhoravarSkillVersatility(Map<String, dynamic> j) {
+    if (j['raceId'] != 'khoravar') return;
+    final skills = j['chosenSkills'];
+    if (skills is! List || skills.isEmpty) return;
+
+    final remaining = List<dynamic>.from(skills);
+    final legacy = remaining.removeLast();
+    j['chosenSkills'] = remaining;
+
+    if (legacy is! String || legacy.isEmpty) return;
+    final raw = j['proficiencyChoices'];
+    final choices =
+        raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+    final existing = choices[_khoravarVersatilityGroup];
+    if (existing is! List || existing.isEmpty) {
+      choices[_khoravarVersatilityGroup] = [legacy];
+    }
+    j['proficiencyChoices'] = choices;
+  }
+
+  /// Convierte `portraitPaths` de rutas absolutas del sistema de archivos de
+  /// origen a claves opacas `<characterId>/<archivo>`. Es el mismo esquema de
+  /// carpetas que ya usaba el guardado en disco
+  /// (`portraits/<characterId>/<archivo>`), así que la clave resultante sigue
+  /// resolviendo al mismo archivo sin mover nada; solo deja de viajar la parte
+  /// de la ruta que identificaba la máquina de origen.
+  static void _migratePortraitPathsToKeys(Map<String, dynamic> j) {
+    final list = j['portraitPaths'];
     if (list is! List) return;
-    j['featIds'] = [
-      for (final id in list) id is String ? (renames[id] ?? id) : id,
+    final characterId = j['id'] as String? ?? '';
+    j['portraitPaths'] = [
+      for (final entry in list)
+        if (entry is String && entry.isNotEmpty)
+          '$characterId/${_basename(entry)}',
     ];
+  }
+
+  static String _basename(String path) {
+    final normalized = path.replaceAll('\\', '/');
+    final idx = normalized.lastIndexOf('/');
+    return idx == -1 ? normalized : normalized.substring(idx + 1);
   }
 
   /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
@@ -538,6 +628,28 @@ class Character {
           _renameFeatIds(migrated, _featIdRenames7to8);
           version = 8;
           migrated['schemaVersion'] = version;
+        case 8:
+          migrated.putIfAbsent('proficiencyChoices', () => {});
+          version = 9;
+          migrated['schemaVersion'] = version;
+        case 9:
+          _migrateKhoravarSkillVersatility(migrated);
+          version = 10;
+          migrated['schemaVersion'] = version;
+        case 10:
+          _renameFeatIds(migrated, _featIdRenames10to11);
+          version = 11;
+          migrated['schemaVersion'] = version;
+        case 11:
+          // La migración a webapp escribió este paso como 8→9 mientras la rama
+          // de escritorio ya había publicado su propio 8→9 (v0.5.1). Los dos
+          // números coincidían y significaban cosas distintas, así que al
+          // fusionar se renumeró **este**: las fichas de escritorio existentes
+          // ya están en 9, 10 u 11 y su cadena no se puede tocar, mientras que
+          // el servidor todavía no había guardado ninguna ficha real.
+          _migratePortraitPathsToKeys(migrated);
+          version = 12;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -575,6 +687,7 @@ class Character {
       chosenProficiencies: (j['chosenProficiencies'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
+      proficiencyChoices: _choiceMap(j['proficiencyChoices']),
       featureChoices: _choiceMap(j['featureChoices']),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
           .map((e) => e as String)
@@ -627,6 +740,7 @@ class Character {
     List<int>? hpPerLevel,
     Map<String, List<String>>? featureChoices,
     List<String>? chosenProficiencies,
+    Map<String, List<String>>? proficiencyChoices,
     List<String>? cantripIds,
     List<String>? spellIds,
     Object? equippedArmorId = _unset,
@@ -664,6 +778,7 @@ class Character {
       backgroundAbilityBonuses: backgroundAbilityBonuses,
       chosenSkills: chosenSkills,
       chosenProficiencies: chosenProficiencies ?? this.chosenProficiencies,
+      proficiencyChoices: proficiencyChoices ?? this.proficiencyChoices,
       featureChoices: featureChoices ?? this.featureChoices,
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,

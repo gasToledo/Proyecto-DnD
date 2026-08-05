@@ -77,6 +77,8 @@
         "name": "Estudiante de la Guerra",
         "description": "Ganas competencia con un tipo de herramientas de artesano y con una habilidad a tu elección.",
         "effects": [
+          { "type": "proficiencyChoice", "groupId": "subclass:battle-master:artisan-tool", "name": "Estudiante de la Guerra: herramienta", "count": 1, "includeSkills": false, "tools": ["artisans-tools"] },
+          { "type": "proficiencyChoice", "groupId": "subclass:battle-master:skill", "name": "Estudiante de la Guerra: habilidad", "count": 1 },
           { "type": "passiveTrait", "name": "Estudiante de la Guerra", "description": "Competencia con unas herramientas de artesano y una habilidad a elección." }
         ]
       },
@@ -2872,8 +2874,8 @@
         "name": "Herramientas del Oficio",
         "description": "Competencia con Suministros de Alquimista y Útiles de Herborista. El tiempo para fabricar una poción usando esas herramientas se reduce a la mitad.",
         "effects": [
-          { "type": "toolProficiency", "tool": "alchemists-supplies" },
-          { "type": "toolProficiency", "tool": "herbalism-kit" }
+          { "type": "proficiencyChoice", "groupId": "subclass:alchemist:alchemists-supplies", "name": "Herramientas del Oficio: alquimista", "count": 1, "includeSkills": false, "tools": ["artisans-tools"], "fallbackFor": "alchemists-supplies" },
+          { "type": "proficiencyChoice", "groupId": "subclass:alchemist:herbalism-kit", "name": "Herramientas del Oficio: herborista", "count": 1, "includeSkills": false, "tools": ["artisans-tools"], "fallbackFor": "herbalism-kit" }
         ]
       },
       {
@@ -2972,7 +2974,7 @@
         "description": "Entrenamiento con armadura pesada y competencia con Herramientas de Herrero. El tiempo para fabricar armadura, mágica o no, se reduce a la mitad.",
         "effects": [
           { "type": "armorProficiency", "category": "heavy" },
-          { "type": "toolProficiency", "tool": "smiths-tools" }
+          { "type": "proficiencyChoice", "groupId": "subclass:armorer:smiths-tools", "name": "Herramientas del Oficio: herrero", "count": 1, "includeSkills": false, "tools": ["artisans-tools"], "fallbackFor": "smiths-tools" }
         ]
       },
       {
@@ -3067,7 +3069,7 @@
         "description": "Competencia con armas marciales a distancia y con Herramientas de Ebanista. El tiempo para fabricar una varita mágica se reduce a la mitad.",
         "effects": [
           { "type": "weaponProficiency", "category": "martial-ranged" },
-          { "type": "toolProficiency", "tool": "woodcarvers-tools" }
+          { "type": "proficiencyChoice", "groupId": "subclass:artillerist:woodcarvers-tools", "name": "Herramientas del Oficio: ebanista", "count": 1, "includeSkills": false, "tools": ["artisans-tools"], "fallbackFor": "woodcarvers-tools" }
         ]
       },
       {
@@ -3161,7 +3163,7 @@
         "name": "Herramientas del Oficio",
         "description": "Competencia con Herramientas de Herrero. El tiempo para fabricar un arma, mágica o no, se reduce a la mitad.",
         "effects": [
-          { "type": "toolProficiency", "tool": "smiths-tools" }
+          { "type": "proficiencyChoice", "groupId": "subclass:battle-smith:smiths-tools", "name": "Herramientas del Oficio: herrero", "count": 1, "includeSkills": false, "tools": ["artisans-tools"], "fallbackFor": "smiths-tools" }
         ]
       },
       {
@@ -3264,8 +3266,8 @@
         "name": "Herramientas del Oficio",
         "description": "Competencia con Suministros de Calígrafo y Herramientas de Cartógrafo. El tiempo para copiar un pergamino de conjuro se reduce a la mitad.",
         "effects": [
-          { "type": "toolProficiency", "tool": "calligraphers-supplies" },
-          { "type": "toolProficiency", "tool": "cartographers-tools" }
+          { "type": "proficiencyChoice", "groupId": "subclass:cartographer:calligraphers-supplies", "name": "Herramientas del Oficio: cal\u00edgrafo", "count": 1, "includeSkills": false, "tools": ["artisans-tools"], "fallbackFor": "calligraphers-supplies" },
+          { "type": "proficiencyChoice", "groupId": "subclass:cartographer:cartographers-tools", "name": "Herramientas del Oficio: cart\u00f3grafo", "count": 1, "includeSkills": false, "tools": ["artisans-tools"], "fallbackFor": "cartographers-tools" }
         ]
       },
       {

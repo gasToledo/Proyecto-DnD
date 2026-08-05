@@ -166,6 +166,144 @@ void main() {
     expect(migrated['featIds'], ['athlete-dexterity', 42, null]);
   });
 
+  group('v10 → v11: Castigo Arcano pasa a Castigo Sobrenatural', () {
+    Map<String, dynamic> brujo(Map<String, dynamic> extra) => {
+          'schemaVersion': 10,
+          'id': 'v10',
+          'name': 'Brujo del Pacto',
+          'raceId': 'human',
+          'classId': 'warlock',
+          'backgroundId': 'soldier',
+          'assignedScores': const <String, int>{},
+          ...extra,
+        };
+
+    test('la invocación se renombra dentro de featureChoices', () {
+      // Es donde viven las invocaciones: si la migración sólo mirara `featIds`
+      // el brujo perdería la invocación en silencio.
+      final migrated = Character.migrateJson(brujo({
+        'featureChoices': {
+          'warlock-invocation': ['pact-of-the-blade', 'arcane-smite'],
+        },
+      }));
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(
+        (migrated['featureChoices'] as Map)['warlock-invocation'],
+        ['pact-of-the-blade', 'eldritch-smite'],
+      );
+    });
+
+    test('el rename de v7 → v8 sigue alcanzando featIds', () {
+      // No-regresión: el helper ahora recorre dos lugares, pero el paso viejo
+      // tiene que seguir produciendo exactamente lo mismo.
+      final migrated = Character.migrateJson({
+        'schemaVersion': 7,
+        'id': 'v7c',
+        'name': 'Atleta',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'featIds': const ['athlete'],
+      });
+
+      expect(migrated['featIds'], ['athlete-dexterity']);
+    });
+
+    test('tolera un featureChoices con basura', () {
+      final migrated = Character.migrateJson(brujo({
+        'featureChoices': {
+          'warlock-invocation': ['arcane-smite', 42, null],
+          'roto': 'no es una lista',
+        },
+      }));
+
+      final choices = migrated['featureChoices'] as Map;
+      expect(choices['warlock-invocation'], ['eldritch-smite', 42, null]);
+      expect(choices['roto'], 'no es una lista');
+    });
+  });
+
+  group('v9 → v10: Versatilidad de Habilidad del Khoravar', () {
+    Map<String, dynamic> khoravar({
+      required List<dynamic> chosenSkills,
+      Map<String, dynamic> proficiencyChoices = const {},
+    }) =>
+        {
+          'schemaVersion': 9,
+          'id': 'v9',
+          'name': 'Mediorco de Khorvaire',
+          'raceId': 'khoravar',
+          'classId': 'artificer',
+          'backgroundId': 'artisan',
+          'assignedScores': const <String, int>{},
+          'chosenSkills': chosenSkills,
+          'proficiencyChoices': proficiencyChoices,
+        };
+
+    test('la habilidad de la especie se muda a su grupo', () {
+      final migrated = Character.migrateJson(
+        khoravar(chosenSkills: ['arcana', 'sleight-of-hand', 'perception']),
+      );
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      // Quedan las dos de la clase; la de la especie, que el wizard agrega
+      // última, pasa a ser una elección de competencia.
+      expect(migrated['chosenSkills'], ['arcana', 'sleight-of-hand']);
+      expect(
+        (migrated['proficiencyChoices']
+            as Map)['race:khoravar:skill-versatility'],
+        ['perception'],
+      );
+    });
+
+    test('si ya eligió con la interfaz nueva, la vieja se descarta', () {
+      // Es el caso de una ficha que se abrió después del cambio de contenido:
+      // eligió por el grupo nuevo y la vieja quedó duplicando la competencia.
+      final migrated = Character.migrateJson(
+        khoravar(
+          chosenSkills: ['arcana', 'sleight-of-hand', 'perception'],
+          proficiencyChoices: {
+            'race:khoravar:skill-versatility': ['stealth'],
+          },
+        ),
+      );
+
+      expect(migrated['chosenSkills'], ['arcana', 'sleight-of-hand']);
+      expect(
+        (migrated['proficiencyChoices']
+            as Map)['race:khoravar:skill-versatility'],
+        ['stealth'],
+      );
+    });
+
+    test('otra especie no pierde ninguna habilidad', () {
+      final source = khoravar(chosenSkills: ['arcana', 'sleight-of-hand'])
+        ..['raceId'] = 'shifter';
+
+      final migrated = Character.migrateJson(source);
+
+      expect(migrated['chosenSkills'], ['arcana', 'sleight-of-hand']);
+    });
+
+    test('tolera un chosenSkills vacío o con basura', () {
+      expect(
+        Character.migrateJson(khoravar(chosenSkills: []))['chosenSkills'],
+        isEmpty,
+      );
+      final basura = Character.migrateJson(
+        khoravar(chosenSkills: ['arcana', 42]),
+      );
+      expect(basura['chosenSkills'], ['arcana']);
+      expect(
+        (basura['proficiencyChoices'] as Map)
+            .containsKey('race:khoravar:skill-versatility'),
+        isFalse,
+      );
+    });
+  });
+
   test('v5 → v6: la mano secundaria arranca vacía', () {
     final source = {
       'schemaVersion': 5,
@@ -290,6 +428,123 @@ void main() {
         {
           'fighting-style': ['fs-defense'],
         },
+      );
+    });
+  });
+
+  group('v11 → v12: los retratos pasan de ruta absoluta a clave opaca', () {
+    test('una ruta de Windows se convierte en characterId/archivo', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'con-retratos',
+        'name': 'Retratada',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const [
+          r'C:\Users\jugador\FichasDnD\portraits\con-retratos\111.png',
+          r'C:\Users\jugador\FichasDnD\portraits\con-retratos\222.png',
+        ],
+      };
+
+      final migrated = Character.migrateJson(source);
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['portraitPaths'], [
+        'con-retratos/111.png',
+        'con-retratos/222.png',
+      ]);
+      final character = Character.fromJson(source);
+      expect(character.portraitPaths, [
+        'con-retratos/111.png',
+        'con-retratos/222.png',
+      ]);
+      // Ninguna clave conserva nada que identifique la máquina de origen.
+      for (final key in character.portraitPaths) {
+        expect(key.contains(':'), isFalse);
+        expect(key.contains(r'\'), isFalse);
+        expect(key.contains('Users'), isFalse);
+      }
+    });
+
+    test('una ruta POSIX también se reduce a la clave', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'posix',
+        'name': 'Retratada',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const [
+          '/home/jugador/FichasDnD/portraits/posix/333.png',
+        ],
+      };
+
+      expect(
+        Character.fromJson(source).portraitPaths,
+        ['posix/333.png'],
+      );
+    });
+
+    test('sin retratos no agrega nada', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'sin-retratos',
+        'name': 'Sin retrato',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+      };
+
+      expect(Character.fromJson(source).portraitPaths, isEmpty);
+    });
+
+    // La ficha que de verdad existe en disco: una publicada por la v0.5.1 de
+    // escritorio, que ya pasó por la cadena vieja y quedó en 11 con rutas
+    // absolutas. Si el paso de retratos se hubiera dejado en 8→9, este
+    // documento nunca lo cruzaría y llegaría al servidor con `C:\Users\...`.
+    test('una ficha de escritorio ya en v11 también se convierte', () {
+      final source = {
+        'schemaVersion': 11,
+        'id': 'veterana',
+        'name': 'Veterana',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const [
+          r'C:\Users\jugador\FichasDnD\portraits\veterana\retrato.png',
+        ],
+      };
+
+      final migrated = Character.migrateJson(source);
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['portraitPaths'], ['veterana/retrato.png']);
+    });
+
+    test('una entrada que no es String se descarta sin perder la ficha', () {
+      final source = {
+        'schemaVersion': 8,
+        'id': 'basura-retrato',
+        'name': 'Importada',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const [
+          r'C:\Users\jugador\FichasDnD\portraits\basura-retrato\1.png',
+          42,
+          null,
+        ],
+      };
+
+      expect(
+        Character.fromJson(source).portraitPaths,
+        ['basura-retrato/1.png'],
       );
     });
   });

@@ -16,8 +16,11 @@ void main() {
     );
   });
 
-  /// Navega hasta Aptitudes con Humano + Mago + Soldado.
-  Future<void> gotoAptitudes(WidgetTester tester) async {
+  /// Navega hasta Aptitudes con Humano + Mago + el trasfondo indicado.
+  Future<void> gotoAptitudes(
+    WidgetTester tester, {
+    String background = 'Soldado',
+  }) async {
     tester.view.physicalSize = const Size(1500, 2200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -40,7 +43,7 @@ void main() {
     await next();
     await tapOption(tester, 'Mago');
     await next();
-    await tapOption(tester, 'Soldado');
+    await tapOption(tester, background);
     await tester.tap(find.text('+1 / +1 / +1'));
     await tester.pumpAndSettle();
     await next();
@@ -140,8 +143,12 @@ void main() {
   ) async {
     await gotoAptitudes(tester);
 
-    // Antes de tomarla, la sección no existe: la declara la dote, no el paso.
-    expect(find.text('Competencias por dote'.toUpperCase()), findsNothing);
+    // Soldado ya declara una elección de set de juego.
+    expect(
+      find.text('Competencias a elecci\u00f3n'.toUpperCase()),
+      findsOneWidget,
+    );
+    expect(find.text('0/1'), findsOneWidget);
 
     final card = find.text('Habilidoso');
     await tester.scrollUntilVisible(card, 200);
@@ -149,8 +156,11 @@ void main() {
     await tester.tap(card);
     await tester.pumpAndSettle();
 
-    expect(find.text('Competencias por dote'.toUpperCase()), findsOneWidget);
-    expect(find.text('0/3'), findsOneWidget);
+    expect(
+      find.text('Competencias a elecci\u00f3n'.toUpperCase()),
+      findsOneWidget,
+    );
+    expect(find.text('0/4'), findsOneWidget);
 
     // Ofrece herramientas además de habilidades, que es lo que la distingue de
     // las competencias de clase y especie.
@@ -159,8 +169,56 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(tool);
     await tester.pumpAndSettle();
-    expect(find.text('1/3'), findsOneWidget);
+    expect(find.text('1/4'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('una competencia no se puede tomar dos veces', () {
+    // El Noble ya concede Habilidoso, así que la elección de tres competencias
+    // convive con la de habilidades de clase desde que se abre el paso. Sin
+    // cruzar las dos listas se podía tomar Arcanos por clase y otra vez por la
+    // dote: la segunda no agregaba nada y la ficha terminada avisaba de la
+    // repetición, pero la creación la seguía ofreciendo.
+    Future<void> tapProficiency(WidgetTester tester, String label) async {
+      final card = find.text(label).last;
+      await tester.scrollUntilVisible(card, 200);
+      await tester.pumpAndSettle();
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('la elegida por clase queda bloqueada en la dote', (
+      tester,
+    ) async {
+      await gotoAptitudes(tester, background: 'Noble');
+      // Habilidoso (3) más el set de juego del Noble (1).
+      expect(find.text('0/4'), findsOneWidget);
+
+      await tester.tap(find.text('Arcanos').first);
+      await tester.pumpAndSettle();
+      expect(find.text('1 / 2 elegidas'), findsOneWidget);
+
+      await tapProficiency(tester, 'Arcanos');
+
+      // La tarjeta de la dote no responde: sigue sin gastarse ninguna.
+      expect(find.text('0/4'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('la elegida por la dote queda bloqueada en la clase', (
+      tester,
+    ) async {
+      await gotoAptitudes(tester, background: 'Noble');
+
+      await tapProficiency(tester, 'Arcanos');
+      expect(find.text('1/4'), findsOneWidget);
+
+      // La misma habilidad ya no se puede sumar como competencia de clase.
+      await tester.tap(find.text('Arcanos').first);
+      await tester.pumpAndSettle();
+      expect(find.text('0 / 2 elegidas'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   testWidgets('Habilidoso no ofrece las herramientas genéricas', (

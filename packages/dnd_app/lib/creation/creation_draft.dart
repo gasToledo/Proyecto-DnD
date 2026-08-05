@@ -121,6 +121,15 @@ class CreationDraft {
     // Se restauran sin filtrar contra las opciones vigentes: el borrador puede
     // venir de antes de elegir la dote, y el paso las poda cuando se abre.
     draft.chosenProficiencies.addAll(_stringList(json['chosenProficiencies']));
+    final rawProficiencyChoices = json['proficiencyChoices'];
+    if (rawProficiencyChoices is Map) {
+      for (final entry in rawProficiencyChoices.entries) {
+        if (entry.key is! String || entry.value is! List) continue;
+        draft.proficiencyChoices[entry.key as String] = (entry.value as List)
+            .whereType<String>()
+            .toList();
+      }
+    }
     final raceFeatId = json['raceFeatId'];
     if (raceFeatId is String && repo.feat(raceFeatId) != null) {
       draft.raceFeatId = raceFeatId;
@@ -249,6 +258,7 @@ class CreationDraft {
   /// Competencias elegidas por dote (Habilidoso, Mente Aguda). Van mezcladas
   /// habilidades y herramientas, igual que en `Character`.
   final List<String> chosenProficiencies = [];
+  final Map<String, List<String>> proficiencyChoices = {};
 
   // Orígenes.
   String? raceId;
@@ -301,6 +311,7 @@ class CreationDraft {
     'classSkills': classSkills.toList(),
     'weaponMasteries': weaponMasteries,
     'chosenProficiencies': chosenProficiencies,
+    'proficiencyChoices': proficiencyChoices,
     'raceId': raceId,
     'lineageId': lineageId,
     'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
@@ -389,6 +400,13 @@ class CreationDraft {
       spreadPlusTwo?.name,
       spreadPlusOne?.name,
       for (final e in featureChoices.entries) '${e.key}:${e.value.join(",")}',
+      for (final e in proficiencyChoices.entries)
+        '${e.key}:${e.value.join(",")}',
+      // Las habilidades elegidas viajan en `build()`, así que también son parte
+      // de lo derivado: sin ellas acá la ficha compilada quedaba una elección
+      // atrás y las competencias de una dote no veían lo recién tomado.
+      (classSkills.toList()..sort()).join(','),
+      (raceSkills.toList()..sort()).join(','),
       for (final a in Ability.values) assignedScores[a] ?? 10,
     ].join('|');
     if (sig != _sheetSig) {
@@ -416,19 +434,25 @@ class CreationDraft {
 
   /// Cuántas competencias por dote faltan elegir.
   int get pendingProficiencyChoices {
-    final total = proficiencyChoiceSlots.fold<int>(0, (n, s) => n + s.count);
-    return total - chosenProficiencies.length;
+    return proficiencyChoiceSlots.fold<int>(0, (n, slot) => n + slot.pending);
   }
 
   /// Saca de la selección lo que dejó de ser elegible: cambiar de dote o de
   /// trasfondo puede invalidar una elección ya hecha, y dejarla puesta daría
   /// una competencia que ninguna dote concede.
   void pruneProficiencyChoices() {
-    final allowed = {for (final s in proficiencyChoiceSlots) ...s.options};
-    chosenProficiencies.removeWhere((id) => !allowed.contains(id));
-    final total = proficiencyChoiceSlots.fold<int>(0, (n, s) => n + s.count);
-    if (chosenProficiencies.length > total) {
-      chosenProficiencies.removeRange(total, chosenProficiencies.length);
+    final slots = proficiencyChoiceSlots;
+    final active = {for (final slot in slots) slot.groupId};
+    proficiencyChoices.removeWhere((groupId, _) => !active.contains(groupId));
+    for (final slot in slots) {
+      final source = proficiencyChoices[slot.groupId] ?? slot.chosen;
+      final chosen = <String>[];
+      for (final id in source) {
+        if (slot.options.contains(id) && !chosen.contains(id)) chosen.add(id);
+        if (chosen.length == slot.count) break;
+      }
+      proficiencyChoices[slot.groupId] = chosen;
+      chosenProficiencies.removeWhere(chosen.contains);
     }
   }
 
@@ -707,14 +731,7 @@ class CreationDraft {
         // toca este gating.
         final faltan = pendingProficiencyChoices;
         if (faltan > 0) {
-          final total = proficiencyChoiceSlots.fold<int>(
-            0,
-            (n, s) => n + s.count,
-          );
-          out.add(
-            'Competencias por dote: '
-            '${chosenProficiencies.length}/$total.',
-          );
+          out.add('Competencias pendientes: $faltan.');
         }
         return out;
 
@@ -785,6 +802,9 @@ class CreationDraft {
       backgroundAbilityBonuses: abilitySpread,
       chosenSkills: [...classSkills, ...raceSkills],
       chosenProficiencies: List.of(chosenProficiencies),
+      proficiencyChoices: {
+        for (final e in proficiencyChoices.entries) e.key: List.of(e.value),
+      },
       cantripIds: cantrips.toList(),
       spellIds: spells.toList(),
       featureChoices: {

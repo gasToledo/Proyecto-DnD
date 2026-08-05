@@ -3,15 +3,16 @@ import 'dart:async';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import 'api/api_client.dart';
+import 'app_version.dart';
 import 'data/asset_content_loader.dart';
-import 'data/character_store.dart';
 import 'data/characters_controller.dart';
 import 'data/homebrew_store.dart';
-import 'data/update_service.dart';
 import 'demo/demo_characters.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_widgets.dart';
 import 'ui/dashboard_screen.dart';
+import 'web/browser.dart' as browser;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,11 +52,12 @@ class _AppData {
   final ContentRepository repo;
   final CharactersController controller;
   final HomebrewStore homebrew;
-  final UpdateService updates;
-  _AppData(this.repo, this.controller, this.homebrew, this.updates);
+  final String? appVersion;
+  _AppData(this.repo, this.controller, this.homebrew, this.appVersion);
 }
 
-/// Carga el contenido oficial y los personajes persistidos antes del dashboard.
+/// Comprueba la sesión, carga el contenido oficial y los personajes de la
+/// cuenta autenticada antes del dashboard (ver capacidad `web-client`).
 class _Bootstrap extends StatefulWidget {
   final VoidCallback onToggleTheme;
   const _Bootstrap({required this.onToggleTheme});
@@ -63,61 +65,46 @@ class _Bootstrap extends StatefulWidget {
   State<_Bootstrap> createState() => _BootstrapState();
 }
 
-class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
+class _BootstrapState extends State<_Bootstrap> {
+  final _api = ApiClient();
   late Future<_AppData> _future;
-  _AppData? _data;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _future = _init();
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    final controller = _data?.controller;
-    if (controller != null) unawaited(controller.flush());
-    super.dispose();
-  }
-
-  /// Al pasar a segundo plano/minimizar/cerrar, vacía los guardados con debounce
-  /// pendientes para no perder hasta 400 ms del último cambio. En escritorio sin
-  /// plugins es la mejor red disponible (no se puede interceptar el cierre de
-  /// ventana); cubre minimizar y la mayoría de los cierres ordenados.
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.hidden ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      final controller = _data?.controller;
-      if (controller != null) unawaited(controller.flush());
-    }
-  }
-
   Future<_AppData> _init() async {
+    final userId = await _api.currentUserId();
+    if (userId == null) {
+      // Nunca hay ficha que mostrar sin sesión: se navega la pestaña entera
+      // al login del proveedor OIDC (ver capacidad `user-accounts`). El
+      // Future se deja sin resolver a propósito: la página está por
+      // cambiar por completo.
+      browser.redirectTo(_api.loginUri.toString());
+      return Completer<_AppData>().future;
+    }
+
     final repo = await AssetContentLoader.loadOfficial();
     // Fusiona el contenido homebrew sobre el oficial (mismo esquema).
-    final homebrew = HomebrewStore();
+    final homebrew = HomebrewStore(_api);
     await homebrew.load();
     repo.addAll(homebrew.toRepository());
 
-    final controller = CharactersController(CharacterStore());
+    final controller = CharactersController(_api);
     await controller.load();
-    // Primera ejecución: sembramos el personaje de ejemplo y lo persistimos.
-    if (controller.characters.isEmpty) {
+    // Primera sesión de la cuenta: sembramos el personaje de ejemplo.
+    if (!controller.loadFailedOffline && controller.characters.isEmpty) {
       controller.add(demoSagan());
     }
-    final updates = await UpdateService.forCurrentPlatform();
-    final data = _AppData(repo, controller, homebrew, updates);
-    _data = data;
-    return data;
+
+    final version = await currentAppVersion();
+    return _AppData(repo, controller, homebrew, version);
   }
 
   void _retry() {
     setState(() {
-      _data = null;
       _future = _init();
     });
   }
@@ -164,11 +151,42 @@ class _BootstrapState extends State<_Bootstrap> with WidgetsBindingObserver {
             body: Center(child: AppBusyLabel('Cargando datos…')),
           );
         }
+        final data = snap.data!;
+        if (data.controller.loadFailedOffline) {
+          // Distinto de "la cuenta no tiene personajes": acá no se sabe si
+          // los tiene, porque no se pudo hablar con el servidor (ver
+          // capacidad `web-client`).
+          return Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.cloud_off,
+                      size: 44,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text('No se pudo conectar con el servidor.'),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: _retry,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Reintentar'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
         return DashboardScreen(
-          repo: snap.data!.repo,
-          controller: snap.data!.controller,
-          homebrew: snap.data!.homebrew,
-          updateService: snap.data!.updates,
+          repo: data.repo,
+          controller: data.controller,
+          homebrew: data.homebrew,
+          appVersion: data.appVersion,
           onToggleTheme: widget.onToggleTheme,
         );
       },

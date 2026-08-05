@@ -81,6 +81,7 @@ void main() {
     await tapText('Arcanos');
     await tapText('Historia');
     await tester.tap(find.text('Supervivencia').last);
+    await tapText('Juego de dados');
     await tester.pumpAndSettle();
     await next();
 

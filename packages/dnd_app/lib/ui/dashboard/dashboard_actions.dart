@@ -8,11 +8,7 @@ extension _DashboardActions on _DashboardScreenState {
   Future<void> _openWizard() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CreationWizard(
-          repo: repo,
-          onCreate: controller.add,
-          draftStore: CreationDraftStore(),
-        ),
+        builder: (_) => CreationWizard(repo: repo, onCreate: controller.add),
       ),
     );
   }
@@ -38,8 +34,10 @@ extension _DashboardActions on _DashboardScreenState {
     );
   }
 
-  /// Las tres acciones de transferencia en un diálogo (antes era el menú del
-  /// AppBar, que ya no existe con el panel lateral).
+  /// Las dos acciones de transferencia en un diálogo (antes era el menú del
+  /// AppBar, que ya no existe con el panel lateral). "Abrir carpeta de
+  /// exportación" no tiene sentido en el cliente web: cada exportación ya es
+  /// una descarga del navegador (ver capacidad `web-client`).
   Future<void> _transferDialog() async {
     final action = await showDialog<String>(
       context: context,
@@ -54,10 +52,6 @@ extension _DashboardActions on _DashboardScreenState {
             onPressed: () => Navigator.pop(ctx, 'backup'),
             child: const Text('Exportar respaldo completo'),
           ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, 'folder'),
-            child: const Text('Abrir carpeta de exportación'),
-          ),
         ],
       ),
     );
@@ -67,8 +61,6 @@ extension _DashboardActions on _DashboardScreenState {
         await _import();
       case 'backup':
         await _exportBackup();
-      case 'folder':
-        TransferService().openExportsFolder();
     }
   }
 
@@ -102,9 +94,13 @@ extension _DashboardActions on _DashboardScreenState {
   Future<void> _exportCharacter(Character c) async {
     if (!_startOperation('Exportando personaje…')) return;
     try {
-      final path = await TransferService().exportCharacter(c);
-      if (!mounted) return;
-      _showExported('Personaje exportado', path);
+      final transfer = TransferService(controller.api);
+      final bytes = await transfer.exportCharacter(c);
+      browser.downloadBytes(
+        bytes,
+        fileName: transfer.characterExportFileName(c),
+        mimeType: 'application/zip',
+      );
     } catch (e) {
       if (mounted) {
         showAppMessage(
@@ -121,16 +117,17 @@ extension _DashboardActions on _DashboardScreenState {
   Future<void> _exportBackup() async {
     if (!_startOperation('Creando respaldo…')) return;
     try {
-      final settings = await SettingsService().load();
-      final path = await TransferService().exportBackup(
+      final settings = await SettingsService(controller.api).load();
+      final transfer = TransferService(controller.api);
+      final bytes = await transfer.exportBackup(
         controller.characters,
         homebrew: widget.homebrew.exportContent(),
-        preferences: settings.toPortableJson(),
+        preferences: settings.toJson(),
       );
-      if (!mounted) return;
-      _showExported(
-        'Respaldo completo (${controller.characters.length} personajes)',
-        path,
+      browser.downloadBytes(
+        bytes,
+        fileName: transfer.backupFileName(),
+        mimeType: 'application/zip',
       );
     } catch (e) {
       if (mounted) {
@@ -145,96 +142,65 @@ extension _DashboardActions on _DashboardScreenState {
     }
   }
 
-  void _showExported(String title, String path) {
-    showDialog<void>(
+  /// Sube el respaldo elegido tal cual al servidor (`POST /api/import`), que
+  /// lo valida y lo aplica de forma atómica (ver capacidad
+  /// `account-data-import`). A diferencia de la versión de escritorio, no
+  /// hay una vista previa del contenido: el cliente ya no decodifica el ZIP,
+  /// así que no puede mostrar qué trae antes de confirmarlo con el servidor.
+  Future<void> _import() async {
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+      withData: true,
+      dialogTitle: 'Elegí un respaldo (.zip)',
+    );
+    final file = picked?.files.singleOrNull;
+    if (file?.bytes == null || !mounted) return;
+
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: SelectableText('Guardado en:\n$path'),
+        title: const Text('Importar respaldo'),
+        content: Text(
+          'Se van a agregar los personajes (y el homebrew y las preferencias, '
+          'si el respaldo los incluye) de "${file!.name}" a esta cuenta. Los '
+          'personajes existentes no se tocan; un id repetido se guarda como '
+          'copia nueva.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => TransferService().openExportsFolder(),
-            child: const Text('Abrir carpeta'),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cerrar'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Importar'),
           ),
         ],
       ),
     );
-  }
+    if (confirmed != true || !mounted) return;
 
-  Future<void> _import() async {
-    final transfer = TransferService();
-    final path = await showDialog<String>(
-      context: context,
-      builder: (_) => ImportDialog(transfer: transfer),
-    );
-    if (path == null || !mounted) return;
-    if (!_startOperation('Revisando respaldo…')) return;
-    PreparedCharacterImport? prepared;
-    var charactersSaved = false;
+    if (!_startOperation('Importando respaldo…')) return;
     try {
-      final bundle = await transfer.readBundleOrLegacy(path);
-      final existingIds = controller.characters
-          .map((character) => character.id)
-          .toSet();
-      final characterCollisions = bundle.characters
-          .where((entry) => existingIds.contains(entry.character.id))
-          .length;
-      final homebrewTotal =
-          bundle.homebrew?.values.fold<int>(
-            0,
-            (total, entries) => total + entries.length,
-          ) ??
-          0;
-      final homebrewCollisions = bundle.homebrew == null
-          ? 0
-          : widget.homebrew.countCollisions(bundle.homebrew!);
-      final choice = await _chooseRestoreScope(
-        bundle,
-        characterCollisions: characterCollisions,
-        homebrewTotal: homebrewTotal,
-        homebrewCollisions: homebrewCollisions,
-      );
-      if (choice == null || !mounted) return;
-      final restoreAll = choice;
-
-      prepared = await transfer.prepareCharacterImport(bundle, existingIds);
-      final imported = await controller.importCharactersDetailed(
-        prepared.characters,
-      );
-      charactersSaved = true;
-
-      var homebrewCount = 0;
-      if (restoreAll && bundle.homebrew != null) {
-        homebrewCount = await widget.homebrew.importContent(bundle.homebrew!);
-        repo.addAll(widget.homebrew.toRepository());
-      }
-      if (restoreAll && bundle.preferences != null) {
-        await SettingsService().restorePortable(bundle.preferences!);
-      }
-
+      final summary = await controller.api.importBackup(file!.bytes!);
+      await controller.load();
+      await widget.homebrew.load();
+      repo.addAll(widget.homebrew.toRepository());
       if (!mounted) return;
-      final extra = restoreAll
-          ? ' También se restauraron $homebrewCount elemento(s) homebrew'
-                '${bundle.preferences == null ? '.' : ' y las preferencias.'}'
-          : '';
       showAppMessage(
         context,
-        'Importados ${imported.length} personaje(s).$extra',
+        'Importados ${summary.charactersImported} personaje(s) y '
+        '${summary.portraitsImported} retrato(s).',
         tone: AppMessageTone.success,
       );
     } catch (e) {
-      if (prepared != null && !charactersSaved) {
-        await prepared.rollbackPortraits();
-      }
-      final prefix = charactersSaved
-          ? 'Los personajes se importaron, pero falló el resto:'
-          : 'Error al importar:';
       if (mounted) {
-        showAppMessage(context, '$prefix $e', tone: AppMessageTone.error);
+        showAppMessage(
+          context,
+          'Error al importar: $e',
+          tone: AppMessageTone.error,
+        );
       }
     } finally {
       _finishOperation();
@@ -252,92 +218,6 @@ extension _DashboardActions on _DashboardScreenState {
 
   void _finishOperation() {
     if (mounted) _updateState(() => _activeOperation = null);
-  }
-
-  Future<bool?> _chooseRestoreScope(
-    BackupBundle bundle, {
-    required int characterCollisions,
-    required int homebrewTotal,
-    required int homebrewCollisions,
-  }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (_) => ImportPreviewDialog(
-        bundle: bundle,
-        characterCollisions: characterCollisions,
-        homebrewTotal: homebrewTotal,
-        homebrewCollisions: homebrewCollisions,
-      ),
-    );
-  }
-
-  Future<void> _checkForUpdates() async {
-    final service = widget.updateService;
-    if (service == null) return;
-    AppUpdate? update;
-    try {
-      update = await service.checkForUpdate();
-    } catch (_) {
-      return; // La aplicacion sigue siendo offline-first.
-    }
-    final available = update;
-    if (available == null || !mounted) return;
-
-    final download = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Nueva versión disponible'),
-        content: SizedBox(
-          width: 520,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Versión instalada: ${service.currentVersion}'),
-                Text('Nueva versión: ${available.version}'),
-                if (available.notes.trim().isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    available.title,
-                    style: Theme.of(ctx).textTheme.titleSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  SelectableText(available.notes),
-                ],
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Ahora no'),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(ctx, true),
-            icon: const Icon(Icons.download),
-            label: const Text('Descargar'),
-          ),
-        ],
-      ),
-    );
-    if (download != true || !mounted) return;
-    if (!_startOperation('Descargando actualización...')) return;
-    try {
-      final file = await service.download(available);
-      if (mounted) _showExported('Actualización descargada', file.path);
-    } catch (error) {
-      if (mounted) {
-        showAppMessage(
-          context,
-          'No se pudo descargar la actualización: $error',
-          tone: AppMessageTone.error,
-        );
-      }
-    } finally {
-      _finishOperation();
-    }
   }
 
   // --------------------------------------------------------------------------

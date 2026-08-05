@@ -1,41 +1,12 @@
-import 'package:dnd_app/data/character_store.dart';
+import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/data/characters_controller.dart';
-import 'package:dnd_app/data/data_recovery.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class _MemoryStore implements CharacterStore {
-  final Map<String, Character> saved = {};
-
-  @override
-  final List<DataRecoveryIssue> recoveryIssues = [];
-  @override
-  final List<DataMigrationBackup> migrationBackups = [];
-
-  @override
-  Future<void> delete(String id) async => saved.remove(id);
-
-  @override
-  Future<String> directoryPath() async => '/memory';
-
-  @override
-  Future<List<Character>> loadAll() async => saved.values.toList();
-
-  @override
-  Future<void> save(Character character) async {
-    saved[character.id] = character;
-  }
-
-  @override
-  Future<void> saveAll(Iterable<Character> characters) async {
-    for (final character in characters) {
-      saved[character.id] = character;
-    }
-  }
-}
+import 'fakes/fake_api_server.dart';
 
 /// Cambio del truco innato desde la ficha (Alto Elfo).
 void main() {
@@ -81,7 +52,9 @@ void main() {
     tester.view.physicalSize = const Size(900, 700);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    final controller = CharactersController(_MemoryStore());
+    final controller = CharactersController(
+      ApiClient(client: FakeApiServer().client),
+    );
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(

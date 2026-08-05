@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 11;
+  static const int currentSchemaVersion = 12;
 
   final String id;
   String name;
@@ -272,7 +272,11 @@ class Character {
   /// adivinarlo daría una ficha distinta sin que el jugador lo haya pedido.
   final Map<String, bool> weaponOffHand;
 
-  /// Rutas locales de retratos guardados. La primera es la activa.
+  /// Claves opacas de retrato guardado, resueltas por la plataforma que las
+  /// muestra (disco local en la aplicación de escritorio, blob de la cuenta
+  /// en el cliente web). MUST NOT contener rutas absolutas del sistema de
+  /// archivos: el documento tiene que ser portable entre máquinas y cuentas.
+  /// La primera es la que se muestra como retrato activo.
   final List<String> portraitPaths;
 
   /// Notas libres del jugador (autoguardadas).
@@ -540,6 +544,29 @@ class Character {
     j['proficiencyChoices'] = choices;
   }
 
+  /// Convierte `portraitPaths` de rutas absolutas del sistema de archivos de
+  /// origen a claves opacas `<characterId>/<archivo>`. Es el mismo esquema de
+  /// carpetas que ya usaba el guardado en disco
+  /// (`portraits/<characterId>/<archivo>`), así que la clave resultante sigue
+  /// resolviendo al mismo archivo sin mover nada; solo deja de viajar la parte
+  /// de la ruta que identificaba la máquina de origen.
+  static void _migratePortraitPathsToKeys(Map<String, dynamic> j) {
+    final list = j['portraitPaths'];
+    if (list is! List) return;
+    final characterId = j['id'] as String? ?? '';
+    j['portraitPaths'] = [
+      for (final entry in list)
+        if (entry is String && entry.isNotEmpty)
+          '$characterId/${_basename(entry)}',
+    ];
+  }
+
+  static String _basename(String path) {
+    final normalized = path.replaceAll('\\', '/');
+    final idx = normalized.lastIndexOf('/');
+    return idx == -1 ? normalized : normalized.substring(idx + 1);
+  }
+
   /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
   /// entrada. Cada paso se conserva explícito para que las próximas versiones
   /// puedan encadenarse sin saltos.
@@ -612,6 +639,16 @@ class Character {
         case 10:
           _renameFeatIds(migrated, _featIdRenames10to11);
           version = 11;
+          migrated['schemaVersion'] = version;
+        case 11:
+          // La migración a webapp escribió este paso como 8→9 mientras la rama
+          // de escritorio ya había publicado su propio 8→9 (v0.5.1). Los dos
+          // números coincidían y significaban cosas distintas, así que al
+          // fusionar se renumeró **este**: las fichas de escritorio existentes
+          // ya están en 9, 10 u 11 y su cadena no se puede tocar, mientras que
+          // el servidor todavía no había guardado ninguna ficha real.
+          _migratePortraitPathsToKeys(migrated);
+          version = 12;
           migrated['schemaVersion'] = version;
       }
     }

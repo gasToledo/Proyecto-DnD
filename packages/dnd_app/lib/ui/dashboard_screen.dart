@@ -1,22 +1,18 @@
-import 'dart:io';
-
 import 'package:dnd_engine/dnd_engine.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../creation/creation_wizard.dart';
-import '../data/backup_bundle.dart';
 import '../data/characters_controller.dart';
-import '../data/creation_draft_store.dart';
-import '../data/data_recovery.dart';
 import '../data/homebrew_store.dart';
 import '../data/settings_service.dart';
 import '../data/transfer_service.dart';
-import '../data/update_service.dart';
 import '../homebrew/homebrew_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
-import 'import_dialog.dart';
+import '../web/browser.dart' as browser;
+import 'portrait_image.dart';
 import 'settings_dialog.dart';
 import 'sheet_screen.dart';
 
@@ -48,14 +44,14 @@ class DashboardScreen extends StatefulWidget {
   final ContentRepository repo;
   final CharactersController controller;
   final HomebrewStore homebrew;
-  final UpdateService? updateService;
+  final String? appVersion;
   final VoidCallback onToggleTheme;
   const DashboardScreen({
     super.key,
     required this.repo,
     required this.controller,
     required this.homebrew,
-    this.updateService,
+    this.appVersion,
     required this.onToggleTheme,
   });
 
@@ -76,10 +72,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     widget.controller.addListener(_handleControllerState);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _showDataNotices();
-      if (mounted) await _checkForUpdates();
-    });
   }
 
   @override
@@ -92,77 +84,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ContentRepository get repo => widget.repo;
   CharactersController get controller => widget.controller;
 
+  /// Un guardado fallido por sesión expirada (401) se trata distinto de
+  /// cualquier otro error: no alcanza con un aviso, hay que ofrecer volver a
+  /// autenticarse (ver capacidad `user-accounts`, sesión expirada durante el
+  /// uso). El cambio sin guardar sigue en `controller.characters` — no se
+  /// pierde nada, solo no se pudo confirmar contra el servidor.
+  bool _sessionExpiredShown = false;
+
   void _handleControllerState() {
     final error = controller.lastSaveError;
     if (error == null || identical(error, _shownSaveError) || !mounted) return;
     _shownSaveError = error;
+    final isAuthError = error.isAuthError;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      showAppMessage(
-        context,
-        'No se pudieron guardar los últimos cambios: $error',
-        tone: AppMessageTone.error,
-      );
+      if (isAuthError) {
+        _showSessionExpired();
+      } else {
+        showAppMessage(
+          context,
+          'No se pudieron guardar los últimos cambios: $error',
+          tone: AppMessageTone.error,
+        );
+      }
     });
   }
 
-  Future<void> _showDataNotices() async {
-    if (!mounted) return;
-    final issues = <DataRecoveryIssue>[
-      ...controller.recoveryIssues,
-      ...widget.homebrew.recoveryIssues,
-    ];
-    if (issues.isNotEmpty) {
-      final moved = issues.where((issue) => issue.wasMoved).toList();
-      final preserved = issues.where((issue) => !issue.wasMoved).toList();
-      await showDialog<void>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(
-            preserved.isEmpty
-                ? 'Archivos apartados para recuperación'
-                : 'Datos que requieren atención',
-          ),
-          content: SizedBox(
-            width: 560,
-            child: SingleChildScrollView(
-              child: Text(
-                [
-                  if (moved.isNotEmpty)
-                    'Se apartaron ${moved.length} archivo(s) ilegible(s) para '
-                        'que puedas revisarlos:\n'
-                        '${moved.map((e) => e.recoveryPath).join('\n')}',
-                  if (preserved.isNotEmpty)
-                    'No se modificaron ${preserved.length} archivo(s) que esta '
-                        'versión de la aplicación no puede abrir:\n'
-                        '${preserved.map((e) => '${e.originalPath}\n${e.error}').join('\n\n')}',
-                ].join('\n\n'),
-              ),
-            ),
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Entendido'),
-            ),
-          ],
+  void _showSessionExpired() {
+    if (_sessionExpiredShown) return;
+    _sessionExpiredShown = true;
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('La sesión terminó'),
+        content: const Text(
+          'Los cambios que todavía no se pudieron guardar siguen en '
+          'pantalla. Iniciá sesión de nuevo para seguir editando.',
         ),
-      );
-    }
-    if (!mounted) return;
-    final migrations = <DataMigrationBackup>[
-      ...controller.migrationBackups,
-      ...widget.homebrew.migrationBackups,
-    ];
-    if (migrations.isNotEmpty) {
-      showAppMessage(
-        context,
-        'Se actualizaron ${migrations.length} archivo(s) al formato actual. '
-        'Las copias anteriores quedaron en recovery/migrations.',
-        tone: AppMessageTone.success,
-        duration: const Duration(seconds: 5),
-      );
-    }
+        actions: [
+          FilledButton.icon(
+            onPressed: () =>
+                browser.redirectTo(controller.api.loginUri.toString()),
+            icon: const Icon(Icons.login),
+            label: const Text('Iniciar sesión'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _klassName(Character c) =>

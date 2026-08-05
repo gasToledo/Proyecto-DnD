@@ -48,3 +48,9 @@ docs/auditoria-clases-2024.md
 # El SRD 5.2.1 sí es redistribuible (CC BY 4.0), pero son 8,8 MB de PDF que no
 # aportan nada al repo: la URL de descarga está en docs/auditoria-reglas-2024.md.
 docs/SP_SRD_CC_v5.2.1.pdf
+
+# Despliegue autoalojado: secretos reales, nunca versionar (ver
+# `.env.example` y `cloudflared/config.example.yml`)
+.env
+cloudflared/config.yml
+cloudflared/creds.json

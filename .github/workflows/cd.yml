@@ -1,0 +1,85 @@
+name: CD
+
+# Único workflow que corre en el runner autoalojado (ver
+# openspec/changes/add-ci-cd-pipeline/design.md, D1/D2/D3). Dispara SOLO por
+# push a main o webapp, nunca por pull_request: es lo que permite tener un
+# runner autoalojado en un repositorio público sin exponerlo a código de un
+# fork (ver design.md, Risks/Trade-offs). No agregar aquí ningún trigger de
+# pull_request ni pull_request_target.
+on:
+  push:
+    branches:
+      - main
+      - webapp
+    paths:
+      - "packages/dnd_server/**"
+      - "packages/dnd_app/**"
+      - "packages/dnd_engine/**"
+      - "docker-compose.yml"
+      - "postgres-init/**"
+      - ".github/workflows/cd.yml"
+  workflow_dispatch: # Enables manual triggering
+
+# No cancela un despliegue en curso ante un push nuevo: dejar que termine
+# `docker compose up --build` en vez de interrumpirlo a mitad de camino.
+concurrency:
+  group: cd-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # No limpiar el workspace del runner: `.env`, `cloudflared/config.yml`
+          # y `cloudflared/creds.json` no están versionados (ver
+          # docs/despliegue.md) y viven a propósito dentro de este mismo
+          # directorio de trabajo, colocados una vez por quien aprovisiona el
+          # runner. `clean: true` (el default) correría `git clean -ffdx` y
+          # los borraría antes de cada despliegue.
+          clean: false
+
+      - name: Reconstruir y levantar el stack
+        # `docker compose up --build` reutiliza cualquier imagen base ya
+        # cacheada en el runner para las etapas `FROM` del Dockerfile
+        # (ghcr.io/cirruslabs/flutter:stable, dart:stable), aunque esas
+        # etiquetas floten en el registro. Eso hizo fallar el build cuando
+        # `dnd_app` subió su cota de SDK y el `stable` de Flutter cacheado
+        # localmente quedó atrás. `--pull` en `up` solo afecta a servicios con
+        # `image:`, no a las etapas de build; `compose build --pull` es lo que
+        # fuerza a repreguntar el registro por esas imágenes base antes de
+        # construir.
+        #
+        # Repreguntar no alcanza si la cota de SDK exige un hotfix de Flutter:
+        # cirruslabs no publica esos tags (ver el Dockerfile), así que el
+        # `stable` más nuevo sigue quedando corto. Ese caso se arregla en el
+        # `pubspec.yaml`, no acá.
+        run: |
+          docker compose build --pull
+          docker compose up -d
+
+      - name: Esperar a que el servicio quede saludable
+        # No hay puertos publicados al host (ver capacidad
+        # self-hosted-deployment), así que no se puede pedir /health por HTTP
+        # desde afuera del contenedor. En vez de reimplementar ese chequeo,
+        # se lee el resultado del healthcheck que docker-compose.yml ya
+        # define sobre ese mismo endpoint (ver design.md, D7).
+        run: |
+          for i in $(seq 1 30); do
+            cid="$(docker compose ps -q server)"
+            status="$(docker inspect --format='{{.State.Health.Status}}' "$cid" 2>/dev/null || echo "starting")"
+            if [ "$status" = "healthy" ]; then
+              echo "Servicio saludable"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "El servicio no quedó saludable a tiempo (último estado: ${status:-desconocido})" >&2
+          echo "--- docker compose ps ---" >&2
+          docker compose ps >&2 || true
+          echo "--- docker compose logs --tail=50 server ---" >&2
+          docker compose logs --tail=50 server >&2 || true
+          exit 1

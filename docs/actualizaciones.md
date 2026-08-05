@@ -1,5 +1,13 @@
 # Actualizaciones de la aplicación
 
+> Este documento describe `update_service.dart`, que existió en la aplicación
+> de escritorio de Windows. Esa aplicación quedó **congelada** con la
+> migración a webapp autoalojada (ver `CLAUDE.md` y
+> `openspec/changes/migrate-to-self-hosted-webapp/`) y el servicio se retiró
+> del cliente web: el despliegue *es* la actualización, no hay nada que
+> comprobar. Se conserva como referencia histórica de cómo funcionaba el
+> último release de escritorio publicado.
+
 ## Alcance actual
 
 Al abrir el dashboard, la aplicación consulta en segundo plano el último Release

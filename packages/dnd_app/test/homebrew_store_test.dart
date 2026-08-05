@@ -1,4 +1,5 @@
 import 'package:dnd_engine/dnd_engine.dart';
+import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,7 +12,10 @@ void main() {
       );
       final w = repo.weapons.values.first;
 
-      final store = HomebrewStore();
+      // countCollisions es lógica pura sobre los mapas en memoria: no hace
+      // ninguna llamada de red, así que un ApiClient sin servidor detrás
+      // alcanza para esta prueba.
+      final store = HomebrewStore(ApiClient());
       store.weapons[w.id] = w; // homebrew existente con este id
 
       final Map<String, List<Map<String, dynamic>>> content = {
@@ -26,7 +30,7 @@ void main() {
 
       expect(store.countCollisions(content), 1);
       // Un store vacío no reporta ninguna colisión.
-      expect(HomebrewStore().countCollisions(content), 0);
+      expect(HomebrewStore(ApiClient()).countCollisions(content), 0);
     },
   );
 }

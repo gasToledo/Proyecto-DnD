@@ -1,0 +1,26 @@
+name: dnd_server
+description: >-
+  API HTTP en Dart para el cliente web de fichas de personaje: persistencia,
+  autenticación OIDC, almacenamiento de retratos y generación con IA,
+  reutilizando dnd_engine como motor de reglas compartido con el cliente.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  archive: ^4.0.9
+  crypto: ^3.0.0
+  dnd_engine:
+    path: ../dnd_engine
+  http: ^1.2.0
+  openid_client: ^0.4.10
+  path: ^1.9.0
+  postgres: ^3.5.0
+  shelf: ^1.4.0
+  shelf_router: ^1.1.0
+  shelf_static: ^1.1.3
+
+dev_dependencies:
+  test: ^1.25.0

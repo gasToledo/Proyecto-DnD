@@ -12,6 +12,12 @@
 # (y actualizarlo a mano) tanto acá como en la sección "Comandos" de
 # `CLAUDE.md`; se deja así por simplicidad de un despliegue de una sola
 # cuenta, no por ser la práctica recomendada en un stack con más operadores.
+#
+# `ghcr.io/cirruslabs/flutter` solo publica los *minor* de Flutter: `stable`
+# apunta al mismo digest que `3.44.0` y no existe tag para los hotfix
+# (`3.44.8`). Por eso `environment.sdk` de `dnd_app` no puede llevar una cota
+# de patch aunque el SDK local sí lo tenga: acá nunca va a haber una imagen
+# que la cumpla.
 
 # ---- Etapa 1: build del cliente web (Flutter) ----
 FROM ghcr.io/cirruslabs/flutter:stable AS web-build

@@ -52,6 +52,11 @@ jobs:
         # `image:`, no a las etapas de build; `compose build --pull` es lo que
         # fuerza a repreguntar el registro por esas imágenes base antes de
         # construir.
+        #
+        # Repreguntar no alcanza si la cota de SDK exige un hotfix de Flutter:
+        # cirruslabs no publica esos tags (ver el Dockerfile), así que el
+        # `stable` más nuevo sigue quedando corto. Ese caso se arregla en el
+        # `pubspec.yaml`, no acá.
         run: |
           docker compose build --pull
           docker compose up -d

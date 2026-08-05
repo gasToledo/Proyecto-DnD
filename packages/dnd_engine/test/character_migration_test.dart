@@ -526,6 +526,34 @@ void main() {
       expect(migrated['portraitPaths'], ['veterana/retrato.png']);
     });
 
+    // El otro documento que existe de verdad: uno guardado por el servidor
+    // mientras su rama numeraba este mismo paso como 8→9, así que ya tiene la
+    // clave opaca y arranca la cadena en 9. Cruza los pasos 9→10 y 10→11 que
+    // en su origen no existían, y vuelve a cruzar el de retratos.
+    //
+    // Que eso sea inocuo es lo que hace segura la renumeración, y depende de
+    // dos propiedades que conviene dejar clavadas: el paso de retratos es
+    // idempotente sobre una clave ya convertida, y saltearse el `case 8:`
+    // deja `proficiencyChoices` igual que si se hubiera aplicado.
+    test('una ficha del servidor ya en v9 no se corrompe al renumerar', () {
+      final source = {
+        'schemaVersion': 9,
+        'id': 'del-servidor',
+        'name': 'Sembrada',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'portraitPaths': const ['del-servidor/retrato.png'],
+      };
+
+      final migrated = Character.migrateJson(source);
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['portraitPaths'], ['del-servidor/retrato.png']);
+      expect(Character.fromJson(source).proficiencyChoices, isEmpty);
+    });
+
     test('una entrada que no es String se descarta sin perder la ficha', () {
       final source = {
         'schemaVersion': 8,

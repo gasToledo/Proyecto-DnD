@@ -33,7 +33,7 @@ class MigrationRunner {
     final ranNow = <String>[];
     for (final migration in _migrations) {
       if (applied.contains(migration.id)) continue;
-      await session.execute(migration.sql);
+      await session.execute(migration.sql, queryMode: QueryMode.simple);
       await session.execute(
         Sql.named('INSERT INTO schema_migrations (id) VALUES (@id)'),
         parameters: {'id': TypedValue(Type.text, migration.id)},

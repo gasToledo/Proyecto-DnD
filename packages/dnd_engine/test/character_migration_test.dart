@@ -166,6 +166,65 @@ void main() {
     expect(migrated['featIds'], ['athlete-dexterity', 42, null]);
   });
 
+  group('v10 → v11: Castigo Arcano pasa a Castigo Sobrenatural', () {
+    Map<String, dynamic> brujo(Map<String, dynamic> extra) => {
+          'schemaVersion': 10,
+          'id': 'v10',
+          'name': 'Brujo del Pacto',
+          'raceId': 'human',
+          'classId': 'warlock',
+          'backgroundId': 'soldier',
+          'assignedScores': const <String, int>{},
+          ...extra,
+        };
+
+    test('la invocación se renombra dentro de featureChoices', () {
+      // Es donde viven las invocaciones: si la migración sólo mirara `featIds`
+      // el brujo perdería la invocación en silencio.
+      final migrated = Character.migrateJson(brujo({
+        'featureChoices': {
+          'warlock-invocation': ['pact-of-the-blade', 'arcane-smite'],
+        },
+      }));
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(
+        (migrated['featureChoices'] as Map)['warlock-invocation'],
+        ['pact-of-the-blade', 'eldritch-smite'],
+      );
+    });
+
+    test('el rename de v7 → v8 sigue alcanzando featIds', () {
+      // No-regresión: el helper ahora recorre dos lugares, pero el paso viejo
+      // tiene que seguir produciendo exactamente lo mismo.
+      final migrated = Character.migrateJson({
+        'schemaVersion': 7,
+        'id': 'v7c',
+        'name': 'Atleta',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'featIds': const ['athlete'],
+      });
+
+      expect(migrated['featIds'], ['athlete-dexterity']);
+    });
+
+    test('tolera un featureChoices con basura', () {
+      final migrated = Character.migrateJson(brujo({
+        'featureChoices': {
+          'warlock-invocation': ['arcane-smite', 42, null],
+          'roto': 'no es una lista',
+        },
+      }));
+
+      final choices = migrated['featureChoices'] as Map;
+      expect(choices['warlock-invocation'], ['eldritch-smite', 42, null]);
+      expect(choices['roto'], 'no es una lista');
+    });
+  });
+
   group('v9 → v10: Versatilidad de Habilidad del Khoravar', () {
     Map<String, dynamic> khoravar({
       required List<dynamic> chosenSkills,

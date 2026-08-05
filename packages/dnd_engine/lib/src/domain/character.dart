@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 10;
+  static const int currentSchemaVersion = 11;
 
   final String id;
   String name;
@@ -473,13 +473,37 @@ class Character {
     'weapon-master': 'weapon-master-strength',
   };
 
+  /// El PHB 2024 llama *Eldritch Smite* a esta invocación; el catálogo la había
+  /// cargado como "Castigo Arcano". El texto de la regla siempre fue el de 2024,
+  /// así que la ficha compila igual: sólo cambian el id y el nombre.
+  static const Map<String, String> _featIdRenames10to11 = {
+    'arcane-smite': 'eldritch-smite',
+  };
+
+  /// Renombra ids de dote en **los dos lugares donde se guardan**: `featIds`
+  /// (las que se toman con una Mejora de Característica) y las listas de
+  /// `featureChoices` (estilo de combate, invocaciones… que también son dotes).
+  ///
+  /// Recorrer sólo `featIds` dejaba las elecciones abiertas afuera, así que una
+  /// invocación renombrada se perdía en silencio. El paso 7→8, que ya usaba este
+  /// helper, produce lo mismo que antes: ninguno de sus 32 ids es una opción de
+  /// elección abierta.
   static void _renameFeatIds(
       Map<String, dynamic> j, Map<String, String> renames) {
-    final list = j['featIds'];
-    if (list is! List) return;
-    j['featIds'] = [
-      for (final id in list) id is String ? (renames[id] ?? id) : id,
-    ];
+    List<dynamic> renamed(List<dynamic> list) => [
+          for (final id in list) id is String ? (renames[id] ?? id) : id,
+        ];
+
+    final feats = j['featIds'];
+    if (feats is List) j['featIds'] = renamed(feats);
+
+    final choices = j['featureChoices'];
+    if (choices is Map) {
+      j['featureChoices'] = {
+        for (final entry in choices.entries)
+          entry.key: entry.value is List ? renamed(entry.value) : entry.value,
+      };
+    }
   }
 
   /// Grupo de Versatilidad de Habilidad del Khoravar.
@@ -584,6 +608,10 @@ class Character {
         case 9:
           _migrateKhoravarSkillVersatility(migrated);
           version = 10;
+          migrated['schemaVersion'] = version;
+        case 10:
+          _renameFeatIds(migrated, _featIdRenames10to11);
+          version = 11;
           migrated['schemaVersion'] = version;
       }
     }

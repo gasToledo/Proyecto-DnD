@@ -29,7 +29,10 @@ class FakeAuthDependencies {
         subject,
         () => 'account-${accountsBySubject.length + 1}',
       );
-      final token = 'token-${_tokenCounter++}';
+      // Termina en `=` a propósito: el token real es base64url de 32 bytes y
+      // siempre trae relleno. Con tokens sin `=` toda esta batería pasaba en
+      // verde mientras el despliegue real no podía leer una sola cookie.
+      final token = 'token-${_tokenCounter++}=';
       sessionsByToken[token] = userId;
       return token;
     },

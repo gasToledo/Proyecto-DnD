@@ -20,13 +20,22 @@ String buildExpiredSessionCookieHeader() {
 
 /// Extrae el token de sesión de una cabecera `Cookie` entrante, o `null` si
 /// no está presente.
+///
+/// Se corta por el **primer** `=`, no por todos: según RFC 6265 el nombre es
+/// lo que va antes de ese primer signo y el valor es todo el resto, `=`
+/// incluidos. Importa porque el token que emite `generateSessionToken` es
+/// base64url de 32 bytes y por lo tanto SIEMPRE termina en un `=` de relleno:
+/// partir por todos los `=` descartaba en silencio cada cookie de sesión, toda
+/// petición se respondía como no autenticada y el cliente quedaba en un ciclo
+/// infinito de login.
 String? readSessionToken(String? cookieHeader) {
   if (cookieHeader == null) return null;
   for (final part in cookieHeader.split(';')) {
-    final pair = part.trim().split('=');
-    if (pair.length == 2 && pair[0] == sessionCookieName) {
-      return pair[1];
-    }
+    final trimmed = part.trim();
+    final separator = trimmed.indexOf('=');
+    if (separator <= 0) continue;
+    if (trimmed.substring(0, separator) != sessionCookieName) continue;
+    return trimmed.substring(separator + 1);
   }
   return null;
 }

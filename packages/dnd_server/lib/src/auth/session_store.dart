@@ -14,7 +14,19 @@ abstract class SessionStore {
   Future<String?> userIdForToken(String token);
 
   Future<void> invalidate(String token);
+
+  /// Borra las sesiones ya vencidas. [userIdForToken] igual las ignora, así
+  /// que esto no cambia quién puede entrar: existe solo para que la tabla no
+  /// crezca sin techo.
+  Future<void> deleteExpired();
 }
+
+/// El `WHERE` no es opcional: sin él, esta sentencia cerraría la sesión de
+/// todas las cuentas conectadas. Se expone para que una prueba pueda fijar
+/// ese predicado (ver `session_store_test.dart`), porque el doble de
+/// [Session] registra parámetros pero no interpreta SQL.
+const String deleteExpiredSessionsSql =
+    'DELETE FROM sessions WHERE expires_at <= now()';
 
 class PostgresSessionStore implements SessionStore {
   final Session _session;
@@ -23,7 +35,17 @@ class PostgresSessionStore implements SessionStore {
   const PostgresSessionStore(this._session);
 
   @override
+  Future<void> deleteExpired() async {
+    await _session.execute(deleteExpiredSessionsSql);
+  }
+
+  /// Aprovecha el login —lo único que hace crecer la tabla— para barrer lo
+  /// vencido, en vez de sumar un proceso periódico al contenedor. Es la
+  /// operación menos frecuente del servidor (una por cuenta cada 12 horas),
+  /// así que el barrido nunca compite con el tráfico normal de fichas.
+  @override
   Future<String> create(String userId, {Duration ttl = defaultTtl}) async {
+    await deleteExpired();
     final token = generateSessionToken();
     await _session.execute(
       Sql.named('''

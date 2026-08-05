@@ -77,11 +77,20 @@ cargada MUST NOT servirse con una caché que sobreviva al despliegue.
 - **WHEN** se despliega una versión nueva del cliente web
 - **THEN** una recarga normal del navegador carga la versión nueva
 
-#### Scenario: Recursos con huella de contenido
+#### Scenario: Recursos sin huella de contenido
 
-- **WHEN** se sirven los recursos cuyo nombre incluye una huella de contenido
-- **THEN** pueden almacenarse en caché de forma prolongada sin causar versiones
-  mezcladas
+- **WHEN** se sirven los archivos del build web, cuyos nombres `flutter build
+  web` repite entre versiones (`main.dart.js`, `flutter_bootstrap.js`,
+  `assets/…`, `canvaskit/…`: ninguno lleva huella de contenido)
+- **THEN** ninguno se declara inmutable ni se cachea sin revalidar
+
+#### Scenario: Caché compartida en el camino
+
+- **WHEN** un intermediario (Cloudflare) almacena la respuesta y reescribe su
+  tiempo de vida hacia el navegador
+- **THEN** los archivos del build se marcan de modo que ese intermediario no
+  pueda conservarlos, para que sea el servidor quien decida qué versión
+  corresponde
 
 ### Requirement: Respaldo y restauración del estado persistente
 

@@ -68,4 +68,14 @@ CREATE TABLE sessions (
 CREATE INDEX sessions_user_id_idx ON sessions (user_id);
 ''',
   ),
+  Migration(
+    id: '0003_sessions_expires_at_idx',
+    sql: '''
+-- `SessionStore.deleteExpired` barre por `expires_at` en cada login. Sin este
+-- índice ese barrido es un recorrido completo de la tabla, que es justo el
+-- caso que importa: la tabla se limpia por primera vez cuando ya venía
+-- creciendo sin freno.
+CREATE INDEX sessions_expires_at_idx ON sessions (expires_at);
+''',
+  ),
 ];

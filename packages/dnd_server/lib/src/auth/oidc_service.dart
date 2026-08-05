@@ -1,6 +1,7 @@
 import 'package:openid_client/openid_client.dart';
 
 import '../config.dart';
+import 'pending_logins.dart';
 
 /// Une el descubrimiento OIDC, el flujo Authorization Code + PKCE y la
 /// verificación del token de identidad. El navegador nunca ve nada de esto:
@@ -13,7 +14,9 @@ class OidcService {
   /// Flujos de login en curso, indexados por `state`. Vive en memoria: un
   /// login abandonado a medias no necesita sobrevivir a un reinicio, y esta
   /// es una instalación de un solo proceso (ver `self-hosted-deployment`).
-  final Map<String, Flow> _pendingLogins = {};
+  /// [PendingLogins] es lo que le pone vencimiento y techo: en memoria no
+  /// quiere decir para siempre.
+  final PendingLogins<Flow> _pendingLogins = PendingLogins<Flow>();
 
   OidcService._(this.config, this._client);
 
@@ -33,7 +36,7 @@ class OidcService {
   Uri beginLogin() {
     final flow = Flow.authorizationCodeWithPKCE(_client)
       ..redirectUri = config.redirectUri;
-    _pendingLogins[flow.state] = flow;
+    _pendingLogins.add(flow.state, flow);
     return flow.authenticationUri;
   }
 
@@ -41,10 +44,10 @@ class OidcService {
   /// identidad y devuelve el sujeto OIDC verificado (`sub`).
   ///
   /// Lanza [OidcCallbackException] si el `state` no corresponde a ningún
-  /// login en curso, o si la aserción no verifica (emisor, firma, audiencia,
-  /// nonce o expiración inválidos): en ambos casos la petición se trata como
-  /// no autenticada, nunca se asume identidad a partir de datos no
-  /// verificados.
+  /// login en curso (nunca existió, ya se usó o venció, ver [PendingLogins]),
+  /// o si la aserción no verifica (emisor, firma, audiencia, nonce o
+  /// expiración inválidos): en todos esos casos la petición se trata como no
+  /// autenticada, nunca se asume identidad a partir de datos no verificados.
   Future<String> completeLogin(Map<String, String> callbackParams) async {
     final state = callbackParams['state'];
     final flow = state == null ? null : _pendingLogins.remove(state);

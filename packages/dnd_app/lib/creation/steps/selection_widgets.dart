@@ -365,6 +365,10 @@ class _FeatureChoiceSelect extends StatelessWidget {
       );
     }
 
+    // ponytail: el `Set` no puede representar una opción repetible tomada dos
+    // veces. Hoy no importa: se crea siempre en nivel 1 y las repetibles del
+    // catálogo piden nivel 2+, así que nunca llegan acá. Si un homebrew declara
+    // una repetible sin `minLevel`, replicar el contador de `level_up_widgets`.
     final selected = chosen.toSet();
     return CappedChipSelect(
       options: {for (final f in options) f.id: f.name},

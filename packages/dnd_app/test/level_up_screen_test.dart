@@ -557,6 +557,69 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('una invocación repetible se puede tomar dos veces', (
+    tester,
+  ) async {
+    // Descarga Agónica dice "Repetible: cada vez elegís un truco distinto", así
+    // que gastar en ella las dos invocaciones del nivel 2 es legal. Antes el
+    // chip era un interruptor y el brujo perdía una invocación.
+    Character? saved;
+    final brujo = Character(
+      id: 't-warlock-rep',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: 'warlock',
+      backgroundId: 'sage',
+      level: 1,
+      assignedScores: {for (final a in Ability.values) a: 12},
+      hpPerLevel: const [8],
+      featureChoices: const {
+        'warlock-invocation': ['pact-of-the-tome'],
+      },
+    );
+    await pumpLevelUp(tester, brujo, onDone: (c) => saved = c);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    final chip = find.widgetWithText(InkWell, 'Descarga Agónica');
+    for (var i = 0; i < 2; i++) {
+      await tester.ensureVisible(chip.first);
+      await tester.pumpAndSettle();
+      await tester.tap(chip.first);
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.text('INVOCACIONES SOBRENATURALES (3/3)'), findsOneWidget);
+    expect(find.text('×2'), findsOneWidget);
+    // La descripción sale una sola vez aunque haya dos copias.
+    expect(
+      find.textContaining('sumás tu modificador por Carisma'),
+      findsOneWidget,
+    );
+
+    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 2'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.featureChoices['warlock-invocation'], [
+      'pact-of-the-tome',
+      'agonizing-blast',
+      'agonizing-blast',
+    ]);
+    // Repetible: el duplicado no es un error.
+    expect(
+      CharacterValidator(repo).validate(saved!).map((w) => w.code),
+      isNot(contains('feat_duplicate')),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'un Paladín legado de nivel alto recupera la elección pendiente',
     (tester) async {

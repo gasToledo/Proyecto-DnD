@@ -117,6 +117,30 @@ services:
       db:
         condition: service_healthy
 
+  # Docker crea un volumen con nombre vacío y propiedad de `root`, y ninguna de
+  # las dos imágenes de Zitadel corre como `root`. Sin este paso, `setup` muere
+  # con `open /zitadel/bootstrap/login-client.pat: permission denied` — y muere
+  # DESPUÉS de haber escrito los eventos de la instancia, que es exactamente lo
+  # que deja la base envenenada (ver el comentario de arriba).
+  #
+  # `0777` sobre el directorio en vez de un `chown` a un UID concreto porque
+  # ninguna de las dos imágenes documenta el suyo y adivinarlo vuelve a romper
+  # en la próxima actualización. No es una concesión de seguridad real: el
+  # volumen no está expuesto al host y cualquier contenedor que pueda montarlo
+  # ya puede leerlo como `root`, sin importar el modo. El PAT en sí queda en
+  # `0644` (ver `zitadel-bootstrap-share`).
+  #
+  # `alpine:3` es una etiqueta flotante a propósito: acá solo se usa `chmod`, no
+  # hay compatibilidad de versión que mantener con nada (a diferencia de
+  # `ZITADEL_VERSION`, que MUST coincidir entre `zitadel` y `zitadel-login`).
+  zitadel-bootstrap-perms:
+    image: alpine:3
+    restart: "no"
+    user: "0:0"
+    command: ["sh", "-c", "mkdir -p /zitadel/bootstrap && chmod 0777 /zitadel/bootstrap"]
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:rw
+
   # Migraciones de esquema y creación de la primera instancia. Es el paso que
   # puede quedar a medias; por eso corre solo, con `restart: "no"`.
   zitadel-setup:
@@ -129,6 +153,37 @@ services:
       - zitadel-bootstrap:/zitadel/bootstrap:rw
     depends_on:
       zitadel-init:
+        condition: service_completed_successfully
+      zitadel-bootstrap-perms:
+        condition: service_completed_successfully
+
+  # `zitadel` escribe el PAT con su propio UID y un modo restrictivo;
+  # `zitadel-login` es otra imagen y no tiene por qué correr con el mismo UID,
+  # así que sin este paso el login arranca y falla al leer el token. Igual que
+  # arriba: se ajusta el modo en vez de igualar UIDs, que es lo que no se puede
+  # sostener entre dos imágenes de terceros.
+  zitadel-bootstrap-share:
+    image: alpine:3
+    restart: "no"
+    user: "0:0"
+    command:
+      - "sh"
+      - "-c"
+      - |
+        pat=/zitadel/bootstrap/login-client.pat
+        if [ ! -f "$$pat" ]; then
+          echo "No existe $$pat. Pasa cuando el volumen zitadel-bootstrap se" >&2
+          echo "borró sin resetear también la base de Zitadel: 'setup' ve la" >&2
+          echo "instancia ya creada, no vuelve a emitir el PAT y el login queda" >&2
+          echo "sin token. Ver docs/despliegue.md, 'Recuperar Zitadel de un" >&2
+          echo "arranque a medias': hay que resetear los dos juntos." >&2
+          exit 1
+        fi
+        chmod 0644 "$$pat"
+    volumes:
+      - zitadel-bootstrap:/zitadel/bootstrap:rw
+    depends_on:
+      zitadel-setup:
         condition: service_completed_successfully
 
   zitadel:
@@ -161,6 +216,8 @@ services:
     depends_on:
       zitadel:
         condition: service_healthy
+      zitadel-bootstrap-share:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [

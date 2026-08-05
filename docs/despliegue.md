@@ -56,9 +56,10 @@ y `design.md` para las decisiones detrás de cada elección).
 
    Esperar a que `db`, `zitadel`, `zitadel-login` y `server` queden `healthy`
    (ver sección "Comprobación de salud" en cada servicio del
-   `docker-compose.yml`). `zitadel-init` y `zitadel-setup` son contenedores de
-   una sola vez: lo correcto es que aparezcan como `exited (0)`, no como
-   `healthy` (ver el comentario sobre el arranque partido en
+   `docker-compose.yml`). `zitadel-init`, `zitadel-bootstrap-perms`,
+   `zitadel-setup` y `zitadel-bootstrap-share` son contenedores de una sola
+   vez: lo correcto es que aparezcan como `exited (0)`, no como `healthy` (ver
+   el comentario sobre el arranque partido en
    `docker-compose.yml`). `server` no queda sano hasta que `zitadel` y
    `zitadel-login` lo estén: si se cuelga ahí, revisar `docker compose logs
    zitadel-setup` y `docker compose logs zitadel`, en ese orden. `db` sirve las
@@ -169,10 +170,13 @@ es la que hay que corregir; el `duplicate key` es solo su eco:
 docker compose logs zitadel-setup zitadel | grep -iE 'level=(ERROR|FATAL)' | head -40
 ```
 
-Dos causas frecuentes: el arranque interrumpido a mano o por reinicio del host,
-y un `permission denied` al escribir `/zitadel/bootstrap/login-client.pat` — un
-volumen con nombre se crea vacío y propiedad de `root`, y la imagen de Zitadel
-no corre como `root`. La segunda se corrige durante el reset (paso 3).
+La causa más común era `permission denied` al escribir
+`/zitadel/bootstrap/login-client.pat`: Docker crea un volumen con nombre vacío y
+propiedad de `root`, y la imagen de Zitadel no corre como `root`. Eso ya está
+resuelto en `docker-compose.yml` con el contenedor `zitadel-bootstrap-perms`,
+así que no hay que corregir nada a mano — pero si la base quedó envenenada por
+esa falla **antes** de ese arreglo, sigue haciendo falta el reset. La otra causa
+es el arranque interrumpido a mano o por reinicio del host.
 
 Reset de la base de Zitadel **sin tocar la de la aplicación** (las dos comparten
 instancia de PostgreSQL, ver design.md, decisión D11, y
@@ -182,9 +186,12 @@ recrear el contenedor no alcanza):
 ```sh
 # 1. Bajar todo lo de Zitadel y resolver el nombre real del volumen.
 vol="$(docker compose config --format json | jq -r '.name')_zitadel-bootstrap"
-docker compose rm -sf zitadel zitadel-login zitadel-setup zitadel-init
+docker compose rm -sf zitadel zitadel-login zitadel-setup zitadel-init \
+  zitadel-bootstrap-perms zitadel-bootstrap-share
 
-# 2. Vaciar la base de Zitadel y el volumen del PAT.
+# 2. Vaciar la base de Zitadel y el volumen del PAT. Los dos JUNTOS: el PAT
+#    pertenece a la instancia que se está borrando y `setup` solo lo vuelve a
+#    emitir cuando crea la instancia de cero.
 docker compose exec -T db psql -U "$APP_DB_USER" -d postgres <<'SQL'
 DROP DATABASE IF EXISTS zitadel WITH (FORCE);
 CREATE DATABASE zitadel OWNER zitadel;
@@ -192,15 +199,8 @@ REVOKE CONNECT ON DATABASE zitadel FROM PUBLIC;
 SQL
 docker volume rm "$vol"
 
-# 3. Solo si la falla original fue `permission denied` sobre el PAT: recrear el
-#    volumen ya con el dueño correcto, tomando el UID que declara la imagen en
-#    vez de adivinarlo.
-uid="$(docker image inspect "ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}" \
-  --format '{{.Config.User}}')"
-docker volume create "$vol"
-docker run --rm -v "$vol:/b" alpine chown -R "${uid:-1000}" /b
-
-# 4. Volver a levantar: `zitadel-setup` corre de nuevo contra una base vacía.
+# 3. Volver a levantar: `zitadel-setup` corre de nuevo contra una base vacía y
+#    sobre un volumen que `zitadel-bootstrap-perms` ya dejó escribible.
 docker compose up -d
 ```
 
@@ -296,9 +296,11 @@ ejecutado:
    previos.
 2. Confirmar que los cuatro servicios con healthcheck (`db`, `zitadel`,
    `zitadel-login`, `server`) llegan a `healthy` sin intervención manual, y
-   que `cloudflared` también. `zitadel-init` y `zitadel-setup` deben quedar
-   en `exited (0)`; si alguno sale con código distinto de 0, el arranque se
-   detiene ahí a propósito (ver "Recuperar Zitadel de un arranque a medias").
+   que `cloudflared` también. Los cuatro contenedores de una sola vez
+   (`zitadel-init`, `zitadel-bootstrap-perms`, `zitadel-setup`,
+   `zitadel-bootstrap-share`) deben quedar en `exited (0)`; si alguno sale con
+   código distinto de 0, el arranque se detiene ahí a propósito (ver
+   "Recuperar Zitadel de un arranque a medias").
 3. Completar el registro manual de Zitadel (paso 4 de "Primer arranque").
 4. Iniciar sesión desde `https://fichas.tu-dominio.com` y crear un personaje.
 5. `docker compose down && docker compose up -d` y confirmar que el

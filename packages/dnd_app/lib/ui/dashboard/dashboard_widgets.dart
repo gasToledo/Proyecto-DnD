@@ -231,9 +231,9 @@ class _CharacterCardState extends State<_CharacterCard> {
                             ? null
                             : PortraitImage.provider(portrait),
                         fallback: c.name.characters.first,
-                        size: 56 * k,
+                        size: 76 * k,
                       ),
-                      SizedBox(width: 13 * k),
+                      SizedBox(width: 14 * k),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

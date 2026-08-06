@@ -32,7 +32,7 @@ const _kWideBreakpoint = 900.0;
 /// escala hasta un 30% con el ancho que efectivamente le tocó (ver `_grid`).
 /// Por debajo de la base no se achica: ahí el diseño ya está al límite.
 const _kCardBaseWidth = 420.0;
-const _kCardBaseHeight = 196.0;
+const _kCardBaseHeight = 212.0;
 const _kCardMaxExtent = 560.0;
 const _kCardSpacing = 16.0;
 

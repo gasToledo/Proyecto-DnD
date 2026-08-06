@@ -82,9 +82,10 @@ void main() {
         isA<ResizeImage>(),
         reason: 'el retrato se está dibujando a resolución completa',
       );
-      // 60 lógicos x 2 de densidad, con el margen que `BoxFit.cover` necesita
-      // para no agrandar una imagen apaisada.
-      expect((source as ResizeImage).width, 240);
+      // 60 lógicos x 2 de densidad de pantalla, sin margen: pedir de más son
+      // píxeles que la GPU vuelve a reducir al dibujar, y ese segundo paso es
+      // el que emborrona (ver `Medallion`).
+      expect((source as ResizeImage).width, 120);
       expect(
         source.allowUpscaling,
         isFalse,

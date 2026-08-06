@@ -498,14 +498,25 @@ class Medallion extends StatelessWidget {
     // sola vez y con el tamaño de destino a la vista. De paso deja de tener
     // 4 MB de mapa de bits en memoria por cada tarjeta del roster.
     //
-    // Se pide el doble de lo que mide el círculo porque `BoxFit.cover` recorta
-    // por el lado corto: una imagen apaisada tiene que traer de sobra para
-    // llenarlo sin que haya que volver a agrandarla.
+    // Se pide exactamente lo que ocupa el círculo en píxeles físicos, sin
+    // margen. Pedir de más no agrega nitidez: son píxeles que la GPU vuelve a
+    // reducir al dibujar, y esa segunda reducción usa mipmaps (un retrato
+    // decodificado a 288 para dibujarse en 96 pasa por 288 → 144 → 72 y se
+    // muestrea mezclando dos niveles). Esa mezcla es lo que se ve como velo.
+    // Decodificando a medida, el remuestreo lo hace el decodificador una sola
+    // vez y el dibujo queda 1:1.
+    //
+    // El caso que esto no cubre es una imagen más ancha que alta: `BoxFit.cover`
+    // recorta por el lado corto, así que ahí el alto queda por debajo del
+    // círculo y se agranda un poco. Los retratos generados son cuadrados (768 o
+    // 1024 de lado) y los subidos suelen ser verticales, así que es el caso
+    // raro. Si aparece, la salida es recortar del lado del servidor, no pedir
+    // de más acá.
     final source = image == null
         ? null
         : ResizeImage(
             image!,
-            width: (size * MediaQuery.devicePixelRatioOf(context) * 2).round(),
+            width: (size * MediaQuery.devicePixelRatioOf(context)).round(),
             allowUpscaling: false,
           );
 

@@ -78,4 +78,24 @@ CREATE INDEX sessions_user_id_idx ON sessions (user_id);
 CREATE INDEX sessions_expires_at_idx ON sessions (expires_at);
 ''',
   ),
+  Migration(
+    id: '0004_sessions_profile',
+    sql: '''
+-- Caché de lo que el proveedor OIDC afirmó al abrir esta sesión: sirve para
+-- mostrar en pantalla con qué cuenta se entró. El dueño del dato sigue siendo
+-- el proveedor; acá vence junto con la sesión que lo produjo.
+--
+-- Todas nullable: las sesiones abiertas antes de este despliegue siguen siendo
+-- válidas, simplemente no tienen perfil que mostrar.
+--
+-- `logout_url` ya trae el `id_token_hint`, así que cerrar sesión también cierra
+-- la del proveedor. No es una credencial de acceso: no sirve para llamar a
+-- ninguna API, solo para terminar esta misma sesión.
+ALTER TABLE sessions
+  ADD COLUMN display_name TEXT,
+  ADD COLUMN email        TEXT,
+  ADD COLUMN picture_url  TEXT,
+  ADD COLUMN logout_url   TEXT;
+''',
+  ),
 ];

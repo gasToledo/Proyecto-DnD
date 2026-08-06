@@ -2,6 +2,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../api/api_models.dart';
 import '../creation/creation_wizard.dart';
 import '../data/characters_controller.dart';
 import '../data/homebrew_store.dart';
@@ -44,6 +45,10 @@ class DashboardScreen extends StatefulWidget {
   final ContentRepository repo;
   final CharactersController controller;
   final HomebrewStore homebrew;
+
+  /// Cuenta con la que se entró, para mostrarla en el panel lateral. Null solo
+  /// en pruebas que no ejercitan la sesión.
+  final AccountInfo? account;
   final String? appVersion;
   final VoidCallback onToggleTheme;
   const DashboardScreen({
@@ -51,6 +56,7 @@ class DashboardScreen extends StatefulWidget {
     required this.repo,
     required this.controller,
     required this.homebrew,
+    this.account,
     this.appVersion,
     required this.onToggleTheme,
   });

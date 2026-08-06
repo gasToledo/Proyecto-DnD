@@ -96,6 +96,7 @@ extension _DashboardNavigation on _DashboardScreenState {
             ),
           ),
           const Spacer(),
+          _accountFooter(context),
           OutlinedButton.icon(
             onPressed: widget.onToggleTheme,
             icon: const Icon(Icons.dark_mode, size: 16),
@@ -123,5 +124,87 @@ extension _DashboardNavigation on _DashboardScreenState {
         ],
       ),
     );
+  }
+
+  /// Con qué cuenta se entró, y cómo salir de ella. Va en el pie del panel
+  /// porque es el único lugar que existe en los dos layouts: en ventana
+  /// angosta este mismo widget es el contenido del Drawer.
+  ///
+  /// Los datos son los que afirmó el proveedor OIDC (ver `AccountInfo`), así
+  /// que pueden faltar: sin nombre ni correo queda solo el botón de salir, que
+  /// es lo que de verdad no puede faltar.
+  Widget _accountFooter(BuildContext context) {
+    final account = widget.account;
+    if (account == null) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (account.name case final name?)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                name,
+                key: const ValueKey('account-name'),
+                // El panel mide 236: un nombre largo tiene que recortarse, no
+                // empujar el resto del pie fuera de la pantalla.
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 13, color: scheme.onSurface),
+              ),
+            ),
+          if (account.email case final email?)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 1, 8, 0),
+              child: Text(
+                email,
+                key: const ValueKey('account-email'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          const SizedBox(height: 6),
+          TextButton.icon(
+            key: const ValueKey('logout-button'),
+            onPressed: _logout,
+            icon: const Icon(Icons.logout, size: 16),
+            label: const Text('Cerrar sesión'),
+            style: TextButton.styleFrom(
+              alignment: Alignment.centerLeft,
+              foregroundColor: scheme.onSurfaceVariant,
+              textStyle: const TextStyle(fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Cierra la sesión del servidor y navega a donde este indique. Ese destino
+  /// es el cierre de sesión del proveedor: sin pasar por ahí, su cookie de SSO
+  /// sigue viva y el próximo login entra sin pedir credenciales. Si el
+  /// servidor no lo pudo calcular, se vuelve a la raíz, que redirige al login.
+  Future<void> _logout() async {
+    try {
+      final logoutUrl = await controller.api.logout();
+      browser.redirectTo(logoutUrl ?? '/');
+    } catch (e) {
+      // Sin esto, un fallo acá no se ve: la página no cambia y no aparece
+      // nada, así que quien quiso salir se queda creyendo que salió.
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo cerrar la sesión: $e',
+          tone: AppMessageTone.error,
+        );
+      }
+    }
   }
 }

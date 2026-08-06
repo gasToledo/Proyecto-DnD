@@ -32,12 +32,15 @@ Future<void> main() async {
     ),
     beginLogin: oidcService.beginLogin,
     completeLogin: oidcService.completeLogin,
-    createSessionForSubject: (subject) => pool.runTx((session) async {
+    createSessionForIdentity: (identity) => pool.runTx((session) async {
       final userId = await PostgresAccountRepository(
         session,
-      ).findOrCreateByOidcSubject(subject);
-      return PostgresSessionStore(session).create(userId);
+      ).findOrCreateByOidcSubject(identity.subject);
+      return PostgresSessionStore(session).create(userId, identity: identity);
     }),
+    sessionProfile: (token) => pool.run(
+      (session) => PostgresSessionStore(session).profileForToken(token),
+    ),
     invalidateSession: (token) =>
         pool.run((session) => PostgresSessionStore(session).invalidate(token)),
   );

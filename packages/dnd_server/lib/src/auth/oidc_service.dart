@@ -41,14 +41,14 @@ class OidcService {
   }
 
   /// Completa el login: intercambia el código, verifica la aserción de
-  /// identidad y devuelve el sujeto OIDC verificado (`sub`).
+  /// identidad y devuelve la identidad OIDC verificada.
   ///
   /// Lanza [OidcCallbackException] si el `state` no corresponde a ningún
   /// login en curso (nunca existió, ya se usó o venció, ver [PendingLogins]),
   /// o si la aserción no verifica (emisor, firma, audiencia, nonce o
   /// expiración inválidos): en todos esos casos la petición se trata como no
   /// autenticada, nunca se asume identidad a partir de datos no verificados.
-  Future<String> completeLogin(Map<String, String> callbackParams) async {
+  Future<OidcIdentity> completeLogin(Map<String, String> callbackParams) async {
     final state = callbackParams['state'];
     final flow = state == null ? null : _pendingLogins.remove(state);
     if (flow == null) {
@@ -69,9 +69,49 @@ class OidcService {
       );
     }
 
-    final subject = credential.idToken.claims.subject;
-    return subject;
+    // Los claims se leen recién acá, después de verificar la aserción: lo que
+    // se muestre en pantalla como "la cuenta con la que entraste" tiene que
+    // salir de datos verificados, igual que el `sub`.
+    final claims = credential.idToken.claims;
+    return OidcIdentity(
+      subject: claims.subject,
+      // Zitadel manda `name` si el perfil lo tiene cargado; si no, el nombre
+      // de usuario es lo único que distingue una cuenta de otra.
+      name: claims.name ?? claims.preferredUsername,
+      email: claims.email,
+      pictureUrl: claims.picture?.toString(),
+      // Se calcula acá, con la credencial todavía en mano, porque al cerrar
+      // sesión ya no queda nada del proveedor: la URL lleva el `id_token_hint`
+      // que Zitadel necesita para cerrar *su* sesión, no solo la nuestra.
+      logoutUrl: credential
+          .generateLogoutUrl(redirectUri: config.postLogoutRedirectUri)
+          ?.toString(),
+    );
   }
+}
+
+/// Lo que el proveedor OIDC afirmó de la cuenta en este login, ya verificado.
+/// Todo menos [subject] es opcional: son claims que el proveedor puede no
+/// mandar (perfil incompleto, scope no concedido) y la aplicación funciona
+/// igual sin ellos.
+class OidcIdentity {
+  final String subject;
+  final String? name;
+  final String? email;
+  final String? pictureUrl;
+
+  /// URL de cierre de sesión del proveedor, ya con el `id_token_hint` y el
+  /// destino de vuelta. `null` si el proveedor no publica
+  /// `end_session_endpoint`: entonces solo se puede cerrar la sesión local.
+  final String? logoutUrl;
+
+  const OidcIdentity({
+    required this.subject,
+    this.name,
+    this.email,
+    this.pictureUrl,
+    this.logoutUrl,
+  });
 }
 
 class OidcCallbackException implements Exception {

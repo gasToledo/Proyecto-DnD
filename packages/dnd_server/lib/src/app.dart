@@ -7,7 +7,9 @@ import 'package:shelf_router/shelf_router.dart';
 
 import 'ai/portrait_generation_service.dart';
 import 'auth/auth_middleware.dart';
+import 'auth/oidc_service.dart';
 import 'auth/session_cookie.dart';
+import 'auth/session_store.dart';
 import 'import/backup_bundle.dart';
 import 'import/import_service.dart';
 import 'portraits/portrait_blob_store.dart';
@@ -49,14 +51,18 @@ class AuthDependencies {
   final Uri Function() beginLogin;
 
   /// Completa el login: intercambia el código, verifica la aserción y
-  /// devuelve el sujeto OIDC verificado. Lanza si la aserción no es válida o
-  /// el `state` no se reconoce.
-  final Future<String> Function(Map<String, String> callbackParams)
+  /// devuelve la identidad OIDC verificada. Lanza si la aserción no es válida
+  /// o el `state` no se reconoce.
+  final Future<OidcIdentity> Function(Map<String, String> callbackParams)
   completeLogin;
 
-  /// Mapea el sujeto OIDC verificado a una cuenta (creándola si hace falta)
+  /// Mapea la identidad OIDC verificada a una cuenta (creándola si hace falta)
   /// y abre una sesión de servidor. Devuelve el token de la cookie.
-  final Future<String> Function(String oidcSubject) createSessionForSubject;
+  final Future<String> Function(OidcIdentity identity) createSessionForIdentity;
+
+  /// Perfil cacheado de la sesión, o `null` si el token no vale. Es lo que
+  /// `/api/me` muestra como "la cuenta con la que entraste".
+  final Future<SessionProfile?> Function(String token) sessionProfile;
 
   final Future<void> Function(String token) invalidateSession;
 
@@ -64,7 +70,8 @@ class AuthDependencies {
     required this.resolveUserId,
     required this.beginLogin,
     required this.completeLogin,
-    required this.createSessionForSubject,
+    required this.createSessionForIdentity,
+    required this.sessionProfile,
     required this.invalidateSession,
   });
 }
@@ -96,7 +103,7 @@ Handler buildHandler({
       '/api/me',
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(_meHandler),
+          .addHandler((request) => _meHandler(request, auth)),
     )
     ..get(
       '/api/characters',
@@ -223,9 +230,9 @@ Future<Response> _callbackHandler(
   Request request,
   AuthDependencies auth,
 ) async {
-  final String subject;
+  final OidcIdentity identity;
   try {
-    subject = await auth.completeLogin(request.requestedUri.queryParameters);
+    identity = await auth.completeLogin(request.requestedUri.queryParameters);
   } catch (error) {
     return Response(
       401,
@@ -234,7 +241,7 @@ Future<Response> _callbackHandler(
     );
   }
 
-  final token = await auth.createSessionForSubject(subject);
+  final token = await auth.createSessionForIdentity(identity);
   return Response.found(
     '/',
     headers: {
@@ -248,13 +255,26 @@ Future<Response> _callbackHandler(
 
 /// Invalida la sesión de servidor y borra la cookie. Una sesión ya cerrada
 /// (o inexistente) responde igual: cerrar sesión dos veces no es un error.
+///
+/// Devuelve además `logoutUrl`: cerrar solo la sesión local no alcanza, porque
+/// la cookie de SSO del proveedor sigue viva y el próximo `/auth/login`
+/// volvería a entrar sin pedir credenciales. El cliente navega a esa URL para
+/// terminar también la sesión del proveedor. Es `null` si no se pudo calcular
+/// (sesión sin perfil, o proveedor sin `end_session_endpoint`): entonces la
+/// sesión local igual quedó cerrada.
+///
+/// Sigue siendo POST: cerrar la sesión de alguien no puede ser el efecto de
+/// hacerle abrir un enlace.
 Future<Response> _logoutHandler(Request request, AuthDependencies auth) async {
   final token = readSessionToken(request.headers['cookie']);
+  String? logoutUrl;
   if (token != null) {
+    // El perfil se lee antes de invalidar: después la fila ya no está.
+    logoutUrl = (await auth.sessionProfile(token))?.logoutUrl;
     await auth.invalidateSession(token);
   }
   return Response.ok(
-    jsonEncode({'status': 'ok'}),
+    jsonEncode({'status': 'ok', 'logoutUrl': logoutUrl}),
     headers: {
       'content-type': 'application/json',
       'set-cookie': buildExpiredSessionCookieHeader(),
@@ -262,10 +282,22 @@ Future<Response> _logoutHandler(Request request, AuthDependencies auth) async {
   );
 }
 
-Response _meHandler(Request request) => Response.ok(
-  jsonEncode({'userId': request.userId}),
-  headers: {'content-type': 'application/json'},
-);
+/// La cuenta de la sesión en curso. El `userId` es el id interno; el resto es
+/// lo que el proveedor OIDC afirmó al abrir la sesión, y puede venir en `null`
+/// (ver [SessionProfile]).
+Future<Response> _meHandler(Request request, AuthDependencies auth) async {
+  final token = readSessionToken(request.headers['cookie']);
+  final profile = token == null ? null : await auth.sessionProfile(token);
+  return Response.ok(
+    jsonEncode({
+      'userId': request.userId,
+      'name': profile?.name,
+      'email': profile?.email,
+      'pictureUrl': profile?.pictureUrl,
+    }),
+    headers: {'content-type': 'application/json'},
+  );
+}
 
 Response _jsonOk(Map<String, dynamic> body) => Response.ok(
   jsonEncode(body),

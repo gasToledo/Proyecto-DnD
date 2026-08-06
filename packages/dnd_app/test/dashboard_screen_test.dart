@@ -1,5 +1,6 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/api/api_client.dart';
+import 'package:dnd_app/api/api_models.dart';
 import 'package:dnd_app/data/characters_controller.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
@@ -23,12 +24,14 @@ void main() {
     CharactersController ctrl,
     FakeApiServer server, {
     String? appVersion,
+    AccountInfo? account,
   }) => MaterialApp(
     theme: AppTheme.dark,
     home: DashboardScreen(
       repo: repo,
       controller: ctrl,
       homebrew: HomebrewStore(ApiClient(client: server.client)),
+      account: account,
       appVersion: appVersion,
       onToggleTheme: () {},
     ),
@@ -68,6 +71,82 @@ void main() {
       tester.getTopLeft(version).dy,
       greaterThan(tester.getTopLeft(find.text('Cambiar tema')).dy),
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  /// Monta el dashboard con una cuenta dada, para las pruebas del pie.
+  Future<FakeApiServer> pumpWithAccount(
+    WidgetTester tester,
+    AccountInfo? account, {
+    Size size = const Size(1400, 900),
+  }) async {
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final server = FakeApiServer();
+    final ctrl = CharactersController(ApiClient(client: server.client))
+      ..add(demoSagan());
+    await tester.pumpWidget(harness(ctrl, server, account: account));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+    return server;
+  }
+
+  // Sin esto no hay forma de saber con qué cuenta estás entrando, que es
+  // justo lo que importa cuando el navegador tiene más de una sesión abierta.
+  testWidgets('el pie del panel muestra la cuenta de la sesión', (tester) async {
+    await pumpWithAccount(
+      tester,
+      const AccountInfo(
+        userId: 'u1',
+        name: 'Ada Lovelace',
+        email: 'ada@example.org',
+      ),
+    );
+
+    expect(find.text('Ada Lovelace'), findsOneWidget);
+    expect(find.text('ada@example.org'), findsOneWidget);
+    expect(find.byKey(const ValueKey('logout-button')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // Una cuenta del proveedor sin nombre ni correo no puede dejar al usuario
+  // sin poder salir.
+  testWidgets('sin nombre ni correo queda el botón de salir', (tester) async {
+    await pumpWithAccount(tester, const AccountInfo(userId: 'u1'));
+
+    expect(find.byKey(const ValueKey('account-name')), findsNothing);
+    expect(find.byKey(const ValueKey('account-email')), findsNothing);
+    expect(find.byKey(const ValueKey('logout-button')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('cerrar sesión llama al servidor y navega a donde este indique', (
+    tester,
+  ) async {
+    final server = await pumpWithAccount(
+      tester,
+      const AccountInfo(userId: 'u1', name: 'Ada Lovelace'),
+    );
+
+    await tester.tap(find.byKey(const ValueKey('logout-button')));
+    await tester.pumpAndSettle();
+
+    expect(server.logoutCalls, 1);
+    // En la VM `redirectTo` es el stub que lanza `UnsupportedError`, así que
+    // el aviso de error es la señal de que se llegó a navegar. En el build web
+    // esa navegación es la que cierra también la sesión del proveedor.
+    expect(
+      find.textContaining('No se pudo cerrar la sesión'),
+      findsOneWidget,
+      reason: 'no se llegó a navegar al cierre de sesión del proveedor',
+    );
+  });
+
+  testWidgets('sin cuenta el pie no aparece', (tester) async {
+    await pumpWithAccount(tester, null);
+
+    expect(find.byKey(const ValueKey('logout-button')), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

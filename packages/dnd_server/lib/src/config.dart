@@ -80,6 +80,12 @@ class OidcConfig {
   Uri get redirectUri =>
       publicBaseUrl.replace(path: '${publicBaseUrl.path}/auth/callback');
 
+  /// A dónde vuelve el navegador después de cerrar sesión en el proveedor.
+  /// También se registra en Zitadel (ver `docs/despliegue.md`): si no coincide
+  /// exactamente, el proveedor cierra la sesión pero no redirige de vuelta.
+  Uri get postLogoutRedirectUri =>
+      publicBaseUrl.replace(path: '${publicBaseUrl.path}/');
+
   factory OidcConfig.fromEnvironment(Map<String, String> env) {
     return OidcConfig(
       issuerUrl: Uri.parse(requireEnv(env, 'DND_OIDC_ISSUER_URL')),

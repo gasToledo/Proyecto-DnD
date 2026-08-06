@@ -21,6 +21,31 @@ class PortraitProviderInfo {
       );
 }
 
+/// La cuenta de la sesión en curso, tal como la publica `GET /api/me`. El
+/// perfil sale del proveedor OIDC (Zitadel), no de un registro de usuario
+/// propio: acá solo se muestra. Todo menos [userId] puede faltar (cuenta sin
+/// esos datos cargados, o sesión abierta antes de que se empezaran a guardar).
+class AccountInfo {
+  final String userId;
+  final String? name;
+  final String? email;
+  final String? pictureUrl;
+
+  const AccountInfo({
+    required this.userId,
+    this.name,
+    this.email,
+    this.pictureUrl,
+  });
+
+  factory AccountInfo.fromJson(Map<String, dynamic> json) => AccountInfo(
+    userId: json['userId'] as String,
+    name: json['name'] as String?,
+    email: json['email'] as String?,
+    pictureUrl: json['pictureUrl'] as String?,
+  );
+}
+
 class ImportSummary {
   final int charactersImported;
   final int portraitsImported;

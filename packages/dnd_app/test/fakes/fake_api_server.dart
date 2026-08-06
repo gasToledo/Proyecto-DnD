@@ -21,6 +21,16 @@ class FakeApiServer {
 
   bool authenticated = true;
 
+  /// Perfil que devuelve `/api/me`. Ambos pueden ser null: el proveedor OIDC
+  /// no siempre manda nombre o correo.
+  String? accountName = 'Ada Lovelace';
+  String? accountEmail = 'ada@example.org';
+
+  /// URL de cierre de sesión del proveedor que devuelve `/auth/logout`, y
+  /// cuántas veces se llamó.
+  String? logoutUrl = 'https://idp.example/end_session';
+  int logoutCalls = 0;
+
   /// Si no es null, toda llamada lanza esto (simula falta de conexión).
   Object? failWith;
 
@@ -36,7 +46,18 @@ class FakeApiServer {
     }
 
     if (method == 'GET' && path == '/api/me') {
-      return _json({'userId': 'fake-user'});
+      return _json({
+        'userId': 'fake-user',
+        'name': accountName,
+        'email': accountEmail,
+        'pictureUrl': null,
+      });
+    }
+
+    if (method == 'POST' && path == '/auth/logout') {
+      logoutCalls++;
+      authenticated = false;
+      return _json({'status': 'ok', 'logoutUrl': logoutUrl});
     }
 
     if (method == 'GET' && path == '/api/characters') {

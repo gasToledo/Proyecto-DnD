@@ -1,3 +1,4 @@
+import 'package:dnd_server/src/auth/oidc_service.dart';
 import 'package:dnd_server/src/auth/session_store.dart';
 import 'package:dnd_server/src/auth/session_token.dart';
 import 'package:postgres/postgres.dart';
@@ -65,6 +66,66 @@ void main() {
         isNull,
         reason: 'la purga no lleva parámetros: se acota con now() en el SQL',
       );
+    });
+  });
+
+  group('perfil de la sesión', () {
+    test('el perfil verificado se guarda junto con la sesión', () async {
+      await store.create(
+        '11111111-1111-1111-1111-111111111111',
+        identity: const OidcIdentity(
+          subject: 'oidc-subject-1',
+          name: 'Ada Lovelace',
+          email: 'ada@example.org',
+          pictureUrl: 'https://idp.example/ada.png',
+          logoutUrl: 'https://idp.example/end_session?id_token_hint=abc',
+        ),
+      );
+
+      final insert = session.executedParameters.last!;
+      expect(_valueOf(insert['displayName']), 'Ada Lovelace');
+      expect(_valueOf(insert['email']), 'ada@example.org');
+      expect(_valueOf(insert['pictureUrl']), 'https://idp.example/ada.png');
+      expect(
+        _valueOf(insert['logoutUrl']),
+        'https://idp.example/end_session?id_token_hint=abc',
+      );
+    });
+
+    // Un login sin claims de perfil (scope no concedido, cuenta incompleta)
+    // tiene que abrir sesión igual: solo se pierde qué mostrar en pantalla.
+    test('sin identidad, las columnas de perfil quedan en null', () async {
+      await store.create('11111111-1111-1111-1111-111111111111');
+
+      final insert = session.executedParameters.last!;
+      expect(_valueOf(insert['displayName']), isNull);
+      expect(_valueOf(insert['logoutUrl']), isNull);
+    });
+
+    test('profileForToken consulta por el hash, no por el token', () async {
+      final token = generateSessionToken();
+      session.nextRows = [
+        {
+          'display_name': 'Ada Lovelace',
+          'email': 'ada@example.org',
+          'picture_url': null,
+          'logout_url': 'https://idp.example/end_session',
+        },
+      ];
+
+      final profile = await store.profileForToken(token);
+
+      expect(profile!.name, 'Ada Lovelace');
+      expect(profile.email, 'ada@example.org');
+      expect(profile.pictureUrl, isNull);
+      expect(profile.logoutUrl, 'https://idp.example/end_session');
+      final params = session.executedParameters.single!;
+      expect(_valueOf(params['tokenHash']), hashSessionToken(token));
+      expect(params.values.map(_valueOf), isNot(contains(token)));
+    });
+
+    test('sin filas devuelve null', () async {
+      expect(await store.profileForToken(generateSessionToken()), isNull);
     });
   });
 

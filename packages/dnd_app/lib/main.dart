@@ -4,6 +4,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import 'api/api_client.dart';
+import 'api/api_models.dart';
 import 'app_version.dart';
 import 'data/asset_content_loader.dart';
 import 'data/characters_controller.dart';
@@ -51,8 +52,15 @@ class _AppData {
   final ContentRepository repo;
   final CharactersController controller;
   final HomebrewStore homebrew;
+  final AccountInfo account;
   final String? appVersion;
-  _AppData(this.repo, this.controller, this.homebrew, this.appVersion);
+  _AppData(
+    this.repo,
+    this.controller,
+    this.homebrew,
+    this.account,
+    this.appVersion,
+  );
 }
 
 /// Comprueba la sesión, carga el contenido oficial y los personajes de la
@@ -75,8 +83,8 @@ class _BootstrapState extends State<_Bootstrap> {
   }
 
   Future<_AppData> _init() async {
-    final userId = await _api.currentUserId();
-    if (userId == null) {
+    final account = await _api.currentAccount();
+    if (account == null) {
       // Nunca hay ficha que mostrar sin sesión: se navega la pestaña entera
       // al login del proveedor OIDC (ver capacidad `user-accounts`). El
       // Future se deja sin resolver a propósito: la página está por
@@ -98,7 +106,7 @@ class _BootstrapState extends State<_Bootstrap> {
     await controller.load();
 
     final version = await currentAppVersion();
-    return _AppData(repo, controller, homebrew, version);
+    return _AppData(repo, controller, homebrew, account, version);
   }
 
   void _retry() {
@@ -184,6 +192,7 @@ class _BootstrapState extends State<_Bootstrap> {
           repo: data.repo,
           controller: data.controller,
           homebrew: data.homebrew,
+          account: data.account,
           appVersion: data.appVersion,
           onToggleTheme: widget.onToggleTheme,
         );

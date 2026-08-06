@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:dnd_server/src/app.dart';
+import 'package:dnd_server/src/auth/oidc_service.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -159,6 +160,54 @@ void main() {
       expect(body['userId'], isNotEmpty);
     });
 
+    // Sin esto la pantalla no puede decir con qué cuenta entraste: hasta
+    // ahora `/api/me` devolvía solo el id interno, que no le dice nada a nadie.
+    test('/api/me devuelve el perfil que afirmó el proveedor', () async {
+      fakeAuth.nextVerifiedIdentity = const OidcIdentity(
+        subject: 'oidc-subject-perfil',
+        name: 'Ada Lovelace',
+        email: 'ada@example.org',
+        pictureUrl: 'https://idp.example/ada.png',
+      );
+      final token = await _login(handler);
+
+      final me = await handler(
+        Request(
+          'GET',
+          Uri.parse('http://localhost/api/me'),
+          headers: {'cookie': 'dnd_session=$token'},
+        ),
+      );
+
+      final body = jsonDecode(await me.readAsString());
+      expect(body['name'], 'Ada Lovelace');
+      expect(body['email'], 'ada@example.org');
+      expect(body['pictureUrl'], 'https://idp.example/ada.png');
+    });
+
+    // Una cuenta del proveedor sin nombre ni correo cargados no puede romper
+    // el arranque de la aplicación.
+    test('/api/me tolera una sesión sin perfil', () async {
+      fakeAuth.nextVerifiedIdentity = const OidcIdentity(
+        subject: 'oidc-subject-sin-perfil',
+      );
+      final token = await _login(handler);
+
+      final me = await handler(
+        Request(
+          'GET',
+          Uri.parse('http://localhost/api/me'),
+          headers: {'cookie': 'dnd_session=$token'},
+        ),
+      );
+
+      expect(me.statusCode, 200);
+      final body = jsonDecode(await me.readAsString());
+      expect(body['userId'], isNotEmpty);
+      expect(body['name'], isNull);
+      expect(body['email'], isNull);
+    });
+
     test('la respuesta del callback no expone tokens en el cuerpo: solo '
         'redirección y cookie', () async {
       fakeAuth.nextVerifiedSubject = 'oidc-subject-c';
@@ -223,6 +272,40 @@ void main() {
         expect(me.statusCode, 401);
       },
     );
+
+    // Cerrar solo la sesión local deja viva la cookie de SSO del proveedor: el
+    // siguiente login vuelve a entrar sin pedir credenciales y el botón parece
+    // no haber hecho nada. El cliente necesita esta URL para cerrar las dos.
+    test('cerrar sesión devuelve la URL de cierre del proveedor', () async {
+      fakeAuth.nextVerifiedIdentity = const OidcIdentity(
+        subject: 'oidc-subject-logout',
+        logoutUrl: 'https://idp.example/end_session?id_token_hint=abc',
+      );
+      final token = await _login(handler);
+
+      final logout = await handler(
+        Request(
+          'POST',
+          Uri.parse('http://localhost/auth/logout'),
+          headers: {'cookie': 'dnd_session=$token'},
+        ),
+      );
+
+      final body = jsonDecode(await logout.readAsString());
+      expect(body['logoutUrl'], 'https://idp.example/end_session?id_token_hint=abc');
+    });
+
+    // Cerrar dos veces, o sin sesión, sigue sin ser un error: la sesión local
+    // ya está cerrada, simplemente no hay a dónde redirigir.
+    test('cerrar sesión sin sesión responde 200 con logoutUrl null', () async {
+      final logout = await handler(
+        Request('POST', Uri.parse('http://localhost/auth/logout')),
+      );
+
+      expect(logout.statusCode, 200);
+      expect(logout.headers['set-cookie'], contains('Max-Age=0'));
+      expect(jsonDecode(await logout.readAsString())['logoutUrl'], isNull);
+    });
 
     test('dos cuentas distintas reciben sesiones que no se mezclan', () async {
       fakeAuth.nextVerifiedSubject = 'subject-a';
@@ -1322,3 +1405,15 @@ Uint8List _validZipBytes() {
 
 String _extractToken(String setCookieHeader) =>
     RegExp(r'dnd_session=([^;]+)').firstMatch(setCookieHeader)!.group(1)!;
+
+/// Recorre el callback con la identidad que el doble tenga configurada y
+/// devuelve el token de la cookie resultante.
+Future<String> _login(Handler handler) async {
+  final callback = await handler(
+    Request(
+      'GET',
+      Uri.parse('http://localhost/auth/callback?code=abc&state=xyz'),
+    ),
+  );
+  return _extractToken(callback.headers['set-cookie']!);
+}

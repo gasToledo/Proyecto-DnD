@@ -83,7 +83,13 @@ y `design.md` para las decisiones detrás de cada elección).
    una aplicación **web** con:
    - Tipo de autenticación: `Code` (Authorization Code + PKCE).
    - Redirect URI: `https://fichas.tu-dominio.com/auth/callback`.
-   - Post-logout redirect URI: `https://fichas.tu-dominio.com/`.
+   - Post-logout redirect URI: `https://fichas.tu-dominio.com/`. Tiene que
+     coincidir exactamente: es a donde vuelve el navegador después de cerrar
+     sesión en Zitadel, y si no coincide el cierre ocurre pero la vuelta no.
+   - Scopes `profile` y `email` habilitados: de ahí salen el nombre y el
+     correo que el panel lateral muestra como "la cuenta con la que entraste".
+     Sin ellos la aplicación funciona igual, pero el pie del panel queda con
+     el botón de cerrar sesión y nada más.
 
    Zitadel devuelve un `Client ID` y un `Client Secret`. Completar
    `OIDC_CLIENT_ID` y `OIDC_CLIENT_SECRET` en `.env` con esos valores y

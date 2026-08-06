@@ -69,17 +69,23 @@ class ApiClient {
   /// imposibilidad de comprobarla son estados distintos para quien arranca
   /// la app (ver capacidad `web-client`, "sin conexión" vs. "cuenta sin
   /// personajes").
-  Future<String?> currentUserId() async {
+  Future<AccountInfo?> currentAccount() async {
     try {
       final response = await _send('GET', '/api/me');
-      return _json(response)['userId'] as String?;
+      return AccountInfo.fromJson(_json(response));
     } on ApiException catch (e) {
       if (e.isAuthError) return null;
       rethrow;
     }
   }
 
-  Future<void> logout() => _send('POST', '/auth/logout');
+  /// Cierra la sesión de servidor y devuelve la URL a la que hay que navegar
+  /// para cerrar también la del proveedor OIDC. `null` si el servidor no la
+  /// pudo calcular: la sesión local igual quedó cerrada.
+  Future<String?> logout() async {
+    final response = await _send('POST', '/auth/logout');
+    return _json(response)['logoutUrl'] as String?;
+  }
 
   // --- Personajes -------------------------------------------------------
 

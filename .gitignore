@@ -35,19 +35,23 @@ openspec/
 
 # Manuales locales (copyright, no versionar)
 d&d-data/
-docs/Player's Handbook (2024).md
-docs/Eberron_ Rising from the Last War.md
-docs/Eberron_ Forge of the Artificer.md
-# Extractos por clase del PHB 2024: mismo copyright que el manual entero.
-docs/Datos de Clases/
 docs.zip
-# Informe de trabajo sobre esos extractos; sus hallazgos se vuelcan en
-# docs/auditoria-reglas-2024.md, que sí se versiona.
-docs/auditoria-clases-2024.md
 
-# El SRD 5.2.1 sí es redistribuible (CC BY 4.0), pero son 8,8 MB de PDF que no
-# aportan nada al repo: la URL de descarga está en docs/auditoria-reglas-2024.md.
-docs/SP_SRD_CC_v5.2.1.pdf
+# `docs/` es material de consulta local: manuales completos, extractos por
+# clase y por especie, PDFs. Se ignora la carpeta entera en vez de archivo por
+# archivo — las reglas por ruta que había acá dejaron de valer en cuanto se
+# reorganizó `docs/`, y los manuales volvieron a aparecer sin que nada avisara.
+#
+# La excepción es la documentación técnica del proyecto: `despliegue.md` es el
+# procedimiento de puesta en marcha y lo referencian README.md,
+# docker-compose.yml, .github/workflows/cd.yml y
+# packages/dnd_server/lib/src/config.dart. Fuera del repo, esas cuatro
+# referencias apuntarían a un archivo que en un clon nuevo no existe.
+#
+# `docs/*` y no `docs/`: a un directorio ya excluido no se le puede volver a
+# incluir nada adentro.
+docs/*
+!docs/Informacion tecnica del proyecto/
 
 # Despliegue autoalojado: secretos reales, nunca versionar (ver
 # `.env.example` y `cloudflared/config.example.yml`)

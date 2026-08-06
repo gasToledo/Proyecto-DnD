@@ -79,6 +79,29 @@ void main() {
       expect(d, contains('d4'));
       expect(d, contains('competencia'));
     });
+
+    test('Portador de Luz concede el truco y Manos Sanadoras tiene recurso',
+        () {
+      final c = Character(
+        id: 'aasimar',
+        name: 'Aasimar',
+        raceId: 'aasimar',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        assignedScores: {for (final a in Ability.values) a: 12},
+        hpPerLevel: const [10],
+      );
+      final sheet = CharacterCompiler(repo).compile(c);
+      expect(sheet.innateSpells.map((s) => s.spellId), contains('light'));
+      expect(sheet.resources.map((r) => r.id), contains('healing_hands'));
+    });
+  });
+
+  test('cada especie conserva su tipo de criatura estructurado', () {
+    expect(repo.race('human')!.creatureType, 'Humanoide');
+    expect(repo.race('changeling')!.creatureType, 'Feérico');
+    expect(repo.race('kalashtar')!.creatureType, 'Aberración');
+    expect(repo.race('warforged')!.creatureType, 'Autómata');
   });
 
   group('Tiefling', () {

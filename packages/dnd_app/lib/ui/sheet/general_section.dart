@@ -438,8 +438,10 @@ extension _SheetGeneralSection on _SheetScreenState {
   Widget _identityCard() {
     final pal = context.palette;
     final bg = repo.background(_c.backgroundId)?.name ?? '—';
+    final creatureType = repo.race(_c.raceId)?.creatureType ?? '—';
     final rows = <(String, String)>[
       ('Alineamiento', _c.alignment?.label ?? '—'),
+      ('Tipo de criatura', creatureType),
       // El tamaño resuelto lo da la ficha compilada, no la especie: las que
       // dejan elegir traen ahí sólo el valor por defecto.
       ('Tamaño', sheet.size),

@@ -3,9 +3,8 @@ import 'package:test/test.dart';
 
 /// Elección de tamaño de especie (PHB 2024).
 ///
-/// Tres especies abarcan cuerpos de tamaños distintos y dejan elegir: Humano,
-/// Tiefling y Aasimar son Mediano o Pequeño. Las demás tienen un tamaño fijo y
-/// no preguntan nada.
+/// Siete especies abarcan cuerpos de tamaños distintos y dejan elegir entre
+/// Mediano y Pequeño. Las demás tienen un tamaño fijo y no preguntan nada.
 void main() {
   late ContentRepository repo;
 
@@ -24,17 +23,33 @@ void main() {
       );
 
   group('catálogo', () {
-    test('exactamente Humano, Tiefling y Aasimar ofrecen la elección', () {
+    test('exactamente siete especies ofrecen la elección', () {
       final choosers = repo.races.values
           .where((r) => r.sizeOptions.isNotEmpty)
           .map((r) => r.id)
           .toList()
         ..sort();
-      expect(choosers, ['aasimar', 'human', 'tiefling']);
+      expect(choosers, [
+        'aasimar',
+        'changeling',
+        'human',
+        'khoravar',
+        'shifter',
+        'tiefling',
+        'warforged',
+      ]);
     });
 
-    test('las tres ofrecen Mediano o Pequeño', () {
-      for (final id in ['human', 'tiefling', 'aasimar']) {
+    test('las siete ofrecen Mediano o Pequeño', () {
+      for (final id in [
+        'human',
+        'tiefling',
+        'aasimar',
+        'changeling',
+        'khoravar',
+        'shifter',
+        'warforged',
+      ]) {
         expect(repo.race(id)!.sizeOptions, ['Mediano', 'Pequeño'], reason: id);
       }
     });

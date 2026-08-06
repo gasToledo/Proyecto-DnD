@@ -43,6 +43,7 @@ class _RaceStep extends StatelessWidget {
               : _DetailPanel(
                   title: race.name,
                   facts: [
+                    ('Tipo', race.creatureType),
                     (
                       'Tamaño',
                       race.sizeOptions.isEmpty
@@ -56,6 +57,10 @@ class _RaceStep extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (race.description.isNotEmpty) ...[
+                        Text(race.description),
+                        const SizedBox(height: 18),
+                      ],
                       _TraitList(effects: race.effects),
                       if (race.sizeOptions.isNotEmpty) ...[
                         const SizedBox(height: 18),

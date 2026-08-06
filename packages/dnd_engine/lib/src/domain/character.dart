@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 12;
+  static const int currentSchemaVersion = 13;
 
   final String id;
   String name;
@@ -544,6 +544,17 @@ class Character {
     j['proficiencyChoices'] = choices;
   }
 
+  /// Ajeno a los Sueños del Kalashtar concede una competencia temporal tras
+  /// cada descanso largo, no una competencia permanente de especie. El wizard
+  /// guardaba esa elección al final de `chosenSkills`, igual que el antiguo
+  /// Khoravar, así que se descarta al migrar.
+  static void _migrateKalashtarTemporarySkill(Map<String, dynamic> j) {
+    if (j['raceId'] != 'kalashtar') return;
+    final skills = j['chosenSkills'];
+    if (skills is! List || skills.isEmpty) return;
+    j['chosenSkills'] = List<dynamic>.from(skills)..removeLast();
+  }
+
   /// Convierte `portraitPaths` de rutas absolutas del sistema de archivos de
   /// origen a claves opacas `<characterId>/<archivo>`. Es el mismo esquema de
   /// carpetas que ya usaba el guardado en disco
@@ -649,6 +660,10 @@ class Character {
           // el servidor todavía no había guardado ninguna ficha real.
           _migratePortraitPathsToKeys(migrated);
           version = 12;
+          migrated['schemaVersion'] = version;
+        case 12:
+          _migrateKalashtarTemporarySkill(migrated);
+          version = 13;
           migrated['schemaVersion'] = version;
       }
     }

@@ -39,8 +39,7 @@ Future<void> tapOption(WidgetTester tester, String label) async {
 /// en vez de en una especie concreta, que puede quedar fuera del viewport.
 const primeraEspecie = 'Aasimar';
 
-/// Elige el tamaño de la especie, para las tres que lo ofrecen (Humano,
-/// Tiefling y Aasimar son Mediano o Pequeño).
+/// Elige el tamaño de la especie cuando ofrece Mediano o Pequeño.
 ///
 /// El paso de Raza no deja avanzar sin esto, así que cualquier prueba que
 /// navegue más allá de la primera pantalla con una de esas especies tiene que

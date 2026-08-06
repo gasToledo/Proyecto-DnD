@@ -55,7 +55,7 @@ void main() {
     }
   });
 
-  test('cada especie y trasfondo declara ícono reconocido y tagline', () async {
+  test('cada especie y trasfondo declara su presentación visual', () async {
     final repo = await ContentRepository.loadFromDirectory(
       '../dnd_engine/lib/assets/srd_2024',
     );
@@ -69,6 +69,11 @@ void main() {
       );
       expect(race.tagline, isNotNull, reason: '${race.id} sin tagline');
       expect(race.tagline, isNotEmpty);
+      expect(
+        race.description.trim(),
+        isNotEmpty,
+        reason: '${race.id} sin descripción',
+      );
     }
 
     for (final bg in repo.backgrounds.values) {

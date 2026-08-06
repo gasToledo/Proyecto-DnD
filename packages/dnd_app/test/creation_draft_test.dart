@@ -493,6 +493,24 @@ void main() {
       }
     });
 
+    test('Cambiante exige naturaleza bestial y tamaño', () {
+      final d = newDraft()..raceId = 'shifter';
+      expect(d.lineageOptions, hasLength(4));
+      expect(
+        d.pendingFor(CreationStep.raza),
+        contains('Elegí un linaje de especie.'),
+      );
+
+      d.lineageId = 'shifter-wildhunt';
+      expect(
+        d.pendingFor(CreationStep.raza),
+        contains('Elegí el tamaño de la especie.'),
+      );
+      d.chosenSize = 'Pequeño';
+      expect(d.lineageUsesSpellcastingAbility, isFalse);
+      expect(d.pendingFor(CreationStep.raza), isEmpty);
+    });
+
     test('Clase (Guerrero) exige estilo de combate y maestrías', () {
       final d = newDraft(); // classId = fighter por defecto
       expect(d.pendingFor(CreationStep.clase), isNotEmpty);

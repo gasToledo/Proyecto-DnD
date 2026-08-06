@@ -334,6 +334,8 @@ void main() {
 
     test('Kalashtar resiste lo psíquico y tiene telepatía por nivel', () {
       final r = race('kalashtar');
+      expect(r.skillChoiceCount, 0,
+          reason: 'la competencia de Ajeno a los Sueños es temporal');
       expect(
           r.effects.whereType<ResistanceEffect>().single.damageType, 'psychic');
       expect(
@@ -378,22 +380,32 @@ void main() {
       expect(innato.ability, Ability.wisdom);
     });
 
-    test('Cambiante elige entre las cuatro habilidades bestiales', () {
+    test('Cambiante elige habilidad, naturaleza bestial y registra usos', () {
       final r = race('shifter');
       expect(r.skillChoiceCount, 1);
       expect(r.skillChoiceFrom,
           ['acrobatics', 'athletics', 'intimidation', 'survival']);
-      // Los cuatro modos de transformación viven en un solo rasgo, porque la
-      // elección todavía no se persiste.
-      final bestial = rasgo('shifter', 'Naturaleza Bestial');
-      for (final modo in [
-        'Piel Robusta',
-        'Colmillo Largo',
-        'Paso Veloz',
-        'Cacería Salvaje',
-      ]) {
-        expect(bestial, contains(modo));
-      }
+      expect(repo.lineagesForRace('shifter').map((l) => l.id).toSet(), {
+        'shifter-beasthide',
+        'shifter-longtooth',
+        'shifter-swiftstride',
+        'shifter-wildhunt',
+      });
+
+      final c = Character(
+        id: 's',
+        name: 'Cambiante',
+        raceId: 'shifter',
+        lineageId: 'shifter-beasthide',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        level: 5,
+        assignedScores: {for (final a in Ability.values) a: 12},
+        hpPerLevel: List.filled(5, 10),
+      );
+      final sheet = CharacterCompiler(repo).compile(c);
+      expect(sheet.resources.singleWhere((r) => r.id == 'shifting').max, 3);
+      expect(sheet.passives.map((p) => p.name), contains('Piel Robusta'));
     });
 
     test('Forjado suma +1 a la CA y resiste veneno', () {

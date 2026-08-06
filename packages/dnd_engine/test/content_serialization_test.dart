@@ -28,6 +28,8 @@ void main() {
         id: 'hb-drakonido',
         name: 'Drakónido custom',
         source: ContentSource.homebrew,
+        creatureType: 'Dragón',
+        description: 'Descendiente de los dragones antiguos.',
         speed: 35,
         effects: [
           DarkvisionEffect(60),
@@ -36,6 +38,8 @@ void main() {
         ],
       );
       final r = Race.fromJson(race.toJson());
+      expect(r.creatureType, 'Dragón');
+      expect(r.description, race.description);
       expect(r.speed, 35);
       expect(r.effects.whereType<DarkvisionEffect>().single.range, 60);
       expect(r.effects.whereType<ResistanceEffect>().single.damageType, 'fire');

@@ -304,6 +304,29 @@ void main() {
     });
   });
 
+  group('v12 → v13: habilidad temporal del Kalashtar', () {
+    test('descarta la antigua habilidad permanente de especie', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 12,
+        'raceId': 'kalashtar',
+        'chosenSkills': ['arcana', 'stealth', 'perception'],
+      });
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['chosenSkills'], ['arcana', 'stealth']);
+    });
+
+    test('no toca las habilidades de otras especies', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 12,
+        'raceId': 'shifter',
+        'chosenSkills': ['arcana', 'stealth', 'survival'],
+      });
+
+      expect(migrated['chosenSkills'], ['arcana', 'stealth', 'survival']);
+    });
+  });
+
   test('v5 → v6: la mano secundaria arranca vacía', () {
     final source = {
       'schemaVersion': 5,

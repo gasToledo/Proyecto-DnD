@@ -768,5 +768,89 @@
         ]
       }
     ]
+  },
+  {
+    "id": "shifter-beasthide",
+    "name": "Piel Robusta",
+    "raceId": "shifter",
+    "source": "foa_2025",
+    "description": "Al transformarte ganás 1d6 PG temporales adicionales y +1 a la CA mientras dure la transformación.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Piel Robusta",
+        "description": "Al transformarte ganás 1d6 PG temporales adicionales y +1 a la CA mientras dure la transformación.",
+        "effects": [
+          {
+            "type": "passiveTrait",
+            "name": "Piel Robusta",
+            "description": "Al transformarte ganás 1d6 PG temporales adicionales y +1 a la CA mientras dure la transformación."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shifter-longtooth",
+    "name": "Colmillo Largo",
+    "raceId": "shifter",
+    "source": "foa_2025",
+    "description": "Mientras estás transformado podés atacar con tus colmillos y causar 1d6 de daño perforante más tu modificador por Fuerza.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Colmillo Largo",
+        "description": "Al transformarte, y como acción adicional en tus turnos siguientes, podés hacer un ataque sin armas con tus colmillos que causa 1d6 de daño perforante más tu modificador por Fuerza.",
+        "effects": [
+          {
+            "type": "passiveTrait",
+            "name": "Colmillo Largo",
+            "description": "Al transformarte, y como acción adicional en tus turnos siguientes, podés hacer un ataque sin armas con tus colmillos que causa 1d6 de daño perforante más tu modificador por Fuerza."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shifter-swiftstride",
+    "name": "Paso Veloz",
+    "raceId": "shifter",
+    "source": "foa_2025",
+    "description": "Mientras estás transformado tu velocidad aumenta 10 pies y podés alejarte como reacción sin provocar ataques de oportunidad.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Paso Veloz",
+        "description": "Mientras estás transformado tu velocidad aumenta 10 pies. Además, cuando una criatura termina su turno a 5 pies o menos, podés moverte hasta 10 pies como reacción sin provocar ataques de oportunidad.",
+        "effects": [
+          {
+            "type": "passiveTrait",
+            "name": "Paso Veloz",
+            "description": "Mientras estás transformado tu velocidad aumenta 10 pies. Además, cuando una criatura termina su turno a 5 pies o menos, podés moverte hasta 10 pies como reacción sin provocar ataques de oportunidad."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "shifter-wildhunt",
+    "name": "Cacería Salvaje",
+    "raceId": "shifter",
+    "source": "foa_2025",
+    "description": "Mientras estás transformado tenés ventaja en pruebas de Sabiduría y limitás la ventaja de atacantes cercanos.",
+    "features": [
+      {
+        "level": 1,
+        "name": "Cacería Salvaje",
+        "description": "Mientras estás transformado tenés ventaja en las pruebas de Sabiduría. Ninguna criatura a 30 pies o menos puede tener ventaja para atacarte, salvo que estés incapacitado.",
+        "effects": [
+          {
+            "type": "passiveTrait",
+            "name": "Cacería Salvaje",
+            "description": "Mientras estás transformado tenés ventaja en las pruebas de Sabiduría. Ninguna criatura a 30 pies o menos puede tener ventaja para atacarte, salvo que estés incapacitado."
+          }
+        ]
+      }
+    ]
   }
 ]

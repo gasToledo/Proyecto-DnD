@@ -12,6 +12,12 @@ class _RaceFormState extends State<RaceForm> {
   late final _size = TextEditingController(
     text: widget.initial?.size ?? 'Mediano',
   );
+  late final _creatureType = TextEditingController(
+    text: widget.initial?.creatureType ?? 'Humanoide',
+  );
+  late final _description = TextEditingController(
+    text: widget.initial?.description ?? '',
+  );
   late final _speed = TextEditingController(
     text: '${widget.initial?.speed ?? 30}',
   );
@@ -27,6 +33,8 @@ class _RaceFormState extends State<RaceForm> {
       onSave: _name.text.trim().isEmpty ? null : _save,
       children: [
         _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _text(_description, 'Descripción', maxLines: 5),
+        _text(_creatureType, 'Tipo de criatura'),
         _text(_size, 'Tamaño (Pequeño/Mediano/Grande)'),
         _text(_speed, 'Velocidad (ft)', number: true),
         _text(_skillCount, 'Habilidades a elegir', number: true),
@@ -43,6 +51,8 @@ class _RaceFormState extends State<RaceForm> {
         id: widget.initial?.id ?? homebrewId(_name.text),
         name: _name.text.trim(),
         source: ContentSource.homebrew,
+        creatureType: _creatureType.text.trim(),
+        description: _description.text.trim(),
         size: _size.text.trim(),
         // El formulario no edita la elección de tamaño, así que se conserva la
         // que traiga el original: editar la velocidad no debería borrarla.

@@ -35,12 +35,14 @@ Widget _text(
   TextEditingController c,
   String label, {
   bool number = false,
+  int maxLines = 1,
   VoidCallback? onChanged,
 }) => Padding(
   padding: const EdgeInsets.symmetric(vertical: 6),
   child: TextField(
     controller: c,
     keyboardType: number ? TextInputType.number : null,
+    maxLines: maxLines,
     onChanged: onChanged == null ? null : (_) => onChanged(),
     decoration: InputDecoration(
       labelText: label,

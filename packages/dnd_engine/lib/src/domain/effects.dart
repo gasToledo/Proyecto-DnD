@@ -250,8 +250,8 @@ class GrantFeatEffect extends Effect {
 }
 
 /// Concede un conjuro concreto por fuera de la magia de clase (linajes de
-/// especie, dotes). La característica de lanzamiento la fija el contenido: los
-/// linajes 2024 dejan elegirla, pero eso todavía no se modela.
+/// especie, dotes). La característica declarada sirve como valor por defecto;
+/// el compilador puede reemplazarla por la elegida para la especie.
 ///
 /// Si [use] es `oncePerLongRest`, el compilador además crea el recurso que
 /// registra ese uso gratuito, para que la ficha lo muestre y lo gaste como

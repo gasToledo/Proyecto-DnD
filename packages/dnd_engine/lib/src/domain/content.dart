@@ -45,16 +45,15 @@ class Race {
   final String name;
   final ContentSource source;
 
+  /// Tipo de criatura de la especie (Humanoide, Feérico, Aberración, etc.).
+  final String creatureType;
+
   /// Tamaño de la especie. Cuando [sizeOptions] no está vacío es solo el valor
   /// por defecto: el que manda es el elegido por el personaje.
   final String size;
 
   /// Tamaños entre los que elige el jugador al seleccionar la especie. Vacío
-  /// —el caso de las 12 especies restantes— significa "sin elección": el
-  /// tamaño es [size] y no hay nada que preguntar.
-  ///
-  /// El PHB 2024 la declara explícita en Humano, Tiefling y Aasimar, que son
-  /// Mediano o Pequeño.
+  /// significa "sin elección": el tamaño es [size] y no hay nada que preguntar.
   final List<String> sizeOptions;
 
   final int speed;
@@ -72,10 +71,14 @@ class Race {
   /// Línea de sabor para las tarjetas de selección. Null = sin tagline.
   final String? tagline;
 
+  /// Presentación narrativa de la especie, separada de sus reglas mecánicas.
+  final String description;
+
   const Race({
     required this.id,
     required this.name,
     required this.source,
+    this.creatureType = 'Humanoide',
     this.size = 'Mediano',
     this.sizeOptions = const [],
     this.speed = 30,
@@ -84,12 +87,14 @@ class Race {
     this.skillChoiceFrom = const [],
     this.iconId,
     this.tagline,
+    this.description = '',
   });
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'source': source.toJson(),
+        'creatureType': creatureType,
         'size': size,
         'sizeOptions': sizeOptions,
         'speed': speed,
@@ -97,6 +102,7 @@ class Race {
         'skillChoiceFrom': skillChoiceFrom,
         'iconId': iconId,
         'tagline': tagline,
+        'description': description,
         'effects': effects.map((e) => e.toJson()).toList(),
       };
 
@@ -104,6 +110,7 @@ class Race {
         id: j['id'] as String,
         name: j['name'] as String,
         source: ContentSource.fromJson(j['source'] as String?),
+        creatureType: j['creatureType'] as String? ?? 'Humanoide',
         size: j['size'] as String? ?? 'Mediano',
         sizeOptions: (j['sizeOptions'] as List? ?? const [])
             .whereType<String>()
@@ -116,6 +123,7 @@ class Race {
             .toList(),
         iconId: j['iconId'] as String?,
         tagline: j['tagline'] as String?,
+        description: j['description'] as String? ?? '',
       );
 }
 

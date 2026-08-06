@@ -3,8 +3,10 @@
     "id": "human",
     "name": "Humano",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "person",
     "tagline": "Ambiciosos y adaptables",
+    "description": "Los humanos se encuentran por todo el multiverso: son tan numerosos como diversos y, aunque sus vidas son relativamente breves, han alcanzado logros extraordinarios. Su ambición y capacidad de adaptación despiertan admiración, respeto y, en ocasiones, temor.\n\nSu aspecto abarca toda la diversidad de la humanidad de nuestro mundo y veneran a incontables dioses. Los eruditos discuten cuál fue su lugar de origen, pero algunos sostienen que sus primeras comunidades se reunieron en Sigil, desde donde difundieron por el multiverso su espíritu cosmopolita y la lengua común.",
     "size": "Mediano",
     "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
@@ -36,8 +38,10 @@
     "id": "dwarf",
     "name": "Enano",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "terrain",
     "tagline": "Recios como la piedra",
+    "description": "Los enanos fueron alzados de la tierra en los días antiguos por una deidad de la forja, llamada Moradin en algunos mundos y Reorx en otros. Aún conservan una afinidad con la piedra, el metal y la vida subterránea. Son resistentes como las montañas que aman y pueden vivir unos 350 años.\n\nBajos, robustos y a menudo barbudos, tallaron ciudades y fortalezas en la roca. Sus leyendas celebran enfrentamientos contra monstruos de las cumbres y de la Infraoscuridad, y sus canciones mantienen viva la memoria del valor. En ciertos mundos se distinguen comunidades de colina y de montaña.",
     "size": "Mediano",
     "speed": 30,
     "effects": [
@@ -74,8 +78,10 @@
     "id": "halfling",
     "name": "Mediano",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "child_care",
     "tagline": "Pequeños, afables y afortunados",
+    "description": "Los medianos fueron creados por dioses que valoraban la vida, el hogar y el calor del fuego. Suelen vivir en comunidades familiares y bucólicas, pero poseen el valor necesario para aventurarse, explorar y descubrir. Su pequeño tamaño les permite abrirse paso entre multitudes y recorrer espacios estrechos.\n\nMuchos atribuyen su extraordinaria fortuna a deidades como Yondalla, Brandobaris o Charmalaine. Viven alrededor de 150 años y sus comunidades adoptan formas muy variadas: algunas son subterráneas, otras viajan junto a pueblos humanos y no todas responden al ideal de una vida apacible.",
     "size": "Pequeño",
     "speed": 30,
     "effects": [
@@ -105,8 +111,10 @@
     "id": "orc",
     "name": "Orco",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "fitness_center",
     "tagline": "Empuje incansable",
+    "description": "Los orcos remontan su creación a Gruumsh, quien recorrió los grandes espacios del Plano Material. Sus dones los prepararon para atravesar llanuras, cavernas y mares, y para enfrentarse a los monstruos del camino. Aunque hoy veneren a otros dioses, conservan una resistencia, determinación y visión en la oscuridad asociadas a aquel antiguo legado.\n\nSuelen ser altos y corpulentos, de piel gris, orejas puntiagudas y colmillos prominentes. Desde jóvenes escuchan historias de viajes y pruebas superadas; para algunos, ese llamado inspira hazañas heroicas y causas dignas, mientras que otros prefieren dejar atrás el pasado de su pueblo.",
     "size": "Mediano",
     "speed": 30,
     "effects": [
@@ -130,8 +138,10 @@
     "id": "elf",
     "name": "Elfo",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "park",
     "tagline": "Gráciles y de sentidos agudos",
+    "description": "Los primeros elfos fueron creados por Corellon y podían cambiar de forma. Tras una antigua traición vinculada a Lolth, perdieron ese don y muchos se retiraron al Feywild. La curiosidad terminó por llevarlos nuevamente a explorar otros planos.\n\nLos elfos tienen orejas puntiagudas, carecen de vello facial y corporal y pueden vivir unos 750 años. En lugar de dormir, entran en un trance durante el cual siguen conscientes de su entorno. Cuando una comunidad permanece durante siglos en un ambiente, ese lugar puede transformarla y concederle una magia particular. De allí proceden tradiciones como las de los drow de la Infraoscuridad, los altos elfos ligados al Feywild y los elfos de los bosques primigenios.",
     "size": "Mediano",
     "speed": 30,
     "skillChoiceCount": 1,
@@ -171,8 +181,10 @@
     "id": "dragonborn",
     "name": "Draconato",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "local_fire_department",
     "tagline": "Herencia de dragón",
+    "description": "Los antepasados de los draconatos surgieron de huevos de dragones cromáticos y metálicos. Algunas historias afirman que Bahamut y Tiamat bendijeron aquellos huevos; otras, que los propios dragones crearon a los primeros draconatos sin intervención divina. Con el tiempo establecieron sus hogares por todo el Plano Material.\n\nParecen dragones bípedos sin alas: tienen escamas, ojos brillantes, huesos fuertes y, a menudo, cuernos. La coloración de sus escamas suele recordar la de sus ancestros dracónicos.",
     "size": "Mediano",
     "speed": 30,
     "effects": [
@@ -187,12 +199,12 @@
         "max": 0,
         "maxFromProficiency": true,
         "recharge": "long",
-        "description": "Al llevar a cabo la acción de Atacar podés sustituir un ataque por una exhalación en cono de 4,5 m o línea de 9 m (salvación de DES, CD 8 + mod. CON + bonif. por competencia). Causa 1d10 del tipo de daño de tu linaje dracónico, y sube a 2d10 en nivel 5, 3d10 en 11 y 4d10 en 17."
+        "description": "Al llevar a cabo la acción de Atacar podés sustituir un ataque por una exhalación en cono de 15 pies o línea de 30 pies y 5 pies de ancho (salvación de DES, CD 8 + mod. CON + bonif. por competencia). Causa 1d10 del tipo de daño de tu linaje dracónico si se falla la salvación, o la mitad si se supera; sube a 2d10 en nivel 5, 3d10 en 11 y 4d10 en 17."
       },
       {
         "type": "passiveTrait",
         "name": "Vuelo Dracónico (nivel 5)",
-        "description": "A partir del nivel 5, como acción adicional obtienes velocidad de vuelo igual a tu velocidad terrestre durante 10 minutos. Una vez por descanso largo."
+        "description": "A partir del nivel 5, como acción adicional obtenés velocidad de vuelo igual a tu velocidad terrestre durante 10 minutos, hasta que retraés las alas sin usar una acción o quedás incapacitado. Una vez por descanso largo."
       }
     ]
   },
@@ -200,8 +212,10 @@
     "id": "gnome",
     "name": "Gnomo",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "science",
     "tagline": "Curiosos e ingeniosos",
+    "description": "Los gnomos son un pueblo mágico asociado a dioses de la invención, las ilusiones y la vida subterránea. Sus comunidades discretas se ocultan en bosques y madrigueras, protegidas por túneles ingeniosos, trampas y engaños. Sus relatos hablan de deidades como Garl Glittergold, Baervan Wildwanderer y Baravar Cloakshadow, y de los orígenes de los linajes del bosque y de la roca.\n\nSon menudos, de ojos grandes y orejas puntiagudas, y pueden vivir unos 425 años. Muchos disfrutan llevar algo sobre la cabeza, incluso si solo se trata de un llamativo sombrero.",
     "size": "Pequeño",
     "speed": 30,
     "effects": [
@@ -225,8 +239,10 @@
     "id": "tiefling",
     "name": "Tiefling",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "whatshot",
     "tagline": "Marcados por un legado de otro plano",
+    "description": "Los tieflings nacen en los Planos Inferiores o llevan en su sangre la influencia de un infernal, un demonio u otro ser maligno. Ese legado les promete poder, pero no determina su moral: cada tiefling decide si lo abraza, lo lamenta o construye algo enteramente propio.\n\nLos legados abisales reflejan la entropía del Abismo, el caos de Pandemónium o la desesperación de Carceri, y pueden manifestarse como cuernos, pelaje, colmillos u olores extraños. Los ctónicos están ligados a Carceri, Gehenna o Hades y pueden tener un aspecto cadavérico o rasgos de súcubos, brujas nocturnas o yugoloths. Los infernales evocan Gehenna, los Nueve Infiernos o Aqueronte mediante cuernos, espinas, colas, ojos dorados y aromas de azufre o humo.",
     "size": "Mediano",
     "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
@@ -257,8 +273,10 @@
     "id": "goliath",
     "name": "Goliat",
     "source": "srd_2024",
+    "creatureType": "Humanoide",
     "iconId": "landscape",
     "tagline": "Sangre de gigante",
+    "description": "Los goliats son un pueblo imponente y descendiente lejano de los gigantes. La influencia de sus ancestros se manifiesta en dones sobrenaturales y en la capacidad de crecer durante un breve periodo.\n\nSus rasgos físicos suelen recordar a una estirpe gigante, pero los goliats han forjado un camino propio, ajeno a las antiguas disputas de sus antepasados. Muchos se sienten atraídos por las alturas y buscan su hogar en montañas, riscos y otros lugares elevados.",
     "size": "Mediano",
     "speed": 35,
     "effects": [
@@ -278,8 +296,10 @@
     "id": "aasimar",
     "name": "Aasimar",
     "source": "phb_2024",
+    "creatureType": "Humanoide",
     "iconId": "auto_awesome",
     "tagline": "Tocados por la luz celestial",
+    "description": "Los aasimar son mortales que llevan una chispa de los Planos Superiores. Pueden descender de seres celestiales, nacer por intervención divina o despertar ese poder tras un acontecimiento extraordinario.\n\nPueden surgir en cualquier pueblo y suelen parecerse a sus progenitores, aunque viven hasta unos 160 años. Pecas metálicas, ojos luminosos, un halo tenue o colores de piel inusuales pueden revelar su naturaleza. Estas señales suelen ser sutiles, pero se vuelven inequívocas cuando manifiestan plenamente su poder celestial.",
     "size": "Mediano",
     "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
@@ -304,17 +324,31 @@
       {
         "type": "passiveTrait",
         "name": "Manos Sanadoras",
-        "description": "Como acción, tocás a una criatura y tirás tantos d4 como tu bonif. de competencia: recupera esa cantidad de PG. Una vez por descanso largo."
+        "description": "Como acción Mágica, tocás a una criatura y tirás tantos d4 como tu bonif. de competencia: recupera esa cantidad de PG. Una vez por descanso largo."
+      },
+      {
+        "type": "resource",
+        "id": "healing_hands",
+        "name": "Manos Sanadoras",
+        "max": 1,
+        "recharge": "long",
+        "description": "Usos de Manos Sanadoras."
       },
       {
         "type": "passiveTrait",
         "name": "Portador de Luz",
-        "description": "Conoces el truco Luz."
+        "description": "Conocés el truco Luz. Carisma es tu aptitud mágica para lanzarlo."
+      },
+      {
+        "type": "grantSpell",
+        "spellId": "light",
+        "ability": "charisma",
+        "use": "atWill"
       },
       {
         "type": "passiveTrait",
         "name": "Revelación Celestial (nivel 3)",
-        "description": "A partir del nivel 3, como acción adicional te transformas revelando tu naturaleza celestial (Necrótico, Radiante o Vuelo). Una vez por descanso largo."
+        "description": "A partir del nivel 3, como acción adicional te transformás durante 1 minuto y elegís cada vez Alas Celestiales, Resplandor Interior o Sudario Necrótico. Una vez por turno causás daño adicional igual a tu bonif. por competencia: radiante con Alas o Resplandor, y necrótico con Sudario. Alas concede vuelo; Resplandor emite luz y daña a criaturas cercanas; Sudario puede asustar a criaturas cercanas. Una vez por descanso largo."
       }
     ]
   },
@@ -322,9 +356,12 @@
     "id": "changeling",
     "name": "Cambiaformas",
     "source": "foa_2025",
+    "creatureType": "Feérico",
     "iconId": "masks",
     "tagline": "Cada rostro es una vida distinta",
+    "description": "Los cambiaformas poseen una apariencia siempre mutable y viven en muchas sociedades sin ser descubiertos. Pueden adoptar casi cualquier rostro humanoide, y cada nueva forma puede revelar un aspecto distinto de su alma. Los primeros surgieron en el Feywild, cuya esencia cambiante todavía perdura en ellos.\n\nSu forma verdadera es pálida y de rasgos apenas definidos. Cambian de aspecto como otras personas cambian de ropa y suelen construir identidades completas, con historia y convicciones propias, para negociar, investigar o combatir. Varias personas cambiaformas pueden incluso compartir una misma identidad y transmitirla de generación en generación junto con sus contactos y obligaciones.",
     "size": "Mediano",
+    "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
     "skillChoiceCount": 2,
     "skillChoiceFrom": [
@@ -356,12 +393,12 @@
     "id": "kalashtar",
     "name": "Kalashtar",
     "source": "foa_2025",
+    "creatureType": "Aberración",
     "iconId": "psychology",
     "tagline": "Dos mentes en un solo cuerpo",
+    "description": "Los kalashtar nacieron de la unión entre la humanidad y espíritus quori renegados del plano de los sueños. Parecen humanos, pero esa conexión suele darles facciones simétricas o angulosas, y sus ojos pueden brillar cuando se concentran o sienten emociones intensas.\n\nUn kalashtar no conversa directamente con su espíritu quori: recibe instintos, inspiración y recuerdos, especialmente mientras duerme. Ese vínculo también le concede facultades psiónicas y una protección particular frente a intrusiones mentales.",
     "size": "Mediano",
     "speed": 30,
-    "skillChoiceCount": 1,
-    "skillChoiceFrom": [],
     "effects": [
       {
         "type": "resistance",
@@ -398,9 +435,12 @@
     "id": "khoravar",
     "name": "Khoravar",
     "source": "foa_2025",
+    "creatureType": "Humanoide",
     "iconId": "handshake",
     "tagline": "Hijos de Khorvaire, el puente entre",
+    "description": "Durante siglos, los descendientes de humanos y elfos formaron sus propias comunidades y tradiciones en Khorvaire. Casas como Lyrandar y Medani reforzaron esa identidad compartida. Se llaman a sí mismos khoravar, \"hijos de Khorvaire\", y muchos rechazan el nombre de medio elfo.\n\nSu filosofía los presenta como un puente entre pueblos, por lo que abundan entre ellos bardos, diplomáticos, mediadores y traductores. Otros interpretan su herencia feérica como un vínculo entre el mundo material y Thelanis, y siguen caminos de druida o pactos con archiféricos.",
     "size": "Mediano",
+    "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
     "skillChoiceCount": 0,
     "skillChoiceFrom": [],
@@ -455,9 +495,12 @@
     "id": "shifter",
     "name": "Cambiante",
     "source": "foa_2025",
+    "creatureType": "Humanoide",
     "iconId": "pets",
     "tagline": "La bestia interior, a flor de piel",
+    "description": "Los cambiantes, también llamados tocados por la bestia, descienden de pueblos afectados por la licantropía completa o parcial. Conservan un aspecto humanoide y no adoptan una forma animal total, pero al cambiar intensifican temporalmente sus rasgos bestiales.\n\nTienen una altura y constitución semejantes a las humanas, aunque suelen ser más ágiles. Sus rostros pueden mostrar ojos grandes, orejas puntiagudas, caninos marcados y cabello parecido al pelaje. Incluso durante el cambio siguen siendo claramente humanoides.",
     "size": "Mediano",
+    "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
     "skillChoiceCount": 1,
     "skillChoiceFrom": [
@@ -487,9 +530,18 @@
         "description": "Como acción adicional adoptás un aspecto más bestial durante 1 minuto, o hasta que volvés a tu forma normal con otra acción adicional. Al transformarte ganás PG temporales iguales al doble de tu bonif. de competencia. Podés transformarte tantas veces como tu bonif. de competencia y recuperás todos los usos con un descanso largo."
       },
       {
+        "type": "resource",
+        "id": "shifting",
+        "name": "Transformación",
+        "max": 0,
+        "maxFromProficiency": true,
+        "recharge": "long",
+        "description": "Usos de Transformación."
+      },
+      {
         "type": "passiveTrait",
         "name": "Naturaleza Bestial",
-        "description": "Elegís al tomar la especie qué beneficio ganás al transformarte. Piel Robusta: 1d6 PG temporales extra y +1 a la CA mientras dure. Colmillo Largo: al transformarte, y como acción adicional en tus turnos siguientes, hacés un ataque sin armas con tus colmillos que causa 1d6 perforante más tu modificador por Fuerza. Paso Veloz: +10 pies de velocidad y podés moverte hasta 10 pies como reacción cuando una criatura termina su turno a 5 pies o menos, sin provocar ataques de oportunidad. Cacería Salvaje: ventaja en las pruebas de Sabiduría, y ninguna criatura a 30 pies puede tener ventaja para atacarte salvo que estés incapacitado."
+        "description": "Elegís al tomar la especie qué beneficio ganás al transformarte: Piel Robusta, Colmillo Largo, Paso Veloz o Cacería Salvaje."
       }
     ]
   },
@@ -497,9 +549,12 @@
     "id": "warforged",
     "name": "Forjado",
     "source": "foa_2025",
+    "creatureType": "Autómata",
     "iconId": "smart_toy",
     "tagline": "Hecho para la guerra, vivo por accidente",
+    "description": "Los forjados son seres mecánicos creados como armas para la Última Guerra. El avance que les dio vida produjo algo inesperado: criaturas conscientes, construidas con madera y metal, capaces de sentir dolor y emociones.\n\nCombinan materia orgánica e inorgánica. Cordones semejantes a raíces forman músculos alquímicos alrededor de un armazón de acero, madera oscura o piedra, protegido por placas. Cada forjado posee modificaciones individuales, y los artífices pueden personalizar su rostro, extremidades y blindaje.",
     "size": "Mediano",
+    "sizeOptions": ["Mediano", "Pequeño"],
     "speed": 30,
     "skillChoiceCount": 1,
     "skillChoiceFrom": [],

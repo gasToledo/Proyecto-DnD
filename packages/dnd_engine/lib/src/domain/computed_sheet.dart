@@ -312,7 +312,7 @@ class ComputedSheet {
 
   /// Tamaño ya resuelto: el elegido por el personaje si la especie ofrece la
   /// elección, y si no el de la especie. La UI lee esto y nunca `Race.size`,
-  /// que para Humano, Tiefling y Aasimar es solo el valor por defecto.
+  /// que para las especies con `sizeOptions` es solo el valor por defecto.
   final String size;
 
   final int speed;

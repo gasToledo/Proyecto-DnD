@@ -33,6 +33,7 @@ void main() {
     // llama linajes igual que a los del Elfo, y son 6 gigantes y 10 dragones.
     expect(repo.lineagesForRace('goliath').length, 6);
     expect(repo.lineagesForRace('dragonborn').length, 10);
+    expect(repo.lineagesForRace('shifter').length, 4);
     // Las especies sin linaje no ofrecen ninguno.
     expect(repo.lineagesForRace('human'), isEmpty);
     expect(repo.lineagesForRace('dwarf'), isEmpty);

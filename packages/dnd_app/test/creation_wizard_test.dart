@@ -189,6 +189,7 @@ void main() {
 
     // Al elegir, el panel pasa a ser el detalle: la lista sigue a la izquierda.
     expect(find.text(emptyHint), findsNothing);
+    expect(find.text(repo.races['human']!.description), findsOneWidget);
 
     final list = tester.getRect(find.text('Humano').first);
     final detail = tester.getRect(find.text('TAMAÑO  '));

@@ -94,7 +94,9 @@ void main() {
 
   // Sin esto no hay forma de saber con qué cuenta estás entrando, que es
   // justo lo que importa cuando el navegador tiene más de una sesión abierta.
-  testWidgets('el pie del panel muestra la cuenta de la sesión', (tester) async {
+  testWidgets('el pie del panel muestra la cuenta de la sesión', (
+    tester,
+  ) async {
     await pumpWithAccount(
       tester,
       const AccountInfo(
@@ -106,7 +108,12 @@ void main() {
 
     expect(find.text('Ada Lovelace'), findsOneWidget);
     expect(find.text('ada@example.org'), findsOneWidget);
-    expect(find.byKey(const ValueKey('logout-button')), findsOneWidget);
+    // Carmesí, no el gris del resto del pie: es la única acción destructiva
+    // del panel y tiene que distinguirse de «Cambiar tema».
+    final logout = tester.widget<OutlinedButton>(
+      find.byKey(const ValueKey('logout-button')),
+    );
+    expect(logout.style?.foregroundColor?.resolve({}), AppPalette.dark.crimson);
     expect(tester.takeException(), isNull);
   });
 

@@ -12,7 +12,12 @@ class SessionProfile {
   final String? pictureUrl;
   final String? logoutUrl;
 
-  const SessionProfile({this.name, this.email, this.pictureUrl, this.logoutUrl});
+  const SessionProfile({
+    this.name,
+    this.email,
+    this.pictureUrl,
+    this.logoutUrl,
+  });
 }
 
 /// Sesiones de servidor: la cookie del navegador solo lleva un token opaco,

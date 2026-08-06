@@ -292,7 +292,10 @@ void main() {
       );
 
       final body = jsonDecode(await logout.readAsString());
-      expect(body['logoutUrl'], 'https://idp.example/end_session?id_token_hint=abc');
+      expect(
+        body['logoutUrl'],
+        'https://idp.example/end_session?id_token_hint=abc',
+      );
     });
 
     // Cerrar dos veces, o sin sesión, sigue sin ser un error: la sesión local

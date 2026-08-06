@@ -137,6 +137,7 @@ extension _DashboardNavigation on _DashboardScreenState {
     final account = widget.account;
     if (account == null) return const SizedBox.shrink();
     final scheme = Theme.of(context).colorScheme;
+    final pal = context.palette;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -164,21 +165,22 @@ extension _DashboardNavigation on _DashboardScreenState {
                 key: const ValueKey('account-email'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: scheme.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant),
               ),
             ),
-          const SizedBox(height: 6),
-          TextButton.icon(
+          const SizedBox(height: 8),
+          // Mismo molde que «Cambiar tema», en carmesí: es el color que la
+          // paleta ya usa para lo que resta (daño, PG), así que marca la
+          // acción destructiva sin meter un rojo ajeno al resto. El borde va
+          // atenuado para que no compita con el botón de al lado.
+          OutlinedButton.icon(
             key: const ValueKey('logout-button'),
             onPressed: _logout,
             icon: const Icon(Icons.logout, size: 16),
             label: const Text('Cerrar sesión'),
-            style: TextButton.styleFrom(
-              alignment: Alignment.centerLeft,
-              foregroundColor: scheme.onSurfaceVariant,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: pal.crimson,
+              side: BorderSide(color: pal.crimson.withAlpha(110)),
               textStyle: const TextStyle(fontSize: 12),
             ),
           ),

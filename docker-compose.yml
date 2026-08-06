@@ -66,6 +66,8 @@ services:
       POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
       # Solo la lee `postgres-init/init-zitadel-db.sh`; Postgres no la usa.
       ZITADEL_DB_PASSWORD: ${ZITADEL_DB_PASSWORD}
+    ports:
+      - "5432:5432"
     volumes:
       - app-db-data:/var/lib/postgresql
       - ./postgres-init:/docker-entrypoint-initdb.d:ro

@@ -98,4 +98,19 @@ ALTER TABLE sessions
   ADD COLUMN logout_url   TEXT;
 ''',
   ),
+  Migration(
+    id: '0005_characters_created_at',
+    sql: '''
+-- Cuándo entró el personaje a la cuenta, para poder ordenar el roster por
+-- antigüedad. No sale del documento: ese lo manda el cliente y no puede fijar
+-- su propia fecha de alta. `updated_at` no sirve para esto porque cambia con
+-- cada edición.
+--
+-- Los personajes que ya existían quedan todos con la fecha de la migración: no
+-- hay forma de reconstruir cuándo se crearon, y entre ellos el orden por fecha
+-- será arbitrario hasta que se creen personajes nuevos.
+ALTER TABLE characters
+  ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT now();
+''',
+  ),
 ];

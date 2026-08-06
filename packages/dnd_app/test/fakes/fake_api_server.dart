@@ -13,6 +13,17 @@ import 'package:http/testing.dart';
 /// implementación.
 class FakeApiServer {
   final Map<String, Character> characters = {};
+
+  /// Fecha de alta por id, como la columna `created_at` del servidor. Se fija
+  /// al guardar por primera vez y no cambia al editar; el reloj avanza de a un
+  /// milisegundo para que el orden por antigüedad sea determinista.
+  final Map<String, DateTime> createdAt = {};
+  int _clock = 0;
+
+  void _stampCreated(String id) => createdAt.putIfAbsent(
+    id,
+    () => DateTime.fromMillisecondsSinceEpoch(_clock++),
+  );
   final Map<String, Map<String, Map<String, dynamic>>> homebrew = {};
   Map<String, dynamic>? settings;
   final Map<String, Uint8List> portraits = {};
@@ -62,7 +73,18 @@ class FakeApiServer {
 
     if (method == 'GET' && path == '/api/characters') {
       return _json({
-        'characters': [for (final c in characters.values) c.toJson()],
+        'characters': [
+          for (final c in characters.values)
+            {
+              'character': c.toJson(),
+              // Un milisegundo por personaje, en orden de alta: alcanza para
+              // que el orden por antigüedad sea determinista en una prueba.
+              'createdAt':
+                  (createdAt[c.id] ?? DateTime.fromMillisecondsSinceEpoch(0))
+                      .toUtc()
+                      .toIso8601String(),
+            },
+        ],
       });
     }
     if (method == 'POST' && path == '/api/characters') {
@@ -72,12 +94,14 @@ class FakeApiServer {
         character = Character.fromJson(character.toJson()..['id'] = newId);
       }
       characters[character.id] = character;
+      _stampCreated(character.id);
       return _json({'character': character.toJson()});
     }
     if (method == 'PUT' && path.startsWith('/api/characters/')) {
       final id = _segment(path, '/api/characters/');
       final character = _characterFrom(_body(request)['character']);
       characters[id] = character;
+      _stampCreated(id);
       return _json({'status': 'ok'});
     }
     if (method == 'DELETE' && path.startsWith('/api/characters/')) {

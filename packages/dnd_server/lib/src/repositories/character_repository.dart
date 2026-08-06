@@ -3,6 +3,16 @@ import 'package:postgres/postgres.dart';
 
 import 'id_allocation.dart';
 
+/// Un personaje guardado, con los metadatos que la fila conoce y el documento
+/// no. [createdAt] lo pone el servidor al insertar: el documento lo manda el
+/// cliente, así que no puede declarar su propia antigüedad.
+class StoredCharacter {
+  final Character character;
+  final DateTime createdAt;
+
+  const StoredCharacter({required this.character, required this.createdAt});
+}
+
 /// Contrato de persistencia de personajes: documentos versionados,
 /// propiedad por cuenta, atómicos frente a escrituras multi-documento (que
 /// aporta quien orqueste varias llamadas dentro de una misma transacción de
@@ -23,7 +33,7 @@ abstract class CharacterRepository {
   /// `user-accounts`).
   Future<Character?> find(String userId, String id);
 
-  Future<List<Character>> listForUser(String userId);
+  Future<List<StoredCharacter>> listForUser(String userId);
 
   Future<void> delete(String userId, String id);
 
@@ -103,10 +113,10 @@ class PostgresCharacterRepository implements CharacterRepository {
   }
 
   @override
-  Future<List<Character>> listForUser(String userId) async {
+  Future<List<StoredCharacter>> listForUser(String userId) async {
     final result = await _session.execute(
       Sql.named('''
-        SELECT document FROM characters
+        SELECT document, created_at FROM characters
         WHERE user_id = @userId
         ORDER BY name
       '''),
@@ -114,8 +124,11 @@ class PostgresCharacterRepository implements CharacterRepository {
     );
     return [
       for (final row in result)
-        Character.fromJson(
-          (row.toColumnMap()['document'] as Map).cast<String, dynamic>(),
+        StoredCharacter(
+          character: Character.fromJson(
+            (row.toColumnMap()['document'] as Map).cast<String, dynamic>(),
+          ),
+          createdAt: row.toColumnMap()['created_at'] as DateTime,
         ),
     ];
   }

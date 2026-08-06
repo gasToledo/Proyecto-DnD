@@ -173,16 +173,19 @@ extension _DashboardNavigation on _DashboardScreenState {
           // paleta ya usa para lo que resta (daño, PG), así que marca la
           // acción destructiva sin meter un rojo ajeno al resto. El borde va
           // atenuado para que no compita con el botón de al lado.
-          OutlinedButton.icon(
+          //
+          // Sin ícono, a diferencia del de al lado: `OutlinedButton.icon`
+          // centra el conjunto ícono + texto, así que sin ícono el texto queda
+          // descolocado hacia la derecha sin que nada explique por qué.
+          OutlinedButton(
             key: const ValueKey('logout-button'),
             onPressed: _logout,
-            icon: const Icon(Icons.logout, size: 16),
-            label: const Text('Cerrar sesión'),
             style: OutlinedButton.styleFrom(
               foregroundColor: pal.crimson,
               side: BorderSide(color: pal.crimson.withAlpha(110)),
               textStyle: const TextStyle(fontSize: 12),
             ),
+            child: const Text('Cerrar sesión'),
           ),
         ],
       ),

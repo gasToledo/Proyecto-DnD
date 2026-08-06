@@ -12,12 +12,44 @@ class AppSettings {
   /// servidor).
   String imageProvider;
 
-  AppSettings({this.imageProvider = 'pollinations'});
+  /// Personaje fijado arriba del roster, o `null` si no hay ninguno. Uno solo:
+  /// marcar otro le saca la marca al anterior, así nunca hay dudas sobre quién
+  /// va primero.
+  String? favoriteCharacterId;
 
-  Map<String, dynamic> toJson() => {'imageProvider': imageProvider};
+  /// Orden elegido a mano, por id. Puede quedar desfasado del roster (ids de
+  /// personajes borrados, personajes nuevos que no están todavía): el
+  /// dashboard lo reconcilia al mostrar, no al guardar, así que borrar y
+  /// recrear un personaje no rompe el orden del resto.
+  List<String> characterOrder;
+
+  /// Criterio de orden activo, por nombre del modo. Se guarda para que el
+  /// orden manual siga en pie al volver a entrar: si no, arrastrar tarjetas
+  /// sería trabajo que se pierde al recargar.
+  String sortMode;
+
+  AppSettings({
+    this.imageProvider = 'pollinations',
+    this.favoriteCharacterId,
+    List<String>? characterOrder,
+    this.sortMode = 'name',
+  }) : characterOrder = characterOrder ?? [];
+
+  Map<String, dynamic> toJson() => {
+    'imageProvider': imageProvider,
+    'favoriteCharacterId': favoriteCharacterId,
+    'characterOrder': characterOrder,
+    'sortMode': sortMode,
+  };
 
   factory AppSettings.fromJson(Map<String, dynamic>? json) => AppSettings(
     imageProvider: json?['imageProvider'] as String? ?? 'pollinations',
+    favoriteCharacterId: json?['favoriteCharacterId'] as String?,
+    characterOrder: [
+      for (final id in (json?['characterOrder'] as List?) ?? const [])
+        id as String,
+    ],
+    sortMode: json?['sortMode'] as String? ?? 'name',
   );
 }
 

@@ -318,16 +318,21 @@ class _ShieldClipper extends CustomClipper<Path> {
 /// La CA dentro de una silueta de escudo con borde dorado.
 class ShieldBadge extends StatelessWidget {
   final String value;
-  const ShieldBadge(this.value, {super.key});
+
+  /// Alto del escudo. El ancho y el número acompañan en proporción, para que
+  /// el escudo no se deforme ni el número se salga del recorte.
+  final double height;
+  const ShieldBadge(this.value, {super.key, this.height = 52});
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final k = height / 52;
     return Semantics(
       label: 'Clase de armadura: $value',
       excludeSemantics: true,
       child: SizedBox(
-        width: 46,
-        height: 52,
+        width: 46 * k,
+        height: height,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -343,12 +348,12 @@ class ShieldBadge extends StatelessWidget {
                   color: Theme.of(context).colorScheme.surface,
                   alignment: Alignment.center,
                   child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: EdgeInsets.only(bottom: 8 * k),
                     child: Text(
                       value,
                       style: TextStyle(
                         fontFamily: 'Georgia',
-                        fontSize: 20,
+                        fontSize: 20 * k,
                         color: p.gold,
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
@@ -500,6 +505,12 @@ class Medallion extends StatelessWidget {
               : DecorationImage(
                   image: image!,
                   fit: BoxFit.cover,
+                  // Los retratos se generan y se suben a resolución mucho mayor
+                  // que este círculo. Con la calidad por defecto (`low`) esa
+                  // reducción muestrea sin promediar y el resultado se ve
+                  // dentado, que es lo que en pantalla parece "pixelado":
+                  // no es que falte resolución, es cómo se está bajando.
+                  filterQuality: FilterQuality.medium,
                   // El retrato viene de una petición de red (`PortraitImage`):
                   // un 404 (clave borrada) no debe tirar un error sin manejar,
                   // solo dejar el medallón sin imagen.

@@ -172,6 +172,17 @@ extension _DashboardContent on _DashboardScreenState {
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 560;
         final horizontalPadding = isCompact ? 16.0 : 32.0;
+
+        // El delegado reparte el ancho en columnas de a lo sumo
+        // `_kCardMaxExtent`, así que el ancho real de una tarjeta no se sabe
+        // sin repetir esa cuenta acá: subir el máximo no la ensancha si
+        // igual entra una columna más. Con el ancho ya resuelto, la tarjeta
+        // se escala en proporción y el alto de la celda la acompaña.
+        final available = constraints.maxWidth - horizontalPadding * 2;
+        final columns = (available / _kCardMaxExtent).ceil().clamp(1, 99);
+        final cardWidth = (available - _kCardSpacing * (columns - 1)) / columns;
+        final scale = (cardWidth / _kCardBaseWidth).clamp(1.0, 1.3);
+
         return GridView.builder(
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
@@ -180,22 +191,31 @@ extension _DashboardContent on _DashboardScreenState {
             32,
           ),
           gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: isCompact ? 560 : 420,
-            mainAxisExtent: 196,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+            maxCrossAxisExtent: _kCardMaxExtent,
+            mainAxisExtent: _kCardBaseHeight * scale,
+            crossAxisSpacing: _kCardSpacing,
+            mainAxisSpacing: _kCardSpacing,
           ),
           itemCount: list.length,
           itemBuilder: (context, i) {
             final c = list[i];
-            return _CharacterCard(
+            final card = _CharacterCard(
               character: c,
               sheet: CharacterCompiler(repo).compile(c),
               repo: repo,
+              scale: scale,
+              isFavorite: _isFavorite(c),
               onTap: () => _openSheet(c),
+              onToggleFavorite: () => _toggleFavorite(c),
               onRename: () => _renameCharacter(c),
               onExport: () => _exportCharacter(c),
               onDelete: () => _confirmDelete(c),
+            );
+            return _ReorderableCard(
+              id: c.id,
+              onDropped: (draggedId) => _reorder(draggedId, c.id, list),
+              cardWidth: cardWidth,
+              child: card,
             );
           },
         );

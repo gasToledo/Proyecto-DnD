@@ -9,6 +9,7 @@ import 'app_version.dart';
 import 'data/asset_content_loader.dart';
 import 'data/characters_controller.dart';
 import 'data/homebrew_store.dart';
+import 'data/settings_service.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_widgets.dart';
 import 'ui/dashboard_screen.dart';
@@ -53,12 +54,14 @@ class _AppData {
   final CharactersController controller;
   final HomebrewStore homebrew;
   final AccountInfo account;
+  final AppSettings settings;
   final String? appVersion;
   _AppData(
     this.repo,
     this.controller,
     this.homebrew,
     this.account,
+    this.settings,
     this.appVersion,
   );
 }
@@ -105,8 +108,18 @@ class _BootstrapState extends State<_Bootstrap> {
     final controller = CharactersController(_api);
     await controller.load();
 
+    // El favorito y el orden del roster viven acá (ver `AppSettings`), así que
+    // hacen falta antes de dibujar el dashboard. Un fallo al leerlos no puede
+    // dejar sin personajes a nadie: se cae a los valores por defecto.
+    AppSettings settings;
+    try {
+      settings = await SettingsService(_api).load();
+    } catch (_) {
+      settings = AppSettings();
+    }
+
     final version = await currentAppVersion();
-    return _AppData(repo, controller, homebrew, account, version);
+    return _AppData(repo, controller, homebrew, account, settings, version);
   }
 
   void _retry() {
@@ -193,6 +206,7 @@ class _BootstrapState extends State<_Bootstrap> {
           controller: data.controller,
           homebrew: data.homebrew,
           account: data.account,
+          settings: data.settings,
           appVersion: data.appVersion,
           onToggleTheme: widget.onToggleTheme,
         );

@@ -24,6 +24,12 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   List<PortraitProviderInfo> _providers = [];
   String? _providerId;
+
+  /// Los ajustes tal como estaban al abrir el diálogo. Esta pantalla edita un
+  /// solo campo, pero el documento tiene más (favorito y orden del roster):
+  /// se guarda este objeto con el campo cambiado, nunca uno nuevo, o guardar
+  /// los ajustes borraría lo que esta pantalla ni muestra.
+  AppSettings? _loadedSettings;
   bool _loaded = false;
   bool _saving = false;
   String? _loadError;
@@ -45,6 +51,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
       if (!mounted) return;
       setState(() {
         _providers = providers;
+        _loadedSettings = settings;
         _providerId = providers.any((p) => p.id == settings.imageProvider)
             ? settings.imageProvider
             : providers.firstOrNull?.id;
@@ -60,7 +67,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
     if (_saving || _providerId == null) return;
     setState(() => _saving = true);
     try {
-      await _settings.save(AppSettings(imageProvider: _providerId!));
+      final settings = _loadedSettings ?? AppSettings();
+      settings.imageProvider = _providerId!;
+      await _settings.save(settings);
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (error) {

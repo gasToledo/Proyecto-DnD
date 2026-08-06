@@ -19,6 +19,11 @@ class CharactersController extends ChangeNotifier {
   final ApiClient api;
   final List<Character> characters = [];
   final Map<String, Timer> _debouncers = {};
+
+  /// Fecha de alta por id, tal como la informa el servidor. Vive acá y no en
+  /// [Character] porque no es parte de la ficha: el documento lo escribe este
+  /// cliente y no puede declarar cuándo entró a la cuenta.
+  final Map<String, DateTime> _createdAt = {};
   final Map<String, Future<void>> _saveQueues = {};
   static const _debounce = Duration(milliseconds: 400);
   ApiException? _lastSaveError;
@@ -52,7 +57,12 @@ class CharactersController extends ChangeNotifier {
       final loaded = await api.listCharacters();
       characters
         ..clear()
-        ..addAll(loaded);
+        ..addAll([for (final s in loaded) s.character]);
+      _createdAt
+        ..clear()
+        ..addEntries([
+          for (final s in loaded) MapEntry(s.character.id, s.createdAt),
+        ]);
     } on ApiException catch (e) {
       if (e.isOffline) {
         loadFailedOffline = true;
@@ -63,8 +73,30 @@ class CharactersController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Cuándo entró [id] a la cuenta. Para un personaje recién creado que
+  /// todavía no volvió del servidor se usa la hora local: alcanza para que
+  /// aparezca como el más nuevo hasta la próxima carga, que trae la de verdad.
+  DateTime createdAtOf(String id) => _createdAt[id] ?? DateTime.now();
+
+  /// Fecha de alta local para un personaje recién creado, siempre posterior a
+  /// la del resto. Con el reloj a secas, dos personajes creados en el mismo
+  /// milisegundo empatan y el orden por antigüedad entre ellos queda librado
+  /// al azar; acá el último creado es siempre el más nuevo, que es lo que
+  /// alguien espera al crear dos seguidos. La fecha real llega en la próxima
+  /// carga.
+  DateTime _nextLocalCreatedAt() {
+    final now = DateTime.now();
+    DateTime? latest;
+    for (final at in _createdAt.values) {
+      if (latest == null || at.isAfter(latest)) latest = at;
+    }
+    if (latest == null || now.isAfter(latest)) return now;
+    return latest.add(const Duration(milliseconds: 1));
+  }
+
   void add(Character c) {
     characters.add(c);
+    _createdAt[c.id] = _nextLocalCreatedAt();
     _scheduleSave(c, isNew: true);
     notifyListeners();
   }

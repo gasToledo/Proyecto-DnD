@@ -66,9 +66,36 @@ void main() {
 
       final list = await repo.listForUser('user-a');
 
-      expect(list.map((c) => c.name), ['Anna', 'Zora']);
+      expect(list.map((s) => s.character.name), ['Anna', 'Zora']);
     },
   );
+
+  // El orden por antigüedad del roster sale de acá: si `create` no dejara
+  // fecha, el dashboard no tendría con qué ordenar.
+  test('listForUser informa cuándo entró cada personaje a la cuenta', () async {
+    await repo.create('user-a', _character('c1', name: 'Zora'));
+    await repo.create('user-a', _character('c2', name: 'Anna'));
+
+    final list = await repo.listForUser('user-a');
+    final byId = {for (final s in list) s.character.id: s.createdAt};
+
+    expect(
+      byId['c1']!.isBefore(byId['c2']!),
+      isTrue,
+      reason: 'el primero en crearse debe ser el más antiguo',
+    );
+  });
+
+  // Editar un personaje no lo vuelve nuevo: si `upsert` pisara la fecha, el
+  // roster se reordenaría solo cada vez que tocás una ficha.
+  test('upsert no cambia la fecha de alta', () async {
+    await repo.create('user-a', _character('sagan', name: 'V1'));
+    final before = (await repo.listForUser('user-a')).single.createdAt;
+
+    await repo.upsert('user-a', _character('sagan', name: 'V2'));
+
+    expect((await repo.listForUser('user-a')).single.createdAt, before);
+  });
 
   test(
     'upsert actualiza un personaje ya asignado a esa cuenta sin cambiar su id',

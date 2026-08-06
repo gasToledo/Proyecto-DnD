@@ -334,7 +334,13 @@ Future<Response> _listCharactersHandler(
 ) async {
   final all = await characters.listForUser(request.userId);
   return _jsonOk({
-    'characters': [for (final c in all) c.toJson()],
+    'characters': [
+      for (final stored in all)
+        {
+          'character': stored.character.toJson(),
+          'createdAt': stored.createdAt.toUtc().toIso8601String(),
+        },
+    ],
   });
 }
 

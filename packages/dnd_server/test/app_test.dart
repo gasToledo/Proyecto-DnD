@@ -830,7 +830,7 @@ void main() {
       );
       final listedBody = jsonDecode(await listed.readAsString());
       expect(listedBody['characters'], hasLength(1));
-      expect(listedBody['characters'][0]['id'], 'sagan');
+      expect(listedBody['characters'][0]['character']['id'], 'sagan');
     });
 
     test('crear con un id ya usado en la cuenta asigna uno libre en vez de '
@@ -919,7 +919,7 @@ void main() {
         )).readAsString(),
       );
       expect(listed['characters'], hasLength(1));
-      expect(listed['characters'][0]['name'], 'Actualizado');
+      expect(listed['characters'][0]['character']['name'], 'Actualizado');
     });
 
     test(
@@ -1038,7 +1038,7 @@ void main() {
           )).readAsString(),
         );
         expect(listedB['characters'], hasLength(1));
-        expect(listedB['characters'][0]['name'], 'De B');
+        expect(listedB['characters'][0]['character']['name'], 'De B');
       },
     );
 
@@ -1084,7 +1084,7 @@ void main() {
           )).readAsString(),
         );
         expect(listedB['characters'], hasLength(1));
-        expect(listedB['characters'][0]['name'], 'De B');
+        expect(listedB['characters'][0]['character']['name'], 'De B');
 
         final listedA = jsonDecode(
           await (await handler(
@@ -1096,7 +1096,7 @@ void main() {
           )).readAsString(),
         );
         expect(listedA['characters'], hasLength(1));
-        expect(listedA['characters'][0]['name'], 'Intento de A');
+        expect(listedA['characters'][0]['character']['name'], 'Intento de A');
       },
     );
   });

@@ -3,8 +3,10 @@ import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/api/api_models.dart';
 import 'package:dnd_app/data/characters_controller.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
+import 'package:dnd_app/data/settings_service.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
+import 'package:dnd_app/theme/class_visuals.dart';
 import 'package:dnd_app/ui/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,6 +27,7 @@ void main() {
     FakeApiServer server, {
     String? appVersion,
     AccountInfo? account,
+    AppSettings? settings,
   }) => MaterialApp(
     theme: AppTheme.dark,
     home: DashboardScreen(
@@ -32,6 +35,7 @@ void main() {
       controller: ctrl,
       homebrew: HomebrewStore(ApiClient(client: server.client)),
       account: account,
+      settings: settings,
       appVersion: appVersion,
       onToggleTheme: () {},
     ),
@@ -155,6 +159,130 @@ void main() {
 
     expect(find.byKey(const ValueKey('logout-button')), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  // La grilla reparte el ancho en columnas de a lo sumo `_kCardMaxExtent`, así
+  // que subir ese máximo por sí solo no ensancha nada: si entra una columna
+  // más, la tarjeta queda igual de chica. Lo que importa es que en una ventana
+  // ancha la tarjeta —y con ella el retrato y los rótulos— crezca de verdad.
+  testWidgets('la tarjeta crece en una ventana ancha', (tester) async {
+    double medallionSize(WidgetTester t) =>
+        t.widgetList<ClassMedallion>(find.byType(ClassMedallion)).first.size;
+
+    await pumpDashboard(tester, const Size(700, 800));
+    final narrow = medallionSize(tester);
+
+    await pumpDashboard(tester, const Size(1920, 1080));
+    final wide = medallionSize(tester);
+
+    expect(
+      wide,
+      greaterThan(narrow),
+      reason: 'la tarjeta no aprovecha el ancho de la ventana',
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  group('favorito y orden del roster', () {
+    /// Monta el dashboard con dos personajes de nombre conocido y unos ajustes
+    /// dados, y devuelve el servidor falso para poder mirar qué se guardó.
+    Future<FakeApiServer> pumpRoster(
+      WidgetTester tester,
+      AppSettings settings,
+    ) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final server = FakeApiServer();
+      final ctrl = CharactersController(ApiClient(client: server.client))
+        ..add(demoSagan())
+        ..add(
+          Character.fromJson(
+            demoSagan().toJson()
+              ..['id'] = 'zzz'
+              ..['name'] = 'Zzz Ultimo',
+          ),
+        );
+      await tester.pumpWidget(harness(ctrl, server, settings: settings));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+      return server;
+    }
+
+    /// Nombres en el orden en que aparecen en la grilla, de arriba a abajo.
+    List<String> rosterOrder(WidgetTester tester) {
+      final names = ['Sagan "The Red"', 'Zzz Ultimo'];
+      final found = [
+        for (final n in names)
+          if (find.text(n).evaluate().isNotEmpty)
+            (n, tester.getTopLeft(find.text(n)).dx),
+      ];
+      found.sort((a, b) => a.$2.compareTo(b.$2));
+      return [for (final f in found) f.$1];
+    }
+
+    testWidgets('el favorito encabeza el roster y se distingue', (
+      tester,
+    ) async {
+      await pumpRoster(
+        tester,
+        AppSettings(favoriteCharacterId: 'zzz', sortMode: 'name'),
+      );
+
+      // Por nombre, "Zzz Ultimo" iría último; marcado como favorito va primero.
+      expect(rosterOrder(tester).first, 'Zzz Ultimo');
+      expect(find.byKey(const ValueKey('favorite-star')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('marcar un favorito lo guarda en los ajustes', (tester) async {
+      final server = await pumpRoster(tester, AppSettings(sortMode: 'name'));
+
+      await tester.tap(find.byTooltip('Acciones').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Marcar como favorito'));
+      await tester.pumpAndSettle();
+
+      expect(server.settings?['favoriteCharacterId'], isNotNull);
+      expect(find.byKey(const ValueKey('favorite-star')), findsOneWidget);
+    });
+
+    // Sin persistir el modo, el orden manual se vería una sola vez y al
+    // recargar volvería a ordenarse por nombre: el arrastre sería trabajo
+    // perdido.
+    testWidgets('el orden manual guardado se respeta al abrir', (tester) async {
+      await pumpRoster(
+        tester,
+        AppSettings(characterOrder: ['zzz', 'sagan'], sortMode: 'manual'),
+      );
+
+      expect(rosterOrder(tester), ['Zzz Ultimo', 'Sagan "The Red"']);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Un personaje que nunca se arrastró (recién creado, o importado) no
+    // aparece en el orden guardado: tiene que ir al final, no desaparecer.
+    testWidgets('un personaje fuera del orden guardado va al final', (
+      tester,
+    ) async {
+      await pumpRoster(
+        tester,
+        AppSettings(characterOrder: ['zzz'], sortMode: 'manual'),
+      );
+
+      expect(rosterOrder(tester), ['Zzz Ultimo', 'Sagan "The Red"']);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ordenar por más recientes pone el último creado primero', (
+      tester,
+    ) async {
+      await pumpRoster(tester, AppSettings(sortMode: 'dateAdded'));
+
+      // "Zzz Ultimo" se agrega después de Sagan en `pumpRoster`.
+      expect(rosterOrder(tester).first, 'Zzz Ultimo');
+      expect(tester.takeException(), isNull);
+    });
   });
 
   testWidgets('sin versión resuelta no se muestra el rótulo', (tester) async {

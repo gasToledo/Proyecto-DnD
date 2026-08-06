@@ -1,3 +1,5 @@
+import 'package:dnd_engine/dnd_engine.dart';
+
 /// Metadatos de un proveedor de generación de retratos, tal como los publica
 /// `GET /api/portraits/providers`: ya viene filtrado a los que el servidor
 /// tiene configurados (ver capacidad `ai-portrait-generation`). El cliente
@@ -44,6 +46,16 @@ class AccountInfo {
     email: json['email'] as String?,
     pictureUrl: json['pictureUrl'] as String?,
   );
+}
+
+/// Un personaje tal como lo devuelve `GET /api/characters`, con la fecha de
+/// alta que la fila conoce y el documento no: el documento lo manda este
+/// cliente, así que no puede declarar su propia antigüedad.
+class StoredCharacter {
+  final Character character;
+  final DateTime createdAt;
+
+  const StoredCharacter({required this.character, required this.createdAt});
 }
 
 class ImportSummary {

@@ -89,12 +89,17 @@ class ApiClient {
 
   // --- Personajes -------------------------------------------------------
 
-  Future<List<Character>> listCharacters() async {
+  Future<List<StoredCharacter>> listCharacters() async {
     final response = await _send('GET', '/api/characters');
     final list = _json(response)['characters'] as List;
     return [
       for (final json in list)
-        Character.fromJson((json as Map).cast<String, dynamic>()),
+        StoredCharacter(
+          character: Character.fromJson(
+            ((json as Map)['character'] as Map).cast<String, dynamic>(),
+          ),
+          createdAt: DateTime.parse(json['createdAt'] as String),
+        ),
     ];
   }
 

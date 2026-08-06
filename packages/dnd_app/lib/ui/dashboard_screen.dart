@@ -26,14 +26,31 @@ part 'dashboard/dashboard_widgets.dart';
 /// un Drawer y la ventana angosta sigue siendo usable.
 const _kWideBreakpoint = 900.0;
 
-/// Criterio de orden del roster.
+/// Medidas de la tarjeta de personaje. La base es el diseño que venía de la
+/// aplicación de escritorio; en una pestaña del navegador sobra ancho, así que
+/// `_kCardMaxExtent` deja que entren menos columnas y más anchas, y la tarjeta
+/// escala hasta un 30% con el ancho que efectivamente le tocó (ver `_grid`).
+/// Por debajo de la base no se achica: ahí el diseño ya está al límite.
+const _kCardBaseWidth = 420.0;
+const _kCardBaseHeight = 196.0;
+const _kCardMaxExtent = 560.0;
+const _kCardSpacing = 16.0;
+
+/// Criterio de orden del roster. El nombre de la constante es lo que se guarda
+/// en los ajustes (`AppSettings.sortMode`), así que renombrarla cambia lo que
+/// ya está guardado: un valor desconocido cae a [name].
 enum _SortMode {
+  manual('Manual'),
+  dateAdded('Más recientes'),
   name('Nombre'),
   level('Nivel'),
   klass('Clase');
 
   const _SortMode(this.label);
   final String label;
+
+  static _SortMode parse(String value) =>
+      _SortMode.values.firstWhere((m) => m.name == value, orElse: () => name);
 }
 
 String _signed(int v) => v >= 0 ? '+$v' : '$v';
@@ -49,6 +66,12 @@ class DashboardScreen extends StatefulWidget {
   /// Cuenta con la que se entró, para mostrarla en el panel lateral. Null solo
   /// en pruebas que no ejercitan la sesión.
   final AccountInfo? account;
+
+  /// Ajustes de la cuenta ya cargados. De acá salen el favorito y el orden del
+  /// roster, y acá se guardan al cambiarlos. Null en pruebas que no los
+  /// ejercitan: entonces se arranca con los valores por defecto y no se
+  /// persiste nada.
+  final AppSettings? settings;
   final String? appVersion;
   final VoidCallback onToggleTheme;
   const DashboardScreen({
@@ -57,6 +80,7 @@ class DashboardScreen extends StatefulWidget {
     required this.controller,
     required this.homebrew,
     this.account,
+    this.settings,
     this.appVersion,
     required this.onToggleTheme,
   });
@@ -68,16 +92,76 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
-  _SortMode _sort = _SortMode.name;
+  late _SortMode _sort;
   Object? _shownSaveError;
   String? _activeOperation;
+
+  /// Copia viva de los ajustes: se edita acá y se manda al servidor. Si no
+  /// vinieron (pruebas), se trabaja sobre un objeto suelto que no se persiste.
+  late final AppSettings _settings = widget.settings ?? AppSettings();
+  bool get _persistsSettings => widget.settings != null;
 
   void _updateState(VoidCallback update) => setState(update);
 
   @override
   void initState() {
     super.initState();
+    _sort = _SortMode.parse(_settings.sortMode);
     widget.controller.addListener(_handleControllerState);
+  }
+
+  /// Guarda los ajustes sin bloquear la interacción: reordenar o marcar un
+  /// favorito tiene que sentirse inmediato. Si falla, se avisa y el cambio
+  /// queda solo en pantalla hasta la próxima carga — nunca se pierde en
+  /// silencio.
+  void _persistSettings() {
+    if (!_persistsSettings) return;
+    SettingsService(widget.controller.api).save(_settings).catchError((
+      Object error,
+    ) {
+      if (mounted) {
+        showAppMessage(
+          context,
+          'No se pudo guardar el orden del roster: $error',
+          tone: AppMessageTone.error,
+        );
+      }
+    });
+  }
+
+  /// Marca (o desmarca) el personaje fijado arriba del roster. Uno solo: el
+  /// anterior queda desmarcado sin preguntar.
+  void _toggleFavorite(Character c) {
+    setState(() {
+      _settings.favoriteCharacterId = _settings.favoriteCharacterId == c.id
+          ? null
+          : c.id;
+    });
+    _persistSettings();
+  }
+
+  bool _isFavorite(Character c) => _settings.favoriteCharacterId == c.id;
+
+  /// Mueve [id] a la posición que ocupa [targetId] dentro del orden manual, y
+  /// pasa a ese modo: arrastrar es la forma de pedirlo, no hace falta además
+  /// elegirlo en el menú.
+  void _reorder(String id, String targetId, List<Character> visible) {
+    if (id == targetId) return;
+    setState(() {
+      // El orden guardado puede estar incompleto (personajes nuevos que nunca
+      // se arrastraron): se parte del orden que se está viendo, que ya incluye
+      // a todos, para que mover uno no reacomode al resto sin querer.
+      final ids = [for (final c in visible) c.id];
+      final from = ids.indexOf(id);
+      final to = ids.indexOf(targetId);
+      if (from < 0 || to < 0) return;
+      ids.removeAt(from);
+      ids.insert(to, id);
+      _settings.characterOrder = ids;
+      _sort = _SortMode.manual;
+      _settings.sortMode = _sort.name;
+    });
+    _persistSettings();
   }
 
   @override
@@ -153,7 +237,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _klassName(c).toLowerCase().contains(q) ||
           _raceName(c).toLowerCase().contains(q);
     }).toList();
+    final createdAt = widget.controller.createdAtOf;
     switch (_sort) {
+      case _SortMode.manual:
+        // Lo que no está en el orden guardado (personaje nuevo, o importado)
+        // va al final en vez de desaparecer o encabezar por accidente.
+        final rank = {
+          for (final (i, id) in _settings.characterOrder.indexed) id: i,
+        };
+        final last = rank.length;
+        list.sort((a, b) => (rank[a.id] ?? last).compareTo(rank[b.id] ?? last));
+      case _SortMode.dateAdded:
+        list.sort((a, b) => createdAt(b.id).compareTo(createdAt(a.id)));
       case _SortMode.name:
         list.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
@@ -162,6 +257,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         list.sort((a, b) => b.level.compareTo(a.level));
       case _SortMode.klass:
         list.sort((a, b) => _klassName(a).compareTo(_klassName(b)));
+    }
+
+    // El favorito encabeza cualquiera sea el criterio: para eso se marca.
+    final favorite = _settings.favoriteCharacterId;
+    if (favorite != null) {
+      final i = list.indexWhere((c) => c.id == favorite);
+      if (i > 0) list.insert(0, list.removeAt(i));
     }
     return list;
   }

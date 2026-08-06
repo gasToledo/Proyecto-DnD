@@ -487,6 +487,28 @@ class Medallion extends StatelessWidget {
     final p = context.palette;
     final hasEmblem = image == null && emblemIcon != null;
     final accent = emblemColor ?? p.gold;
+
+    // Los retratos se generan a 768 o 1024 px de lado (ver `portrait_provider`
+    // y `azure_image_service`) y este círculo mide menos de 100: dibujarlos
+    // tal cual obliga a reducirlos unas catorce veces en cada píxel, y no hay
+    // calidad de filtro que lo salve. Con `low` el resultado sale dentado; con
+    // `medium`, lavado. Son dos caras de lo mismo.
+    //
+    // `ResizeImage` mueve ese trabajo al decodificador, que remuestrea una
+    // sola vez y con el tamaño de destino a la vista. De paso deja de tener
+    // 4 MB de mapa de bits en memoria por cada tarjeta del roster.
+    //
+    // Se pide el doble de lo que mide el círculo porque `BoxFit.cover` recorta
+    // por el lado corto: una imagen apaisada tiene que traer de sobra para
+    // llenarlo sin que haya que volver a agrandarla.
+    final source = image == null
+        ? null
+        : ResizeImage(
+            image!,
+            width: (size * MediaQuery.devicePixelRatioOf(context) * 2).round(),
+            allowUpscaling: false,
+          );
+
     return Semantics(
       image: true,
       label: image == null ? 'Emblema de $fallback' : 'Retrato de $fallback',
@@ -500,16 +522,13 @@ class Medallion extends StatelessWidget {
               ? RadialGradient(colors: [accent.withAlpha(70), p.plaque])
               : null,
           border: Border.all(color: hasEmblem ? accent : p.gold, width: 2),
-          image: image == null
+          image: source == null
               ? null
               : DecorationImage(
-                  image: image!,
+                  image: source,
                   fit: BoxFit.cover,
-                  // Los retratos se generan y se suben a resolución mucho mayor
-                  // que este círculo. Con la calidad por defecto (`low`) esa
-                  // reducción muestrea sin promediar y el resultado se ve
-                  // dentado, que es lo que en pantalla parece "pixelado":
-                  // no es que falte resolución, es cómo se está bajando.
+                  // Ya decodificado cerca del tamaño final, acá queda un ajuste
+                  // chico y `medium` alcanza.
                   filterQuality: FilterQuality.medium,
                   // El retrato viene de una petición de red (`PortraitImage`):
                   // un 404 (clave borrada) no debe tirar un error sin manejar,

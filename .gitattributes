@@ -3,3 +3,8 @@
 # `core.autocrlf=true` los convertiría a CRLF y el intérprete del
 # contenedor fallaría en la primera línea.
 *.sh text eol=lf
+
+# Los hooks son scripts de shell sin extensión, así que la regla de arriba no
+# los alcanza. Mismo problema: con CRLF, `sh` falla en el shebang y el hook no
+# corre —silenciosamente, que es la peor forma de no correr.
+.githooks/* text eol=lf

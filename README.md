@@ -1,9 +1,9 @@
-# Fichas D&D 5e
+# Milantus, asistente de aventuras
 
 Aplicación web autoalojada para crear y llevar personajes de **D&D 5.ª
 edición con las reglas de 2024 (SRD 5.2.1)**, con una cuenta por jugador.
 
-Ya no es offline: el asistente guía la creación y el motor calcula la ficha
+El asistente guía la creación y el motor calcula la ficha
 igual que siempre, pero la ficha se guarda en un servidor propio, no en el
 equipo del usuario. Se despliega como contenedores Docker sobre
 infraestructura propia, publicado por Cloudflare Tunnel sin abrir puertos

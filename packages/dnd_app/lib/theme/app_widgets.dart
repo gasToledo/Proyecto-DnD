@@ -1,6 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../ui/portrait_image.dart';
 import 'app_theme.dart';
 
 enum AppMessageTone { info, success, error }
@@ -462,9 +463,14 @@ class AbilityPlaque extends StatelessWidget {
   }
 }
 
-/// Medallón de retrato: círculo con aro dorado. Muestra [image] o [fallback].
+/// Medallón de retrato: círculo con aro dorado. Muestra el retrato de
+/// [portraitKey] o, si no hay, [fallback].
 class Medallion extends StatelessWidget {
-  final ImageProvider? image;
+  /// Clave opaca del retrato (`Character.portraitPaths`), no una imagen ya
+  /// resuelta: es este widget el que conoce el tamaño final en píxeles y por
+  /// eso el único que puede pedir la miniatura del tamaño correcto (ver
+  /// [PortraitImage.provider]).
+  final String? portraitKey;
   final String fallback;
   final double size;
 
@@ -475,7 +481,7 @@ class Medallion extends StatelessWidget {
 
   const Medallion({
     super.key,
-    this.image,
+    this.portraitKey,
     required this.fallback,
     this.size = 74,
     this.emblemIcon,
@@ -485,26 +491,26 @@ class Medallion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final hasEmblem = image == null && emblemIcon != null;
+    final hasEmblem = portraitKey == null && emblemIcon != null;
     final accent = emblemColor ?? p.gold;
 
     // Los retratos se generan a 768 o 1024 px de lado (ver `portrait_provider`
     // y `azure_image_service`) y este círculo mide menos de 100: dibujarlos
-    // tal cual obliga a reducirlos unas catorce veces en cada píxel, y no hay
+    // tal cual obliga a reducirlos unas diez veces en cada píxel, y no hay
     // calidad de filtro que lo salve. Con `low` el resultado sale dentado; con
     // `medium`, lavado. Son dos caras de lo mismo.
     //
-    // `ResizeImage` mueve ese trabajo al decodificador, que remuestrea una
-    // sola vez y con el tamaño de destino a la vista. De paso deja de tener
-    // 4 MB de mapa de bits en memoria por cada tarjeta del roster.
+    // La reducción hay que hacerla **una vez y bien**, y eso acá no se puede.
+    // `ResizeImage` —que es lo que había antes— se lo encarga al decodificador,
+    // pero la implementación web de `NetworkImage` no admite decodificar a un
+    // tamaño dado (lo dice su documentación en el propio SDK) y el navegador es
+    // la única plataforma que se publica: ese envoltorio no hacía nada. Se pide
+    // la miniatura al servidor, que remuestrea por promedio de área y la
+    // guarda; el navegador recibe algo del tamaño en que se va a dibujar.
     //
-    // Se pide exactamente lo que ocupa el círculo en píxeles físicos, sin
-    // margen. Pedir de más no agrega nitidez: son píxeles que la GPU vuelve a
-    // reducir al dibujar, y esa segunda reducción usa mipmaps (un retrato
-    // decodificado a 288 para dibujarse en 96 pasa por 288 → 144 → 72 y se
-    // muestrea mezclando dos niveles). Esa mezcla es lo que se ve como velo.
-    // Decodificando a medida, el remuestreo lo hace el decodificador una sola
-    // vez y el dibujo queda 1:1.
+    // Se pide en píxeles físicos, redondeando al peldaño de arriba de la
+    // escalera de anchos. El sobrante es como mucho un tercio, un reajuste
+    // chico que `FilterQuality.medium` resuelve sin velo.
     //
     // El caso que esto no cubre es una imagen más ancha que alta: `BoxFit.cover`
     // recorta por el lado corto, así que ahí el alto queda por debajo del
@@ -512,17 +518,20 @@ class Medallion extends StatelessWidget {
     // 1024 de lado) y los subidos suelen ser verticales, así que es el caso
     // raro. Si aparece, la salida es recortar del lado del servidor, no pedir
     // de más acá.
-    final source = image == null
+    final key = portraitKey;
+    final source = key == null
         ? null
-        : ResizeImage(
-            image!,
-            width: (size * MediaQuery.devicePixelRatioOf(context)).round(),
-            allowUpscaling: false,
+        : PortraitImage.provider(
+            key,
+            width: PortraitImage.thumbnailWidthFor(
+              size,
+              MediaQuery.devicePixelRatioOf(context),
+            ),
           );
 
     return Semantics(
       image: true,
-      label: image == null ? 'Emblema de $fallback' : 'Retrato de $fallback',
+      label: key == null ? 'Emblema de $fallback' : 'Retrato de $fallback',
       child: Container(
         width: size,
         height: size,
@@ -548,7 +557,7 @@ class Medallion extends StatelessWidget {
                 ),
         ),
         alignment: Alignment.center,
-        child: image != null
+        child: key != null
             ? null
             : hasEmblem
             ? Icon(emblemIcon, size: size * .48, color: accent)

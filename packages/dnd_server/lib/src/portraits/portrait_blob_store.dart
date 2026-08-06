@@ -30,11 +30,25 @@ abstract class PortraitBlobStore {
   /// cuenta: la ausencia y el acceso cruzado no deben distinguirse en la
   /// respuesta.
   ///
+  /// Con [width] devuelve una miniatura de ese ancho en vez del original. El
+  /// cliente dibuja los retratos en medallones de menos de cien píxeles y los
+  /// originales son de 768 o 1024 de lado: reducir eso en el navegador no
+  /// funciona —la implementación web de `NetworkImage` no sabe decodificar a
+  /// un tamaño dado, así que el remuestreo lo termina haciendo la GPU en un
+  /// solo salto y sale lavado o dentado— y además baja megabytes para pintar
+  /// un círculo. Es el servidor el que tiene que entregar el tamaño que se va
+  /// a dibujar.
+  ///
+  /// Un [width] que no esté en `portraitThumbnailWidths`, o mayor que el
+  /// original, devuelve el original: la lista de anchos es un límite de
+  /// recursos, no una validación de entrada.
+  ///
   /// Lanza [FormatException] si [portraitKey] no tiene el formato esperado o
   /// contiene segmentos que intentan escapar del espacio de la cuenta; a
   /// diferencia del caso anterior, esto sí se rechaza como petición inválida.
   Future<PortraitBlob?> read({
     required String userId,
     required String portraitKey,
+    int? width,
   });
 }

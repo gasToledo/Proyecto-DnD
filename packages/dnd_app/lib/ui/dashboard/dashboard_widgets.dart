@@ -227,9 +227,7 @@ class _CharacterCardState extends State<_CharacterCard> {
                     children: [
                       ClassMedallion(
                         klass: klassObj,
-                        image: portrait == null
-                            ? null
-                            : PortraitImage.provider(portrait),
+                        portraitKey: portrait,
                         fallback: c.name.characters.first,
                         size: 76 * k,
                       ),

@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dnd_server/src/portraits/disk_portrait_blob_store.dart';
+import 'package:image/image.dart' as img;
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
@@ -189,6 +191,147 @@ void main() {
         () => store.read(userId: 'user-a', portraitKey: 'sagan'),
         throwsFormatException,
       );
+    });
+  });
+
+  group('miniaturas', () {
+    // Un PNG de verdad, no la cabecera de mentira que alcanza para el resto de
+    // las pruebas: acá hay que decodificarlo.
+    final realPng = Uint8List.fromList(
+      img.encodePng(img.Image(width: 1024, height: 1024)),
+    );
+
+    DiskPortraitBlobStore storeAt(Directory dir) =>
+        DiskPortraitBlobStore(root: dir.path, maxBytes: 8 * 1024 * 1024);
+
+    test('con width devuelve el retrato reducido a ese ancho', () async {
+      final store = storeAt(tempDir);
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: realPng,
+      );
+
+      final blob = await store.read(
+        userId: 'user-a',
+        portraitKey: key,
+        width: 128,
+      );
+
+      expect(blob!.contentType, 'image/png');
+      expect(img.decodePng(blob.bytes)!.width, 128);
+      expect(
+        blob.bytes.length,
+        lessThan(realPng.length),
+        reason: 'la miniatura tiene que pesar menos que el original',
+      );
+    });
+
+    test('la miniatura se genera una vez y queda guardada', () async {
+      final store = storeAt(tempDir);
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: realPng,
+      );
+
+      final first = await store.read(
+        userId: 'user-a',
+        portraitKey: key,
+        width: 192,
+      );
+      final second = await store.read(
+        userId: 'user-a',
+        portraitKey: key,
+        width: 192,
+      );
+
+      expect(second!.bytes, first!.bytes);
+      final derived = tempDir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .map((f) => p.basename(f.path))
+          .where((name) => name.contains('@'));
+      expect(derived, [
+        '${p.basename(key)}@192.png',
+      ], reason: 'sin derivado en disco se recalcula en cada petición');
+    });
+
+    test('un derivado no se puede pedir como si fuera un retrato', () async {
+      // La arroba del nombre no la admite `requireSafePathSegment`, así que
+      // convivir con los originales en la misma carpeta es seguro: nadie puede
+      // nombrar un derivado desde afuera.
+      final store = storeAt(tempDir);
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: realPng,
+      );
+      await store.read(userId: 'user-a', portraitKey: key, width: 192);
+
+      expect(
+        () => store.read(userId: 'user-a', portraitKey: '$key@192.png'),
+        throwsFormatException,
+      );
+    });
+
+    test('un ancho fuera de la escalera devuelve el original', () async {
+      final store = storeAt(tempDir);
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: realPng,
+      );
+
+      final blob = await store.read(
+        userId: 'user-a',
+        portraitKey: key,
+        width: 137,
+      );
+
+      expect(blob!.bytes, realPng);
+    });
+
+    test('un retrato más chico que el ancho pedido se sirve entero', () async {
+      final store = storeAt(tempDir);
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(
+          img.encodePng(img.Image(width: 64, height: 64)),
+        ),
+      );
+
+      final blob = await store.read(
+        userId: 'user-a',
+        portraitKey: key,
+        width: 256,
+      );
+
+      expect(
+        img.decodePng(blob!.bytes)!.width,
+        64,
+        reason: 'agrandar en el servidor no agrega nitidez, solo bytes',
+      );
+    });
+
+    test('un archivo que no se puede decodificar se sirve tal cual', () async {
+      // Los bytes se validaron por cabecera al guardar, no decodificándolos:
+      // un PNG truncado llega hasta acá y no debe tumbar la petición.
+      final store = storeAt(tempDir);
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      final blob = await store.read(
+        userId: 'user-a',
+        portraitKey: key,
+        width: 128,
+      );
+
+      expect(blob!.bytes, pngBytes);
     });
   });
 

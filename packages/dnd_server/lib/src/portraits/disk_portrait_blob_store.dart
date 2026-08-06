@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import '../util/safe_path.dart';
 import 'portrait_blob_store.dart';
 import 'portrait_image_type.dart';
+import 'portrait_thumbnail.dart';
 
 /// Implementación sobre volumen de disco de [PortraitBlobStore].
 ///
@@ -58,6 +59,7 @@ class DiskPortraitBlobStore implements PortraitBlobStore {
   Future<PortraitBlob?> read({
     required String userId,
     required String portraitKey,
+    int? width,
   }) async {
     final segments = portraitKey.split('/');
     if (segments.length != 2) {
@@ -78,8 +80,51 @@ class DiskPortraitBlobStore implements PortraitBlobStore {
     final type = portraitImageTypeForExtension(p.extension(safeFileName));
     if (type == null) return null;
 
-    final file = File(p.join(root, safeUserId, safeCharacterId, safeFileName));
+    final dir = p.join(root, safeUserId, safeCharacterId);
+    final file = File(p.join(dir, safeFileName));
     if (!await file.exists()) return null;
+
+    if (width != null) {
+      final thumbnail = await _thumbnail(dir, safeFileName, file, width);
+      if (thumbnail != null) return thumbnail;
+    }
     return PortraitBlob(await file.readAsBytes(), type.contentType);
+  }
+
+  /// Miniatura de [width] píxeles de ancho, generada una vez y guardada al
+  /// lado del original, o `null` si corresponde servir el original.
+  ///
+  /// El derivado se llama `<original>@<ancho>.png`. La arroba es deliberada:
+  /// [requireSafePathSegment] no la admite, así que un derivado **no puede
+  /// pedirse como clave de retrato** aunque esté en la misma carpeta. Es lo
+  /// que evita tener que distinguirlos al leer, al borrar un personaje o al
+  /// armar un respaldo, que trabajan sobre las claves guardadas en la ficha.
+  ///
+  /// No hace falta invalidar nada: un retrato nuevo se guarda con un nombre
+  /// nuevo (ver [save]) y ningún archivo se reescribe, así que el derivado no
+  /// puede quedar desactualizado respecto de su original.
+  Future<PortraitBlob?> _thumbnail(
+    String dir,
+    String fileName,
+    File original,
+    int width,
+  ) async {
+    final cached = File(p.join(dir, '$fileName@$width.png'));
+    if (await cached.exists()) {
+      return PortraitBlob(await cached.readAsBytes(), 'image/png');
+    }
+
+    final bytes = encodePortraitThumbnail(await original.readAsBytes(), width);
+    if (bytes == null) return null;
+
+    // Escritura por archivo temporal y renombrado: dos peticiones simultáneas
+    // del mismo retrato generan la misma miniatura a la vez, y un lector no
+    // debe poder encontrarse con un PNG a medio escribir.
+    final temp = File(
+      '${cached.path}.${pid}_${DateTime.now().microsecondsSinceEpoch}.tmp',
+    );
+    await temp.writeAsBytes(bytes);
+    await temp.rename(cached.path);
+    return PortraitBlob(bytes, 'image/png');
   }
 }

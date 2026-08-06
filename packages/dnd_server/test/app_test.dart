@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:dnd_server/src/app.dart';
 import 'package:dnd_server/src/auth/oidc_service.dart';
+import 'package:image/image.dart' as img;
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -440,6 +441,83 @@ void main() {
         expect(response.statusCode, 404);
       },
     );
+
+    test('con ?w= devuelve la miniatura de ese ancho', () async {
+      // El medallón del roster mide menos de cien píxeles y el original 1024:
+      // el cliente pide el ancho en que va a dibujar porque en el navegador no
+      // hay forma de decodificar a medida (ver `PortraitImage.provider`).
+      final token = await _loginAs('subject-thumb');
+      final me = jsonDecode(
+        await (await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/me'),
+            headers: {'cookie': 'dnd_session=$token'},
+          ),
+        )).readAsString(),
+      );
+      final key = await portraits.save(
+        userId: me['userId'] as String,
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(
+          img.encodePng(img.Image(width: 1024, height: 1024)),
+        ),
+      );
+
+      final response = await handler(
+        Request(
+          'GET',
+          Uri.parse('http://localhost/api/portraits/$key?w=128'),
+          headers: {'cookie': 'dnd_session=$token'},
+        ),
+      );
+
+      expect(response.statusCode, 200);
+      final bytes = Uint8List.fromList(
+        await response.read().expand((e) => e).toList(),
+      );
+      expect(img.decodePng(bytes)!.width, 128);
+      // Una clave de retrato nunca se reescribe, así que el navegador no tiene
+      // por qué volver a pedirla.
+      expect(response.headers['cache-control'], contains('immutable'));
+    });
+
+    test('un ?w= inservible sirve el original en vez de fallar', () async {
+      // Un medallón vacío por un parámetro mal formado sería peor que bajar de
+      // más: el retrato tiene que aparecer igual.
+      final token = await _loginAs('subject-thumb-bad');
+      final me = jsonDecode(
+        await (await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/me'),
+            headers: {'cookie': 'dnd_session=$token'},
+          ),
+        )).readAsString(),
+      );
+      final key = await portraits.save(
+        userId: me['userId'] as String,
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      for (final w in ['0', '-8', 'grande', '9999']) {
+        final response = await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/portraits/$key?w=$w'),
+            headers: {'cookie': 'dnd_session=$token'},
+          ),
+        );
+
+        expect(response.statusCode, 200, reason: 'con w=$w');
+        expect(
+          await response.read().expand((e) => e).toList(),
+          pngBytes,
+          reason: 'con w=$w',
+        );
+      }
+    });
 
     test('un retrato inexistente también responde 404', () async {
       final token = await _loginAs('subject-empty');

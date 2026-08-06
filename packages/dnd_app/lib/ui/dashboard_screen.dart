@@ -13,7 +13,6 @@ import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
 import '../web/browser.dart' as browser;
-import 'portrait_image.dart';
 import 'settings_dialog.dart';
 import 'sheet_screen.dart';
 

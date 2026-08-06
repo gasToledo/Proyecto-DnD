@@ -52,9 +52,7 @@ extension _SheetNavigation on _SheetScreenState {
                         : SystemMouseCursors.basic,
                     child: ClassMedallion(
                       klass: klassObj,
-                      image: hasPortrait
-                          ? PortraitImage.provider(portrait)
-                          : null,
+                      portraitKey: hasPortrait ? portrait : null,
                       fallback: _c.name.characters.first,
                       size: 42,
                     ),

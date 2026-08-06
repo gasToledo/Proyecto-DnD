@@ -100,6 +100,65 @@ void main() {
       expect(entry.portraits.single.bytes, portraitBytes);
     });
 
+    // Un retrato declarado que no viaja en el ZIP costaba el personaje entero:
+    // el import fallaba con "Falta un retrato declarado." y el jugador perdía
+    // la ficha por un archivo decorativo. El codificador ya trata una clave
+    // que no resuelve omitiéndola en vez de abortar el respaldo; el
+    // decodificador tiene que ser igual de tolerante, porque el ZIP que le
+    // llega puede venir de una versión vieja o de otra herramienta.
+    test('omite un retrato declarado que falta y conserva el personaje', () {
+      final presente = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 2,
+          'scope': 'character',
+          'characters': [
+            {
+              'id': 'sagan',
+              'file': 'characters/sagan.json',
+              'portraits': [
+                'portraits/sagan/0_borrado.png',
+                'portraits/sagan/1_presente.png',
+              ],
+            },
+          ],
+        },
+        characterFiles: {'characters/sagan.json': _characterJson('sagan')},
+        extraBinaryEntries: {'portraits/sagan/1_presente.png': presente},
+      );
+
+      final bundle = BackupBundleCodec.decode(zip);
+
+      final entry = bundle.characters.single;
+      expect(entry.character.id, 'sagan');
+      expect(entry.portraits, hasLength(1));
+      expect(entry.portraits.single.bytes, presente);
+    });
+
+    // La tolerancia es solo para el archivo ausente: una ruta que apunta fuera
+    // de la carpeta del personaje sigue siendo un intento de escape y tiene
+    // que seguir abortando (lo cubre también el caso de 'portraits/otro/').
+    test('un retrato declarado con ruta inválida sigue abortando', () {
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 2,
+          'scope': 'character',
+          'characters': [
+            {
+              'id': 'sagan',
+              'file': 'characters/sagan.json',
+              'portraits': ['portraits/sagan/../otro/0.png'],
+            },
+          ],
+        },
+        characterFiles: {'characters/sagan.json': _characterJson('sagan')},
+      );
+
+      expect(() => BackupBundleCodec.decode(zip), throwsFormatException);
+    });
+
     test('rechaza una versión de formato futura', () {
       final zip = _buildZip(
         manifest: {

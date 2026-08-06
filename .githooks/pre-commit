@@ -1,0 +1,54 @@
+#!/bin/sh
+# Formatea los .dart que estás por commitear, para que CI no falle en su
+# primer paso (`dart format --set-exit-if-changed`, ver .github/workflows/ci.yml)
+# después de que analyze y test ya pasaron en local.
+#
+# Instalar (una vez por clon):
+#   git config core.hooksPath .githooks
+#
+# Solo mira los archivos preparados, no el repositorio entero: un commit no
+# tiene por qué esperar a que se recorran los tres paquetes.
+
+files=$(git diff --cached --name-only --diff-filter=ACM -- '*.dart')
+[ -z "$files" ] && exit 0
+
+# Los preparados a medias (parte de sus cambios en el índice y parte no) van
+# por otro camino: formatearlos en disco y volver a prepararlos arrastraría al
+# commit lo que dejaste afuera a propósito.
+partial=$(git diff --name-only -- $files)
+
+whole=""
+for f in $files; do
+  case " $partial " in
+    *" $f "*) ;;
+    *) whole="$whole $f" ;;
+  esac
+done
+
+# A los parciales solo se los revisa, nunca se los toca: y se revisa el
+# contenido *preparado*, que es lo que va al commit y lo que CI va a ver.
+bad=""
+for f in $partial; do
+  git show ":$f" | dart format --output=none --set-exit-if-changed >/dev/null 2>&1 ||
+    bad="$bad $f"
+done
+if [ -n "$bad" ]; then
+  echo "pre-commit: lo preparado de estos archivos no está formateado:"
+  for f in $bad; do echo "  $f"; done
+  echo "Están preparados a medias, así que no los toco. Formatealos y"
+  echo "elegí qué preparar:"
+  echo "  dart format$bad"
+  exit 1
+fi
+
+# El resto sí se formatea y se vuelve a preparar: no hay nada afuera del
+# índice que se pueda colar.
+[ -z "$whole" ] && exit 0
+dart format $whole >/dev/null || exit 1
+
+changed=$(git diff --name-only -- $whole)
+if [ -n "$changed" ]; then
+  git add $changed
+  echo "pre-commit: formateado y vuelto a preparar:"
+  echo "$changed" | sed 's/^/  /'
+fi

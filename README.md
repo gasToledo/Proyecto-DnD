@@ -172,6 +172,15 @@ dart run bin/server.dart
 Antes de enviar cambios, formateá el paquete afectado y verificá que el
 análisis y los tests terminen correctamente; para cambios de UI, persistencia
 o integración del cliente web, generá además `flutter build web --release`.
+
+Para no depender de acordarse del formateo —CI lo verifica en su primer paso,
+antes de analizar y de testear— hay un hook que formatea los `.dart`
+preparados en cada commit. Se instala una vez por clon:
+
+```sh
+git config core.hooksPath .githooks
+```
+
 `flutter build windows --release` sigue existiendo pero corresponde a la
 aplicación de escritorio congelada: no es criterio de cierre.
 

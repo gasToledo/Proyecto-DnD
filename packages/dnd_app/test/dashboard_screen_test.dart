@@ -76,6 +76,25 @@ void main() {
     expect(find.byKey(const ValueKey('app-version')), findsNothing);
   });
 
+  // En ancho, la marca la lleva la cabecera del panel lateral, que tiene 236
+  // de ancho fijo: el subtítulo es largo y ahí es donde puede desbordar.
+  testWidgets('el panel lateral muestra el nombre y el subtítulo', (
+    tester,
+  ) async {
+    await pumpDashboard(tester, const Size(1400, 900));
+
+    expect(
+      find.byWidgetPredicate(
+        (w) =>
+            w is RichText &&
+            w.text.toPlainText().contains('Milantus') &&
+            w.text.toPlainText().contains('Asistente de Aventuras'),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('layout ancho: panel lateral + tarjeta con datos de combate', (
     tester,
   ) async {
@@ -142,7 +161,11 @@ void main() {
   testWidgets('dashboard sigue usable en una ventana mínima', (tester) async {
     await pumpDashboard(tester, const Size(480, 520));
 
-    expect(find.text('Fichas D&D 5e'), findsOneWidget);
+    // En este ancho el panel lateral se esconde en el Drawer, así que la marca
+    // la lleva la barra superior: el nombre y el subtítulo tienen que estar los
+    // dos, no solo el nombre.
+    expect(find.text('Milantus'), findsOneWidget);
+    expect(find.text('Asistente de Aventuras'), findsOneWidget);
     expect(find.text('Sagan "The Red"'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

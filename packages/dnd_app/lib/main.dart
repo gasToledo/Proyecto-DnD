@@ -37,7 +37,7 @@ class _DndAppState extends State<DndApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fichas D&D 5e',
+      title: 'Milantus — Asistente de Aventuras',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

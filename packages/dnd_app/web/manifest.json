@@ -1,11 +1,11 @@
 {
-    "name": "dnd_app",
-    "short_name": "dnd_app",
+    "name": "Milantus — Asistente de Aventuras",
+    "short_name": "Milantus",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#1E1915",
+    "theme_color": "#1E1915",
+    "description": "Fichas de personaje de D&D 5e con las reglas de 2024.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

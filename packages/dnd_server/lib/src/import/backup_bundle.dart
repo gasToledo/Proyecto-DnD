@@ -162,10 +162,16 @@ class BackupBundleCodec {
             !_isSafeArchivePath(rawPath)) {
           throw const FormatException('Ruta de retrato inválida.');
         }
+        // Un retrato declarado que no viaja en el ZIP se omite en vez de
+        // costar el personaje entero: es un archivo decorativo y la ficha
+        // está intacta. `BackupBundleCodec.encode` ya trata así una clave que
+        // no resuelve, y el ZIP que llega acá puede venir de una versión
+        // vieja o de otra herramienta, así que el decodificador tiene que
+        // tolerar lo mismo que tolera el codificador. La ruta sí se sigue
+        // validando arriba: lo que se perdona es el archivo ausente, no un
+        // intento de escapar de la carpeta del personaje.
         final entry = files[rawPath];
-        if (entry == null) {
-          throw const FormatException('Falta un retrato declarado.');
-        }
+        if (entry == null) continue;
         portraits.add(
           BundlePortrait(
             fileName: _safeFileName(p.posix.basename(rawPath)),

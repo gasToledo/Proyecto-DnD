@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dnd_server/src/portraits/portrait_blob_store.dart';
 import 'package:dnd_server/src/portraits/portrait_image_type.dart';
+import 'package:dnd_server/src/portraits/portrait_thumbnail.dart';
 import 'package:dnd_server/src/util/safe_path.dart';
 
 /// Doble en memoria de [PortraitBlobStore], con la misma partición por
@@ -50,6 +51,7 @@ class InMemoryPortraitBlobStore implements PortraitBlobStore {
   Future<PortraitBlob?> read({
     required String userId,
     required String portraitKey,
+    int? width,
   }) async {
     final segments = portraitKey.split('/');
     if (segments.length != 2) {
@@ -65,6 +67,12 @@ class InMemoryPortraitBlobStore implements PortraitBlobStore {
       segments[1],
       label: 'archivo de retrato',
     );
-    return _byUser[userId]?[safeCharacterId]?[safeFileName];
+    final blob = _byUser[userId]?[safeCharacterId]?[safeFileName];
+    if (blob == null || width == null) return blob;
+
+    // Sin caché en disco que imitar: acá el interés es que el enrutado pase
+    // el ancho hasta el almacén, no la escritura del derivado.
+    final thumbnail = encodePortraitThumbnail(blob.bytes, width);
+    return thumbnail == null ? blob : PortraitBlob(thumbnail, 'image/png');
   }
 }

@@ -3,6 +3,7 @@ import 'package:dnd_app/ai/portrait_prompt.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
+import 'package:dnd_app/ui/portrait_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -52,45 +53,76 @@ void main() {
 
   // Los retratos llegan a 768 o 1024 px de lado y el medallón del roster mide
   // menos de 100. Reducir eso al dibujar sale dentado con `FilterQuality.low` y
-  // lavado con `medium`: hay que decodificar cerca del tamaño final, no filtrar
-  // más fuerte. Si alguien saca el `ResizeImage`, esto lo tiene que decir.
+  // lavado con `medium`: hay que recibirlo cerca del tamaño final, no filtrar
+  // más fuerte.
+  //
+  // Reducirlo en el cliente **no es una alternativa**: la implementación web de
+  // `NetworkImage` no admite decodificar a un tamaño dado, así que un
+  // `ResizeImage` alrededor no hace nada en el navegador (que es la plataforma
+  // que se publica) y el retrato llega entero igual. Por eso lo que se prueba
+  // acá es que el medallón *pida* la miniatura, no que la decodifique.
   group('Medallion', () {
-    testWidgets('decodifica el retrato al tamaño en que se dibuja', (
+    ImageProvider sourceOf(WidgetTester tester) {
+      final decoration =
+          tester.widget<Container>(find.byType(Container)).decoration
+              as BoxDecoration;
+      return decoration.image!.image;
+    }
+
+    Future<void> pumpMedallion(WidgetTester tester, double size) =>
+        tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.dark,
+            home: Medallion(
+              portraitKey: 'sagan/x.png',
+              fallback: 'S',
+              size: size,
+            ),
+          ),
+        );
+
+    testWidgets('pide la miniatura del tamaño en que se dibuja', (
       tester,
     ) async {
       tester.view.devicePixelRatio = 2.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.dark,
-          home: Medallion(
-            image: const NetworkImage('/api/portraits/x.png'),
-            fallback: 'S',
-            size: 60,
-          ),
-        ),
-      );
+      await pumpMedallion(tester, 60);
 
-      final decoration =
-          tester.widget<Container>(find.byType(Container)).decoration
-              as BoxDecoration;
-      final source = decoration.image!.image;
+      // 60 lógicos x 2 de densidad son 120 px físicos, y el peldaño que los
+      // cubre es 128. Sin el `?w=`, el servidor manda el original de 1024.
+      expect(
+        (sourceOf(tester) as NetworkImage).url,
+        '/api/portraits/sagan/x.png?w=128',
+        reason: 'el retrato se está pidiendo a resolución completa',
+      );
+    });
+
+    testWidgets('sobre el peldaño más grande pide el original', (tester) async {
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.reset);
+
+      // 400 lógicos x 3 pasan de 512, el ancho máximo de la escalera: ahí una
+      // miniatura habría que estirarla, así que corresponde el original.
+      await pumpMedallion(tester, 400);
 
       expect(
-        source,
-        isA<ResizeImage>(),
-        reason: 'el retrato se está dibujando a resolución completa',
+        (sourceOf(tester) as NetworkImage).url,
+        '/api/portraits/sagan/x.png',
       );
-      // 60 lógicos x 2 de densidad de pantalla, sin margen: pedir de más son
-      // píxeles que la GPU vuelve a reducir al dibujar, y ese segundo paso es
-      // el que emborrona (ver `Medallion`).
-      expect((source as ResizeImage).width, 120);
-      expect(
-        source.allowUpscaling,
-        isFalse,
-        reason: 'un retrato chico no debe estirarse al decodificar',
-      );
+    });
+  });
+
+  group('PortraitImage.thumbnailWidthFor', () {
+    test('redondea al peldaño de arriba, nunca al de abajo', () {
+      // Redondear para abajo es agrandar al dibujar, que es justo lo que no
+      // puede pasar: un retrato estirado se ve peor que uno reducido de más.
+      expect(PortraitImage.thumbnailWidthFor(76, 1), 96);
+      expect(PortraitImage.thumbnailWidthFor(96, 1), 96);
+      expect(PortraitImage.thumbnailWidthFor(96.5, 1), 128);
+      expect(PortraitImage.thumbnailWidthFor(42, 2), 96);
+      expect(PortraitImage.thumbnailWidthFor(512, 1), 512);
+      expect(PortraitImage.thumbnailWidthFor(513, 1), isNull);
     });
   });
 }

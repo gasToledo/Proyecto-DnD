@@ -15,6 +15,7 @@ dependencies:
   dnd_engine:
     path: ../dnd_engine
   http: ^1.2.0
+  image: ^4.3.0
   openid_client: ^0.4.10
   path: ^1.9.0
   postgres: ^3.5.0

@@ -476,14 +476,35 @@ Future<Response> _portraitHandler(
   PortraitBlobStore portraits,
 ) async {
   final key = '${request.params['characterId']}/${request.params['fileName']}';
-  final blob = await portraits.read(userId: request.userId, portraitKey: key);
+  // `w` es el ancho en píxeles físicos en que el cliente va a dibujar el
+  // retrato. Un valor que no sea un entero positivo se ignora y se sirve el
+  // original, igual que uno fuera de la escalera de anchos: el medallón tiene
+  // que aparecer aunque el parámetro venga mal.
+  final width = int.tryParse(request.url.queryParameters['w'] ?? '');
+  final blob = await portraits.read(
+    userId: request.userId,
+    portraitKey: key,
+    width: width != null && width > 0 ? width : null,
+  );
   if (blob == null) {
     return Response.notFound(
       jsonEncode({'error': 'Retrato no encontrado.'}),
       headers: {'content-type': 'application/json'},
     );
   }
-  return Response.ok(blob.bytes, headers: {'content-type': blob.contentType});
+  return Response.ok(
+    blob.bytes,
+    headers: {
+      'content-type': blob.contentType,
+      // Un retrato es inmutable: se guarda con un nombre nuevo cada vez y
+      // nunca se reescribe (ver `DiskPortraitBlobStore.save`), así que la
+      // clave identifica el contenido y puede cachearse sin límite. `private`
+      // porque la respuesta depende de la sesión: la única caché compartida en
+      // el camino es Cloudflare y un retrato no es suyo para repartir (ver
+      // `webCacheControl`).
+      'cache-control': 'private, max-age=31536000, immutable',
+    },
+  );
 }
 
 /// Lista los proveedores de generación que este servidor puede ofrecer: uno

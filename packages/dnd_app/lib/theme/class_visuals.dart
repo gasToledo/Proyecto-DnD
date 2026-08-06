@@ -102,14 +102,14 @@ IconData backgroundIcon(Background? bg) =>
 /// inicial del nombre, como antes.
 class ClassMedallion extends StatelessWidget {
   final CharacterClass? klass;
-  final ImageProvider? image;
+  final String? portraitKey;
   final String fallback;
   final double size;
   const ClassMedallion({
     super.key,
     required this.klass,
     required this.fallback,
-    this.image,
+    this.portraitKey,
     this.size = 74,
   });
 
@@ -117,7 +117,7 @@ class ClassMedallion extends StatelessWidget {
   Widget build(BuildContext context) {
     final gold = context.palette.gold;
     return Medallion(
-      image: image,
+      portraitKey: portraitKey,
       fallback: fallback,
       size: size,
       emblemIcon: klass == null ? null : classIcon(klass),

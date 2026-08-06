@@ -42,16 +42,23 @@ docs.zip
 # archivo — las reglas por ruta que había acá dejaron de valer en cuanto se
 # reorganizó `docs/`, y los manuales volvieron a aparecer sin que nada avisara.
 #
-# La excepción es la documentación técnica del proyecto: `despliegue.md` es el
-# procedimiento de puesta en marcha y lo referencian README.md,
-# docker-compose.yml, .github/workflows/cd.yml y
-# packages/dnd_server/lib/src/config.dart. Fuera del repo, esas cuatro
-# referencias apuntarían a un archivo que en un clon nuevo no existe.
+# La única excepción es `despliegue.md`: es el procedimiento de puesta en
+# marcha y lo referencian README.md, docker-compose.yml,
+# .github/workflows/cd.yml y packages/dnd_server/lib/src/config.dart. Sin él,
+# un clon nuevo no se puede levantar y esas cuatro referencias quedan
+# apuntando a la nada.
 #
 # `docs/*` y no `docs/`: a un directorio ya excluido no se le puede volver a
-# incluir nada adentro.
+# incluir nada adentro, así que hay que re-incluir la carpeta y después
+# excluir dentro de ella.
 docs/*
 !docs/Informacion tecnica del proyecto/
+docs/Informacion tecnica del proyecto/*
+!docs/Informacion tecnica del proyecto/despliegue.md
+
+# Documentos internos de producto y de trabajo: no le sirven a quien usa la
+# aplicación, y lo que hay que saber para usarla está en el README.
+brief-app-dnd5e.md
 
 # Despliegue autoalojado: secretos reales, nunca versionar (ver
 # `.env.example` y `cloudflared/config.example.yml`)

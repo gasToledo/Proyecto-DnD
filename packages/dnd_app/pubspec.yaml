@@ -1,7 +1,7 @@
 name: dnd_app
 description: "App de fichas de personaje D&D 5e (offline-first, multiplataforma)."
 publish_to: 'none'
-version: 0.5.1+1
+version: 0.5.2+1
 
 environment:
   # No subir a un patch (3.12.2) sin necesidad real: las imágenes

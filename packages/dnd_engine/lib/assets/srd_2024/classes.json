@@ -1002,6 +1002,7 @@
         "name": "Druídico",
         "description": "Conoces el idioma secreto Druídico y puedes lanzar el conjuro Sentido Animal como ritual.",
         "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "guidance" },
           { "type": "passiveTrait", "name": "Druídico", "description": "Conoces el idioma Druídico. Siempre tienes preparado el truco Guía y puedes lanzar Sentido Animal como ritual." }
         ]
       },
@@ -1187,6 +1188,8 @@
         "name": "Palabras de Creación",
         "description": "Siempre tenés preparados Palabra de Poder: Sanar y Palabra de Poder: Matar, y alcanzan a dos criaturas.",
         "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "power-word-heal" },
+          { "type": "alwaysPreparedSpell", "spellId": "power-word-kill" },
           { "type": "passiveTrait", "name": "Palabras de Creación", "description": "Dominás las palabras de la vida y de la muerte: siempre tenés preparados Palabra de Poder: Sanar y Palabra de Poder: Matar. Al lanzar cualquiera de los dos podés hacer objetivo a una segunda criatura que esté a 10 pies o menos de la primera." }
         ]
       }
@@ -1396,6 +1399,7 @@
         "name": "Contactar Patrón",
         "description": "Siempre tenés preparado Contactar con Otro Plano y lo lanzás gratis para hablar con tu patrón.",
         "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "contact-other-plane" },
           { "type": "passiveTrait", "name": "Contactar Patrón", "description": "Siempre tenés preparado Contactar con Otro Plano. Una vez por descanso largo podés lanzarlo sin gastar espacio para comunicarte con tu patrón, y superás automáticamente la salvación del conjuro." }
         ]
       },
@@ -1506,6 +1510,7 @@
         "name": "Castigo de Paladín",
         "description": "Siempre tenés preparado el conjuro Castigo Divino y podés lanzarlo como acción adicional tras impactar.",
         "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "divine-smite" },
           { "type": "passiveTrait", "name": "Castigo de Paladín", "description": "Siempre tenés preparado el conjuro Castigo Divino. En 2024 es un conjuro: tras impactar con un ataque de arma lo lanzás como acción adicional, gastando un espacio, para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes e infernales)." }
         ]
       },
@@ -1538,6 +1543,7 @@
         "name": "Corcel Fiel",
         "description": "Siempre tenés preparado Hallar Corcel y lo lanzás gratis una vez por descanso largo.",
         "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "find-steed" },
           { "type": "passiveTrait", "name": "Corcel Fiel", "description": "Siempre tenés preparado Hallar Corcel. Además podés lanzarlo una vez sin gastar espacio de conjuro, y recuperás esa capacidad tras un descanso largo." }
         ]
       },
@@ -1627,6 +1633,7 @@
         "name": "Enemigo Predilecto",
         "description": "Siempre tienes preparado Marca del Cazador y puedes lanzarlo varias veces por descanso largo sin gastar espacio.",
         "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "hunters-mark" },
           { "type": "passiveTrait", "name": "Enemigo Predilecto", "description": "Siempre tienes preparado Marca del Cazador. Puedes lanzarlo sin gastar espacio un número de veces igual a tu bonif. de competencia por descanso largo." }
         ]
       },

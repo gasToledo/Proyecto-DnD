@@ -80,10 +80,10 @@ class SheetBuilder {
   List<CharacterResource> resolveResources(Map<Ability, int> mods, int level) {
     return _resources.values.map((e) {
       final max = e.maxFromProficiency
-          ? proficiencyBonusForLevel(level)
+          ? proficiencyBonusForLevel(level) * e.proficiencyMultiplier
           : e.maxFromAbility != null
               ? [e.max, mods[e.maxFromAbility]!].reduce((a, b) => a > b ? a : b)
-              : (e.maxPerLevel ? level : e.max);
+              : (e.maxPerLevel ? level + e.max : e.max);
       return CharacterResource(
         id: e.id,
         name: e.name,

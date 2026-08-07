@@ -47,13 +47,32 @@ void main() {
     // elección todavía no existe en el motor.
     expect(conTabla, hasLength(24));
     expect(conTabla, isNot(contains('circle-land')));
-    // Las que el manual deja sin tabla siguen sin tabla.
+    // Las que el manual deja sin *tabla* siguen sin tabla. Ojo: no tener tabla
+    // no es lo mismo que no conceder ningún conjuro siempre preparado. El
+    // Círculo de las Estrellas (Guía y Saeta Guía) y el Abjurador
+    // (Contrahechizo y Disipar Magia) conceden un par fijo desde un rasgo
+    // suelto, que no es una tabla por tramos y por eso `tablas()` no lo ve.
     expect(conTabla, isNot(contains('circle-stars')));
     expect(conTabla, isNot(contains('wild-magic-sorcery')));
     expect(conTabla, isNot(contains('hunter')));
     for (final id in ['abjurer', 'diviner', 'evoker', 'illusionist']) {
       expect(conTabla, isNot(contains(id)), reason: 'el Mago no tiene tabla');
     }
+  });
+
+  test('los conjuros sueltos, fuera de tabla, también se conceden', () {
+    // Contraparte del test de arriba: estos rasgos declaran un par fijo de
+    // conjuros junto a un passiveTrait, así que no son "tabla" pero el jugador
+    // igual los tiene. Antes vivían solo en la prosa.
+    Set<String> deRasgo(String subclassId, int level) => {
+          for (final f in repo.subclass(subclassId)!.featuresUpTo(level))
+            for (final e in f.effects)
+              if (e is AlwaysPreparedSpellEffect) e.spellId,
+        };
+
+    expect(deRasgo('circle-stars', 3), {'guidance', 'guiding-bolt'});
+    expect(deRasgo('abjurer', 10), {'counterspell', 'dispel-magic'});
+    expect(deRasgo('abjurer', 9), isEmpty, reason: 'Rompeconjuros es nivel 10');
   });
 
   test('cada conjuro entra en los espacios de su clase a ese nivel', () {
@@ -124,12 +143,21 @@ void main() {
           ),
         );
 
-    expect(en(2, subclassId: 'oath-devotion').alwaysPreparedSpellIds, isEmpty,
+    // El Paladín ya trae conjuros siempre preparados de *clase* (Castigo
+    // Divino a nivel 2, Hallar Corcel a nivel 5), así que lo que se mide es el
+    // aporte de la subclase: la diferencia contra el mismo nivel sin subclase.
+    Set<String> deSubclase(int nivel, String subclassId) =>
+        en(nivel, subclassId: subclassId)
+            .alwaysPreparedSpellIds
+            .difference(en(nivel).alwaysPreparedSpellIds);
+
+    expect(en(2).alwaysPreparedSpellIds, {'divine-smite'},
+        reason: 'Castigo de Paladín es un rasgo de clase de nivel 2');
+    expect(deSubclase(2, 'oath-devotion'), isEmpty,
         reason: 'la subclase llega a nivel 3');
-    expect(en(3, subclassId: 'oath-devotion').alwaysPreparedSpellIds,
+    expect(deSubclase(3, 'oath-devotion'),
         {'protection-from-evil-and-good', 'shield-of-faith'});
-    expect(en(17, subclassId: 'oath-devotion').alwaysPreparedSpellIds,
-        hasLength(10));
+    expect(deSubclase(17, 'oath-devotion'), hasLength(10));
     // No ocupan cupo: el conteo de preparados es el mismo sin subclase.
     expect(en(17, subclassId: 'oath-devotion').spellcasting!.preparedCount,
         en(17).spellcasting!.preparedCount);

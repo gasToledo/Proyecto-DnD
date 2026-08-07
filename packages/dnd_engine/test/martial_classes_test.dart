@@ -10,12 +10,14 @@ Character _char({
   String? armorId,
   bool shield = false,
   List<String> weapons = const [],
+  String? subclassId,
 }) =>
     Character(
       id: 'probe-$classId',
       name: 'Prueba',
       raceId: 'human',
       classId: classId,
+      subclassId: subclassId,
       backgroundId: 'soldier',
       level: level,
       assignedScores: scores ??
@@ -40,6 +42,40 @@ void main() {
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
     compiler = CharacterCompiler(repo);
+  });
+
+  // Los tramos de recurso (Furia 2/3/4/5/6, Tomar Aliento 2/3/4) dependen de
+  // que los rasgos lleguen ordenados por nivel: gana el último aplicado. Los
+  // arrays del contenido no están ordenados, así que esto protege la
+  // convención de la que cuelgan todos los tests de tramos de abajo.
+  group('featuresUpToLevel', () {
+    test('ordena por nivel aunque el contenido esté desordenado', () {
+      const desordenado = [
+        ClassFeature(level: 10, name: 'diez'),
+        ClassFeature(level: 1, name: 'uno'),
+        ClassFeature(level: 4, name: 'cuatro'),
+      ];
+      expect(
+        featuresUpToLevel(desordenado, 20).map((f) => f.name),
+        ['uno', 'cuatro', 'diez'],
+      );
+      expect(
+        featuresUpToLevel(desordenado, 4).map((f) => f.name),
+        ['uno', 'cuatro'],
+      );
+    });
+
+    test('entre rasgos del mismo nivel respeta el orden del contenido', () {
+      const mismoNivel = [
+        ClassFeature(level: 3, name: 'primero'),
+        ClassFeature(level: 1, name: 'previo'),
+        ClassFeature(level: 3, name: 'segundo'),
+      ];
+      expect(
+        featuresUpToLevel(mismoNivel, 3).map((f) => f.name),
+        ['previo', 'primero', 'segundo'],
+      );
+    });
   });
 
   group('Bárbaro', () {
@@ -293,6 +329,26 @@ void main() {
       expect(resourceMax('fighter', 4, 'second_wind'), 3);
       expect(resourceMax('fighter', 10, 'second_wind'), 4);
       expect(resourceMax('fighter', 20, 'second_wind'), 4);
+    });
+
+    test('Maestro del Combate: los dados de superioridad van 4 / 5 / 6', () {
+      int dados(int level) => compiler
+          .compile(_char(
+            classId: 'fighter',
+            level: level,
+            hp: List.filled(level, 6),
+            subclassId: 'battle-master',
+          ))
+          .resources
+          .firstWhere((r) => r.id == 'superiority_dice')
+          .max;
+
+      expect(dados(3), 4);
+      expect(dados(6), 4);
+      expect(dados(7), 5);
+      expect(dados(14), 5);
+      expect(dados(15), 6);
+      expect(dados(20), 6);
     });
 
     test('Guerrero: Tomar Aliento recupera uno en descanso corto', () {

@@ -85,8 +85,9 @@
       {
         "level": 7,
         "name": "Conoce a tu Enemigo",
-        "description": "Como acción adicional gastas un dado de superioridad para estudiar a una criatura y descubrir si es tu igual, superior o inferior en fuerza.",
+        "description": "Como acción adicional gastas un dado de superioridad para estudiar a una criatura y descubrir si es tu igual, superior o inferior en fuerza. Pasas a tener 5 dados de superioridad.",
         "effects": [
+          { "type": "resource", "id": "superiority_dice", "name": "Dados de Superioridad", "max": 5, "recharge": "short", "description": "Gastas un dado de superioridad (d8) para ejecutar una maniobra: Ataque de Finta, Barrido, Desarmar, Maniobra Defensiva, etc." },
           { "type": "passiveTrait", "name": "Conoce a tu Enemigo", "description": "Gasta un dado de superioridad para conocer las capacidades relativas de un enemigo." }
         ]
       },
@@ -101,8 +102,9 @@
       {
         "level": 15,
         "name": "Implacable",
-        "description": "Si tiras iniciativa sin dados de superioridad, recuperas uno.",
+        "description": "Si tiras iniciativa sin dados de superioridad, recuperas uno. Pasas a tener 6 dados de superioridad.",
         "effects": [
+          { "type": "resource", "id": "superiority_dice", "name": "Dados de Superioridad", "max": 6, "recharge": "short", "description": "Gastas un dado de superioridad (d8) para ejecutar una maniobra: Ataque de Finta, Barrido, Desarmar, Maniobra Defensiva, etc." },
           { "type": "passiveTrait", "name": "Implacable", "description": "Al entrar en combate sin dados de superioridad, recuperas uno." }
         ]
       },
@@ -185,7 +187,7 @@
         "name": "Poder Psiónico",
         "description": "Ganas dados psiónicos (d6) que alimentan Golpe Telequinético, Movimiento Telequinético y Escudo Protector.",
         "effects": [
-          { "type": "resource", "id": "psionic_energy", "name": "Energía Psiónica", "max": 4, "recharge": "short", "description": "Dados de energía psiónica (d6) para Golpe Telequinético (daño de fuerza), mover objetos/criaturas o reducir daño a un aliado." }
+          { "type": "resource", "id": "psionic_energy", "name": "Energía Psiónica", "max": 0, "maxFromProficiency": true, "proficiencyMultiplier": 2, "recharge": "short", "description": "Dados de energía psiónica (d6) para Golpe Telequinético (daño de fuerza), mover objetos/criaturas o reducir daño a un aliado; tenés dos veces tu bonif. por competencia." }
         ]
       },
       {
@@ -814,7 +816,7 @@
         "name": "Sacerdote Guerrero",
         "description": "Cuando realizas la acción de Ataque puedes hacer un ataque con arma adicional como acción adicional un número de veces por descanso.",
         "effects": [
-          { "type": "resource", "id": "war_priest", "name": "Sacerdote Guerrero", "max": 2, "recharge": "long", "description": "Ataque con arma adicional como acción adicional; usos = mod. de Sabiduría, recuperados en descanso largo." }
+          { "type": "resource", "id": "war_priest", "name": "Sacerdote Guerrero", "max": 1, "maxFromAbility": "wisdom", "recharge": "long", "description": "Ataque con arma adicional como acción adicional; usos = mod. de Sabiduría, recuperados en descanso largo." }
         ]
       },
       {
@@ -1097,8 +1099,10 @@
       {
         "level": 3,
         "name": "Mapa Estelar / Forma Estelar",
-        "description": "Portas un mapa estelar y puedes gastar Forma Salvaje para adoptar una Forma Estelar (Arquero, Cáliz o Dragón).",
+        "description": "Portas un mapa estelar que te da Guía y Saeta Guía siempre preparados, y puedes gastar Forma Salvaje para adoptar una Forma Estelar (Arquero, Cáliz o Dragón).",
         "effects": [
+          { "type": "alwaysPreparedSpell", "spellId": "guidance" },
+          { "type": "alwaysPreparedSpell", "spellId": "guiding-bolt" },
           { "type": "passiveTrait", "name": "Forma Estelar", "description": "Adoptas una constelación: Arquero (ataque radiante), Cáliz (curación) o Dragón (concentración y salvaciones)." }
         ]
       },
@@ -2046,7 +2050,7 @@
         "name": "Poder Psiónico / Hojas Psíquicas",
         "description": "Manifiestas hojas de energía mental como armas y ganas dados psiónicos para potenciar tus habilidades.",
         "effects": [
-          { "type": "resource", "id": "psionic_energy", "name": "Energía Psiónica", "max": 4, "recharge": "short", "description": "Dados psiónicos (d6) para sumar a pruebas (Impulso Psíquico) o teletransportarte (Salto de Sombra)." },
+          { "type": "resource", "id": "psionic_energy", "name": "Energía Psiónica", "max": 0, "maxFromProficiency": true, "proficiencyMultiplier": 2, "recharge": "short", "description": "Dados psiónicos (d6) para sumar a pruebas (Impulso Psíquico) o teletransportarte (Salto de Sombra); tenés dos veces tu bonif. por competencia." },
           { "type": "passiveTrait", "name": "Hojas Psíquicas", "description": "Manifiestas hojas psíquicas (finura, arrojadizas) que infligen daño psíquico." }
         ]
       },
@@ -2538,7 +2542,7 @@
         "name": "Luz Sanadora",
         "description": "Ganas un pozo de dados de curación (d6) que puedes repartir como acción adicional.",
         "effects": [
-          { "type": "resource", "id": "healing_light", "name": "Luz Sanadora", "max": 2, "recharge": "long", "description": "Dados de curación (d6) que repartes como acción adicional; pozo = 1 + nivel de Brujo, se recarga en descanso largo." },
+          { "type": "resource", "id": "healing_light", "name": "Luz Sanadora", "max": 1, "maxPerLevel": true, "recharge": "long", "description": "Dados de curación (d6) que repartes como acción adicional; pozo = 1 + nivel de Brujo, se recarga en descanso largo." },
           { "type": "passiveTrait", "name": "Trucos Adicionales", "description": "Conoces los trucos Luz y Llama Sagrada." }
         ]
       },
@@ -2767,7 +2771,9 @@
         "name": "Rompeconjuros",
         "description": "Tienes siempre preparados Contrahechizo y Disipar Magia, y los lanzas de forma más eficiente.",
         "effects": [
-          { "type": "passiveTrait", "name": "Rompeconjuros", "description": "Contrahechizo y Disipar Magia siempre preparados y lanzados con ventaja de nivel." }
+          { "type": "alwaysPreparedSpell", "spellId": "counterspell" },
+          { "type": "alwaysPreparedSpell", "spellId": "dispel-magic" },
+          { "type": "passiveTrait", "name": "Rompeconjuros", "description": "Lanzas Contrahechizo y Disipar Magia sin gastar espacio de nivel superior al del conjuro contrarrestado." }
         ]
       },
       {

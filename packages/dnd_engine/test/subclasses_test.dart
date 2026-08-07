@@ -276,6 +276,92 @@ void main() {
       expect(s.armorProficiencies, contains('heavy'));
     });
 
+    test('Luz Sanadora es 1 + nivel de Brujo', () {
+      // La queja que originó esto: en nivel 4 la pantalla mostraba 2 curas.
+      // La descripción del rasgo siempre dijo "pozo = 1 + nivel de Brujo" y el
+      // dato tenía un 2 fijo, porque `maxPerLevel` reemplazaba en vez de sumar.
+      int pozo(int level) => compiler
+          .compile(_char(
+            classId: 'warlock',
+            level: level,
+            hp: List.filled(level, 5),
+            subclassId: 'celestial-patron',
+          ))
+          .resources
+          .firstWhere((r) => r.id == 'healing_light')
+          .max;
+
+      expect(pozo(3), 4);
+      expect(pozo(4), 5);
+      expect(pozo(20), 21);
+    });
+
+    test('Energía Psiónica es dos veces el bonif. por competencia', () {
+      int dados(String classId, String subclassId, int level) => compiler
+          .compile(_char(
+            classId: classId,
+            level: level,
+            hp: List.filled(level, 6),
+            subclassId: subclassId,
+          ))
+          .resources
+          .firstWhere((r) => r.id == 'psionic_energy')
+          .max;
+
+      // Bonif. 2 a nivel 3, 3 a nivel 5, 6 a nivel 17.
+      expect(dados('fighter', 'psi-warrior', 3), 4);
+      expect(dados('fighter', 'psi-warrior', 5), 6);
+      expect(dados('fighter', 'psi-warrior', 17), 12);
+      // El mismo recurso en la otra subclase que lo tiene.
+      expect(dados('rogue', 'soulknife', 3), 4);
+      expect(dados('rogue', 'soulknife', 17), 12);
+    });
+
+    test('los recursos que ya escalaban por nivel no cambiaron', () {
+      // Regresión de volver `maxPerLevel` aditivo: los dos usuarios previos
+      // declaran `max: 0`, así que siguen dando el nivel pelado.
+      int recurso(String classId, int level, String id) => compiler
+          .compile(_char(
+            classId: classId,
+            level: level,
+            hp: List.filled(level, 6),
+          ))
+          .resources
+          .firstWhere((r) => r.id == id)
+          .max;
+
+      expect(recurso('monk', 6, 'focus_points'), 6);
+      expect(recurso('monk', 20, 'focus_points'), 20);
+      expect(recurso('sorcerer', 5, 'sorcery_points'), 5);
+    });
+
+    test('Sacerdote Guerrero escala con Sabiduría, con piso de 1', () {
+      // La descripción del rasgo siempre dijo "usos = mod. de Sabiduría" y el
+      // dato tenía un 2 fijo. Con Sabiduría 10 (mod. 0) el piso deja 1 uso.
+      int usos(int wisdom) => compiler
+          .compile(_char(
+            classId: 'cleric',
+            level: 3,
+            hp: [8, 5, 5],
+            subclassId: 'war-domain',
+            scores: {
+              Ability.strength: 15,
+              Ability.dexterity: 14,
+              Ability.constitution: 14,
+              Ability.intelligence: 12,
+              Ability.wisdom: wisdom,
+              Ability.charisma: 8,
+            },
+          ))
+          .resources
+          .firstWhere((r) => r.id == 'war_priest')
+          .max;
+
+      expect(usos(10), 1, reason: 'mod. 0 pero mínimo un uso');
+      expect(usos(16), 3);
+      expect(usos(20), 5);
+    });
+
     test('la competencia de escudo usa la misma categoría que la armadura', () {
       final fighter =
           compiler.compile(_char(classId: 'fighter', level: 1, hp: [10]));

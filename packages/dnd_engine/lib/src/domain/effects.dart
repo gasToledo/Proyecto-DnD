@@ -91,6 +91,7 @@ sealed class Effect {
               ? Ability.fromKey(json['maxFromAbility'] as String)
               : null,
           maxFromProficiency: json['maxFromProficiency'] as bool? ?? false,
+          proficiencyMultiplier: json['proficiencyMultiplier'] as int? ?? 1,
         ),
       'offHandAbilityDamage' => const OffHandAbilityDamageEffect(),
       'featureChoice' => FeatureChoiceEffect(
@@ -588,16 +589,28 @@ class SpellcastingEffect extends Effect {
 /// Plantilla de un recurso consumible (Segundo Aliento, Oleada de Acción).
 ///
 /// El máximo puede ser fijo ([max]), escalar con el nivel de personaje
-/// ([maxPerLevel] = true, p.ej. Puntos de Enfoque del Monje = nivel de Monje)
+/// ([maxPerLevel] = true, p.ej. Puntos de Enfoque del Monje = nivel de Monje),
 /// escalar con un modificador de característica ([maxFromAbility], p.ej.
 /// Magia de Manitas del Artífice = mod. de Inteligencia) o escalar con el
 /// bonificador por competencia ([maxFromProficiency], p.ej. Linaje gigante del
-/// Goliat y Ataque de aliento del Dracónido). Con [maxFromAbility] el [max] es
-/// el piso (normalmente 1, "mínimo una vez"); con [maxFromProficiency] se
-/// ignora, porque el bonificador nunca baja de 2.
+/// Goliat y Ataque de aliento del Dracónido).
+///
+/// Cómo entra [max] en cada caso:
+/// - con [maxPerLevel] es el término constante y **se suma** al nivel, para
+///   pozos del tipo "1 + nivel de Brujo" (Luz Sanadora del Patrón Celestial);
+///   con `max: 0` queda el nivel pelado, que es el caso del Monje y el
+///   Hechicero;
+/// - con [maxFromAbility] es el piso (normalmente 1, "mínimo una vez");
+/// - con [maxFromProficiency] se ignora, porque el bonificador nunca baja de 2.
+///   Ahí el que escala es [proficiencyMultiplier], para "dos veces tu
+///   bonificador por competencia" (Energía Psiónica del Guerrero Psiónico y de
+///   la Cuchilla Espiritual).
+///
 /// Para recursos con tramos por nivel (p.ej. Furia del Bárbaro: 2/3/4/5/6) se
 /// declaran varios ResourceEffect con el mismo [id] a distintos niveles: el de
-/// mayor nivel aplicable sobrescribe a los previos.
+/// mayor nivel aplicable sobrescribe a los previos. Eso depende de que los
+/// rasgos lleguen ordenados por nivel, que es lo que garantiza
+/// `featuresUpToLevel`.
 class ResourceEffect extends Effect {
   final String id;
   final String name;
@@ -608,6 +621,11 @@ class ResourceEffect extends Effect {
   final bool maxPerLevel;
   final Ability? maxFromAbility;
   final bool maxFromProficiency;
+
+  /// Factor sobre el bonificador por competencia. Solo se lee cuando
+  /// [maxFromProficiency] es true.
+  final int proficiencyMultiplier;
+
   const ResourceEffect({
     required this.id,
     required this.name,
@@ -618,6 +636,7 @@ class ResourceEffect extends Effect {
     this.maxPerLevel = false,
     this.maxFromAbility,
     this.maxFromProficiency = false,
+    this.proficiencyMultiplier = 1,
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -631,5 +650,7 @@ class ResourceEffect extends Effect {
         'maxPerLevel': maxPerLevel,
         if (maxFromAbility != null) 'maxFromAbility': maxFromAbility!.name,
         if (maxFromProficiency) 'maxFromProficiency': true,
+        if (proficiencyMultiplier != 1)
+          'proficiencyMultiplier': proficiencyMultiplier,
       };
 }

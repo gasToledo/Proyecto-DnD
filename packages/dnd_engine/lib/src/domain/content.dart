@@ -156,6 +156,35 @@ class ClassFeature {
       );
 }
 
+/// Los rasgos de [all] hasta [level] inclusive, **en orden de nivel**.
+///
+/// Ordenar acá no es cosmético: es lo que hace cierta la convención de que
+/// varios [ResourceEffect] con el mismo id declaran tramos y **gana el de mayor
+/// nivel**. Quien la aplica es `SheetBuilder.applyEffect`, que hace
+/// `_resources[id] = e`, o sea gana *el último aplicado*. Los arrays del
+/// contenido no están ordenados por nivel (el Guerrero declara
+/// 1,1,1,4,4,10,10,16,2,2,5,…), así que sin este orden la convención solo se
+/// cumple por casualidad, cuando el autor del contenido declaró los tramos
+/// ascendentes.
+///
+/// El desempate por posición original es necesario porque `List.sort` de Dart
+/// no es estable, y entre dos rasgos del mismo nivel el orden del contenido es
+/// el que decide (p.ej. cuál de dos efectos sobre el mismo campo pisa al otro).
+List<ClassFeature> featuresUpToLevel(List<ClassFeature> all, int level) {
+  final selected = [
+    for (final (i, f) in all.indexed)
+      if (f.level <= level) (i, f),
+  ];
+  selected.sort((a, b) {
+    final (ai, af) = a;
+    final (bi, bf) = b;
+    return af.level != bf.level
+        ? af.level.compareTo(bf.level)
+        : ai.compareTo(bi);
+  });
+  return [for (final (_, f) in selected) f];
+}
+
 class CharacterClass {
   final String id;
   final String name;
@@ -200,9 +229,9 @@ class CharacterClass {
     this.features = const [],
   });
 
-  /// Rasgos activos hasta [level] inclusive.
+  /// Rasgos activos hasta [level] inclusive, en orden de nivel.
   List<ClassFeature> featuresUpTo(int level) =>
-      features.where((f) => f.level <= level).toList();
+      featuresUpToLevel(features, level);
 
   /// Rasgos ganados exactamente al alcanzar [level] (para mostrarlos al subir).
   List<ClassFeature> featuresAt(int level) =>
@@ -260,9 +289,9 @@ class Subclass {
     this.features = const [],
   });
 
-  /// Rasgos de subclase activos hasta [level] inclusive.
+  /// Rasgos de subclase activos hasta [level] inclusive, en orden de nivel.
   List<ClassFeature> featuresUpTo(int level) =>
-      features.where((f) => f.level <= level).toList();
+      featuresUpToLevel(features, level);
 
   /// Rasgos de subclase ganados exactamente al alcanzar [level].
   List<ClassFeature> featuresAt(int level) =>
@@ -313,9 +342,9 @@ class Lineage {
     this.features = const [],
   });
 
-  /// Rasgos activos hasta [level] inclusive.
+  /// Rasgos activos hasta [level] inclusive, en orden de nivel.
   List<ClassFeature> featuresUpTo(int level) =>
-      features.where((f) => f.level <= level).toList();
+      featuresUpToLevel(features, level);
 
   /// Rasgos ganados exactamente al alcanzar [level].
   List<ClassFeature> featuresAt(int level) =>

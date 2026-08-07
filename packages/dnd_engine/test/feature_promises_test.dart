@@ -111,26 +111,14 @@ void main() {
           p.contains('ericia') ||
           RegExp('[Dd]uplica[sn]?|duplicás').hasMatch(p) &&
               p.contains('competencia'),
-      entrega: (f) => f.effects.whereType<ProficiencyChoiceEffect>().isNotEmpty,
+      entrega: (f) => f.effects
+          .whereType<ProficiencyChoiceEffect>()
+          .any((e) => e.expertise),
       coincidencias: 8,
       falsosPositivos: {
         // Recomienda la dote "Don de la Pericia en Combate" por su nombre; no
         // concede Pericia.
         'clase fighter n19 "Don Épico"',
-      },
-      deuda: {
-        for (final e in [
-          'clase rogue n1 "Pericia"',
-          'clase rogue n6 "Pericia (dos habilidades más)"',
-          'clase bard n2 "Pericia"',
-          'clase bard n9 "Pericia (dos habilidades más)"',
-          'clase ranger n9 "Pericia"',
-          'clase wizard n2 "Académico"',
-          'clase ranger n2 "Explorador Hábil"',
-        ])
-          e: 'Pericia no existe como mecánica todavía: duplicar el bonificador '
-              'necesita distinguir competencia de pericia en la ficha y una '
-              'elección de habilidad por rasgo de clase',
       },
     );
   });

@@ -629,7 +629,15 @@ extension _ProficiencyChoiceChecks on CharacterValidator {
   ) {
     final slots = sheet.proficiencyChoiceSlots;
     final chosen = [for (final slot in slots) ...slot.chosen];
-    for (final slot in slots) {
+
+    // Los cupos de Pericia entran solo en los chequeos de cantidad, y con los
+    // mismos códigos: así la ficha ofrece el mismo botón de resolver sin una
+    // rama nueva. Quedan afuera del chequeo de duplicados a propósito, porque
+    // una Pericia legal siempre cae sobre una habilidad que ya está en
+    // `chosenSkills` —es el requisito— y dispararía siempre. Y afuera del de
+    // opciones válidas porque el compilador las construye filtrando por
+    // competencia, así que no pueden salirse de la lista.
+    for (final slot in [...slots, ...sheet.expertiseChoiceSlots]) {
       if (slot.chosen.length < slot.count) {
         w.add(ValidationWarning(
           'proficiency_choice_count',

@@ -183,12 +183,25 @@ class CharacterCompiler {
     final slotTools = <String, List<String>>{};
     final slotReplaceable = <String, bool>{};
     final slotFallback = <String, String?>{};
+    final slotUpgradesToExpertise = <String, bool>{};
 
     for (final source in proficiencySources) {
-      for (final effect
-          in source.effects.whereType<ProficiencyChoiceEffect>()) {
+      // La Pericia pura se resuelve en una segunda pasada, más abajo: sus
+      // opciones son las competencias que quedan cuando este loop terminó.
+      //
+      // La variante "competencia, o Pericia si ya eras competente" (Mente
+      // Aguda) se queda acá a propósito: sus opciones son una lista fija, no
+      // dependen de lo que ya tengas, así que sigue siendo una elección de
+      // competencia. Sacarla de esta pasada le haría perder la migración del
+      // campo viejo `chosenProficiencies`, y con ella la elección guardada de
+      // cualquier personaje que venga de antes.
+      for (final effect in source.effects
+          .whereType<ProficiencyChoiceEffect>()
+          .where((e) => !e.expertise || e.allowNewProficiency)) {
         final groupId = effect.groupId ?? source.id + ':proficiency';
         slotNames[groupId] = effect.name ?? source.name;
+        slotUpgradesToExpertise[groupId] =
+            (slotUpgradesToExpertise[groupId] ?? false) || effect.expertise;
         slotCounts[groupId] = (slotCounts[groupId] ?? 0) + effect.count;
         slotReplaceable[groupId] =
             (slotReplaceable[groupId] ?? false) || effect.replaceable;
@@ -266,10 +279,67 @@ class CharacterCompiler {
 
       for (final id in chosen.where(options.contains)) {
         if (Skill.allIds.contains(id)) {
-          builder.skillProficiencies.add(id);
+          // Mente Aguda: si ya eras competente en la habilidad elegida, lo que
+          // concede es Pericia en vez de una competencia que ya tenías.
+          if ((slotUpgradesToExpertise[groupId] ?? false) &&
+              builder.skillProficiencies.contains(id)) {
+            builder.expertiseSkills.add(id);
+          } else {
+            builder.skillProficiencies.add(id);
+          }
         } else {
           builder.toolProficiencies.add(id);
         }
+      }
+    }
+
+    // --- Pericia ---
+    // Segunda pasada, después de las competencias: las opciones son "las
+    // habilidades en las que ya sos competente", y eso incluye lo que acaba de
+    // conceder el loop de arriba (Habilidoso, la elección de trasfondo).
+    final expertiseSlots = <ProficiencyChoiceSlot>[];
+    final expertiseTaken = <String>{};
+
+    for (final source in proficiencySources) {
+      for (final effect in source.effects
+          .whereType<ProficiencyChoiceEffect>()
+          .where((e) => e.expertise && !e.allowNewProficiency)) {
+        final groupId = effect.groupId ?? source.id + ':expertise';
+        final pool = effect.skills.isEmpty ? Skill.allIds : effect.skills;
+        // Se revalida contra el estado actual y nunca se confía en lo guardado:
+        // si el personaje perdió la competencia (cambió de trasfondo), su
+        // Pericia deja de ser elegible y el cupo vuelve a quedar pendiente.
+        final options = [
+          for (final id in pool)
+            if (builder.skillProficiencies.contains(id))
+              if (!expertiseTaken.contains(id)) id,
+        ];
+
+        final chosen = <String>[];
+        for (final id in c.proficiencyChoices[groupId] ?? const <String>[]) {
+          if (chosen.length >= effect.count) break;
+          if (options.contains(id) && !chosen.contains(id)) chosen.add(id);
+        }
+        // Sacarlas de las opciones de los cupos siguientes es lo que impide que
+        // el Pícaro repita a nivel 6 lo que eligió a nivel 1.
+        expertiseTaken.addAll(chosen);
+
+        expertiseSlots.add(
+          ProficiencyChoiceSlot(
+            groupId: groupId,
+            name: effect.name ?? source.name,
+            count: effect.count,
+            skills: options,
+            tools: const [],
+            chosen: chosen,
+            replaceable: effect.replaceable,
+            expertise: true,
+          ),
+        );
+
+        // Las opciones ya se filtraron a competencias que tiene, así que acá
+        // no hay rama: todo lo elegido es Pericia.
+        builder.expertiseSkills.addAll(chosen);
       }
     }
 
@@ -281,7 +351,6 @@ class CharacterCompiler {
     final profBonus = proficiencyBonusForLevel(c.level);
     final conMod = mods[Ability.constitution]!;
     final dexMod = mods[Ability.dexterity]!;
-    final wisMod = mods[Ability.wisdom]!;
 
     final baseHp = c.hpPerLevel.fold<int>(0, (s, v) => s + v);
     final maxHp = baseHp +
@@ -292,10 +361,6 @@ class CharacterCompiler {
     final ac = _armorClass(c, builder, mods);
     final speed = _speed(c, builder);
     final size = _size(c, race);
-
-    final passivePerception = 10 +
-        wisMod +
-        (builder.skillProficiencies.contains('perception') ? profBonus : 0);
 
     final attacksPerAction = 1 + builder.maxExtraAttack;
 
@@ -316,6 +381,7 @@ class CharacterCompiler {
       abilityModifiers: mods,
       savingThrowProficiencies: builder.saveProficiencies,
       skillProficiencies: builder.skillProficiencies,
+      expertiseSkills: builder.expertiseSkills,
       armorProficiencies: builder.armorProficiencies,
       weaponProficiencies: builder.weaponProficiencies,
       toolProficiencies: builder.toolProficiencies,
@@ -325,7 +391,6 @@ class CharacterCompiler {
       size: size,
       speed: speed,
       initiative: dexMod,
-      passivePerception: passivePerception,
       darkvision: builder.darkvision,
       resistances: builder.resistances,
       immunities: builder.immunities,
@@ -359,6 +424,7 @@ class CharacterCompiler {
           ),
       ],
       proficiencyChoiceSlots: proficiencySlots,
+      expertiseChoiceSlots: expertiseSlots,
       spellcasting: spellcasting,
     );
   }

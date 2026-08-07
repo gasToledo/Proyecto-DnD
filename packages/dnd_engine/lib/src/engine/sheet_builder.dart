@@ -34,6 +34,12 @@ class SheetBuilder {
 
   final Set<Ability> saveProficiencies = {};
   final Set<String> skillProficiencies = {};
+
+  /// Habilidades con Pericia. Lo llena el compilador en su segunda pasada, no
+  /// [applyEffect]: las opciones dependen de qué competencias quedaron, y eso
+  /// solo se sabe cuando ya se aplicaron todos los efectos.
+  final Set<String> expertiseSkills = {};
+
   final Set<String> armorProficiencies = {};
   final Set<String> weaponProficiencies = {};
   final Set<String> toolProficiencies = {};

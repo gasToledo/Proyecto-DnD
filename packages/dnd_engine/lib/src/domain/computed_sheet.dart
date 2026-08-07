@@ -1,5 +1,6 @@
 import 'ability.dart';
 import 'effects.dart';
+import 'skill.dart';
 import 'spell_slots.dart';
 
 /// Rasgo pasivo mostrado en la ficha.
@@ -126,6 +127,12 @@ class ProficiencyChoiceSlot {
   final List<String> chosen;
   final bool replaceable;
 
+  /// Este cupo concede **Pericia**, no competencia. La UI lo necesita para
+  /// rotular y, sobre todo, para invertir el bloqueo: en un cupo normal una
+  /// habilidad que ya tenés se muestra bloqueada, y acá es al revés, porque ser
+  /// competente es el requisito para poder elegirla.
+  final bool expertise;
+
   const ProficiencyChoiceSlot({
     required this.groupId,
     required this.name,
@@ -134,6 +141,7 @@ class ProficiencyChoiceSlot {
     required this.tools,
     this.chosen = const [],
     this.replaceable = false,
+    this.expertise = false,
   });
 
   /// Todo lo elegible, en el orden en que se muestra.
@@ -302,6 +310,14 @@ class ComputedSheet {
   final Map<Ability, int> abilityModifiers;
   final Set<Ability> savingThrowProficiencies;
   final Set<String> skillProficiencies;
+
+  /// Habilidades con **Pericia**: el bonificador por competencia cuenta doble.
+  /// Siempre es un subconjunto de [skillProficiencies] — el compilador lo
+  /// garantiza, porque la Pericia se elige entre las competencias que ya tenés.
+  /// Para leer el modificador de una habilidad no hace falta cruzar los dos
+  /// conjuntos a mano: está [skillModifier].
+  final Set<String> expertiseSkills;
+
   final Set<String> armorProficiencies;
   final Set<String> weaponProficiencies;
   final Set<String> toolProficiencies;
@@ -317,7 +333,6 @@ class ComputedSheet {
 
   final int speed;
   final int initiative;
-  final int passivePerception;
   final int? darkvision;
 
   final Set<String> resistances;
@@ -361,6 +376,16 @@ class ComputedSheet {
   /// qué lista salen, en vez de recorrer las dotes por su cuenta.
   final List<ProficiencyChoiceSlot> proficiencyChoiceSlots;
 
+  /// Cupos de **Pericia** pendientes o elegidos, en una lista aparte de
+  /// [proficiencyChoiceSlots] a propósito.
+  ///
+  /// Mezclarlos rompería los consumidores del otro camino: el chequeo de
+  /// duplicados de la validación dispararía siempre para una Pericia legal
+  /// (la habilidad ya está entre las competencias, que es justamente el
+  /// requisito), y la UI bloquea las opciones que ya tenés, que acá son las
+  /// únicas elegibles.
+  final List<ProficiencyChoiceSlot> expertiseChoiceSlots;
+
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
 
@@ -371,6 +396,7 @@ class ComputedSheet {
     required this.abilityModifiers,
     required this.savingThrowProficiencies,
     required this.skillProficiencies,
+    this.expertiseSkills = const {},
     required this.armorProficiencies,
     required this.weaponProficiencies,
     required this.toolProficiencies,
@@ -380,7 +406,6 @@ class ComputedSheet {
     this.size = 'Mediano',
     required this.speed,
     required this.initiative,
-    required this.passivePerception,
     required this.darkvision,
     required this.resistances,
     required this.immunities,
@@ -394,6 +419,7 @@ class ComputedSheet {
     this.spellListAdditionIds = const {},
     this.featureChoiceSlots = const [],
     this.proficiencyChoiceSlots = const [],
+    this.expertiseChoiceSlots = const [],
     this.spellcasting,
   });
 
@@ -401,4 +427,24 @@ class ComputedSheet {
   int savingThrow(Ability a) =>
       abilityModifiers[a]! +
       (savingThrowProficiencies.contains(a) ? proficiencyBonus : 0);
+
+  /// Modificador total de una habilidad: **único lugar donde vive esta suma**.
+  /// Antes la hacían a mano la Percepción pasiva y la ficha, cada una por su
+  /// lado, y así fue como Pericia no llegó a ninguna de las dos.
+  ///
+  /// Un id que no está en el catálogo de habilidades devuelve 0 en vez de
+  /// reventar: puede venir de contenido homebrew que inventó una habilidad.
+  int skillModifier(String skillId) {
+    final ability = Skill.fromId(skillId)?.ability;
+    if (ability == null) return 0;
+    return abilityModifiers[ability]! +
+        (expertiseSkills.contains(skillId)
+            ? proficiencyBonus * 2
+            : skillProficiencies.contains(skillId)
+                ? proficiencyBonus
+                : 0);
+  }
+
+  /// Percepción pasiva: 10 + el modificador de Percepción, Pericia incluida.
+  int get passivePerception => 10 + skillModifier('perception');
 }

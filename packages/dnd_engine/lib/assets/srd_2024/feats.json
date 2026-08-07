@@ -1075,7 +1075,9 @@
       {
         "type": "proficiencyChoice",
         "count": 1,
-        "skills": ["arcana", "history", "investigation", "nature", "religion"]
+        "skills": ["arcana", "history", "investigation", "nature", "religion"],
+        "expertise": true,
+        "allowNewProficiency": true
       },
       {
         "type": "passiveTrait",

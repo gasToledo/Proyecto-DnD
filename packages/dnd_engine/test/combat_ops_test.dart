@@ -108,7 +108,6 @@ void main() {
       armorClass: 10,
       speed: 30,
       initiative: 0,
-      passivePerception: 10,
       darkvision: null,
       resistances: {},
       immunities: {},

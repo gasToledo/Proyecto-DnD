@@ -130,6 +130,8 @@ sealed class Effect {
               .toList(),
           replaceable: json['replaceable'] as bool? ?? false,
           fallbackFor: json['fallbackFor'] as String?,
+          expertise: json['expertise'] as bool? ?? false,
+          allowNewProficiency: json['allowNewProficiency'] as bool? ?? false,
         ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
@@ -363,6 +365,23 @@ class ProficiencyChoiceEffect extends Effect {
   final bool replaceable;
   final String? fallbackFor;
 
+  /// La elección concede **Pericia** (bonificador por competencia duplicado) en
+  /// vez de competencia: Pericia del Pícaro y del Bardo, Académico del Mago,
+  /// Explorador Hábil del Explorador.
+  ///
+  /// Cambia de dónde salen las opciones: solo las habilidades en las que ya sos
+  /// competente, porque Pericia se apoya sobre una competencia que ya tenés.
+  /// Por eso el compilador la resuelve en una segunda pasada, después de las
+  /// competencias, y por eso los slots viajan en una lista aparte de
+  /// [ComputedSheet]. Con [expertise] se ignoran [includeTools] y [tools]: la
+  /// Pericia es siempre sobre una habilidad.
+  final bool expertise;
+
+  /// Variante "competencia, **o** Pericia si ya eras competente" (Mente Aguda).
+  /// Las opciones no se filtran a lo que ya tenés, y una habilidad sin
+  /// competencia concede competencia normal en vez de Pericia.
+  final bool allowNewProficiency;
+
   const ProficiencyChoiceEffect({
     this.groupId,
     this.name,
@@ -373,6 +392,8 @@ class ProficiencyChoiceEffect extends Effect {
     this.tools = const [],
     this.replaceable = false,
     this.fallbackFor,
+    this.expertise = false,
+    this.allowNewProficiency = false,
   });
 
   @override
@@ -387,6 +408,8 @@ class ProficiencyChoiceEffect extends Effect {
         'tools': tools,
         'replaceable': replaceable,
         if (fallbackFor != null) 'fallbackFor': fallbackFor,
+        if (expertise) 'expertise': true,
+        if (allowNewProficiency) 'allowNewProficiency': true,
       };
 }
 

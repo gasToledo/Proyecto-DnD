@@ -416,6 +416,7 @@
         "name": "Pericia",
         "description": "Duplicas tu bonif. de competencia en dos habilidades elegidas.",
         "effects": [
+          { "type": "proficiencyChoice", "groupId": "class:rogue:expertise-1", "name": "Pericia (nivel 1)", "count": 2, "expertise": true },
           { "type": "passiveTrait", "name": "Pericia", "description": "Elige dos de tus competencias de habilidad; tu bonif. de competencia se duplica en cualquier prueba que las use. A nivel 6 eliges otras dos." }
         ]
       },
@@ -472,6 +473,7 @@
         "name": "Pericia (dos habilidades más)",
         "description": "Eliges otras dos habilidades para duplicar tu bonif. de competencia.",
         "effects": [
+          { "type": "proficiencyChoice", "groupId": "class:rogue:expertise-6", "name": "Pericia (nivel 6)", "count": 2, "expertise": true },
           { "type": "passiveTrait", "name": "Pericia (dos habilidades más)", "description": "Eliges otras dos de tus competencias de habilidad para aplicar Pericia." }
         ]
       },
@@ -822,9 +824,10 @@
       {
         "level": 2,
         "name": "Académico",
-        "description": "Tu experiencia en un campo de estudio te da beneficios (subclase a nivel 3).",
+        "description": "Ganas Pericia en una habilidad de estudio en la que ya seas competente.",
         "effects": [
-          { "type": "passiveTrait", "name": "Académico", "description": "Ganas competencia (o Pericia) en una habilidad mental y beneficios menores según tu tradición arcana." }
+          { "type": "proficiencyChoice", "groupId": "class:wizard:expertise-2", "name": "Académico: Pericia", "count": 1, "expertise": true, "skills": ["arcana", "history", "investigation", "medicine", "nature", "religion"] },
+          { "type": "passiveTrait", "name": "Académico", "description": "Elegí una habilidad en la que tengas competencia entre Arcanos, Historia, Investigación, Medicina, Naturaleza o Religión: ganás Pericia en ella." }
         ]
       },
       {
@@ -1132,6 +1135,7 @@
         "name": "Pericia",
         "description": "Duplicás tu bonif. de competencia en dos habilidades.",
         "effects": [
+          { "type": "proficiencyChoice", "groupId": "class:bard:expertise-2", "name": "Pericia (nivel 2)", "count": 2, "expertise": true },
           { "type": "passiveTrait", "name": "Pericia", "description": "Elegí dos de tus competencias de habilidad; duplicás tu bonif. de competencia en ellas. Otras dos a nivel 9." }
         ]
       },
@@ -1156,6 +1160,7 @@
         "name": "Pericia (dos habilidades más)",
         "description": "Ganás pericia en otras dos de tus competencias de habilidad.",
         "effects": [
+          { "type": "proficiencyChoice", "groupId": "class:bard:expertise-9", "name": "Pericia (nivel 9)", "count": 2, "expertise": true },
           { "type": "passiveTrait", "name": "Pericia (dos habilidades más)", "description": "Elegí otras dos de tus competencias de habilidad; duplicás tu bonif. de competencia también en ellas." }
         ]
       },
@@ -1663,6 +1668,7 @@
         "name": "Explorador Hábil",
         "description": "Ganas Pericia y beneficios de movimiento y exploración.",
         "effects": [
+          { "type": "proficiencyChoice", "groupId": "class:ranger:expertise-2", "name": "Explorador Hábil: Pericia", "count": 1, "expertise": true },
           { "type": "passiveTrait", "name": "Explorador Hábil", "description": "Ganas Pericia en una habilidad en la que ya seas competente y otros beneficios de exploración." }
         ]
       },
@@ -1688,6 +1694,7 @@
         "name": "Pericia",
         "description": "Ganás pericia en dos de tus competencias de habilidad.",
         "effects": [
+          { "type": "proficiencyChoice", "groupId": "class:ranger:expertise-9", "name": "Pericia (nivel 9)", "count": 2, "expertise": true },
           { "type": "passiveTrait", "name": "Pericia", "description": "Escogé dos de tus competencias de habilidad en las que no tengas pericia; duplicás tu bonif. de competencia en ellas." }
         ]
       },

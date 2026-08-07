@@ -227,7 +227,9 @@ void main() {
     // modelar todavía, bajá el número a mano y explicá por qué en el commit:
     // el historial de este número es el registro de deuda, y sale más barato
     // que marcar 311 entradas con un motivo que nadie va a leer.
-    expect(soloTexto, hasLength(lessThanOrEqualTo(311)),
+    // Hoy son exactamente 304. Va como cota y no como igualdad para que pagar
+    // deuda no haga fallar el test: lo que tiene que doler es *sumar*.
+    expect(soloTexto, hasLength(lessThanOrEqualTo(304)),
         reason: 'hay más rasgos que solo son texto que antes:\n'
             '${soloTexto.join('\n')}');
   });

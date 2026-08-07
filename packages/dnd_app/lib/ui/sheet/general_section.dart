@@ -100,13 +100,19 @@ extension _SheetGeneralSection on _SheetScreenState {
     'feature_choice_pending' => _resolveFeatureChoices,
     // El mismo código también sale cuando sobran competencias sin rasgo que
     // las conceda: ahí no hay nada que elegir y el diálogo saldría vacío.
-    'proficiency_choice_count' when sheet.proficiencyChoiceSlots.isNotEmpty =>
+    // El mismo aviso cubre la Pericia, que viaja en su propia lista.
+    'proficiency_choice_count'
+        when sheet.proficiencyChoiceSlots.isNotEmpty ||
+            sheet.expertiseChoiceSlots.isNotEmpty =>
       _resolveProficiencyChoices,
     _ => null,
   };
 
   Future<void> _resolveProficiencyChoices() async {
-    final initial = sheet.proficiencyChoiceSlots;
+    final initial = [
+      ...sheet.proficiencyChoiceSlots,
+      ...sheet.expertiseChoiceSlots,
+    ];
     final choices = <String, List<String>>{
       for (final slot in initial) slot.groupId: List.of(slot.chosen),
     };
@@ -120,7 +126,10 @@ extension _SheetGeneralSection on _SheetScreenState {
             proficiencyChoices: choices,
           );
           final preview = CharacterCompiler(repo).compile(previewCharacter);
-          final slots = preview.proficiencyChoiceSlots;
+          final slots = [
+            ...preview.proficiencyChoiceSlots,
+            ...preview.expertiseChoiceSlots,
+          ];
           final fixed = <String>{
             ...preview.skillProficiencies,
             ...preview.toolProficiencies,
@@ -136,7 +145,11 @@ extension _SheetGeneralSection on _SheetScreenState {
           });
 
           return AlertDialog(
-            title: const Text('Elegir competencias'),
+            title: Text(
+              slots.isNotEmpty && slots.every((s) => s.expertise)
+                  ? 'Elegir Pericia'
+                  : 'Elegir competencias',
+            ),
             content: SizedBox(
               width: 720,
               child: SingleChildScrollView(
@@ -145,7 +158,10 @@ extension _SheetGeneralSection on _SheetScreenState {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Las opciones que ya ten\u00e9s por otra v\u00eda quedan bloqueadas.',
+                      'Las opciones que ya ten\u00e9s por otra v\u00eda quedan '
+                      'bloqueadas. En los cupos de Pericia es al rev\u00e9s: '
+                      'solo se ofrecen las habilidades en las que ya sos '
+                      'competente, y duplic\u00e1s el bonificador en ellas.',
                     ),
                     const SizedBox(height: 16),
                     for (final slot in slots) ...[
@@ -172,9 +188,14 @@ extension _SheetGeneralSection on _SheetScreenState {
                                     .where((entry) => entry.key != slot.groupId)
                                     .expand((entry) => entry.value)
                                     .contains(id);
+                                // En un cupo de Pericia, tener la competencia
+                                // es el requisito para elegirla: `fixed` no
+                                // debe bloquear. Lo elegido en otro cupo sí,
+                                // en los dos casos.
                                 final locked =
                                     !selected &&
-                                    (fixed.contains(id) || selectedElsewhere);
+                                    ((!slot.expertise && fixed.contains(id)) ||
+                                        selectedElsewhere);
                                 return FilterChip(
                                   label: Text(
                                     slot.skills.contains(id)
@@ -511,25 +532,35 @@ extension _SheetGeneralSection on _SheetScreenState {
   Widget _skillRow(ComputedSheet s, Skill skill) {
     final pal = context.palette;
     final proficient = s.skillProficiencies.contains(skill.id);
-    final mod =
-        s.abilityModifiers[skill.ability]! +
-        (proficient ? s.proficiencyBonus : 0);
+    final expertise = s.expertiseSkills.contains(skill.id);
+    // La cuenta vive en la ficha, no acá: es el mismo método que usa la
+    // Percepción pasiva, así que la Pericia no puede llegar a una y no a otra.
+    final mod = s.skillModifier(skill.id);
     final color = proficient ? pal.gold : null;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: Row(
         children: [
+          // Con Pericia el punto lleva un anillo, para distinguirla de la
+          // competencia simple sin depender solo del número.
           Container(
             width: 8,
             height: 8,
             decoration: BoxDecoration(
               color: proficient ? pal.gold : pal.hairline,
               shape: BoxShape.circle,
+              border: expertise ? Border.all(color: pal.gold, width: 3) : null,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: expertise ? 4 : 10),
           Expanded(
-            child: Text(skill.label, style: TextStyle(color: color)),
+            child: Text(
+              expertise ? '${skill.label} ··' : skill.label,
+              style: TextStyle(
+                color: color,
+                fontWeight: expertise ? FontWeight.w600 : null,
+              ),
+            ),
           ),
           Text(
             skill.ability.abbr,

@@ -796,3 +796,60 @@ class _FeatureChoiceChip extends StatelessWidget {
     );
   }
 }
+
+/// Selector de Pericia: chips de las habilidades elegibles, que el compilador
+/// ya filtró a las competencias que tiene el personaje.
+///
+/// No hay noción de "bloqueada por tenerla ya": acá tenerla es el requisito. Lo
+/// único que limita es el cupo, y una habilidad tomada en otro cupo ya viene
+/// fuera de `slot.skills`.
+class _ExpertiseGroup extends StatelessWidget {
+  final ProficiencyChoiceSlot slot;
+  final List<String> chosen;
+  final ValueChanged<List<String>> onChanged;
+
+  const _ExpertiseGroup({
+    required this.slot,
+    required this.chosen,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (slot.skills.isEmpty) {
+      return Text(
+        'No tenés competencias sobre las que aplicar Pericia.',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+
+    final full = chosen.length >= slot.count;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final id in slot.skills)
+          Builder(
+            builder: (context) {
+              final selected = chosen.contains(id);
+              return FilterChip(
+                label: Text(Skill.labelFor(id)),
+                selected: selected,
+                onSelected: !selected && full
+                    ? null
+                    : (value) {
+                        final next = List<String>.of(chosen);
+                        if (value) {
+                          next.add(id);
+                        } else {
+                          next.remove(id);
+                        }
+                        onChanged(next);
+                      },
+              );
+            },
+          ),
+      ],
+    );
+  }
+}

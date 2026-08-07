@@ -56,6 +56,80 @@ void main() {
     expect(character.name, 'Sagan "The Red"');
   });
 
+  group('Pericia en creación', () {
+    /// Un Pícaro listo salvo la Pericia, que la clase concede a nivel 1.
+    CreationDraft rogue() {
+      final d = CreationDraft(repo)
+        ..classId = 'rogue'
+        ..raceId = 'human'
+        ..raceFeatId = 'skilled'
+        ..backgroundId = 'criminal'
+        ..name = 'Ladrón';
+      d.classSkills.addAll(['stealth', 'perception', 'acrobatics', 'insight']);
+      d.applyScoreMethod(ScoreMethod.standardArray);
+      d.assignedScores.addAll({
+        Ability.strength: 8,
+        Ability.dexterity: 15,
+        Ability.constitution: 14,
+        Ability.intelligence: 13,
+        Ability.wisdom: 12,
+        Ability.charisma: 10,
+      });
+      return d;
+    }
+
+    test('el Pícaro de nivel 1 tiene un cupo de Pericia por dos', () {
+      final d = rogue();
+      final slot = d.expertiseChoiceSlots.single;
+      expect(slot.groupId, 'class:rogue:expertise-1');
+      expect(slot.count, 2);
+      // Solo sus competencias, no las 18 habilidades.
+      expect(slot.skills, contains('stealth'));
+      expect(slot.skills, isNot(contains('athletics')));
+    });
+
+    test('la Pericia pendiente bloquea el paso de aptitudes', () {
+      final d = rogue();
+      expect(
+        d.pendingFor(CreationStep.aptitudes),
+        contains('Pericias pendientes: 2.'),
+      );
+
+      d.proficiencyChoices['class:rogue:expertise-1'] = [
+        'stealth',
+        'perception',
+      ];
+      expect(
+        d
+            .pendingFor(CreationStep.aptitudes)
+            .where((b) => b.contains('Pericia')),
+        isEmpty,
+      );
+    });
+
+    test('el podado no borra la Pericia elegida', () {
+      // `pruneProficiencyChoices` recorre las dos listas de cupos: si mirara
+      // solo las competencias, su removeWhere se llevaría estas elecciones.
+      final d = rogue();
+      d.proficiencyChoices['class:rogue:expertise-1'] = [
+        'stealth',
+        'perception',
+      ];
+      d.pruneProficiencyChoices();
+      expect(d.proficiencyChoices['class:rogue:expertise-1'], [
+        'stealth',
+        'perception',
+      ]);
+
+      final sheet = CharacterCompiler(repo).compile(d.build());
+      expect(sheet.expertiseSkills, {'stealth', 'perception'});
+      expect(
+        sheet.skillModifier('stealth'),
+        sheet.abilityModifiers[Ability.dexterity]! + sheet.proficiencyBonus * 2,
+      );
+    });
+  });
+
   test('un linaje válido se conserva y aporta sus rasgos al personaje', () {
     final d = CreationDraft(repo)
       ..raceId = 'elf'

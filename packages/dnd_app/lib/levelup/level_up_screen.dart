@@ -24,6 +24,10 @@ enum _LevelUpStepKind {
   // subclase recién elegida, y los prerrequisitos de una opción pueden depender
   // de la característica que sube el ASI de este mismo nivel.
   featureChoices,
+  // Después de las elecciones abiertas: las opciones son las habilidades en las
+  // que ya sos competente, y una dote recién elegida (Habilidoso) puede sumar
+  // competencias.
+  expertise,
   features,
   spells,
   review,
@@ -144,6 +148,68 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     setState(() => _newFeatureChoices = next);
   }
 
+  /// Pericias re-resueltas en este nivel (null = sin cambios). Van en
+  /// `Character.proficiencyChoices`, el mismo mapa que las competencias por
+  /// dote, con su propio groupId.
+  Map<String, List<String>>? _newProficiencyChoices;
+
+  Map<String, List<String>> get _effectiveProficiencyChoices =>
+      _newProficiencyChoices ?? widget.character.proficiencyChoices;
+
+  List<String> _expertiseFor(String groupId) =>
+      _effectiveProficiencyChoices[groupId] ?? const [];
+
+  void _setExpertise(String groupId, List<String> ids) {
+    final next = {
+      for (final e in _effectiveProficiencyChoices.entries)
+        e.key: List<String>.of(e.value),
+    };
+    if (ids.isEmpty) {
+      next.remove(groupId);
+    } else {
+      next[groupId] = ids;
+    }
+    setState(() => _newProficiencyChoices = next);
+  }
+
+  List<ProficiencyChoiceSlot>? _expertiseCache;
+  String? _expertiseSig;
+
+  /// Cupos de Pericia al nivel nuevo. Se memoiza por el mismo motivo que
+  /// [_choiceSlots]: `_steps` corre en cada build y compilar la ficha no es
+  /// gratis. La firma incluye las Pericias ya elegidas porque una habilidad
+  /// tomada sale de las opciones del otro cupo, y la dote porque Habilidoso
+  /// puede sumar la competencia que habilita una Pericia nueva.
+  List<ProficiencyChoiceSlot> get _expertiseSlots {
+    final sig = [
+      _newLevel,
+      _subclassId,
+      _asiKind.name,
+      _featId,
+      _abilityA?.name,
+      _abilityB?.name,
+      _impMode.name,
+      for (final e in _effectiveProficiencyChoices.entries)
+        '${e.key}=${e.value.join(",")}',
+    ].join('|');
+    if (sig != _expertiseSig) {
+      _expertiseCache = CharacterCompiler(
+        widget.repo,
+      ).compile(_buildUpdated()).expertiseChoiceSlots;
+      _expertiseSig = sig;
+    }
+    return _expertiseCache!;
+  }
+
+  int get _pendingExpertise => _expertiseSlots.fold(
+    0,
+    (n, s) => n + (s.count - _expertiseFor(s.groupId).length).clamp(0, s.count),
+  );
+
+  /// El paso aparece solo si falta elegir: una Pericia ya elegida no se
+  /// re-pregunta en cada subida (no es re-elegible por regla).
+  bool get _hasExpertise => _pendingExpertise > 0;
+
   List<FeatureChoiceSlot>? _slotCache;
   String? _slotSig;
 
@@ -209,6 +275,8 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           'Elecciones',
           Icons.style,
         ),
+      if (_hasExpertise)
+        const _LevelUpStep(_LevelUpStepKind.expertise, 'Pericia', Icons.star),
       if (_gainedFeatures().isNotEmpty)
         const _LevelUpStep(
           _LevelUpStepKind.features,
@@ -248,6 +316,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     _LevelUpStepKind.subclass => !_needsSubclass || _subclassId != null,
     _LevelUpStepKind.abilityScore => _asiComplete,
     _LevelUpStepKind.featureChoices => _pendingChoices == 0,
+    _LevelUpStepKind.expertise => _pendingExpertise == 0,
     _ => true,
   };
 
@@ -291,6 +360,10 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _pendingChoices == 1
           ? 'Te falta una elección para continuar.'
           : 'Te faltan $_pendingChoices elecciones para continuar.',
+    _LevelUpStepKind.expertise when _pendingExpertise > 0 =>
+      _pendingExpertise == 1
+          ? 'Elegí una habilidad para tu Pericia.'
+          : 'Elegí $_pendingExpertise habilidades para tu Pericia.',
     _ => null,
   };
 
@@ -330,6 +403,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       cantripIds: _newCantrips,
       spellIds: _newSpells,
       featureChoices: _newFeatureChoices,
+      proficiencyChoices: _newProficiencyChoices,
     );
   }
 

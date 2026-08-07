@@ -631,4 +631,117 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  // --- Pericia -------------------------------------------------------------
+
+  Character bard({
+    int level = 1,
+    Map<String, List<String>> expertise = const {},
+  }) => Character(
+    id: 't-bard',
+    name: 'Prueba',
+    raceId: 'human',
+    classId: 'bard',
+    backgroundId: 'sage',
+    level: level,
+    assignedScores: {
+      Ability.strength: 10,
+      Ability.dexterity: 14,
+      Ability.constitution: 12,
+      Ability.intelligence: 12,
+      Ability.wisdom: 10,
+      Ability.charisma: 16,
+    },
+    hpPerLevel: List.filled(level, 8),
+    chosenSkills: const ['perception', 'stealth', 'performance'],
+    proficiencyChoices: expertise,
+  );
+
+  testWidgets('subir un Bardo a nivel 2 pide la Pericia', (tester) async {
+    // La queja que originó todo esto: "los bardos tienen pericia con el nivel 2
+    // que duplica el bonificador, pero nunca me lo hizo elegir".
+    Character? saved;
+    await pumpLevelUp(tester, bard(), onDone: (c) => saved = c);
+
+    expect(find.text('Pericia'), findsWidgets);
+
+    // El paso bloquea el avance mientras falten elecciones.
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Elegí 2 habilidades para tu Pericia.'), findsOneWidget);
+
+    // Solo se ofrecen las competencias que tiene, no las 18 habilidades.
+    expect(find.widgetWithText(FilterChip, 'Percepción'), findsOneWidget);
+    expect(find.widgetWithText(FilterChip, 'Atletismo'), findsNothing);
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Percepción'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilterChip, 'Sigilo'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Elegí'),
+      findsNothing,
+      reason: 'ya no debería bloquear',
+    );
+    expect(saved, isNull, reason: 'todavía no se confirmó');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('la Pericia elegida se guarda y duplica el bonificador', (
+    tester,
+  ) async {
+    Character? saved;
+    await pumpLevelUp(tester, bard(), onDone: (c) => saved = c);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilterChip, 'Percepción'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilterChip, 'Sigilo'));
+    await tester.pumpAndSettle();
+
+    // Avanzar hasta el final y confirmar.
+    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 2'));
+    await tester.pumpAndSettle();
+
+    expect(saved, isNotNull);
+    expect(
+      saved!.proficiencyChoices['class:bard:expertise-2'],
+      containsAll(['perception', 'stealth']),
+    );
+
+    final sheet = CharacterCompiler(repo).compile(saved!);
+    expect(sheet.expertiseSkills, {'perception', 'stealth'});
+    expect(
+      sheet.skillModifier('perception'),
+      sheet.abilityModifiers[Ability.wisdom]! + sheet.proficiencyBonus * 2,
+    );
+  });
+
+  testWidgets('un Bardo que ya eligió su Pericia no vuelve a que se la pidan', (
+    tester,
+  ) async {
+    await pumpLevelUp(
+      tester,
+      bard(
+        level: 2,
+        expertise: const {
+          'class:bard:expertise-2': ['perception', 'stealth'],
+        },
+      ),
+    );
+
+    // Sube a 3: la Pericia del nivel 2 ya está resuelta y no hay otra hasta 9.
+    expect(find.text('Pericia'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -451,6 +451,41 @@ class _AptitudesStep extends StatelessWidget {
             ],
           ];
         }(),
+        // Pericia (Pícaro nivel 1, Bardo nivel 2): duplica el bonificador en
+        // una competencia que ya tenés. No se pasa `already`: acá ser
+        // competente es el requisito para poder elegirla, no un motivo para
+        // bloquearla. Lo que sí bloquea es haberla elegido en otro cupo, y de
+        // eso ya se encarga el compilador sacándola de las opciones.
+        ...() {
+          final slots = draft.expertiseChoiceSlots;
+          if (slots.isEmpty) return <Widget>[];
+          final total = slots.fold<int>(0, (n, s) => n + s.count);
+          final selected = slots.fold<int>(
+            0,
+            (n, slot) =>
+                n + (draft.proficiencyChoices[slot.groupId]?.length ?? 0),
+          );
+          return <Widget>[
+            const SizedBox(height: 26),
+            _SectionHeader(title: 'Pericia', counter: '$selected/$total'),
+            const SizedBox(height: 6),
+            Text(
+              'Duplica tu bonificador por competencia en la habilidad elegida.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            for (final slot in slots) ...[
+              _ProficiencyChoicePicker(
+                slot: slot,
+                chosen: draft.proficiencyChoices[slot.groupId]!,
+                already: const {},
+                max: slot.count,
+                onChanged: onChanged,
+              ),
+              const SizedBox(height: 12),
+            ],
+          ];
+        }(),
       ],
     );
   }

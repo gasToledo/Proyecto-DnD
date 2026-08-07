@@ -46,6 +46,21 @@ extension _LevelUpSections on _LevelUpScreenState {
         _buildFeatureChoicesSection(),
       ],
     ),
+    _LevelUpStepKind.expertise => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _LevelUpIntro(
+          eyebrow: 'Elegís vos',
+          title: 'Pericia',
+          body:
+              'Duplicás tu bonificador por competencia en las habilidades que '
+              'elijas. Solo se ofrecen las habilidades en las que ya sos '
+              'competente.',
+        ),
+        const SizedBox(height: 22),
+        _buildExpertiseSection(),
+      ],
+    ),
     _LevelUpStepKind.features => _buildFeaturesStep(),
     _LevelUpStepKind.spells => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,6 +360,27 @@ extension _LevelUpSections on _LevelUpScreenState {
                 )
                 .toList(),
             onChanged: (ids) => _setChoices(slot.groupId, ids),
+          ),
+          const SizedBox(height: 22),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildExpertiseSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final slot in _expertiseSlots) ...[
+          Eyebrow(
+            '${slot.name} '
+            '(${_expertiseFor(slot.groupId).length}/${slot.count})',
+          ),
+          const SizedBox(height: 6),
+          _ExpertiseGroup(
+            slot: slot,
+            chosen: _expertiseFor(slot.groupId),
+            onChanged: (ids) => _setExpertise(slot.groupId, ids),
           ),
           const SizedBox(height: 22),
         ],

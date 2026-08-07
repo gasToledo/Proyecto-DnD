@@ -432,16 +432,36 @@ class CreationDraft {
   List<ProficiencyChoiceSlot> get proficiencyChoiceSlots =>
       previewSheet.proficiencyChoiceSlots;
 
-  /// Cuántas competencias por dote faltan elegir.
+  /// Cupos de Pericia (Pícaro y Bardo ya a nivel bajo). Viven en una lista
+  /// aparte en la ficha, así que hay que pedirlos aparte.
+  List<ProficiencyChoiceSlot> get expertiseChoiceSlots =>
+      previewSheet.expertiseChoiceSlots;
+
+  /// Todos los cupos de elección de competencia, Pericia incluida. Es lo que
+  /// tienen que recorrer el podado y el conteo de pendientes: si la Pericia
+  /// queda afuera, sus elecciones se borran.
+  List<ProficiencyChoiceSlot> get allProficiencyChoiceSlots => [
+    ...proficiencyChoiceSlots,
+    ...expertiseChoiceSlots,
+  ];
+
+  /// Cuántas competencias por dote faltan elegir, contando la Pericia.
   int get pendingProficiencyChoices {
-    return proficiencyChoiceSlots.fold<int>(0, (n, slot) => n + slot.pending);
+    return allProficiencyChoiceSlots.fold<int>(
+      0,
+      (n, slot) => n + slot.pending,
+    );
   }
 
   /// Saca de la selección lo que dejó de ser elegible: cambiar de dote o de
   /// trasfondo puede invalidar una elección ya hecha, y dejarla puesta daría
   /// una competencia que ninguna dote concede.
+  ///
+  /// Recorre **las dos** listas de cupos. Si se recorriera solo la de
+  /// competencias, el `removeWhere` de abajo borraría las Pericias elegidas por
+  /// no encontrar su groupId entre los activos.
   void pruneProficiencyChoices() {
-    final slots = proficiencyChoiceSlots;
+    final slots = allProficiencyChoiceSlots;
     final active = {for (final slot in slots) slot.groupId};
     proficiencyChoices.removeWhere((groupId, _) => !active.contains(groupId));
     for (final slot in slots) {
@@ -729,9 +749,21 @@ class CreationDraft {
         // Competencias que declara una dote (Habilidoso del trasfondo o de la
         // especie, Mente Aguda). Genérico: sumar otra dote que las conceda no
         // toca este gating.
-        final faltan = pendingProficiencyChoices;
+        final faltan = proficiencyChoiceSlots.fold<int>(
+          0,
+          (n, slot) => n + slot.pending,
+        );
         if (faltan > 0) {
           out.add('Competencias pendientes: $faltan.');
+        }
+        // La Pericia se nombra aparte: decirle "competencia" a lo que duplica
+        // el bonificador confunde, y son dos secciones distintas del paso.
+        final periciasFaltan = expertiseChoiceSlots.fold<int>(
+          0,
+          (n, slot) => n + slot.pending,
+        );
+        if (periciasFaltan > 0) {
+          out.add('Pericias pendientes: $periciasFaltan.');
         }
         return out;
 

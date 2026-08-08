@@ -491,9 +491,10 @@
       {
         "level": 6,
         "name": "Descubrimientos Mágicos",
-        "description": "Aprendes dos conjuros de cualquier clase que tienes siempre preparados.",
+        "description": "Aprendes dos conjuros de las listas de Clérigo, Druida o Mago que tienes siempre preparados.",
         "effects": [
-          { "type": "passiveTrait", "name": "Descubrimientos Mágicos", "description": "Dos conjuros de cualquier lista, siempre preparados." }
+          { "type": "spellChoice", "groupId": "subclass:college-lore:magical-discoveries", "name": "Descubrimientos Mágicos", "count": 2, "minLevel": 0, "maxLevelFromSlots": true, "fromClasses": ["cleric", "druid", "wizard"], "replaceable": true },
+          { "type": "passiveTrait", "name": "Descubrimientos Mágicos", "description": "Elegí dos conjuros de las listas de Clérigo, Druida o Mago, o de cualquier combinación de ellas. Tienen que ser trucos o conjuros para los que tengas espacios. Siempre los tenés preparados y podés cambiar uno cada vez que subas un nivel de Bardo." }
         ]
       },
       {

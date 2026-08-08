@@ -535,9 +535,176 @@ void main() {
       });
     });
   });
+
+  group('Catálogo oficial', () {
+    late ContentRepository repo;
+    late CharacterCompiler compiler;
+
+    setUpAll(() async {
+      repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+      compiler = CharacterCompiler(repo);
+    });
+
+    ComputedSheet oficial(
+      String classId,
+      int level, {
+      String? subclassId,
+      Map<String, List<String>> choices = const {},
+    }) =>
+        compiler.compile(Character(
+          id: 'p',
+          name: 'Prueba',
+          raceId: 'human',
+          classId: classId,
+          backgroundId: 'sage',
+          subclassId: subclassId,
+          level: level,
+          assignedScores: {for (final a in Ability.values) a: 14},
+          hpPerLevel: List.filled(level, 6),
+          spellChoices: choices,
+        ));
+
+    test('Conjuros Característicos llega a nivel 20, no antes', () {
+      expect(oficial('wizard', 19).spellChoiceSlots.map((s) => s.groupId),
+          isNot(contains('class:wizard:signature-spells')));
+
+      final slot =
+          oficial('wizard', 20).slotOf('class:wizard:signature-spells');
+      expect(slot.count, 2);
+      expect(slot.pending, 2);
+    });
+
+    test('y solo ofrece conjuros de nivel 3 de la lista de Mago', () {
+      final slot =
+          oficial('wizard', 20).slotOf('class:wizard:signature-spells');
+      expect(slot.options, isNotEmpty);
+      for (final id in slot.options) {
+        final spell = repo.spell(id)!;
+        expect(spell.level, 3, reason: id);
+        expect(spell.classes, contains('wizard'), reason: id);
+      }
+    });
+
+    test('elegidos quedan siempre preparados y con un uso gratis cada uno', () {
+      final sheet = oficial('wizard', 20, choices: {
+        'class:wizard:signature-spells': ['fireball', 'fly'],
+      });
+
+      expect(sheet.alwaysPreparedSpellIds, containsAll(['fireball', 'fly']));
+
+      final gratis =
+          sheet.resources.where((r) => r.id.startsWith('innate-')).toList();
+      expect(gratis.map((r) => r.id),
+          containsAll(['innate-fireball', 'innate-fly']));
+      expect(
+        gratis
+            .where((r) => r.id == 'innate-fireball' || r.id == 'innate-fly')
+            .every((r) => r.recharge == RechargeOn.shortRest && r.max == 1),
+        isTrue,
+      );
+    });
+
+    test('no le comen cupo de preparados al Mago', () {
+      final sin = oficial('wizard', 20).spellcasting!.preparedCount;
+      final con = oficial('wizard', 20, choices: {
+        'class:wizard:signature-spells': ['fireball', 'fly'],
+      }).spellcasting!.preparedCount;
+      expect(con, sin);
+    });
+
+    test('Maestría sobre Conjuros son dos cupos, uno por nivel', () {
+      final sheet = oficial('wizard', 18);
+      final n1 = sheet.slotOf('class:wizard:spell-mastery-1');
+      final n2 = sheet.slotOf('class:wizard:spell-mastery-2');
+
+      expect(n1.count, 1);
+      expect(n2.count, 1);
+      expect(n1.options.every((id) => repo.spell(id)!.level == 1), isTrue);
+      expect(n2.options.every((id) => repo.spell(id)!.level == 2), isTrue);
+    });
+
+    test('y solo ofrece los que se lanzan con una acción', () {
+      // La regla lo exige, y "Acción Adicional" no cuenta: el filtro compara
+      // exacto justamente por eso.
+      final n1 = oficial('wizard', 18).slotOf('class:wizard:spell-mastery-1');
+      expect(n1.options, isNotEmpty);
+      expect(
+        n1.options.every((id) => repo.spell(id)!.castingTime == 'Acción'),
+        isTrue,
+      );
+      // Escudo es de reacción y Retirada Rápida de acción adicional: los dos
+      // son de nivel 1 en la lista de Mago y ninguno puede aparecer.
+      expect(n1.options, isNot(contains('shield')));
+    });
+
+    test('Maestría sobre Conjuros se lanza a voluntad, sin recurso', () {
+      final sheet = oficial('wizard', 18, choices: {
+        'class:wizard:spell-mastery-1': ['magic-missile'],
+      });
+      final innato =
+          sheet.innateSpells.firstWhere((s) => s.spellId == 'magic-missile');
+      expect(innato.use, InnateSpellUse.atWill);
+      expect(sheet.resources.map((r) => r.id),
+          isNot(contains('innate-magic-missile')));
+    });
+
+    test('Descubrimientos Mágicos llega a nivel 6, no antes', () {
+      const grupo = 'subclass:college-lore:magical-discoveries';
+      expect(
+        oficial('bard', 5, subclassId: 'college-lore')
+            .spellChoiceSlots
+            .map((s) => s.groupId),
+        isNot(contains(grupo)),
+      );
+
+      final slot = oficial('bard', 6, subclassId: 'college-lore').slotOf(grupo);
+      expect(slot.count, 2);
+      expect(slot.replaceable, isTrue);
+    });
+
+    test('ofrece Clérigo, Druida y Mago, y no la lista de Bardo', () {
+      const grupo = 'subclass:college-lore:magical-discoveries';
+      final slot = oficial('bard', 6, subclassId: 'college-lore').slotOf(grupo);
+
+      // Cada opción viene de alguna de las tres listas permitidas.
+      for (final id in slot.options) {
+        final spell = repo.spell(id)!;
+        expect(
+          spell.classes.any(const {'cleric', 'druid', 'wizard'}.contains),
+          isTrue,
+          reason: id,
+        );
+      }
+      // Y las tres están representadas.
+      for (final lista in ['cleric', 'druid', 'wizard']) {
+        expect(
+          slot.options.any((id) => repo.spell(id)!.classes.contains(lista)),
+          isTrue,
+          reason: lista,
+        );
+      }
+    });
+
+    test('admite trucos y respeta el techo de espacios del Bardo', () {
+      const grupo = 'subclass:college-lore:magical-discoveries';
+      final slot = oficial('bard', 6, subclassId: 'college-lore').slotOf(grupo);
+
+      // "trucos o conjuros para los que tengas espacios": a nivel 6 el Bardo
+      // llega a espacios de nivel 3.
+      expect(slot.options.any((id) => repo.spell(id)!.level == 0), isTrue);
+      expect(slot.options.every((id) => repo.spell(id)!.level <= 3), isTrue);
+
+      final alto =
+          oficial('bard', 20, subclassId: 'college-lore').slotOf(grupo);
+      expect(alto.options.any((id) => repo.spell(id)!.level > 3), isTrue);
+    });
+  });
 }
 
 extension on ComputedSheet {
   List<String> chosenOf(String groupId) =>
       spellChoiceSlots.firstWhere((s) => s.groupId == groupId).chosen;
+
+  SpellChoiceSlot slotOf(String groupId) =>
+      spellChoiceSlots.firstWhere((s) => s.groupId == groupId);
 }

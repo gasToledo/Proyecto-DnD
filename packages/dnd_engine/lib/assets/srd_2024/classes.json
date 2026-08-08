@@ -851,6 +851,8 @@
         "name": "Maestría sobre Conjuros",
         "description": "Lanzás a voluntad un conjuro de nivel 1 y otro de nivel 2 de tu libro.",
         "effects": [
+          { "type": "spellChoice", "groupId": "class:wizard:spell-mastery-1", "name": "Maestría sobre Conjuros (nivel 1)", "count": 1, "minLevel": 1, "maxLevel": 1, "fromClasses": ["wizard"], "castingTimes": ["Acción"], "freeCast": "atWill", "replaceable": true },
+          { "type": "spellChoice", "groupId": "class:wizard:spell-mastery-2", "name": "Maestría sobre Conjuros (nivel 2)", "count": 1, "minLevel": 2, "maxLevel": 2, "fromClasses": ["wizard"], "castingTimes": ["Acción"], "freeCast": "atWill", "replaceable": true },
           { "type": "passiveTrait", "name": "Maestría sobre Conjuros", "description": "Elegí un conjuro de nivel 1 y otro de nivel 2 de tu libro cuyo tiempo de lanzamiento sea una acción. Siempre los tenés preparados y podés lanzarlos a su nivel más bajo sin gastar espacio. Para subirlos de nivel sí gastás un espacio. Tras un descanso largo podés cambiarlos por otros del mismo nivel." }
         ]
       },
@@ -867,6 +869,7 @@
         "name": "Conjuros Característicos",
         "description": "Dos conjuros de nivel 3 siempre preparados, con un uso gratuito cada uno.",
         "effects": [
+          { "type": "spellChoice", "groupId": "class:wizard:signature-spells", "name": "Conjuros Característicos", "count": 2, "minLevel": 3, "maxLevel": 3, "fromClasses": ["wizard"], "freeCast": "oncePerShortRest" },
           { "type": "passiveTrait", "name": "Conjuros Característicos", "description": "Elegí dos conjuros de nivel 3 de tu libro. Siempre los tenés preparados y podés lanzar cada uno una vez a nivel 3 sin gastar espacio. El uso gratuito vuelve tras un descanso corto o largo." }
         ]
       }

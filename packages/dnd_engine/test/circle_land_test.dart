@@ -81,12 +81,38 @@ void main() {
     });
 
     test('ninguna declara exclusiveGroup', () {
-      // Si compartieran grupo, `unmetFeatPrerequisite` filtraría las otras tres
-      // en cuanto se elija una y el terreno quedaría inmutable, en contra de la
-      // regla ("tras finalizar un descanso largo, elige un tipo de terreno").
-      // El `count: 1` ya impide tener dos a la vez.
       for (final f in repo.featsByCategory('druid-land')) {
         expect(f.exclusiveGroup, isNull, reason: f.id);
+      }
+    });
+
+    test('con un terreno elegido, los otros tres siguen siendo elegibles', () {
+      // Ésta es la aserción que importa, y el test de arriba es solo su causa.
+      // Los tres selectores de la aplicación filtran las opciones con
+      // `unmetFeatPrerequisite`: si los terrenos compartieran `exclusiveGroup`,
+      // elegir uno haría desaparecer los otros y el druida no podría volver a
+      // cambiarlo, en contra de la regla ("tras finalizar un descanso largo,
+      // elige un tipo de terreno").
+      final c = Character(
+        id: 'p',
+        name: 'Druida',
+        raceId: 'human',
+        classId: 'druid',
+        backgroundId: 'sage',
+        subclassId: 'circle-land',
+        level: 5,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: List.filled(5, 6),
+        featureChoices: const {
+          'circle-land:terrain': ['druid-land-arid'],
+        },
+      );
+      final sheet = compiler.compile(c);
+      final validator = CharacterValidator(repo);
+
+      for (final f in repo.featsByCategory('druid-land')) {
+        expect(validator.unmetFeatPrerequisite(f, c, sheet), isNull,
+            reason: 'con Árido elegido, ${f.id} tiene que seguir ofreciéndose');
       }
     });
 

@@ -62,6 +62,21 @@ extension _LevelUpSections on _LevelUpScreenState {
       ],
     ),
     _LevelUpStepKind.features => _buildFeaturesStep(),
+    _LevelUpStepKind.spellChoices => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _LevelUpIntro(
+          eyebrow: 'Elegís vos',
+          title: 'Conjuros que quedan siempre preparados',
+          body:
+              'Estos conjuros no ocupan cupo de preparados y no se pueden '
+              'desmarcar desde el editor. El pozo ya viene filtrado por lo que '
+              'el rasgo permite.',
+        ),
+        const SizedBox(height: 22),
+        _buildSpellChoicesSection(),
+      ],
+    ),
     _LevelUpStepKind.spells => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -381,6 +396,28 @@ extension _LevelUpSections on _LevelUpScreenState {
             slot: slot,
             chosen: _expertiseFor(slot.groupId),
             onChanged: (ids) => _setExpertise(slot.groupId, ids),
+          ),
+          const SizedBox(height: 22),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSpellChoicesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final slot in _spellChoiceSlots) ...[
+          Eyebrow(
+            '${slot.name} '
+            '(${_spellChoiceFor(slot.groupId).length}/${slot.count})',
+          ),
+          const SizedBox(height: 6),
+          _SpellChoiceGroup(
+            repo: widget.repo,
+            slot: slot,
+            chosen: _spellChoiceFor(slot.groupId),
+            onChanged: (ids) => _setSpellChoice(slot.groupId, ids),
           ),
           const SizedBox(height: 22),
         ],

@@ -80,6 +80,13 @@ class _EquipmentStep extends StatelessWidget {
         const SizedBox(height: 26),
         const _SectionHeader(title: 'Conjuros'),
         const SizedBox(height: 12),
+        // Va antes de la magia de clase: lo elegido acá queda siempre preparado
+        // y sale del pozo de abajo, así que preguntarlo después haría que el
+        // jugador preparase un conjuro que está por recibir gratis.
+        //
+        // Fuera de `draft.isCaster` a propósito: un rasgo puede conceder
+        // conjuros a un personaje que no lanza por clase.
+        _SpellChoicesSection(draft: draft, onChanged: onChanged),
         if (draft.isCaster)
           _SpellsSection(draft: draft, onChanged: onChanged)
         else
@@ -262,6 +269,68 @@ class _NoSpellsNotice extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Conjuros que un rasgo deja elegir y quedan siempre preparados.
+///
+/// Ninguna clase oficial declara uno a nivel 1 —el primero es Descubrimientos
+/// Mágicos, a nivel 6—, así que en la práctica esto solo aparece con homebrew.
+/// Va igual: si no estuviera, la creación sería el único lugar donde una
+/// elección que el motor declara no se puede resolver.
+class _SpellChoicesSection extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _SpellChoicesSection({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    // Igual que en el paso de aptitudes: cambiar de clase o de trasfondo puede
+    // vaciar un cupo, y una elección que dejó de calificar tiene que soltarse
+    // acá y no quedar guardada sin chip que la saque.
+    draft.pruneSpellChoices();
+    final slots = draft.spellChoiceSlots;
+    if (slots.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (final slot in slots) ...[
+          _SpellGroupHeader(
+            title: slot.name,
+            count: (draft.spellChoices[slot.groupId] ?? const []).length,
+            cap: slot.count,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'No ocupan cupo de preparados.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 10),
+          Builder(
+            builder: (context) {
+              final selected = {...?draft.spellChoices[slot.groupId]};
+              return CappedChipSelect(
+                options: {
+                  for (final id in slot.options)
+                    if (draft.repo.spell(id) case final s?)
+                      id: s.isCantrip
+                          ? '${s.name} (truco)'
+                          : '${s.name} (Nv ${s.level})',
+                },
+                selected: selected,
+                max: slot.count,
+                onChanged: () {
+                  draft.spellChoices[slot.groupId] = selected.toList();
+                  onChanged();
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 22),
+        ],
+      ],
     );
   }
 }

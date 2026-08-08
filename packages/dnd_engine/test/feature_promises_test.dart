@@ -102,6 +102,25 @@ void main() {
     }
   }
 
+  /// Si estos efectos dejan algún conjuro siempre preparado, sea cual sea el
+  /// camino: declarado, elegido de un pozo, escalonado por nivel o traído por
+  /// una elección abierta.
+  ///
+  /// La elección abierta exige que **todas** las opciones del catálogo
+  /// concedan uno. Sin ese "todas", cualquier rasgo con Estilo de Combate
+  /// satisfaría el lint por accidente, porque la categoría existe y tiene
+  /// dotes; lo que importa es que el jugador no pueda elegir una que lo deje
+  /// sin la mecánica que la prosa le prometió.
+  bool concedeSiemprePreparado(List<Effect> effects) => effects.any((e) =>
+      e is AlwaysPreparedSpellEffect ||
+      e is SpellChoiceEffect ||
+      (e is LeveledEffect && concedeSiemprePreparado(e.effects)) ||
+      (e is FeatureChoiceEffect &&
+          repo.featsByCategory(e.featCategory).isNotEmpty &&
+          repo
+              .featsByCategory(e.featCategory)
+              .every((f) => concedeSiemprePreparado(f.effects))));
+
   test('todo rasgo que promete Pericia la concede', () {
     lint(
       nombre: 'Pericia',
@@ -129,22 +148,14 @@ void main() {
       promete: (p) => RegExp(
         'siempre (?:preparad|tienes preparad|tenés preparad|los ten)'
         '|preparados? (?:adicional|extra)',
+        caseSensitive: false,
       ).hasMatch(p),
-      entrega: (f) =>
-          f.effects.whereType<AlwaysPreparedSpellEffect>().isNotEmpty,
-      coincidencias: 114,
-      deuda: {
-        'clase wizard n20 "Conjuros Característicos"':
-            'son dos conjuros de nivel 3 a elección del jugador y esa elección '
-                'no existe en el motor',
-        'subclase college-lore n6 "Descubrimientos Mágicos"':
-            'dos conjuros de cualquier lista a elección del jugador',
-        'subclase circle-land n3 "Conjuros de Círculo"':
-            'la tabla depende del terreno elegido (árido, polar, templado o '
-                'tropical) y esa elección no existe en el motor',
-        'subclase circle-land n6 "Recuperación Natural"':
-            'se apoya en la tabla por terreno del nivel 3',
-      },
+      entrega: (f) => concedeSiemprePreparado(f.effects),
+      // Bajó uno respecto de la tanda anterior a propósito: la descripción de
+      // Recuperación Natural decía "y siempre tienes preparados tus conjuros de
+      // círculo", que no es lo que dice la regla. Al corregirla dejó de
+      // coincidir, que es lo correcto: ese rasgo no concede ninguno.
+      coincidencias: 119,
     );
   });
 
@@ -227,9 +238,9 @@ void main() {
     // modelar todavía, bajá el número a mano y explicá por qué en el commit:
     // el historial de este número es el registro de deuda, y sale más barato
     // que marcar 311 entradas con un motivo que nadie va a leer.
-    // Hoy son exactamente 304. Va como cota y no como igualdad para que pagar
+    // Hoy son exactamente 301. Va como cota y no como igualdad para que pagar
     // deuda no haga fallar el test: lo que tiene que doler es *sumar*.
-    expect(soloTexto, hasLength(lessThanOrEqualTo(304)),
+    expect(soloTexto, hasLength(lessThanOrEqualTo(301)),
         reason: 'hay más rasgos que solo son texto que antes:\n'
             '${soloTexto.join('\n')}');
   });

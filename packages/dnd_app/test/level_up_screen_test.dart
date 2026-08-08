@@ -744,4 +744,205 @@ void main() {
     expect(find.text('Pericia'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  // --- Conjuros a elección --------------------------------------------------
+
+  Character wizard({
+    required int level,
+    Map<String, List<String>> spellChoices = const {},
+  }) => Character(
+    id: 't-wizard',
+    name: 'Prueba',
+    raceId: 'human',
+    classId: 'wizard',
+    backgroundId: 'sage',
+    subclassId: 'evoker',
+    level: level,
+    assignedScores: {
+      Ability.strength: 8,
+      Ability.dexterity: 14,
+      Ability.constitution: 12,
+      Ability.intelligence: 16,
+      Ability.wisdom: 10,
+      Ability.charisma: 10,
+    },
+    hpPerLevel: List.filled(level, 6),
+    chosenSkills: const ['arcana', 'history'],
+    // Académico (nivel 2) es un cupo de Pericia: sin resolverlo el asistente
+    // agrega —con razón— un paso que bloquea, y los bucles de abajo no
+    // avanzarían.
+    proficiencyChoices: const {
+      'class:wizard:expertise-2': ['arcana'],
+    },
+    spellChoices: spellChoices,
+  );
+
+  /// Avanza tocando "Continuar" hasta que aparezca [target], con tope: un paso
+  /// que bloquea haría girar el bucle para siempre y el fallo saldría como un
+  /// timeout sin decir dónde se trabó.
+  Future<void> advanceUntil(WidgetTester tester, String target) async {
+    for (var i = 0; i < 12; i++) {
+      if (find.text(target).evaluate().isNotEmpty) return;
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    final visto = find
+        .byType(Text)
+        .evaluate()
+        .map((e) => (e.widget as Text).data)
+        .whereType<String>()
+        .take(40)
+        .join(' | ');
+    fail('no se llegó a "$target": algún paso previo está bloqueando.\n$visto');
+  }
+
+  /// Un Mago de 19 ya tiene resueltos los dos cupos de Maestría sobre Conjuros
+  /// (nivel 18), así que lo único pendiente al subir a 20 son los Característicos.
+  /// Paso Brumoso no sirve para el de nivel 2: es de acción adicional y la
+  /// regla pide acción.
+  Character wizard19() => wizard(
+    level: 19,
+    spellChoices: const {
+      'class:wizard:spell-mastery-1': ['magic-missile'],
+      'class:wizard:spell-mastery-2': ['invisibility'],
+    },
+  );
+
+  testWidgets('subir un Mago a nivel 20 pide los Conjuros Característicos', (
+    tester,
+  ) async {
+    await pumpLevelUp(tester, wizard19());
+
+    expect(find.text('Conjuros a elección'), findsWidgets);
+
+    // Avanza hasta el paso y comprueba que bloquea.
+    await advanceUntil(tester, 'Conjuros que quedan siempre preparados');
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Te faltan 2 conjuros para continuar.'), findsOneWidget);
+
+    // Los Característicos ofrecen nivel 3. Los de nivel 1 y 2 que también se
+    // ven son los pozos de Maestría sobre Conjuros, que comparten el paso.
+    expect(
+      find.widgetWithText(FilterChip, 'Bola de Fuego (Nv 3)'),
+      findsOneWidget,
+    );
+    // Ningún cupo del Mago llega a nivel 4, así que no puede aparecer en
+    // ninguno de los tres.
+    expect(
+      find.widgetWithText(FilterChip, 'Muro de Fuego (Nv 4)'),
+      findsNothing,
+    );
+    // Paso Brumoso es de acción adicional: la regla de Maestría pide acción.
+    expect(
+      find.widgetWithText(FilterChip, 'Paso Brumoso (Nv 2)'),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'lo elegido se guarda y queda siempre preparado sin gastar cupo',
+    (tester) async {
+      Character? saved;
+      await pumpLevelUp(tester, wizard19(), onDone: (c) => saved = c);
+
+      await advanceUntil(tester, 'Conjuros que quedan siempre preparados');
+      // Los tres cupos del Mago comparten el paso y el de nivel 3 queda abajo
+      // del todo, fuera de la vista: sin `ensureVisible` el toque cae al vacío.
+      for (final etiqueta in ['Bola de Fuego (Nv 3)', 'Volar (Nv 3)']) {
+        final chip = find.widgetWithText(FilterChip, etiqueta);
+        await tester.ensureVisible(chip);
+        await tester.pumpAndSettle();
+        await tester.tap(chip);
+        await tester.pumpAndSettle();
+      }
+
+      await advanceUntil(tester, 'Confirmar nivel 20');
+      await tester.tap(find.text('Confirmar nivel 20'));
+      await tester.pumpAndSettle();
+
+      expect(saved, isNotNull);
+      expect(
+        saved!.spellChoices['class:wizard:signature-spells'],
+        containsAll(['fireball', 'fly']),
+      );
+
+      final sheet = CharacterCompiler(repo).compile(saved!);
+      expect(sheet.alwaysPreparedSpellIds, containsAll(['fireball', 'fly']));
+      // No entran en `spellIds`: no gastan cupo de preparados.
+      expect(saved!.spellIds, isNot(contains('fireball')));
+      // Y traen su uso gratis por descanso corto.
+      expect(
+        sheet.resources.map((r) => r.id),
+        containsAll(['innate-fireball', 'innate-fly']),
+      );
+    },
+  );
+
+  testWidgets('una clase sin conjuros a elección no ve el paso', (
+    tester,
+  ) async {
+    // El paso tiene que aparecer solo donde hay algo que elegir: es genérico y
+    // se cuela en cada subida si el gating está mal.
+    await pumpLevelUp(tester, fighterL3());
+    expect(find.text('Conjuros a elección'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('los Conjuros Característicos no se re-preguntan una vez hechos', (
+    tester,
+  ) async {
+    // Signature Spells no es reemplazable —la regla no da forma de cambiarlos—,
+    // así que el cupo tiene que quedar completo y no bloquear.
+    await pumpLevelUp(
+      tester,
+      wizard(
+        level: 19,
+        spellChoices: const {
+          'class:wizard:signature-spells': ['fireball', 'fly'],
+          'class:wizard:spell-mastery-1': ['magic-missile'],
+          'class:wizard:spell-mastery-2': ['invisibility'],
+        },
+      ),
+    );
+
+    // Llega hasta el final sin que ningún paso pida conjuros: si bloqueara,
+    // `advanceUntil` agota su tope y falla diciendo dónde se trabó.
+    await advanceUntil(tester, 'Confirmar nivel 20');
+    expect(find.textContaining('Te falta'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Descubrimientos Mágicos se puede rehacer en cada nivel', (
+    tester,
+  ) async {
+    // `replaceable: true`, así que el paso aparece aunque ya esté completo.
+    final bardo = Character(
+      id: 't-lore',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: 'bard',
+      backgroundId: 'sage',
+      subclassId: 'college-lore',
+      level: 6,
+      assignedScores: {
+        Ability.strength: 10,
+        Ability.dexterity: 14,
+        Ability.constitution: 12,
+        Ability.intelligence: 12,
+        Ability.wisdom: 10,
+        Ability.charisma: 16,
+      },
+      hpPerLevel: List.filled(6, 8),
+      chosenSkills: const ['perception', 'stealth', 'performance'],
+      spellChoices: const {
+        'subclass:college-lore:magical-discoveries': ['fireball', 'fly'],
+      },
+    );
+
+    await pumpLevelUp(tester, bardo);
+    expect(find.text('Conjuros a elección'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
 }

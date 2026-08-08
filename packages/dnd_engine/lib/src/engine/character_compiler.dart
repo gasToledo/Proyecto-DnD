@@ -32,17 +32,32 @@ class CharacterCompiler {
     final proficiencySources =
         <({String id, String name, List<Effect> effects})>[];
 
+    // Desenvuelve los [LeveledEffect] que no llegan al nivel del personaje y
+    // deja el resto plano. Se hace **antes** de repartir, no dentro del
+    // builder: `proficiencySources` alimenta las pasadas de competencias,
+    // Pericia y elección de conjuros, que hacen `whereType<...>()`. Con el
+    // envoltorio puesto, una de esas elecciones escalonada por nivel sería
+    // invisible para ellas y el defecto entraría en verde.
+    List<Effect> flatten(List<Effect> effects) => [
+          for (final e in effects)
+            if (e is LeveledEffect)
+              ...(c.level >= e.minLevel ? flatten(e.effects) : const <Effect>[])
+            else
+              e,
+        ];
+
     void applySource(
       String id,
       String name,
       List<Effect> effects, {
       Ability? spellAbilityOverride,
     }) {
+      final flat = flatten(effects);
       builder.applyAll(
-        effects,
+        flat,
         spellAbilityOverride: spellAbilityOverride,
       );
-      proficiencySources.add((id: id, name: name, effects: effects));
+      proficiencySources.add((id: id, name: name, effects: flat));
     }
 
     if (race != null) builder.speed = race.speed;
@@ -372,6 +387,15 @@ class CharacterCompiler {
     }
 
     final spellcasting = _spellcasting(builder, c.level, mods, profBonus);
+
+    // Elección de conjuros. Va acá y no antes ni después por dos razones que
+    // apuntan en direcciones opuestas: necesita `spellcasting` para el techo de
+    // `maxLevelFromSlots`, y tiene que correr **antes** de `_resolveInnate`
+    // porque el lanzamiento gratis se resuelve empujando un GrantSpellEffect al
+    // builder y dejando que aquél acuñe el recurso.
+    final spellChoiceSlots =
+        _resolveSpellChoices(c, builder, proficiencySources, spellcasting);
+
     final innate = _resolveInnate(c, builder, mods, profBonus);
 
     return ComputedSheet(
@@ -425,6 +449,7 @@ class CharacterCompiler {
       ],
       proficiencyChoiceSlots: proficiencySlots,
       expertiseChoiceSlots: expertiseSlots,
+      spellChoiceSlots: spellChoiceSlots,
       spellcasting: spellcasting,
     );
   }
@@ -449,6 +474,82 @@ class CharacterCompiler {
     if (chosen.level != granted.level) return granted;
     if (!g.replaceableFrom.any(chosen.classes.contains)) return granted;
     return chosen;
+  }
+
+  /// Resuelve los cupos de elección de conjuros: filtra el pozo, revalida lo
+  /// guardado y vuelca lo elegido en `alwaysPreparedSpellIds`.
+  ///
+  /// Ese volcado es el punto entero del mecanismo. A partir de ahí el editor de
+  /// conjuros, la vista previa de creación y la validación tratan lo elegido
+  /// igual que lo que concede un `AlwaysPreparedSpellEffect`: no gasta cupo de
+  /// preparados, no se puede desmarcar y no se ofrece dos veces.
+  List<SpellChoiceSlot> _resolveSpellChoices(
+    Character c,
+    SheetBuilder builder,
+    List<({String id, String name, List<Effect> effects})> sources,
+    Spellcasting? spellcasting,
+  ) {
+    final slots = <SpellChoiceSlot>[];
+    final maxSlotLevel =
+        spellcasting?.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m) ??
+            0;
+
+    for (final source in sources) {
+      for (final effect in source.effects.whereType<SpellChoiceEffect>()) {
+        final ceiling = effect.maxLevelFromSlots
+            ? min(effect.maxLevel ?? maxSlotLevel, maxSlotLevel)
+            : effect.maxLevel;
+
+        // El pozo se rearma en cada compilación y nunca se confía en lo
+        // guardado, igual que la pasada de Pericia y `_replacementFor`.
+        final options = [
+          for (final s in repo.spellsSorted)
+            if (s.level >= effect.minLevel &&
+                (ceiling == null || s.level <= ceiling) &&
+                (effect.fromClasses.isEmpty ||
+                    effect.fromClasses.any(s.classes.contains)) &&
+                (effect.schools.isEmpty || effect.schools.contains(s.school)) &&
+                (effect.castingTimes.isEmpty ||
+                    effect.castingTimes.contains(s.castingTime)) &&
+                // Lo que otro rasgo ya concede no se puede volver a elegir.
+                // Como lo elegido se vuelca abajo, esto cubre también los cupos
+                // anteriores de este mismo recorrido.
+                !builder.alwaysPreparedSpellIds.contains(s.id))
+              s.id,
+        ];
+
+        final chosen = <String>[];
+        for (final id in c.spellChoices[effect.groupId] ?? const <String>[]) {
+          if (chosen.length >= effect.count) break;
+          if (options.contains(id) && !chosen.contains(id)) chosen.add(id);
+        }
+
+        slots.add(SpellChoiceSlot(
+          groupId: effect.groupId,
+          name: effect.name.isEmpty ? source.name : effect.name,
+          count: effect.count,
+          options: options,
+          chosen: chosen,
+          replaceable: effect.replaceable,
+        ));
+
+        builder.alwaysPreparedSpellIds.addAll(chosen);
+
+        // El lanzamiento gratis se declara como conjuro innato: así
+        // `_resolveInnate` acuña el recurso que lleva la cuenta de los usos sin
+        // que este mecanismo sepa nada de recursos ni de descansos.
+        if (effect.freeCast != null) {
+          for (final id in chosen) {
+            builder.grantedSpells.add(GrantSpellEffect(
+              spellId: id,
+              ability: builder.spellcasting?.ability ?? Ability.intelligence,
+              use: effect.freeCast!,
+            ));
+          }
+        }
+      }
+    }
+    return slots;
   }
 
   _InnateResult _resolveInnate(
@@ -484,7 +585,9 @@ class CharacterCompiler {
           max: g.use == InnateSpellUse.proficiencyBonusPerLongRest
               ? proficiencyBonus
               : 1,
-          recharge: RechargeOn.longRest,
+          recharge: g.use == InnateSpellUse.oncePerShortRest
+              ? RechargeOn.shortRest
+              : RechargeOn.longRest,
           description: 'Lanzarlo sin gastar espacio de conjuro. '
               'También podés lanzarlo gastando un espacio.',
         ));

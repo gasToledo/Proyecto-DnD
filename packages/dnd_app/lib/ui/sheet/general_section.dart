@@ -6,20 +6,38 @@ extension _SheetGeneralSection on _SheetScreenState {
   Widget _buildPersonaje() {
     final s = sheet;
     final warnings = CharacterValidator(repo).validate(_c);
-    final choiceSlots = s.proficiencyChoiceSlots;
     // Lo pendiente ya sale como advertencia con su propio bot\u00f3n; ac\u00e1 queda
     // s\u00f3lo lo que el motor no reporta, que es poder cambiar lo ya elegido.
-    final canReplace = choiceSlots.any(
-      (slot) => slot.replaceable && slot.pending == 0,
-    );
+    final canReplace = <(String, IconData, VoidCallback)>[
+      if (s.proficiencyChoiceSlots.any(
+        (slot) => slot.replaceable && slot.pending == 0,
+      ))
+        (
+          'Competencia reemplazable',
+          Icons.handyman,
+          _resolveProficiencyChoices,
+        ),
+      // `FeatureChoiceSlot` no lleva `chosen`: es declarativo y lo elegido vive
+      // en el personaje, as\u00ed que lo completo se cuenta desde ah\u00ed.
+      if (s.featureChoiceSlots.any(
+        (slot) =>
+            slot.replaceable &&
+            (_c.featureChoices[slot.groupId]?.length ?? 0) >= slot.count,
+      ))
+        ('Elecci\u00f3n reemplazable', Icons.style, _resolveFeatureChoices),
+      if (s.spellChoiceSlots.any(
+        (slot) => slot.replaceable && slot.pending == 0,
+      ))
+        ('Conjuros reemplazables', Icons.auto_fix_high, _resolveSpellChoices),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (canReplace) ...[
+        for (final (title, icon, onPressed) in canReplace) ...[
           sheetCard(
-            icon: Icons.handyman,
-            title: 'Competencia reemplazable',
+            icon: icon,
+            title: title,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -28,7 +46,7 @@ extension _SheetGeneralSection on _SheetScreenState {
                   const Text('Este rasgo permite cambiar la elecci\u00f3n.'),
                   const SizedBox(height: 12),
                   FilledButton(
-                    onPressed: _resolveProficiencyChoices,
+                    onPressed: onPressed,
                     child: const Text('Cambiar'),
                   ),
                 ],
@@ -98,6 +116,7 @@ extension _SheetGeneralSection on _SheetScreenState {
       _resolveLineage,
     'species_spellcasting_ability_pending' => _resolveSpeciesAbility,
     'feature_choice_pending' => _resolveFeatureChoices,
+    'spell_choice_pending' => _resolveSpellChoices,
     // El mismo código también sale cuando sobran competencias sin rasgo que
     // las conceda: ahí no hay nada que elegir y el diálogo saldría vacío.
     // El mismo aviso cubre la Pericia, que viaja en su propia lista.
@@ -418,6 +437,113 @@ extension _SheetGeneralSection on _SheetScreenState {
                               CappedChipSelect(
                                 options: {
                                   for (final f in options) f.id: f.name,
+                                },
+                                selected: selected,
+                                max: slot.count,
+                                onChanged: () => setDialogState(
+                                  () =>
+                                      choices[slot.groupId] = selected.toList(),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: complete()
+                    ? () => Navigator.pop(dialogContext, choices)
+                    : null,
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (result == null || !mounted) return;
+    _replace(withChoices(result));
+  }
+
+  /// Editor de los conjuros que un rasgo deja elegir y quedan siempre
+  /// preparados (Conjuros Característicos, Descubrimientos Mágicos).
+  ///
+  /// El pozo lo entrega la ficha compilada ya filtrado, así que acá no se
+  /// vuelve a interpretar ningún criterio. La ficha se recompila en cada toque
+  /// porque un conjuro tomado en un cupo sale del pozo del siguiente.
+  Future<void> _resolveSpellChoices() async {
+    final choices = <String, List<String>>{
+      for (final slot in sheet.spellChoiceSlots)
+        slot.groupId: List.of(slot.chosen),
+    };
+
+    // Los grupos que no se editan acá se conservan, igual que en
+    // `_resolveFeatureChoices`.
+    Character withChoices(Map<String, List<String>> edited) =>
+        _c.copyWith(spellChoices: {..._c.spellChoices, ...edited});
+
+    final result = await showDialog<Map<String, List<String>>>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final previewSheet = CharacterCompiler(
+            repo,
+          ).compile(withChoices(choices));
+          final slots = previewSheet.spellChoiceSlots;
+
+          bool complete() => slots.every(
+            (slot) => (choices[slot.groupId] ?? const []).length >= slot.count,
+          );
+
+          return AlertDialog(
+            title: const Text('Elegir conjuros'),
+            content: SizedBox(
+              width: 720,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final slot in slots) ...[
+                      Text(
+                        slot.name,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Builder(
+                        builder: (context) {
+                          final chosen = choices[slot.groupId] ??= [];
+                          if (slot.options.isEmpty) {
+                            return Text(
+                              'No hay conjuros disponibles para este rasgo.',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            );
+                          }
+                          final selected = chosen.toSet();
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${chosen.length}/${slot.count}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              const SizedBox(height: 8),
+                              CappedChipSelect(
+                                options: {
+                                  for (final id in slot.options)
+                                    if (repo.spell(id) case final s?)
+                                      id: s.isCantrip
+                                          ? '${s.name} (truco)'
+                                          : '${s.name} (Nv ${s.level})',
                                 },
                                 selected: selected,
                                 max: slot.count,

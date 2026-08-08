@@ -130,6 +130,19 @@ class CreationDraft {
             .toList();
       }
     }
+    final rawSpellChoices = json['spellChoices'];
+    if (rawSpellChoices is Map) {
+      for (final entry in rawSpellChoices.entries) {
+        if (entry.key is! String || entry.value is! List) continue;
+        // Se filtra contra el catálogo, igual que `cantrips` y `spells`: un
+        // borrador viejo puede nombrar un conjuro que ya no existe.
+        final ids = (entry.value as List)
+            .whereType<String>()
+            .where((id) => repo.spell(id) != null)
+            .toList();
+        if (ids.isNotEmpty) draft.spellChoices[entry.key as String] = ids;
+      }
+    }
     final raceFeatId = json['raceFeatId'];
     if (raceFeatId is String && repo.feat(raceFeatId) != null) {
       draft.raceFeatId = raceFeatId;
@@ -260,6 +273,12 @@ class CreationDraft {
   final List<String> chosenProficiencies = [];
   final Map<String, List<String>> proficiencyChoices = {};
 
+  /// Conjuros elegidos por un rasgo que los deja siempre preparados. Ninguna
+  /// clase oficial declara uno a nivel 1 —el primero llega a nivel 6—, así que
+  /// hoy esto solo lo usa el homebrew; va igual para que la creación no sea el
+  /// único lugar donde una elección del motor no existe.
+  final Map<String, List<String>> spellChoices = {};
+
   // Orígenes.
   String? raceId;
   String? lineageId;
@@ -312,6 +331,7 @@ class CreationDraft {
     'weaponMasteries': weaponMasteries,
     'chosenProficiencies': chosenProficiencies,
     'proficiencyChoices': proficiencyChoices,
+    'spellChoices': spellChoices,
     'raceId': raceId,
     'lineageId': lineageId,
     'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
@@ -402,6 +422,7 @@ class CreationDraft {
       for (final e in featureChoices.entries) '${e.key}:${e.value.join(",")}',
       for (final e in proficiencyChoices.entries)
         '${e.key}:${e.value.join(",")}',
+      for (final e in spellChoices.entries) '${e.key}:${e.value.join(",")}',
       // Las habilidades elegidas viajan en `build()`, así que también son parte
       // de lo derivado: sin ellas acá la ficha compilada quedaba una elección
       // atrás y las competencias de una dote no veían lo recién tomado.
@@ -473,6 +494,31 @@ class CreationDraft {
       }
       proficiencyChoices[slot.groupId] = chosen;
       chosenProficiencies.removeWhere(chosen.contains);
+    }
+  }
+
+  /// Cupos de conjuros a elección que quedan siempre preparados. Ninguna clase
+  /// oficial declara uno a nivel 1; existe para el homebrew y para que la
+  /// creación no ignore un mecanismo que el motor sí tiene.
+  List<SpellChoiceSlot> get spellChoiceSlots => previewSheet.spellChoiceSlots;
+
+  int get pendingSpellChoices =>
+      spellChoiceSlots.fold<int>(0, (n, slot) => n + slot.pending);
+
+  /// Saca de la selección lo que dejó de calificar, igual que
+  /// [pruneProficiencyChoices]: cambiar de clase o de trasfondo puede vaciar un
+  /// cupo, y dejar la elección puesta daría conjuros que ningún rasgo concede.
+  void pruneSpellChoices() {
+    final slots = spellChoiceSlots;
+    final active = {for (final slot in slots) slot.groupId};
+    spellChoices.removeWhere((groupId, _) => !active.contains(groupId));
+    for (final slot in slots) {
+      // `slot.chosen` ya viene revalidado por el motor contra el pozo actual.
+      if (slot.chosen.isEmpty) {
+        spellChoices.remove(slot.groupId);
+      } else {
+        spellChoices[slot.groupId] = List.of(slot.chosen);
+      }
     }
   }
 
@@ -770,9 +816,18 @@ class CreationDraft {
       case CreationStep.equipo:
         // El equipo no obliga (sin arma = puños, sin armadura es válido); los
         // conjuros sí, para las clases lanzadoras.
+        //
+        // Los conjuros a elección se cuentan aunque la clase no lance: el rasgo
+        // que los concede no depende de la magia de clase. El selector está en
+        // este mismo paso, así que exigirlos nunca deja al jugador sin salida.
+        final elegidos = pendingSpellChoices;
         final sc = spellcasting;
-        if (sc == null) return const [];
-        final out = <String>[];
+        if (sc == null) {
+          return elegidos > 0 ? ['Conjuros a elección: $elegidos.'] : const [];
+        }
+        final out = <String>[
+          if (elegidos > 0) 'Conjuros a elección: $elegidos.',
+        ];
         if (cantrips.length < sc.cantripsKnown) {
           out.add('Trucos: ${cantrips.length}/${sc.cantripsKnown}.');
         }
@@ -841,6 +896,9 @@ class CreationDraft {
       spellIds: spells.toList(),
       featureChoices: {
         for (final e in featureChoices.entries) e.key: List.of(e.value),
+      },
+      spellChoices: {
+        for (final e in spellChoices.entries) e.key: List.of(e.value),
       },
       weaponMasteryChoices: List.of(weaponMasteries),
       featIds: [?raceFeatId],

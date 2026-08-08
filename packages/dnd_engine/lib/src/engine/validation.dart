@@ -185,6 +185,7 @@ class CharacterValidator {
 
     _validateOffHand(c, repo, w);
     _validateFeatureChoices(c, sheet, w);
+    _validateSpellChoices(c, sheet, w);
 
     for (final a in c.assignedScores.values) {
       if (a < 3 || a > 18) {
@@ -389,6 +390,56 @@ class CharacterValidator {
       w.add(ValidationWarning(
         'feature_choice_orphan',
         'Tenés elecciones guardadas de "$groupId", un rasgo que ya no tenés.',
+        WarningSeverity.info,
+      ));
+    }
+  }
+
+  /// Chequeos de la elección de conjuros (Conjuros Característicos,
+  /// Descubrimientos Mágicos).
+  ///
+  /// No hay código propio para "lo elegí y además lo preparé": lo elegido entra
+  /// en `alwaysPreparedSpellIds` y `_validateSpells` ya lo cubre con
+  /// `spell_already_granted`, que es el punto único donde vive esa regla.
+  void _validateSpellChoices(
+      Character c, ComputedSheet sheet, List<ValidationWarning> w) {
+    final slots = {for (final s in sheet.spellChoiceSlots) s.groupId: s};
+
+    for (final slot in sheet.spellChoiceSlots) {
+      // Se lee lo guardado y no `slot.chosen`, que el compilador ya podó: si
+      // se mirara el cupo, `spell_choice_invalid` no dispararía nunca. Mismo
+      // criterio que `feature_choice_invalid`.
+      final stored = c.spellChoices[slot.groupId] ?? const <String>[];
+
+      if (slot.chosen.length < slot.count) {
+        w.add(ValidationWarning(
+          'spell_choice_pending',
+          '${slot.name}: elegiste ${slot.chosen.length} de ${slot.count}.',
+          WarningSeverity.info,
+        ));
+      } else if (stored.length > slot.count) {
+        w.add(ValidationWarning(
+          'too_many_spell_choices',
+          '${slot.name}: elegiste ${stored.length} pero tenés ${slot.count} espacios.',
+        ));
+      }
+
+      for (final id in stored) {
+        if (!slot.options.contains(id)) {
+          w.add(ValidationWarning(
+            'spell_choice_invalid',
+            '"$id" ya no es una opción de ${slot.name}.',
+          ));
+        }
+      }
+    }
+
+    for (final groupId in c.spellChoices.keys) {
+      if ((c.spellChoices[groupId] ?? const []).isEmpty) continue;
+      if (slots.containsKey(groupId)) continue;
+      w.add(ValidationWarning(
+        'spell_choice_orphan',
+        'Tenés conjuros elegidos de "$groupId", un rasgo que ya no tenés.',
         WarningSeverity.info,
       ));
     }

@@ -162,6 +162,20 @@ class SheetBuilder {
         // los arma él también, porque necesita saber de qué dote sale cada uno
         // y acá esa procedencia ya se perdió.
         break;
+      case SpellChoiceEffect():
+        // Marcador, igual que ProficiencyChoiceEffect: la elección vive en
+        // Character.spellChoices y la resuelve el compilador, que tiene el
+        // repositorio para filtrar el pozo y el bloque de lanzamiento para
+        // saber hasta qué nivel llega.
+        break;
+      case LeveledEffect(:final minLevel, :final effects):
+        // Por el camino normal no llega ninguno: el compilador los expande en
+        // `applySource` para que las pasadas que leen la lista de efectos de
+        // cada fuente vean el contenido y no el envoltorio. Esto es la red para
+        // quien use SheetBuilder directo, que es público.
+        if (level >= minLevel) {
+          applyAll(effects, spellAbilityOverride: spellAbilityOverride);
+        }
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
       case FeatureChoiceEffect(:final groupId, :final count):

@@ -126,8 +126,15 @@ void main() {
   });
 
   test('solo las dotes del SRD 5.2.1 quedan etiquetadas como tales', () {
-    // El SRD trae 17 dotes; de esas, 9 están en este catálogo.
+    // El SRD trae 17 dotes; de esas, 10 están en este catálogo. Los cuatro
+    // terrenos del Círculo de la Tierra se suman aparte: no son dotes del
+    // capítulo 5, son el catálogo de una elección abierta que reusa `Feat`, y
+    // el texto de sus tablas sale del SRD igual que la subclase.
     const srdFeats = {
+      'druid-land-arid',
+      'druid-land-polar',
+      'druid-land-temperate',
+      'druid-land-tropical',
       'alert',
       'savage-attacker',
       'skilled',
@@ -237,6 +244,11 @@ void main() {
       // No es una dote que se tome en un ASI: es el catálogo de opciones de una
       // elección abierta, que reusa `Feat` para no duplicar prerrequisitos.
       'warlock-invocation',
+      // Ídem: los cuatro terrenos del Círculo de la Tierra. Viven acá y no como
+      // rasgos repetidos de la subclase porque `subclasses_test` prohíbe repetir
+      // nombre de rasgo salvo que sea *solo* tabla de conjuros, y estos además
+      // conceden resistencia.
+      'druid-land',
     };
     for (final f in repo.feats.values) {
       expect(validCategories, contains(f.category),

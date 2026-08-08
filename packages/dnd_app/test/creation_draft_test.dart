@@ -130,6 +130,127 @@ void main() {
     });
   });
 
+  group('Conjuros a elección', () {
+    // Ninguna clase oficial declara un cupo a nivel 1, así que el mecanismo se
+    // prueba con homebrew: el motor ya lo cubre y acá interesa la plomería del
+    // borrador.
+    CreationDraft casterConCupo() {
+      final homebrew = ContentRepository.fromJsonPacks(
+        races: [
+          {'id': 'hr', 'name': 'Raza', 'source': 'homebrew'},
+        ],
+        classes: [
+          {
+            'id': 'hc',
+            'name': 'Clase',
+            'source': 'homebrew',
+            'hitDie': 8,
+            'features': [
+              {
+                'level': 1,
+                'name': 'Magia',
+                'effects': [
+                  {
+                    'type': 'spellcasting',
+                    'ability': 'intelligence',
+                    'progression': 'full',
+                    'preparation': 'prepared',
+                    'spellList': 'hc',
+                    'cantripsKnown': 0,
+                  },
+                  {
+                    'type': 'spellChoice',
+                    'groupId': 'g',
+                    'name': 'Conjuros del pacto',
+                    'count': 1,
+                    'minLevel': 1,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        backgrounds: [
+          {'id': 'hb', 'name': 'Trasfondo', 'source': 'homebrew'},
+        ],
+        spells: [
+          for (final id in ['uno', 'dos'])
+            {
+              'id': id,
+              'name': id.toUpperCase(),
+              'source': 'homebrew',
+              'level': 1,
+              'school': 'Evocación',
+              'castingTime': 'Acción',
+              'range': 'Toque',
+              'components': 'V',
+              'duration': 'Instantánea',
+              'description': '',
+              'classes': ['hc'],
+            },
+        ],
+      );
+      final d = CreationDraft(homebrew)
+        ..classId = 'hc'
+        ..raceId = 'hr'
+        ..backgroundId = 'hb';
+      d.applyScoreMethod(ScoreMethod.standardArray);
+      d.assignedScores.addAll({for (final a in Ability.values) a: 14});
+      return d;
+    }
+
+    test('el cupo pendiente bloquea el paso de equipo', () {
+      final d = casterConCupo();
+      expect(
+        d.pendingFor(CreationStep.equipo),
+        contains('Conjuros a elección: 1.'),
+      );
+
+      d.spellChoices['g'] = ['uno'];
+      expect(
+        d.pendingFor(CreationStep.equipo).where((b) => b.contains('elección')),
+        isEmpty,
+      );
+    });
+
+    test('la vista previa no queda una elección atrasada', () {
+      // Regresión de la firma de caché de `previewSheet`: sin `spellChoices`
+      // ahí, la ficha compilada seguía sin el conjuro recién elegido y el
+      // selector de preparados lo ofrecía como si no lo tuviera.
+      final d = casterConCupo();
+      expect(d.previewSheet.alwaysPreparedSpellIds, isNot(contains('uno')));
+
+      d.spellChoices['g'] = ['uno'];
+      expect(d.previewSheet.alwaysPreparedSpellIds, contains('uno'));
+      expect(d.grantedSpellIds, contains('uno'));
+    });
+
+    test('lo elegido llega al personaje construido', () {
+      final d = casterConCupo();
+      d.spellChoices['g'] = ['dos'];
+      expect(d.build().spellChoices, {
+        'g': ['dos'],
+      });
+    });
+
+    test('el podado suelta lo que dejó de calificar', () {
+      final d = casterConCupo();
+      d.spellChoices['g'] = ['inventado'];
+      d.pruneSpellChoices();
+      expect(d.spellChoices['g'], isNull);
+      expect(d.pendingSpellChoices, 1);
+    });
+
+    test('el round-trip conserva la elección', () {
+      final d = casterConCupo();
+      d.spellChoices['g'] = ['uno'];
+      final back = CreationDraft.fromJson(d.repo, d.toJson());
+      expect(back.spellChoices, {
+        'g': ['uno'],
+      });
+    });
+  });
+
   test('un linaje válido se conserva y aporta sus rasgos al personaje', () {
     final d = CreationDraft(repo)
       ..raceId = 'elf'

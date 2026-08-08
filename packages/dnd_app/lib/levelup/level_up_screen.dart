@@ -29,6 +29,10 @@ enum _LevelUpStepKind {
   // competencias.
   expertise,
   features,
+  // Antes de `spells` a propósito: el editor de conjuros oculta y poda lo que
+  // ya está siempre preparado, y lo elegido acá entra en esa lista. Al revés,
+  // el jugador prepararía a mano un conjuro que está por recibir gratis.
+  spellChoices,
   spells,
   review,
 }
@@ -108,6 +112,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       }
     }
     if (_pendingChoices > 0) return false;
+    if (_pendingSpellChoices > 0) return false;
     return true;
   }
 
@@ -171,6 +176,68 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     }
     setState(() => _newProficiencyChoices = next);
   }
+
+  /// Conjuros elegidos en este nivel (null = sin cambios). Van en
+  /// `Character.spellChoices`, aparte de `spellIds`: no gastan cupo de
+  /// preparados.
+  Map<String, List<String>>? _newSpellChoices;
+
+  Map<String, List<String>> get _effectiveSpellChoices =>
+      _newSpellChoices ?? widget.character.spellChoices;
+
+  List<String> _spellChoiceFor(String groupId) =>
+      _effectiveSpellChoices[groupId] ?? const [];
+
+  void _setSpellChoice(String groupId, List<String> ids) {
+    final next = {
+      for (final e in _effectiveSpellChoices.entries)
+        e.key: List<String>.of(e.value),
+    };
+    if (ids.isEmpty) {
+      next.remove(groupId);
+    } else {
+      next[groupId] = ids;
+    }
+    setState(() => _newSpellChoices = next);
+  }
+
+  List<SpellChoiceSlot>? _spellChoiceCache;
+  String? _spellChoiceSig;
+
+  /// Cupos de elección de conjuros al nivel nuevo. Se memoiza igual que
+  /// [_expertiseSlots]. La firma incluye lo ya elegido porque un conjuro tomado
+  /// en un cupo sale del pozo del siguiente.
+  List<SpellChoiceSlot> get _spellChoiceSlots {
+    final sig = [
+      _newLevel,
+      _subclassId,
+      _asiKind.name,
+      _featId,
+      _abilityA?.name,
+      _abilityB?.name,
+      _impMode.name,
+      for (final e in _effectiveSpellChoices.entries)
+        '${e.key}=${e.value.join(",")}',
+    ].join('|');
+    if (sig != _spellChoiceSig) {
+      _spellChoiceCache = CharacterCompiler(
+        widget.repo,
+      ).compile(_buildUpdated()).spellChoiceSlots;
+      _spellChoiceSig = sig;
+    }
+    return _spellChoiceCache!;
+  }
+
+  int get _pendingSpellChoices => _spellChoiceSlots.fold(
+    0,
+    (n, s) =>
+        n + (s.count - _spellChoiceFor(s.groupId).length).clamp(0, s.count),
+  );
+
+  /// El paso aparece si falta elegir o si algún cupo se puede rehacer
+  /// (Descubrimientos Mágicos se puede cambiar en cada nivel de Bardo).
+  bool get _hasSpellChoices =>
+      _pendingSpellChoices > 0 || _spellChoiceSlots.any((s) => s.replaceable);
 
   List<ProficiencyChoiceSlot>? _expertiseCache;
   String? _expertiseSig;
@@ -283,6 +350,12 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           'Rasgos',
           Icons.workspace_premium,
         ),
+      if (_hasSpellChoices)
+        const _LevelUpStep(
+          _LevelUpStepKind.spellChoices,
+          'Conjuros a elección',
+          Icons.auto_fix_high,
+        ),
       if (_hasSpellcasting)
         const _LevelUpStep(
           _LevelUpStepKind.spells,
@@ -317,6 +390,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     _LevelUpStepKind.abilityScore => _asiComplete,
     _LevelUpStepKind.featureChoices => _pendingChoices == 0,
     _LevelUpStepKind.expertise => _pendingExpertise == 0,
+    _LevelUpStepKind.spellChoices => _pendingSpellChoices == 0,
     _ => true,
   };
 
@@ -364,6 +438,10 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _pendingExpertise == 1
           ? 'Elegí una habilidad para tu Pericia.'
           : 'Elegí $_pendingExpertise habilidades para tu Pericia.',
+    _LevelUpStepKind.spellChoices when _pendingSpellChoices > 0 =>
+      _pendingSpellChoices == 1
+          ? 'Te falta elegir un conjuro para continuar.'
+          : 'Te faltan $_pendingSpellChoices conjuros para continuar.',
     _ => null,
   };
 
@@ -404,6 +482,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       spellIds: _newSpells,
       featureChoices: _newFeatureChoices,
       proficiencyChoices: _newProficiencyChoices,
+      spellChoices: _newSpellChoices,
     );
   }
 

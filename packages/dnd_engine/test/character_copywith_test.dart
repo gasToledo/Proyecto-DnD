@@ -62,4 +62,27 @@ void main() {
       expect(Character.fromJson(c.toJson()).weaponOffHand, {'dagger': true});
     });
   });
+
+  group('spellChoices', () {
+    const choices = {
+      'class:wizard:signature-spells': ['fireball', 'fly'],
+    };
+
+    test('elegir conjuros preserva el CombatState', () {
+      final base = _base();
+      final c = base.copyWith(spellChoices: choices);
+      expect(c.spellChoices, choices);
+      expect(identical(c.combat, base.combat), isTrue);
+    });
+
+    test('no pasarlo conserva lo que había', () {
+      final base = _base().copyWith(spellChoices: choices);
+      expect(base.copyWith(name: 'Otro').spellChoices, choices);
+    });
+
+    test('sobrevive un round-trip por JSON', () {
+      final c = _base().copyWith(spellChoices: choices);
+      expect(Character.fromJson(c.toJson()).spellChoices, choices);
+    });
+  });
 }

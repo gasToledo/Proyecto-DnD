@@ -193,6 +193,52 @@ class FeatureChoiceSlot {
       };
 }
 
+/// Una elección de conjuros pendiente, con el pozo ya filtrado: la ficha
+/// entrega ids concretos y la UI no vuelve a interpretar los filtros.
+///
+/// Lleva la forma autocontenida de [ProficiencyChoiceSlot] —[chosen] y
+/// [pending] adentro— y no la declarativa de [FeatureChoiceSlot], porque
+/// revalidar la elección contra el pozo es trabajo del compilador y no algo que
+/// la UI deba repetir.
+class SpellChoiceSlot {
+  final String groupId;
+  final String name;
+
+  /// Cuántos conjuros concede este cupo.
+  final int count;
+
+  /// Conjuros elegibles, ya filtrados por nivel, lista, escuela y tiempo de
+  /// lanzamiento, y sin lo que otro rasgo ya concede.
+  final List<String> options;
+
+  /// Lo elegido, ya revalidado contra [options]: lo guardado que dejó de
+  /// calificar no llega hasta acá.
+  final List<String> chosen;
+
+  /// Si una elección ya hecha se puede cambiar más adelante.
+  final bool replaceable;
+
+  const SpellChoiceSlot({
+    required this.groupId,
+    required this.name,
+    required this.count,
+    required this.options,
+    this.chosen = const [],
+    this.replaceable = false,
+  });
+
+  int get pending => (count - chosen.length).clamp(0, count);
+
+  Map<String, dynamic> toJson() => {
+        'groupId': groupId,
+        'name': name,
+        'count': count,
+        'options': options,
+        'chosen': chosen,
+        'replaceable': replaceable,
+      };
+}
+
 /// Qué economía de acción consume un ataque.
 ///
 /// La resuelve el motor y no la ficha: derivarla en la UI de `offHand` y la
@@ -386,6 +432,13 @@ class ComputedSheet {
   /// únicas elegibles.
   final List<ProficiencyChoiceSlot> expertiseChoiceSlots;
 
+  /// Conjuros que el personaje todavía tiene que elegir por un rasgo, con el
+  /// pozo ya filtrado (Conjuros Característicos, Descubrimientos Mágicos).
+  ///
+  /// Lo ya elegido no queda solo acá: también está en [alwaysPreparedSpellIds],
+  /// que es por donde el resto del sistema lo ve.
+  final List<SpellChoiceSlot> spellChoiceSlots;
+
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
 
@@ -420,6 +473,7 @@ class ComputedSheet {
     this.featureChoiceSlots = const [],
     this.proficiencyChoiceSlots = const [],
     this.expertiseChoiceSlots = const [],
+    this.spellChoiceSlots = const [],
     this.spellcasting,
   });
 

@@ -465,11 +465,18 @@ class _ReviewRow extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            before,
-            style: TextStyle(
-              fontFamily: 'Georgia',
-              color: scheme.onSurfaceVariant,
+          // Mismo tope y elipsis que el valor nuevo. Sin esto la fila desborda:
+          // el resumen de espacios de un lanzador de nivel 20 son nueve tramos
+          // ("4/3/3/3/3/2/2/1/1") y este texto no tenía dónde recortarse.
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 180),
+            child: Text(
+              before,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ),
           Padding(
@@ -803,6 +810,48 @@ class _FeatureChoiceChip extends StatelessWidget {
 /// No hay noción de "bloqueada por tenerla ya": acá tenerla es el requisito. Lo
 /// único que limita es el cupo, y una habilidad tomada en otro cupo ya viene
 /// fuera de `slot.skills`.
+/// Selector de un cupo de [SpellChoiceSlot]. Las opciones ya vienen filtradas
+/// por el motor —nivel, lista, escuela, tiempo de lanzamiento y lo que otro
+/// rasgo ya concede—, así que acá solo se rotulan y se ordenan.
+class _SpellChoiceGroup extends StatelessWidget {
+  final ContentRepository repo;
+  final SpellChoiceSlot slot;
+  final List<String> chosen;
+  final ValueChanged<List<String>> onChanged;
+
+  const _SpellChoiceGroup({
+    required this.repo,
+    required this.slot,
+    required this.chosen,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (slot.options.isEmpty) {
+      return Text(
+        'No hay conjuros disponibles para este rasgo.',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+
+    // `slot.options` ya viene ordenado por nivel y nombre desde el motor. Lo
+    // elegido puede haber quedado fuera del pozo si dejó de calificar, y en ese
+    // caso el motor ya lo descartó: no hace falta filtrarlo de nuevo acá.
+    final selected = {...chosen};
+    return CappedChipSelect(
+      options: {
+        for (final id in slot.options)
+          if (repo.spell(id) case final s?)
+            id: s.isCantrip ? '${s.name} (truco)' : '${s.name} (Nv ${s.level})',
+      },
+      selected: selected,
+      max: slot.count,
+      onChanged: () => onChanged(selected.toList()),
+    );
+  }
+}
+
 class _ExpertiseGroup extends StatelessWidget {
   final ProficiencyChoiceSlot slot;
   final List<String> chosen;

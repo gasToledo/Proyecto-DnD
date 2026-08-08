@@ -6,6 +6,7 @@ import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
 import '../domain/effects.dart';
+import '../domain/language.dart';
 import '../domain/proficiency_labels.dart';
 import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
@@ -398,6 +399,20 @@ class CharacterCompiler {
 
     final innate = _resolveInnate(c, builder, mods, profBonus);
 
+    // Idiomas. Común lo sabe todo personaje y no gasta una de las dos
+    // elecciones del origen; lo elegido y lo que conceden los rasgos se unen
+    // sin repetir. Se recorta a `originChoiceCount` para que una ficha con más
+    // de la cuenta no las aplique todas; la validación además avisa.
+    final knownLanguages = <String>{
+      Language.universal.id,
+      ...c.languages.take(Language.originChoiceCount),
+      ...builder.languages,
+    };
+    // Las elecciones que declara un rasgo se resuelven después, para que su
+    // pozo pueda excluir todo lo anterior.
+    final languageChoiceSlots =
+        _resolveLanguageChoices(c, proficiencySources, knownLanguages);
+
     return ComputedSheet(
       level: c.level,
       proficiencyBonus: profBonus,
@@ -450,6 +465,8 @@ class CharacterCompiler {
       proficiencyChoiceSlots: proficiencySlots,
       expertiseChoiceSlots: expertiseSlots,
       spellChoiceSlots: spellChoiceSlots,
+      languages: knownLanguages,
+      languageChoiceSlots: languageChoiceSlots,
       spellcasting: spellcasting,
     );
   }
@@ -474,6 +491,47 @@ class CharacterCompiler {
     if (chosen.level != granted.level) return granted;
     if (!g.replaceableFrom.any(chosen.classes.contains)) return granted;
     return chosen;
+  }
+
+  /// Resuelve los cupos de elección de idiomas y **suma lo elegido a
+  /// [known]**, que por eso se recibe mutable: un idioma tomado en un cupo no
+  /// se vuelve a ofrecer en el siguiente ni cuenta dos veces en la ficha.
+  List<LanguageChoiceSlot> _resolveLanguageChoices(
+    Character c,
+    List<({String id, String name, List<Effect> effects})> sources,
+    Set<String> known,
+  ) {
+    final slots = <LanguageChoiceSlot>[];
+
+    for (final source in sources) {
+      for (final effect in source.effects.whereType<LanguageChoiceEffect>()) {
+        // El pozo se rearma en cada compilación: lo guardado que el personaje
+        // ya sabe por otra vía se descarta en silencio y devuelve el cupo.
+        final options = [
+          for (final l in Language.values)
+            if (!known.contains(l.id))
+              if (!effect.standardOnly || l.standard) l.id,
+        ];
+
+        final chosen = <String>[];
+        for (final id
+            in c.languageChoices[effect.groupId] ?? const <String>[]) {
+          if (chosen.length >= effect.count) break;
+          if (options.contains(id) && !chosen.contains(id)) chosen.add(id);
+        }
+
+        slots.add(LanguageChoiceSlot(
+          groupId: effect.groupId,
+          name: effect.name.isEmpty ? source.name : effect.name,
+          count: effect.count,
+          options: options,
+          chosen: chosen,
+        ));
+
+        known.addAll(chosen);
+      }
+    }
+    return slots;
   }
 
   /// Resuelve los cupos de elección de conjuros: filtra el pozo, revalida lo

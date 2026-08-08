@@ -46,6 +46,10 @@ class SheetBuilder {
   final Set<String> resistances = {};
   final Set<String> immunities = {};
 
+  /// Idiomas que conceden los rasgos. Los dos que elige el jugador y el Común
+  /// los suma el compilador: no vienen de un efecto.
+  final Set<String> languages = {};
+
   final List<PassiveTrait> passives = [];
 
   /// Conjuros concedidos por rasgos, sin resolver (el compilador los cruza con
@@ -133,6 +137,12 @@ class SheetBuilder {
         resistances.add(damageType);
       case ImmunityEffect(:final damageType):
         immunities.add(damageType);
+      case LanguageEffect(:final language):
+        languages.add(language);
+      case LanguageChoiceEffect():
+        // Marcador: lo resuelve el compilador, que sabe qué idiomas ya tiene
+        // el personaje y por eso puede armar el pozo sin repetidos.
+        break;
       case PassiveTraitEffect(:final name, :final description):
         passives.add(PassiveTrait(name, description));
       case GrantFeatEffect():

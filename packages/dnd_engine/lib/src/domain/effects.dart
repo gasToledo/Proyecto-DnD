@@ -133,6 +133,13 @@ sealed class Effect {
           expertise: json['expertise'] as bool? ?? false,
           allowNewProficiency: json['allowNewProficiency'] as bool? ?? false,
         ),
+      'language' => LanguageEffect(json['language'] as String),
+      'languageChoice' => LanguageChoiceEffect(
+          groupId: json['groupId'] as String,
+          name: json['name'] as String? ?? '',
+          count: json['count'] as int? ?? 1,
+          standardOnly: json['standardOnly'] as bool? ?? false,
+        ),
       'spellChoice' => SpellChoiceEffect(
           groupId: json['groupId'] as String,
           name: json['name'] as String? ?? '',
@@ -488,6 +495,57 @@ class FeatureChoiceEffect extends Effect {
         'featCategory': featCategory,
         'count': count,
         'replaceable': replaceable,
+      };
+}
+
+/// Concede un idioma concreto: el Druídico del Druida, la Jerga de Ladrones
+/// del Pícaro.
+///
+/// Es el único camino por el que se obtiene un idioma **inusual**: los dos que
+/// elige el jugador salen de la tabla de estándar y viven en
+/// `Character.languages`. Un id que el catálogo no conoce se conserva igual
+/// —el homebrew puede inventar idiomas— y se muestra capitalizado.
+class LanguageEffect extends Effect {
+  final String language;
+  const LanguageEffect(this.language);
+  @override
+  Map<String, dynamic> toJson() => {'type': 'language', 'language': language};
+}
+
+/// Declara "elegí [count] idiomas": la Jerga de Ladrones del Pícaro concede el
+/// suyo **y otro a elección** de las tablas de idiomas.
+///
+/// Es un **marcador**, como [SpellChoiceEffect]: lo resuelve el compilador,
+/// que es quien sabe qué idiomas ya tiene el personaje para no ofrecerlos dos
+/// veces. La elección vive en `Character.languageChoices`.
+class LanguageChoiceEffect extends Effect {
+  /// Clave con la que se guarda la elección.
+  final String groupId;
+
+  /// Rótulo para la UI. Vacío significa "usá el nombre del rasgo".
+  final String name;
+
+  final int count;
+
+  /// Si el pozo se limita a la tabla de estándar. El Pícaro dice "de las
+  /// tablas" —en plural— así que puede tomar uno inusual; un rasgo que diga
+  /// "un idioma estándar" declara esto en true.
+  final bool standardOnly;
+
+  const LanguageChoiceEffect({
+    required this.groupId,
+    this.name = '',
+    this.count = 1,
+    this.standardOnly = false,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'languageChoice',
+        'groupId': groupId,
+        if (name.isNotEmpty) 'name': name,
+        'count': count,
+        'standardOnly': standardOnly,
       };
 }
 

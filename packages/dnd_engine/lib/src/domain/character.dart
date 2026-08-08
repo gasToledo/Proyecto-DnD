@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 14;
+  static const int currentSchemaVersion = 15;
 
   final String id;
   String name;
@@ -217,6 +217,23 @@ class Character {
 
   /// Elecciones de competencia por origen estable.
   final Map<String, List<String>> proficiencyChoices;
+
+  /// Los idiomas que **elige** el jugador al crear el personaje: dos de la
+  /// tabla de estándar (`Language.originChoiceCount`).
+  ///
+  /// No incluye Común, que todo personaje sabe, ni los que concede un rasgo
+  /// con `LanguageEffect`: esos los suma el compilador. Guardar solo lo
+  /// elegido es lo que permite cambiar de clase sin perder los idiomas ni
+  /// arrastrar el Druídico de un Druida que ya no se es.
+  final List<String> languages;
+
+  /// Idiomas elegidos por un **rasgo** que los concede a elección (la Jerga de
+  /// Ladrones del Pícaro): id de grupo → ids de idioma.
+  ///
+  /// Aparte de [languages] porque no salen del origen sino de la clase: si el
+  /// personaje deja de tener el rasgo, esta elección queda huérfana y la
+  /// validación lo dice, mientras que los del origen se conservan siempre.
+  final Map<String, List<String>> languageChoices;
 
   /// Elecciones abiertas resueltas: id de grupo → ids de opción elegidos.
   ///
@@ -317,6 +334,8 @@ class Character {
     this.chosenSkills = const [],
     this.chosenProficiencies = const [],
     this.proficiencyChoices = const {},
+    this.languages = const [],
+    this.languageChoices = const {},
     this.featureChoices = const {},
     this.spellChoices = const {},
     this.weaponMasteryChoices = const [],
@@ -357,6 +376,8 @@ class Character {
         'chosenSkills': chosenSkills,
         'chosenProficiencies': chosenProficiencies,
         'proficiencyChoices': proficiencyChoices,
+        'languages': languages,
+        'languageChoices': languageChoices,
         'featureChoices': featureChoices,
         'spellChoices': spellChoices,
         'weaponMasteryChoices': weaponMasteryChoices,
@@ -679,6 +700,15 @@ class Character {
           migrated.putIfAbsent('spellChoices', () => {});
           version = 14;
           migrated['schemaVersion'] = version;
+        case 14:
+          // Arranca vacío a propósito: la ficha vieja no dice qué idiomas
+          // eligió el jugador y el motor no se los va a inventar. Queda con
+          // los dos pendientes como aviso informativo, igual que pasó con la
+          // Pericia, y el editor de la ficha los resuelve.
+          migrated.putIfAbsent('languages', () => []);
+          migrated.putIfAbsent('languageChoices', () => {});
+          version = 15;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -717,6 +747,10 @@ class Character {
           .map((e) => e as String)
           .toList(),
       proficiencyChoices: _choiceMap(j['proficiencyChoices']),
+      languages: (j['languages'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
+      languageChoices: _choiceMap(j['languageChoices']),
       featureChoices: _choiceMap(j['featureChoices']),
       spellChoices: _choiceMap(j['spellChoices']),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
@@ -772,6 +806,8 @@ class Character {
     Map<String, List<String>>? spellChoices,
     List<String>? chosenProficiencies,
     Map<String, List<String>>? proficiencyChoices,
+    List<String>? languages,
+    Map<String, List<String>>? languageChoices,
     List<String>? cantripIds,
     List<String>? spellIds,
     Object? equippedArmorId = _unset,
@@ -810,6 +846,8 @@ class Character {
       chosenSkills: chosenSkills,
       chosenProficiencies: chosenProficiencies ?? this.chosenProficiencies,
       proficiencyChoices: proficiencyChoices ?? this.proficiencyChoices,
+      languages: languages ?? this.languages,
+      languageChoices: languageChoices ?? this.languageChoices,
       featureChoices: featureChoices ?? this.featureChoices,
       spellChoices: spellChoices ?? this.spellChoices,
       weaponMasteryChoices: weaponMasteryChoices,

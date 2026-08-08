@@ -193,6 +193,38 @@ class FeatureChoiceSlot {
       };
 }
 
+/// Una elección de idiomas pendiente, con el pozo ya resuelto: lo que el
+/// personaje ya sabe por otra vía no se ofrece.
+class LanguageChoiceSlot {
+  final String groupId;
+  final String name;
+  final int count;
+
+  /// Idiomas elegibles, ya sin los que el personaje sabe por otra vía.
+  final List<String> options;
+
+  /// Lo elegido, ya revalidado contra [options].
+  final List<String> chosen;
+
+  const LanguageChoiceSlot({
+    required this.groupId,
+    required this.name,
+    required this.count,
+    required this.options,
+    this.chosen = const [],
+  });
+
+  int get pending => (count - chosen.length).clamp(0, count);
+
+  Map<String, dynamic> toJson() => {
+        'groupId': groupId,
+        'name': name,
+        'count': count,
+        'options': options,
+        'chosen': chosen,
+      };
+}
+
 /// Una elección de conjuros pendiente, con el pozo ya filtrado: la ficha
 /// entrega ids concretos y la UI no vuelve a interpretar los filtros.
 ///
@@ -432,6 +464,14 @@ class ComputedSheet {
   /// únicas elegibles.
   final List<ProficiencyChoiceSlot> expertiseChoiceSlots;
 
+  /// Idiomas que sabe el personaje: Común, los dos elegidos en el origen, los
+  /// que conceda un rasgo y los de una elección resuelta, ya unidos y sin
+  /// repetir.
+  final Set<String> languages;
+
+  /// Idiomas que todavía tiene que elegir por un rasgo (Jerga de Ladrones).
+  final List<LanguageChoiceSlot> languageChoiceSlots;
+
   /// Conjuros que el personaje todavía tiene que elegir por un rasgo, con el
   /// pozo ya filtrado (Conjuros Característicos, Descubrimientos Mágicos).
   ///
@@ -474,6 +514,8 @@ class ComputedSheet {
     this.proficiencyChoiceSlots = const [],
     this.expertiseChoiceSlots = const [],
     this.spellChoiceSlots = const [],
+    this.languages = const {},
+    this.languageChoiceSlots = const [],
     this.spellcasting,
   });
 

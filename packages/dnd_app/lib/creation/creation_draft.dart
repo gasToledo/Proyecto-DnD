@@ -130,6 +130,20 @@ class CreationDraft {
             .toList();
       }
     }
+    draft.languages.addAll(
+      _stringList(json['languages']).where((id) => Language.fromId(id) != null),
+    );
+    final rawLanguageChoices = json['languageChoices'];
+    if (rawLanguageChoices is Map) {
+      for (final entry in rawLanguageChoices.entries) {
+        if (entry.key is! String || entry.value is! List) continue;
+        final ids = (entry.value as List)
+            .whereType<String>()
+            .where((id) => Language.fromId(id) != null)
+            .toList();
+        if (ids.isNotEmpty) draft.languageChoices[entry.key as String] = ids;
+      }
+    }
     final rawSpellChoices = json['spellChoices'];
     if (rawSpellChoices is Map) {
       for (final entry in rawSpellChoices.entries) {
@@ -279,6 +293,13 @@ class CreationDraft {
   /// único lugar donde una elección del motor no existe.
   final Map<String, List<String>> spellChoices = {};
 
+  /// Idiomas elegidos en el origen: dos de la tabla de estándar. Común no va
+  /// acá, lo sabe todo personaje.
+  final List<String> languages = [];
+
+  /// Idiomas elegidos por un rasgo que los deja a elección (Jerga de Ladrones).
+  final Map<String, List<String>> languageChoices = {};
+
   // Orígenes.
   String? raceId;
   String? lineageId;
@@ -332,6 +353,8 @@ class CreationDraft {
     'chosenProficiencies': chosenProficiencies,
     'proficiencyChoices': proficiencyChoices,
     'spellChoices': spellChoices,
+    'languages': languages,
+    'languageChoices': languageChoices,
     'raceId': raceId,
     'lineageId': lineageId,
     'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
@@ -423,6 +446,8 @@ class CreationDraft {
       for (final e in proficiencyChoices.entries)
         '${e.key}:${e.value.join(",")}',
       for (final e in spellChoices.entries) '${e.key}:${e.value.join(",")}',
+      languages.join(','),
+      for (final e in languageChoices.entries) '${e.key}:${e.value.join(",")}',
       // Las habilidades elegidas viajan en `build()`, así que también son parte
       // de lo derivado: sin ellas acá la ficha compilada quedaba una elección
       // atrás y las competencias de una dote no veían lo recién tomado.
@@ -518,6 +543,33 @@ class CreationDraft {
         spellChoices.remove(slot.groupId);
       } else {
         spellChoices[slot.groupId] = List.of(slot.chosen);
+      }
+    }
+  }
+
+  /// Cuántos idiomas del origen faltan elegir. El cupo lo fija el motor.
+  int get pendingLanguages =>
+      (Language.originChoiceCount - languages.length).clamp(0, 99);
+
+  /// Cupos de idioma que declara un rasgo (Jerga de Ladrones del Pícaro).
+  List<LanguageChoiceSlot> get languageChoiceSlots =>
+      previewSheet.languageChoiceSlots;
+
+  int get pendingLanguageChoices =>
+      languageChoiceSlots.fold<int>(0, (n, slot) => n + slot.pending);
+
+  /// Suelta lo que dejó de ser elegible: cambiar de clase puede vaciar un cupo
+  /// de rasgo, y un idioma del origen que además concede la clase pasaría a
+  /// estar dos veces.
+  void pruneLanguages() {
+    final slots = languageChoiceSlots;
+    final active = {for (final slot in slots) slot.groupId};
+    languageChoices.removeWhere((groupId, _) => !active.contains(groupId));
+    for (final slot in slots) {
+      if (slot.chosen.isEmpty) {
+        languageChoices.remove(slot.groupId);
+      } else {
+        languageChoices[slot.groupId] = List.of(slot.chosen);
       }
     }
   }
@@ -811,6 +863,17 @@ class CreationDraft {
         if (periciasFaltan > 0) {
           out.add('Pericias pendientes: $periciasFaltan.');
         }
+        // Los dos del origen y los que deje elegir un rasgo. El selector está
+        // en este mismo paso, así que exigirlos no deja al jugador sin salida.
+        if (pendingLanguages > 0) {
+          out.add(
+            'Idiomas: ${languages.length}/'
+            '${Language.originChoiceCount}.',
+          );
+        }
+        if (pendingLanguageChoices > 0) {
+          out.add('Idiomas por rasgo pendientes: $pendingLanguageChoices.');
+        }
         return out;
 
       case CreationStep.equipo:
@@ -899,6 +962,10 @@ class CreationDraft {
       },
       spellChoices: {
         for (final e in spellChoices.entries) e.key: List.of(e.value),
+      },
+      languages: List.of(languages),
+      languageChoices: {
+        for (final e in languageChoices.entries) e.key: List.of(e.value),
       },
       weaponMasteryChoices: List.of(weaponMasteries),
       featIds: [?raceFeatId],

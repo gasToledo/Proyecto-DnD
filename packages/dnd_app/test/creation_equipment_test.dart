@@ -104,6 +104,7 @@ void main() {
       await tester.tap(f.first);
       await tester.pumpAndSettle();
     }
+    await pickLanguages(tester);
     await next();
   }
 

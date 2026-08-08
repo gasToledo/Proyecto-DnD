@@ -4,6 +4,7 @@ import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
 import '../domain/effects.dart';
+import '../domain/language.dart';
 import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
 import 'character_compiler.dart';
@@ -186,6 +187,8 @@ class CharacterValidator {
     _validateOffHand(c, repo, w);
     _validateFeatureChoices(c, sheet, w);
     _validateSpellChoices(c, sheet, w);
+    _validateLanguages(c, w);
+    _validateLanguageChoices(c, sheet, w);
 
     for (final a in c.assignedScores.values) {
       if (a < 3 || a > 18) {
@@ -442,6 +445,86 @@ class CharacterValidator {
         'Tenés conjuros elegidos de "$groupId", un rasgo que ya no tenés.',
         WarningSeverity.info,
       ));
+    }
+  }
+
+  /// Chequeos de los idiomas del origen.
+  ///
+  /// Solo miran lo **elegido**: Común y lo que concede un rasgo no son
+  /// decisiones del jugador y no pueden estar mal.
+  void _validateLanguageChoices(
+      Character c, ComputedSheet sheet, List<ValidationWarning> w) {
+    final slots = {for (final s in sheet.languageChoiceSlots) s.groupId: s};
+
+    for (final slot in sheet.languageChoiceSlots) {
+      if (slot.chosen.length < slot.count) {
+        w.add(ValidationWarning(
+          'language_choice_pending_feature',
+          '${slot.name}: elegiste ${slot.chosen.length} de ${slot.count} '
+              'idiomas.',
+          WarningSeverity.info,
+        ));
+      }
+    }
+
+    for (final groupId in c.languageChoices.keys) {
+      if ((c.languageChoices[groupId] ?? const []).isEmpty) continue;
+      if (slots.containsKey(groupId)) continue;
+      w.add(ValidationWarning(
+        'language_choice_orphan',
+        'Tenés idiomas elegidos de "$groupId", un rasgo que ya no tenés.',
+        WarningSeverity.info,
+      ));
+    }
+  }
+
+  void _validateLanguages(Character c, List<ValidationWarning> w) {
+    const cupo = Language.originChoiceCount;
+    final elegidos = c.languages;
+
+    if (elegidos.length < cupo) {
+      w.add(ValidationWarning(
+        'language_choice_pending',
+        'Idiomas: elegiste ${elegidos.length} de $cupo.',
+        WarningSeverity.info,
+      ));
+    } else if (elegidos.length > cupo) {
+      w.add(ValidationWarning(
+        'too_many_languages',
+        'Idiomas: elegiste ${elegidos.length} pero te corresponden $cupo.',
+      ));
+    }
+
+    final vistos = <String>{};
+    for (final id in elegidos) {
+      if (!vistos.add(id)) {
+        w.add(ValidationWarning(
+          'language_duplicate',
+          '${Language.labelFor(id)} está elegido dos veces.',
+        ));
+        continue;
+      }
+      // Común no se elige: ya se sabe, y gastarlo deja al personaje con un
+      // idioma menos del que le corresponde.
+      if (id == Language.universal.id) {
+        w.add(ValidationWarning(
+          'language_universal_chosen',
+          '${Language.labelFor(id)} lo sabe todo personaje: no ocupa una de '
+              'tus elecciones.',
+        ));
+        continue;
+      }
+      final lang = Language.fromId(id);
+      // Un id que el catálogo no conoce se deja pasar: puede venir de
+      // homebrew. Lo que sí se avisa es elegir uno inusual, que por regla solo
+      // llega por un rasgo.
+      if (lang != null && !lang.standard) {
+        w.add(ValidationWarning(
+          'language_not_standard',
+          '${lang.label} no está entre los idiomas estándar: solo se obtiene '
+              'por un rasgo.',
+        ));
+      }
     }
   }
 

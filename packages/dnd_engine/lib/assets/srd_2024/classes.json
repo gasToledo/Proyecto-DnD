@@ -431,9 +431,11 @@
       {
         "level": 1,
         "name": "Jerga de Ladrones",
-        "description": "Conoces la jerga secreta de los ladrones.",
+        "description": "Conoces la jerga de ladrones y otro idioma a tu elección.",
         "effects": [
-          { "type": "passiveTrait", "name": "Jerga de Ladrones", "description": "Conoces la Jerga de Ladrones y un lenguaje de signos con el que puedes ocultar mensajes en una conversación aparentemente normal." }
+          { "type": "language", "language": "thieves-cant" },
+          { "type": "languageChoice", "groupId": "class:rogue:cant-language", "name": "Idioma de Jerga de Ladrones", "count": 1 },
+          { "type": "passiveTrait", "name": "Jerga de Ladrones", "description": "Aprendiste varios idiomas en las comunidades donde empleabas tus talentos de pícaro: conocés la jerga de ladrones y otro idioma a tu elección de las tablas de idiomas." }
         ]
       },
       {
@@ -1006,10 +1008,11 @@
       {
         "level": 1,
         "name": "Druídico",
-        "description": "Conoces el idioma secreto Druídico y puedes lanzar el conjuro Sentido Animal como ritual.",
+        "description": "Conoces el idioma secreto Druídico y siempre tienes preparado Hablar con los Animales.",
         "effects": [
-          { "type": "alwaysPreparedSpell", "spellId": "guidance" },
-          { "type": "passiveTrait", "name": "Druídico", "description": "Conoces el idioma Druídico. Siempre tienes preparado el truco Guía y puedes lanzar Sentido Animal como ritual." }
+          { "type": "alwaysPreparedSpell", "spellId": "speak-with-animals" },
+          { "type": "language", "language": "druidic" },
+          { "type": "passiveTrait", "name": "Druídico", "description": "Sabés druídico, el idioma secreto de los druidas. Al aprenderlo accediste a la magia para comunicarte con los animales, así que siempre tenés preparado Hablar con los Animales. Podés usar el druídico para dejar mensajes ocultos: quien lo conozca los detecta de inmediato y el resto necesita una prueba de Inteligencia (Investigación) CD 15 para notarlos, sin poder descifrarlos sin magia." }
         ]
       },
       {

@@ -77,6 +77,9 @@ Character _minimalCharacter({
   int level = 1,
   List<AsiChoice> asiChoices = const [],
   List<int>? hpPerLevel,
+  // Todo personaje elige dos idiomas en el origen; sin ellos el fixture
+  // "bien formado" arrastra el aviso de pendientes.
+  List<String> languages = const ['elvish', 'dwarvish'],
 }) =>
     Character(
       id: 'test',
@@ -95,6 +98,7 @@ Character _minimalCharacter({
             Ability.charisma: 10,
           },
       chosenSkills: chosenSkills,
+      languages: languages,
       featIds: featIds,
       hpPerLevel: hpPerLevel ?? List.filled(level, 8),
       equippedWeaponIds: equippedWeaponIds,

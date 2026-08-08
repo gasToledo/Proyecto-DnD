@@ -130,6 +130,90 @@ void main() {
     });
   });
 
+  group('Idiomas', () {
+    CreationDraft picaro() {
+      final d = CreationDraft(repo)
+        ..classId = 'rogue'
+        ..raceId = 'human'
+        ..backgroundId = 'soldier';
+      d.applyScoreMethod(ScoreMethod.standardArray);
+      d.assignedScores.addAll({for (final a in Ability.values) a: 12});
+      return d;
+    }
+
+    test('los dos del origen bloquean el paso de aptitudes', () {
+      final d = picaro();
+      expect(d.pendingLanguages, 2);
+      expect(d.pendingFor(CreationStep.aptitudes), contains('Idiomas: 0/2.'));
+
+      d.languages.addAll(['goblin', 'orc']);
+      expect(d.pendingLanguages, 0);
+      expect(
+        d.pendingFor(CreationStep.aptitudes).where((b) => b == 'Idiomas: 0/2.'),
+        isEmpty,
+      );
+    });
+
+    test('el Pícaro suma el cupo de la Jerga de Ladrones', () {
+      final d = picaro()..languages.addAll(['goblin', 'orc']);
+      final slot = d.languageChoiceSlots.single;
+      expect(slot.groupId, 'class:rogue:cant-language');
+      expect(d.pendingLanguageChoices, 1);
+      expect(
+        d.pendingFor(CreationStep.aptitudes),
+        contains('Idiomas por rasgo pendientes: 1.'),
+      );
+      // No ofrece lo que ya sabe por el origen ni la propia Jerga.
+      expect(slot.options, isNot(contains('goblin')));
+      expect(slot.options, isNot(contains('thieves-cant')));
+    });
+
+    test('la vista previa no queda una elección atrasada', () {
+      // La firma de caché de `previewSheet` tiene que incluir los idiomas.
+      final d = picaro();
+      expect(d.previewSheet.languages, isNot(contains('orc')));
+      d.languages.addAll(['goblin', 'orc']);
+      expect(d.previewSheet.languages, contains('orc'));
+    });
+
+    test('lo elegido llega al personaje construido', () {
+      final d = picaro()
+        ..languages.addAll(['goblin', 'orc'])
+        ..languageChoices['class:rogue:cant-language'] = ['infernal'];
+      final c = d.build();
+      expect(c.languages, ['goblin', 'orc']);
+      expect(c.languageChoices, {
+        'class:rogue:cant-language': ['infernal'],
+      });
+
+      final sheet = CharacterCompiler(repo).compile(c);
+      expect(
+        sheet.languages,
+        containsAll(['common', 'goblin', 'orc', 'thieves-cant', 'infernal']),
+      );
+    });
+
+    test('el podado suelta el cupo de una clase que ya no es', () {
+      final d = picaro()
+        ..languages.addAll(['goblin', 'orc'])
+        ..languageChoices['class:rogue:cant-language'] = ['infernal'];
+      d.classId = 'fighter';
+      d.pruneLanguages();
+      expect(d.languageChoices, isEmpty);
+    });
+
+    test('el round-trip conserva ambas listas', () {
+      final d = picaro()
+        ..languages.addAll(['goblin', 'orc'])
+        ..languageChoices['class:rogue:cant-language'] = ['infernal'];
+      final back = CreationDraft.fromJson(d.repo, d.toJson());
+      expect(back.languages, ['goblin', 'orc']);
+      expect(back.languageChoices, {
+        'class:rogue:cant-language': ['infernal'],
+      });
+    });
+  });
+
   group('Conjuros a elección', () {
     // Ninguna clase oficial declara un cupo a nivel 1, así que el mecanismo se
     // prueba con homebrew: el motor ya lo cubre y acá interesa la plomería del
@@ -766,6 +850,9 @@ void main() {
             .firstWhere((f) => f.category == 'origin')
             .id;
       }
+      // Los dos idiomas del origen también son parte de este paso.
+      expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
+      d.languages.addAll(['goblin', 'orc']);
       expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
     });
 
@@ -789,6 +876,7 @@ void main() {
         expect(d.pendingFor(CreationStep.aptitudes), isNotEmpty);
         // Elegida la única disponible, el gate se satisface (no exige el 2.º).
         d.classSkills.add(from.last);
+        d.languages.addAll(['goblin', 'orc']);
         expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
       },
     );

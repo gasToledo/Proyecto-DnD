@@ -43,8 +43,10 @@ void main() {
   test('las 24 subclases con tabla la tienen cargada', () {
     final conTabla = tablas().map((t) => t.sub.id).toSet();
     // 19 del PHB 2024 más las 5 del Artífice. El Círculo de la Tierra queda
-    // fuera a propósito: sus conjuros dependen del terreno elegido, y esa
-    // elección todavía no existe en el motor.
+    // fuera a propósito y **sigue quedando fuera**: sus cuatro tablas dependen
+    // del terreno elegido, así que viven en las dotes `druid-land` y no en los
+    // rasgos de la subclase (ver `circle_land_test.dart`). La aserción se
+    // conserva como guarda: si alguien vuelve a meter la tabla acá, se rompe.
     expect(conTabla, hasLength(24));
     expect(conTabla, isNot(contains('circle-land')));
     // Las que el manual deja sin *tabla* siguen sin tabla. Ojo: no tener tabla

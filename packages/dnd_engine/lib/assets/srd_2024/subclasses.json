@@ -897,7 +897,7 @@
         "name": "Conjuros de Círculo",
         "description": "Tu conexión con la tierra te otorga conjuros preparados adicionales según el terreno elegido.",
         "effects": [
-          { "type": "passiveTrait", "name": "Conjuros de Círculo", "description": "Conjuros preparados extra según el terreno (árido, polar, templado o tropical)." }
+          { "type": "featureChoice", "groupId": "circle-land:terrain", "name": "Terreno del Círculo", "featCategory": "druid-land", "count": 1, "replaceable": true }
         ]
       },
       {
@@ -911,17 +911,18 @@
       {
         "level": 6,
         "name": "Recuperación Natural",
-        "description": "En un descanso corto recuperas espacios de conjuro hasta la mitad de tu nivel de Druida.",
+        "description": "Lanzas gratis un conjuro de círculo por descanso largo, y recuperas espacios en un descanso corto.",
         "effects": [
-          { "type": "passiveTrait", "name": "Recuperación Natural", "description": "Descanso corto: recuperas espacios de conjuro y siempre tienes preparados tus conjuros de círculo." }
+          { "type": "passiveTrait", "name": "Recuperación Natural", "description": "Lanzás sin gastar espacio uno de los conjuros de nivel 1 o superior que tengas preparados por Conjuros de Círculo; para repetirlo hay que terminar un descanso largo. Además, tras un descanso corto recuperás espacios de conjuro cuyo total de niveles no supere la mitad de tu nivel de Druida (redondeando hacia arriba), ninguno de nivel 6+, una vez por descanso largo." }
         ]
       },
       {
         "level": 10,
         "name": "Protección de la Naturaleza",
-        "description": "Eres inmune a ser envenenado y enfermado, y ganas resistencia a un tipo de daño según tu terreno.",
+        "description": "Eres inmune al estado envenenado y ganas resistencia a un tipo de daño según tu terreno.",
         "effects": [
-          { "type": "passiveTrait", "name": "Protección de la Naturaleza", "description": "Inmune a veneno y enfermedad; resistencia al daño elemental de tu terreno." }
+          { "type": "immunity", "damageType": "poisoned" },
+          { "type": "passiveTrait", "name": "Protección de la Naturaleza", "description": "Sos inmune al estado envenenado y tenés resistencia al tipo de daño asociado al terreno que hayas elegido en Conjuros de Círculo: fuego (árido), frío (polar), relámpago (templado) o veneno (tropical)." }
         ]
       },
       {

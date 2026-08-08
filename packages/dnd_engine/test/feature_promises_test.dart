@@ -151,14 +151,11 @@ void main() {
         caseSensitive: false,
       ).hasMatch(p),
       entrega: (f) => concedeSiemprePreparado(f.effects),
-      coincidencias: 120,
-      deuda: {
-        'subclase circle-land n3 "Conjuros de Círculo"':
-            'la tabla depende del terreno elegido (árido, polar, templado o '
-                'tropical) y esa elección no existe en el motor',
-        'subclase circle-land n6 "Recuperación Natural"':
-            'se apoya en la tabla por terreno del nivel 3',
-      },
+      // Bajó uno respecto de la tanda anterior a propósito: la descripción de
+      // Recuperación Natural decía "y siempre tienes preparados tus conjuros de
+      // círculo", que no es lo que dice la regla. Al corregirla dejó de
+      // coincidir, que es lo correcto: ese rasgo no concede ninguno.
+      coincidencias: 119,
     );
   });
 

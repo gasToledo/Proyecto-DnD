@@ -3300,5 +3300,73 @@
     "prerequisite": {
       "minLevel": 19
     }
+  },
+  {
+    "id": "druid-land-arid",
+    "name": "Terreno Árido",
+    "source": "srd_2024",
+    "category": "druid-land",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Terreno Árido", "description": "Tu círculo se liga al desierto y las tierras baldías: ganás sus conjuros de círculo siempre preparados y, a nivel 10, resistencia al daño de fuego." },
+      { "type": "alwaysPreparedSpell", "spellId": "blur" },
+      { "type": "alwaysPreparedSpell", "spellId": "fire-bolt" },
+      { "type": "alwaysPreparedSpell", "spellId": "burning-hands" },
+      { "type": "leveled", "minLevel": 5, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "fireball" }] },
+      { "type": "leveled", "minLevel": 7, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "blight" }] },
+      { "type": "leveled", "minLevel": 9, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "wall-of-stone" }] },
+      { "type": "leveled", "minLevel": 10, "effects": [{ "type": "resistance", "damageType": "fire" }] }
+    ]
+  },
+  {
+    "id": "druid-land-polar",
+    "name": "Terreno Polar",
+    "source": "srd_2024",
+    "category": "druid-land",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Terreno Polar", "description": "Tu círculo se liga a la tundra y el hielo: ganás sus conjuros de círculo siempre preparados y, a nivel 10, resistencia al daño de frío." },
+      { "type": "alwaysPreparedSpell", "spellId": "hold-person" },
+      { "type": "alwaysPreparedSpell", "spellId": "fog-cloud" },
+      { "type": "alwaysPreparedSpell", "spellId": "ray-of-frost" },
+      { "type": "leveled", "minLevel": 5, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "sleet-storm" }] },
+      { "type": "leveled", "minLevel": 7, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "ice-storm" }] },
+      { "type": "leveled", "minLevel": 9, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "cone-of-cold" }] },
+      { "type": "leveled", "minLevel": 10, "effects": [{ "type": "resistance", "damageType": "cold" }] }
+    ]
+  },
+  {
+    "id": "druid-land-temperate",
+    "name": "Terreno Templado",
+    "source": "srd_2024",
+    "category": "druid-land",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Terreno Templado", "description": "Tu círculo se liga a los bosques y praderas: ganás sus conjuros de círculo siempre preparados y, a nivel 10, resistencia al daño de relámpago." },
+      { "type": "alwaysPreparedSpell", "spellId": "shocking-grasp" },
+      { "type": "alwaysPreparedSpell", "spellId": "sleep" },
+      { "type": "alwaysPreparedSpell", "spellId": "misty-step" },
+      { "type": "leveled", "minLevel": 5, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "lightning-bolt" }] },
+      { "type": "leveled", "minLevel": 7, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "freedom-of-movement" }] },
+      { "type": "leveled", "minLevel": 9, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "tree-stride" }] },
+      { "type": "leveled", "minLevel": 10, "effects": [{ "type": "resistance", "damageType": "lightning" }] }
+    ]
+  },
+  {
+    "id": "druid-land-tropical",
+    "name": "Terreno Tropical",
+    "source": "srd_2024",
+    "category": "druid-land",
+    "repeatable": false,
+    "effects": [
+      { "type": "passiveTrait", "name": "Terreno Tropical", "description": "Tu círculo se liga a la selva y el pantano: ganás sus conjuros de círculo siempre preparados y, a nivel 10, resistencia al daño de veneno." },
+      { "type": "alwaysPreparedSpell", "spellId": "ray-of-sickness" },
+      { "type": "alwaysPreparedSpell", "spellId": "acid-splash" },
+      { "type": "alwaysPreparedSpell", "spellId": "web" },
+      { "type": "leveled", "minLevel": 5, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "stinking-cloud" }] },
+      { "type": "leveled", "minLevel": 7, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "polymorph" }] },
+      { "type": "leveled", "minLevel": 9, "effects": [{ "type": "alwaysPreparedSpell", "spellId": "insect-plague" }] },
+      { "type": "leveled", "minLevel": 10, "effects": [{ "type": "resistance", "damageType": "poison" }] }
+    ]
   }
 ]

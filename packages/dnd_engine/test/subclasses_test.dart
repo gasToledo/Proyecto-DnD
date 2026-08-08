@@ -72,6 +72,11 @@ void main() {
       // como las presenta el manual. Solo se exceptúa si el rasgo es
       // *únicamente* esa tabla; cualquier otro nombre repetido sigue siendo un
       // error de copiado.
+      //
+      // Es también la razón por la que las cuatro tablas del Círculo de la
+      // Tierra viven en dotes `druid-land` y no como cuatro "Conjuros de
+      // Círculo" a nivel 3: además de conjuros conceden resistencia, así que
+      // no calificarían para esta exención. Ver `circle_land_test.dart`.
       bool esTablaDeConjuros(ClassFeature f) =>
           f.effects.isNotEmpty &&
           f.effects.every((e) => e is AlwaysPreparedSpellEffect);

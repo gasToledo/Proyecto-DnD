@@ -83,6 +83,7 @@ void main() {
     await tester.tap(find.text('Supervivencia').last);
     await tapText('Juego de dados');
     await tester.pumpAndSettle();
+    await pickLanguages(tester);
     await next();
 
     // Equipo: dejamos el equipo por defecto y llenamos los cupos de conjuros,

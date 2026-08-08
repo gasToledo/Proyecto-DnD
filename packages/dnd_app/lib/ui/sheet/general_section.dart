@@ -89,7 +89,12 @@ extension _SheetGeneralSection on _SheetScreenState {
           const SizedBox(height: 16),
         ],
         responsiveColumns([
-          [_identityCard(), _abilitiesCard(s), _proficienciesCard(s)],
+          [
+            _identityCard(),
+            _abilitiesCard(s),
+            _proficienciesCard(s),
+            _languagesCard(s),
+          ],
           [_skillsCard(s)],
           [_passivesCard(s)],
         ]),
@@ -117,6 +122,15 @@ extension _SheetGeneralSection on _SheetScreenState {
     'species_spellcasting_ability_pending' => _resolveSpeciesAbility,
     'feature_choice_pending' => _resolveFeatureChoices,
     'spell_choice_pending' => _resolveSpellChoices,
+    // Todos los avisos de idiomas los arregla el mismo editor: los del origen
+    // y los que deja elegir un rasgo se muestran juntos, que es como el
+    // jugador los piensa.
+    'language_choice_pending' ||
+    'language_choice_pending_feature' ||
+    'too_many_languages' ||
+    'language_duplicate' ||
+    'language_universal_chosen' ||
+    'language_not_standard' => _resolveLanguages,
     // El mismo código también sale cuando sobran competencias sin rasgo que
     // las conceda: ahí no hay nada que elegir y el diálogo saldría vacío.
     // El mismo aviso cubre la Pericia, que viaja en su propia lista.
@@ -582,6 +596,111 @@ extension _SheetGeneralSection on _SheetScreenState {
     _replace(withChoices(result));
   }
 
+  /// Editor de idiomas: los dos del origen y los que deja elegir un rasgo.
+  ///
+  /// Van en un solo diálogo porque para el jugador son lo mismo —qué habla su
+  /// personaje— aunque el motor los guarde por separado según de dónde salgan.
+  Future<void> _resolveLanguages() async {
+    final origen = {..._c.languages};
+    final porRasgo = <String, List<String>>{
+      for (final slot in sheet.languageChoiceSlots)
+        slot.groupId: List.of(slot.chosen),
+    };
+
+    Character conIdiomas() => _c.copyWith(
+      languages: origen.toList(),
+      languageChoices: {..._c.languageChoices, ...porRasgo},
+    );
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          // Se recompila en cada toque: un idioma tomado en el origen sale del
+          // pozo del cupo de rasgo, y al revés.
+          final preview = CharacterCompiler(repo).compile(conIdiomas());
+          final cupo = Language.originChoiceCount;
+          final completo =
+              origen.length == cupo &&
+              preview.languageChoiceSlots.every((s) => s.pending == 0);
+
+          return AlertDialog(
+            title: const Text('Elegir idiomas'),
+            content: SizedBox(
+              width: 720,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Todo personaje sabe ${Language.labelFor(Language.universal.id)}, '
+                      'que no ocupa una elección.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'De tu origen (${origen.length}/$cupo)',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    CappedChipSelect(
+                      options: {
+                        for (final l in Language.originChoices) l.id: l.label,
+                      },
+                      selected: origen,
+                      max: cupo,
+                      onChanged: () => setDialogState(() {}),
+                    ),
+                    for (final slot in preview.languageChoiceSlots) ...[
+                      const SizedBox(height: 18),
+                      Text(
+                        '${slot.name} '
+                        '(${(porRasgo[slot.groupId] ?? const []).length}/${slot.count})',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Builder(
+                        builder: (context) {
+                          final sel = {...?porRasgo[slot.groupId]};
+                          return CappedChipSelect(
+                            options: {
+                              for (final id in slot.options)
+                                id: Language.labelFor(id),
+                            },
+                            selected: sel,
+                            max: slot.count,
+                            onChanged: () => setDialogState(
+                              () => porRasgo[slot.groupId] = sel.toList(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: completo
+                    ? () => Navigator.pop(dialogContext, true)
+                    : null,
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (ok != true || !mounted) return;
+    _replace(conIdiomas());
+  }
+
   Widget _identityCard() {
     final pal = context.palette;
     final bg = repo.background(_c.backgroundId)?.name ?? '—';
@@ -642,6 +761,23 @@ extension _SheetGeneralSection on _SheetScreenState {
       icon: Icons.verified_user,
       title: 'Competencias',
       child: Padding(padding: const EdgeInsets.all(14), child: _chips(labels)),
+    );
+  }
+
+  Widget _languagesCard(ComputedSheet s) {
+    // Común primero, que lo sabe todo personaje; el resto por nombre. Se
+    // ordena por etiqueta y no por id para que salga alfabético en español.
+    final labels = [
+      for (final id in s.languages)
+        if (id != Language.universal.id) Language.labelFor(id),
+    ]..sort(compareContentNames);
+    return sheetCard(
+      icon: Icons.translate,
+      title: 'Idiomas',
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: _chips([Language.labelFor(Language.universal.id), ...labels]),
+      ),
     );
   }
 

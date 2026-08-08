@@ -486,6 +486,81 @@ class _AptitudesStep extends StatelessWidget {
             ],
           ];
         }(),
+        _LanguagesSection(draft: draft, onChanged: onChanged),
+      ],
+    );
+  }
+}
+
+/// Idiomas: los dos que elige todo personaje en su origen, más los que deje
+/// elegir un rasgo (la Jerga de Ladrones del Pícaro).
+///
+/// En 2024 **no vienen de la especie**, así que van con las competencias y no
+/// en el paso de especie: son del personaje, no de lo que es.
+class _LanguagesSection extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _LanguagesSection({required this.draft, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    draft.pruneLanguages();
+    final cupo = Language.originChoiceCount;
+    final elegidos = draft.languages.toSet();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 22),
+        _SectionHeader(
+          title: 'Idiomas',
+          counterIcon: Icons.translate,
+          counter: '${elegidos.length} / $cupo elegidos',
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Todo personaje sabe Común, que no ocupa una elección.',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        const SizedBox(height: 12),
+        CappedChipSelect(
+          options: {for (final l in Language.originChoices) l.id: l.label},
+          selected: elegidos,
+          max: cupo,
+          onChanged: () {
+            draft.languages
+              ..clear()
+              ..addAll(elegidos);
+            onChanged();
+          },
+        ),
+        for (final slot in draft.languageChoiceSlots) ...[
+          const SizedBox(height: 22),
+          _SectionHeader(
+            title: slot.name,
+            counterIcon: Icons.translate,
+            counter:
+                '${(draft.languageChoices[slot.groupId] ?? const []).length}'
+                ' / ${slot.count} elegidos',
+          ),
+          const SizedBox(height: 12),
+          Builder(
+            builder: (context) {
+              final sel = {...?draft.languageChoices[slot.groupId]};
+              return CappedChipSelect(
+                options: {
+                  for (final id in slot.options) id: Language.labelFor(id),
+                },
+                selected: sel,
+                max: slot.count,
+                onChanged: () {
+                  draft.languageChoices[slot.groupId] = sel.toList();
+                  onChanged();
+                },
+              );
+            },
+          ),
+        ],
       ],
     );
   }

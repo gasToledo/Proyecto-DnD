@@ -77,3 +77,34 @@ Future<void> checkWeapon(WidgetTester tester, String name) async {
   await tester.enterText(search, '');
   await tester.pumpAndSettle();
 }
+
+/// Elige los dos idiomas del origen, y uno más por cada cupo que declare un
+/// rasgo (la Jerga de Ladrones del Pícaro).
+///
+/// El paso de Aptitudes no deja avanzar sin ellos, así que toda prueba que
+/// navegue hasta Equipo o más allá tiene que pasar por acá.
+///
+/// Se toman los chips por su etiqueta y no por posición: varios idiomas
+/// comparten nombre con una especie ("Elfo", "Enano"), pero en este paso las
+/// tarjetas de especie no están, así que no hay ambigüedad. Se usa `.first`
+/// porque el cupo de un rasgo ofrece las mismas etiquetas más abajo.
+Future<void> pickLanguages(WidgetTester tester) async {
+  Future<void> tapChip(String label) async {
+    final chip = find.widgetWithText(FilterChip, label);
+    if (chip.evaluate().isEmpty) return;
+    await tester.ensureVisible(chip.first);
+    await tester.pumpAndSettle();
+    await tester.tap(chip.first);
+    await tester.pumpAndSettle();
+  }
+
+  await tapChip('Goblin');
+  await tapChip('Orco');
+
+  // Un cupo de rasgo deja su etiqueta libre después de llenar el origen: se
+  // toma la primera que quede sin usar.
+  for (final extra in ['Gigante', 'Dracónico', 'Gnomo']) {
+    if (find.textContaining('/ 1 elegidos').evaluate().isEmpty) break;
+    await tapChip(extra);
+  }
+}

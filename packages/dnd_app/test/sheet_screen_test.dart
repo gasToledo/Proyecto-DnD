@@ -22,7 +22,12 @@ void main() {
     WidgetTester tester,
     Character character,
   ) async {
-    tester.view.physicalSize = const Size(900, 700);
+    // Alto de sobra a propósito. Con 700 la pestaña Personaje —que desde los
+    // idiomas tiene cuatro tarjetas— dispara un fallo dentro de Flutter, en
+    // `_RenderObjectSemantics._updateSemanticsNodeGeometry`: el binding de
+    // test recorre el árbol de semántica en cada frame y ahí revienta un `!`
+    // suyo. No es código nuestro y no se puede sortear desde acá.
+    tester.view.physicalSize = const Size(900, 1400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final controller = CharactersController(
@@ -264,6 +269,10 @@ void main() {
       backgroundId: 'soldier',
       assignedScores: {for (final ability in Ability.values) ability: 12},
       hpPerLevel: const [10],
+      // Con idiomas, aunque el personaje sea "viejo": estos tests son sobre
+      // resolver otras advertencias, y sin ellos la tarjeta suma dos avisos
+      // más que empujan los botones fuera de la vista.
+      languages: const ['goblin', 'orc'],
     );
 
     /// El botón de la advertencia cuyo mensaje es [message]. Hay varias en
@@ -368,6 +377,7 @@ void main() {
           backgroundId: 'soldier',
           assignedScores: {for (final ability in Ability.values) ability: 12},
           hpPerLevel: const [10],
+          languages: const ['goblin', 'orc'],
         ),
       );
 

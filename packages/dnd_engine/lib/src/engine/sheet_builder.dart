@@ -162,6 +162,14 @@ class SheetBuilder {
         // los arma él también, porque necesita saber de qué dote sale cada uno
         // y acá esa procedencia ya se perdió.
         break;
+      case LeveledEffect(:final minLevel, :final effects):
+        // Por el camino normal no llega ninguno: el compilador los expande en
+        // `applySource` para que las pasadas que leen la lista de efectos de
+        // cada fuente vean el contenido y no el envoltorio. Esto es la red para
+        // quien use SheetBuilder directo, que es público.
+        if (level >= minLevel) {
+          applyAll(effects, spellAbilityOverride: spellAbilityOverride);
+        }
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
       case FeatureChoiceEffect(:final groupId, :final count):

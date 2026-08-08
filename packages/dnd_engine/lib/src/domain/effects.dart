@@ -133,6 +133,10 @@ sealed class Effect {
           expertise: json['expertise'] as bool? ?? false,
           allowNewProficiency: json['allowNewProficiency'] as bool? ?? false,
         ),
+      'leveled' => LeveledEffect(
+          minLevel: json['minLevel'] as int,
+          effects: Effect.listFromJson(json['effects']),
+        ),
       _ => throw ArgumentError('Tipo de efecto desconocido: "$type"'),
     };
   }
@@ -463,6 +467,40 @@ class FeatureChoiceEffect extends Effect {
         'featCategory': featCategory,
         'count': count,
         'replaceable': replaceable,
+      };
+}
+
+/// Envuelve efectos que **solo aplican a partir de [minLevel]**.
+///
+/// Existe porque una dote se aplica entera y sin nivel, mientras que un rasgo de
+/// clase o subclase hereda el suyo de `featuresUpTo`. Cuando un catálogo de
+/// [FeatureChoiceEffect] tiene que crecer por tramos —la tabla de conjuros del
+/// Círculo de la Tierra escalona 3/5/7/9 y su resistencia llega a 10— la dote
+/// necesita declarar ese nivel por su cuenta.
+///
+/// **Lo expande [CharacterCompiler] en `applySource`, no [SheetBuilder]**, y la
+/// diferencia importa. El compilador guarda la lista de efectos de cada fuente
+/// para las pasadas que resuelven competencias, Pericia y elección de conjuros,
+/// y esas pasadas hacen `whereType<...>()` sobre ella. Si el desenvuelto viviera
+/// en el builder, la lista guardada conservaría el envoltorio y una elección
+/// escalonada por nivel sería **invisible** para ellas: un defecto que entraría
+/// en verde. Expandir antes de repartir es la única forma de que todas vean lo
+/// mismo.
+///
+/// [minLevel] es nivel de **personaje**, no de clase. Hoy son el mismo número
+/// —cada personaje usa una sola clase— y un futuro multiclase tendrá que
+/// revisarlo, igual que `featuresUpTo`.
+class LeveledEffect extends Effect {
+  final int minLevel;
+  final List<Effect> effects;
+
+  const LeveledEffect({required this.minLevel, required this.effects});
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'leveled',
+        'minLevel': minLevel,
+        'effects': [for (final e in effects) e.toJson()],
       };
 }
 

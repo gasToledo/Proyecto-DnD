@@ -32,17 +32,32 @@ class CharacterCompiler {
     final proficiencySources =
         <({String id, String name, List<Effect> effects})>[];
 
+    // Desenvuelve los [LeveledEffect] que no llegan al nivel del personaje y
+    // deja el resto plano. Se hace **antes** de repartir, no dentro del
+    // builder: `proficiencySources` alimenta las pasadas de competencias,
+    // Pericia y elección de conjuros, que hacen `whereType<...>()`. Con el
+    // envoltorio puesto, una de esas elecciones escalonada por nivel sería
+    // invisible para ellas y el defecto entraría en verde.
+    List<Effect> flatten(List<Effect> effects) => [
+          for (final e in effects)
+            if (e is LeveledEffect)
+              ...(c.level >= e.minLevel ? flatten(e.effects) : const <Effect>[])
+            else
+              e,
+        ];
+
     void applySource(
       String id,
       String name,
       List<Effect> effects, {
       Ability? spellAbilityOverride,
     }) {
+      final flat = flatten(effects);
       builder.applyAll(
-        effects,
+        flat,
         spellAbilityOverride: spellAbilityOverride,
       );
-      proficiencySources.add((id: id, name: name, effects: effects));
+      proficiencySources.add((id: id, name: name, effects: flat));
     }
 
     if (race != null) builder.speed = race.speed;

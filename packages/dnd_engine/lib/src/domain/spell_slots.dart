@@ -37,6 +37,11 @@ enum InnateSpellUse {
   /// espacio de conjuro, si el personaje tiene.
   oncePerLongRest,
 
+  /// Gratis una vez por descanso **corto o largo**; además se puede lanzar
+  /// gastando un espacio de conjuro. Es el caso de los Conjuros
+  /// Característicos del Mago.
+  oncePerShortRest,
+
   /// Gratis una cantidad de veces igual al bono de competencia por descanso
   /// largo; además se puede lanzar gastando un espacio de conjuro.
   proficiencyBonusPerLongRest;
@@ -44,12 +49,14 @@ enum InnateSpellUse {
   String toJson() => switch (this) {
         InnateSpellUse.atWill => 'atWill',
         InnateSpellUse.oncePerLongRest => 'oncePerLongRest',
+        InnateSpellUse.oncePerShortRest => 'oncePerShortRest',
         InnateSpellUse.proficiencyBonusPerLongRest =>
           'proficiencyBonusPerLongRest',
       };
 
   static InnateSpellUse fromJson(String? v) => switch (v) {
         'oncePerLongRest' => InnateSpellUse.oncePerLongRest,
+        'oncePerShortRest' => InnateSpellUse.oncePerShortRest,
         'proficiencyBonusPerLongRest' =>
           InnateSpellUse.proficiencyBonusPerLongRest,
         _ => InnateSpellUse.atWill,

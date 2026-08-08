@@ -133,6 +133,27 @@ sealed class Effect {
           expertise: json['expertise'] as bool? ?? false,
           allowNewProficiency: json['allowNewProficiency'] as bool? ?? false,
         ),
+      'spellChoice' => SpellChoiceEffect(
+          groupId: json['groupId'] as String,
+          name: json['name'] as String? ?? '',
+          count: json['count'] as int? ?? 1,
+          minLevel: json['minLevel'] as int? ?? 0,
+          maxLevel: json['maxLevel'] as int?,
+          maxLevelFromSlots: json['maxLevelFromSlots'] as bool? ?? false,
+          fromClasses: (json['fromClasses'] as List? ?? const [])
+              .map((e) => e as String)
+              .toList(),
+          schools: (json['schools'] as List? ?? const [])
+              .map((e) => e as String)
+              .toList(),
+          castingTimes: (json['castingTimes'] as List? ?? const [])
+              .map((e) => e as String)
+              .toList(),
+          freeCast: json['freeCast'] == null
+              ? null
+              : InnateSpellUse.fromJson(json['freeCast'] as String?),
+          replaceable: json['replaceable'] as bool? ?? false,
+        ),
       'leveled' => LeveledEffect(
           minLevel: json['minLevel'] as int,
           effects: Effect.listFromJson(json['effects']),
@@ -466,6 +487,109 @@ class FeatureChoiceEffect extends Effect {
         'name': name,
         'featCategory': featCategory,
         'count': count,
+        'replaceable': replaceable,
+      };
+}
+
+/// Declara "elegí [count] conjuros de un pozo filtrado; quedan **siempre
+/// preparados**". Conjuros Característicos y Maestría sobre Conjuros del Mago,
+/// Descubrimientos Mágicos del Colegio del Conocimiento.
+///
+/// Es un **marcador**, igual que [ProficiencyChoiceEffect]: el [SheetBuilder]
+/// no aplica nada. Lo resuelve el compilador, que es quien tiene el repositorio
+/// para filtrar el pozo y el bloque de lanzamiento para saber hasta qué nivel
+/// llega. La elección del jugador vive en `Character.spellChoices`.
+///
+/// Lo elegido se vuelca en `ComputedSheet.alwaysPreparedSpellIds`, que es el
+/// punto único por el que el resto del sistema deja de cobrarle cupo de
+/// preparados: a partir de ahí nada distingue esto de un conjuro que el
+/// contenido concedió con [AlwaysPreparedSpellEffect].
+///
+/// Dos diferencias con [FeatureChoiceEffect] que conviene tener presentes:
+///
+/// - **[groupId] es obligatorio y un efecto declara un cupo.** Aquel funde por
+///   grupo quedándose con el mayor `count`; [ProficiencyChoiceEffect] suma.
+///   Acá ninguna de las dos: cuando la elección crece por tramos se declara
+///   **otro grupo**, con el nivel en el id, que es la convención que ya usa la
+///   Pericia (`class:bard:expertise-2` y `-9`). Dos efectos con el mismo
+///   [groupId] producirían dos cupos leyendo la misma lista guardada.
+/// - **[fromClasses] son ids de clase, no de conjuro**, por la misma razón que
+///   [GrantSpellEffect.replaceableFrom]: agregar contenido no puede tocar el
+///   motor. El pozo sale de la misma consulta que usa la magia de clase.
+class SpellChoiceEffect extends Effect {
+  /// Identificador del grupo, la clave con la que se guarda la elección.
+  final String groupId;
+
+  /// Rótulo para la UI. Vacío significa "usá el nombre del rasgo".
+  final String name;
+
+  /// Cuántos conjuros concede.
+  final int count;
+
+  /// Nivel mínimo elegible. 0 incluye trucos.
+  final int minLevel;
+
+  /// Techo propio del rasgo (Conjuros Característicos: nivel 3 y solo 3).
+  /// `null` significa que el rasgo no impone uno.
+  final int? maxLevel;
+
+  /// Además, techo por los espacios que el personaje tenga. Es la forma de
+  /// "trucos o conjuros para los que tengas espacios" de Descubrimientos
+  /// Mágicos, que sube sola al subir de nivel.
+  final bool maxLevelFromSlots;
+
+  /// Listas de clase de las que se puede elegir. **Vacío significa todas**,
+  /// misma convención que [ProficiencyChoiceEffect.skills].
+  final List<String> fromClasses;
+
+  /// Escuelas elegibles. Vacío significa todas.
+  final List<String> schools;
+
+  /// Tiempos de lanzamiento elegibles, por coincidencia **exacta**. Maestría
+  /// sobre Conjuros pide "tiempo de lanzamiento de una acción", y comparar por
+  /// subcadena metería "Acción Adicional".
+  ///
+  /// Es el filtro más frágil de los cuatro, porque `Spell.castingTime` es texto
+  /// libre: un homebrew que escriba el valor distinto queda fuera del pozo en
+  /// silencio. Se acepta porque la alternativa —ofrecer conjuros que la regla
+  /// prohíbe— es peor, y porque el contenido oficial usa un puñado de valores
+  /// que un test vigila.
+  final List<String> castingTimes;
+
+  /// Si además se puede lanzar sin gastar espacio, y con qué frecuencia.
+  /// `null` es el caso normal: solo queda siempre preparado.
+  final InnateSpellUse? freeCast;
+
+  /// Si una elección ya hecha se puede cambiar más adelante.
+  final bool replaceable;
+
+  const SpellChoiceEffect({
+    required this.groupId,
+    this.name = '',
+    this.count = 1,
+    this.minLevel = 0,
+    this.maxLevel,
+    this.maxLevelFromSlots = false,
+    this.fromClasses = const [],
+    this.schools = const [],
+    this.castingTimes = const [],
+    this.freeCast,
+    this.replaceable = false,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'spellChoice',
+        'groupId': groupId,
+        if (name.isNotEmpty) 'name': name,
+        'count': count,
+        'minLevel': minLevel,
+        if (maxLevel != null) 'maxLevel': maxLevel,
+        if (maxLevelFromSlots) 'maxLevelFromSlots': true,
+        'fromClasses': fromClasses,
+        'schools': schools,
+        'castingTimes': castingTimes,
+        if (freeCast != null) 'freeCast': freeCast!.toJson(),
         'replaceable': replaceable,
       };
 }

@@ -195,6 +195,7 @@ extension _SheetSpellsSection on _SheetScreenState {
     final use = switch (innate.use) {
       InnateSpellUse.atWill => 'A voluntad',
       InnateSpellUse.oncePerLongRest => '1/descanso largo',
+      InnateSpellUse.oncePerShortRest => '1/descanso corto',
       InnateSpellUse.proficiencyBonusPerLongRest =>
         'Competencia/descanso largo',
     };

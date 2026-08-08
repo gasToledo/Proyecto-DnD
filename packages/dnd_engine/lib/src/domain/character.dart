@@ -158,7 +158,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 13;
+  static const int currentSchemaVersion = 14;
 
   final String id;
   String name;
@@ -226,6 +226,14 @@ class Character {
   /// por eso no servía para Paladín/Explorador (nivel 2) ni para las
   /// Invocaciones del Brujo (varias, crecientes).
   final Map<String, List<String>> featureChoices;
+
+  /// Conjuros elegidos por un rasgo que los deja **siempre preparados**: id de
+  /// grupo → ids de conjuro. El grupo lo declara un `SpellChoiceEffect`.
+  ///
+  /// Aparte de [featureChoices] porque las opciones son conjuros y no dotes, y
+  /// aparte de [spellIds] porque estos no gastan cupo de preparados: el
+  /// compilador los vuelca en `alwaysPreparedSpellIds`.
+  final Map<String, List<String>> spellChoices;
 
   /// Grupo del Estilo de Combate. Es un id de contenido, pero vive acá porque
   /// la migración desde `fightingStyleId` tiene que nombrarlo.
@@ -310,6 +318,7 @@ class Character {
     this.chosenProficiencies = const [],
     this.proficiencyChoices = const {},
     this.featureChoices = const {},
+    this.spellChoices = const {},
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
     this.spellIds = const [],
@@ -349,6 +358,7 @@ class Character {
         'chosenProficiencies': chosenProficiencies,
         'proficiencyChoices': proficiencyChoices,
         'featureChoices': featureChoices,
+        'spellChoices': spellChoices,
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
         'spellIds': spellIds,
@@ -665,6 +675,10 @@ class Character {
           _migrateKalashtarTemporarySkill(migrated);
           version = 13;
           migrated['schemaVersion'] = version;
+        case 13:
+          migrated.putIfAbsent('spellChoices', () => {});
+          version = 14;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -704,6 +718,7 @@ class Character {
           .toList(),
       proficiencyChoices: _choiceMap(j['proficiencyChoices']),
       featureChoices: _choiceMap(j['featureChoices']),
+      spellChoices: _choiceMap(j['spellChoices']),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -754,6 +769,7 @@ class Character {
     List<AsiChoice>? asiChoices,
     List<int>? hpPerLevel,
     Map<String, List<String>>? featureChoices,
+    Map<String, List<String>>? spellChoices,
     List<String>? chosenProficiencies,
     Map<String, List<String>>? proficiencyChoices,
     List<String>? cantripIds,
@@ -795,6 +811,7 @@ class Character {
       chosenProficiencies: chosenProficiencies ?? this.chosenProficiencies,
       proficiencyChoices: proficiencyChoices ?? this.proficiencyChoices,
       featureChoices: featureChoices ?? this.featureChoices,
+      spellChoices: spellChoices ?? this.spellChoices,
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,
       spellIds: spellIds ?? this.spellIds,

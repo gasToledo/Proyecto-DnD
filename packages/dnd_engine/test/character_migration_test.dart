@@ -327,6 +327,36 @@ void main() {
     });
   });
 
+  group('v13 → v14: elección de conjuros', () {
+    test('la ficha vieja arranca sin ninguna elegida', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 13,
+        'id': 'v13',
+        'name': 'Maga',
+        'raceId': 'human',
+        'classId': 'wizard',
+        'backgroundId': 'sage',
+        'assignedScores': const <String, int>{},
+      });
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['spellChoices'], isEmpty);
+    });
+
+    test('no pisa lo que ya venía elegido', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 13,
+        'spellChoices': {
+          'class:wizard:signature-spells': ['fireball'],
+        },
+      });
+
+      expect(migrated['spellChoices'], {
+        'class:wizard:signature-spells': ['fireball'],
+      });
+    });
+  });
+
   test('v5 → v6: la mano secundaria arranca vacía', () {
     final source = {
       'schemaVersion': 5,

@@ -214,7 +214,9 @@ extension _SheetSpellsSection on _SheetScreenState {
         children: [
           Expanded(
             child: InkWell(
-              onTap: spell == null ? null : () => _showSpellDialog(spell),
+              onTap: spell == null
+                  ? null
+                  : () => _showSpellDialog(spell, innate: innate),
               borderRadius: BorderRadius.circular(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,7 +493,16 @@ extension _SheetSpellsSection on _SheetScreenState {
     );
   }
 
-  void _showSpellDialog(Spell s) {
+  /// Detalle de un conjuro. [innate] llega cuando lo concede un rasgo: esos se
+  /// lanzan con la característica que fija el rasgo, que puede no ser la de la
+  /// clase, así que los números tienen que salir de ahí y no de `spellcasting`.
+  void _showSpellDialog(Spell s, {InnateSpell? innate}) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final sc = sheet.spellcasting;
+    final ability = innate?.ability ?? sc?.ability;
+    final attackBonus = innate?.attackBonus ?? sc?.attackBonus;
+    final saveDc = innate?.saveDc ?? sc?.saveDc;
+
     _infoDialog(
       s.name,
       Column(
@@ -500,9 +511,7 @@ extension _SheetSpellsSection on _SheetScreenState {
         children: [
           Text(
             '${s.isCantrip ? "Truco" : "Nivel ${s.level}"} · ${s.school}',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(color: muted),
           ),
           const SizedBox(height: 10),
           Row(
@@ -519,6 +528,21 @@ extension _SheetSpellsSection on _SheetScreenState {
           _spellMeta('Duración', s.duration),
           const SizedBox(height: 10),
           Text(s.description),
+
+          // Los números resueltos a este personaje. La descripción del SRD dice
+          // "usando tu característica de conjuro" sin decir cuánto es, y en la
+          // mesa eso obliga a ir a buscarlo a otra tarjeta.
+          if (ability != null) ...[
+            const SizedBox(height: 14),
+            const Eyebrow('Con este personaje'),
+            Text(
+              'Lanzás con ${ability.label} '
+              '(${_signed(sheet.abilityModifiers[ability]!)}). '
+              'Ataque de conjuro ${_signed(attackBonus!)} · '
+              'CD de salvación $saveDc.',
+              style: TextStyle(fontSize: 12, color: muted),
+            ),
+          ],
         ],
       ),
     );

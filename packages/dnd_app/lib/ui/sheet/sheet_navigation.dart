@@ -217,6 +217,10 @@ extension _SheetNavigation on _SheetScreenState {
 
   /// Tarjeta con encabezado (ícono + título + acción opcional), estilo
   /// consistente con el resto de la ficha.
+  ///
+  /// Se pliega tocando el encabezado. El objetivo táctil es la fila entera y no
+  /// solo la flecha: en el celular una flecha de 18px es un blanco incómodo, y
+  /// tarjetas como Competencias son largas justo ahí.
   Widget sheetCard({
     required IconData icon,
     required String title,
@@ -224,32 +228,53 @@ extension _SheetNavigation on _SheetScreenState {
     required Widget child,
   }) {
     final pal = context.palette;
+    final collapsed = _collapsedCards.contains(title);
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: pal.hairline)),
-            ),
-            child: Row(
-              children: [
-                Icon(icon, size: 18, color: pal.gold),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(fontFamily: 'Georgia', fontSize: 16),
-                    overflow: TextOverflow.ellipsis,
+          InkWell(
+            onTap: () => _toggleCard(title),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(16, 13, 8, 13),
+              decoration: BoxDecoration(
+                border: collapsed
+                    ? null
+                    : Border(bottom: BorderSide(color: pal.hairline)),
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: pal.gold),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 16,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                ?trailing,
-              ],
+                  // La acción de la tarjeta no tiene sentido con el contenido
+                  // escondido, y encima competiría por el toque de plegado.
+                  if (!collapsed && trailing != null) trailing,
+                  AnimatedRotation(
+                    turns: collapsed ? -0.25 : 0,
+                    duration: const Duration(milliseconds: 150),
+                    child: Icon(
+                      Icons.expand_more,
+                      size: 20,
+                      color: pal.textMuted,
+                      semanticLabel: collapsed ? 'Desplegar' : 'Plegar',
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          child,
+          if (!collapsed) child,
         ],
       ),
     );

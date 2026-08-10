@@ -160,6 +160,13 @@ class _SheetScreenState extends State<SheetScreen> {
     return _sheetCache!;
   }
 
+  /// Tarjetas plegadas, por título. Vive en memoria y no en los ajustes: estos
+  /// van al servidor, y guardar una preferencia de presentación costaría un
+  /// viaje de red por cada toque. Además es una decisión de pantalla —en el
+  /// celular querés plegar Competencias, en el escritorio entra entera— así que
+  /// tampoco corresponde compartirla entre dispositivos.
+  final Set<String> _collapsedCards = {};
+
   final _amountCtrl = TextEditingController();
   // Controlador propio de las notas: sobrevive los cambios de tab y evita el
   // footgun de TextFormField(initialValue:), que ignora cambios posteriores.
@@ -180,6 +187,10 @@ class _SheetScreenState extends State<SheetScreen> {
   }
 
   void _selectTab(_SheetTab tab) => setState(() => _tab = tab);
+
+  void _toggleCard(String title) => setState(() {
+    if (!_collapsedCards.remove(title)) _collapsedCards.add(title);
+  });
 
   void _replace(Character next) {
     setState(() => _c = next);

@@ -167,6 +167,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('plegar una tarjeta esconde su contenido y no el de las otras', (
+    tester,
+  ) async {
+    // En el celular la tarjeta de Competencias es larguísima y empuja todo lo
+    // demás fuera de la pantalla; plegarla tiene que sacar su contenido sin
+    // llevarse puesto el de la tarjeta de al lado.
+    final artificer = Character(
+      id: 'collapse-sheet',
+      name: 'Merrix',
+      raceId: 'warforged',
+      classId: 'artificer',
+      subclassId: 'alchemist',
+      backgroundId: 'artisan',
+      level: 3,
+      assignedScores: {for (final ability in Ability.values) ability: 12},
+      hpPerLevel: const [8, 5, 5],
+    );
+    await pumpSheet(tester, artificer);
+
+    expect(find.text('Armadura ligera'), findsOneWidget);
+    expect(find.text('STR'), findsWidgets);
+
+    await tester.tap(find.text('Competencias'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Armadura ligera'), findsNothing);
+    // El título sigue, que es de lo que se trata: se pliega, no se esconde.
+    expect(find.text('Competencias'), findsOneWidget);
+    // Y plegar una no toca a las demás.
+    expect(find.text('STR'), findsWidgets);
+
+    await tester.tap(find.text('Competencias'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Armadura ligera'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('los conjuros siempre preparados de subclase llegan a la ficha', (
     tester,
   ) async {

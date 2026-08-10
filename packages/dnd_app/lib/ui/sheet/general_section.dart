@@ -1005,11 +1005,15 @@ extension _SheetGeneralSection on _SheetScreenState {
       ),
     );
 
-    // Las habilidades que usan esta característica, con competencia o Pericia
-    // marcada: es el otro lugar donde aparece un "+7" que hay que justificar.
+    // Solo las habilidades en las que sos competente. Las demás tiran con el
+    // modificador pelado, que ya está arriba: listarlas todas eran seis líneas
+    // repitiendo el mismo número en una pantalla de celular.
     final skills = [
       for (final sk in Skill.values)
-        if (sk.ability == ability) sk,
+        if (sk.ability == ability &&
+            (s.skillProficiencies.contains(sk.id) ||
+                s.expertiseSkills.contains(sk.id)))
+          sk,
     ];
 
     _infoDialog(
@@ -1044,21 +1048,19 @@ extension _SheetGeneralSection on _SheetScreenState {
           for (final sk in skills)
             line(
               '${sk.label}'
-              '${s.expertiseSkills.contains(sk.id)
-                  ? ' (pericia)'
-                  : s.skillProficiencies.contains(sk.id)
-                  ? ' (competente)'
-                  : ''}',
+              '${s.expertiseSkills.contains(sk.id) ? ' (pericia)' : ''}',
               _signed(s.skillModifier(sk.id)),
             ),
+          if (skills.isEmpty) line('Pruebas de característica', _signed(mod)),
           if (sc != null && sc.ability == ability) ...[
             line('Ataque con conjuros', _signed(sc.attackBonus)),
             line('CD de salvación', '${sc.saveDc}'),
           ],
           const SizedBox(height: 10),
           Text(
-            'Competencia +${s.proficiencyBonus} a nivel ${s.level}. '
-            'Las tiradas de arriba ya la incluyen donde corresponde.',
+            'Competencia +${s.proficiencyBonus} a nivel ${s.level}, ya incluida '
+            'arriba. Solo se listan las habilidades en las que sos competente: '
+            'el resto tira con el modificador pelado (${_signed(mod)}).',
             style: TextStyle(fontSize: 11, color: muted),
           ),
         ],

@@ -662,6 +662,15 @@ class Weapon {
       );
 }
 
+/// Qué parte de la economía del turno consume lanzar un conjuro. Se deriva de
+/// `Spell.castingTime`, que es texto libre del contenido.
+///
+/// En mesa lo que se decide con esto es "¿puedo lanzarlo *además* de lo que ya
+/// hice este turno?": acción, adicional y reacción compiten entre sí, y todo lo
+/// que tarda minutos u horas ([longer]) no compite con nada porque no entra en
+/// un turno.
+enum SpellActionType { action, bonusAction, reaction, longer }
+
 /// Conjuro. Es contenido como cualquier otro: oficial y homebrew comparten
 /// este modelo. `level` 0 = truco (cantrip). `classes` lista los ids de clase
 /// cuya lista lo incluye (p.ej. ['wizard', 'sorcerer']).
@@ -697,6 +706,16 @@ class Spell {
   });
 
   bool get isCantrip => level == 0;
+
+  /// El orden importa: "Acción Adicional" también empieza con "Acción", así que
+  /// la adicional tiene que descartarse antes que la principal.
+  SpellActionType get actionType {
+    final t = castingTime.toLowerCase();
+    if (t.startsWith('acción adicional')) return SpellActionType.bonusAction;
+    if (t.startsWith('reacción')) return SpellActionType.reaction;
+    if (t.startsWith('acción')) return SpellActionType.action;
+    return SpellActionType.longer;
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,

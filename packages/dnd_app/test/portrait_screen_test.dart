@@ -20,7 +20,7 @@ void main() {
     );
   });
 
-  Future<void> pumpScreen(
+  Future<FakeApiServer> pumpScreen(
     WidgetTester tester, {
     required List<Map<String, dynamic>> providers,
   }) async {
@@ -40,6 +40,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    return server;
   }
 
   const pollinations = {
@@ -78,6 +79,21 @@ void main() {
     expect(find.text('Importar imagen desde archivo'), findsOneWidget);
     // La pestaña de IA ni siquiera aparece: no hay con qué generar.
     expect(find.text('Generar con IA'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('elegir un proveedor lo deja fijado como predeterminado', (
+    tester,
+  ) async {
+    // Lo hacía el diálogo de ajustes, que se sacó de esta pantalla por
+    // redundante: si la tarjeta no lo guarda, la elección se pierde al salir.
+    final server = await pumpScreen(tester, providers: [pollinations, azure]);
+    expect(server.settings?['imageProvider'], isNot('azure'));
+
+    await tester.tap(find.text('Azure'));
+    await tester.pumpAndSettle();
+
+    expect(server.settings?['imageProvider'], 'azure');
     expect(tester.takeException(), isNull);
   });
 

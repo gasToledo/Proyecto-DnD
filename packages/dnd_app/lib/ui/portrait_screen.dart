@@ -157,6 +157,32 @@ class _PortraitScreenState extends State<PortraitScreen> {
     includeWeapon: _providerId != 'azure',
   );
 
+  /// Elige el proveedor y lo deja fijado como predeterminado. Antes esto lo
+  /// hacía el diálogo de ajustes; al sacarlo de esta pantalla, la elección se
+  /// perdía al salir.
+  ///
+  /// Relee los ajustes antes de guardarlos en vez de reusar los que trajo
+  /// [_load]: el documento se guarda entero, y esta pantalla puede quedar
+  /// abierta un buen rato mientras genera. Con una copia vieja, fijar el
+  /// proveedor pisaría el favorito o el orden del roster que se hubieran
+  /// tocado mientras tanto.
+  Future<void> _selectProvider(String id) async {
+    setState(() => _providerId = id);
+    try {
+      final service = SettingsService(widget.api);
+      final settings = await service.load();
+      settings.imageProvider = id;
+      await service.save(settings);
+    } catch (e) {
+      if (!mounted) return;
+      showAppMessage(
+        context,
+        'No se pudo fijar como predeterminado, pero vale para esta sesión.',
+        tone: AppMessageTone.error,
+      );
+    }
+  }
+
   Future<void> _generate() async {
     final provider = _provider;
     if (provider == null) return;
@@ -927,7 +953,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
     final pal = context.palette;
     final on = p.id == _providerId;
     return InkWell(
-      onTap: () => setState(() => _providerId = p.id),
+      onTap: () => _selectProvider(p.id),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),

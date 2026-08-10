@@ -90,6 +90,15 @@ extension _SheetSpellsSection on _SheetScreenState {
               ),
             ],
 
+            if ([
+              ...cantrips,
+              ...spells,
+              ...alwaysPrepared,
+            ].any((s) => s.actionType != SpellActionType.longer)) ...[
+              const SizedBox(height: 12),
+              const ActionTypeLegend(),
+            ],
+
             if (sheet.innateSpells.isNotEmpty) ...[
               if (sc != null) const SizedBox(height: 20),
               // No solo de especie: desde las invocaciones del Brujo también
@@ -210,9 +219,20 @@ extension _SheetSpellsSection on _SheetScreenState {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    innate.name,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  Row(
+                    children: [
+                      if (spell != null &&
+                          spell.actionType != SpellActionType.longer) ...[
+                        ActionTypeIcon(spell.actionType),
+                        const SizedBox(width: 6),
+                      ],
+                      Flexible(
+                        child: Text(
+                          innate.name,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -421,6 +441,10 @@ extension _SheetSpellsSection on _SheetScreenState {
                       children: [
                         Row(
                           children: [
+                            if (s.actionType != SpellActionType.longer) ...[
+                              ActionTypeIcon(s.actionType),
+                              const SizedBox(width: 6),
+                            ],
                             Flexible(
                               child: Text(
                                 s.name,
@@ -481,7 +505,15 @@ extension _SheetSpellsSection on _SheetScreenState {
             ),
           ),
           const SizedBox(height: 10),
-          _spellMeta('Lanzamiento', s.castingTime),
+          Row(
+            children: [
+              if (s.actionType != SpellActionType.longer) ...[
+                ActionTypeIcon(s.actionType, size: 15),
+                const SizedBox(width: 6),
+              ],
+              Flexible(child: _spellMeta('Lanzamiento', s.castingTime)),
+            ],
+          ),
           _spellMeta('Alcance', s.range),
           _spellMeta('Componentes', s.components),
           _spellMeta('Duración', s.duration),

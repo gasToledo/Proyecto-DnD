@@ -1,5 +1,6 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../ui/portrait_image.dart';
 import 'app_theme.dart';
@@ -782,6 +783,99 @@ String featSummary(Feat feat) {
   return traits
       .map((t) => t.description.isEmpty ? t.name : t.description)
       .join(' ');
+}
+
+/// Ícono y color de un tipo de acción. Verde = acción, rojo = adicional,
+/// ámbar = reacción; lo que tarda minutos u horas no lleva distintivo porque no
+/// compite por la economía del turno.
+///
+/// Vive acá porque lo usan tanto la ficha como el selector de conjuros, y
+/// porque el par ícono/color tiene que ser el mismo en los dos lados o la
+/// leyenda deja de significar algo.
+///
+/// Los tres salen de Font Awesome y no de Material a propósito: Material no
+/// tiene con qué representar "acción principal" (la espada es de FA Pro), y
+/// mezclar familias en tres íconos que se leen juntos se nota. `handFist` es el
+/// reemplazo de la espada.
+({FaIconData icon, Color color, String label})? actionTypeBadge(
+  SpellActionType type,
+  AppPalette palette,
+) => switch (type) {
+  SpellActionType.action => (
+    icon: FontAwesomeIcons.handFist,
+    color: palette.verdant,
+    label: 'Acción',
+  ),
+  SpellActionType.bonusAction => (
+    icon: FontAwesomeIcons.circlePlus,
+    color: palette.crimson,
+    label: 'Acción adicional',
+  ),
+  SpellActionType.reaction => (
+    icon: FontAwesomeIcons.bolt,
+    color: palette.gold,
+    label: 'Reacción',
+  ),
+  SpellActionType.longer => null,
+};
+
+/// Distintivo de tipo de acción para una fila de conjuro.
+///
+/// El `Tooltip` no es adorno: en el celular el color solo no alcanza (y con
+/// daltonismo, menos), así que mantener el nombre a un toque largo es lo que
+/// hace que el ícono sea legible sin memorizar la leyenda.
+class ActionTypeIcon extends StatelessWidget {
+  final SpellActionType type;
+  final double size;
+  const ActionTypeIcon(this.type, {super.key, this.size = 16});
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = actionTypeBadge(type, context.palette);
+    if (badge == null) return const SizedBox.shrink();
+    return Tooltip(
+      message: badge.label,
+      child: FaIcon(
+        badge.icon,
+        size: size,
+        color: badge.color,
+        semanticLabel: badge.label,
+      ),
+    );
+  }
+}
+
+/// Leyenda de los tres íconos. Sin esto el color es adivinanza la primera vez.
+class ActionTypeLegend extends StatelessWidget {
+  const ActionTypeLegend({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Wrap(
+      spacing: 14,
+      runSpacing: 4,
+      children: [
+        for (final type in [
+          SpellActionType.action,
+          SpellActionType.bonusAction,
+          SpellActionType.reaction,
+        ])
+          if (actionTypeBadge(type, pal) case final badge?)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FaIcon(badge.icon, size: 13, color: badge.color),
+                const SizedBox(width: 4),
+                Text(
+                  badge.label,
+                  style: TextStyle(fontSize: 11, color: pal.textMuted),
+                ),
+              ],
+            ),
+      ],
+    );
+  }
 }
 
 /// Distintivo de procedencia para las tarjetas de selección.

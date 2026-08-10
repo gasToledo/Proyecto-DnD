@@ -20,6 +20,7 @@ dependencies:
   archive: 4.0.9
   file_picker: ^8.1.6
   package_info_plus: ^9.0.1
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

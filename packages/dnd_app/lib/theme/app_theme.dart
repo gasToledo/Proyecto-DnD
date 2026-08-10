@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 class AppPalette extends ThemeExtension<AppPalette> {
   final Color gold; // acento heráldico: números clave, reglas, activos
   final Color crimson; // PG / daño
+  final Color verdant; // verde heráldico: la acción principal del turno
   final Color plaque; // fondo de placas/plaquetas (más hundido que surface)
   final Color hairline; // bordes finos
   final Color goldSoft; // fondo suave para pills doradas
@@ -15,6 +16,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   const AppPalette({
     required this.gold,
     required this.crimson,
+    required this.verdant,
     required this.plaque,
     required this.hairline,
     required this.goldSoft,
@@ -24,6 +26,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   static const dark = AppPalette(
     gold: Color(0xFFC9A24B),
     crimson: Color(0xFFC24A3E),
+    verdant: Color(0xFF6FA85C),
     plaque: Color(0xFF12100C),
     hairline: Color(0xFF3A2F25),
     goldSoft: Color(0xFF2E2617),
@@ -33,6 +36,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   static const light = AppPalette(
     gold: Color(0xFF8A6A1E),
     crimson: Color(0xFFA6392E),
+    verdant: Color(0xFF3E7A33),
     plaque: Color(0xFFEBE0C9),
     hairline: Color(0xFFD9C9A8),
     goldSoft: Color(0xFFEEE1BF),
@@ -43,6 +47,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   AppPalette copyWith({
     Color? gold,
     Color? crimson,
+    Color? verdant,
     Color? plaque,
     Color? hairline,
     Color? goldSoft,
@@ -50,6 +55,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   }) => AppPalette(
     gold: gold ?? this.gold,
     crimson: crimson ?? this.crimson,
+    verdant: verdant ?? this.verdant,
     plaque: plaque ?? this.plaque,
     hairline: hairline ?? this.hairline,
     goldSoft: goldSoft ?? this.goldSoft,
@@ -62,6 +68,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     return AppPalette(
       gold: Color.lerp(gold, other.gold, t)!,
       crimson: Color.lerp(crimson, other.crimson, t)!,
+      verdant: Color.lerp(verdant, other.verdant, t)!,
       plaque: Color.lerp(plaque, other.plaque, t)!,
       hairline: Color.lerp(hairline, other.hairline, t)!,
       goldSoft: Color.lerp(goldSoft, other.goldSoft, t)!,

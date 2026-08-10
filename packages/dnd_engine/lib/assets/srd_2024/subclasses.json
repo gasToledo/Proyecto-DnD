@@ -1699,7 +1699,7 @@
         "name": "Compañero Primario",
         "description": "Invocas un espíritu bestial (de tierra, mar o aire) que combate contigo y actúa a tu orden.",
         "effects": [
-          { "type": "passiveTrait", "name": "Compañero Primario", "description": "Una bestia compañera (Feroz de Tierra, Mar o Aire) que ataca y se mueve con tu comando." }
+          { "type": "companion", "id": "primal-companion", "name": "Compañero Primario", "creatureIds": ["beast-of-the-land", "beast-of-the-sea", "beast-of-the-sky"], "maxActive": 1 }
         ]
       },
       {
@@ -3130,7 +3130,7 @@
         "name": "Cañón Arcano",
         "description": "Con Herramientas de Herrero o de Tallista, creás como acción de magia un Cañón Arcano Pequeño o Diminuto en un espacio libre a 5 pies. Como acción adicional lo activás para usar Lanzallamas, Ballesta de Fuerza o Protector; podés moverlo hasta 15 pies antes o después. Desaparece tras 1 hora, a 0 PG, o si lo desactivás. Solo podés tener un cañón a la vez.",
         "effects": [
-          { "type": "passiveTrait", "name": "Cañón Arcano", "description": "Un cañón (CA 18, 5 PG por nivel de Artífice) que activás como acción adicional para Lanzallamas (2d8 fuego en cono), Ballesta de Fuerza (2d8 fuerza a distancia) o Protector (PG temporales)." }
+          { "type": "companion", "id": "eldritch-cannon", "name": "Cañón Arcano", "creatureIds": ["eldritch-cannon"], "maxActive": 1 }
         ]
       },
       {
@@ -3154,7 +3154,8 @@
         "name": "Posición Fortificada",
         "description": "Podés tener y crear dos Cañones Arcanos a la vez, activándolos con la misma acción adicional. Vos y tus aliados tenéis media cobertura a 10 pies de tu Cañón Arcano.",
         "effects": [
-          { "type": "passiveTrait", "name": "Posición Fortificada", "description": "Hasta dos cañones simultáneos, activados juntos; media cobertura para vos y tus aliados cerca del cañón." }
+          { "type": "passiveTrait", "name": "Posición Fortificada", "description": "Hasta dos cañones simultáneos, activados juntos; media cobertura para vos y tus aliados cerca del cañón." },
+          { "type": "companion", "id": "eldritch-cannon", "name": "Cañón Arcano", "creatureIds": ["eldritch-cannon"], "maxActive": 2 }
         ]
       }
     ]
@@ -3233,7 +3234,7 @@
         "name": "Defensor de Acero",
         "description": "Tu tinkering te da un compañero, un Defensor de Acero: PG 5 + cinco veces tu nivel de Artífice, CA 12 + tu mod. de Inteligencia, actúa en tu turno (Esquivar salvo que le ordenes otra acción con una acción adicional), y su ataque causa 1d8 + 2 + tu mod. de Inteligencia de daño de fuerza. Tras un descanso largo con Herramientas de Herrero en mano podés crear uno nuevo, y podés revivir al actual gastando un espacio de conjuro si murió hace menos de una hora.",
         "effects": [
-          { "type": "passiveTrait", "name": "Defensor de Acero", "description": "Compañero construido (PG 5 + 5×nivel de Artífice, CA 12+INT, ataque 1d8+2+INT de fuerza) que se crea tras un descanso largo con Herramientas de Herrero." }
+          { "type": "companion", "id": "steel-defender", "name": "Defensor de Acero", "creatureIds": ["steel-defender"], "maxActive": 1 }
         ]
       },
       {

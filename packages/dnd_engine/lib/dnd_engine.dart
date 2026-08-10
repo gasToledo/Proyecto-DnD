@@ -14,6 +14,7 @@ export 'src/domain/weapon_mastery.dart';
 export 'src/domain/effects.dart';
 export 'src/domain/spell_slots.dart';
 export 'src/domain/content.dart';
+export 'src/domain/creature.dart';
 export 'src/domain/character.dart';
 export 'src/domain/computed_sheet.dart';
 export 'src/data/content_repository.dart';

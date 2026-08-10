@@ -1,0 +1,1109 @@
+[
+  {
+    "id": "eagle",
+    "name": "Águila",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "ac": "12",
+    "hp": "4",
+    "speed": "10 pies, volar 60 pies",
+    "abilityScores": { "str": 6, "dex": 15, "con": 12, "int": 2, "wis": 14, "cha": 7 },
+    "senses": "Percepción pasiva 16",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Garras",
+        "attackBonus": "4",
+        "damage": "1d4+2",
+        "damageType": "slashing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "spider",
+    "name": "Araña",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "12",
+    "hp": "1",
+    "speed": "20 pies, trepar 20 pies",
+    "abilityScores": { "str": 2, "dex": 14, "con": 8, "int": 1, "wis": 10, "cha": 2 },
+    "senses": "visión en la oscuridad 30 pies; Percepción pasiva 10",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Caminar por telarañas",
+        "description": "Ignora todas las restricciones de movimiento causadas por las telarañas y conoce la ubicación de cualquier otra criatura que esté en contacto con la misma telaraña."
+      },
+      {
+        "name": "Trepar cual arácnido",
+        "description": "Puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "4",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies",
+        "description": "Más 2 (1d4) de daño de veneno."
+      }
+    ]
+  },
+  {
+    "id": "baboon",
+    "name": "Babuino",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "ac": "12",
+    "hp": "3",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 8, "dex": 14, "con": 11, "int": 4, "wis": 12, "cha": 6 },
+    "senses": "Percepción pasiva 11",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Atacar en manada",
+        "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados se encuentra a 5 pies o menos de ella y no tiene el estado de incapacitado."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "1",
+        "damage": "1d4-1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "owl",
+    "name": "Búho",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "11",
+    "hp": "1",
+    "speed": "5 pies, volar 60 pies",
+    "abilityScores": { "str": 3, "dex": 13, "con": 8, "int": 2, "wis": 12, "cha": 7 },
+    "senses": "visión en la oscuridad 120 pies; Percepción pasiva 15",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Pasar volando",
+        "description": "No provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Garras",
+        "attackBonus": "3",
+        "damage": "1",
+        "damageType": "slashing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "vulture",
+    "name": "Buitre",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "ac": "10",
+    "hp": "5",
+    "speed": "10 pies, volar 50 pies",
+    "abilityScores": { "str": 7, "dex": 10, "con": 13, "int": 2, "wis": 12, "cha": 4 },
+    "senses": "Percepción pasiva 13",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Atacar en manada",
+        "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados se encuentra a 5 pies o menos de ella y no tiene el estado de incapacitado."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Pico",
+        "attackBonus": "2",
+        "damage": "1d4",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "seahorse",
+    "name": "Caballito de mar",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "12",
+    "hp": "1",
+    "speed": "5 pies, nadar 20 pies",
+    "abilityScores": { "str": 1, "dex": 12, "con": 8, "int": 1, "wis": 10, "cha": 2 },
+    "senses": "Percepción pasiva 12",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Respirar en el agua",
+        "description": "Solo puede respirar bajo el agua."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Carrera burbujeante",
+        "description": "Mientras está bajo el agua, se mueve hasta su velocidad nadando sin provocar ataques de oportunidad."
+      }
+    ]
+  },
+  {
+    "id": "goat",
+    "name": "Cabra",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "ac": "10",
+    "hp": "4",
+    "speed": "40 pies, trepar 30 pies",
+    "abilityScores": { "str": 11, "dex": 10, "con": 11, "int": 2, "wis": 10, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Embestir",
+        "attackBonus": "2",
+        "damage": "1",
+        "damageType": "bludgeoning",
+        "reach": "5 pies",
+        "description": "2 (1d4) de daño contundente si la cabra recorre al menos 20 pies en línea recta hacia el objetivo justo antes de acertarle."
+      }
+    ]
+  },
+  {
+    "id": "crab",
+    "name": "Cangrejo",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "11",
+    "hp": "3",
+    "speed": "20 pies, nadar 20 pies",
+    "abilityScores": { "str": 6, "dex": 11, "con": 12, "int": 1, "wis": 8, "cha": 2 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 9",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Anfibio",
+        "description": "Puede respirar tanto dentro como fuera del agua."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Pinza",
+        "attackBonus": "2",
+        "damage": "1",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "jackal",
+    "name": "Chacal",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "ac": "12",
+    "hp": "3",
+    "speed": "40 pies",
+    "abilityScores": { "str": 8, "dex": 15, "con": 11, "int": 3, "wis": 12, "cha": 6 },
+    "senses": "visión en la oscuridad 90 pies; Percepción pasiva 15",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "1",
+        "damage": "1d4-1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "deer",
+    "name": "Ciervo",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "ac": "13",
+    "hp": "4",
+    "speed": "50 pies",
+    "abilityScores": { "str": 11, "dex": 16, "con": 11, "int": 2, "wis": 14, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 14",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Ágil",
+        "description": "No provoca ataques de oportunidad cuando se mueve para ponerse fuera del alcance de un enemigo."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Embestir",
+        "attackBonus": "2",
+        "damage": "1d4",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "weasel",
+    "name": "Comadreja",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "13",
+    "hp": "1",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 3, "dex": 16, "con": 8, "int": 2, "wis": 12, "cha": 3 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "5",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "raven",
+    "name": "Cuervo",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "12",
+    "hp": "2",
+    "speed": "10 pies, volar 50 pies",
+    "abilityScores": { "str": 2, "dex": 14, "con": 10, "int": 5, "wis": 13, "cha": 6 },
+    "senses": "Percepción pasiva 13",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Imitación",
+        "description": "Puede imitar sonidos sencillos que haya escuchado, como un susurro o un trino. Alguien que lo escuche podrá darse cuenta de que son imitaciones si supera una prueba de Sabiduría (Perspicacia) con CD 10."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Pico",
+        "attackBonus": "4",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "giant-fire-beetle",
+    "name": "Escarabajo de fuego gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "ac": "13",
+    "hp": "4",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 8, "dex": 10, "con": 12, "int": 1, "wis": 7, "cha": 3 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 8",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Iluminación",
+        "description": "Emite luz brillante en un radio de 10 pies y luz tenue 10 pies más allá."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "1",
+        "damage": "1",
+        "damageType": "fire",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "scorpion",
+    "name": "Escorpión",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "11",
+    "hp": "1",
+    "speed": "10 pies",
+    "abilityScores": { "str": 2, "dex": 11, "con": 8, "int": 1, "wis": 8, "cha": 2 },
+    "senses": "visión ciega 10 pies; Percepción pasiva 9",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Aguijón",
+        "attackBonus": "2",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies",
+        "description": "Más 3 (1d6) de daño de veneno."
+      }
+    ]
+  },
+  {
+    "id": "cat",
+    "name": "Gato",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "12",
+    "hp": "2",
+    "speed": "40 pies, trepar 40 pies",
+    "abilityScores": { "str": 3, "dex": 15, "con": 10, "int": 3, "wis": 12, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Saltador",
+        "description": "Su distancia de salto se determina usando su Destreza en vez de su Fuerza."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Arañazo",
+        "attackBonus": "4",
+        "damage": "1",
+        "damageType": "slashing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "hawk",
+    "name": "Halcón",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "13",
+    "hp": "1",
+    "speed": "10 pies, volar 60 pies",
+    "abilityScores": { "str": 5, "dex": 16, "con": 8, "int": 2, "wis": 14, "cha": 6 },
+    "senses": "Percepción pasiva 16",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Garras",
+        "attackBonus": "5",
+        "damage": "1",
+        "damageType": "slashing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "hyena",
+    "name": "Hiena",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "ac": "11",
+    "hp": "5",
+    "speed": "50 pies",
+    "abilityScores": { "str": 11, "dex": 13, "con": 12, "int": 2, "wis": 12, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Atacar en manada",
+        "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados se encuentra a 5 pies o menos de ella y no tiene el estado de incapacitado."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "2",
+        "damage": "1d6",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "lizard",
+    "name": "Lagarto",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "10",
+    "hp": "2",
+    "speed": "20 pies, trepar 20 pies",
+    "abilityScores": { "str": 2, "dex": 11, "con": 10, "int": 1, "wis": 8, "cha": 3 },
+    "senses": "visión en la oscuridad 30 pies; Percepción pasiva 9",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Trepar cual arácnido",
+        "description": "Puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "2",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "bat",
+    "name": "Murciélago",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "12",
+    "hp": "1",
+    "speed": "5 pies, volar 30 pies",
+    "abilityScores": { "str": 2, "dex": 15, "con": 8, "int": 2, "wis": 12, "cha": 4 },
+    "senses": "visión ciega 60 pies; Percepción pasiva 11",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "4",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "piranha",
+    "name": "Piraña",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "13",
+    "hp": "1",
+    "speed": "5 pies, nadar 40 pies",
+    "abilityScores": { "str": 2, "dex": 16, "con": 9, "int": 1, "wis": 7, "cha": 2 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 8",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Respirar en el agua",
+        "description": "Solo puede respirar bajo el agua."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "5",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies",
+        "description": "Con ventaja si el objetivo no tiene todos sus puntos de golpe."
+      }
+    ]
+  },
+  {
+    "id": "octopus",
+    "name": "Pulpo",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "ac": "12",
+    "hp": "3",
+    "speed": "5 pies, nadar 30 pies",
+    "abilityScores": { "str": 4, "dex": 15, "con": 11, "int": 3, "wis": 10, "cha": 4 },
+    "senses": "visión en la oscuridad 30 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Compresión",
+        "description": "Puede moverse a través de un espacio de solo una pulgada de ancho sin gastar movimiento adicional."
+      },
+      {
+        "name": "Respirar en el agua",
+        "description": "Solo puede respirar bajo el agua."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Tentáculos",
+        "attackBonus": "4",
+        "damage": "1",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Nube de tinta (1/día)",
+        "reaction": true,
+        "description": "Detonante: una criatura termina su turno a 5 pies o menos del pulpo mientras está bajo el agua. Respuesta: el pulpo suelta tinta que llena un cubo de 5 pies de lado centrado en él y se mueve hasta su velocidad nadando. El cubo está muy oscuro durante 1 minuto."
+      }
+    ]
+  },
+  {
+    "id": "frog",
+    "name": "Rana",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "11",
+    "hp": "1",
+    "speed": "20 pies, nadar 20 pies",
+    "abilityScores": { "str": 1, "dex": 13, "con": 8, "int": 1, "wis": 8, "cha": 3 },
+    "senses": "visión en la oscuridad 30 pies; Percepción pasiva 11",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Anfibia",
+        "description": "Puede respirar tanto dentro como fuera del agua."
+      },
+      {
+        "name": "Saltar sin carrera",
+        "description": "Puede hacer un salto de longitud de hasta 10 pies o un salto de altura de hasta 5 pies, tanto si ha cogido carrerilla como si no."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "3",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "rat",
+    "name": "Rata",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "10",
+    "hp": "1",
+    "speed": "20 pies, trepar 20 pies",
+    "abilityScores": { "str": 2, "dex": 11, "con": 9, "int": 2, "wis": 10, "cha": 4 },
+    "senses": "visión en la oscuridad 30 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "traits": [
+      {
+        "name": "Ágil",
+        "description": "No provoca ataques de oportunidad cuando se mueve para ponerse fuera del alcance de un enemigo."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "2",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "badger",
+    "name": "Tejón",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "11",
+    "hp": "5",
+    "speed": "20 pies, excavar 5 pies",
+    "abilityScores": { "str": 10, "dex": 11, "con": 16, "int": 2, "wis": 12, "cha": 5 },
+    "senses": "visión en la oscuridad 30 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "defenses": "Resistencia a veneno",
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "2",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "imp",
+    "name": "Diablillo",
+    "source": "srd_2024",
+    "kind": "Infernal Diminuto (diablo)",
+    "ac": "13",
+    "hp": "21",
+    "speed": "20 pies, volar 40 pies",
+    "abilityScores": { "str": 6, "dex": 17, "con": 13, "int": 11, "wis": 12, "cha": 14 },
+    "senses": "visión en la oscuridad 120 pies (no afectada por la oscuridad mágica); Percepción pasiva 11",
+    "languages": "común, infernal",
+    "defenses": "Resistencia a frío. Inmunidad a fuego y veneno; envenenado",
+    "traits": [
+      {
+        "name": "Resistencia mágica",
+        "description": "Tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Aguijón",
+        "attackBonus": "5",
+        "damage": "1d6+3",
+        "damageType": "piercing",
+        "reach": "5 pies",
+        "description": "Más 7 (2d6) de daño de veneno."
+      },
+      {
+        "name": "Cambio de forma",
+        "description": "Cambia de forma para parecerse a una araña (velocidad 20 pies, trepar 20 pies), un cuervo (20 pies, volar 60 pies) o una rata (20 pies), o recupera su auténtica forma. Su perfil es el mismo en todas las formas, excepto por su velocidad."
+      },
+      {
+        "name": "Invisibilidad",
+        "description": "Lanza invisibilidad sobre sí mismo sin necesidad de componentes y utiliza el Carisma como aptitud mágica."
+      }
+    ]
+  },
+  {
+    "id": "sprite",
+    "name": "Duende",
+    "source": "srd_2024",
+    "kind": "Feérico Diminuto",
+    "ac": "15",
+    "hp": "10",
+    "speed": "10 pies, volar 40 pies",
+    "abilityScores": { "str": 3, "dex": 18, "con": 10, "int": 14, "wis": 13, "cha": 11 },
+    "senses": "Percepción pasiva 13",
+    "languages": "común, elfo, silvano",
+    "actions": [
+      {
+        "name": "Espada aguja",
+        "attackBonus": "6",
+        "damage": "1d4+4",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Arco encantador",
+        "attackBonus": "6",
+        "damage": "1",
+        "damageType": "piercing",
+        "reach": "40/160 pies",
+        "description": "El objetivo tendrá el estado de hechizado hasta el principio del siguiente turno del duende."
+      },
+      {
+        "name": "Invisibilidad",
+        "description": "Lanza invisibilidad sobre sí mismo sin necesidad de componentes y utiliza el Carisma como aptitud mágica."
+      },
+      {
+        "name": "Visión del corazón",
+        "description": "Tirada de salvación de Carisma CD 10, una criatura que el duende pueda ver a 5 pies o menos (los celestiales, infernales y muertos vivientes fallan automáticamente). Fallo: el duende descubre las emociones y el alineamiento del objetivo."
+      }
+    ]
+  },
+  {
+    "id": "sphinx-of-wonder",
+    "name": "Esfinge de las maravillas",
+    "source": "srd_2024",
+    "kind": "Celestial Diminuto",
+    "ac": "13",
+    "hp": "24",
+    "speed": "20 pies, volar 40 pies",
+    "abilityScores": { "str": 6, "dex": 17, "con": 13, "int": 15, "wis": 12, "cha": 11 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 11",
+    "languages": "celestial, común",
+    "defenses": "Resistencia a necrótico, psíquico y radiante",
+    "traits": [
+      {
+        "name": "Resistencia mágica",
+        "description": "Tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Desgarro",
+        "attackBonus": "5",
+        "damage": "1d4+3",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "Más 7 (2d6) de daño radiante."
+      },
+      {
+        "name": "Arranque de ingenio (2/día)",
+        "reaction": true,
+        "description": "Detonante: la esfinge u otra criatura a 30 pies o menos hace una prueba de característica o una tirada de salvación. Respuesta: la esfinge suma 2 a la tirada."
+      }
+    ]
+  },
+  {
+    "id": "skeleton",
+    "name": "Esqueleto",
+    "source": "srd_2024",
+    "kind": "Muerto viviente Mediano",
+    "ac": "14",
+    "hp": "13",
+    "speed": "30 pies",
+    "abilityScores": { "str": 10, "dex": 16, "con": 15, "int": 6, "wis": 8, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 9",
+    "languages": "entiende común y otro idioma, pero no puede hablar",
+    "defenses": "Vulnerable a contundente. Inmunidad a veneno; cansancio, envenenado",
+    "actions": [
+      {
+        "name": "Espada corta",
+        "attackBonus": "5",
+        "damage": "1d6+3",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Arco corto",
+        "attackBonus": "5",
+        "damage": "1d6+3",
+        "damageType": "piercing",
+        "reach": "80/320 pies"
+      }
+    ]
+  },
+  {
+    "id": "pseudodragon",
+    "name": "Pseudodragón",
+    "source": "srd_2024",
+    "kind": "Dragón Diminuto",
+    "ac": "14",
+    "hp": "10",
+    "speed": "15 pies, volar 60 pies",
+    "abilityScores": { "str": 6, "dex": 15, "con": 13, "int": 10, "wis": 12, "cha": 10 },
+    "senses": "visión ciega 10 pies, visión en la oscuridad 60 pies; Percepción pasiva 15",
+    "languages": "entiende común y dracónico, pero no puede hablar",
+    "traits": [
+      {
+        "name": "Resistencia mágica",
+        "description": "Tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Realiza dos ataques de mordisco."
+      },
+      {
+        "name": "Mordisco",
+        "attackBonus": "4",
+        "damage": "1d4+2",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Aguijón",
+        "description": "Tirada de salvación de Constitución CD 12, una criatura que el pseudodragón pueda ver a 5 pies o menos. Fallo: 5 (2d4) de daño de veneno y el objetivo tendrá el estado de envenenado durante 1 hora. Fallo por 5 o más: además queda inconsciente, que terminará antes si recibe daño o alguien lo despierta."
+      }
+    ]
+  },
+  {
+    "id": "quasit",
+    "name": "Quasit",
+    "source": "srd_2024",
+    "kind": "Infernal Diminuto (demonio)",
+    "ac": "13",
+    "hp": "25",
+    "speed": "40 pies",
+    "abilityScores": { "str": 5, "dex": 17, "con": 10, "int": 7, "wis": 10, "cha": 10 },
+    "senses": "visión en la oscuridad 120 pies; Percepción pasiva 10",
+    "languages": "abisal, común",
+    "defenses": "Resistencia a frío, fuego y relámpago. Inmunidad a veneno; envenenado",
+    "traits": [
+      {
+        "name": "Resistencia mágica",
+        "description": "Tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Desgarro",
+        "attackBonus": "5",
+        "damage": "1d4+3",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "El objetivo tendrá el estado de envenenado hasta el principio del siguiente turno del quasit."
+      },
+      {
+        "name": "Asustar (1/día)",
+        "description": "Tirada de salvación de Sabiduría CD 10, una criatura a 20 pies o menos. Fallo: el objetivo tendrá el estado de asustado. Repite la salvación al final de cada uno de sus turnos y tras 1 minuto tiene éxito automáticamente."
+      },
+      {
+        "name": "Cambio de forma",
+        "description": "Cambia de forma para parecerse a un ciempiés (velocidad 40 pies, trepar 40 pies), un murciélago (10 pies, volar 40 pies) o un sapo (40 pies, nadar 40 pies), o recupera su auténtica forma."
+      },
+      {
+        "name": "Invisibilidad",
+        "description": "Lanza invisibilidad sobre sí mismo sin necesidad de componentes y utiliza el Carisma como aptitud mágica."
+      }
+    ]
+  },
+  {
+    "id": "poisonous-snake",
+    "name": "Serpiente venenosa",
+    "source": "srd_2024",
+    "kind": "Bestia Diminuta",
+    "ac": "12",
+    "hp": "5",
+    "speed": "30 pies, nadar 30 pies",
+    "abilityScores": { "str": 2, "dex": 15, "con": 11, "int": 1, "wis": 10, "cha": 3 },
+    "senses": "visión ciega 10 pies; Percepción pasiva 10",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Mordisco",
+        "attackBonus": "4",
+        "damage": "1d4+2",
+        "damageType": "piercing",
+        "reach": "5 pies",
+        "description": "Más 3 (1d6) de daño de veneno."
+      }
+    ]
+  },
+  {
+    "id": "otherworldly-steed",
+    "name": "Corcel sobrenatural",
+    "source": "srd_2024",
+    "kind": "Celestial, feérico o infernal Grande (a tu elección)",
+    "ac": "10+spellLevel",
+    "hp": "5+10*spellLevel",
+    "speed": "60 pies, volar 60 pies (requiere un conjuro de nivel 4 o superior)",
+    "abilityScores": { "str": 18, "dex": 12, "con": 14, "int": 6, "wis": 12, "cha": 8 },
+    "senses": "Percepción pasiva 11",
+    "languages": "telepatía 1 milla (solo funciona contigo)",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Vínculo vital",
+        "description": "Cuando recuperás puntos de golpe mediante un conjuro de nivel 1 o superior, el corcel recupera la misma cantidad si estás a 5 pies o menos de él."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Golpetazo sobrenatural",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{spellLevel}",
+        "reach": "5 pies",
+        "description": "El daño es radiante (celestial), psíquico (feérico) o necrótico (infernal), según el tipo que elegiste al invocarlo."
+      },
+      {
+        "name": "Mirada siniestra (acción adicional, solo infernal)",
+        "description": "Se recarga tras un descanso largo. Tirada de salvación de Sabiduría CD igual a tu CD de salvación de conjuros ({SPELLDC}), una criatura a 60 pies o menos que el corcel pueda ver. Fallo: el objetivo tiene el estado de asustado hasta el final de tu siguiente turno."
+      },
+      {
+        "name": "Paso feérico (acción adicional, solo feérico)",
+        "description": "Se recarga tras un descanso largo. El corcel se teletransporta, junto con su jinete, a un espacio sin ocupar de tu elección a 60 pies o menos del corcel."
+      },
+      {
+        "name": "Toque sanador (acción adicional, solo celestial)",
+        "description": "Se recarga tras un descanso largo. Una criatura a 5 pies o menos del corcel recupera 2d8 + {spellLevel} puntos de golpe."
+      }
+    ]
+  },
+  {
+    "id": "eldritch-cannon",
+    "name": "Cañón Arcano",
+    "source": "foa_2025",
+    "kind": "Objeto Diminuto o Pequeño (a tu elección)",
+    "ac": "18",
+    "hp": "5*level",
+    "speed": "no se mueve solo: lo dirigís hasta 15 pies al activarlo",
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "defenses": "Inmunidad a veneno y psíquico",
+    "traits": [
+      {
+        "name": "Reparación",
+        "description": "Lanzar Reparar sobre el cañón le restaura 2d6 puntos de golpe."
+      },
+      {
+        "name": "Duración",
+        "description": "Desaparece tras 1 hora, al llegar a 0 PG o si lo desactivás como acción."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Activar el cañón (acción adicional, a 60 pies o menos)",
+        "description": "Le ordenás usar Lanzallamas, Ballesta de Fuerza o Protector, y podés dirigirlo hasta 15 pies antes o después."
+      },
+      {
+        "name": "Lanzallamas",
+        "damage": "2d8",
+        "damageType": "fire",
+        "reach": "cono de 15 pies",
+        "description": "Cada criatura en el área hace una salvación de Destreza CD {SPELLDC}; a la mitad si la supera. Los objetos inflamables del cono que nadie lleve encima empiezan a arder. Con Cañón Explosivo (nivel 9), +1d8."
+      },
+      {
+        "name": "Ballesta de Fuerza",
+        "attackBonus": "SPELLATK",
+        "damage": "2d8",
+        "damageType": "force",
+        "reach": "120 pies desde el cañón",
+        "description": "Si el objetivo es una criatura, es empujado hasta 5 pies. Con Cañón Explosivo (nivel 9), +1d8."
+      },
+      {
+        "name": "Protector",
+        "damage": "1d8+{INT}",
+        "reach": "10 pies desde el cañón",
+        "description": "Da esa cantidad de puntos de golpe temporales (mínimo 1) al cañón y a cada criatura que elijas en el área. Con Cañón Explosivo (nivel 9), +1d8."
+      }
+    ]
+  },
+  {
+    "id": "steel-defender",
+    "name": "Defensor de Acero",
+    "source": "foa_2025",
+    "kind": "Constructo Mediano, neutral",
+    "ac": "12+INT",
+    "hp": "5+5*level",
+    "speed": "40 pies",
+    "abilityScores": { "str": 14, "dex": 12, "con": 14, "int": 4, "wis": 10, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "entiende los idiomas que sepas",
+    "defenses": "Inmunidad a veneno; hechizado, cansancio, envenenado",
+    "traits": [
+      {
+        "name": "Vínculo de acero",
+        "description": "Suma tu bonificador por competencia (+{PB}) a cualquier prueba de característica o tirada de salvación que haga el defensor."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Desgarro potenciado por fuerza",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{2+INT}",
+        "damageType": "force",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Reparar (3/día)",
+        "description": "El defensor, o un constructo u objeto que vea a 5 pies o menos, recupera 2d8 + {INT} puntos de golpe."
+      },
+      {
+        "name": "Desviar ataque",
+        "reaction": true,
+        "description": "Detonante: una criatura que el defensor vea a 5 pies o menos hace una tirada de ataque contra otra criatura. Respuesta: esa tirada se hace con desventaja."
+      }
+    ]
+  },
+  {
+    "id": "beast-of-the-land",
+    "name": "Bestia de la Tierra",
+    "source": "phb_2024",
+    "kind": "Bestia Mediana, neutral",
+    "ac": "13+WIS",
+    "hp": "5+5*level",
+    "speed": "40 pies, trepar 40 pies",
+    "abilityScores": { "str": 14, "dex": 14, "con": 15, "int": 8, "wis": 14, "cha": 11 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que sepas",
+    "traits": [
+      {
+        "name": "Vínculo primario",
+        "description": "Suma tu bonificador por competencia (+{PB}) a cualquier prueba de característica o tirada de salvación que haga la bestia."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Golpe de la bestia",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{2+WIS}",
+        "reach": "5 pies",
+        "description": "Daño contundente, perforante o cortante, el que elegiste al invocarla. Si la bestia se movió al menos 20 pies en línea recta hacia el objetivo antes de acertar, causa 1d6 extra del mismo tipo y el objetivo queda derribado si es Grande o más pequeño."
+      }
+    ]
+  },
+  {
+    "id": "beast-of-the-sea",
+    "name": "Bestia del Mar",
+    "source": "phb_2024",
+    "kind": "Bestia Mediana, neutral",
+    "ac": "13+WIS",
+    "hp": "5+5*level",
+    "speed": "5 pies, nadar 60 pies",
+    "abilityScores": { "str": 14, "dex": 14, "con": 15, "int": 8, "wis": 14, "cha": 11 },
+    "senses": "visión en la oscuridad 90 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que sepas",
+    "traits": [
+      {
+        "name": "Anfibia",
+        "description": "Puede respirar tanto dentro como fuera del agua."
+      },
+      {
+        "name": "Vínculo primario",
+        "description": "Suma tu bonificador por competencia (+{PB}) a cualquier prueba de característica o tirada de salvación que haga la bestia."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Golpe de la bestia",
+        "attackBonus": "SPELLATK",
+        "damage": "1d6+{2+WIS}",
+        "reach": "5 pies",
+        "description": "Daño contundente o perforante, el que elegiste al invocarla, y el objetivo queda agarrado (CD {SPELLDC} para escapar)."
+      }
+    ]
+  },
+  {
+    "id": "beast-of-the-sky",
+    "name": "Bestia del Aire",
+    "source": "phb_2024",
+    "kind": "Bestia Pequeña, neutral",
+    "ac": "13+WIS",
+    "hp": "4+4*level",
+    "speed": "10 pies, volar 60 pies",
+    "abilityScores": { "str": 6, "dex": 16, "con": 13, "int": 8, "wis": 14, "cha": 11 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que sepas",
+    "traits": [
+      {
+        "name": "Pasar volando",
+        "description": "No provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+      },
+      {
+        "name": "Vínculo primario",
+        "description": "Suma tu bonificador por competencia (+{PB}) a cualquier prueba de característica o tirada de salvación que haga la bestia."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Golpe de la bestia",
+        "attackBonus": "SPELLATK",
+        "damage": "1d4+{3+WIS}",
+        "damageType": "slashing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "homunculus-servant",
+    "name": "Sirviente Homúnculo",
+    "source": "foa_2025",
+    "kind": "Constructo Diminuto, neutral",
+    "ac": "13",
+    "hp": "5+5*spellLevel",
+    "speed": "20 pies, volar 30 pies",
+    "abilityScores": { "str": 4, "dex": 15, "con": 12, "int": 10, "wis": 10, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "telepatía 1 milla (solo funciona contigo)",
+    "defenses": "Inmunidad a veneno; cansancio, envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Evasión",
+        "description": "Si un efecto le permite hacer una salvación de Destreza para recibir la mitad del daño, no recibe ninguno si la supera y la mitad si la falla. No puede usarlo si está incapacitado."
+      },
+      {
+        "name": "Vínculo mágico",
+        "description": "Suma el nivel del conjuro (+{spellLevel}) a cualquier prueba de característica o tirada de salvación que haga el homúnculo."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Golpe de fuerza",
+        "attackBonus": "SPELLATK",
+        "damage": "1d6+{spellLevel}",
+        "damageType": "force",
+        "reach": "5 pies, o a distancia 30 pies"
+      },
+      {
+        "name": "Canalizar magia",
+        "reaction": true,
+        "description": "Detonante: lanzás un conjuro con alcance de toque mientras el homúnculo está a 120 pies o menos. Respuesta: el homúnculo entrega el conjuro con su toque."
+      }
+    ]
+  }
+]

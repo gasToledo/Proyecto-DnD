@@ -1,4 +1,5 @@
 import '../domain/content.dart';
+import '../domain/creature.dart';
 import '../domain/data_version.dart';
 import '../domain/name_sort.dart';
 import 'content_pack_loader_stub.dart'
@@ -67,6 +68,7 @@ class ContentRepository {
   final Map<String, Weapon> weapons;
   final Map<String, Armor> armor;
   final Map<String, Spell> spells;
+  final Map<String, Creature> creatures;
 
   ContentRepository({
     Map<String, Race>? races,
@@ -78,6 +80,7 @@ class ContentRepository {
     Map<String, Weapon>? weapons,
     Map<String, Armor>? armor,
     Map<String, Spell>? spells,
+    Map<String, Creature>? creatures,
   })  : races = races ?? {},
         classes = classes ?? {},
         subclasses = subclasses ?? {},
@@ -86,7 +89,8 @@ class ContentRepository {
         feats = feats ?? {},
         weapons = weapons ?? {},
         armor = armor ?? {},
-        spells = spells ?? {};
+        spells = spells ?? {},
+        creatures = creatures ?? {};
 
   Race? race(String id) => races[id];
   CharacterClass? characterClass(String id) => classes[id];
@@ -97,6 +101,7 @@ class ContentRepository {
   Weapon? weapon(String id) => weapons[id];
   Armor? armorPiece(String id) => armor[id];
   Spell? spell(String id) => spells[id];
+  Creature? creature(String id) => creatures[id];
 
   /// Catálogos completos en orden alfabético, que es como los lista la UI. Los
   /// mapas conservan el orden de carga del JSON, que no le sirve a nadie para
@@ -175,6 +180,7 @@ class ContentRepository {
     weapons.addAll(other.weapons);
     armor.addAll(other.armor);
     spells.addAll(other.spells);
+    creatures.addAll(other.creatures);
   }
 
   /// Construye un repositorio desde mapas JSON ya decodificados (una lista por
@@ -189,6 +195,7 @@ class ContentRepository {
     List<Map<String, dynamic>> weapons = const [],
     List<Map<String, dynamic>> armor = const [],
     List<Map<String, dynamic>> spells = const [],
+    List<Map<String, dynamic>> creatures = const [],
   }) {
     return ContentRepository(
       races: {for (final j in races) j['id'] as String: Race.fromJson(j)},
@@ -208,6 +215,9 @@ class ContentRepository {
       weapons: {for (final j in weapons) j['id'] as String: Weapon.fromJson(j)},
       armor: {for (final j in armor) j['id'] as String: Armor.fromJson(j)},
       spells: {for (final j in spells) j['id'] as String: Spell.fromJson(j)},
+      creatures: {
+        for (final j in creatures) j['id'] as String: Creature.fromJson(j),
+      },
     );
   }
 

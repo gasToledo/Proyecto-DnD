@@ -1,4 +1,5 @@
 import 'ability.dart';
+import 'creature.dart';
 import 'effects.dart';
 import 'skill.dart';
 import 'spell_slots.dart';
@@ -37,6 +38,47 @@ class CharacterResource {
         'shortRestRecovery': shortRestRecovery,
         'description': description,
       };
+}
+
+/// Compañero que el personaje puede invocar, con sus formas ya resueltas
+/// contra el catálogo.
+///
+/// Las fórmulas de cada [Creature] **no** están evaluadas: el Corcel
+/// Sobrenatural y el Sirviente Homúnculo dependen del nivel del espacio que se
+/// gaste al invocarlos, y eso recién se sabe en la ficha. Quien pinta una
+/// instancia llama a `Creature.resolve` con los `CreatureVars` del momento.
+class CompanionOption {
+  /// Id de la opción (no de la criatura): es lo que ata la instancia guardada
+  /// en el personaje con el rasgo que la concede.
+  final String id;
+  final String name;
+
+  /// Rasgo o dote que lo concedió, para mostrar de dónde sale.
+  final String source;
+
+  final List<Creature> forms;
+  final int maxActive;
+
+  const CompanionOption({
+    required this.id,
+    required this.name,
+    required this.source,
+    required this.forms,
+    this.maxActive = 1,
+  });
+
+  /// Invocarlo gasta un espacio de conjuro y sus números dependen del nivel.
+  /// Alcanza con mirar la primera forma: un compañero no mezcla formas que
+  /// escalan con formas que no.
+  bool get scalesWithSpellLevel =>
+      forms.isNotEmpty && forms.first.scalesWithSpellLevel;
+
+  Creature? form(String creatureId) {
+    for (final f in forms) {
+      if (f.id == creatureId) return f;
+    }
+    return null;
+  }
 }
 
 /// Conjuro concedido por un rasgo (linaje, dote), por fuera de la magia de
@@ -451,6 +493,10 @@ class ComputedSheet {
   final List<PassiveTrait> passives;
   final List<CharacterResource> resources;
 
+  /// Compañeros invocables a este nivel (Cañón Arcano, Defensor de Acero,
+  /// familiar, corcel). Vacío para la enorme mayoría de los personajes.
+  final List<CompanionOption> companions;
+
   /// Conjuros concedidos por rasgos (linajes, dotes), fuera de la magia de clase.
   final List<InnateSpell> innateSpells;
 
@@ -536,6 +582,7 @@ class ComputedSheet {
     required this.attacks,
     required this.passives,
     required this.resources,
+    this.companions = const [],
     this.innateSpells = const [],
     this.alwaysPreparedSpellIds = const {},
     this.spellListAdditionIds = const {},

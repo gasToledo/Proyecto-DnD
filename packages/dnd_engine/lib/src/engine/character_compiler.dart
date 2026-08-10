@@ -5,6 +5,7 @@ import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
+import '../domain/creature.dart';
 import '../domain/effects.dart';
 import '../domain/language.dart';
 import '../domain/proficiency_labels.dart';
@@ -424,6 +425,13 @@ class CharacterCompiler {
     final languageChoiceSlots =
         _resolveLanguageChoices(c, proficiencySources, knownLanguages);
 
+    // Un id que el catálogo no conoce se descarta acá, igual que en los
+    // innatos: contenido incompleto no debe romper la ficha.
+    final alwaysPrepared = {
+      for (final id in builder.alwaysPreparedSpellIds)
+        if (repo.spell(id) != null) id,
+    };
+
     return ComputedSheet(
       level: c.level,
       proficiencyBonus: profBonus,
@@ -453,13 +461,17 @@ class CharacterCompiler {
         ...builder.resolveResources(mods, c.level),
         ...innate.resources
       ],
+      companions: _resolveCompanions(c, builder, proficiencySources, {
+        ...c.cantripIds,
+        ...c.spellIds,
+        ...alwaysPrepared,
+        // Un conjuro concedido por un rasgo también se sabe. Sin esto, el
+        // Pacto de la Cadena —que regala Encontrar Familiar en vez de ponerlo
+        // en la lista— dejaría al brujo sin el familiar que el pacto le da.
+        ...innate.spells.map((s) => s.spellId),
+      }),
       innateSpells: innate.spells,
-      // Un id que el catálogo no conoce se descarta acá, igual que en los
-      // innatos: contenido incompleto no debe romper la ficha.
-      alwaysPreparedSpellIds: {
-        for (final id in builder.alwaysPreparedSpellIds)
-          if (repo.spell(id) != null) id,
-      },
+      alwaysPreparedSpellIds: alwaysPrepared,
       spellListAdditionIds: {
         for (final id in builder.spellListAdditionIds)
           if (repo.spell(id) != null) id,
@@ -481,6 +493,57 @@ class CharacterCompiler {
       languageChoiceSlots: languageChoiceSlots,
       spellcasting: spellcasting,
     );
+  }
+
+  /// Cruza los compañeros declarados por los rasgos con el catálogo de
+  /// criaturas.
+  ///
+  /// Los que dependen de un conjuro (Encontrar Familiar, Hallar Corcel) se
+  /// descartan si el personaje no lo tiene: el rasgo del Mago concede el
+  /// familiar, pero un mago que nunca aprendió el conjuro no tiene ninguno.
+  /// Se mira lo aprendido **y** lo siempre preparado, porque el Corcel Fiel del
+  /// Paladín llega por la segunda vía.
+  List<CompanionOption> _resolveCompanions(
+    Character c,
+    SheetBuilder builder,
+    List<({String id, String name, List<Effect> effects})> sources,
+    Set<String> knownSpells,
+  ) {
+    if (builder.companions.isEmpty) return const [];
+
+    // De qué rasgo salió cada compañero. El builder no lo sabe (guarda el
+    // efecto suelto), pero las fuentes ya vienen con su nombre legible.
+    final sourceNames = <String, String>{};
+    for (final s in sources) {
+      for (final e in s.effects.whereType<CompanionEffect>()) {
+        sourceNames.putIfAbsent(e.id, () => s.name);
+      }
+    }
+
+    final options = <CompanionOption>[];
+    for (final e in builder.companions.values) {
+      if (e.requiresSpell != null && !knownSpells.contains(e.requiresSpell)) {
+        continue;
+      }
+      final forms = [
+        for (final id in e.creatureIds)
+          if (repo.creature(id) case final Creature form) form,
+      ];
+      // Sin ninguna forma en el catálogo no hay nada que invocar. Se descarta
+      // en silencio por la misma razón que los conjuros innatos: contenido
+      // incompleto no debe romper la ficha.
+      if (forms.isEmpty) continue;
+      options.add(
+        CompanionOption(
+          id: e.id,
+          name: e.name,
+          source: sourceNames[e.id] ?? '',
+          forms: forms,
+          maxActive: e.maxActive,
+        ),
+      );
+    }
+    return options;
   }
 
   /// Resuelve los conjuros concedidos por rasgos contra el repositorio y, para

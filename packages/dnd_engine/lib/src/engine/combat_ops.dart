@@ -3,6 +3,7 @@ import 'dart:math';
 import '../domain/ability.dart';
 import '../domain/character.dart';
 import '../domain/computed_sheet.dart';
+import '../domain/creature.dart';
 import '../domain/effects.dart';
 import '../domain/spell_slots.dart';
 import 'dice.dart';
@@ -11,17 +12,30 @@ import 'dice.dart';
 /// mutan el estado in situ. La recuperación por descanso sigue reglas 2024
 /// simplificadas para el MVP.
 class CombatOps {
+  /// La regla de daño en crudo: los PG temporales absorben primero y los PG no
+  /// bajan de 0. Devuelve los valores nuevos.
+  ///
+  /// Vive suelta porque la aplican dos cosas distintas —el personaje y cada
+  /// compañero invocado— y una copia por cada una es una copia que se puede
+  /// desincronizar.
+  static ({int hp, int tempHp}) _absorbDamage(int hp, int tempHp, int amount) {
+    if (amount <= 0) return (hp: hp, tempHp: tempHp);
+    var dmg = amount;
+    var temp = tempHp;
+    if (temp > 0) {
+      final absorbed = min(temp, dmg);
+      temp -= absorbed;
+      dmg -= absorbed;
+    }
+    return (hp: max(0, hp - dmg), tempHp: temp);
+  }
+
   /// Aplica daño: primero consume PG temporales, luego PG. No baja de 0
   /// (a 0 PG el personaje queda inconsciente y entran las salvaciones de muerte).
   static void applyDamage(CombatState c, int amount) {
-    if (amount <= 0) return;
-    var dmg = amount;
-    if (c.tempHp > 0) {
-      final absorbed = min(c.tempHp, dmg);
-      c.tempHp -= absorbed;
-      dmg -= absorbed;
-    }
-    c.currentHp = max(0, c.currentHp - dmg);
+    final next = _absorbDamage(c.currentHp, c.tempHp, amount);
+    c.currentHp = next.hp;
+    c.tempHp = next.tempHp;
   }
 
   /// Cura PG hasta el máximo. Curar desde 0 o menos estabiliza y limpia las
@@ -66,12 +80,22 @@ class CombatOps {
   /// muerte, baja 1 el agotamiento, se recupera la mitad de los dados de golpe,
   /// se recargan todos los recursos, se recuperan los espacios de conjuro y
   /// termina la concentración.
+  ///
+  /// [companionMaxHp] resuelve los PG máximos de cada compañero invocado, que
+  /// dependen del catálogo y del nivel del espacio con que se lo convocó. Si no
+  /// se pasa, los compañeros quedan como estaban.
+  ///
+  /// ponytail: el descanso largo deja a los compañeros activos a tope y no
+  /// despide a ninguno. El Cañón Arcano dura una hora por regla y tendría que
+  /// desaparecer solo; queda para el botón Despedir hasta que algún compañero
+  /// necesite de verdad una duración modelada.
   static void longRest(
     CombatState c,
     int maxHp,
     List<CharacterResource> resources,
-    int hitDiceMax,
-  ) {
+    int hitDiceMax, {
+    int Function(CompanionInstance)? companionMaxHp,
+  }) {
     c.currentHp = maxHp;
     c.tempHp = 0;
     c.deathSuccesses = 0;
@@ -83,6 +107,13 @@ class CombatOps {
     }
     c.spellSlotsUsed.clear();
     c.concentratingOn = null;
+    if (companionMaxHp != null) {
+      for (final companion in c.companions) {
+        companion.currentHp = companionMaxHp(companion);
+        companion.tempHp = 0;
+        companion.conditions.clear();
+      }
+    }
   }
 
   /// Gasta un espacio de conjuro del [slotLevel] indicado. Devuelve false si no
@@ -133,6 +164,66 @@ class CombatOps {
     c.hitDiceUsed += 1;
     applyHealing(c, sheet.maxHp, heal);
     return heal;
+  }
+
+  // ------------------------------------------------------------ Compañeros
+
+  /// Invoca un compañero con los PG al máximo y lo devuelve.
+  ///
+  /// El nivel del espacio sale de [vars], no de un parámetro aparte: es el
+  /// mismo número que resuelve los PG del Corcel Sobrenatural, y tenerlo dos
+  /// veces es tenerlo mal una vez.
+  ///
+  /// Si ya se llegó a [CompanionOption.maxActive], el más viejo se reemplaza en
+  /// lugar de rechazar la invocación. Es lo que dicen las reglas: volver a
+  /// lanzar Encontrar Familiar le cambia la forma al que había, y solo puede
+  /// haber un cañón a la vez.
+  static CompanionInstance summonCompanion(
+    CombatState c,
+    CompanionOption option,
+    Creature form,
+    CreatureVars vars,
+  ) {
+    final active = c.companions.where((i) => i.optionId == option.id).toList();
+    // Se retiran los más viejos hasta dejar un lugar libre para el nuevo.
+    for (var i = 0; i <= active.length - option.maxActive; i++) {
+      c.companions.remove(active[i]);
+    }
+    final instance = CompanionInstance(
+      optionId: option.id,
+      creatureId: form.id,
+      spellLevel: vars['spellLevel'] ?? 0,
+      currentHp: resolveCreatureInt(form.hp, vars),
+    );
+    c.companions.add(instance);
+    return instance;
+  }
+
+  /// Despide un compañero (o lo retira cuando fue destruido).
+  static void dismissCompanion(CombatState c, CompanionInstance instance) {
+    c.companions.removeWhere((i) => identical(i, instance));
+  }
+
+  /// Daña a un compañero con la misma regla que al personaje.
+  ///
+  /// A 0 PG el compañero queda en la lista en vez de borrarse solo: por regla
+  /// desaparece, pero el Defensor de Acero se puede revivir dentro de la hora y
+  /// borrarlo automáticamente le sacaría al jugador la decisión de la mano.
+  static void damageCompanion(CompanionInstance i, int amount) {
+    final next = _absorbDamage(i.currentHp, i.tempHp, amount);
+    i.currentHp = next.hp;
+    i.tempHp = next.tempHp;
+  }
+
+  static void healCompanion(CompanionInstance i, int maxHp, int amount) {
+    if (amount <= 0) return;
+    i.currentHp = min(maxHp, i.currentHp + amount);
+  }
+
+  /// PG temporales de un compañero (el modo Protector del Cañón Arcano). No se
+  /// acumulan, igual que los del personaje.
+  static void setCompanionTempHp(CompanionInstance i, int value) {
+    i.tempHp = max(0, max(i.tempHp, value));
   }
 
   /// Marca una salvación de muerte (éxito o fallo). Devuelve un resultado:

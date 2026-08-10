@@ -93,6 +93,15 @@ sealed class Effect {
           maxFromProficiency: json['maxFromProficiency'] as bool? ?? false,
           proficiencyMultiplier: json['proficiencyMultiplier'] as int? ?? 1,
         ),
+      'companion' => CompanionEffect(
+          id: json['id'] as String,
+          name: json['name'] as String,
+          creatureIds: (json['creatureIds'] as List? ?? const [])
+              .map((e) => e as String)
+              .toList(),
+          maxActive: json['maxActive'] as int? ?? 1,
+          requiresSpell: json['requiresSpell'] as String?,
+        ),
       'offHandAbilityDamage' => const OffHandAbilityDamageEffect(),
       'featureChoice' => FeatureChoiceEffect(
           groupId: json['groupId'] as String,
@@ -895,5 +904,50 @@ class ResourceEffect extends Effect {
         if (maxFromProficiency) 'maxFromProficiency': true,
         if (proficiencyMultiplier != 1)
           'proficiencyMultiplier': proficiencyMultiplier,
+      };
+}
+
+/// Concede un compañero invocable: el Cañón Arcano, el Defensor de Acero, un
+/// familiar, un corcel.
+///
+/// Es el **único** punto donde se cablea una criatura a un personaje; el
+/// catálogo de `creatures.json` son perfiles puros que no saben quién los
+/// invoca. Varias fuentes pueden declarar el mismo [id] (el Artillero lo hace
+/// a nivel 3 y otra vez a nivel 15 para tener dos cañones): gana el de mayor
+/// [maxActive], igual que [FeatureChoiceEffect] con su cuenta.
+class CompanionEffect extends Effect {
+  /// Id estable de la opción, no de la criatura: es lo que ata una instancia
+  /// guardada en la ficha con el rasgo que la concede.
+  final String id;
+
+  /// Rótulo para la UI ("Cañón Arcano", "Familiar").
+  final String name;
+
+  /// Formas elegibles. Una sola para el cañón o el defensor; veinticuatro para
+  /// el familiar, que elige forma al invocarlo.
+  final List<String> creatureIds;
+
+  final int maxActive;
+
+  /// El compañero solo existe si el personaje tiene este conjuro (Encontrar
+  /// Familiar, Hallar Corcel). Null = lo concede el rasgo por sí solo.
+  final String? requiresSpell;
+
+  const CompanionEffect({
+    required this.id,
+    required this.name,
+    required this.creatureIds,
+    this.maxActive = 1,
+    this.requiresSpell,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'companion',
+        'id': id,
+        'name': name,
+        'creatureIds': creatureIds,
+        'maxActive': maxActive,
+        if (requiresSpell != null) 'requiresSpell': requiresSpell,
       };
 }

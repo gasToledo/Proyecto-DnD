@@ -17,6 +17,11 @@ class SheetDiff {
 
   final List<PassiveTrait> newPassives;
   final List<CharacterResource> newResources;
+
+  /// Compañeros nuevos. Van aparte de [newPassives] porque el Cañón Arcano y
+  /// el Defensor de Acero dejaron de ser un rasgo en prosa: sin esto, subir al
+  /// nivel que los concede no aparecería en el resumen.
+  final List<CompanionOption> newCompanions;
   final List<String> newSkillProficiencies;
   final List<Ability> newSaveProficiencies;
 
@@ -34,6 +39,7 @@ class SheetDiff {
     required this.weaponMasterySlotsGained,
     required this.newPassives,
     required this.newResources,
+    required this.newCompanions,
     required this.newSkillProficiencies,
     required this.newSaveProficiencies,
     required this.speedGained,
@@ -51,6 +57,7 @@ class SheetDiff {
       weaponMasterySlotsGained != 0 ||
       newPassives.isNotEmpty ||
       newResources.isNotEmpty ||
+      newCompanions.isNotEmpty ||
       newSkillProficiencies.isNotEmpty ||
       newSaveProficiencies.isNotEmpty ||
       proficiencyBonusChanged ||
@@ -75,6 +82,11 @@ SheetDiff diffSheets(ComputedSheet before, ComputedSheet after) {
   final newResources =
       after.resources.where((r) => !beforeResIds.contains(r.id)).toList();
 
+  final beforeCompanionIds = before.companions.map((c) => c.id).toSet();
+  final newCompanions = after.companions
+      .where((c) => !beforeCompanionIds.contains(c.id))
+      .toList();
+
   final newSkills = after.skillProficiencies
       .difference(before.skillProficiencies)
       .toList()
@@ -93,6 +105,7 @@ SheetDiff diffSheets(ComputedSheet before, ComputedSheet after) {
         after.weaponMasterySlots - before.weaponMasterySlots,
     newPassives: newPassives,
     newResources: newResources,
+    newCompanions: newCompanions,
     newSkillProficiencies: newSkills,
     newSaveProficiencies: newSaves,
     speedGained: after.speed - before.speed,

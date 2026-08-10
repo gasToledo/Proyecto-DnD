@@ -77,6 +77,59 @@ class AsiChoice {
       );
 }
 
+/// Un compañero que está invocado ahora mismo: el cañón que hay en el suelo,
+/// el defensor que camina al lado.
+///
+/// Guarda solo lo que cambia en la mesa. Todo lo demás (CA, ataques, rasgos)
+/// se recalcula desde el catálogo con el nivel del personaje, así que subir de
+/// nivel no deja una instancia con números viejos.
+class CompanionInstance {
+  /// Id de la opción que lo concede (`CompanionOption.id`).
+  final String optionId;
+
+  /// Forma elegida al invocarlo (`Creature.id`).
+  final String creatureId;
+
+  /// Nivel del espacio de conjuro gastado, o 0 si no aplica. Los números del
+  /// Corcel Sobrenatural y del Sirviente Homúnculo cuelgan de esto, así que se
+  /// congela al invocar: subir de nivel no mejora un corcel ya convocado.
+  final int spellLevel;
+
+  int currentHp;
+  int tempHp;
+  final Set<String> conditions;
+
+  CompanionInstance({
+    required this.optionId,
+    required this.creatureId,
+    this.spellLevel = 0,
+    this.currentHp = 0,
+    this.tempHp = 0,
+    Set<String>? conditions,
+  }) : conditions = conditions ?? {};
+
+  Map<String, dynamic> toJson() => {
+        'optionId': optionId,
+        'creatureId': creatureId,
+        'spellLevel': spellLevel,
+        'currentHp': currentHp,
+        'tempHp': tempHp,
+        'conditions': conditions.toList(),
+      };
+
+  factory CompanionInstance.fromJson(Map<String, dynamic> j) =>
+      CompanionInstance(
+        optionId: j['optionId'] as String,
+        creatureId: j['creatureId'] as String,
+        spellLevel: j['spellLevel'] as int? ?? 0,
+        currentHp: j['currentHp'] as int? ?? 0,
+        tempHp: j['tempHp'] as int? ?? 0,
+        conditions: (j['conditions'] as List? ?? const [])
+            .map((e) => e as String)
+            .toSet(),
+      );
+}
+
 /// Estado mutable durante la partida. No influye en la ficha derivada
 /// (`ComputedSheet`); se persiste aparte y se guarda con debounce.
 class CombatState {
@@ -97,6 +150,10 @@ class CombatState {
   /// Conjuro en el que se está concentrando (nombre), o null.
   String? concentratingOn;
 
+  /// Compañeros invocados ahora mismo. Es una lista y no un mapa por opción
+  /// porque el Artillero de nivel 15 tiene dos cañones a la vez.
+  final List<CompanionInstance> companions;
+
   CombatState({
     this.currentHp = 0,
     this.tempHp = 0,
@@ -108,9 +165,11 @@ class CombatState {
     Map<String, int>? resourceUsage,
     Map<int, int>? spellSlotsUsed,
     this.concentratingOn,
+    List<CompanionInstance>? companions,
   })  : conditions = conditions ?? {},
         resourceUsage = resourceUsage ?? {},
-        spellSlotsUsed = spellSlotsUsed ?? {};
+        spellSlotsUsed = spellSlotsUsed ?? {},
+        companions = companions ?? [];
 
   Map<String, dynamic> toJson() => {
         'currentHp': currentHp,
@@ -125,6 +184,7 @@ class CombatState {
           for (final e in spellSlotsUsed.entries) '${e.key}': e.value
         },
         'concentratingOn': concentratingOn,
+        'companions': [for (final c in companions) c.toJson()],
       };
 
   factory CombatState.fromJson(Map<String, dynamic> j) => CombatState(
@@ -146,6 +206,10 @@ class CombatState {
             int.parse(e.key as String): e.value as int,
         },
         concentratingOn: j['concentratingOn'] as String?,
+        companions: [
+          for (final c in (j['companions'] as List? ?? const []))
+            CompanionInstance.fromJson((c as Map).cast<String, dynamic>()),
+        ],
       );
 }
 
@@ -158,7 +222,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 15;
+  static const int currentSchemaVersion = 16;
 
   final String id;
   String name;
@@ -708,6 +772,17 @@ class Character {
           migrated.putIfAbsent('languages', () => []);
           migrated.putIfAbsent('languageChoices', () => {});
           version = 15;
+          migrated['schemaVersion'] = version;
+        case 15:
+          // Los compañeros invocados viven dentro de `combat`. Una ficha vieja
+          // no tenía ninguno, así que arranca con la lista vacía: el cañón o el
+          // defensor se invocan de nuevo desde la ficha.
+          final raw = migrated['combat'];
+          final combat =
+              raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+          combat.putIfAbsent('companions', () => []);
+          migrated['combat'] = combat;
+          version = 16;
           migrated['schemaVersion'] = version;
       }
     }

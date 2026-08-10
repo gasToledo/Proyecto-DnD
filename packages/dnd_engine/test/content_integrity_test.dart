@@ -749,6 +749,123 @@ void main() {
     }
   });
 
+  group('Criaturas invocables', () {
+    /// Recorre todos los efectos del catálogo, incluidos los envueltos en un
+    /// [LeveledEffect]: un compañero declarado por nivel no debe escaparse del
+    /// chequeo solo por estar anidado.
+    Iterable<Effect> allEffects() sync* {
+      Iterable<Effect> flat(List<Effect> effects) sync* {
+        for (final e in effects) {
+          yield e;
+          if (e is LeveledEffect) yield* flat(e.effects);
+        }
+      }
+
+      for (final k in repo.classes.values) {
+        for (final f in k.features) {
+          yield* flat(f.effects);
+        }
+      }
+      for (final s in repo.subclasses.values) {
+        for (final f in s.features) {
+          yield* flat(f.effects);
+        }
+      }
+      for (final f in repo.feats.values) {
+        yield* flat(f.effects);
+      }
+      for (final r in repo.races.values) {
+        yield* flat(r.effects);
+      }
+      for (final l in repo.lineages.values) {
+        for (final f in l.features) {
+          yield* flat(f.effects);
+        }
+      }
+    }
+
+    test('el catálogo trae las formas de familiar y los compañeros de clase',
+        () {
+      expect(repo.creatures.length, greaterThanOrEqualTo(30));
+      for (final id in const [
+        'eldritch-cannon',
+        'steel-defender',
+        'beast-of-the-land',
+        'beast-of-the-sea',
+        'beast-of-the-sky',
+        'homunculus-servant',
+        'otherworldly-steed',
+      ]) {
+        expect(repo.creature(id), isNotNull, reason: id);
+      }
+    });
+
+    test('todo creatureId referenciado existe en el catálogo', () {
+      final referenced = <String>{};
+      for (final e in allEffects().whereType<CompanionEffect>()) {
+        expect(e.creatureIds, isNotEmpty, reason: e.id);
+        expect(e.maxActive, greaterThan(0), reason: e.id);
+        referenced.addAll(e.creatureIds);
+      }
+      expect(referenced, isNotEmpty);
+      for (final id in referenced) {
+        expect(repo.creature(id), isNotNull, reason: id);
+      }
+    });
+
+    test('todo requiresSpell apunta a un conjuro real', () {
+      for (final e in allEffects().whereType<CompanionEffect>()) {
+        if (e.requiresSpell == null) continue;
+        expect(repo.spell(e.requiresSpell!), isNotNull, reason: e.id);
+      }
+    });
+
+    test('toda fórmula evalúa de nivel 1 a 20 y con cualquier espacio', () {
+      for (final creature in repo.creatures.values) {
+        for (var level = 1; level <= 20; level++) {
+          final vars = CreatureVars.from(
+            level: level,
+            proficiencyBonus: proficiencyBonusForLevel(level),
+            abilityModifiers: {for (final a in Ability.values) a: 3},
+            spellAttackBonus: 6,
+            spellSaveDc: 14,
+            // Una criatura que no escala igual recibe un nivel de espacio: si
+            // alguna fórmula lo usa sin declararlo, se ve acá.
+            spellLevel: creature.scalesWithSpellLevel ? 1 + level ~/ 4 : 0,
+          );
+          expect(
+            () => creature.resolve(vars),
+            returnsNormally,
+            reason: '${creature.id} a nivel $level',
+          );
+        }
+      }
+    });
+
+    test('los tipos de daño de las acciones son válidos', () {
+      for (final creature in repo.creatures.values) {
+        for (final action in creature.actions) {
+          if (action.damageType == null) continue;
+          expect(
+            DamageType.fromId(action.damageType!),
+            isNotNull,
+            reason: '${creature.id}: ${action.name}',
+          );
+        }
+      }
+    });
+
+    test('una criatura hace round-trip por JSON', () {
+      final original = repo.creature('steel-defender')!;
+      final back = Creature.fromJson(original.toJson());
+      expect(back.ac, original.ac);
+      expect(back.hp, original.hp);
+      expect(back.abilityScores, original.abilityScores);
+      expect(back.actions.first.damage, original.actions.first.damage);
+      expect(back.traits.length, original.traits.length);
+    });
+  });
+
   test('FeatPrerequisite hace round-trip por JSON', () {
     const feat = Feat(
       id: 'hb-grappler',

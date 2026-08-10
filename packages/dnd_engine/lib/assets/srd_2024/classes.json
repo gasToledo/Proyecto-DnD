@@ -804,7 +804,8 @@
             "preparation": "prepared",
             "spellList": "wizard",
             "cantripsKnown": 3
-          }
+          },
+          { "type": "companion", "id": "familiar", "name": "Familiar", "requiresSpell": "find-familiar", "creatureIds": ["bat", "cat", "raven", "crab", "frog", "hawk", "lizard", "octopus", "rat", "seahorse", "spider", "weasel", "owl", "eagle", "vulture", "baboon", "goat", "jackal", "deer", "giant-fire-beetle", "scorpion", "hyena", "piranha", "badger"] }
         ]
       },
       {
@@ -1028,7 +1029,8 @@
         "name": "Compañero Salvaje",
         "description": "Gastas un uso de Forma Salvaje para lanzar Encontrar Familiar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Compañero Salvaje", "description": "Puedes gastar un uso de Forma Salvaje para lanzar Encontrar Familiar sin componentes materiales, convocando un espíritu feérico." }
+          { "type": "passiveTrait", "name": "Compañero Salvaje", "description": "Puedes gastar un uso de Forma Salvaje para lanzar Encontrar Familiar sin componentes materiales, convocando un espíritu feérico." },
+          { "type": "companion", "id": "familiar", "name": "Compañero Salvaje", "creatureIds": ["bat", "cat", "raven", "crab", "frog", "hawk", "lizard", "octopus", "rat", "seahorse", "spider", "weasel", "owl", "eagle", "vulture", "baboon", "goat", "jackal", "deer", "giant-fire-beetle", "scorpion", "hyena", "piranha", "badger"] }
         ]
       },
       {
@@ -1555,7 +1557,8 @@
         "description": "Siempre tenés preparado Hallar Corcel y lo lanzás gratis una vez por descanso largo.",
         "effects": [
           { "type": "alwaysPreparedSpell", "spellId": "find-steed" },
-          { "type": "passiveTrait", "name": "Corcel Fiel", "description": "Siempre tenés preparado Hallar Corcel. Además podés lanzarlo una vez sin gastar espacio de conjuro, y recuperás esa capacidad tras un descanso largo." }
+          { "type": "passiveTrait", "name": "Corcel Fiel", "description": "Siempre tenés preparado Hallar Corcel. Además podés lanzarlo una vez sin gastar espacio de conjuro, y recuperás esa capacidad tras un descanso largo." },
+          { "type": "companion", "id": "otherworldly-steed", "name": "Corcel Sobrenatural", "creatureIds": ["otherworldly-steed"] }
         ]
       },
       {
@@ -1784,7 +1787,8 @@
         "name": "Lanzamiento de Conjuros",
         "description": "Lanzas conjuros de Artífice usando Inteligencia y un foco de conjuro (Herramientas de Ladrón, de Manitas u otras Herramientas de Artesano con las que tengas competencia). Preparas conjuros de nivel 1+ tras un descanso largo; conoces 2 trucos a nivel 1, y aprendés otro a niveles 10 y 14.",
         "effects": [
-          { "type": "spellcasting", "ability": "intelligence", "progression": "half", "preparation": "prepared", "spellList": "artificer", "cantripsKnown": 2, "cantripIncreases": [10, 14] }
+          { "type": "spellcasting", "ability": "intelligence", "progression": "half", "preparation": "prepared", "spellList": "artificer", "cantripsKnown": 2, "cantripIncreases": [10, 14] },
+          { "type": "companion", "id": "homunculus-servant", "name": "Sirviente Homúnculo", "requiresSpell": "homunculus-servant", "creatureIds": ["homunculus-servant"] }
         ]
       },
       {

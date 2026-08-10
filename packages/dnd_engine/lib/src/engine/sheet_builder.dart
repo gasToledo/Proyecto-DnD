@@ -69,6 +69,15 @@ class SheetBuilder {
 
   final Map<String, ResourceEffect> _resources = {};
 
+  /// Compañeros concedidos, por id de opción. Gana el de mayor `maxActive`
+  /// porque el contenido declara el acumulado a cada nivel: el Artillero
+  /// vuelve a declarar el cañón a nivel 15 solo para pasar de uno a dos.
+  ///
+  /// Se guardan crudos: resolver las formas contra el catálogo y descartar las
+  /// que dependen de un conjuro que el personaje no tiene necesita el
+  /// repositorio, que vive en el compilador.
+  final Map<String, CompanionEffect> companions = {};
+
   /// Elecciones abiertas declaradas por el contenido, por grupo. Gana la de
   /// mayor [FeatureChoiceEffect.count], porque el contenido declara el
   /// acumulado a cada nivel y no el incremento.
@@ -246,6 +255,9 @@ class SheetBuilder {
         // El máximo puede depender de un modificador de característica que
         // todavía no está disponible acá; se resuelve en [resolveResources].
         _resources[id] = e;
+      case CompanionEffect(:final id, :final maxActive):
+        final prev = companions[id];
+        if (prev == null || maxActive > prev.maxActive) companions[id] = e;
     }
   }
 

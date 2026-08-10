@@ -301,7 +301,8 @@
         "type": "passiveTrait",
         "name": "Pacto de la Cadena",
         "description": "Aprendés Encontrar Familiar y podés lanzarlo como acción de magia sin gastar espacio. Al lanzarlo elegís una forma habitual o una especial: diablillo, duende, esfinge de las maravillas, esqueleto, pseudodragón, quasit, renacuajo slaad o serpiente venenosa. Además, al realizar la acción de Atacar podés renunciar a uno de tus ataques para que el familiar ataque con su reacción."
-      }
+      },
+      { "type": "companion", "id": "familiar", "name": "Familiar del Pacto", "creatureIds": ["imp", "sprite", "sphinx-of-wonder", "skeleton", "pseudodragon", "quasit", "poisonous-snake", "bat", "cat", "raven", "crab", "frog", "hawk", "lizard", "octopus", "rat", "seahorse", "spider", "weasel", "owl", "eagle", "vulture", "baboon", "goat", "jackal", "deer", "giant-fire-beetle", "scorpion", "hyena", "piranha", "badger"] }
     ]
   },
   {

@@ -630,6 +630,35 @@ void main() {
     });
   });
 
+  group('15 → 16: compañeros invocados', () {
+    Map<String, dynamic> at15({Map<String, dynamic>? combat}) => {
+          'schemaVersion': 15,
+          'id': 'artillero',
+          'name': 'Artillero',
+          'raceId': 'human',
+          'classId': 'artificer',
+          'backgroundId': 'sage',
+          'assignedScores': const <String, int>{},
+          if (combat != null) 'combat': combat,
+        };
+
+    test('una ficha sin compañeros queda con la lista vacía', () {
+      final migrated = Character.migrateJson(at15());
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect((migrated['combat'] as Map)['companions'], isEmpty);
+      expect(Character.fromJson(at15()).combat.companions, isEmpty);
+    });
+
+    test('no pisa el resto del estado de combate', () {
+      final character = Character.fromJson(
+        at15(combat: {'currentHp': 17, 'exhaustion': 2}),
+      );
+      expect(character.combat.currentHp, 17);
+      expect(character.combat.exhaustion, 2);
+      expect(character.combat.companions, isEmpty);
+    });
+  });
+
   test('rechaza una versión futura con un error comprensible', () {
     final future = {
       'schemaVersion': Character.currentSchemaVersion + 1,

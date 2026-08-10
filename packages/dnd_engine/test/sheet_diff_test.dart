@@ -77,4 +77,27 @@ void main() {
     final d = diffSheets(before, after);
     expect(d.abilityChanges[Ability.strength], 2);
   });
+
+  test('subir a Artillero de nivel 3 avisa del Cañón Arcano', () {
+    // El cañón dejó de ser un rasgo en prosa, así que sin `newCompanions` el
+    // resumen de subida de nivel no diría que lo ganaste.
+    Character artificer(int level) => Character(
+          id: 'vex',
+          name: 'Vex',
+          raceId: 'human',
+          classId: 'artificer',
+          subclassId: level >= 3 ? 'artillerist' : null,
+          backgroundId: 'sage',
+          level: level,
+          assignedScores: {for (final a in Ability.values) a: 12},
+          hpPerLevel: List.filled(level, 6),
+        );
+
+    final d = diffSheets(
+      compiler.compile(artificer(2)),
+      compiler.compile(artificer(3)),
+    );
+    expect(d.newCompanions.map((c) => c.id), ['eldritch-cannon']);
+    expect(d.hasChanges, isTrue);
+  });
 }

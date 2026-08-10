@@ -14,7 +14,6 @@ import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
 import 'portrait_image.dart';
-import 'settings_dialog.dart';
 
 /// Cómo se consigue el retrato. Antes los dos caminos convivían apilados en el
 /// mismo formulario, con el de archivo arriba de todo y separado por una regla
@@ -158,14 +157,6 @@ class _PortraitScreenState extends State<PortraitScreen> {
     includeWeapon: _providerId != 'azure',
   );
 
-  Future<void> _openSettings() async {
-    final saved = await showDialog<bool>(
-      context: context,
-      builder: (_) => SettingsDialog(api: widget.api),
-    );
-    if (saved == true) await _load();
-  }
-
   Future<void> _generate() async {
     final provider = _provider;
     if (provider == null) return;
@@ -277,16 +268,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Retrato'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Ajustes de IA',
-            onPressed: _openSettings,
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Retrato')),
       body: _loading
           ? const Center(child: AppBusyLabel('Cargando configuración…'))
           : _loadError != null
@@ -763,14 +745,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
     }
     return [
       const SizedBox(height: 20),
-      _sectionHeader(
-        'Motor de generación',
-        trailing: TextButton.icon(
-          onPressed: _openSettings,
-          icon: const Icon(Icons.tune, size: 15),
-          label: const Text('Ajustes'),
-        ),
-      ),
+      _sectionHeader('Motor de generación'),
       const SizedBox(height: 10),
       _providerGrid(),
       const SizedBox(height: 20),
@@ -913,7 +888,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
     ];
   }
 
-  Widget _sectionHeader(String label, {Widget? trailing}) => Row(
+  Widget _sectionHeader(String label) => Row(
     children: [
       Text(
         label.toUpperCase(),
@@ -925,7 +900,6 @@ class _PortraitScreenState extends State<PortraitScreen> {
       ),
       const SizedBox(width: 10),
       Expanded(child: Divider(color: context.palette.hairline)),
-      ?trailing,
     ],
   );
 

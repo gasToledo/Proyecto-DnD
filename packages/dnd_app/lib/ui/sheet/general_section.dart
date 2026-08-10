@@ -944,9 +944,12 @@ extension _SheetGeneralSection on _SheetScreenState {
       children: [
         for (var i = 0; i < a.length; i++) ...[
           Expanded(
-            child: Tooltip(
-              message: '${a[i].label}\n${a[i].description}',
-              waitDuration: const Duration(milliseconds: 400),
+            // Toque en vez de tooltip: el tooltip en el celular casi no se
+            // descubre, y este es justo el número que hay que poder explicar
+            // en la mesa cuando el DM pregunta de dónde sale.
+            child: InkWell(
+              onTap: () => _showAbilityBreakdown(s, a[i]),
+              borderRadius: BorderRadius.circular(12),
               child: AbilityPlaque(
                 abbr: a[i].abbr,
                 score: s.abilityScores[a[i]]!,
@@ -958,6 +961,108 @@ extension _SheetGeneralSection on _SheetScreenState {
           if (i < a.length - 1) const SizedBox(width: 8),
         ],
       ],
+    );
+  }
+
+  /// Explica de dónde sale una característica y qué tiradas dependen de ella.
+  ///
+  /// Existe por un caso concreto de mesa: el DM preguntó por qué Inteligencia
+  /// daba +7 y la ficha mostraba el resultado pero no el camino. Cada línea es
+  /// una suma verificable, no un número suelto.
+  void _showAbilityBreakdown(ComputedSheet s, Ability ability) {
+    final pal = context.palette;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final score = s.abilityScores[ability]!;
+    final mod = s.abilityModifiers[ability]!;
+    final bonuses = s.bonusesFor(ability);
+    final sc = s.spellcasting;
+
+    Widget line(String label, String value, {bool strong = false}) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: strong ? null : muted,
+                fontWeight: strong ? FontWeight.w600 : null,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: strong ? FontWeight.w600 : FontWeight.w500,
+              color: strong ? pal.gold : null,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Las habilidades que usan esta característica, con competencia o Pericia
+    // marcada: es el otro lugar donde aparece un "+7" que hay que justificar.
+    final skills = [
+      for (final sk in Skill.values)
+        if (sk.ability == ability) sk,
+    ];
+
+    _infoDialog(
+      ability.label,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            ability.description,
+            style: TextStyle(fontSize: 12, color: muted),
+          ),
+          const SizedBox(height: 14),
+          const Eyebrow('De dónde sale'),
+          line('Asignada en la creación', '${s.baseAbilityScore(ability)}'),
+          for (final b in bonuses)
+            line(
+              b.source.isEmpty ? 'Otro rasgo' : b.source,
+              '${b.amount >= 0 ? '+' : ''}${b.amount}',
+            ),
+          const Divider(height: 16),
+          line('Puntuación', '$score', strong: true),
+          line('Modificador', _signed(mod), strong: true),
+
+          const SizedBox(height: 16),
+          const Eyebrow('Qué se tira con esto'),
+          line(
+            'Salvación'
+            '${s.savingThrowProficiencies.contains(ability) ? ' (competente)' : ''}',
+            _signed(s.savingThrow(ability)),
+          ),
+          for (final sk in skills)
+            line(
+              '${sk.label}'
+              '${s.expertiseSkills.contains(sk.id)
+                  ? ' (pericia)'
+                  : s.skillProficiencies.contains(sk.id)
+                  ? ' (competente)'
+                  : ''}',
+              _signed(s.skillModifier(sk.id)),
+            ),
+          if (sc != null && sc.ability == ability) ...[
+            line('Ataque con conjuros', _signed(sc.attackBonus)),
+            line('CD de salvación', '${sc.saveDc}'),
+          ],
+          const SizedBox(height: 10),
+          Text(
+            'Competencia +${s.proficiencyBonus} a nivel ${s.level}. '
+            'Las tiradas de arriba ya la incluyen donde corresponde.',
+            style: TextStyle(fontSize: 11, color: muted),
+          ),
+        ],
+      ),
     );
   }
 

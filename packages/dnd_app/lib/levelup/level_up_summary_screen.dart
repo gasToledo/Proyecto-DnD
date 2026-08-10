@@ -194,6 +194,23 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
                     ],
                   ),
                 ],
+                if (diff.newCompanions.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const Eyebrow('Compañeros nuevos'),
+                  DenseRows(
+                    children: [
+                      for (final c in diff.newCompanions)
+                        _featureRow(
+                          context,
+                          c.name,
+                          c.forms.length == 1
+                              ? 'Se invoca desde la pestaña Combate.'
+                              : '${c.forms.length} formas a elegir, desde la '
+                                    'pestaña Combate.',
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

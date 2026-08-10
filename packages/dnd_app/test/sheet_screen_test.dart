@@ -575,4 +575,113 @@ void main() {
       expect(find.textContaining('todavía no se aplica'), findsNothing);
     });
   });
+
+  group('Compañeros invocados', () {
+    /// La tarjeta de Compañeros va debajo de la de Ataques, así que sus
+    /// controles caen fuera de la ventana del test. Se scrollea antes de tocar.
+    Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+      await tester.ensureVisible(finder);
+      await tester.pumpAndSettle();
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
+    }
+
+    Character artillerist({int level = 5}) => Character(
+      id: 'artillero',
+      name: 'Vex',
+      raceId: 'human',
+      classId: 'artificer',
+      subclassId: 'artillerist',
+      backgroundId: 'sage',
+      level: level,
+      assignedScores: const {
+        Ability.strength: 10,
+        Ability.dexterity: 14,
+        Ability.constitution: 14,
+        Ability.intelligence: 18,
+        Ability.wisdom: 10,
+        Ability.charisma: 8,
+      },
+      hpPerLevel: List.filled(level, 5),
+      combat: CombatState(currentHp: 30),
+    );
+
+    testWidgets('se invoca el cañón, se le pega y los PG quedan guardados', (
+      tester,
+    ) async {
+      final character = artillerist();
+      await pumpSheet(tester, character);
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Compañeros'), findsOneWidget);
+      expect(find.text('No hay ninguno invocado.'), findsOneWidget);
+
+      await tapVisible(tester, find.text('Invocar'));
+      await tester.pumpAndSettle();
+
+      // PG 5 × nivel de Artífice, sin preguntar forma: el cañón es uno solo.
+      expect(character.combat.companions, hasLength(1));
+      expect(find.text('25 / 25 PG'), findsOneWidget);
+      expect(find.text('CA 18'), findsOneWidget);
+
+      final amounts = find.widgetWithText(TextField, 'Cantidad');
+      await tester.enterText(amounts.last, '7');
+      await tapVisible(tester, find.widgetWithText(FilledButton, 'Daño').last);
+      await tester.pumpAndSettle();
+
+      expect(character.combat.companions.single.currentHp, 18);
+      expect(find.text('18 / 25 PG'), findsOneWidget);
+
+      // El daño al compañero no toca los PG del personaje.
+      expect(character.combat.currentHp, 30);
+    });
+
+    testWidgets('despedirlo lo saca de la ficha', (tester) async {
+      final character = artillerist();
+      await pumpSheet(tester, character);
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Invocar'));
+      await tester.pumpAndSettle();
+
+      await tapVisible(tester, find.text('Despedir'));
+      await tester.pumpAndSettle();
+
+      expect(character.combat.companions, isEmpty);
+      expect(find.text('No hay ninguno invocado.'), findsOneWidget);
+
+      // Invocar deja un SnackBar con su temporizador; sin agotarlo el binding
+      // falla al desmontar el árbol.
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('el descanso largo devuelve al cañón a sus PG máximos', (
+      tester,
+    ) async {
+      final character = artillerist();
+      await pumpSheet(tester, character);
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Invocar'));
+      await tester.pumpAndSettle();
+
+      final amounts = find.widgetWithText(TextField, 'Cantidad');
+      await tester.enterText(amounts.last, '10');
+      await tapVisible(tester, find.widgetWithText(FilledButton, 'Daño').last);
+      await tester.pumpAndSettle();
+      expect(character.combat.companions.single.currentHp, 15);
+
+      await tapVisible(tester, find.text('Descanso largo'));
+      await tester.pumpAndSettle();
+      expect(character.combat.companions.single.currentHp, 25);
+    });
+
+    testWidgets('un Guerrero no ve la tarjeta', (tester) async {
+      await pumpSheet(tester, demoSagan());
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.text('Compañeros'), findsNothing);
+    });
+  });
 }

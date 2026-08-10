@@ -40,3 +40,4 @@ flutter:
     - packages/dnd_engine/assets/srd_2024/weapons.json
     - packages/dnd_engine/assets/srd_2024/armor.json
     - packages/dnd_engine/assets/srd_2024/spells.json
+    - packages/dnd_engine/assets/srd_2024/creatures.json

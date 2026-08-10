@@ -168,6 +168,12 @@ class _SheetScreenState extends State<SheetScreen> {
   final Set<String> _collapsedCards = {};
 
   final _amountCtrl = TextEditingController();
+
+  /// Cantidad para los compañeros invocados. Aparte del [_amountCtrl] del
+  /// personaje a propósito: en la mesa se cura al defensor mientras el número
+  /// del propio daño sigue escrito arriba, y compartir el campo obligaría a
+  /// borrarlo cada vez.
+  final _companionAmountCtrl = TextEditingController();
   // Controlador propio de las notas: sobrevive los cambios de tab y evita el
   // footgun de TextFormField(initialValue:), que ignora cambios posteriores.
   late final _notesCtrl = TextEditingController(text: widget.character.notes);
@@ -175,11 +181,15 @@ class _SheetScreenState extends State<SheetScreen> {
   @override
   void dispose() {
     _amountCtrl.dispose();
+    _companionAmountCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
 
   int get _amount => int.tryParse(_amountCtrl.text.trim()) ?? 0;
+
+  int get _companionAmount =>
+      int.tryParse(_companionAmountCtrl.text.trim()) ?? 0;
 
   void _mutateCombat(void Function() change) {
     setState(change);

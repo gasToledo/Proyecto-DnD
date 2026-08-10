@@ -16,6 +16,7 @@ void main() {
     weaponMasterySlotsGained: 0,
     newPassives: [],
     newResources: [],
+    newCompanions: [],
     newSkillProficiencies: [],
     newSaveProficiencies: [],
     speedGained: 0,

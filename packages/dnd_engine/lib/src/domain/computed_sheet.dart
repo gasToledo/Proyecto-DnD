@@ -379,6 +379,27 @@ class Spellcasting {
       };
 }
 
+/// Un bonus a una característica junto con **de dónde salió**.
+///
+/// El total por sí solo no se puede explicar en la mesa: cuando el DM pregunta
+/// por qué Inteligencia es 20 y no 18, la respuesta ("+2 del trasfondo") no se
+/// puede reconstruir desde el número final. Por eso el acumulador de
+/// `SheetBuilder` guarda además cada aporte con su fuente.
+class AbilityBonus {
+  final Ability ability;
+  final int amount;
+
+  /// Nombre legible de la fuente, tal como lo declara el contenido: el nombre
+  /// del trasfondo, de la dote, de la especie. No es un id.
+  final String source;
+
+  const AbilityBonus({
+    required this.ability,
+    required this.amount,
+    required this.source,
+  });
+}
+
 /// Resultado **derivado y de solo lectura** de compilar un personaje.
 /// La UI de la ficha lee de aquí; nunca recalcula a mano.
 class ComputedSheet {
@@ -386,6 +407,13 @@ class ComputedSheet {
   final int proficiencyBonus;
   final Map<Ability, int> abilityScores;
   final Map<Ability, int> abilityModifiers;
+
+  /// Cada bonus que se sumó a una característica, con su fuente, **en el orden
+  /// en que se aplicaron**. Es lo que permite explicar un valor final; el
+  /// puntaje asignado en la creación no está acá, se deduce con
+  /// [baseAbilityScore].
+  final List<AbilityBonus> abilityBonuses;
+
   final Set<Ability> savingThrowProficiencies;
   final Set<String> skillProficiencies;
 
@@ -487,6 +515,7 @@ class ComputedSheet {
     required this.proficiencyBonus,
     required this.abilityScores,
     required this.abilityModifiers,
+    this.abilityBonuses = const [],
     required this.savingThrowProficiencies,
     required this.skillProficiencies,
     this.expertiseSkills = const {},
@@ -518,6 +547,19 @@ class ComputedSheet {
     this.languageChoiceSlots = const [],
     this.spellcasting,
   });
+
+  /// Los bonus que recibió [a], en orden de aplicación.
+  List<AbilityBonus> bonusesFor(Ability a) => [
+        for (final b in abilityBonuses)
+          if (b.ability == a) b
+      ];
+
+  /// El puntaje **antes** de cualquier bonus: lo que se asignó en la creación.
+  /// Se deduce restando en vez de guardarse aparte, así no hay dos fuentes de
+  /// verdad que se puedan desincronizar.
+  int baseAbilityScore(Ability a) =>
+      abilityScores[a]! -
+      bonusesFor(a).fold<int>(0, (sum, b) => sum + b.amount);
 
   /// Tirada de salvación total para [a] (mod + competencia si aplica).
   int savingThrow(Ability a) =>

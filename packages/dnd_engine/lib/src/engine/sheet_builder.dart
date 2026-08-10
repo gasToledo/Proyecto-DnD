@@ -14,6 +14,10 @@ class SheetBuilder {
     for (final a in Ability.values) a: 0,
   };
 
+  /// Los mismos aportes que suma [abilityBonuses], pero uno por uno y con su
+  /// fuente. El mapa responde "cuánto"; esta lista responde "por qué".
+  final List<AbilityBonus> abilityBonusSources = [];
+
   int speed = 30;
   int? darkvision;
 
@@ -105,17 +109,34 @@ class SheetBuilder {
     }).toList();
   }
 
-  void addAbilityBonus(Ability a, int amount) =>
-      abilityBonuses[a] = abilityBonuses[a]! + amount;
+  /// Suma [amount] a [a] y **anota de dónde vino**. El total sin la
+  /// procedencia no se puede explicar después: es lo que hacía imposible
+  /// responder "¿por qué tengo 20 de Inteligencia?" desde la ficha.
+  ///
+  /// [source] queda vacío solo si quien llama no sabe la fuente; la UI trata
+  /// esos aportes como anónimos en vez de inventarles un nombre.
+  void addAbilityBonus(Ability a, int amount, {String source = ''}) {
+    abilityBonuses[a] = abilityBonuses[a]! + amount;
+    abilityBonusSources.add(
+      AbilityBonus(ability: a, amount: amount, source: source),
+    );
+  }
 
   int finalScore(Ability a) => (baseScores[a] ?? 10) + abilityBonuses[a]!;
 
   /// Interpreta un efecto sobre este acumulador. Único lugar donde la semántica
   /// de cada tipo de efecto vive; agregar contenido no toca este switch.
-  void applyEffect(Effect e, {Ability? spellAbilityOverride}) {
+  ///
+  /// [sourceName] es el nombre legible de la fuente que trajo el efecto, para
+  /// que los bonus a características puedan explicarse. Lo pasa `applyAll`.
+  void applyEffect(
+    Effect e, {
+    Ability? spellAbilityOverride,
+    String sourceName = '',
+  }) {
     switch (e) {
       case AbilityScoreBonusEffect(:final ability, :final amount):
-        addAbilityBonus(ability, amount);
+        addAbilityBonus(ability, amount, source: sourceName);
       case SetSpeedEffect(:final feet):
         speed = feet;
       case SpeedBonusEffect(:final feet):
@@ -184,7 +205,11 @@ class SheetBuilder {
         // cada fuente vean el contenido y no el envoltorio. Esto es la red para
         // quien use SheetBuilder directo, que es público.
         if (level >= minLevel) {
-          applyAll(effects, spellAbilityOverride: spellAbilityOverride);
+          applyAll(
+            effects,
+            spellAbilityOverride: spellAbilityOverride,
+            sourceName: sourceName,
+          );
         }
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
@@ -227,9 +252,14 @@ class SheetBuilder {
   void applyAll(
     Iterable<Effect> effects, {
     Ability? spellAbilityOverride,
+    String sourceName = '',
   }) {
     for (final effect in effects) {
-      applyEffect(effect, spellAbilityOverride: spellAbilityOverride);
+      applyEffect(
+        effect,
+        spellAbilityOverride: spellAbilityOverride,
+        sourceName: sourceName,
+      );
     }
   }
 }

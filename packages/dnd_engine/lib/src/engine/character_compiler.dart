@@ -57,16 +57,27 @@ class CharacterCompiler {
       builder.applyAll(
         flat,
         spellAbilityOverride: spellAbilityOverride,
+        sourceName: name,
       );
       proficiencySources.add((id: id, name: name, effects: flat));
     }
 
     if (race != null) builder.speed = race.speed;
 
-    // Bonos de característica explícitos (trasfondo 2024 + ASI).
-    c.backgroundAbilityBonuses.forEach(builder.addAbilityBonus);
+    // Bonos de característica explícitos (trasfondo 2024 + ASI). No vienen de
+    // un efecto, así que el nombre de la fuente se arma acá: es el único lugar
+    // que sabe de qué trasfondo o de qué nivel salieron.
+    final backgroundLabel =
+        background == null ? 'Trasfondo' : 'Trasfondo: ${background.name}';
+    c.backgroundAbilityBonuses.forEach(
+      (a, amount) =>
+          builder.addAbilityBonus(a, amount, source: backgroundLabel),
+    );
     for (final asi in c.asiChoices) {
-      asi.abilityIncreases.forEach(builder.addAbilityBonus);
+      asi.abilityIncreases.forEach(
+        (a, amount) => builder.addAbilityBonus(a, amount,
+            source: 'Mejora de nivel ${asi.level}'),
+      );
     }
 
     // Efectos de raza, clase (por nivel), trasfondo y dotes.
@@ -418,6 +429,7 @@ class CharacterCompiler {
       proficiencyBonus: profBonus,
       abilityScores: scores,
       abilityModifiers: mods,
+      abilityBonuses: List.unmodifiable(builder.abilityBonusSources),
       savingThrowProficiencies: builder.saveProficiencies,
       skillProficiencies: builder.skillProficiencies,
       expertiseSkills: builder.expertiseSkills,

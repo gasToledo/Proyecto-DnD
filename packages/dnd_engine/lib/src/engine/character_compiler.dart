@@ -540,6 +540,7 @@ class CharacterCompiler {
           source: sourceNames[e.id] ?? '',
           forms: forms,
           maxActive: e.maxActive,
+          spellId: e.requiresSpell,
           // El piso sale del conjuro, no del contenido de la criatura: es el
           // mismo dato y tenerlo dos veces es tenerlo mal una vez.
           minSpellLevel: e.requiresSpell == null

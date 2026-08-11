@@ -106,7 +106,9 @@ class CombatOps {
       c.resourceUsage[r.id] = 0;
     }
     c.spellSlotsUsed.clear();
-    c.concentratingOn = null;
+    // Por la misma vía que el botón de terminar: el descanso corta la
+    // concentración, y con ella se van los espíritus invocados.
+    endConcentration(c);
     if (companionMaxHp != null) {
       for (final companion in c.companions) {
         companion.currentHp = companionMaxHp(companion);
@@ -139,14 +141,24 @@ class CombatOps {
     return max(0, available - (c.spellSlotsUsed[slotLevel] ?? 0));
   }
 
-  /// Inicia (o reemplaza) la concentración en un conjuro.
+  /// Inicia (o reemplaza) la concentración en un conjuro. Reemplazarla rompe la
+  /// anterior, así que se lleva puestos a los compañeros que la sostenían.
   static void startConcentration(CombatState c, String spell) {
+    _dismissConcentrationCompanions(c);
     c.concentratingOn = spell;
   }
 
-  /// Termina la concentración actual.
+  /// Termina la concentración actual y despide a lo que dependía de ella.
   static void endConcentration(CombatState c) {
+    _dismissConcentrationCompanions(c);
     c.concentratingOn = null;
+  }
+
+  /// Los compañeros que sostiene un conjuro de concentración desaparecen con
+  /// ella. Los que no dependen de ninguna —el cañón, el defensor, el familiar—
+  /// se quedan donde están.
+  static void _dismissConcentrationCompanions(CombatState c) {
+    c.companions.removeWhere((i) => i.concentration);
   }
 
   /// Gasta un dado de golpe para curarse (tirada + mod. de CON). Devuelve los
@@ -178,12 +190,22 @@ class CombatOps {
   /// lugar de rechazar la invocación. Es lo que dicen las reglas: volver a
   /// lanzar Encontrar Familiar le cambia la forma al que había, y solo puede
   /// haber un cañón a la vez.
+  ///
+  /// [concentration] marca que lo sostiene un conjuro de concentración, y hace
+  /// dos cosas: el compañero se va cuando la concentración termina, y empezarla
+  /// rompe la anterior (con lo que se lleva puesto al compañero que hubiera).
   static CompanionInstance summonCompanion(
     CombatState c,
     CompanionOption option,
     Creature form,
-    CreatureVars vars,
-  ) {
+    CreatureVars vars, {
+    bool concentration = false,
+    String concentratingOn = '',
+  }) {
+    // Antes de nada: empezar una concentración nueva rompe la que hubiera, y
+    // eso puede llevarse por delante a un compañero que ya estaba en juego.
+    if (concentration) startConcentration(c, concentratingOn);
+
     final active = c.companions.where((i) => i.optionId == option.id).toList();
     // Se retiran los más viejos hasta dejar un lugar libre para el nuevo.
     for (var i = 0; i <= active.length - option.maxActive; i++) {
@@ -193,6 +215,7 @@ class CombatOps {
       optionId: option.id,
       creatureId: form.id,
       spellLevel: vars['spellLevel'] ?? 0,
+      concentration: concentration,
       currentHp: resolveCreatureInt(form.hp, vars),
     );
     c.companions.add(instance);

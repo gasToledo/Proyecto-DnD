@@ -95,6 +95,10 @@ class CompanionInstance {
   /// congela al invocar: subir de nivel no mejora un corcel ya convocado.
   final int spellLevel;
 
+  /// Se lo invocó con un conjuro de concentración, así que se va cuando la
+  /// concentración termina.
+  final bool concentration;
+
   int currentHp;
   int tempHp;
   final Set<String> conditions;
@@ -103,6 +107,7 @@ class CompanionInstance {
     required this.optionId,
     required this.creatureId,
     this.spellLevel = 0,
+    this.concentration = false,
     this.currentHp = 0,
     this.tempHp = 0,
     Set<String>? conditions,
@@ -112,6 +117,7 @@ class CompanionInstance {
         'optionId': optionId,
         'creatureId': creatureId,
         'spellLevel': spellLevel,
+        'concentration': concentration,
         'currentHp': currentHp,
         'tempHp': tempHp,
         'conditions': conditions.toList(),
@@ -122,6 +128,7 @@ class CompanionInstance {
         optionId: j['optionId'] as String,
         creatureId: j['creatureId'] as String,
         spellLevel: j['spellLevel'] as int? ?? 0,
+        concentration: j['concentration'] as bool? ?? false,
         currentHp: j['currentHp'] as int? ?? 0,
         tempHp: j['tempHp'] as int? ?? 0,
         conditions: (j['conditions'] as List? ?? const [])

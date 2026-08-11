@@ -663,6 +663,65 @@ void main() {
       expect(instance.currentHp, 5);
     });
 
+    test('un compañero de concentración se va al cortarla', () {
+      final held = CombatOps.summonCompanion(
+        combat,
+        option,
+        form,
+        vars,
+        concentration: true,
+        concentratingOn: 'Invocar Dragón',
+      );
+      expect(combat.concentratingOn, 'Invocar Dragón');
+      expect(held.concentration, isTrue);
+
+      CombatOps.endConcentration(combat);
+
+      expect(combat.companions, isEmpty);
+      expect(combat.concentratingOn, isNull);
+    });
+
+    test('concentrarse en otra cosa se lleva puesto al espíritu', () {
+      CombatOps.summonCompanion(
+        combat,
+        option,
+        form,
+        vars,
+        concentration: true,
+        concentratingOn: 'Invocar Dragón',
+      );
+      CombatOps.startConcentration(combat, 'Volar');
+
+      expect(combat.companions, isEmpty);
+      expect(combat.concentratingOn, 'Volar');
+    });
+
+    test('el que no depende de la concentración se queda', () {
+      // El cañón y el defensor no los sostiene ningún conjuro.
+      final cannon = CombatOps.summonCompanion(combat, option, form, vars);
+      CombatOps.startConcentration(combat, 'Invocar Dragón');
+      CombatOps.endConcentration(combat);
+
+      expect(combat.companions, [cannon]);
+    });
+
+    test('el descanso largo corta la concentración y sus espíritus', () {
+      final held = CombatOps.summonCompanion(
+        combat,
+        option,
+        form,
+        vars,
+        concentration: true,
+        concentratingOn: 'Invocar Dragón',
+      );
+      CombatOps.damageCompanion(combat, held, 5);
+
+      CombatOps.longRest(combat, 40, const [], 5, companionMaxHp: (_) => 30);
+
+      expect(combat.companions, isEmpty);
+      expect(combat.concentratingOn, isNull);
+    });
+
     test('el estado sobrevive a un ida y vuelta por JSON', () {
       final instance = CombatOps.summonCompanion(combat, option, form, vars);
       CombatOps.damageCompanion(combat, instance, 7);
@@ -676,6 +735,21 @@ void main() {
       expect(back.creatureId, 'defender');
       expect(back.currentHp, 23);
       expect(back.conditions, {'prone'});
+      expect(back.concentration, isFalse);
+    });
+
+    test('la marca de concentración también sobrevive al guardado', () {
+      CombatOps.summonCompanion(
+        combat,
+        option,
+        form,
+        vars,
+        concentration: true,
+        concentratingOn: 'Invocar Dragón',
+      );
+      final restored = CombatState.fromJson(combat.toJson());
+      expect(restored.companions.single.concentration, isTrue);
+      expect(restored.concentratingOn, 'Invocar Dragón');
     });
   });
 }

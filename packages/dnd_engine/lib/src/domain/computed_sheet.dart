@@ -59,6 +59,11 @@ class CompanionOption {
   final List<Creature> forms;
   final int maxActive;
 
+  /// Conjuro que hay que lanzar para invocarlo, o null si lo concede un rasgo
+  /// por sí solo (el Cañón Arcano, el Defensor de Acero). Es lo que decide si
+  /// invocarlo gasta un espacio y si arranca una concentración.
+  final String? spellId;
+
   /// Nivel mínimo del espacio con que se lo puede invocar: el del conjuro que
   /// lo concede, o 0 si no depende de ninguno.
   ///
@@ -73,6 +78,7 @@ class CompanionOption {
     required this.source,
     required this.forms,
     this.maxActive = 1,
+    this.spellId,
     this.minSpellLevel = 0,
   });
 

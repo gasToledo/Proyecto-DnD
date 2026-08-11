@@ -206,11 +206,6 @@ class ApiClient {
     return _json(response)['key'] as String;
   }
 
-  /// URL del mismo origen que sirve el retrato: la autorización viaja en la
-  /// cookie de sesión, no hace falta que este cliente la agregue (ver
-  /// capacidad `portrait-storage`).
-  Uri portraitUrl(String portraitKey) => _uri('/api/portraits/$portraitKey');
-
   /// Bytes de un retrato, para armar un respaldo ZIP en el navegador (ver
   /// `TransferService`). `null` si el retrato ya no existe: un respaldo no
   /// debe fallar por completo por una referencia huérfana (misma tolerancia

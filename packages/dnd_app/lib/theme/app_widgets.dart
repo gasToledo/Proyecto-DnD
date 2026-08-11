@@ -495,8 +495,8 @@ class Medallion extends StatelessWidget {
     final hasEmblem = portraitKey == null && emblemIcon != null;
     final accent = emblemColor ?? p.gold;
 
-    // Los retratos se generan a 768 o 1024 px de lado (ver `portrait_provider`
-    // y `azure_image_service`) y este círculo mide menos de 100: dibujarlos
+    // Los retratos se generan a 768 o 1024 px de lado (ver `portrait_provider`)
+    // y este círculo mide menos de 100: dibujarlos
     // tal cual obliga a reducirlos unas diez veces en cada píxel, y no hay
     // calidad de filtro que lo salve. Con `low` el resultado sale dentado; con
     // `medium`, lavado. Son dos caras de lo mismo.

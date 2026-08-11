@@ -31,13 +31,6 @@ class CharactersController extends ChangeNotifier {
 
   CharactersController(this.api);
 
-  /// Sin equivalente en el servidor: un documento corrupto no existe como
-  /// concepto en Postgres. Se conservan vacías para no obligar a la UI del
-  /// dashboard a distinguir entre "no hay avisos" y "esta plataforma no los
-  /// tiene".
-  List<Object> get recoveryIssues => const [];
-  List<Object> get migrationBackups => const [];
-
   ApiException? get lastSaveError => _lastSaveError;
   bool get isSaving => _debouncers.isNotEmpty || _saveQueues.isNotEmpty;
   CharacterSaveState get saveState => isSaving

@@ -58,9 +58,6 @@ class SettingsService {
 
   SettingsService(this.api);
 
-  /// Sin equivalente en el servidor (ver `CharactersController`).
-  final List<Object> recoveryIssues = const [];
-
   Future<AppSettings> load() async {
     final document = await api.loadSettingsDocument();
     return AppSettings.fromJson(document);

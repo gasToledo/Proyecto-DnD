@@ -16,10 +16,6 @@ class HomebrewStore {
   final Map<String, Background> backgrounds = {};
   final Map<String, Spell> spells = {};
 
-  /// Sin equivalente en el servidor (ver `CharactersController`).
-  final List<Object> recoveryIssues = const [];
-  final List<Object> migrationBackups = const [];
-
   HomebrewStore(this.api);
 
   Future<void> load() async {

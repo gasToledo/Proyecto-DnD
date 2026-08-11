@@ -96,7 +96,7 @@ class _BootstrapState extends State<_Bootstrap> {
       return Completer<_AppData>().future;
     }
 
-    final repo = await AssetContentLoader.loadOfficial();
+    final repo = await loadOfficialContent();
     // Fusiona el contenido homebrew sobre el oficial (mismo esquema).
     final homebrew = HomebrewStore(_api);
     await homebrew.load();

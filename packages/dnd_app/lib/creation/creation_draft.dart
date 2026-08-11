@@ -20,10 +20,6 @@ enum AbilitySpreadMode { twoOne, oneOneOne }
 /// se sube y se baja contra un presupuesto compartido.
 enum ScoreMethod { standardArray, roll4d6, pointBuy, manual }
 
-/// Los métodos que no reparten [CreationDraft.pool].
-bool scoreMethodUsesPool(ScoreMethod method) =>
-    method == ScoreMethod.standardArray || method == ScoreMethod.roll4d6;
-
 /// Rango aceptado al escribir a mano. Es el rango absoluto de 5e, no el de
 /// generación: si el valor sale de 3-18 el motor ya avisa (sin bloquear).
 const manualScoreMin = 1;
@@ -490,14 +486,6 @@ class CreationDraft {
     ...proficiencyChoiceSlots,
     ...expertiseChoiceSlots,
   ];
-
-  /// Cuántas competencias por dote faltan elegir, contando la Pericia.
-  int get pendingProficiencyChoices {
-    return allProficiencyChoiceSlots.fold<int>(
-      0,
-      (n, slot) => n + slot.pending,
-    );
-  }
 
   /// Saca de la selección lo que dejó de ser elegible: cambiar de dote o de
   /// trasfondo puede invalidar una elección ya hecha, y dejarla puesta daría

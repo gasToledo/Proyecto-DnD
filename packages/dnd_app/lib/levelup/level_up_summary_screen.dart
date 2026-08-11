@@ -211,6 +211,19 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
                     ],
                   ),
                 ],
+                if (diff.wildShapeFormsGained > 0) ...[
+                  const SizedBox(height: 22),
+                  const Eyebrow('Forma Salvaje'),
+                  DenseRows(
+                    children: [
+                      _featureRow(
+                        context,
+                        '${diff.wildShapeFormsGained} formas más',
+                        'Anotá las nuevas desde la pestaña Combate.',
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

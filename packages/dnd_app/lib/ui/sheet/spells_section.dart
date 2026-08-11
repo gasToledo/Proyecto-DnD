@@ -113,6 +113,35 @@ extension _SheetSpellsSection on _SheetScreenState {
               ),
             ],
 
+            // Transformado no podés lanzar, salvo que un rasgo lo levante
+            // (Conjurar como Bestia). El nivel al que eso pasa lo declara el
+            // contenido, no este `if`.
+            if (wildShapeForm case final beast?
+                when !(sheetArg.wildShape?.canCast ?? false)) ...[
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: pal.gold),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.block, size: 18, color: pal.gold),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'En forma de ${beast.name} no podés lanzar conjuros.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             if (combat.concentratingOn != null) ...[
               const SizedBox(height: 14),
               Container(

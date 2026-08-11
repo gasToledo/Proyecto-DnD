@@ -182,6 +182,13 @@ extension _SheetNavigation on _SheetScreenState {
           ],
         ),
         const SizedBox(height: 16),
+        // Va arriba de las placas y en todas las pestañas: son justo los
+        // números que cambiaron, y una ficha que muestra otra CA sin decir por
+        // qué se lee como un error de la app.
+        if (wildShapeForm case final beast?) ...[
+          _wildShapeBanner(beast),
+          const SizedBox(height: 16),
+        ],
         _statPlaques(s),
         const SectionRule(),
         _tabContent(_tab),

@@ -157,7 +157,19 @@ class _SheetScreenState extends State<SheetScreen> {
       _sheetCache = CharacterCompiler(repo).compile(_c);
       _sheetFor = _c;
     }
-    return _sheetCache!;
+    // La Forma Salvaje se aplica encima y no se cachea: la caché va por
+    // identidad de _c, y transformarse muta el estado de combate in situ sin
+    // producir un _c nuevo. Es barato —copiar campos y resolver un perfil sin
+    // fórmulas— y así ninguna tarjeta tiene que acordarse de que sos un oso.
+    final beast = wildShapeForm;
+    return beast == null ? _sheetCache! : applyWildShape(_sheetCache!, beast);
+  }
+
+  /// La bestia en la que está transformado, o null. Null también si el
+  /// catálogo ya no la tiene: la ficha vuelve a su forma en vez de romperse.
+  Creature? get wildShapeForm {
+    final id = _c.combat.wildShapeCreatureId;
+    return id == null ? null : repo.creature(id);
   }
 
   /// Tarjetas plegadas, por título. Vive en memoria y no en los ajustes: estos

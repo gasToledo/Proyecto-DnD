@@ -953,4 +953,138 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
     });
   });
+
+  group('Forma Salvaje', () {
+    Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+      await tester.ensureVisible(finder);
+      await tester.pumpAndSettle();
+      await tester.tap(finder);
+      await tester.pumpAndSettle();
+    }
+
+    Character druid({int level = 4, List<String> forms = const ['wolf']}) =>
+        Character(
+          id: 'druida',
+          name: 'Sagan',
+          raceId: 'human',
+          classId: 'druid',
+          backgroundId: 'sage',
+          level: level,
+          wildShapeForms: forms,
+          assignedScores: const {
+            Ability.strength: 8,
+            Ability.dexterity: 12,
+            Ability.constitution: 14,
+            Ability.intelligence: 13,
+            Ability.wisdom: 16,
+            Ability.charisma: 10,
+          },
+          hpPerLevel: List.filled(level, 5),
+          combat: CombatState(currentHp: 26),
+        );
+
+    testWidgets('transformarse cambia los números de la ficha y volver los '
+        'devuelve', (tester) async {
+      final character = druid();
+      await pumpSheet(tester, character, size: const Size(900, 2400));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Forma Salvaje'), findsWidgets);
+      // La CA del druida sin armadura: 10 + DES.
+      expect(find.text('11'), findsWidgets);
+
+      await tapVisible(tester, find.text('Transformarse'));
+
+      expect(character.combat.wildShapeCreatureId, 'wolf');
+      expect(find.text('Transformado en Lobo'), findsWidgets);
+      // La CA pasa a ser la del lobo y el mordisco aparece entre los ataques.
+      expect(find.text('12'), findsWidgets);
+      expect(find.text('Mordisco'), findsWidgets);
+      // Los PG no se tocan; los temporales son el nivel de druida.
+      expect(character.combat.currentHp, 26);
+      expect(character.combat.tempHp, 4);
+      expect(tester.takeException(), isNull);
+
+      await tapVisible(tester, find.text('Volver'));
+      expect(character.combat.wildShapeCreatureId, isNull);
+      expect(find.text('Mordisco'), findsNothing);
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('transformado avisa que no podés lanzar conjuros', (
+      tester,
+    ) async {
+      final character = druid();
+      await pumpSheet(tester, character, size: const Size(900, 2400));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Transformarse'));
+
+      expect(
+        find.text('En forma de Lobo no podés lanzar conjuros.'),
+        findsOneWidget,
+      );
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('anotar formas guarda la elección en el personaje', (
+      tester,
+    ) async {
+      final character = druid(forms: const []);
+      final controller = await pumpSheet(
+        tester,
+        character,
+        size: const Size(900, 2400),
+      );
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.text('Todavía no anotaste ninguna forma.'), findsOneWidget);
+
+      await tapVisible(tester, find.text('Anotar'));
+      expect(find.text('Formas conocidas (0/6)'), findsOneWidget);
+
+      // El pozo son decenas de bestias en un ListView perezoso: el Lobo no
+      // está construido hasta que se scrollea hasta él.
+      await tester.scrollUntilVisible(
+        find.text('Lobo'),
+        120,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.text('Lobo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(controller.characters.single.wildShapeForms, ['wolf']);
+      expect(find.text('Transformarse'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un Guerrero no ve la tarjeta', (tester) async {
+      await pumpSheet(tester, demoSagan());
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(find.text('Forma Salvaje'), findsNothing);
+    });
+
+    testWidgets('la tarjeta y el selector entran en un teléfono angosto', (
+      tester,
+    ) async {
+      await pumpSheet(tester, druid(), size: const Size(360, 2400));
+      // Por debajo de 900 la navegación de la ficha vive en un Drawer.
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      // Sin `takeException` a propósito: un desborde llega igual como fallo, y
+      // recogerlo se lleva puesto el widget que lo causó, que es el único dato
+      // que sirve para arreglarlo.
+      await tapVisible(tester, find.text('Transformarse'));
+      await tapVisible(tester, find.text('Anotar'));
+      expect(find.text('Formas conocidas (1/6)'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 5));
+    });
+  });
 }

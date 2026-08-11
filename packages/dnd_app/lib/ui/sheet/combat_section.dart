@@ -10,6 +10,7 @@ extension _SheetCombatSection on _SheetScreenState {
       [_hpCard(s), _defenseCard(s), _restResourcesCard(s)],
       [
         if (s.attacks.isNotEmpty) _attacksCard(s),
+        if (s.wildShape != null) _wildShapeCard(s),
         if (s.companions.isNotEmpty) _companionsCard(s),
         if (hasSpells) _spellsCard(s),
       ],
@@ -30,9 +31,15 @@ extension _SheetCombatSection on _SheetScreenState {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
+            // Wrap y no Row con Spacer: el número a 40px más "/ NN PG" más la
+            // píldora de temporales no entran en un teléfono angosto, y la
+            // píldora aparece sola apenas algo da PG temporales (la Forma
+            // Salvaje, el Cañón Protector). Acá baja de línea en vez de
+            // desbordar, igual que en el bloque de compañeros.
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.end,
+              spacing: 8,
+              runSpacing: 4,
               children: [
                 Text(
                   '${combat.currentHp}',
@@ -44,14 +51,13 @@ extension _SheetCombatSection on _SheetScreenState {
                   ),
                 ),
                 Text(
-                  ' / ${s.maxHp} PG',
+                  '/ ${s.maxHp} PG',
                   style: TextStyle(
                     fontFamily: 'Georgia',
                     fontSize: 18,
                     color: muted,
                   ),
                 ),
-                const Spacer(),
                 if (combat.tempHp > 0) GoldPill('+${combat.tempHp} temp'),
               ],
             ),
@@ -488,6 +494,197 @@ extension _SheetCombatSection on _SheetScreenState {
         spellSaveDc: s.spellcasting?.saveDc ?? 0,
         spellLevel: spellLevel,
       );
+
+  // --------------------------------------------------------- Forma Salvaje
+
+  /// Aviso de que la ficha que estás mirando no es la tuya. Vive en la
+  /// cabecera, arriba de las placas, para que se vea desde cualquier pestaña.
+  Widget _wildShapeBanner(Creature beast) {
+    final pal = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: pal.gold),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.pets, size: 18, color: pal.gold),
+          const SizedBox(width: 8),
+          Expanded(child: Text('Transformado en ${beast.name}')),
+          TextButton(
+            onPressed: () =>
+                _mutateCombat(() => CombatOps.leaveWildShape(_c.combat)),
+            child: const Text('Volver'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _wildShapeCard(ComputedSheet s) {
+    final slot = s.wildShape!;
+    final beast = wildShapeForm;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final uses = s.resources
+        .where((r) => r.id == CombatOps.wildShapeResourceId)
+        .firstOrNull;
+
+    return sheetCard(
+      icon: Icons.pets,
+      title: 'Forma Salvaje',
+      trailing: TextButton.icon(
+        onPressed: () => _editWildShapeForms(slot),
+        icon: const Icon(Icons.edit, size: 16),
+        label: const Text('Anotar'),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              [
+                if (uses != null) 'Usos: ${_resourceLeft(uses)} de ${uses.max}',
+                'Formas: ${slot.chosen.length} de ${slot.count}',
+              ].join(' · '),
+              style: TextStyle(fontSize: 12.5, color: muted),
+            ),
+            if (beast != null) ...[
+              const SizedBox(height: 12),
+              _wildShapeBanner(beast),
+              // Los ataques de la bestia ya están en la tarjeta Ataques por el
+              // overlay; acá van los rasgos, que no tienen otro lugar.
+              for (final trait in beast.traits)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '${trait.name}. ',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        TextSpan(text: trait.description),
+                      ],
+                    ),
+                    style: TextStyle(fontSize: 13, color: muted),
+                  ),
+                ),
+            ] else if (slot.chosen.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  'Todavía no anotaste ninguna forma.',
+                  style: TextStyle(fontSize: 13, color: muted),
+                ),
+              )
+            else
+              for (final form in slot.chosen) _wildShapeForm(s, form),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _wildShapeForm(ComputedSheet s, Creature form) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(form.name),
+                Text(
+                  '${form.kind} · CA ${form.ac} · ${form.speed}',
+                  style: TextStyle(fontSize: 12.5, color: muted),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton(
+            onPressed: () => _enterWildShape(s, form),
+            child: const Text('Transformarse'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _enterWildShape(ComputedSheet s, Creature form) {
+    // Se pregunta al motor y no se mira el recurso acá: quién puede
+    // transformarse es una regla, y duplicarla en la pantalla es tenerla mal
+    // en un lado.
+    var ok = false;
+    _mutateCombat(() {
+      ok = CombatOps.enterWildShape(_c.combat, s, form);
+    });
+    _snack(
+      ok
+          ? 'Te transformaste en ${form.name}: +${s.level} PG temporales.'
+          : 'No te quedan usos de Forma Salvaje.',
+    );
+  }
+
+  /// Elige las formas anotadas. Son hasta ocho sobre un pozo de sesenta y pico,
+  /// así que van en una lista con casillas y no en chips como las competencias.
+  Future<void> _editWildShapeForms(WildShapeSlot slot) async {
+    final chosen = [for (final b in slot.chosen) b.id];
+    final result = await showDialog<List<String>>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Formas conocidas (${chosen.length}/${slot.count})'),
+          content: SizedBox(
+            width: double.maxFinite,
+            // Alto fijo: el pozo tiene decenas de bestias y sin esto el
+            // diálogo intenta crecer hasta pasarse de la pantalla.
+            height: 420,
+            child: ListView(
+              children: [
+                for (final beast in slot.options)
+                  CheckboxListTile(
+                    dense: true,
+                    value: chosen.contains(beast.id),
+                    // Con el cupo lleno, lo no elegido se bloquea en vez de
+                    // desalojar en silencio a otra forma.
+                    onChanged:
+                        chosen.length >= slot.count &&
+                            !chosen.contains(beast.id)
+                        ? null
+                        : (value) => setDialogState(() {
+                            if (value ?? false) {
+                              chosen.add(beast.id);
+                            } else {
+                              chosen.remove(beast.id);
+                            }
+                          }),
+                    title: Text(beast.name),
+                    subtitle: Text('${beast.kind} · CA ${beast.ac}'),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(chosen),
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (result == null || !mounted) return;
+    _replace(_c.copyWith(wildShapeForms: result));
+  }
 
   Widget _companionsCard(ComputedSheet s) {
     return sheetCard(

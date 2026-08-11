@@ -800,6 +800,85 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
     });
 
+    testWidgets('sin espacios ni usos gratis no se puede invocar', (
+      tester,
+    ) async {
+      final paladin = Character(
+        id: 'paladin-sin-espacios',
+        name: 'Aurel',
+        raceId: 'human',
+        classId: 'paladin',
+        backgroundId: 'soldier',
+        level: 5,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: List.filled(5, 6),
+        combat: CombatState(
+          currentHp: 40,
+          // Todo gastado: 4 espacios de nivel 1, 2 de nivel 2, y el uso gratis
+          // del Corcel Fiel.
+          spellSlotsUsed: {1: 4, 2: 2},
+          resourceUsage: {innateSpellResourceId('find-steed'): 1},
+        ),
+      );
+      await pumpSheet(tester, paladin, size: const Size(900, 6000));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      await tapVisible(tester, find.text('Invocar'));
+
+      // No abre el selector: avisa y no invoca nada.
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(paladin.combat.companions, isEmpty);
+      expect(find.textContaining('No te quedan espacios'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 5));
+    });
+
+    testWidgets('reemplazar un compañero avisa antes de gastar nada', (
+      tester,
+    ) async {
+      final paladin = Character(
+        id: 'paladin-reemplazo',
+        name: 'Aurel',
+        raceId: 'human',
+        classId: 'paladin',
+        backgroundId: 'soldier',
+        level: 5,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: List.filled(5, 6),
+        combat: CombatState(currentHp: 40),
+      );
+      await pumpSheet(tester, paladin, size: const Size(900, 6000));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      Finder inDialog(String text) => find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(text),
+      );
+
+      await tapVisible(tester, find.text('Invocar'));
+      await tester.tap(inDialog('Sin gastar espacio'));
+      await tester.pumpAndSettle();
+      expect(paladin.combat.companions, hasLength(1));
+
+      // Con uno en juego, invocar otro avisa primero.
+      await tapVisible(tester, find.text('Invocar otro'));
+      expect(find.text('Ya tenés uno en juego'), findsOneWidget);
+      expect(
+        find.textContaining('hace desaparecer a Corcel sobrenatural'),
+        findsOneWidget,
+      );
+
+      // Cancelar no toca nada: ni el compañero ni los espacios.
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(paladin.combat.companions, hasLength(1));
+      expect(paladin.combat.spellSlotsUsed, isEmpty);
+
+      await tester.pump(const Duration(seconds: 5));
+    });
+
     testWidgets('un Guerrero no ve la tarjeta', (tester) async {
       await pumpSheet(tester, demoSagan());
       await tester.tap(find.text('Combate'));

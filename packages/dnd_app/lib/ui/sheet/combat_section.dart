@@ -576,8 +576,50 @@ extension _SheetCombatSection on _SheetScreenState {
     return null;
   }
 
+  /// Diálogo de sí o no. Devuelve false si se cancela o se cierra.
+  Future<bool> _confirmDialog(String title, String message) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Invocar igual'),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
   /// Pide la forma y el nivel de espacio que hagan falta, e invoca.
   Future<void> _summonCompanion(ComputedSheet s, CompanionOption option) async {
+    // Invocar con el cupo lleno reemplaza al más viejo, así que se avisa antes
+    // de que el jugador gaste un espacio: perder el compañero que ya estaba en
+    // la mesa no puede ser algo que se descubra después de pagar.
+    final active = [
+      for (final i in _c.combat.companions)
+        if (i.optionId == option.id) i,
+    ];
+    if (active.length >= option.maxActive) {
+      final going = option.form(active.first.creatureId)?.name ?? option.name;
+      final confirmed = await _confirmDialog(
+        option.maxActive == 1 ? 'Ya tenés uno en juego' : 'Llegaste al máximo',
+        option.maxActive == 1
+            ? 'Invocar otro hace desaparecer a $going, con los puntos de golpe '
+                  'que tenga.'
+            : 'Ya tenés ${option.maxActive}. Invocar otro hace desaparecer al '
+                  'más viejo, $going.',
+      );
+      if (!confirmed) return;
+    }
+
     var form = option.forms.first;
     if (option.forms.length > 1) {
       final chosen = await _pickFromList<Creature>(
@@ -604,10 +646,17 @@ extension _SheetCombatSection on _SheetScreenState {
       final choices =
           <({int level, bool free})>[
             if (free != null) (level: option.minSpellLevel, free: true),
-            for (final entry
-                in (s.spellcasting?.slotsByLevel ?? const {}).entries)
-              if (entry.value > 0 && entry.key >= option.minSpellLevel)
-                (level: entry.key, free: false),
+            for (final level in (s.spellcasting?.slotsByLevel ?? const {}).keys)
+              // `slotsByLevel` es el máximo, no lo que queda: filtrar por ahí
+              // dejaba invocar con espacios ya gastados.
+              if (level >= option.minSpellLevel &&
+                  CombatOps.spellSlotsRemaining(
+                        _c.combat,
+                        s.spellcasting!,
+                        level,
+                      ) >
+                      0)
+                (level: level, free: false),
           ]..sort(
             (a, b) => a.free == b.free
                 ? a.level.compareTo(b.level)

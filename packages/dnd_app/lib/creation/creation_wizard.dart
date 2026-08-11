@@ -237,17 +237,25 @@ class _CreationWizardState extends State<CreationWizard> {
                   child: Text.rich(
                     TextSpan(
                       children: [
-                        const TextSpan(text: 'Fichas\n'),
+                        const TextSpan(text: 'Milantus\n'),
+                        // El subtítulo va más chico a propósito: a 17 no
+                        // entra en los 236 de ancho del panel y parte la
+                        // palabra, mientras que el nombre sí tiene que
+                        // leerse como el título.
                         TextSpan(
-                          text: 'D&D 5e',
-                          style: TextStyle(color: pal.gold),
+                          text: 'Asistente de Aventuras',
+                          style: TextStyle(
+                            color: pal.gold,
+                            fontSize: 11,
+                            letterSpacing: 0.3,
+                          ),
                         ),
                       ],
                     ),
                     style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 17,
-                      height: 1.1,
+                      fontSize: 18,
+                      height: 1.25,
                       color: scheme.onSurface,
                     ),
                   ),

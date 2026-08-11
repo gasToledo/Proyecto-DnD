@@ -367,7 +367,7 @@ extension _LevelUpSections on _LevelUpScreenState {
             slot: slot,
             chosen: _choicesFor(slot.groupId),
             options: widget.repo
-                .featsByCategory(slot.featCategory)
+                .featureChoiceOptions(slot)
                 .where(
                   (f) =>
                       _choicesFor(slot.groupId).contains(f.id) ||

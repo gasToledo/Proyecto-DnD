@@ -120,6 +120,7 @@ extension _SheetGeneralSection on _SheetScreenState {
         when repo.lineagesForRace(_c.raceId).isNotEmpty =>
       _resolveLineage,
     'species_spellcasting_ability_pending' => _resolveSpeciesAbility,
+    'feat_spellcasting_ability_pending' => _resolveFeatAbilities,
     'feature_choice_pending' => _resolveFeatureChoices,
     'spell_choice_pending' => _resolveSpellChoices,
     // Todos los avisos de idiomas los arregla el mismo editor: los del origen
@@ -369,6 +370,34 @@ extension _SheetGeneralSection on _SheetScreenState {
     _replace(_c.copyWith(speciesSpellcastingAbility: picked));
   }
 
+  /// Aptitud mágica de las dotes que la dejan elegir (Iniciado en la Magia,
+  /// Marcas Dracónicas). Se resuelven de a una, en el orden en que la ficha
+  /// las lista, igual que el resto de los editores de esta pantalla.
+  Future<void> _resolveFeatAbilities() async {
+    final validator = CharacterValidator(repo);
+    for (final id in validator.heldFeatIds(_c)) {
+      final feat = repo.feat(id);
+      if (feat == null || feat.spellcastingAbilityOptions.isEmpty) continue;
+      if (_c.featSpellcastingAbilities.containsKey(id)) continue;
+      final picked = await _pickOne<Ability>(
+        title: 'Aptitud mágica de ${feat.name}',
+        hint: 'Se usa para la CD y los ataques de los conjuros de esta dote.',
+        options: feat.spellcastingAbilityOptions,
+        label: (ability) => ability.label,
+        current: null,
+      );
+      if (picked == null || !mounted) return;
+      _replace(
+        _c.copyWith(
+          featSpellcastingAbilities: {
+            ..._c.featSpellcastingAbilities,
+            id: picked,
+          },
+        ),
+      );
+    }
+  }
+
   /// Resuelve las elecciones abiertas pendientes (Estilo de Combate,
   /// Invocaciones Sobrenaturales…) sin recrear el personaje.
   ///
@@ -417,7 +446,7 @@ extension _SheetGeneralSection on _SheetScreenState {
                         builder: (context) {
                           final chosen = choices[slot.groupId] ??= [];
                           final options = repo
-                              .featsByCategory(slot.featCategory)
+                              .featureChoiceOptions(slot)
                               .where(
                                 (f) =>
                                     chosen.contains(f.id) ||
@@ -1008,11 +1037,14 @@ extension _SheetGeneralSection on _SheetScreenState {
     // Solo las habilidades en las que sos competente. Las demás tiran con el
     // modificador pelado, que ya está arriba: listarlas todas eran seis líneas
     // repitiendo el mismo número en una pantalla de celular.
+    // Un aporte de Orden Divina o Primordial también hace que la habilidad
+    // deje de tirar con el modificador pelado, aunque no haya competencia.
     final skills = [
       for (final sk in Skill.values)
         if (sk.ability == ability &&
             (s.skillProficiencies.contains(sk.id) ||
-                s.expertiseSkills.contains(sk.id)))
+                s.expertiseSkills.contains(sk.id) ||
+                s.skillBonuses.containsKey(sk.id)))
           sk,
     ];
 
@@ -1045,12 +1077,18 @@ extension _SheetGeneralSection on _SheetScreenState {
             '${s.savingThrowProficiencies.contains(ability) ? ' (competente)' : ''}',
             _signed(s.savingThrow(ability)),
           ),
-          for (final sk in skills)
+          for (final sk in skills) ...[
             line(
               '${sk.label}'
               '${s.expertiseSkills.contains(sk.id) ? ' (pericia)' : ''}',
               _signed(s.skillModifier(sk.id)),
             ),
+            for (final b in s.skillBonuses[sk.id] ?? const <SkillBonus>[])
+              Padding(
+                padding: const EdgeInsets.only(left: 14),
+                child: line('incluye ${_signed(b.amount)} de ${b.source}', ''),
+              ),
+          ],
           if (skills.isEmpty) line('Pruebas de característica', _signed(mod)),
           if (sc != null && sc.ability == ability) ...[
             line('Ataque con conjuros', _signed(sc.attackBonus)),

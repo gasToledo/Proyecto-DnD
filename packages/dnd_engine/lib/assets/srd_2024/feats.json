@@ -433,7 +433,7 @@
       {
         "type": "passiveTrait",
         "name": "Sanador",
-        "description": "Con un kit de sanador, como acción puedes gastar un uso para restaurar 1d6 + bonif. de competencia PG a una criatura (más dados según el nivel del objetivo). También puedes estabilizar y curar 1 PG a una criatura a 0 PG."
+        "description": "Médico de Campaña: con un kit de sanador podés gastar un uso y atender a una criatura a 5 pies como acción de utilizar. Esa criatura gasta uno de sus Dados de Golpe y vos tirás ese dado: recupera puntos de golpe iguales a la tirada más tu bonificador por competencia. Repetición de Curación: siempre que tirés un dado para determinar los puntos de golpe que restaurás con un conjuro o con Médico de Campaña, podés volver a tirar el dado si sacás un 1, y tenés que usar el nuevo resultado."
       }
     ]
   },
@@ -527,7 +527,7 @@
       {
         "type": "passiveTrait",
         "name": "Maestro en Armas Pesadas",
-        "description": "Al reducir a 0 PG o impactar con crítico con un arma cuerpo a cuerpo pesada, puedes hacer un ataque adicional como acción adicional. Tus ataques con arma pesada suman tu bonif. de competencia al daño."
+        "description": "Maestría con Armas Pesadas: cuando aciertes a una criatura con un arma que tenga la propiedad Pesada como parte de la acción de Atacar en tu turno, podés hacer que el arma cause daño adicional igual a tu bonificador por competencia. Tajo: inmediatamente después de que hagas un crítico con un arma cuerpo a cuerpo, o reduzcas a una criatura a 0 puntos de golpe con ella, podés hacer un ataque con esa misma arma como acción adicional. Tajo se dispara con cualquier arma cuerpo a cuerpo, no solo con las Pesadas."
       }
     ],
     "prerequisite": {
@@ -647,7 +647,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
-      { "type": "passiveTrait", "name": "Atacante a la Carga", "description": "Si te mueves al menos 10 pies en línea recta antes de atacar, ganas daño o empuje adicional. (+1 a FUE o DES)" }
+      { "type": "passiveTrait", "name": "Atacante a la Carga", "description": "Correr Mejorado: cuando lleves a cabo la acción de correr, tu velocidad aumenta 10 pies para esa acción. Ataque a la Carga: si te movés al menos 10 pies en línea recta hacia un objetivo inmediatamente antes de acertarle con un ataque cuerpo a cuerpo como parte de la acción de Atacar, elegís uno de estos efectos: un bonificador de 1d8 a la tirada de daño del ataque, o empujar al objetivo hasta 10 pies si no es más de una categoría de tamaño mayor que vos. Solo una vez en cada uno de tus turnos. (+1 a FUE o DES)" }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
@@ -660,7 +660,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
-      { "type": "passiveTrait", "name": "Atacante a la Carga", "description": "Si te mueves al menos 10 pies en línea recta antes de atacar, ganas daño o empuje adicional. (+1 a FUE o DES)" }
+      { "type": "passiveTrait", "name": "Atacante a la Carga", "description": "Correr Mejorado: cuando lleves a cabo la acción de correr, tu velocidad aumenta 10 pies para esa acción. Ataque a la Carga: si te movés al menos 10 pies en línea recta hacia un objetivo inmediatamente antes de acertarle con un ataque cuerpo a cuerpo como parte de la acción de Atacar, elegís uno de estos efectos: un bonificador de 1d8 a la tirada de daño del ataque, o empujar al objetivo hasta 10 pies si no es más de una categoría de tamaño mayor que vos. Solo una vez en cada uno de tus turnos. (+1 a FUE o DES)" }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
@@ -671,6 +671,7 @@
     "category": "general",
     "exclusiveGroup": "chef",
     "effects": [
+      {"type":"toolProficiency","tool":"cooks-utensils"},
       {
         "type": "abilityScoreBonus",
         "ability": "constitution",
@@ -679,7 +680,7 @@
       {
         "type": "passiveTrait",
         "name": "Cocinero",
-        "description": "Cocinas comida que restaura PG extra tras un descanso corto y golosinas que dan PG temporales."
+        "description": "Utensilios de Cocinero: ganás competencia con las herramientas de cocinero si no la tenías. Comida Reparadora: como parte de un descanso corto podés cocinar comida especial si tenés ingredientes y herramientas de cocinero a mano, en cantidad suficiente para 4 + tu bonificador por competencia criaturas; al final del descanso, quien la coma y gaste al menos un Dado de Golpe recupera 1d8 puntos de golpe adicionales. Golosinas Fortalecedoras: con 1 hora de trabajo o al terminar un descanso largo podés cocinar una cantidad de golosinas igual a tu bonificador por competencia; duran 8 horas y una criatura puede usar una acción adicional para comer una y obtener puntos de golpe temporales iguales a tu bonificador por competencia."
       }
     ],
     "prerequisite": {
@@ -693,6 +694,7 @@
     "category": "general",
     "exclusiveGroup": "chef",
     "effects": [
+      {"type":"toolProficiency","tool":"cooks-utensils"},
       {
         "type": "abilityScoreBonus",
         "ability": "wisdom",
@@ -701,7 +703,7 @@
       {
         "type": "passiveTrait",
         "name": "Cocinero",
-        "description": "Cocinas comida que restaura PG extra tras un descanso corto y golosinas que dan PG temporales."
+        "description": "Utensilios de Cocinero: ganás competencia con las herramientas de cocinero si no la tenías. Comida Reparadora: como parte de un descanso corto podés cocinar comida especial si tenés ingredientes y herramientas de cocinero a mano, en cantidad suficiente para 4 + tu bonificador por competencia criaturas; al final del descanso, quien la coma y gaste al menos un Dado de Golpe recupera 1d8 puntos de golpe adicionales. Golosinas Fortalecedoras: con 1 hora de trabajo o al terminar un descanso largo podés cocinar una cantidad de golosinas igual a tu bonificador por competencia; duran 8 horas y una criatura puede usar una acción adicional para comer una y obtener puntos de golpe temporales iguales a tu bonificador por competencia."
       }
     ],
     "prerequisite": {
@@ -767,7 +769,7 @@
       {
         "type": "passiveTrait",
         "name": "Experto en Ballestas",
-        "description": "Ignoras la propiedad de recarga; no tienes desventaja al disparar con enemigos adyacentes."
+        "description": "Ignorar Recarga: ignorás la propiedad Recarga de la ballesta de mano, la ballesta pesada y la ballesta ligera. Si tenés una en la mano, podés cargarle munición aunque no tengas una mano libre. Disparar en Cuerpo a Cuerpo: estar a 5 pies o menos de un enemigo no te impone desventaja en las tiradas de ataque con ballestas. Empuñar Dos: cuando hagas el ataque adicional de la propiedad Ligera, podés sumar tu modificador de característica al daño de ese ataque si es con una ballesta que tenga la propiedad Ligera y no lo estuvieras sumando ya."
       }
     ],
     "prerequisite": {
@@ -1018,7 +1020,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "constitution", "amount": 1 },
-      { "type": "passiveTrait", "name": "Maestro en Armaduras Pesadas", "description": "Con armadura pesada reduces el daño no mágico contundente, perforante y cortante. (+1 a FUE o CON)" }
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Pesadas", "description": "Reducción de Daño: cuando te acierten con un ataque mientras llevás armadura pesada, todo el daño contundente, perforante y cortante de ese ataque se reduce en una cantidad igual a tu bonificador por competencia. La regla 2024 no distingue si el ataque es mágico. (+1 a FUE o CON)" }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "heavy" }
   },
@@ -1031,7 +1033,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
-      { "type": "passiveTrait", "name": "Maestro en Armaduras Pesadas", "description": "Con armadura pesada reduces el daño no mágico contundente, perforante y cortante. (+1 a FUE o CON)" }
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Pesadas", "description": "Reducción de Daño: cuando te acierten con un ataque mientras llevás armadura pesada, todo el daño contundente, perforante y cortante de ese ataque se reduce en una cantidad igual a tu bonificador por competencia. La regla 2024 no distingue si el ataque es mágico. (+1 a FUE o CON)" }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "heavy" }
   },
@@ -1155,25 +1157,31 @@
     "source": "srd_2024",
     "category": "origin",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"spellChoice","groupId":"magic-initiate-wizard:cantrips","name":"Iniciado en la Magia: trucos","count":2,"minLevel":0,"maxLevel":0,"fromClasses":["wizard"],"replaceable":true},
+      {"type":"spellChoice","groupId":"magic-initiate-wizard:spell","name":"Iniciado en la Magia: conjuro de nivel 1","count":1,"minLevel":1,"maxLevel":1,"fromClasses":["wizard"],"freeCast":"oncePerLongRest","replaceable":true},
       {
         "type": "passiveTrait",
         "name": "Iniciado en la Magia (Mago)",
-        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Mago. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios."
+        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Mago. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios. Al obtener un nivel nuevo podés reemplazar uno de los conjuros elegidos por otro de la misma lista. Podés tomar esta dote más de una vez, pero cada vez con una lista distinta."
       }
     ]
   },
   {
     "id": "magic-initiate-druid",
     "name": "Iniciado en la Magia (Druida)",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "origin",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"spellChoice","groupId":"magic-initiate-druid:cantrips","name":"Iniciado en la Magia: trucos","count":2,"minLevel":0,"maxLevel":0,"fromClasses":["druid"],"replaceable":true},
+      {"type":"spellChoice","groupId":"magic-initiate-druid:spell","name":"Iniciado en la Magia: conjuro de nivel 1","count":1,"minLevel":1,"maxLevel":1,"fromClasses":["druid"],"freeCast":"oncePerLongRest","replaceable":true},
       {
         "type": "passiveTrait",
         "name": "Iniciado en la Magia (Druida)",
-        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Druida. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios."
+        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Druida. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios. Al obtener un nivel nuevo podés reemplazar uno de los conjuros elegidos por otro de la misma lista. Podés tomar esta dote más de una vez, pero cada vez con una lista distinta."
       }
     ]
   },
@@ -1196,11 +1204,14 @@
     "source": "srd_2024",
     "category": "origin",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"spellChoice","groupId":"magic-initiate-cleric:cantrips","name":"Iniciado en la Magia: trucos","count":2,"minLevel":0,"maxLevel":0,"fromClasses":["cleric"],"replaceable":true},
+      {"type":"spellChoice","groupId":"magic-initiate-cleric:spell","name":"Iniciado en la Magia: conjuro de nivel 1","count":1,"minLevel":1,"maxLevel":1,"fromClasses":["cleric"],"freeCast":"oncePerLongRest","replaceable":true},
       {
         "type": "passiveTrait",
         "name": "Iniciado en la Magia (Clérigo)",
-        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Clérigo. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios."
+        "description": "Aprendés dos trucos y un conjuro de nivel 1 de la lista de Clérigo. Tu aptitud mágica es Inteligencia, Sabiduría o Carisma a tu elección. El conjuro queda siempre preparado y podés lanzarlo gratis una vez por descanso largo, o gastando espacios. Al obtener un nivel nuevo podés reemplazar uno de los conjuros elegidos por otro de la misma lista. Podés tomar esta dote más de una vez, pero cada vez con una lista distinta."
       }
     ]
   },
@@ -1305,8 +1316,9 @@
     "exclusiveGroup": "observant",
     "repeatable": false,
     "effects": [
+      {"type":"proficiencyChoice","groupId":"observant-intelligence:skill","name":"Observador: habilidad","count":1,"skills":["insight","investigation","perception"],"expertise":true,"allowNewProficiency":true},
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Observador", "description": "Sumas +5 a tu Percepción e Investigación pasivas y puedes leer los labios." }
+      { "type": "passiveTrait", "name": "Observador", "description": "Observador Agudo: elegís Perspicacia, Investigación o Percepción; si no sos competente en la habilidad elegida ganás competencia, y si ya lo eras ganás Pericia. Búsqueda Rápida: podés llevar a cabo la acción de buscar como acción adicional." }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13 } }
   },
@@ -1318,8 +1330,9 @@
     "exclusiveGroup": "observant",
     "repeatable": false,
     "effects": [
+      {"type":"proficiencyChoice","groupId":"observant-wisdom:skill","name":"Observador: habilidad","count":1,"skills":["insight","investigation","perception"],"expertise":true,"allowNewProficiency":true},
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Observador", "description": "Sumas +5 a tu Percepción e Investigación pasivas y puedes leer los labios." }
+      { "type": "passiveTrait", "name": "Observador", "description": "Observador Agudo: elegís Perspicacia, Investigación o Percepción; si no sos competente en la habilidad elegida ganás competencia, y si ya lo eras ganás Pericia. Búsqueda Rápida: podés llevar a cabo la acción de buscar como acción adicional." }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13 } }
   },
@@ -1375,8 +1388,9 @@
     "exclusiveGroup": "poisoner",
     "repeatable": false,
     "effects": [
+      {"type":"toolProficiency","tool":"poisoner-kit"},
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
-      { "type": "passiveTrait", "name": "Envenenador", "description": "Aplicas veneno potente como acción adicional; tus venenos ignoran la resistencia al veneno." }
+      { "type": "passiveTrait", "name": "Envenenador", "description": "Veneno Potente: cuando hagas una tirada de daño de veneno, esta ignora la resistencia al daño de veneno. Preparar Veneno: ganás competencia con el kit de envenenador. Con 1 hora de trabajo usando ese kit y gastando 50 po en materiales, creás una cantidad de dosis de veneno igual a tu bonificador por competencia. Como acción adicional aplicás una dosis a un arma o munición; el veneno conserva su potencia 1 minuto o hasta que causes daño con el objeto envenenado. Cuando una criatura reciba daño de ese objeto, debe superar una salvación de Constitución (CD 8 + el modificador de la característica que aumenta esta dote + tu bonificador por competencia) o recibir 2d8 de daño de veneno y quedar envenenada hasta el final de tu siguiente turno." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1388,8 +1402,9 @@
     "exclusiveGroup": "poisoner",
     "repeatable": false,
     "effects": [
+      {"type":"toolProficiency","tool":"poisoner-kit"},
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Envenenador", "description": "Aplicas veneno potente como acción adicional; tus venenos ignoran la resistencia al veneno." }
+      { "type": "passiveTrait", "name": "Envenenador", "description": "Veneno Potente: cuando hagas una tirada de daño de veneno, esta ignora la resistencia al daño de veneno. Preparar Veneno: ganás competencia con el kit de envenenador. Con 1 hora de trabajo usando ese kit y gastando 50 po en materiales, creás una cantidad de dosis de veneno igual a tu bonificador por competencia. Como acción adicional aplicás una dosis a un arma o munición; el veneno conserva su potencia 1 minuto o hasta que causes daño con el objeto envenenado. Cuando una criatura reciba daño de ese objeto, debe superar una salvación de Constitución (CD 8 + el modificador de la característica que aumenta esta dote + tu bonificador por competencia) o recibir 2d8 de daño de veneno y quedar envenenada hasta el final de tu siguiente turno." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1481,8 +1496,9 @@
     "exclusiveGroup": "ritual-caster",
     "repeatable": false,
     "effects": [
+      {"type":"spellChoice","groupId":"ritual-caster-intelligence:rituals","name":"Lanzador Ritual: conjuros rituales","countFromProficiency":true,"minLevel":1,"maxLevel":1,"ritualOnly":true},
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él." }
+      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Conjuros Rituales: elegís una cantidad de conjuros de nivel 1 con la etiqueta Ritual igual a tu bonificador por competencia. Los tenés siempre preparados y podés lanzarlos con cualquier espacio de conjuro que tengas; su característica de lanzamiento es la que aumenta esta dote. Cada vez que tu bonificador por competencia aumente, sumás otro conjuro de nivel 1 con la etiqueta Ritual. Ritual Rápido: podés lanzar un conjuro ritual que tengas preparado con su tiempo de lanzamiento normal en vez del tiempo extendido del ritual, y sin gastar espacio de conjuro; una vez lanzado así, no podés volver a hacerlo hasta terminar un descanso largo." }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13, "charisma": 13 } }
   },
@@ -1494,8 +1510,9 @@
     "exclusiveGroup": "ritual-caster",
     "repeatable": false,
     "effects": [
+      {"type":"spellChoice","groupId":"ritual-caster-wisdom:rituals","name":"Lanzador Ritual: conjuros rituales","countFromProficiency":true,"minLevel":1,"maxLevel":1,"ritualOnly":true},
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él." }
+      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Conjuros Rituales: elegís una cantidad de conjuros de nivel 1 con la etiqueta Ritual igual a tu bonificador por competencia. Los tenés siempre preparados y podés lanzarlos con cualquier espacio de conjuro que tengas; su característica de lanzamiento es la que aumenta esta dote. Cada vez que tu bonificador por competencia aumente, sumás otro conjuro de nivel 1 con la etiqueta Ritual. Ritual Rápido: podés lanzar un conjuro ritual que tengas preparado con su tiempo de lanzamiento normal en vez del tiempo extendido del ritual, y sin gastar espacio de conjuro; una vez lanzado así, no podés volver a hacerlo hasta terminar un descanso largo." }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13, "charisma": 13 } }
   },
@@ -1507,8 +1524,9 @@
     "exclusiveGroup": "ritual-caster",
     "repeatable": false,
     "effects": [
+      {"type":"spellChoice","groupId":"ritual-caster-charisma:rituals","name":"Lanzador Ritual: conjuros rituales","countFromProficiency":true,"minLevel":1,"maxLevel":1,"ritualOnly":true},
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Portas un libro de rituales y puedes lanzar como ritual los conjuros que aprendas en él." }
+      { "type": "passiveTrait", "name": "Lanzador Ritual", "description": "Conjuros Rituales: elegís una cantidad de conjuros de nivel 1 con la etiqueta Ritual igual a tu bonificador por competencia. Los tenés siempre preparados y podés lanzarlos con cualquier espacio de conjuro que tengas; su característica de lanzamiento es la que aumenta esta dote. Cada vez que tu bonificador por competencia aumente, sumás otro conjuro de nivel 1 con la etiqueta Ritual. Ritual Rápido: podés lanzar un conjuro ritual que tengas preparado con su tiempo de lanzamiento normal en vez del tiempo extendido del ritual, y sin gastar espacio de conjuro; una vez lanzado así, no podés volver a hacerlo hasta terminar un descanso largo." }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "intelligence": 13, "wisdom": 13, "charisma": 13 } }
   },
@@ -1619,7 +1637,7 @@
       {
         "type": "passiveTrait",
         "name": "Maestro en Escudos",
-        "description": "Puedes empujar con el escudo como acción adicional y usarlo para reforzar tus salvaciones de Destreza."
+        "description": "Golpe de Escudo: si atacás a una criatura a 5 pies o menos como parte de la acción de Atacar y acertás con un arma cuerpo a cuerpo, podés golpearla de inmediato con tu escudo si lo llevás equipado. El objetivo hace una salvación de Fuerza (CD 8 + tu modificador de Fuerza + tu bonificador por competencia) y, si la falla, lo empujás 5 pies o le aplicás el estado de derribado, a tu elección. Solo una vez en cada uno de tus turnos. Interponer el Escudo: si te afecta un efecto que te permite hacer una salvación de Destreza para recibir solo la mitad del daño, podés llevar a cabo una reacción para no recibir ningún daño si la superás y llevás un escudo."
       }
     ],
     "prerequisite": {
@@ -1784,7 +1802,7 @@
     "effects": [
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
       { "type": "speedBonus", "feet": 10 },
-      { "type": "passiveTrait", "name": "Veloz", "description": "Correr ignora el terreno difícil y no provocas ataques de oportunidad al Correr. (+1 a DES o CON)" }
+      { "type": "passiveTrait", "name": "Veloz", "description": "Aumento de Velocidad: tu velocidad aumenta 10 pies. Correr sobre Terreno Difícil: cuando lleves a cabo la acción de correr en tu turno, el terreno difícil no te cuesta movimiento adicional durante el resto de ese turno. Movimiento Ágil: los ataques de oportunidad tienen desventaja contra vos. (+1 a DES o CON)" }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "dexterity": 13, "constitution": 13 } }
   },
@@ -1798,7 +1816,7 @@
     "effects": [
       { "type": "abilityScoreBonus", "ability": "constitution", "amount": 1 },
       { "type": "speedBonus", "feet": 10 },
-      { "type": "passiveTrait", "name": "Veloz", "description": "Correr ignora el terreno difícil y no provocas ataques de oportunidad al Correr. (+1 a DES o CON)" }
+      { "type": "passiveTrait", "name": "Veloz", "description": "Aumento de Velocidad: tu velocidad aumenta 10 pies. Correr sobre Terreno Difícil: cuando lleves a cabo la acción de correr en tu turno, el terreno difícil no te cuesta movimiento adicional durante el resto de ese turno. Movimiento Ágil: los ataques de oportunidad tienen desventaja contra vos. (+1 a DES o CON)" }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "dexterity": 13, "constitution": 13 } }
   },
@@ -1811,7 +1829,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos." }
+      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "Ignorar Cobertura: tus tiradas de ataque con conjuros ignoran la cobertura media y la de tres cuartos. Lanzar en Combate Cuerpo a Cuerpo: estar a 5 pies o menos de un enemigo no te impone desventaja en las tiradas de ataque con conjuros. Alcance Aumentado: cuando lancés un conjuro que tenga un alcance de al menos 10 pies y requiera una tirada de ataque, podés aumentar su alcance en 60 pies; no se duplica." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -1824,7 +1842,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos." }
+      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "Ignorar Cobertura: tus tiradas de ataque con conjuros ignoran la cobertura media y la de tres cuartos. Lanzar en Combate Cuerpo a Cuerpo: estar a 5 pies o menos de un enemigo no te impone desventaja en las tiradas de ataque con conjuros. Alcance Aumentado: cuando lancés un conjuro que tenga un alcance de al menos 10 pies y requiera una tirada de ataque, podés aumentar su alcance en 60 pies; no se duplica." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -1837,7 +1855,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "El alcance de tus conjuros de ataque se duplica y ignoran cobertura media y tres cuartos." }
+      { "type": "passiveTrait", "name": "Lanzador Preciso", "description": "Ignorar Cobertura: tus tiradas de ataque con conjuros ignoran la cobertura media y la de tres cuartos. Lanzar en Combate Cuerpo a Cuerpo: estar a 5 pies o menos de un enemigo no te impone desventaja en las tiradas de ataque con conjuros. Alcance Aumentado: cuando lancés un conjuro que tenga un alcance de al menos 10 pies y requiera una tirada de ataque, podés aumentar su alcance en 60 pies; no se duplica." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -1961,7 +1979,7 @@
   {
     "id": "ability-score-improvement",
     "name": "Mejora de Característica",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "general",
     "repeatable": true,
     "effects": [
@@ -2102,7 +2120,7 @@
   {
     "id": "fs-two-weapon-fighting",
     "name": "Combate con Dos Armas",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "fighting-style",
     "repeatable": false,
     "effects": [
@@ -2134,6 +2152,62 @@
     ],
     "prerequisite": {
       "requiredClassFeature": "Estilo de Combate"
+    }
+  },
+  {
+    "id": "fs-blessed-warrior",
+    "name": "Blessed Warrior",
+    "source": "srd_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "spellChoice",
+        "groupId": "fs-blessed-warrior:cantrips",
+        "name": "Guerrero Bendito: trucos de Clérigo",
+        "count": 2,
+        "minLevel": 0,
+        "maxLevel": 0,
+        "fromClasses": ["cleric"],
+        "replaceable": true
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Blessed Warrior",
+        "description": "Aprendés dos trucos de la lista de Clérigo a tu elección. Carisma es tu característica de lanzamiento para ellos. Cada vez que subas un nivel de Paladín podés sustituir uno de esos trucos por otro truco de Clérigo. En lugar de una dote de Estilo de Combate, el Paladín puede tomar esta opción."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate",
+      "requiredClassId": "paladin"
+    }
+  },
+  {
+    "id": "fs-druidic-warrior",
+    "name": "Druidic Warrior",
+    "source": "srd_2024",
+    "category": "fighting-style",
+    "repeatable": false,
+    "effects": [
+      {
+        "type": "spellChoice",
+        "groupId": "fs-druidic-warrior:cantrips",
+        "name": "Guerrero Druídico: trucos de Druida",
+        "count": 2,
+        "minLevel": 0,
+        "maxLevel": 0,
+        "fromClasses": ["druid"],
+        "replaceable": true
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Druidic Warrior",
+        "description": "Aprendés dos trucos de la lista de Druida a tu elección. Sabiduría es tu característica de lanzamiento para ellos. Cada vez que subas un nivel de Explorador podés sustituir uno de esos trucos por otro truco de Druida. En lugar de una dote de Estilo de Combate, el Explorador puede tomar esta opción."
+      }
+    ],
+    "prerequisite": {
+      "requiredClassFeature": "Estilo de Combate",
+      "requiredClassId": "ranger"
     }
   },
   {
@@ -2235,6 +2309,25 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"skillProficiency","skill":"acrobatics"},
+      {"type":"skillProficiency","skill":"animal-handling"},
+      {"type":"skillProficiency","skill":"arcana"},
+      {"type":"skillProficiency","skill":"athletics"},
+      {"type":"skillProficiency","skill":"deception"},
+      {"type":"skillProficiency","skill":"history"},
+      {"type":"skillProficiency","skill":"insight"},
+      {"type":"skillProficiency","skill":"intimidation"},
+      {"type":"skillProficiency","skill":"investigation"},
+      {"type":"skillProficiency","skill":"medicine"},
+      {"type":"skillProficiency","skill":"nature"},
+      {"type":"skillProficiency","skill":"perception"},
+      {"type":"skillProficiency","skill":"performance"},
+      {"type":"skillProficiency","skill":"persuasion"},
+      {"type":"skillProficiency","skill":"religion"},
+      {"type":"skillProficiency","skill":"sleight-of-hand"},
+      {"type":"skillProficiency","skill":"stealth"},
+      {"type":"skillProficiency","skill":"survival"},
+      {"type":"proficiencyChoice","groupId":"boon-of-skill:expertise","name":"Don de la Habilidad: Pericia","count":1,"expertise":true},
       {
         "type": "passiveTrait",
         "name": "Don de la Habilidad",
@@ -2248,7 +2341,7 @@
   {
     "id": "boon-of-combat-prowess",
     "name": "Don de la Pericia en Combate",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
@@ -2320,7 +2413,7 @@
   {
     "id": "boon-of-truesight",
     "name": "Don de la Visión Verdadera",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
@@ -2337,7 +2430,7 @@
   {
     "id": "boon-of-irresistible-offense",
     "name": "Don del Ataque Imparable",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
@@ -2354,7 +2447,7 @@
   {
     "id": "boon-of-fate",
     "name": "Don del Destino",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
@@ -2371,7 +2464,7 @@
   {
     "id": "boon-of-the-night-spirit",
     "name": "Don del Espíritu de la Noche",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
@@ -2388,7 +2481,7 @@
   {
     "id": "boon-of-spell-recall",
     "name": "Don del Recuerdo de Conjuros",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
@@ -2406,7 +2499,7 @@
   {
     "id": "boon-of-dimensional-travel",
     "name": "Don del Viaje Dimensional",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
@@ -2427,6 +2520,8 @@
     "category": "dragonmark",
     "repeatable": false,
     "effects": [
+      {"type":"spellChoice","groupId":"aberrant-dragonmark:cantrip","name":"Magia Aberrante: truco","count":1,"minLevel":0,"maxLevel":0,"fromClasses":["sorcerer"],"ability":"constitution"},
+      {"type":"spellChoice","groupId":"aberrant-dragonmark:spell","name":"Magia Aberrante: conjuro de nivel 1","count":1,"minLevel":1,"maxLevel":1,"fromClasses":["sorcerer"],"freeCast":"oncePerShortRest","ability":"constitution"},
       {
         "type": "passiveTrait",
         "name": "Fortaleza Aberrante",
@@ -2450,7 +2545,11 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"detect-magic","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"grantSpell","spellId":"detect-poison-and-disease","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"leveled","minLevel":3,"effects":[{"type":"grantSpell","spellId":"see-invisibility","ability":"intelligence","use":"oncePerLongRest"}]},
       {
         "type": "passiveTrait",
         "name": "Intuición Deductiva",
@@ -2483,7 +2582,10 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"hunters-mark","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"leveled","minLevel":3,"effects":[{"type":"grantSpell","spellId":"locate-object","ability":"intelligence","use":"oncePerLongRest"}]},
       {
         "type": "passiveTrait",
         "name": "Intuición del Cazador",
@@ -2516,7 +2618,10 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"animal-friendship","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"grantSpell","spellId":"speak-with-animals","ability":"intelligence","use":"oncePerLongRest"},
       {
         "type": "passiveTrait",
         "name": "Intuición Salvaje",
@@ -2554,7 +2659,10 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"cure-wounds","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"leveled","minLevel":3,"effects":[{"type":"grantSpell","spellId":"lesser-restoration","ability":"intelligence","use":"oncePerLongRest"}]},
       {
         "type": "passiveTrait",
         "name": "Intuición Médica",
@@ -2587,7 +2695,11 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"purify-food-and-drink","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"grantSpell","spellId":"unseen-servant","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"leveled","minLevel":3,"effects":[{"type":"grantSpell","spellId":"calm-emotions","ability":"intelligence","use":"oncePerLongRest"}]},
       {
         "type": "passiveTrait",
         "name": "Siempre Hospitalario",
@@ -2620,7 +2732,10 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"mending","ability":"intelligence","use":"atWill"},
+      {"type":"grantSpell","spellId":"magic-weapon","ability":"intelligence","use":"oncePerLongRest"},
       {
         "type": "passiveTrait",
         "name": "Intuición del Artesano",
@@ -2653,7 +2768,9 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"misty-step","ability":"intelligence","use":"oncePerLongRest"},
       {
         "type": "passiveTrait",
         "name": "Movimiento Intuitivo",
@@ -2692,7 +2809,11 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"message","ability":"intelligence","use":"atWill"},
+      {"type":"grantSpell","spellId":"comprehend-languages","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"leveled","minLevel":3,"effects":[{"type":"grantSpell","spellId":"magic-mouth","ability":"intelligence","use":"oncePerLongRest"}]},
       {
         "type": "passiveTrait",
         "name": "Escriba Dotado",
@@ -2725,7 +2846,9 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"shield","ability":"intelligence","use":"oncePerLongRest"},
       {
         "type": "passiveTrait",
         "name": "Intuición del Centinela",
@@ -2763,7 +2886,10 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"minor-illusion","ability":"intelligence","use":"atWill"},
+      {"type":"grantSpell","spellId":"invisibility","ability":"intelligence","use":"oncePerLongRest"},
       {
         "type": "passiveTrait",
         "name": "Intuición Astuta",
@@ -2796,7 +2922,10 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"thunderclap","ability":"intelligence","use":"atWill"},
+      {"type":"leveled","minLevel":3,"effects":[{"type":"grantSpell","spellId":"gust-of-wind","ability":"intelligence","use":"oncePerLongRest"}]},
       {
         "type": "passiveTrait",
         "name": "Intuición del Timonel",
@@ -2835,7 +2964,11 @@
     "source": "foa_2025",
     "category": "dragonmark",
     "repeatable": false,
+    "spellcastingAbilityOptions": ["intelligence", "wisdom", "charisma"],
     "effects": [
+      {"type":"grantSpell","spellId":"alarm","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"grantSpell","spellId":"mage-armor","ability":"intelligence","use":"oncePerLongRest"},
+      {"type":"leveled","minLevel":3,"effects":[{"type":"grantSpell","spellId":"arcane-lock","ability":"intelligence","use":"oncePerLongRest"}]},
       {
         "type": "passiveTrait",
         "name": "Intuición del Guardián",
@@ -3259,6 +3392,8 @@
     "category": "general",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreBonusFromFeatChoice","featCategory":"dragonmark","amount":1},
+      {"type":"prepareSpellListAdditions"},
       {
         "type": "passiveTrait",
         "name": "Aumento de Característica",

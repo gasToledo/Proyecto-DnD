@@ -27,8 +27,9 @@ manual.
 ### Crear un personaje
 
 Son ocho pasos, y cada uno muestra solo lo que aplica a lo que venís
-eligiendo. El catálogo: 13 clases con 53 subclases, 15 especies con 24
-linajes, 33 trasfondos, 183 dotes, 38 armas, 13 armaduras y 392 conjuros.
+eligiendo. El catálogo: 13 clases con 53 subclases, 15 especies con 28
+linajes, 33 trasfondos, 189 filas de dotes y opciones equivalentes, 38 armas,
+13 armaduras y 392 conjuros.
 
 Las puntuaciones salen de compra por puntos, de una tirada de 4d6 o del
 arreglo estándar, y el paso de equipo ya viene con lo que te dan la clase y el

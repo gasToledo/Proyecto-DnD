@@ -687,6 +687,58 @@ void main() {
     });
   });
 
+  group('17 → 18: aptitud mágica elegida por dote', () {
+    Map<String, dynamic> at17() => {
+          'schemaVersion': 17,
+          'id': 'marcado',
+          'name': 'Marcado',
+          'raceId': 'human',
+          'classId': 'fighter',
+          'backgroundId': 'soldier',
+          'level': 4,
+          'assignedScores': const <String, int>{},
+          'featIds': const ['mark-of-storm'],
+          'spellIds': const [],
+          'combat': const {'currentHp': 30},
+        };
+
+    test('una ficha vieja queda sin elección y no pierde nada', () {
+      final migrated = Character.migrateJson(at17());
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['featSpellcastingAbilities'], isEmpty);
+
+      final character = Character.fromJson(at17());
+      // Pendiente, no inventada: el motor no elige por el jugador.
+      expect(character.featSpellcastingAbilities, isEmpty);
+      expect(character.featIds, ['mark-of-storm']);
+      expect(character.level, 4);
+      expect(character.combat.currentHp, 30);
+    });
+
+    test('la elección sobrevive el round-trip de la versión actual', () {
+      final elegido = Character(
+        id: 'marcado',
+        name: 'Marcado',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        level: 4,
+        assignedScores: const {},
+        hpPerLevel: const [10, 6, 6, 6],
+        featIds: const ['mark-of-storm', 'magic-initiate-wizard'],
+        featSpellcastingAbilities: const {
+          'mark-of-storm': Ability.charisma,
+          'magic-initiate-wizard': Ability.wisdom,
+        },
+      );
+      final vuelta = Character.fromJson(elegido.toJson());
+      expect(vuelta.featSpellcastingAbilities, {
+        'mark-of-storm': Ability.charisma,
+        'magic-initiate-wizard': Ability.wisdom,
+      });
+    });
+  });
+
   test('rechaza una versión futura con un error comprensible', () {
     final future = {
       'schemaVersion': Character.currentSchemaVersion + 1,

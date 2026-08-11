@@ -56,6 +56,11 @@ class SheetBuilder {
 
   final List<PassiveTrait> passives = [];
 
+  /// Bonificadores a habilidades concretas, sin resolver: el monto sale de un
+  /// modificador de característica que todavía no está fijo cuando se aplican
+  /// los efectos. Los resuelve [resolveSkillBonuses].
+  final List<({SkillBonusEffect effect, String source})> skillBonusEffects = [];
+
   /// Conjuros concedidos por rasgos, sin resolver (el compilador los cruza con
   /// el repositorio para armar los [InnateSpell]).
   final List<GrantSpellEffect> grantedSpells = [];
@@ -66,6 +71,14 @@ class SheetBuilder {
 
   /// Conjuros que un rasgo suma a la lista elegible (Conjuros de la Marca).
   final Set<String> spellListAdditionIds = {};
+
+  /// Marca Dracónica Potente: lo sumado a la lista queda siempre preparado.
+  bool prepareSpellListAdditions = false;
+
+  /// Bonos a la característica que el personaje eligió para una dote, sin
+  /// resolver: la elección vive en el personaje y solo el compilador la ve.
+  final List<({AbilityScoreBonusFromFeatChoiceEffect effect, String source})>
+      abilityBonusesFromFeatChoice = [];
 
   final Map<String, ResourceEffect> _resources = {};
 
@@ -128,6 +141,23 @@ class SheetBuilder {
     }).toList();
   }
 
+  /// Resuelve los bonificadores a habilidades contra los modificadores ya
+  /// calculados. Devuelve, por habilidad, cada aporte con su fuente: el total
+  /// suelto no se puede explicar en la ficha.
+  Map<String, List<SkillBonus>> resolveSkillBonuses(Map<Ability, int> mods) {
+    final out = <String, List<SkillBonus>>{};
+    for (final entry in skillBonusEffects) {
+      final e = entry.effect;
+      final mod = mods[e.fromAbility]!;
+      final amount = mod > e.minimum ? mod : e.minimum;
+      if (amount == 0) continue;
+      (out[e.skill] ??= []).add(
+        SkillBonus(amount: amount, source: entry.source),
+      );
+    }
+    return out;
+  }
+
   /// Suma [amount] a [a] y **anota de dónde vino**. El total sin la
   /// procedencia no se puede explicar después: es lo que hacía imposible
   /// responder "¿por qué tengo 20 de Inteligencia?" desde la ficha.
@@ -165,6 +195,14 @@ class SheetBuilder {
             (darkvision == null || range > darkvision!) ? range : darkvision;
       case SkillProficiencyEffect(:final skill):
         skillProficiencies.add(skill);
+      case SkillBonusEffect():
+        skillBonusEffects.add((effect: e, source: sourceName));
+      case PrepareSpellListAdditionsEffect():
+        prepareSpellListAdditions = true;
+      case AbilityScoreBonusFromFeatChoiceEffect():
+        // Marcador: la característica la eligió el personaje y solo el
+        // compilador la conoce.
+        abilityBonusesFromFeatChoice.add((effect: e, source: sourceName));
       case SavingThrowProficiencyEffect(:final ability):
         saveProficiencies.add(ability);
       case ArmorProficiencyEffect(:final category):

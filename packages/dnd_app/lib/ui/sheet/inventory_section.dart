@@ -141,7 +141,26 @@ extension _SheetInventorySection on _SheetScreenState {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Expanded(child: Text(w?.name ?? id)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(w?.name ?? id),
+                if (w != null && w.requiresTwoHands())
+                  Text(
+                    // La lanza es el único caso: montado deja de exigirlas.
+                    w.twoHandedUnlessMounted
+                        ? 'Exige dos manos salvo que estés montado'
+                        : 'Exige dos manos',
+                    key: ValueKey('hands-$id'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
           if (w != null && w.isLight)
             Padding(
               padding: const EdgeInsets.only(left: 6),

@@ -331,7 +331,7 @@ class _FeatureChoiceSelect extends StatelessWidget {
     final base = draft.build();
     final validator = CharacterValidator(repo);
     final options = repo
-        .featsByCategory(slot.featCategory)
+        .featureChoiceOptions(slot)
         .where(
           (f) =>
               chosen.contains(f.id) ||

@@ -243,12 +243,17 @@ class FeatureChoiceSlot {
   /// Si se puede cambiar una elección ya hecha al subir de nivel.
   final bool replaceable;
 
+  /// Opciones que trae el propio rasgo. Cuando no está vacío reemplaza a
+  /// [featCategory] como pozo: son elecciones de clase que no son dotes.
+  final List<FeatureOption> options;
+
   const FeatureChoiceSlot({
     required this.groupId,
     required this.name,
     required this.featCategory,
     required this.count,
     required this.replaceable,
+    this.options = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -257,6 +262,8 @@ class FeatureChoiceSlot {
         'featCategory': featCategory,
         'count': count,
         'replaceable': replaceable,
+        if (options.isNotEmpty)
+          'options': options.map((o) => o.toJson()).toList(),
       };
 }
 
@@ -499,6 +506,15 @@ class AbilityBonus {
   });
 }
 
+/// Un aporte a las pruebas de una habilidad que no es competencia ni Pericia:
+/// hoy solo el "+mod. de Sabiduría (mínimo +1)" de Orden Divina y Orden
+/// Primordial. Lleva la fuente por el mismo motivo que [AbilityBonus].
+class SkillBonus {
+  final int amount;
+  final String source;
+  const SkillBonus({required this.amount, required this.source});
+}
+
 /// Resultado **derivado y de solo lectura** de compilar un personaje.
 /// La UI de la ficha lee de aquí; nunca recalcula a mano.
 class ComputedSheet {
@@ -522,6 +538,10 @@ class ComputedSheet {
   /// Para leer el modificador de una habilidad no hace falta cruzar los dos
   /// conjuntos a mano: está [skillModifier].
   final Set<String> expertiseSkills;
+
+  /// Aportes extra por habilidad, ya resueltos a número y con su fuente.
+  /// [skillModifier] los suma; la ficha los muestra en el desglose.
+  final Map<String, List<SkillBonus>> skillBonuses;
 
   final Set<String> armorProficiencies;
   final Set<String> weaponProficiencies;
@@ -625,6 +645,7 @@ class ComputedSheet {
     required this.savingThrowProficiencies,
     required this.skillProficiencies,
     this.expertiseSkills = const {},
+    this.skillBonuses = const {},
     required this.armorProficiencies,
     required this.weaponProficiencies,
     required this.toolProficiencies,
@@ -688,7 +709,9 @@ class ComputedSheet {
             ? proficiencyBonus * 2
             : skillProficiencies.contains(skillId)
                 ? proficiencyBonus
-                : 0);
+                : 0) +
+        (skillBonuses[skillId] ?? const <SkillBonus>[])
+            .fold(0, (sum, b) => sum + b.amount);
   }
 
   /// Percepción pasiva: 10 + el modificador de Percepción, Pericia incluida.

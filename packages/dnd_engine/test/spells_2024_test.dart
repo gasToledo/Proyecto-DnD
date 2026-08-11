@@ -88,10 +88,8 @@ void main() {
       expect(invocar.id, isNot(conjurar.id));
     });
 
-    test('el alcance "Especial" se preserva tal cual lo trae el manual', () {
-      // Ensueño alcanza al lanzador o a un objetivo lejano según el caso,
-      // así que el PHB no le da una distancia fija.
-      expect(spell('dream').range, 'Especial');
+    test('Ensueño tiene alcance Personal en la versión 2024', () {
+      expect(spell('dream').range, 'Personal');
     });
 
     test('el catálogo cubre los 388 conjuros del capítulo 7', () {
@@ -216,11 +214,30 @@ void main() {
       expect(spell('divine-favor').concentration, isFalse);
     });
 
-    test('las altas se etiquetan phb_2024, no srd_2024', () {
-      // Sin el SRD a mano no se puede afirmar que estén cubiertas por
-      // CC BY 4.0. Quedarse corto es seguro; al revés sería un problema.
-      for (final id in ['friends', 'divine-smite', 'hex', 'chromatic-orb']) {
-        expect(spell(id).source, ContentSource.phb2024);
+    test('la procedencia se cruzó contra el SRD 5.2.1 conjuro por conjuro', () {
+      // Antes se etiquetaba todo `phb_2024` por no tener el SRD a mano. El
+      // cruce por nombre, nivel y escuela contra SP_SRD_CC_v5.2.1 dejó 339
+      // conjuros cubiertos por CC BY 4.0 y 52 que son exclusivos del manual.
+      final porFuente = <ContentSource, int>{};
+      for (final s in repo.spells.values) {
+        porFuente[s.source] = (porFuente[s.source] ?? 0) + 1;
+      }
+      expect(porFuente[ContentSource.srd2024], 339);
+      expect(porFuente[ContentSource.phb2024], 52);
+      expect(porFuente[ContentSource.foa2025], 1);
+
+      // Estos sí están en el SRD, con el nombre "desmarcado" en dos casos.
+      for (final id in [
+        'divine-smite',
+        'hex',
+        'chromatic-orb',
+        'bigbys-hand'
+      ]) {
+        expect(spell(id).source, ContentSource.srd2024, reason: id);
+      }
+      // Y estos no: quedarse corto es seguro, al revés sería un problema.
+      for (final id in ['friends', 'toll-the-dead', 'summon-beast']) {
+        expect(spell(id).source, ContentSource.phb2024, reason: id);
       }
     });
   });
@@ -441,6 +458,118 @@ void main() {
       expect(oficiales.length, 391);
       expect(repo.spells.length, 392,
           reason: '391 del PHB más Sirviente Homúnculo de Forge');
+    });
+  });
+
+  group('Correcciones del apartado 9', () {
+    // Tabla exacta del documento, un caso por id. Se comprueban valores y no
+    // que el texto nombre el conjuro: es lo que distingue esta regresión de
+    // una que pasa con cualquier redacción.
+
+    test('9.1 componentes', () {
+      const esperado = {
+        'true-strike': 'S, M',
+        'dancing-lights': 'V, S, M',
+        'message': 'S, M',
+        'shield-of-faith': 'V, S, M',
+        'phantasmal-killer': 'V, S',
+        'banishment': 'V, S, M',
+        'power-word-heal': 'V, S',
+        'storm-of-vengeance': 'V, S',
+      };
+      esperado.forEach((id, componentes) {
+        expect(spell(id).components, componentes, reason: id);
+      });
+    });
+
+    test('9.2 tiempo de lanzamiento', () {
+      expect(spell('lesser-restoration').castingTime, 'Acción Adicional');
+      expect(spell('produce-flame').castingTime, 'Acción Adicional');
+      expect(spell('commune-with-nature').castingTime, '1 minuto');
+    });
+
+    test('9.2 alcance', () {
+      const esperado = {
+        'produce-flame': 'Personal',
+        'banishment': '30 pies',
+        'inflict-wounds': 'Toque',
+        'shillelagh': 'Personal',
+        'dream': 'Personal',
+      };
+      esperado.forEach((id, alcance) {
+        expect(spell(id).range, alcance, reason: id);
+      });
+      // El ataque de Crear Llama sigue llegando a 60 pies aunque el alcance
+      // del conjuro sea Personal.
+      expect(spell('produce-flame').description, contains('60 pies'));
+    });
+
+    test('9.2 duración', () {
+      const esperado = {
+        'goodberry': '24 horas',
+        'command': 'Instantánea',
+        'mind-sliver': 'Instantánea',
+        'blink': '1 minuto',
+        'false-life': 'Instantánea',
+        'nystuls-magic-aura': '24 horas',
+        'mordenkainens-faithful-hound': '8 horas',
+        'transport-via-plants': '10 minutos',
+        'astral-projection': 'Hasta disipar',
+      };
+      esperado.forEach((id, duracion) {
+        expect(spell(id).duration, duracion, reason: id);
+      });
+      // Falsa Vida ya no inventa una hora para los PG temporales.
+      expect(spell('false-life').description, isNot(contains('1 hora')));
+      // El Aura de Nystul pasa a "hasta ser disipada" solo tras los 30 días.
+      expect(spell('nystuls-magic-aura').description, contains('30 días'));
+      expect(spell('commune-with-nature').description, contains('300 pies'));
+    });
+
+    test('9.3 daño y mecánicas', () {
+      const debe = {
+        'flame-strike': ['5d6 de fuego', '5d6 radiante'],
+        'mass-cure-wounds': ['5d8'],
+        'circle-of-death': ['8d8'],
+        'weird': ['10d10', '5d10'],
+        'cordon-of-arrows': ['2d4', 'una sola pieza'],
+        'conjure-celestial': ['4d12', '6d12'],
+        'blade-barrier': ['fuerza'],
+        'mordenkainens-faithful-hound': ['4d8', 'fuerza'],
+        'phantasmal-killer': ['4d10', 'desventaja'],
+        'wall-of-thorns': ['7d8', '4 pies'],
+      };
+      debe.forEach((id, frases) {
+        for (final f in frases) {
+          expect(spell(id).description, contains(f), reason: '$id: "$f"');
+        }
+      });
+
+      // Y lo que la regla 2024 quitó.
+      expect(
+          spell('phantasmal-killer').description, isNot(contains('asustad')));
+      expect(spell('wall-of-thorns').description, contains('No aplica el'));
+      expect(spell('circle-of-death').description, isNot(contains('8d6')));
+      expect(spell('flame-strike').description, isNot(contains('4d6')));
+    });
+
+    test('los conjuros corregidos conservan id, nivel, escuela y clases', () {
+      // El apartado 9 prohíbe tocarlos: si una corrección los movió, esto lo
+      // ve antes que cualquier otra prueba.
+      const firma = {
+        'flame-strike': (5, 'Evocación'),
+        'circle-of-death': (6, 'Nigromancia'),
+        'weird': (9, 'Ilusionismo'),
+        'phantasmal-killer': (4, 'Ilusionismo'),
+        'wall-of-thorns': (6, 'Conjuración'),
+        'conjure-celestial': (7, 'Conjuración'),
+        'produce-flame': (0, 'Conjuración'),
+        'astral-projection': (9, 'Nigromancia'),
+      };
+      firma.forEach((id, datos) {
+        expect(spell(id).level, datos.$1, reason: id);
+        expect(spell(id).school, datos.$2, reason: id);
+      });
     });
   });
 }

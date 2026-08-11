@@ -429,4 +429,83 @@ void main() {
       }
     });
   });
+
+  group('Exclusión de Marcas Dracónicas', () {
+    // Forge of the Artificer: solo se tiene **una** categoría base de marca, y
+    // la Marca Aberrante cuenta dentro de esa exclusión. Las mayores y Potente
+    // dependen de la base y no son una segunda base.
+    Character conDotes(List<String> featIds, {int level = 4}) => Character(
+          id: 'marcado',
+          name: 'Prueba',
+          raceId: 'human',
+          classId: 'fighter',
+          // Un trasfondo sin dote de origen: los de casa dracomarcada
+          // conceden una marca y ensuciarían la premisa.
+          backgroundId: 'soldier',
+          level: level,
+          assignedScores: {for (final a in Ability.values) a: 14},
+          hpPerLevel: List.filled(level, 8),
+          featIds: featIds,
+        );
+
+    List<String> codigos(Character c) =>
+        CharacterValidator(repo).validate(c).map((w) => w.code).toList();
+
+    test('las trece marcas base comparten grupo excluyente', () {
+      final base = repo.feats.values.where((f) => f.category == 'dragonmark');
+      expect(base, hasLength(13));
+      for (final f in base) {
+        expect(f.effectiveExclusiveGroup, 'dragonmark', reason: f.id);
+      }
+    });
+
+    test('dos marcas base distintas se rechazan', () {
+      expect(
+        codigos(conDotes(['mark-of-storm', 'mark-of-shadow'])),
+        contains('feat_exclusive_group'),
+      );
+    });
+
+    test('una marca base más la Aberrante se rechaza', () {
+      expect(
+        codigos(conDotes(['mark-of-storm', 'aberrant-dragonmark'])),
+        contains('feat_exclusive_group'),
+      );
+    });
+
+    test('una marca base con su Marca Mayor se acepta', () {
+      final c = conDotes(['mark-of-storm', 'greater-mark-of-storm']);
+      final w = codigos(c);
+      expect(w, isNot(contains('feat_exclusive_group')));
+      expect(w, isNot(contains('feat_prerequisite')));
+    });
+
+    test('la Marca Mayor sin su base se rechaza por prerrequisito', () {
+      expect(
+        codigos(conDotes(['greater-mark-of-storm'])),
+        contains('feat_prerequisite'),
+      );
+    });
+
+    test('cualquier marca con Marca Dracónica Potente se acepta', () {
+      final w = codigos(conDotes(['mark-of-storm', 'potent-dragonmark']));
+      expect(w, isNot(contains('feat_exclusive_group')));
+      expect(w, isNot(contains('feat_prerequisite')));
+    });
+
+    test('Potente sin ninguna marca se rechaza por prerrequisito', () {
+      expect(
+        codigos(conDotes(['potent-dragonmark'])),
+        contains('feat_prerequisite'),
+      );
+    });
+
+    test('las 108 incorporaciones a listas de conjuros no se movieron', () {
+      final total = repo.feats.values
+          .where((f) => f.category == 'dragonmark')
+          .expand((f) => f.effects.whereType<SpellListAdditionEffect>())
+          .length;
+      expect(total, 108, reason: '12 marcas × 9 conjuros');
+    });
+  });
 }

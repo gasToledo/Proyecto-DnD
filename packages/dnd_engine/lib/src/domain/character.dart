@@ -237,7 +237,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 17;
+  static const int currentSchemaVersion = 18;
 
   final String id;
   String name;
@@ -257,6 +257,16 @@ class Character {
   /// Aptitud mágica elegida para los conjuros concedidos por la especie o su
   /// linaje. En 2024, Elfo, Gnomo y Tiefling eligen INT, SAB o CAR.
   final Ability? speciesSpellcastingAbility;
+
+  /// Aptitud mágica elegida para los conjuros que concede una dote, por id de
+  /// dote. Iniciado en la Magia dice "Inteligencia, Sabiduría o Carisma (elegí
+  /// al tomar la dote)", y esa elección no puede vivir en el contenido porque
+  /// es del personaje. Es un mapa y no un campo suelto porque la dote es
+  /// repetible con listas distintas y cada copia elige la suya.
+  ///
+  /// Una dote que no esté en el mapa cae en la característica que declare su
+  /// contenido: las fichas anteriores a este campo siguen compilando igual.
+  final Map<String, Ability> featSpellcastingAbilities;
 
   /// Tamaño elegido, para las especies que lo ofrecen (Humano, Tiefling y
   /// Aasimar son Mediano o Pequeño). Null significa "sin elegir": la ficha cae
@@ -412,6 +422,7 @@ class Character {
     this.subclassId,
     this.lineageId,
     this.speciesSpellcastingAbility,
+    this.featSpellcastingAbilities = const {},
     this.chosenSize,
     this.innateCantripChoices = const {},
     this.level = 1,
@@ -455,6 +466,10 @@ class Character {
         'subclassId': subclassId,
         'lineageId': lineageId,
         'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
+        'featSpellcastingAbilities': {
+          for (final e in featSpellcastingAbilities.entries)
+            e.key: e.value.name,
+        },
         'chosenSize': chosenSize,
         'innateCantripChoices': innateCantripChoices,
         'level': level,
@@ -815,6 +830,14 @@ class Character {
           migrated.putIfAbsent('wildShapeForms', () => []);
           version = 17;
           migrated['schemaVersion'] = version;
+        case 17:
+          // Arranca vacío: la ficha vieja no dice qué característica eligió el
+          // jugador para Iniciado en la Magia, y el motor no se la inventa.
+          // Sin entrada, los conjuros de la dote usan la que declara el
+          // contenido, que es exactamente el comportamiento anterior.
+          migrated.putIfAbsent('featSpellcastingAbilities', () => {});
+          version = 18;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -836,6 +859,12 @@ class Character {
       lineageId: j['lineageId'] as String?,
       speciesSpellcastingAbility:
           _abilityFromJson(j['speciesSpellcastingAbility']),
+      featSpellcastingAbilities: {
+        for (final e
+            in (j['featSpellcastingAbilities'] as Map? ?? const {}).entries)
+          if (e.key is String && _abilityFromJson(e.value) != null)
+            e.key as String: _abilityFromJson(e.value)!,
+      },
       chosenSize: j['chosenSize'] as String?,
       innateCantripChoices: {
         for (final e in (j['innateCantripChoices'] as Map? ?? const {}).entries)
@@ -905,6 +934,7 @@ class Character {
     Object? subclassId = _unset,
     Object? lineageId = _unset,
     Object? speciesSpellcastingAbility = _unset,
+    Map<String, Ability>? featSpellcastingAbilities,
     Object? chosenSize = _unset,
     Map<String, String>? innateCantripChoices,
     int? level,
@@ -946,6 +976,8 @@ class Character {
       speciesSpellcastingAbility: identical(speciesSpellcastingAbility, _unset)
           ? this.speciesSpellcastingAbility
           : speciesSpellcastingAbility as Ability?,
+      featSpellcastingAbilities:
+          featSpellcastingAbilities ?? this.featSpellcastingAbilities,
       chosenSize: identical(chosenSize, _unset)
           ? this.chosenSize
           : chosenSize as String?,

@@ -189,9 +189,11 @@ void main() {
         assignedScores: {for (final a in Ability.values) a: 14},
         hpPerLevel: List.filled(3, 6),
       );
-      final w = CharacterValidator(repo)
-          .validate(c)
-          .where((x) => x.code == 'feature_choice_pending');
+      // El Druida también tiene pendiente Orden Primordial a nivel 1, así que
+      // se filtra por el rasgo de esta subclase.
+      final w = CharacterValidator(repo).validate(c).where((x) =>
+          x.code == 'feature_choice_pending' &&
+          x.message.contains('Terreno del Círculo'));
       expect(w, hasLength(1));
       expect(w.single.severity, WarningSeverity.info);
     });

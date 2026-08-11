@@ -100,4 +100,131 @@ void main() {
       expect(d, contains(die));
     }
   });
+
+  group('las órdenes de nivel 1 se compilan de verdad', () {
+    late ContentRepository repo;
+    setUpAll(() async {
+      repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+    });
+
+    ComputedSheet conOrden(String classId, String groupId, String? optionId) =>
+        CharacterCompiler(repo).compile(Character(
+          id: 'orden-$classId',
+          name: 'Prueba',
+          raceId: 'human',
+          classId: classId,
+          backgroundId: 'hermit',
+          level: 1,
+          assignedScores: const {
+            Ability.strength: 10,
+            Ability.dexterity: 14,
+            Ability.constitution: 14,
+            Ability.intelligence: 12,
+            // SAB 16 → modificador +3, para distinguirlo del piso de +1.
+            Ability.wisdom: 16,
+            Ability.charisma: 10,
+          },
+          hpPerLevel: const [8],
+          featureChoices: optionId == null
+              ? const {}
+              : {
+                  groupId: [optionId]
+                },
+        ));
+
+    test('Protector concede las competencias y Taumaturgo no', () {
+      final protector =
+          conOrden('cleric', 'divine-order', 'divine-order-protector');
+      expect(protector.weaponProficiencies, contains('martial'));
+      expect(protector.armorProficiencies, contains('heavy'));
+
+      final thaum =
+          conOrden('cleric', 'divine-order', 'divine-order-thaumaturge');
+      expect(thaum.weaponProficiencies, isNot(contains('martial')));
+      expect(thaum.armorProficiencies, isNot(contains('heavy')));
+    });
+
+    test('Taumaturgo suma el modificador de Sabiduría a Arcanos y Religión',
+        () {
+      final sin = conOrden('cleric', 'divine-order', null);
+      final thaum =
+          conOrden('cleric', 'divine-order', 'divine-order-thaumaturge');
+      expect(thaum.skillModifier('arcana') - sin.skillModifier('arcana'), 3);
+      expect(
+          thaum.skillModifier('religion') - sin.skillModifier('religion'), 3);
+      // Y no toca las demás.
+      expect(thaum.skillModifier('nature'), sin.skillModifier('nature'));
+
+      // El aporte queda explicable, no solo sumado al total.
+      expect(thaum.skillBonuses['arcana']!.single.amount, 3);
+      expect(
+        thaum.skillBonuses['arcana']!.single.source,
+        'Orden Divina: Taumaturgo',
+      );
+    });
+
+    test('Taumaturgo abre un cupo real de truco de Clérigo', () {
+      final thaum =
+          conOrden('cleric', 'divine-order', 'divine-order-thaumaturge');
+      final slot = thaum.spellChoiceSlots
+          .firstWhere((s) => s.groupId == 'divine-order:thaumaturge-cantrip');
+      expect(slot.count, 1);
+      expect(slot.options, isNotEmpty);
+      for (final id in slot.options) {
+        expect(repo.spell(id)!.level, 0);
+        expect(repo.spell(id)!.classes, contains('cleric'));
+      }
+    });
+
+    test('Guardián da al Druida armas marciales y armadura media', () {
+      final sin = conOrden('druid', 'primal-order', null);
+      expect(sin.armorProficiencies, isNot(contains('medium')));
+
+      final warden = conOrden('druid', 'primal-order', 'primal-order-warden');
+      expect(warden.weaponProficiencies, contains('martial'));
+      expect(warden.armorProficiencies, contains('medium'));
+    });
+
+    test('Naturalista suma a Arcanos y Naturaleza, no a Religión', () {
+      final sin = conOrden('druid', 'primal-order', null);
+      final mag = conOrden('druid', 'primal-order', 'primal-order-magician');
+      expect(mag.skillModifier('arcana') - sin.skillModifier('arcana'), 3);
+      expect(mag.skillModifier('nature') - sin.skillModifier('nature'), 3);
+      expect(mag.skillModifier('religion'), sin.skillModifier('religion'));
+      // Y no devuelve armadura media a todos los Druidas.
+      expect(mag.armorProficiencies, isNot(contains('medium')));
+    });
+
+    test('el piso de +1 se aplica con Sabiduría baja', () {
+      final flojo = CharacterCompiler(repo).compile(Character(
+        id: 'clerigo-flojo',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'cleric',
+        backgroundId: 'hermit',
+        level: 1,
+        assignedScores: const {
+          Ability.strength: 10,
+          Ability.dexterity: 10,
+          Ability.constitution: 10,
+          Ability.intelligence: 10,
+          // SAB 8 → modificador −1; el bonificador tiene que quedar en +1.
+          Ability.wisdom: 8,
+          Ability.charisma: 10,
+        },
+        hpPerLevel: const [8],
+        featureChoices: const {
+          'divine-order': ['divine-order-thaumaturge'],
+        },
+      ));
+      expect(flojo.skillBonuses['arcana']!.single.amount, 1);
+    });
+
+    test('una elección que el rasgo no ofrece se ignora', () {
+      final trucho =
+          conOrden('cleric', 'divine-order', 'divine-order-inventada');
+      expect(trucho.weaponProficiencies, isNot(contains('martial')));
+      expect(trucho.skillBonuses, isEmpty);
+    });
+  });
 }

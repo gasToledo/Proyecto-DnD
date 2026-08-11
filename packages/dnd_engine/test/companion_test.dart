@@ -495,6 +495,114 @@ void main() {
       expect(companion(druid, 'summon-undead'), isNull);
     });
 
+    test('Animar Objetos llega a todas sus listas con las tres formas', () {
+      final spell = srd.spell('animate-objects')!;
+      expect(spell.classes, ['wizard', 'sorcerer', 'bard', 'artificer']);
+
+      for (final classId in spell.classes) {
+        final option = companion(
+          build(classId: classId, level: 20, spellIds: [spell.id]),
+          spell.id,
+        );
+        expect(option, isNotNull, reason: classId);
+        expect(option!.minSpellLevel, 5, reason: classId);
+        expect(
+          option.forms.map((f) => f.id),
+          [
+            'animated-object-medium-or-smaller',
+            'animated-object-large',
+            'animated-object-huge',
+          ],
+          reason: classId,
+        );
+      }
+    });
+
+    test('los Objetos Animados escalan el dado con el espacio', () {
+      final sheet = build(
+        classId: 'wizard',
+        level: 20,
+        spellIds: ['animate-objects'],
+        scores: {Ability.intelligence: 20},
+      );
+      final option = companion(sheet, 'animate-objects')!;
+
+      Map<String, ResolvedCreature> at(int slot) => {
+            for (final form in option.forms)
+              form.id: form.resolve(
+                CreatureVars.from(
+                  level: sheet.level,
+                  proficiencyBonus: sheet.proficiencyBonus,
+                  abilityModifiers: sheet.abilityModifiers,
+                  spellAttackBonus: sheet.spellcasting!.attackBonus,
+                  spellSaveDc: sheet.spellcasting!.saveDc,
+                  spellLevel: slot,
+                ),
+              ),
+          };
+
+      expect(at(5)['animated-object-medium-or-smaller']!.maxHp, 10);
+      expect(
+        at(5)['animated-object-medium-or-smaller']!.actions.single.damage,
+        '1d4+8',
+      );
+      expect(at(5)['animated-object-large']!.actions.single.damage, '2d6+8');
+      expect(at(5)['animated-object-huge']!.actions.single.damage, '2d12+8');
+      expect(
+        at(7)['animated-object-medium-or-smaller']!.actions.single.damage,
+        '3d4+8',
+      );
+      expect(at(7)['animated-object-large']!.actions.single.damage, '4d6+8');
+      expect(at(7)['animated-object-huge']!.actions.single.damage, '4d12+8');
+    });
+
+    test('Insecto Gigante ofrece Ciempiés, Araña y Avispa al Druida', () {
+      final spell = srd.spell('giant-insect')!;
+      expect(spell.classes, ['druid']);
+      final sheet = build(
+        classId: 'druid',
+        level: 20,
+        spellIds: [spell.id],
+        scores: {Ability.wisdom: 20},
+      );
+      final option = companion(sheet, spell.id)!;
+      expect(option.minSpellLevel, 4);
+      expect(
+        option.forms.map((f) => f.id),
+        ['giant-insect-centipede', 'giant-insect-spider', 'giant-insect-wasp'],
+      );
+
+      ResolvedCreature at(String id, int slot) =>
+          option.forms.singleWhere((f) => f.id == id).resolve(
+                CreatureVars.from(
+                  level: sheet.level,
+                  proficiencyBonus: sheet.proficiencyBonus,
+                  abilityModifiers: sheet.abilityModifiers,
+                  spellAttackBonus: sheet.spellcasting!.attackBonus,
+                  spellSaveDc: sheet.spellcasting!.saveDc,
+                  spellLevel: slot,
+                ),
+              );
+
+      final centipede4 = at('giant-insect-centipede', 4);
+      expect(centipede4.armorClass, 15);
+      expect(centipede4.maxHp, 30);
+      expect(centipede4.actions.first.description, contains('2 ataques'));
+      expect(centipede4.actions[1].damage, '1d6+7 perforante + 1d4 veneno');
+
+      final spider6 = at('giant-insect-spider', 6);
+      expect(spider6.armorClass, 17);
+      expect(spider6.maxHp, 50);
+      expect(spider6.actions.first.description, contains('3 ataques'));
+      expect(
+        spider6.actions
+            .singleWhere((a) => a.name == 'Proyectil de telaraña')
+            .damage,
+        '1d10+9',
+      );
+      expect(at('giant-insect-wasp', 4).speed, contains('volar 40 pies'));
+    });
+
     test('un espíritu no se puede invocar por debajo del nivel del conjuro',
         () {
       final wizard = build(

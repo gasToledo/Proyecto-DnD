@@ -4,11 +4,89 @@ import 'package:test/test.dart';
 /// Chequeos de integridad sobre el contenido real del SRD 2024. Atrapa datos
 /// mal referenciados (una dote inexistente, una maestría inválida) apenas se
 /// cargan, sin necesidad de recorrer la app.
+/// Las dotes que el SRD 5.2.1 sí publica y que el catálogo tenía etiquetadas
+/// `phb_2024`. Se comparte entre los dos tests que miran procedencia de dotes.
+const srdFeatIds = {
+  'druid-land-arid',
+  'druid-land-polar',
+  'druid-land-temperate',
+  'druid-land-tropical',
+  'alert',
+  'savage-attacker',
+  'skilled',
+  'magic-initiate-wizard',
+  'magic-initiate-cleric',
+  'magic-initiate-druid',
+  // Apresador se divide por característica, así que aporta dos entradas.
+  'grappler-strength',
+  'grappler-dexterity',
+  'fs-defense',
+  'fs-archery',
+  'fs-great-weapon',
+  'fs-two-weapon-fighting',
+  // Alternativas de clase "en lugar de una dote de Estilo de Combate".
+  'fs-blessed-warrior',
+  'fs-druidic-warrior',
+  'ability-score-improvement',
+  'boon-of-combat-prowess',
+  'boon-of-truesight',
+  'boon-of-irresistible-offense',
+  'boon-of-fate',
+  'boon-of-the-night-spirit',
+  'boon-of-spell-recall',
+  'boon-of-dimensional-travel',
+};
+
 void main() {
   late ContentRepository repo;
 
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
+  });
+
+  group('inventario del catálogo', () {
+    // Un alta, una baja o un duplicado accidental se ve acá antes que en
+    // ninguna otra prueba. Los números salen de la auditoría del catálogo.
+    Map<ContentSource, int> porFuente(Iterable<dynamic> entradas) {
+      final c = <ContentSource, int>{};
+      for (final e in entradas) {
+        c[e.source as ContentSource] = (c[e.source as ContentSource] ?? 0) + 1;
+      }
+      return c;
+    }
+
+    test('las cantidades por bloque no se mueven', () {
+      expect(repo.classes, hasLength(13));
+      expect(repo.subclasses, hasLength(53));
+      expect(repo.races, hasLength(15));
+      expect(repo.lineages, hasLength(28));
+      expect(repo.backgrounds, hasLength(33));
+      // 187 dotes canónicas + Blessed Warrior y Druidic Warrior, que son
+      // opciones de clase "en lugar de una dote de Estilo de Combate".
+      expect(repo.feats, hasLength(189));
+      expect(repo.weapons, hasLength(38));
+      expect(repo.armor, hasLength(13));
+      expect(repo.spells, hasLength(392));
+      expect(repo.creatures, hasLength(107));
+    });
+
+    test('las procedencias coinciden con el cruce contra el SRD 5.2.1', () {
+      expect(porFuente(repo.lineages.values), {
+        ContentSource.srd2024: 24,
+        ContentSource.foa2025: 4,
+      });
+      expect(porFuente(repo.weapons.values), {ContentSource.srd2024: 38});
+      expect(porFuente(repo.spells.values), {
+        ContentSource.srd2024: 339,
+        ContentSource.phb2024: 52,
+        ContentSource.foa2025: 1,
+      });
+      expect(porFuente(repo.feats.values), {
+        ContentSource.srd2024: 26,
+        ContentSource.phb2024: 135,
+        ContentSource.foa2025: 28,
+      });
+    });
   });
 
   // Las 8 propiedades de Maestría de Armas del PHB 2024.
@@ -126,32 +204,14 @@ void main() {
   });
 
   test('solo las dotes del SRD 5.2.1 quedan etiquetadas como tales', () {
-    // El SRD trae 17 dotes; de esas, 10 están en este catálogo. Los cuatro
-    // terrenos del Círculo de la Tierra se suman aparte: no son dotes del
-    // capítulo 5, son el catálogo de una elección abierta que reusa `Feat`, y
-    // el texto de sus tablas sale del SRD igual que la subclase.
-    const srdFeats = {
-      'druid-land-arid',
-      'druid-land-polar',
-      'druid-land-temperate',
-      'druid-land-tropical',
-      'alert',
-      'savage-attacker',
-      'skilled',
-      'magic-initiate-wizard',
-      'magic-initiate-cleric',
-      // Apresador se divide por característica, así que aporta dos entradas.
-      'grappler-strength',
-      'grappler-dexterity',
-      'fs-defense',
-      'fs-archery',
-      'fs-great-weapon',
-    };
+    // Los cuatro terrenos del Círculo de la Tierra se suman aparte: no son
+    // dotes del capítulo 5, son el catálogo de una elección abierta que reusa
+    // `Feat`, y el texto de sus tablas sale del SRD igual que la subclase.
     final tagged = repo.feats.values
         .where((f) => f.source == ContentSource.srd2024)
         .map((f) => f.id)
         .toSet();
-    expect(tagged, equals(srdFeats));
+    expect(tagged, equals(srdFeatIds));
   });
 
   test('solo los trasfondos del SRD 5.2.1 quedan etiquetados como tales', () {
@@ -313,7 +373,13 @@ void main() {
       expect(feat, isNotNull, reason: 'falta ${entry.key}');
       expect(feat!.name, entry.value.$1, reason: entry.key);
       expect(feat.category, entry.value.$2, reason: entry.key);
-      expect(feat.source, ContentSource.phb2024, reason: entry.key);
+      expect(
+        feat.source,
+        srdFeatIds.contains(entry.key)
+            ? ContentSource.srd2024
+            : ContentSource.phb2024,
+        reason: entry.key,
+      );
     }
     expect(repo.feat('mobile'), isNull,
         reason: 'Ágil/Mobile es la dote 2014 reemplazada por Veloz en 2024');
@@ -334,7 +400,11 @@ void main() {
           (f) =>
               (f.source == ContentSource.phb2024 ||
                   f.source == ContentSource.srd2024) &&
-              featCategories.contains(f.category),
+              featCategories.contains(f.category) &&
+              // Blessed Warrior y Druidic Warrior no son dotes del capítulo 5:
+              // son la alternativa de clase "en lugar de una dote de Estilo de
+              // Combate", y por eso son las únicas con `requiredClassId`.
+              f.prerequisite?.requiredClassId == null,
         )
         .toList();
     // Son 127 registros para 75 dotes del capítulo porque las que dejan elegir
@@ -492,10 +562,12 @@ void main() {
     }
   });
 
-  test('los diez estilos exigen el rasgo Estilo de Combate', () {
+  test('los estilos de combate exigen el rasgo Estilo de Combate', () {
     final styles =
         repo.feats.values.where((f) => f.category == 'fighting-style').toList();
-    expect(styles, hasLength(10));
+    // 10 dotes del capítulo 5 + las dos opciones de clase que XPHB ofrece "en
+    // lugar de una dote de Estilo de Combate".
+    expect(styles, hasLength(12));
     for (final feat in styles) {
       expect(
         feat.prerequisite?.requiredClassFeature,
@@ -503,6 +575,34 @@ void main() {
         reason: feat.id,
       );
     }
+  });
+
+  test('Blessed Warrior y Druidic Warrior son de una sola clase', () {
+    const esperado = {
+      'fs-blessed-warrior': ('paladin', 'cleric'),
+      'fs-druidic-warrior': ('ranger', 'druid'),
+    };
+    for (final entry in esperado.entries) {
+      final feat = repo.feat(entry.key);
+      expect(feat, isNotNull, reason: entry.key);
+      expect(feat!.source, ContentSource.srd2024, reason: entry.key);
+      expect(feat.category, 'fighting-style', reason: entry.key);
+      expect(feat.prerequisite?.requiredClassId, entry.value.$1,
+          reason: entry.key);
+      // Los dos trucos salen de la lista de la clase que corresponde.
+      final choice = feat.effects.whereType<SpellChoiceEffect>().single;
+      expect(choice.count, 2, reason: entry.key);
+      expect(choice.maxLevel, 0, reason: entry.key);
+      expect(choice.fromClasses, [entry.value.$2], reason: entry.key);
+      expect(choice.replaceable, isTrue, reason: entry.key);
+    }
+    // Y ninguna otra opción declara clase: el resto las ve cualquier clase con
+    // el rasgo.
+    final conClase = repo.feats.values
+        .where((f) => f.prerequisite?.requiredClassId != null)
+        .map((f) => f.id)
+        .toSet();
+    expect(conClase, esperado.keys.toSet());
   });
 
   test('Resiliente ofrece las seis características pero solo permite una', () {
@@ -701,6 +801,68 @@ void main() {
           reason: entry.key);
     }
     expect(repo.weapons['musket']!.properties, contains('two-handed'));
+  });
+
+  group('la Lanza de caballería solo exige dos manos desmontada', () {
+    // XPHB: "You have Disadvantage when you use a Lance to attack a target
+    // within 5 feet. You also must use two hands to attack with it unless
+    // you're mounted." Se modela calificando `two-handed`, no borrándola.
+    test('el arma declara la propiedad y su condición', () {
+      final lance = repo.weapons['lance']!;
+      expect(lance.properties, contains('two-handed'));
+      expect(lance.twoHandedUnlessMounted, isTrue);
+    });
+
+    test('desmontado la exige, montado no', () {
+      final lance = repo.weapons['lance']!;
+      expect(lance.requiresTwoHands(), isTrue);
+      expect(lance.requiresTwoHands(mounted: true), isFalse);
+    });
+
+    test('las demás armas a dos manos siguen siendo incondicionales', () {
+      final otras = repo.weapons.values.where(
+        (w) => w.id != 'lance' && w.properties.contains('two-handed'),
+      );
+      expect(otras, isNotEmpty);
+      for (final w in otras) {
+        expect(w.twoHandedUnlessMounted, isFalse, reason: w.id);
+        expect(w.requiresTwoHands(mounted: true), isTrue, reason: w.id);
+      }
+    });
+
+    test('round-trip JSON con y sin la condición', () {
+      final lance = repo.weapons['lance']!;
+      expect(Weapon.fromJson(lance.toJson()).twoHandedUnlessMounted, isTrue);
+
+      final greatsword = repo.weapons['greatsword']!;
+      expect(greatsword.toJson().containsKey('twoHandedUnlessMounted'), isFalse,
+          reason: 'no ensuciar el JSON de las armas que no usan la condición');
+      expect(
+          Weapon.fromJson(greatsword.toJson()).twoHandedUnlessMounted, isFalse);
+
+      // Un arma homebrew vieja, sin el campo, sigue siendo estricta.
+      final vieja = Weapon.fromJson({
+        'id': 'homebrew-pike',
+        'name': 'Pica casera',
+        'source': 'homebrew',
+        'category': 'martial',
+        'damageDice': '1d10',
+        'damageType': 'piercing',
+        'properties': ['two-handed'],
+      });
+      expect(vieja.twoHandedUnlessMounted, isFalse);
+      expect(vieja.requiresTwoHands(mounted: true), isTrue);
+    });
+  });
+
+  test('el Pico de guerra es versátil 1d8/1d10', () {
+    final pick = repo.weapons['war-pick']!;
+    expect(pick.properties, contains('versatile'));
+    expect(pick.damageDice, '1d8');
+    expect(pick.versatileDice, '1d10');
+    // La corrección no toca ni el tipo de daño ni la maestría.
+    expect(pick.damageType, 'piercing');
+    expect(pick.mastery, 'sap');
   });
 
   test('cada armadura tiene categoría válida', () {

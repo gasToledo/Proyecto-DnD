@@ -93,7 +93,7 @@
       {
         "type": "passiveTrait",
         "name": "Agilidad Mediana",
-        "description": "Puedes moverte a través del espacio de cualquier criatura de tamaño mayor que el tuyo."
+        "description": "Puedes moverte a través del espacio de cualquier criatura de tamaño mayor que el tuyo, pero no puedes detenerte en el mismo espacio."
       },
       {
         "type": "passiveTrait",

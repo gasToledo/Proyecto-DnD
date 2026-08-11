@@ -162,6 +162,26 @@ class CharacterCompiler {
       }
     }
 
+    // Elecciones abiertas que el rasgo declara en línea (Orden Primordial,
+    // Orden Divina): no son dotes, así que se resuelven contra las opciones del
+    // slot. Los slots de clase ya están cargados: `klass.featuresUpTo` corrió
+    // arriba.
+    for (final slot in builder.featureChoiceSlots.values) {
+      if (slot.options.isEmpty) continue;
+      final chosen = c.featureChoices[slot.groupId] ?? const <String>[];
+      for (final option in slot.options
+          .where((o) => chosen.contains(o.id))
+          .take(slot.count)) {
+        applySource(
+          'featureOption:' + slot.groupId + ':' + option.id,
+          // "Orden Divina: Taumaturgo": sola, la opción no dice de qué elección
+          // salió, y así es como se lee en el desglose de la ficha.
+          slot.name + ': ' + option.name,
+          option.effects,
+        );
+      }
+    }
+
     // Dotes: la de origen del trasfondo + las elegidas + estilo de combate.
     //
     // Una dote se toma una sola vez salvo que sea repetible (PHB, cap. 5). Un
@@ -194,7 +214,25 @@ class CharacterCompiler {
             (feat.repeatable ? ':' + occurrence.toString() : ''),
         feat.name,
         feat.effects,
+        // Iniciado en la Magia deja elegir INT, SAB o CAR al tomar la dote.
+        // Sin elección, manda la que declare el contenido.
+        spellAbilityOverride: c.featSpellcastingAbilities[feat.id],
       );
+    }
+
+    // Bonos a la característica que el personaje eligió para una dote (Marca
+    // Dracónica Potente sube la de su marca). Va acá, después del loop de
+    // dotes y antes de calcular las puntuaciones finales.
+    for (final (:effect, :source) in builder.abilityBonusesFromFeatChoice) {
+      final elegida = featIds
+          .whereType<String>()
+          .where((id) => repo.feat(id)?.category == effect.featCategory)
+          .map((id) => c.featSpellcastingAbilities[id])
+          .whereType<Ability>()
+          .firstOrNull;
+      if (elegida != null) {
+        builder.addAbilityBonus(elegida, effect.amount, source: source);
+      }
     }
 
     // Habilidades elegidas en el wizard (raza/clase/trasfondo).
@@ -427,6 +465,13 @@ class CharacterCompiler {
 
     // Un id que el catálogo no conoce se descarta acá, igual que en los
     // innatos: contenido incompleto no debe romper la ficha.
+    // Marca Dracónica Potente deja siempre preparada la lista que sumó la
+    // marca base. Se hace acá y no en el builder porque el orden importa: la
+    // marca puede aplicarse después que la dote que promete prepararla.
+    if (builder.prepareSpellListAdditions) {
+      builder.alwaysPreparedSpellIds.addAll(builder.spellListAdditionIds);
+    }
+
     final alwaysPrepared = {
       for (final id in builder.alwaysPreparedSpellIds)
         if (repo.spell(id) != null) id,
@@ -441,6 +486,7 @@ class CharacterCompiler {
       savingThrowProficiencies: builder.saveProficiencies,
       skillProficiencies: builder.skillProficiencies,
       expertiseSkills: builder.expertiseSkills,
+      skillBonuses: builder.resolveSkillBonuses(mods),
       armorProficiencies: builder.armorProficiencies,
       weaponProficiencies: builder.weaponProficiencies,
       toolProficiencies: builder.toolProficiencies,
@@ -484,6 +530,7 @@ class CharacterCompiler {
             featCategory: e.featCategory,
             count: e.count,
             replaceable: e.replaceable,
+            options: e.options,
           ),
       ],
       proficiencyChoiceSlots: proficiencySlots,
@@ -690,6 +737,7 @@ class CharacterCompiler {
                 (effect.schools.isEmpty || effect.schools.contains(s.school)) &&
                 (effect.castingTimes.isEmpty ||
                     effect.castingTimes.contains(s.castingTime)) &&
+                (!effect.ritualOnly || s.ritual) &&
                 // Lo que otro rasgo ya concede no se puede volver a elegir.
                 // Como lo elegido se vuelca abajo, esto cubre también los cupos
                 // anteriores de este mismo recorrido.
@@ -697,16 +745,22 @@ class CharacterCompiler {
               s.id,
         ];
 
+        // Lanzador Ritual crece con el bonificador por competencia en vez de
+        // declarar un grupo por tramo.
+        final cupo = effect.countFromProficiency
+            ? proficiencyBonusForLevel(c.level)
+            : effect.count;
+
         final chosen = <String>[];
         for (final id in c.spellChoices[effect.groupId] ?? const <String>[]) {
-          if (chosen.length >= effect.count) break;
+          if (chosen.length >= cupo) break;
           if (options.contains(id) && !chosen.contains(id)) chosen.add(id);
         }
 
         slots.add(SpellChoiceSlot(
           groupId: effect.groupId,
           name: effect.name.isEmpty ? source.name : effect.name,
-          count: effect.count,
+          count: cupo,
           options: options,
           chosen: chosen,
           replaceable: effect.replaceable,
@@ -718,10 +772,19 @@ class CharacterCompiler {
         // `_resolveInnate` acuña el recurso que lleva la cuenta de los usos sin
         // que este mecanismo sepa nada de recursos ni de descansos.
         if (effect.freeCast != null) {
+          // Una dote puede traer su propia característica elegida (Iniciado en
+          // la Magia). El id de la fuente es "feat:<id>[:copia]".
+          final featId =
+              source.id.startsWith('feat:') ? source.id.split(':')[1] : null;
           for (final id in chosen) {
             builder.grantedSpells.add(GrantSpellEffect(
               spellId: id,
-              ability: builder.spellcasting?.ability ?? Ability.intelligence,
+              ability: effect.ability ??
+                  (featId == null
+                      ? null
+                      : c.featSpellcastingAbilities[featId]) ??
+                  builder.spellcasting?.ability ??
+                  Ability.intelligence,
               use: effect.freeCast!,
             ));
           }

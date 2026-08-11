@@ -210,6 +210,7 @@
     "damageDice": "1d10",
     "damageType": "piercing",
     "properties": ["heavy", "reach", "two-handed"],
+    "twoHandedUnlessMounted": true,
     "mastery": "topple"
   },
   {
@@ -301,7 +302,8 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "piercing",
-    "properties": [],
+    "properties": ["versatile"],
+    "versatileDice": "1d10",
     "mastery": "sap"
   },
   {
@@ -358,7 +360,7 @@
   {
     "id": "blowgun",
     "name": "Cerbatana",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "martial",
     "damageDice": "1",
     "damageType": "piercing",
@@ -368,7 +370,7 @@
   {
     "id": "musket",
     "name": "Mosquete",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "martial",
     "damageDice": "1d12",
     "damageType": "piercing",
@@ -378,7 +380,7 @@
   {
     "id": "pistol",
     "name": "Pistola",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "category": "martial",
     "damageDice": "1d10",
     "damageType": "piercing",

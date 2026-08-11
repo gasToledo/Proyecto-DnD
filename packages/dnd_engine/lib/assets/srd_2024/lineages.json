@@ -373,7 +373,7 @@
     "id": "goliath-cloud",
     "name": "Gigante de las Nubes",
     "raceId": "goliath",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Excursión de las nubes. Te desplazás por el aire un instante, como los gigantes de las nubes.",
     "features": [
       {
@@ -398,7 +398,7 @@
     "id": "goliath-fire",
     "name": "Gigante de Fuego",
     "raceId": "goliath",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Abrasión del fuego. Tus golpes arden como la forja de los gigantes de fuego.",
     "features": [
       {
@@ -423,7 +423,7 @@
     "id": "goliath-frost",
     "name": "Gigante de Escarcha",
     "raceId": "goliath",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Frío de la escarcha. Tus golpes hielan y entorpecen, como los gigantes de escarcha.",
     "features": [
       {
@@ -448,7 +448,7 @@
     "id": "goliath-hill",
     "name": "Gigante de las Colinas",
     "raceId": "goliath",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Caída de las colinas. Tu peso derriba, como los gigantes de las colinas.",
     "features": [
       {
@@ -473,7 +473,7 @@
     "id": "goliath-stone",
     "name": "Gigante de Piedra",
     "raceId": "goliath",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Resistencia de la piedra. Aguantás el golpe como los gigantes de piedra.",
     "features": [
       {
@@ -498,7 +498,7 @@
     "id": "goliath-storm",
     "name": "Gigante de las Tormentas",
     "raceId": "goliath",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Trueno de la tormenta. Devolvés el golpe con un estallido, como los gigantes de las tormentas.",
     "features": [
       {
@@ -523,7 +523,7 @@
     "id": "dragonborn-black",
     "name": "Dragón Negro",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era negro. Tu Ataque de Aliento causa daño de ácido y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -548,7 +548,7 @@
     "id": "dragonborn-copper",
     "name": "Dragón Cobre",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era cobre. Tu Ataque de Aliento causa daño de ácido y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -573,7 +573,7 @@
     "id": "dragonborn-blue",
     "name": "Dragón Azul",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era azul. Tu Ataque de Aliento causa daño de relámpago y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -598,7 +598,7 @@
     "id": "dragonborn-bronze",
     "name": "Dragón Bronce",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era bronce. Tu Ataque de Aliento causa daño de relámpago y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -623,7 +623,7 @@
     "id": "dragonborn-white",
     "name": "Dragón Blanco",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era blanco. Tu Ataque de Aliento causa daño de frío y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -648,7 +648,7 @@
     "id": "dragonborn-silver",
     "name": "Dragón Plata",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era plata. Tu Ataque de Aliento causa daño de frío y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -673,7 +673,7 @@
     "id": "dragonborn-green",
     "name": "Dragón Verde",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era verde. Tu Ataque de Aliento causa daño de veneno y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -698,7 +698,7 @@
     "id": "dragonborn-red",
     "name": "Dragón Rojo",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era rojo. Tu Ataque de Aliento causa daño de fuego y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -723,7 +723,7 @@
     "id": "dragonborn-gold",
     "name": "Dragón Oro",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era oro. Tu Ataque de Aliento causa daño de fuego y tenés resistencia a ese tipo de daño.",
     "features": [
       {
@@ -748,7 +748,7 @@
     "id": "dragonborn-brass",
     "name": "Dragón Oropel",
     "raceId": "dragonborn",
-    "source": "phb_2024",
+    "source": "srd_2024",
     "description": "Tu progenitor dragón era oropel. Tu Ataque de Aliento causa daño de fuego y tenés resistencia a ese tipo de daño.",
     "features": [
       {

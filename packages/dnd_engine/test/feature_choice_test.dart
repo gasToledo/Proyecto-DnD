@@ -466,12 +466,27 @@ void main() {
       expect(sheet.attacks.length, sinEstilo.attacks.length);
     });
 
-    test('las diez opciones salen de la categoría, sin lista de ids', () {
+    test('las opciones salen de la categoría, sin lista de ids', () {
       final slot = CharacterCompiler(
         repo,
       ).compile(guerrero()).featureChoiceSlots.single;
 
-      expect(repo.featsByCategory(slot.featCategory), hasLength(10));
+      // 10 dotes del capítulo 5 + Blessed Warrior y Druidic Warrior, que son
+      // de una sola clase y por eso el Guerrero no las ve.
+      expect(repo.featsByCategory(slot.featCategory), hasLength(12));
+    });
+
+    test('el Guerrero no ve Blessed Warrior ni Druidic Warrior', () {
+      final fighter = guerrero();
+      final sheet = CharacterCompiler(repo).compile(fighter);
+      final validator = CharacterValidator(repo);
+      for (final id in ['fs-blessed-warrior', 'fs-druidic-warrior']) {
+        expect(
+          validator.unmetFeatPrerequisite(repo.feat(id)!, fighter, sheet),
+          isNotNull,
+          reason: id,
+        );
+      }
     });
 
     test('Guerrero, Paladín y Explorador conceden el estilo, y a qué nivel',
@@ -513,7 +528,8 @@ void main() {
       }
     });
 
-    test('un Paladín nivel 2 puede tomar cualquiera de los diez estilos', () {
+    test('un Paladín nivel 2 puede tomar los diez estilos y Blessed Warrior',
+        () {
       final paladin = Character(
         id: 'paladin',
         name: 'Prueba',
@@ -528,13 +544,16 @@ void main() {
       final validator = CharacterValidator(repo);
 
       expect(sheet.featureChoiceSlots.single.groupId, 'fighting-style');
+      final elegibles = <String>[];
       for (final feat in repo.featsByCategory('fighting-style')) {
-        expect(
-          validator.unmetFeatPrerequisite(feat, paladin, sheet),
-          isNull,
-          reason: feat.id,
-        );
+        if (validator.unmetFeatPrerequisite(feat, paladin, sheet) == null) {
+          elegibles.add(feat.id);
+        }
       }
+      expect(elegibles, hasLength(11));
+      expect(elegibles, contains('fs-blessed-warrior'));
+      // Druidic Warrior es del Explorador, no del Paladín.
+      expect(elegibles, isNot(contains('fs-druidic-warrior')));
     });
 
     test('un Paladín nivel 1 todavía no tiene la elección', () {
@@ -586,5 +605,37 @@ void main() {
     expect(restored.featCategory, 'c');
     expect(restored.count, 3);
     expect(restored.replaceable, isTrue);
+    // Sin opciones en línea el JSON no lleva la clave: los efectos que ya
+    // existían no cambian de forma.
+    expect(effect.toJson().containsKey('options'), isFalse);
+    expect(restored.options, isEmpty);
+  });
+
+  test('las opciones en línea sobreviven un round-trip por JSON', () {
+    const effect = FeatureChoiceEffect(
+      groupId: 'orden',
+      name: 'Orden',
+      featCategory: 'orden',
+      options: [
+        FeatureOption(
+          id: 'orden-a',
+          name: 'A',
+          source: ContentSource.srd2024,
+          description: 'La primera',
+          effects: [ArmorProficiencyEffect('heavy')],
+        ),
+      ],
+    );
+    final restored = Effect.fromJson(effect.toJson()) as FeatureChoiceEffect;
+    expect(restored.options, hasLength(1));
+    final o = restored.options.single;
+    expect(o.id, 'orden-a');
+    expect(o.name, 'A');
+    expect(o.source, ContentSource.srd2024);
+    expect(o.description, 'La primera');
+    expect(
+      o.effects.whereType<ArmorProficiencyEffect>().single.category,
+      'heavy',
+    );
   });
 }

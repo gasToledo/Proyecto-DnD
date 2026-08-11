@@ -147,14 +147,20 @@ void main() {
       expect(featuresOf('clockwork-sorcery'), contains('Cabalgata Mecánica'));
     });
 
-    test('Hechicería Dracónica todavía tiene el rasgo de 2014 en el nivel 18',
-        () {
+    test('Hechicería Dracónica cambió el rasgo de 2014 del nivel 18', () {
       // En 2024 el nivel 18 es Compañero Dragón, no la Presencia Dracónica de
-      // 2014. No es un cambio de nombre sino de rasgo, así que hace falta el
-      // texto del manual para reescribirlo. Este caso documenta la deuda: hay
-      // que darlo vuelta cuando se consiga, no dejarlo pasar en silencio.
-      expect(featuresOf('draconic-sorcery'), contains('Presencia Dracónica'),
-          reason: 'si ya se corrigió, actualizar esta prueba');
+      // 2014. Era un cambio de rasgo, no de nombre, y quedó pendiente hasta
+      // tener el texto del manual; ya está reescrito.
+      expect(featuresOf('draconic-sorcery'), contains('Compañero Dragón'));
+      expect(
+        featuresOf('draconic-sorcery'),
+        isNot(contains('Presencia Dracónica')),
+      );
+      // Afinidad Dracónica tampoco pertenece a la versión XPHB del nivel 3.
+      expect(
+        featuresOf('draconic-sorcery'),
+        isNot(contains('Afinidad Dracónica')),
+      );
     });
   });
 

@@ -1,3 +1,4 @@
+import '../domain/computed_sheet.dart';
 import '../domain/content.dart';
 import '../domain/creature.dart';
 import '../domain/data_version.dart';
@@ -121,6 +122,25 @@ class ContentRepository {
         feats.values.where((f) => f.category == category),
         (e) => e.name,
       );
+
+  /// El pozo de una elección abierta. Normalmente son las dotes de su
+  /// categoría, pero un rasgo puede traer sus opciones en línea (Orden
+  /// Primordial, Orden Divina): esas no son dotes y no están en el catálogo,
+  /// así que se envuelven en [Feat] para que los selectores no tengan que
+  /// distinguir de dónde salió cada opción.
+  List<Feat> featureChoiceOptions(FeatureChoiceSlot slot) =>
+      slot.options.isEmpty
+          ? featsByCategory(slot.featCategory)
+          : [
+              for (final o in slot.options)
+                Feat(
+                  id: o.id,
+                  name: o.name,
+                  source: o.source,
+                  category: slot.featCategory,
+                  effects: o.effects,
+                ),
+            ];
   List<Weapon> get weaponsSorted => sortedByName(weapons.values, (e) => e.name);
   List<Armor> get armorSorted => sortedByName(armor.values, (e) => e.name);
 

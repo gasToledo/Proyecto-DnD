@@ -175,4 +175,170 @@ void main() {
     expect(d, contains('competencia'));
     expect(d, contains('Fuerza'));
   });
+
+  /// Descripción del rasgo pasivo `trait` dentro del rasgo de clase `feature`.
+  String passiveIn(String classId, String feature, String trait) => repo
+      .characterClass(classId)!
+      .features
+      .firstWhere((f) => f.name == feature)
+      .effects
+      .whereType<PassiveTraitEffect>()
+      .firstWhere((t) => t.name == trait)
+      .description;
+
+  /// Las opciones en línea del rasgo `feature` de la clase `classId`.
+  List<FeatureOption> optionsIn(String classId, String feature) => repo
+      .characterClass(classId)!
+      .features
+      .firstWhere((f) => f.name == feature)
+      .effects
+      .whereType<FeatureChoiceEffect>()
+      .single
+      .options;
+
+  test('Guerrero: Mente Táctica no gasta el uso si la prueba sigue fallando',
+      () {
+    final d = passiveIn('fighter', 'Mente Táctica', 'Mente Táctica');
+    expect(d, contains('1d10'));
+    expect(d, contains('Tomar Aliento'));
+    // La mitad que faltaba: el reembolso.
+    expect(d, contains('no se gasta'));
+  });
+
+  test('Bárbaro: el daño de Furia no exige que el ataque sea cuerpo a cuerpo',
+      () {
+    final d = passiveIn('barbarian', 'Furia', 'Daño por Furia');
+    expect(d, contains('use la Fuerza'));
+    expect(d, contains('sin armas'));
+    // La regla 2024 no dice "cuerpo a cuerpo" y el catálogo sí lo decía.
+    expect(
+      repo
+          .characterClass('barbarian')!
+          .features
+          .firstWhere((f) => f.name == 'Furia')
+          .description,
+      isNot(contains('daño cuerpo a cuerpo')),
+    );
+  });
+
+  test('Druida: Compañero Salvaje admite espacio de conjuro o Forma Salvaje',
+      () {
+    final d = passiveIn('druid', 'Compañero Salvaje', 'Compañero Salvaje');
+    expect(d, contains('acción de Magia'));
+    expect(d, contains('espacio de conjuro'));
+    expect(d, contains('Forma Salvaje'));
+    expect(d, contains('sin componentes materiales'));
+    expect(d, contains('Feérico'));
+    expect(d, contains('descanso largo'));
+  });
+
+  test('Paladín: Castigo de Paladín trae el lanzamiento gratuito como recurso',
+      () {
+    final effects = repo
+        .characterClass('paladin')!
+        .features
+        .firstWhere((f) => f.name == 'Castigo de Paladín')
+        .effects;
+    // Sigue siempre preparado…
+    expect(
+      effects.whereType<AlwaysPreparedSpellEffect>().map((e) => e.spellId),
+      contains('divine-smite'),
+    );
+    // …y además hay un uso gratis por descanso largo, no solo texto.
+    final gratis = effects
+        .whereType<GrantSpellEffect>()
+        .where((e) => e.spellId == 'divine-smite');
+    expect(gratis, hasLength(1));
+    expect(gratis.single.use, InnateSpellUse.oncePerLongRest);
+  });
+
+  test('Explorador: Explorador Hábil también concede dos idiomas', () {
+    final effects = repo
+        .characterClass('ranger')!
+        .features
+        .firstWhere((f) => f.name == 'Explorador Hábil')
+        .effects;
+    // La Pericia que ya estaba sigue estando.
+    expect(
+      effects.whereType<ProficiencyChoiceEffect>().where((e) => e.expertise),
+      hasLength(1),
+    );
+    final idiomas = effects.whereType<LanguageChoiceEffect>();
+    expect(idiomas, hasLength(1));
+    expect(idiomas.single.count, 2);
+  });
+
+  group('Orden Primordial del Druida (nivel 1)', () {
+    test('es una elección obligatoria entre Naturalista y Guardián', () {
+      expect(levelOf('druid', 'Orden Primordial'), 1);
+      final options = optionsIn('druid', 'Orden Primordial');
+      expect(options.map((o) => o.id),
+          ['primal-order-magician', 'primal-order-warden']);
+      for (final o in options) {
+        expect(o.source, ContentSource.srd2024, reason: o.id);
+      }
+    });
+
+    test('Naturalista da un truco de Druida y el bono a Arcanos y Naturaleza',
+        () {
+      final magician = optionsIn('druid', 'Orden Primordial').first;
+      final truco = magician.effects.whereType<SpellChoiceEffect>().single;
+      expect(truco.count, 1);
+      expect(truco.minLevel, 0);
+      expect(truco.maxLevel, 0);
+      expect(truco.fromClasses, ['druid']);
+
+      final bonos = magician.effects.whereType<SkillBonusEffect>();
+      expect(bonos.map((b) => b.skill).toSet(), {'arcana', 'nature'});
+      for (final b in bonos) {
+        expect(b.fromAbility, Ability.wisdom);
+        expect(b.minimum, 1);
+      }
+    });
+
+    test('Guardián da armas marciales y armadura media', () {
+      final warden = optionsIn('druid', 'Orden Primordial').last;
+      expect(
+        warden.effects.whereType<WeaponProficiencyEffect>().single.category,
+        'martial',
+      );
+      expect(
+        warden.effects.whereType<ArmorProficiencyEffect>().single.category,
+        'medium',
+      );
+    });
+  });
+
+  group('Orden Divina del Clérigo (nivel 1)', () {
+    test('es una elección obligatoria entre Protector y Taumaturgo', () {
+      expect(levelOf('cleric', 'Orden Divina'), 1);
+      expect(optionsIn('cleric', 'Orden Divina').map((o) => o.id),
+          ['divine-order-protector', 'divine-order-thaumaturge']);
+    });
+
+    test('Protector da armas marciales y armadura pesada', () {
+      final protector = optionsIn('cleric', 'Orden Divina').first;
+      expect(
+        protector.effects.whereType<WeaponProficiencyEffect>().single.category,
+        'martial',
+      );
+      expect(
+        protector.effects.whereType<ArmorProficiencyEffect>().single.category,
+        'heavy',
+      );
+    });
+
+    test('Taumaturgo da un truco de Clérigo y el bono a Arcanos y Religión',
+        () {
+      final thaumaturge = optionsIn('cleric', 'Orden Divina').last;
+      final truco = thaumaturge.effects.whereType<SpellChoiceEffect>().single;
+      expect(truco.maxLevel, 0);
+      expect(truco.fromClasses, ['cleric']);
+      final bonos = thaumaturge.effects.whereType<SkillBonusEffect>();
+      expect(bonos.map((b) => b.skill).toSet(), {'arcana', 'religion'});
+      // Y no concede ninguna competencia de armas ni armadura.
+      expect(thaumaturge.effects.whereType<WeaponProficiencyEffect>(), isEmpty);
+      expect(thaumaturge.effects.whereType<ArmorProficiencyEffect>(), isEmpty);
+    });
+  });
 }

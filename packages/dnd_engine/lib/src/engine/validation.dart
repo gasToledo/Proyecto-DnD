@@ -344,6 +344,17 @@ class CharacterValidator {
           '${feat.name}: no cumplís el prerrequisito ($missing).',
         ));
       }
+      // La dote deja elegir su aptitud mágica y todavía no se eligió. Es
+      // informativo, no bloqueante: los conjuros funcionan con la
+      // característica que declara el contenido hasta que se resuelva.
+      if (feat.spellcastingAbilityOptions.isNotEmpty &&
+          !c.featSpellcastingAbilities.containsKey(feat.id)) {
+        w.add(ValidationWarning(
+          'feat_spellcasting_ability_pending',
+          '${feat.name}: falta elegir la aptitud mágica de sus conjuros.',
+          WarningSeverity.info,
+        ));
+      }
     }
 
     return w;
@@ -739,6 +750,10 @@ class CharacterValidator {
               feature.level <= c.level && feature.name == reqFeature) ??
           false;
       if (!has) return 'el rasgo de clase "$reqFeature"';
+    }
+    final reqClass = prereq.requiredClassId;
+    if (reqClass != null && c.classId != reqClass) {
+      return 'ser ${repo.characterClass(reqClass)?.name ?? reqClass}';
     }
     if (prereq.minLevel != null && c.level < prereq.minLevel!) {
       return 'nivel ${prereq.minLevel}';

@@ -97,9 +97,9 @@
       {
         "level": 2,
         "name": "Mente Táctica",
-        "description": "Al fallar una prueba de característica, puedes gastar un uso de Tomar Aliento para sumar 1d10.",
+        "description": "Al fallar una prueba de característica, puedes gastar un uso de Tomar Aliento para sumar 1d10; si sigue fallando, el uso no se gasta.",
         "effects": [
-          { "type": "passiveTrait", "name": "Mente Táctica", "description": "Gasta Tomar Aliento para sumar 1d10 a una prueba de característica fallida." }
+          { "type": "passiveTrait", "name": "Mente Táctica", "description": "Cuando falles una prueba de característica, podés gastar un uso de Tomar Aliento para esforzarte. En vez de recuperar puntos de golpe, tirás 1d10 y sumás el resultado a la prueba, lo que puede convertir el fallo en un éxito. Si aun así seguís sin superarla, ese uso de Tomar Aliento no se gasta." }
         ]
       },
       {
@@ -196,9 +196,10 @@
       {
         "level": 1,
         "name": "Furia",
-        "description": "Como acción adicional entras en Furia: ventaja en pruebas y salvaciones de Fuerza, bonif. al daño cuerpo a cuerpo con Fuerza (+2, sube a +3 a nivel 9 y +4 a nivel 16) y resistencia a daño contundente, perforante y cortante. Dura hasta 10 minutos.",
+        "description": "Como acción adicional entras en Furia: ventaja en pruebas y salvaciones de Fuerza, bonif. al daño de los ataques que usen Fuerza (+2, sube a +3 a nivel 9 y +4 a nivel 16) y resistencia a daño contundente, perforante y cortante.",
         "effects": [
-          { "type": "resource", "id": "rage", "name": "Furia", "max": 2, "recharge": "long", "description": "Usos de Furia. Recuperas al menos uno tras un descanso corto y todos tras un descanso largo." }
+          { "type": "resource", "id": "rage", "name": "Furia", "max": 2, "recharge": "long", "description": "Usos de Furia. Recuperas al menos uno tras un descanso corto y todos tras un descanso largo." },
+          { "type": "passiveTrait", "name": "Daño por Furia", "description": "Cuando llevás a cabo un ataque que use la Fuerza —con arma o sin armas— y causás daño al objetivo, obtenés un bonificador al daño: +2, que sube a +3 a nivel 9 y a +4 a nivel 16. La regla no exige que el ataque sea cuerpo a cuerpo, solo que use Fuerza." }
         ]
       },
       {
@@ -811,6 +812,7 @@
           { "type": "companion", "id": "summon-aberration", "name": "Espíritu aberrante", "requiresSpell": "summon-aberration", "creatureIds": ["aberrant-spirit-beholderkin", "aberrant-spirit-slaad", "aberrant-spirit-mind-flayer"] },
           { "type": "companion", "id": "summon-construct", "name": "Espíritu de autómata", "requiresSpell": "summon-construct", "creatureIds": ["construct-spirit-clay", "construct-spirit-metal", "construct-spirit-stone"] },
           { "type": "companion", "id": "summon-elemental", "name": "Espíritu elemental", "requiresSpell": "summon-elemental", "creatureIds": ["elemental-spirit-air", "elemental-spirit-earth", "elemental-spirit-fire", "elemental-spirit-water"] },
+          { "type": "companion", "id": "animate-objects", "name": "Objetos animados", "requiresSpell": "animate-objects", "creatureIds": ["animated-object-medium-or-smaller", "animated-object-large", "animated-object-huge"] },
           { "type": "companion", "id": "summon-dragon", "name": "Espíritu dracónico", "requiresSpell": "summon-dragon", "creatureIds": ["draconic-spirit"] },
           { "type": "companion", "id": "summon-fiend", "name": "Espíritu infernal", "requiresSpell": "summon-fiend", "creatureIds": ["fiendish-spirit-demon", "fiendish-spirit-devil", "fiendish-spirit-yugoloth"] }
         ]
@@ -912,9 +914,40 @@
       {
         "level": 1,
         "name": "Orden Divina",
-        "description": "Eliges una orden: Protector (competencia con armas marciales) o Taumaturgo (un truco extra y bonif. a Religión).",
+        "description": "Te consagras a una función sacra: Protector o Taumaturgo.",
         "effects": [
-          { "type": "passiveTrait", "name": "Orden Divina", "description": "Protector: competencia con armas marciales y armadura pesada. Taumaturgo: un truco de Clérigo adicional y sumas tu mod. de Sabiduría a las pruebas de Arcanos y Religión." }
+          {
+            "type": "featureChoice",
+            "groupId": "divine-order",
+            "name": "Orden Divina",
+            "featCategory": "divine-order",
+            "count": 1,
+            "options": [
+              {
+                "id": "divine-order-protector",
+                "name": "Protector",
+                "source": "srd_2024",
+                "description": "Te has entrenado para el combate: ganas competencia con armas marciales y entrenamiento con armaduras pesadas.",
+                "effects": [
+                  { "type": "weaponProficiency", "category": "martial" },
+                  { "type": "armorProficiency", "category": "heavy" },
+                  { "type": "passiveTrait", "name": "Orden Divina: Protector", "description": "Competencia con armas marciales y entrenamiento con armaduras pesadas." }
+                ]
+              },
+              {
+                "id": "divine-order-thaumaturge",
+                "name": "Taumaturgo",
+                "source": "srd_2024",
+                "description": "Conoces un truco adicional de la lista de Clérigo. Además, tu conexión mística con lo divino te da un bonificador igual a tu modificador de Sabiduría (mínimo +1) a las pruebas de Inteligencia (Arcanos) y de Inteligencia (Religión).",
+                "effects": [
+                  { "type": "spellChoice", "groupId": "divine-order:thaumaturge-cantrip", "name": "Truco de Taumaturgo", "count": 1, "minLevel": 0, "maxLevel": 0, "fromClasses": ["cleric"] },
+                  { "type": "skillBonus", "skill": "arcana", "fromAbility": "wisdom", "minimum": 1 },
+                  { "type": "skillBonus", "skill": "religion", "fromAbility": "wisdom", "minimum": 1 },
+                  { "type": "passiveTrait", "name": "Orden Divina: Taumaturgo", "description": "Un truco adicional de Clérigo y un bonificador igual a tu modificador de Sabiduría (mínimo +1) a las pruebas de Inteligencia (Arcanos) e Inteligencia (Religión)." }
+                ]
+              }
+            ]
+          }
         ]
       },
       {
@@ -1014,7 +1047,8 @@
           { "type": "spellcasting", "ability": "wisdom", "progression": "full", "preparation": "prepared", "spellList": "druid", "cantripsKnown": 2 },
           { "type": "companion", "id": "summon-beast", "name": "Espíritu bestial", "requiresSpell": "summon-beast", "creatureIds": ["bestial-spirit-land", "bestial-spirit-air", "bestial-spirit-water"] },
           { "type": "companion", "id": "summon-fey", "name": "Espíritu feérico", "requiresSpell": "summon-fey", "creatureIds": ["fey-spirit"] },
-          { "type": "companion", "id": "summon-elemental", "name": "Espíritu elemental", "requiresSpell": "summon-elemental", "creatureIds": ["elemental-spirit-air", "elemental-spirit-earth", "elemental-spirit-fire", "elemental-spirit-water"] }
+          { "type": "companion", "id": "summon-elemental", "name": "Espíritu elemental", "requiresSpell": "summon-elemental", "creatureIds": ["elemental-spirit-air", "elemental-spirit-earth", "elemental-spirit-fire", "elemental-spirit-water"] },
+          { "type": "companion", "id": "giant-insect", "name": "Insecto gigante", "requiresSpell": "giant-insect", "creatureIds": ["giant-insect-centipede", "giant-insect-spider", "giant-insect-wasp"] }
         ]
       },
       {
@@ -1025,6 +1059,45 @@
           { "type": "alwaysPreparedSpell", "spellId": "speak-with-animals" },
           { "type": "language", "language": "druidic" },
           { "type": "passiveTrait", "name": "Druídico", "description": "Sabés druídico, el idioma secreto de los druidas. Al aprenderlo accediste a la magia para comunicarte con los animales, así que siempre tenés preparado Hablar con los Animales. Podés usar el druídico para dejar mensajes ocultos: quien lo conozca los detecta de inmediato y el resto necesita una prueba de Inteligencia (Investigación) CD 15 para notarlos, sin poder descifrarlos sin magia." }
+        ]
+      },
+      {
+        "level": 1,
+        "name": "Orden Primordial",
+        "description": "Te consagras a una función sacra: Naturalista o Guardián.",
+        "effects": [
+          {
+            "type": "featureChoice",
+            "groupId": "primal-order",
+            "name": "Orden Primordial",
+            "featCategory": "primal-order",
+            "count": 1,
+            "options": [
+              {
+                "id": "primal-order-magician",
+                "name": "Naturalista",
+                "source": "srd_2024",
+                "description": "Conoces un truco adicional de la lista de Druida. Además, tu conexión mística con la naturaleza te da un bonificador igual a tu modificador de Sabiduría (mínimo +1) a las pruebas de Inteligencia (Arcanos) y de Inteligencia (Naturaleza).",
+                "effects": [
+                  { "type": "spellChoice", "groupId": "primal-order:magician-cantrip", "name": "Truco de Naturalista", "count": 1, "minLevel": 0, "maxLevel": 0, "fromClasses": ["druid"] },
+                  { "type": "skillBonus", "skill": "arcana", "fromAbility": "wisdom", "minimum": 1 },
+                  { "type": "skillBonus", "skill": "nature", "fromAbility": "wisdom", "minimum": 1 },
+                  { "type": "passiveTrait", "name": "Orden Primordial: Naturalista", "description": "Un truco adicional de Druida y un bonificador igual a tu modificador de Sabiduría (mínimo +1) a las pruebas de Inteligencia (Arcanos) e Inteligencia (Naturaleza)." }
+                ]
+              },
+              {
+                "id": "primal-order-warden",
+                "name": "Guardián",
+                "source": "srd_2024",
+                "description": "Te has entrenado para el combate: ganas competencia con armas marciales y entrenamiento con armaduras medias.",
+                "effects": [
+                  { "type": "weaponProficiency", "category": "martial" },
+                  { "type": "armorProficiency", "category": "medium" },
+                  { "type": "passiveTrait", "name": "Orden Primordial: Guardián", "description": "Competencia con armas marciales y entrenamiento con armaduras medias." }
+                ]
+              }
+            ]
+          }
         ]
       },
       {
@@ -1055,9 +1128,9 @@
       {
         "level": 2,
         "name": "Compañero Salvaje",
-        "description": "Gastas un uso de Forma Salvaje para lanzar Encontrar Familiar.",
+        "description": "Como acción de Magia gastas un espacio de conjuro o un uso de Forma Salvaje para lanzar Encontrar Familiar.",
         "effects": [
-          { "type": "passiveTrait", "name": "Compañero Salvaje", "description": "Puedes gastar un uso de Forma Salvaje para lanzar Encontrar Familiar sin componentes materiales, convocando un espíritu feérico." },
+          { "type": "passiveTrait", "name": "Compañero Salvaje", "description": "Como acción de Magia podés gastar un espacio de conjuro **o** un uso de Forma Salvaje para lanzar Encontrar Familiar sin componentes materiales. El familiar convocado así es Feérico y desaparece cuando termina tu siguiente descanso largo." },
           { "type": "companion", "id": "familiar", "name": "Compañero Salvaje", "creatureIds": ["bat", "cat", "raven", "crab", "frog", "hawk", "lizard", "octopus", "rat", "seahorse", "spider", "weasel", "owl", "eagle", "vulture", "baboon", "goat", "jackal", "deer", "giant-fire-beetle", "scorpion", "hyena", "piranha", "badger"] }
         ]
       },
@@ -1148,7 +1221,8 @@
         "name": "Lanzamiento de Conjuros",
         "description": "Lanzas conjuros de Bardo usando Carisma; los preparas tras un descanso largo.",
         "effects": [
-          { "type": "spellcasting", "ability": "charisma", "progression": "full", "preparation": "prepared", "spellList": "bard", "cantripsKnown": 2 }
+          { "type": "spellcasting", "ability": "charisma", "progression": "full", "preparation": "prepared", "spellList": "bard", "cantripsKnown": 2 },
+          { "type": "companion", "id": "animate-objects", "name": "Objetos animados", "requiresSpell": "animate-objects", "creatureIds": ["animated-object-medium-or-smaller", "animated-object-large", "animated-object-huge"] }
         ]
       },
       {
@@ -1257,7 +1331,8 @@
         "name": "Lanzamiento de Conjuros",
         "description": "Lanzas conjuros de Hechicero usando Carisma; los preparas de tu repertorio innato.",
         "effects": [
-          { "type": "spellcasting", "ability": "charisma", "progression": "full", "preparation": "prepared", "spellList": "sorcerer", "cantripsKnown": 4 }
+          { "type": "spellcasting", "ability": "charisma", "progression": "full", "preparation": "prepared", "spellList": "sorcerer", "cantripsKnown": 4 },
+          { "type": "companion", "id": "animate-objects", "name": "Objetos animados", "requiresSpell": "animate-objects", "creatureIds": ["animated-object-medium-or-smaller", "animated-object-large", "animated-object-huge"] }
         ]
       },
       {
@@ -1555,10 +1630,11 @@
       {
         "level": 2,
         "name": "Castigo de Paladín",
-        "description": "Siempre tenés preparado el conjuro Castigo Divino y podés lanzarlo como acción adicional tras impactar.",
+        "description": "Siempre tenés preparado Castigo Divino y podés lanzarlo gratis una vez por descanso largo.",
         "effects": [
           { "type": "alwaysPreparedSpell", "spellId": "divine-smite" },
-          { "type": "passiveTrait", "name": "Castigo de Paladín", "description": "Siempre tenés preparado el conjuro Castigo Divino. En 2024 es un conjuro: tras impactar con un ataque de arma lo lanzás como acción adicional, gastando un espacio, para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes e infernales)." }
+          { "type": "grantSpell", "spellId": "divine-smite", "ability": "charisma", "use": "oncePerLongRest" },
+          { "type": "passiveTrait", "name": "Castigo de Paladín", "description": "Siempre tenés preparado el conjuro Castigo Divino. Además podés lanzarlo **sin gastar un espacio de conjuro**, y para volver a hacerlo así tenés que terminar un descanso largo; gastado el uso gratuito, el conjuro sigue disponible con espacios normales. En 2024 es un conjuro: tras impactar con un ataque de arma lo lanzás como acción adicional para infligir 2d8 de daño radiante (+1d8 por nivel de espacio superior, y +1d8 a muertos vivientes e infernales)." }
         ]
       },
       {
@@ -1713,10 +1789,11 @@
       {
         "level": 2,
         "name": "Explorador Hábil",
-        "description": "Ganas Pericia y beneficios de movimiento y exploración.",
+        "description": "Ganas Pericia en una habilidad y conoces dos idiomas de tu elección.",
         "effects": [
           { "type": "proficiencyChoice", "groupId": "class:ranger:expertise-2", "name": "Explorador Hábil: Pericia", "count": 1, "expertise": true },
-          { "type": "passiveTrait", "name": "Explorador Hábil", "description": "Ganas Pericia en una habilidad en la que ya seas competente y otros beneficios de exploración." }
+          { "type": "languageChoice", "groupId": "class:ranger:languages-2", "name": "Explorador Hábil: Idiomas", "count": 2 },
+          { "type": "passiveTrait", "name": "Explorador Hábil", "description": "Idiomas: conocés dos idiomas de tu elección de las tablas del capítulo de creación de personajes. Pericia: elegís una de tus competencias en habilidades sin Pericia y ganás Pericia en ella." }
         ]
       },
       {
@@ -1827,7 +1904,8 @@
         "effects": [
           { "type": "spellcasting", "ability": "intelligence", "progression": "half", "preparation": "prepared", "spellList": "artificer", "cantripsKnown": 2, "cantripIncreases": [10, 14] },
           { "type": "companion", "id": "homunculus-servant", "name": "Sirviente Homúnculo", "requiresSpell": "homunculus-servant", "creatureIds": ["homunculus-servant"] },
-          { "type": "companion", "id": "summon-construct", "name": "Espíritu de autómata", "requiresSpell": "summon-construct", "creatureIds": ["construct-spirit-clay", "construct-spirit-metal", "construct-spirit-stone"] }
+          { "type": "companion", "id": "summon-construct", "name": "Espíritu de autómata", "requiresSpell": "summon-construct", "creatureIds": ["construct-spirit-clay", "construct-spirit-metal", "construct-spirit-stone"] },
+          { "type": "companion", "id": "animate-objects", "name": "Objetos animados", "requiresSpell": "animate-objects", "creatureIds": ["animated-object-medium-or-smaller", "animated-object-large", "animated-object-huge"] }
         ]
       },
       {

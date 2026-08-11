@@ -133,11 +133,14 @@ void main() {
       entrega: (f) => f.effects
           .whereType<ProficiencyChoiceEffect>()
           .any((e) => e.expertise),
-      coincidencias: 8,
+      coincidencias: 9,
       falsosPositivos: {
         // Recomienda la dote "Don de la Pericia en Combate" por su nombre; no
         // concede Pericia.
         'clase fighter n19 "Don Épico"',
+        // "el daño se duplica" más la CD, que nombra el bonificador por
+        // competencia: coincide el patrón, no la mecánica.
+        'subclase assassin n17 "Golpe Mortal"',
       },
     );
   });
@@ -155,7 +158,7 @@ void main() {
       // Recuperación Natural decía "y siempre tienes preparados tus conjuros de
       // círculo", que no es lo que dice la regla. Al corregirla dejó de
       // coincidir, que es lo correcto: ese rasgo no concede ninguno.
-      coincidencias: 119,
+      coincidencias: 123,
     );
   });
 
@@ -182,7 +185,7 @@ void main() {
         for (final e in f.effects.whereType<ResourceEffect>())
           (where: 'dote ${f.id} ${e.id}', e: e),
     ];
-    expect(recursos, hasLength(44));
+    expect(recursos, hasLength(45));
 
     var porCaracteristica = 0;
     var porNivel = 0;
@@ -243,5 +246,302 @@ void main() {
     expect(soloTexto, hasLength(lessThanOrEqualTo(301)),
         reason: 'hay más rasgos que solo son texto que antes:\n'
             '${soloTexto.join('\n')}');
+  });
+
+  group('Reglas de dote reescritas contra XPHB (apartado 8.2)', () {
+    String prosa(String featId) {
+      final f = repo.feat(featId)!;
+      return f.effects
+          .whereType<PassiveTraitEffect>()
+          .map((e) => '${e.name} ${e.description}')
+          .join(' ');
+    }
+
+    const casos = <(String, List<String>, List<String>)>[
+      (
+        'healer',
+        ['Dados de Golpe', 'bonificador por competencia', 'volver a tirar'],
+        []
+      ),
+      (
+        'observant-wisdom',
+        ['Perspicacia, Investigación o Percepción', 'acción adicional'],
+        ['+5']
+      ),
+      (
+        'heavy-armor-master-strength',
+        ['bonificador por competencia'],
+        ['no mágico']
+      ),
+      (
+        'ritual-caster-charisma',
+        ['etiqueta Ritual', 'siempre preparados', 'descanso largo'],
+        []
+      ),
+      (
+        'shield-master',
+        ['Golpe de Escudo', 'salvación de Fuerza', 'no recibir ningún daño'],
+        []
+      ),
+      ('speedy-dexterity', ['10 pies', 'terreno difícil', 'desventaja'], []),
+      ('spell-sniper-charisma', ['60 pies', 'no se duplica'], []),
+      (
+        'great-weapon-master',
+        ['propiedad Pesada', 'Tajo', 'acción adicional'],
+        []
+      ),
+      (
+        'crossbow-expert',
+        ['ballesta de mano', 'mano libre', 'propiedad Ligera'],
+        []
+      ),
+      ('charger-strength', ['1d8', '10 pies'], []),
+      (
+        'chef-wisdom',
+        ['4 + tu bonificador por competencia', '1d8', '8 horas'],
+        []
+      ),
+      ('poisoner-dexterity', ['50 po', '2d8', 'envenenada'], []),
+    ];
+
+    for (final (featId, debe, noDebe) in casos) {
+      test(featId, () {
+        final p = prosa(featId);
+        for (final f in debe) {
+          expect(p, contains(f), reason: featId);
+        }
+        for (final f in noDebe) {
+          expect(p, isNot(contains(f)), reason: featId);
+        }
+      });
+    }
+
+    test('Observador declara la elección de habilidad, no solo el texto', () {
+      for (final id in ['observant-intelligence', 'observant-wisdom']) {
+        final e =
+            repo.feat(id)!.effects.whereType<ProficiencyChoiceEffect>().single;
+        expect(e.skills, ['insight', 'investigation', 'perception'],
+            reason: id);
+        // "competencia, o Pericia si ya eras competente".
+        expect(e.expertise, isTrue, reason: id);
+        expect(e.allowNewProficiency, isTrue, reason: id);
+      }
+    });
+
+    test('Chef y Envenenador conceden sus herramientas', () {
+      for (final (id, tool) in const [
+        ('chef-wisdom', 'cooks-utensils'),
+        ('chef-constitution', 'cooks-utensils'),
+        ('poisoner-dexterity', 'poisoner-kit'),
+        ('poisoner-intelligence', 'poisoner-kit'),
+      ]) {
+        expect(
+          repo.feat(id)!.effects.whereType<ToolProficiencyEffect>().single.tool,
+          tool,
+          reason: id,
+        );
+      }
+    });
+
+    test('Lanzador Ritual abre un cupo real de rituales de nivel 1', () {
+      final e = repo
+          .feat('ritual-caster-wisdom')!
+          .effects
+          .whereType<SpellChoiceEffect>()
+          .single;
+      expect(e.ritualOnly, isTrue);
+      expect(e.countFromProficiency, isTrue);
+      expect(e.minLevel, 1);
+      expect(e.maxLevel, 1);
+    });
+  });
+
+  group('Promesas mecánicas del apartado 8.4', () {
+    late CharacterCompiler compiler;
+    setUpAll(() => compiler = CharacterCompiler(repo));
+
+    Character conDote(
+      String featId, {
+      Ability? ability,
+      Map<String, List<String>> spellChoices = const {},
+      int level = 4,
+      String classId = 'fighter',
+    }) =>
+        Character(
+          id: 'dotado',
+          name: 'Prueba',
+          raceId: 'human',
+          classId: classId,
+          backgroundId: 'soldier',
+          level: level,
+          assignedScores: {for (final a in Ability.values) a: 14},
+          hpPerLevel: List.filled(level, 8),
+          featIds: [featId],
+          featSpellcastingAbilities:
+              ability == null ? const {} : {featId: ability},
+          spellChoices: spellChoices,
+        );
+
+    test('Iniciado en la Magia abre dos cupos: trucos y conjuro de nivel 1',
+        () {
+      final s = compiler.compile(conDote('magic-initiate-wizard'));
+      final slots = {
+        for (final x in s.spellChoiceSlots) x.groupId: x,
+      };
+      expect(slots['magic-initiate-wizard:cantrips']!.count, 2);
+      expect(slots['magic-initiate-wizard:cantrips']!.replaceable, isTrue);
+      expect(slots['magic-initiate-wizard:spell']!.count, 1);
+      expect(slots['magic-initiate-wizard:spell']!.replaceable, isTrue);
+      // El pozo sale de la lista que nombra la dote.
+      for (final id in slots['magic-initiate-wizard:cantrips']!.options) {
+        expect(repo.spell(id)!.level, 0);
+        expect(repo.spell(id)!.classes, contains('wizard'));
+      }
+    });
+
+    test('la característica elegida manda sobre la del contenido', () {
+      final elegido = conDote(
+        'magic-initiate-wizard',
+        ability: Ability.charisma,
+        spellChoices: const {
+          'magic-initiate-wizard:spell': ['magic-missile'],
+        },
+      );
+      final s = compiler.compile(elegido);
+      final innato =
+          s.innateSpells.firstWhere((x) => x.spellId == 'magic-missile');
+      expect(innato.ability, Ability.charisma);
+      expect(s.alwaysPreparedSpellIds, contains('magic-missile'));
+
+      // Sin elección cae en la del contenido, que es Inteligencia.
+      final sinElegir = compiler.compile(conDote(
+        'magic-initiate-wizard',
+        spellChoices: const {
+          'magic-initiate-wizard:spell': ['magic-missile'],
+        },
+      ));
+      expect(
+        sinElegir.innateSpells
+            .firstWhere((x) => x.spellId == 'magic-missile')
+            .ability,
+        Ability.intelligence,
+      );
+    });
+
+    test('las Marcas Dracónicas conceden sus conjuros, no solo el texto', () {
+      // Tormenta: truco Tronar a voluntad, y a nivel 3 Ráfaga de Viento gratis.
+      final n1 = compiler.compile(conDote('mark-of-storm', level: 1));
+      expect(n1.innateSpells.map((s) => s.spellId), contains('thunderclap'));
+      expect(n1.innateSpells.map((s) => s.spellId),
+          isNot(contains('gust-of-wind')));
+
+      final n3 = compiler.compile(conDote('mark-of-storm', level: 3));
+      final rafaga =
+          n3.innateSpells.firstWhere((s) => s.spellId == 'gust-of-wind');
+      expect(rafaga.use, InnateSpellUse.oncePerLongRest);
+    });
+
+    test('la característica de la marca la elige el personaje', () {
+      final s = compiler.compile(conDote(
+        'mark-of-storm',
+        ability: Ability.charisma,
+        level: 3,
+      ));
+      for (final innato in s.innateSpells) {
+        expect(innato.ability, Ability.charisma, reason: innato.spellId);
+      }
+    });
+
+    test('las doce marcas conceden al menos un conjuro cada una', () {
+      final marcas = repo.feats.values.where(
+          (f) => f.category == 'dragonmark' && f.id != 'aberrant-dragonmark');
+      for (final m in marcas) {
+        final innatos = m.effects.expand(
+          (e) => e is LeveledEffect
+              ? e.effects.whereType<GrantSpellEffect>()
+              : e is GrantSpellEffect
+                  ? [e]
+                  : const <GrantSpellEffect>[],
+        );
+        expect(innatos, isNotEmpty, reason: m.id);
+        for (final g in innatos) {
+          expect(repo.spell(g.spellId), isNotNull,
+              reason: '${m.id}: ${g.spellId}');
+        }
+      }
+    });
+
+    test('la Marca Aberrante usa Constitución y descanso corto', () {
+      final s = compiler.compile(conDote(
+        'aberrant-dragonmark',
+        spellChoices: const {
+          'aberrant-dragonmark:spell': ['magic-missile'],
+        },
+      ));
+      final innato =
+          s.innateSpells.firstWhere((x) => x.spellId == 'magic-missile');
+      expect(innato.ability, Ability.constitution);
+      expect(innato.use, InnateSpellUse.oncePerShortRest);
+    });
+
+    test('Marca Dracónica Potente sube la característica de su marca', () {
+      final base = compiler.compile(
+          conDote('mark-of-storm', ability: Ability.charisma, level: 4));
+      final conPotente = compiler.compile(Character(
+        id: 'potente',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'sage',
+        level: 4,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: const [6, 4, 4, 4],
+        featIds: const ['mark-of-storm', 'potent-dragonmark'],
+        featSpellcastingAbilities: const {'mark-of-storm': Ability.charisma},
+      ));
+      expect(conPotente.abilityScores[Ability.charisma],
+          base.abilityScores[Ability.charisma]! + 1);
+    });
+
+    test('Marca Dracónica Potente deja preparados los conjuros de la marca',
+        () {
+      final sinPotente = compiler.compile(Character(
+        id: 'sin',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'sage',
+        level: 4,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: const [6, 4, 4, 4],
+        featIds: const ['mark-of-storm'],
+      ));
+      expect(sinPotente.alwaysPreparedSpellIds, isNot(contains('levitate')));
+
+      final conPotente = compiler.compile(Character(
+        id: 'con',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'sage',
+        level: 4,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: const [6, 4, 4, 4],
+        featIds: const ['mark-of-storm', 'potent-dragonmark'],
+      ));
+      // Los nueve Conjuros de la Marca quedan siempre preparados.
+      expect(conPotente.alwaysPreparedSpellIds, contains('levitate'));
+      expect(conPotente.alwaysPreparedSpellIds, contains('conjure-elemental'));
+    });
+
+    test('Don de la Habilidad da las 18 competencias y un cupo de Pericia', () {
+      final s = compiler.compile(conDote('boon-of-skill', level: 19));
+      expect(s.skillProficiencies, hasLength(18));
+      expect(
+        s.expertiseChoiceSlots
+            .where((x) => x.groupId == 'boon-of-skill:expertise'),
+        hasLength(1),
+      );
+    });
   });
 }

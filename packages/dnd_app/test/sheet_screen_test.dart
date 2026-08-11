@@ -575,6 +575,97 @@ void main() {
       // Y el aviso viejo de que la regla no se aplicaba sola ya no está.
       expect(find.textContaining('todavía no se aplica'), findsNothing);
     });
+
+    testWidgets('la Lanza de caballería avisa que montado no exige dos manos', (
+      tester,
+    ) async {
+      final character = Character(
+        id: 'lancero',
+        name: 'Lancero',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        equippedWeaponIds: const ['lance', 'greatsword'],
+        assignedScores: {for (final ability in Ability.values) ability: 14},
+        hpPerLevel: const [10],
+      );
+      await pumpSheet(tester, character);
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      final lanza = find.byKey(const ValueKey('hands-lance'));
+      await tester.ensureVisible(lanza);
+      expect(
+        tester.widget<Text>(lanza).data,
+        'Exige dos manos salvo que estés montado',
+      );
+      // El espadón sigue siendo incondicional.
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('hands-greatsword')))
+            .data,
+        'Exige dos manos',
+      );
+    });
+  });
+
+  group('Orden Divina', () {
+    Character clerigo({Map<String, List<String>> choices = const {}}) =>
+        Character(
+          id: 'clerigo',
+          name: 'Sacerdote',
+          raceId: 'human',
+          classId: 'cleric',
+          backgroundId: 'acolyte',
+          level: 1,
+          assignedScores: const {
+            Ability.strength: 10,
+            Ability.dexterity: 12,
+            Ability.constitution: 14,
+            Ability.intelligence: 10,
+            Ability.wisdom: 16,
+            Ability.charisma: 10,
+          },
+          hpPerLevel: const [8],
+          featureChoices: choices,
+        );
+
+    testWidgets('una ficha vieja sin elegir avisa, no inventa una opción', (
+      tester,
+    ) async {
+      await pumpSheet(tester, clerigo());
+      expect(find.textContaining('Orden Divina'), findsWidgets);
+      // Sin elegir, no se regaló ninguna de las dos opciones.
+      final sheet = CharacterCompiler(repo).compile(clerigo());
+      expect(sheet.armorProficiencies, isNot(contains('heavy')));
+      expect(sheet.skillBonuses, isEmpty);
+    });
+
+    testWidgets('Taumaturgo muestra el aporte en el desglose de Inteligencia', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        clerigo(
+          choices: const {
+            'divine-order': ['divine-order-thaumaturge'],
+          },
+        ),
+      );
+      await tester.tap(find.text('Personaje'));
+      await tester.pumpAndSettle();
+
+      final int = find.text('INT');
+      await tester.ensureVisible(int.first);
+      await tester.tap(int.first);
+      await tester.pumpAndSettle();
+
+      // El total no alcanza: el desglose tiene que decir de dónde salen los +3.
+      expect(
+        find.textContaining('incluye +3 de Orden Divina: Taumaturgo'),
+        findsWidgets,
+      );
+    });
   });
 
   group('Compañeros invocados', () {

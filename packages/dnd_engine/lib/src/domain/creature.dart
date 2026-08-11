@@ -1,5 +1,5 @@
 import 'ability.dart';
-import 'content.dart';
+import 'content_source.dart';
 
 /// Valores del personaje que las fórmulas de una criatura pueden leer.
 ///

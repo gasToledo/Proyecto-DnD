@@ -2644,5 +2644,177 @@
         "description": "Detonante: lanzás un conjuro con alcance de toque mientras el homúnculo está a 120 pies o menos. Respuesta: el homúnculo entrega el conjuro con su toque."
       }
     ]
+  },
+  {
+    "id": "animated-object-medium-or-smaller",
+    "name": "Objeto animado (Mediano o más pequeño)",
+    "source": "srd_2024",
+    "kind": "Constructo Mediano o más pequeño, sin alineamiento",
+    "ac": "15",
+    "hp": "10",
+    "speed": "30 pies",
+    "abilityScores": { "str": 16, "dex": 10, "con": 10, "int": 3, "wis": 3, "cha": 1 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 6",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "{spellLevel-4}d4+{3+SPELLATK-PB}",
+        "damageType": "force",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "animated-object-large",
+    "name": "Objeto animado (Grande)",
+    "source": "srd_2024",
+    "kind": "Constructo Grande, sin alineamiento",
+    "ac": "15",
+    "hp": "20",
+    "speed": "30 pies",
+    "abilityScores": { "str": 16, "dex": 10, "con": 10, "int": 3, "wis": 3, "cha": 1 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 6",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "{spellLevel-3}d6+{3+SPELLATK-PB}",
+        "damageType": "force",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "animated-object-huge",
+    "name": "Objeto animado (Enorme)",
+    "source": "srd_2024",
+    "kind": "Constructo Enorme, sin alineamiento",
+    "ac": "15",
+    "hp": "40",
+    "speed": "30 pies",
+    "abilityScores": { "str": 16, "dex": 10, "con": 10, "int": 3, "wis": 3, "cha": 1 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 6",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "{spellLevel-3}d12+{3+SPELLATK-PB}",
+        "damageType": "force",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "giant-insect-centipede",
+    "name": "Insecto gigante (Ciempiés)",
+    "source": "srd_2024",
+    "kind": "Bestia Grande, sin alineamiento",
+    "ac": "11+spellLevel",
+    "hp": "30+10*(spellLevel-4)",
+    "speed": "40 pies, trepar 40 pies",
+    "abilityScores": { "str": 17, "dex": 13, "con": 15, "int": 4, "wis": 14, "cha": 3 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Trepar cual arácnido",
+        "description": "Puede trepar por superficies difíciles, incluso por techos, sin hacer una prueba de característica."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de Aguijón venenoso."
+      },
+      {
+        "name": "Aguijón venenoso",
+        "attackBonus": "SPELLATK",
+        "damage": "1d6+{3+spellLevel} perforante + 1d4 veneno",
+        "reach": "10 pies"
+      },
+      {
+        "name": "Descarga venenosa (acción adicional)",
+        "reach": "una criatura visible a 10 pies",
+        "description": "Salvación de Constitución CD {SPELLDC}; si falla, queda Envenenada hasta el comienzo del siguiente turno del insecto."
+      }
+    ]
+  },
+  {
+    "id": "giant-insect-spider",
+    "name": "Insecto gigante (Araña)",
+    "source": "srd_2024",
+    "kind": "Bestia Grande, sin alineamiento",
+    "ac": "11+spellLevel",
+    "hp": "30+10*(spellLevel-4)",
+    "speed": "40 pies, trepar 40 pies",
+    "abilityScores": { "str": 17, "dex": 13, "con": 15, "int": 4, "wis": 14, "cha": 3 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Trepar cual arácnido",
+        "description": "Puede trepar por superficies difíciles, incluso por techos, sin hacer una prueba de característica."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques, usando Aguijón venenoso o Proyectil de telaraña en cualquier combinación."
+      },
+      {
+        "name": "Aguijón venenoso",
+        "attackBonus": "SPELLATK",
+        "damage": "1d6+{3+spellLevel} perforante + 1d4 veneno",
+        "reach": "10 pies"
+      },
+      {
+        "name": "Proyectil de telaraña",
+        "attackBonus": "SPELLATK",
+        "damage": "1d10+{3+spellLevel}",
+        "damageType": "bludgeoning",
+        "reach": "a distancia 60 pies",
+        "description": "La velocidad del objetivo se reduce a 0 hasta el comienzo del siguiente turno del insecto."
+      }
+    ]
+  },
+  {
+    "id": "giant-insect-wasp",
+    "name": "Insecto gigante (Avispa)",
+    "source": "srd_2024",
+    "kind": "Bestia Grande, sin alineamiento",
+    "ac": "11+spellLevel",
+    "hp": "30+10*(spellLevel-4)",
+    "speed": "40 pies, trepar 40 pies, volar 40 pies",
+    "abilityScores": { "str": 17, "dex": 13, "con": 15, "int": 4, "wis": 14, "cha": 3 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Trepar cual arácnido",
+        "description": "Puede trepar por superficies difíciles, incluso por techos, sin hacer una prueba de característica."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de Aguijón venenoso."
+      },
+      {
+        "name": "Aguijón venenoso",
+        "attackBonus": "SPELLATK",
+        "damage": "1d6+{3+spellLevel} perforante + 1d4 veneno",
+        "reach": "10 pies"
+      }
+    ]
   }
 ]

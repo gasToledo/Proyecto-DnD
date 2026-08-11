@@ -62,6 +62,18 @@ void main() {
     });
   });
 
+  group('Mediano', () {
+    test('Agilidad Mediana también dice que no puede detenerse ahí', () {
+      // SRD 5.2.1: "Puedes moverte a través del espacio ocupado por cualquier
+      // criatura de tamaño superior al tuyo, pero no puedes detenerte en el
+      // mismo espacio". El catálogo tenía solo la primera mitad.
+      final d = traitOf('halfling', 'Agilidad Mediana');
+      expect(d, isNotNull);
+      expect(d, contains('tamaño mayor que el tuyo'));
+      expect(d, contains('no puedes detenerte'));
+    });
+  });
+
   group('Humano', () {
     test('nombra los tres rasgos del SRD', () {
       expect(traitNames('human'),

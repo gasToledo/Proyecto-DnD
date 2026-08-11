@@ -1,4 +1,5 @@
 import 'ability.dart';
+import 'content_source.dart';
 import 'spell_slots.dart';
 
 /// Tipo de descanso que recarga un recurso.
@@ -116,6 +117,9 @@ sealed class Effect {
               json['featCategory'] as String? ?? json['groupId'] as String,
           count: json['count'] as int? ?? 1,
           replaceable: json['replaceable'] as bool? ?? false,
+          options: (json['options'] as List? ?? const [])
+              .map((e) => FeatureOption.fromJson(e as Map<String, dynamic>))
+              .toList(),
         ),
       'grantSpell' => GrantSpellEffect(
           spellId: json['spellId'] as String,
@@ -148,6 +152,17 @@ sealed class Effect {
           expertise: json['expertise'] as bool? ?? false,
           allowNewProficiency: json['allowNewProficiency'] as bool? ?? false,
         ),
+      'prepareSpellListAdditions' => const PrepareSpellListAdditionsEffect(),
+      'abilityScoreBonusFromFeatChoice' =>
+        AbilityScoreBonusFromFeatChoiceEffect(
+          featCategory: json['featCategory'] as String,
+          amount: json['amount'] as int? ?? 1,
+        ),
+      'skillBonus' => SkillBonusEffect(
+          skill: json['skill'] as String,
+          fromAbility: Ability.fromKey(json['fromAbility'] as String),
+          minimum: json['minimum'] as int? ?? 0,
+        ),
       'language' => LanguageEffect(json['language'] as String),
       'languageChoice' => LanguageChoiceEffect(
           groupId: json['groupId'] as String,
@@ -175,6 +190,11 @@ sealed class Effect {
               ? null
               : InnateSpellUse.fromJson(json['freeCast'] as String?),
           replaceable: json['replaceable'] as bool? ?? false,
+          ritualOnly: json['ritualOnly'] as bool? ?? false,
+          countFromProficiency: json['countFromProficiency'] as bool? ?? false,
+          ability: json['ability'] == null
+              ? null
+              : Ability.fromKey(json['ability'] as String),
         ),
       'leveled' => LeveledEffect(
           minLevel: json['minLevel'] as int,
@@ -485,7 +505,8 @@ class FeatureChoiceEffect extends Effect {
   final String name;
 
   /// Categoría de [Feat] que provee las opciones. Suele coincidir con
-  /// [groupId], y en ese caso el JSON puede omitirla.
+  /// [groupId], y en ese caso el JSON puede omitirla. Se ignora cuando el
+  /// efecto trae [options] propias.
   final String featCategory;
 
   /// Cantidad total de opciones a este nivel.
@@ -494,12 +515,18 @@ class FeatureChoiceEffect extends Effect {
   /// Si al subir de nivel se puede cambiar una elección ya hecha.
   final bool replaceable;
 
+  /// Opciones declaradas por el propio rasgo, para las elecciones de clase que
+  /// **no** son dotes: Orden Primordial del Druida y Orden Divina del Clérigo.
+  /// Vacío es el caso normal y las opciones salen de [featCategory].
+  final List<FeatureOption> options;
+
   const FeatureChoiceEffect({
     required this.groupId,
     required this.name,
     required this.featCategory,
     this.count = 1,
     this.replaceable = false,
+    this.options = const [],
   });
 
   @override
@@ -510,6 +537,115 @@ class FeatureChoiceEffect extends Effect {
         'featCategory': featCategory,
         'count': count,
         'replaceable': replaceable,
+        if (options.isNotEmpty)
+          'options': options.map((o) => o.toJson()).toList(),
+      };
+}
+
+/// Una de las opciones en línea de un [FeatureChoiceEffect].
+///
+/// Es deliberadamente más chica que `Feat`: no tiene categoría, ni
+/// prerrequisito, ni es repetible. Una orden de clase no se toma en el nivel 4
+/// ni compite con las dotes, así que meterla en el catálogo de dotes la
+/// mostraría donde no corresponde y movería sus conteos.
+class FeatureOption {
+  final String id;
+  final String name;
+  final String description;
+  final ContentSource source;
+  final List<Effect> effects;
+
+  const FeatureOption({
+    required this.id,
+    required this.name,
+    required this.source,
+    this.description = '',
+    this.effects = const [],
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'source': source.toJson(),
+        if (description.isNotEmpty) 'description': description,
+        'effects': effects.map((e) => e.toJson()).toList(),
+      };
+
+  factory FeatureOption.fromJson(Map<String, dynamic> json) => FeatureOption(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        source: ContentSource.fromJson(json['source'] as String?),
+        description: json['description'] as String? ?? '',
+        effects: Effect.listFromJson(json['effects']),
+      );
+}
+
+/// Deja **siempre preparados** los conjuros que otros rasgos hayan sumado a la
+/// lista elegible. Marca Dracónica Potente: "tenés siempre preparados los
+/// conjuros de tu lista de Conjuros de la Marca, si la tenés".
+///
+/// Se resuelve al final, cuando ya se aplicaron todos los rasgos: la dote no
+/// sabe qué marca tiene el personaje ni tiene por qué saberlo.
+class PrepareSpellListAdditionsEffect extends Effect {
+  const PrepareSpellListAdditionsEffect();
+  @override
+  Map<String, dynamic> toJson() => {'type': 'prepareSpellListAdditions'};
+}
+
+/// Suma [amount] a la característica que el personaje eligió como aptitud
+/// mágica de una dote de [featCategory].
+///
+/// Marca Dracónica Potente sube "la característica de lanzamiento que usa tu
+/// dote de marca", y esa característica la eligió el jugador al tomar la marca
+/// (vive en `Character.featSpellcastingAbilities`). Sin esto habría que partir
+/// la dote en una variante por característica, que movería el conteo del
+/// catálogo y ofrecería combinaciones que la regla no permite.
+class AbilityScoreBonusFromFeatChoiceEffect extends Effect {
+  final String featCategory;
+  final int amount;
+
+  const AbilityScoreBonusFromFeatChoiceEffect({
+    required this.featCategory,
+    this.amount = 1,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'abilityScoreBonusFromFeatChoice',
+        'featCategory': featCategory,
+        'amount': amount,
+      };
+}
+
+/// Suma un bonificador a las pruebas de una habilidad concreta, tomado del
+/// modificador de otra característica y con un piso.
+///
+/// Existe por Orden Divina (Taumaturgo) y Orden Primordial (Naturalista):
+/// "un bonificador igual a tu modificador por Sabiduría (mínimo de +1)" a
+/// Inteligencia (Conocimiento arcano) y otra habilidad. No es competencia ni
+/// Pericia —no escala con el bonificador por competencia y no habilita nada—,
+/// así que no se puede modelar con [SkillProficiencyEffect].
+class SkillBonusEffect extends Effect {
+  final String skill;
+
+  /// De qué característica sale el bonificador.
+  final Ability fromAbility;
+
+  /// Piso del bonificador. El SRD dice "mínimo de +1".
+  final int minimum;
+
+  const SkillBonusEffect({
+    required this.skill,
+    required this.fromAbility,
+    this.minimum = 0,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'skillBonus',
+        'skill': skill,
+        'fromAbility': fromAbility.name,
+        'minimum': minimum,
       };
 }
 
@@ -636,6 +772,22 @@ class SpellChoiceEffect extends Effect {
   /// Si una elección ya hecha se puede cambiar más adelante.
   final bool replaceable;
 
+  /// Restringe el pozo a los conjuros con la etiqueta Ritual. Lanzador Ritual
+  /// es el único caso: "una cantidad de conjuros de nivel 1 con la etiqueta
+  /// Ritual igual a tu bonificador por competencia".
+  final bool ritualOnly;
+
+  /// El cupo es el bonificador por competencia en vez de [count]. Lo usa
+  /// Lanzador Ritual, cuyo pozo crece solo con el nivel en vez de declarar un
+  /// grupo por tramo.
+  final bool countFromProficiency;
+
+  /// Característica del lanzamiento gratuito cuando el contenido la fija.
+  /// La Marca Dracónica Aberrante usa Constitución; sin esto caería en la de
+  /// la clase, que para un Guerrero no existe. `null` deja que mande la
+  /// elegida por el personaje y, si tampoco hay, la de la clase.
+  final Ability? ability;
+
   const SpellChoiceEffect({
     required this.groupId,
     this.name = '',
@@ -648,6 +800,9 @@ class SpellChoiceEffect extends Effect {
     this.castingTimes = const [],
     this.freeCast,
     this.replaceable = false,
+    this.ritualOnly = false,
+    this.countFromProficiency = false,
+    this.ability,
   });
 
   @override
@@ -664,6 +819,9 @@ class SpellChoiceEffect extends Effect {
         'castingTimes': castingTimes,
         if (freeCast != null) 'freeCast': freeCast!.toJson(),
         'replaceable': replaceable,
+        if (ritualOnly) 'ritualOnly': true,
+        if (countFromProficiency) 'countFromProficiency': true,
+        if (ability != null) 'ability': ability!.name,
       };
 }
 

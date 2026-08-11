@@ -1,43 +1,6 @@
 import 'ability.dart';
+import 'content_source.dart';
 import 'effects.dart';
-
-/// Origen del contenido. Oficial y homebrew comparten estructura; solo cambia
-/// esta etiqueta (y de qué edición proviene lo oficial).
-///
-/// `srd2024` es lo licenciable bajo CC BY 4.0. `phb2024` es contenido oficial
-/// del Player's Handbook 2024 que **no** está en el SRD 5.2.1 y por lo tanto no
-/// queda cubierto por esa atribución: la distinción es de licencia, no cosmética.
-/// `foa2025` es *Forge of the Artificer*, una expansión aparte: tampoco está en
-/// el SRD, y además el jugador necesita ver que una opción viene de otro libro
-/// antes de comprometer un personaje con ella.
-enum ContentSource {
-  srd2024,
-  phb2024,
-  foa2025,
-  srd2014,
-  homebrew;
-
-  /// Un valor desconocido degrada a [homebrew] a propósito: este parser también
-  /// procesa importaciones, que se tratan como datos no confiables y no deben
-  /// hacer fallar la carga. La red de seguridad del contenido oficial es
-  /// `content_integrity_test.dart`, no una excepción en tiempo de carga.
-  static ContentSource fromJson(String? v) => switch (v) {
-        'srd_2024' => ContentSource.srd2024,
-        'phb_2024' => ContentSource.phb2024,
-        'foa_2025' => ContentSource.foa2025,
-        'srd_2014' => ContentSource.srd2014,
-        'homebrew' => ContentSource.homebrew,
-        _ => ContentSource.homebrew,
-      };
-
-  String toJson() => switch (this) {
-        ContentSource.srd2024 => 'srd_2024',
-        ContentSource.phb2024 => 'phb_2024',
-        ContentSource.foa2025 => 'foa_2025',
-        ContentSource.srd2014 => 'srd_2014',
-        ContentSource.homebrew => 'homebrew',
-      };
-}
 
 /// Raza (o especie, en terminología 2024).
 class Race {
@@ -468,6 +431,13 @@ class FeatPrerequisite {
   /// que se trata de una competencia.
   final String? requiredClassFeature;
 
+  /// Clase que hay que tener para poder elegir esta opción. Existe por los dos
+  /// estilos de combate que en XPHB no son dotes abiertas sino una alternativa
+  /// concreta de una clase: Blessed Warrior es solo del Paladín y Druidic
+  /// Warrior solo del Explorador. Es singular a propósito: no hay ninguna
+  /// opción 2024 elegible por dos clases y no por las demás.
+  final String? requiredClassId;
+
   final int? minLevel;
 
   const FeatPrerequisite({
@@ -477,6 +447,7 @@ class FeatPrerequisite {
     this.requiredFeatIds = const [],
     this.requiredFeatCategory,
     this.requiredClassFeature,
+    this.requiredClassId,
     this.minLevel,
   });
 
@@ -487,6 +458,7 @@ class FeatPrerequisite {
       requiredFeatIds.isEmpty &&
       requiredFeatCategory == null &&
       requiredClassFeature == null &&
+      requiredClassId == null &&
       minLevel == null;
 
   Map<String, dynamic> toJson() => {
@@ -496,6 +468,7 @@ class FeatPrerequisite {
         'requiredFeatIds': requiredFeatIds,
         'requiredFeatCategory': requiredFeatCategory,
         'requiredClassFeature': requiredClassFeature,
+        'requiredClassId': requiredClassId,
         'minLevel': minLevel,
       };
 
@@ -508,6 +481,7 @@ class FeatPrerequisite {
             .toList(),
         requiredFeatCategory: j['requiredFeatCategory'] as String?,
         requiredClassFeature: j['requiredClassFeature'] as String?,
+        requiredClassId: j['requiredClassId'] as String?,
         minLevel: j['minLevel'] as int?,
       );
 }
@@ -536,6 +510,14 @@ class Feat {
   final List<Effect> effects;
   final FeatPrerequisite? prerequisite;
 
+  /// Características entre las que el personaje elige la aptitud mágica de los
+  /// conjuros de esta dote. Iniciado en la Magia y las Marcas Dracónicas dicen
+  /// "Inteligencia, Sabiduría o Carisma (se elige al tomar la dote)".
+  ///
+  /// Vacío es el caso normal: la característica la fija el contenido en cada
+  /// efecto. La elección vive en `Character.featSpellcastingAbilities`.
+  final List<Ability> spellcastingAbilityOptions;
+
   const Feat({
     required this.id,
     required this.name,
@@ -545,6 +527,7 @@ class Feat {
     this.exclusiveGroup,
     this.effects = const [],
     this.prerequisite,
+    this.spellcastingAbilityOptions = const [],
   });
 
   Map<String, dynamic> toJson() => {
@@ -556,6 +539,9 @@ class Feat {
         if (exclusiveGroup != null) 'exclusiveGroup': exclusiveGroup,
         'effects': effects.map((e) => e.toJson()).toList(),
         'prerequisite': prerequisite?.toJson(),
+        if (spellcastingAbilityOptions.isNotEmpty)
+          'spellcastingAbilityOptions':
+              spellcastingAbilityOptions.map((a) => a.name).toList(),
       };
 
   factory Feat.fromJson(Map<String, dynamic> j) => Feat(
@@ -570,6 +556,10 @@ class Feat {
             ? null
             : FeatPrerequisite.fromJson(
                 (j['prerequisite'] as Map).cast<String, dynamic>()),
+        spellcastingAbilityOptions:
+            (j['spellcastingAbilityOptions'] as List? ?? const [])
+                .map((e) => Ability.fromKey(e as String))
+                .toList(),
       );
 
   /// Las marcas dracónicas son mutuamente excluyentes por regla de Forge.
@@ -599,6 +589,12 @@ class Weapon {
   /// Propiedad de Maestría 2024 (sap, graze, nick, cleave, ...).
   final String? mastery;
 
+  /// La Lanza de caballería es el único caso 2024 en el que `two-handed` no es
+  /// incondicional: solo exige dos manos si quien la empuña **no** está
+  /// montado. Se modela como calificador de la propiedad y no borrándola, para
+  /// que un arma sin el campo (todo el homebrew anterior) siga siendo estricta.
+  final bool twoHandedUnlessMounted;
+
   const Weapon({
     required this.id,
     required this.name,
@@ -609,6 +605,7 @@ class Weapon {
     this.properties = const [],
     this.versatileDice,
     this.mastery,
+    this.twoHandedUnlessMounted = false,
   });
 
   bool get isRanged => properties.contains('ranged');
@@ -616,6 +613,12 @@ class Weapon {
 
   /// Propiedad Ligera: requisito del ataque de mano secundaria (2024).
   bool get isLight => properties.contains('light');
+
+  /// Si el arma exige dos manos en este contexto. Única puerta de entrada a
+  /// `two-handed`: compilador, validación y ficha preguntan acá para no
+  /// resolver la excepción de la lanza cada uno por su cuenta.
+  bool requiresTwoHands({bool mounted = false}) =>
+      properties.contains('two-handed') && !(mounted && twoHandedUnlessMounted);
 
   /// Claves de competencia que habilitan esta arma: su id, su categoría y la
   /// media categoría por alcance.
@@ -645,6 +648,7 @@ class Weapon {
         'properties': properties,
         'versatileDice': versatileDice,
         'mastery': mastery,
+        if (twoHandedUnlessMounted) 'twoHandedUnlessMounted': true,
       };
 
   factory Weapon.fromJson(Map<String, dynamic> j) => Weapon(
@@ -659,6 +663,7 @@ class Weapon {
             .toList(),
         versatileDice: j['versatileDice'] as String?,
         mastery: j['mastery'] as String?,
+        twoHandedUnlessMounted: j['twoHandedUnlessMounted'] as bool? ?? false,
       );
 }
 

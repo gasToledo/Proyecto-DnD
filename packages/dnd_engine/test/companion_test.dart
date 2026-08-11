@@ -115,7 +115,7 @@ void main() {
       expect(compile(repoWith(const [])).companions, isEmpty);
     });
 
-    test('gana el maxActive más alto entre las declaraciones del mismo id', () {
+    test('gana la declaración de mayor nivel del mismo id', () {
       final repo = ContentRepository.fromJsonPacks(
         races: [
           {'id': 'human', 'name': 'Humano', 'source': 'srd_2024', 'speed': 30},
@@ -151,7 +151,7 @@ void main() {
                     'type': 'companion',
                     'id': 'cannon',
                     'name': 'Cañón',
-                    'creatureIds': ['cannon'],
+                    'creatureIds': ['cannon-improved'],
                     'maxActive': 2,
                   },
                 ],
@@ -159,10 +159,46 @@ void main() {
             ],
           },
         ],
-        creatures: [creature('cannon', ac: '18', hp: '5*level')],
+        creatures: [
+          creature('cannon', ac: '18', hp: '5*level'),
+          creature('cannon-improved', ac: '18', hp: '6*level'),
+        ],
       );
-      expect(compile(repo, level: 4).companions.single.maxActive, 1);
-      expect(compile(repo, level: 5).companions.single.maxActive, 2);
+      final before = compile(repo, level: 4).companions.single;
+      expect(before.maxActive, 1);
+      expect(before.forms.single.id, 'cannon');
+
+      // El rasgo de nivel 5 pisa al de nivel 1 entero: cambia el perfil y la
+      // cantidad, no solo la cantidad.
+      final after = compile(repo, level: 5).companions.single;
+      expect(after.maxActive, 2);
+      expect(after.forms.single.id, 'cannon-improved');
+    });
+
+    test('una instancia vieja sigue el perfil nuevo si la forma es única', () {
+      // El Artillero que sube a nivel 9 con el cañón invocado: el compañero
+      // creció, así que la instancia guardada apunta al perfil de ahora en vez
+      // de quedar huérfana.
+      final option = CompanionOption(
+        id: 'cannon',
+        name: 'Cañón',
+        source: 'Rasgo',
+        forms: [Creature.fromJson(creature('cannon-improved'))],
+      );
+      expect(option.form('cannon')!.id, 'cannon-improved');
+    });
+
+    test('con varias formas, una que no existe no se adivina', () {
+      final option = CompanionOption(
+        id: 'familiar',
+        name: 'Familiar',
+        source: 'Rasgo',
+        forms: [
+          Creature.fromJson(creature('cat')),
+          Creature.fromJson(creature('owl')),
+        ],
+      );
+      expect(option.form('gato-inventado'), isNull);
     });
 
     test('requiresSpell descarta el compañero si el conjuro no está', () {
@@ -310,6 +346,44 @@ void main() {
             .maxActive,
         2,
       );
+    });
+
+    test('el cañón crece a nivel 9 y no vuelve atrás a nivel 15', () {
+      CompanionOption cannonAt(int level) => companion(
+            build(
+                classId: 'artificer', subclassId: 'artillerist', level: level),
+            'eldritch-cannon',
+          )!;
+
+      expect(cannonAt(3).forms.single.id, 'eldritch-cannon');
+      // Cañón Explosivo: el mismo id, otro perfil.
+      expect(cannonAt(9).forms.single.id, 'eldritch-cannon-explosive');
+      // Posición Fortificada suma el segundo cañón sin revivir el perfil viejo.
+      expect(cannonAt(15).forms.single.id, 'eldritch-cannon-explosive');
+    });
+
+    test('el Cañón Explosivo pega más fuerte y suma la detonación', () {
+      final sheet = build(
+        classId: 'artificer',
+        subclassId: 'artillerist',
+        level: 9,
+        scores: {Ability.intelligence: 18},
+      );
+      final resolved =
+          companion(sheet, 'eldritch-cannon')!.forms.single.resolve(
+                CreatureVars.from(
+                  level: sheet.level,
+                  proficiencyBonus: sheet.proficiencyBonus,
+                  abilityModifiers: sheet.abilityModifiers,
+                  spellAttackBonus: sheet.spellcasting!.attackBonus,
+                  spellSaveDc: sheet.spellcasting!.saveDc,
+                ),
+              );
+      final byName = {for (final a in resolved.actions) a.name: a};
+      expect(byName['Lanzallamas']!.damage, '3d8');
+      expect(byName['Ballesta de Fuerza']!.damage, '3d8');
+      expect(byName['Protector']!.damage, '2d8+4');
+      expect(byName['Detonar']!.reaction, isTrue);
     });
 
     test('el Defensor de Acero sale con los números del libro', () {

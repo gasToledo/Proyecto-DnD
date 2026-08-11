@@ -73,11 +73,21 @@ class CompanionOption {
   bool get scalesWithSpellLevel =>
       forms.isNotEmpty && forms.first.scalesWithSpellLevel;
 
+  /// La forma que usa una instancia ya invocada.
+  ///
+  /// Si el id no está entre las formas **y el compañero tiene una sola**, se
+  /// devuelve esa: es el caso del Artillero que sube a nivel 9 con el cañón en
+  /// el suelo y pasa a tener el Cañón Explosivo. El compañero creció, no
+  /// desapareció, y obligarlo a despedirlo y volver a invocarlo sería castigar
+  /// al jugador por subir de nivel a mitad de combate.
+  ///
+  /// Con varias formas no se adivina: si un familiar apunta a una bestia que
+  /// el catálogo ya no tiene, elegir otra por él sería inventarle la criatura.
   Creature? form(String creatureId) {
     for (final f in forms) {
       if (f.id == creatureId) return f;
     }
-    return null;
+    return forms.length == 1 ? forms.single : null;
   }
 }
 

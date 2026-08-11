@@ -924,7 +924,7 @@
         "damage": "2d8",
         "damageType": "fire",
         "reach": "cono de 15 pies",
-        "description": "Cada criatura en el área hace una salvación de Destreza CD {SPELLDC}; a la mitad si la supera. Los objetos inflamables del cono que nadie lleve encima empiezan a arder. Con Cañón Explosivo (nivel 9), +1d8."
+        "description": "Cada criatura en el área hace una salvación de Destreza CD {SPELLDC}; a la mitad si la supera. Los objetos inflamables del cono que nadie lleve encima empiezan a arder."
       },
       {
         "name": "Ballesta de Fuerza",
@@ -932,13 +932,70 @@
         "damage": "2d8",
         "damageType": "force",
         "reach": "120 pies desde el cañón",
-        "description": "Si el objetivo es una criatura, es empujado hasta 5 pies. Con Cañón Explosivo (nivel 9), +1d8."
+        "description": "Si el objetivo es una criatura, es empujado hasta 5 pies."
       },
       {
         "name": "Protector",
         "damage": "1d8+{INT}",
         "reach": "10 pies desde el cañón",
-        "description": "Da esa cantidad de puntos de golpe temporales (mínimo 1) al cañón y a cada criatura que elijas en el área. Con Cañón Explosivo (nivel 9), +1d8."
+        "description": "Da esa cantidad de puntos de golpe temporales (mínimo 1) al cañón y a cada criatura que elijas en el área."
+      }
+    ]
+  },
+  {
+    "id": "eldritch-cannon-explosive",
+    "name": "Cañón Arcano",
+    "source": "foa_2025",
+    "kind": "Objeto Diminuto o Pequeño (a tu elección)",
+    "ac": "18",
+    "hp": "5*level",
+    "speed": "no se mueve solo: lo dirigís hasta 15 pies al activarlo",
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "defenses": "Inmunidad a veneno y psíquico",
+    "traits": [
+      {
+        "name": "Reparación",
+        "description": "Lanzar Reparar sobre el cañón le restaura 2d6 puntos de golpe."
+      },
+      {
+        "name": "Duración",
+        "description": "Desaparece tras 1 hora, al llegar a 0 PG o si lo desactivás como acción."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Activar el cañón (acción adicional, a 60 pies o menos)",
+        "description": "Le ordenás usar Lanzallamas, Ballesta de Fuerza o Protector, y podés dirigirlo hasta 15 pies antes o después."
+      },
+      {
+        "name": "Lanzallamas",
+        "damage": "3d8",
+        "damageType": "fire",
+        "reach": "cono de 15 pies",
+        "description": "Cada criatura en el área hace una salvación de Destreza CD {SPELLDC}; a la mitad si la supera. Los objetos inflamables del cono que nadie lleve encima empiezan a arder."
+      },
+      {
+        "name": "Ballesta de Fuerza",
+        "attackBonus": "SPELLATK",
+        "damage": "3d8",
+        "damageType": "force",
+        "reach": "120 pies desde el cañón",
+        "description": "Si el objetivo es una criatura, es empujado hasta 5 pies."
+      },
+      {
+        "name": "Protector",
+        "damage": "2d8+{INT}",
+        "reach": "10 pies desde el cañón",
+        "description": "Da esa cantidad de puntos de golpe temporales (mínimo 1) al cañón y a cada criatura que elijas en el área."
+      },
+      {
+        "name": "Detonar",
+        "reaction": true,
+        "damage": "3d10",
+        "damageType": "force",
+        "reach": "20 pies desde el cañón",
+        "description": "Detonante: el cañón recibe daño. Respuesta: lo hacés estallar y se destruye. Cada criatura en el área hace una salvación de Destreza CD {SPELLDC}; a la mitad si la supera."
       }
     ]
   },

@@ -1699,6 +1699,7 @@
         "name": "Compañero Primario",
         "description": "Invocas un espíritu bestial (de tierra, mar o aire) que combate contigo y actúa a tu orden.",
         "effects": [
+          { "type": "passiveTrait", "name": "Compañero Primario", "description": "Un espíritu bestial de tierra, mar o aire que combate a tu orden. Elegís la forma al invocarlo, y sus estadísticas están en la tarjeta Compañeros de la pestaña Combate." },
           { "type": "companion", "id": "primal-companion", "name": "Compañero Primario", "creatureIds": ["beast-of-the-land", "beast-of-the-sea", "beast-of-the-sky"], "maxActive": 1 }
         ]
       },
@@ -3130,6 +3131,7 @@
         "name": "Cañón Arcano",
         "description": "Con Herramientas de Herrero o de Tallista, creás como acción de magia un Cañón Arcano Pequeño o Diminuto en un espacio libre a 5 pies. Como acción adicional lo activás para usar Lanzallamas, Ballesta de Fuerza o Protector; podés moverlo hasta 15 pies antes o después. Desaparece tras 1 hora, a 0 PG, o si lo desactivás. Solo podés tener un cañón a la vez.",
         "effects": [
+          { "type": "passiveTrait", "name": "Cañón Arcano", "description": "Creás un cañón como acción de magia y lo activás como acción adicional para Lanzallamas, Ballesta de Fuerza o Protector. Sus estadísticas, sus PG y sus tres modos están en la tarjeta Compañeros de la pestaña Combate." },
           { "type": "companion", "id": "eldritch-cannon", "name": "Cañón Arcano", "creatureIds": ["eldritch-cannon"], "maxActive": 1 }
         ]
       },
@@ -3146,7 +3148,8 @@
         "name": "Cañón Explosivo",
         "description": "Tu Cañón Arcano se vuelve más destructivo: al recibir daño, podés detonarlo como reacción (3d10 de fuerza en área, mitad con salvación), y sus daños y las PG temporales de Protector aumentan en 1d8.",
         "effects": [
-          { "type": "passiveTrait", "name": "Cañón Explosivo", "description": "Reacción de detonación (3d10 de fuerza en área a 20 pies); +1d8 a los daños del cañón y a las PG temporales de Protector." }
+          { "type": "passiveTrait", "name": "Cañón Explosivo", "description": "Reacción de detonación (3d10 de fuerza en área a 20 pies); +1d8 a los daños del cañón y a las PG temporales de Protector." },
+          { "type": "companion", "id": "eldritch-cannon", "name": "Cañón Arcano", "creatureIds": ["eldritch-cannon-explosive"], "maxActive": 1 }
         ]
       },
       {
@@ -3155,7 +3158,7 @@
         "description": "Podés tener y crear dos Cañones Arcanos a la vez, activándolos con la misma acción adicional. Vos y tus aliados tenéis media cobertura a 10 pies de tu Cañón Arcano.",
         "effects": [
           { "type": "passiveTrait", "name": "Posición Fortificada", "description": "Hasta dos cañones simultáneos, activados juntos; media cobertura para vos y tus aliados cerca del cañón." },
-          { "type": "companion", "id": "eldritch-cannon", "name": "Cañón Arcano", "creatureIds": ["eldritch-cannon"], "maxActive": 2 }
+          { "type": "companion", "id": "eldritch-cannon", "name": "Cañón Arcano", "creatureIds": ["eldritch-cannon-explosive"], "maxActive": 2 }
         ]
       }
     ]
@@ -3234,6 +3237,7 @@
         "name": "Defensor de Acero",
         "description": "Tu tinkering te da un compañero, un Defensor de Acero: PG 5 + cinco veces tu nivel de Artífice, CA 12 + tu mod. de Inteligencia, actúa en tu turno (Esquivar salvo que le ordenes otra acción con una acción adicional), y su ataque causa 1d8 + 2 + tu mod. de Inteligencia de daño de fuerza. Tras un descanso largo con Herramientas de Herrero en mano podés crear uno nuevo, y podés revivir al actual gastando un espacio de conjuro si murió hace menos de una hora.",
         "effects": [
+          { "type": "passiveTrait", "name": "Defensor de Acero", "description": "Un compañero construido que se crea tras un descanso largo con Herramientas de Herrero, y al que podés revivir gastando un espacio de conjuro si murió hace menos de una hora. Sus estadísticas y sus acciones están en la tarjeta Compañeros de la pestaña Combate." },
           { "type": "companion", "id": "steel-defender", "name": "Defensor de Acero", "creatureIds": ["steel-defender"], "maxActive": 1 }
         ]
       },

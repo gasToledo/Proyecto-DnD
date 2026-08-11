@@ -912,9 +912,13 @@ class ResourceEffect extends Effect {
 ///
 /// Es el **único** punto donde se cablea una criatura a un personaje; el
 /// catálogo de `creatures.json` son perfiles puros que no saben quién los
-/// invoca. Varias fuentes pueden declarar el mismo [id] (el Artillero lo hace
-/// a nivel 3 y otra vez a nivel 15 para tener dos cañones): gana el de mayor
-/// [maxActive], igual que [FeatureChoiceEffect] con su cuenta.
+/// invoca.
+///
+/// Varios rasgos pueden declarar el mismo [id] para hacerlo crecer: el
+/// Artillero lo hace a nivel 3, a nivel 9 (el cañón pasa a ser el Explosivo) y
+/// a nivel 15 (dos a la vez). **Gana la declaración de mayor nivel**, igual que
+/// con [ResourceEffect], así que cada una tiene que traer el cuadro completo y
+/// no solo lo que cambia.
 class CompanionEffect extends Effect {
   /// Id estable de la opción, no de la criatura: es lo que ata una instancia
   /// guardada en la ficha con el rasgo que la concede.

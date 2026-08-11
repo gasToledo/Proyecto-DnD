@@ -69,9 +69,11 @@ class SheetBuilder {
 
   final Map<String, ResourceEffect> _resources = {};
 
-  /// Compañeros concedidos, por id de opción. Gana el de mayor `maxActive`
-  /// porque el contenido declara el acumulado a cada nivel: el Artillero
-  /// vuelve a declarar el cañón a nivel 15 solo para pasar de uno a dos.
+  /// Compañeros concedidos, por id de opción. **Gana el último**, que por el
+  /// orden de `featuresUpTo` es el del nivel más alto: es la misma convención
+  /// que los recursos, y es lo que deja al Artillero pasar del cañón base al
+  /// Cañón Explosivo a nivel 9 y a dos cañones a nivel 15 redeclarando el
+  /// mismo id.
   ///
   /// Se guardan crudos: resolver las formas contra el catálogo y descartar las
   /// que dependen de un conjuro que el personaje no tiene necesita el
@@ -255,9 +257,8 @@ class SheetBuilder {
         // El máximo puede depender de un modificador de característica que
         // todavía no está disponible acá; se resuelve en [resolveResources].
         _resources[id] = e;
-      case CompanionEffect(:final id, :final maxActive):
-        final prev = companions[id];
-        if (prev == null || maxActive > prev.maxActive) companions[id] = e;
+      case CompanionEffect(:final id):
+        companions[id] = e;
     }
   }
 

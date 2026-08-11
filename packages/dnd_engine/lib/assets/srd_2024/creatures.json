@@ -4,6 +4,7 @@
     "name": "Águila",
     "source": "srd_2024",
     "kind": "Bestia Pequeña",
+    "cr": 0,
     "ac": "12",
     "hp": "4",
     "speed": "10 pies, volar 60 pies",
@@ -25,6 +26,7 @@
     "name": "Araña",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "12",
     "hp": "1",
     "speed": "20 pies, trepar 20 pies",
@@ -57,6 +59,7 @@
     "name": "Babuino",
     "source": "srd_2024",
     "kind": "Bestia Pequeña",
+    "cr": 0,
     "ac": "12",
     "hp": "3",
     "speed": "30 pies, trepar 30 pies",
@@ -84,6 +87,7 @@
     "name": "Búho",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "11",
     "hp": "1",
     "speed": "5 pies, volar 60 pies",
@@ -111,6 +115,7 @@
     "name": "Buitre",
     "source": "srd_2024",
     "kind": "Bestia Mediana",
+    "cr": 0,
     "ac": "10",
     "hp": "5",
     "speed": "10 pies, volar 50 pies",
@@ -138,6 +143,7 @@
     "name": "Caballito de mar",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "12",
     "hp": "1",
     "speed": "5 pies, nadar 20 pies",
@@ -162,6 +168,7 @@
     "name": "Cabra",
     "source": "srd_2024",
     "kind": "Bestia Mediana",
+    "cr": 0,
     "ac": "10",
     "hp": "4",
     "speed": "40 pies, trepar 30 pies",
@@ -184,6 +191,7 @@
     "name": "Cangrejo",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "11",
     "hp": "3",
     "speed": "20 pies, nadar 20 pies",
@@ -211,6 +219,7 @@
     "name": "Chacal",
     "source": "srd_2024",
     "kind": "Bestia Pequeña",
+    "cr": 0,
     "ac": "12",
     "hp": "3",
     "speed": "40 pies",
@@ -232,6 +241,7 @@
     "name": "Ciervo",
     "source": "srd_2024",
     "kind": "Bestia Mediana",
+    "cr": 0,
     "ac": "13",
     "hp": "4",
     "speed": "50 pies",
@@ -259,6 +269,7 @@
     "name": "Comadreja",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "13",
     "hp": "1",
     "speed": "30 pies, trepar 30 pies",
@@ -280,6 +291,7 @@
     "name": "Cuervo",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "12",
     "hp": "2",
     "speed": "10 pies, volar 50 pies",
@@ -307,6 +319,7 @@
     "name": "Escarabajo de fuego gigante",
     "source": "srd_2024",
     "kind": "Bestia Pequeña",
+    "cr": 0,
     "ac": "13",
     "hp": "4",
     "speed": "30 pies, trepar 30 pies",
@@ -334,6 +347,7 @@
     "name": "Escorpión",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "11",
     "hp": "1",
     "speed": "10 pies",
@@ -356,6 +370,7 @@
     "name": "Gato",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "12",
     "hp": "2",
     "speed": "40 pies, trepar 40 pies",
@@ -383,6 +398,7 @@
     "name": "Halcón",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "13",
     "hp": "1",
     "speed": "10 pies, volar 60 pies",
@@ -404,6 +420,7 @@
     "name": "Hiena",
     "source": "srd_2024",
     "kind": "Bestia Mediana",
+    "cr": 0,
     "ac": "11",
     "hp": "5",
     "speed": "50 pies",
@@ -431,6 +448,7 @@
     "name": "Lagarto",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "10",
     "hp": "2",
     "speed": "20 pies, trepar 20 pies",
@@ -458,6 +476,7 @@
     "name": "Murciélago",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "12",
     "hp": "1",
     "speed": "5 pies, volar 30 pies",
@@ -479,6 +498,7 @@
     "name": "Piraña",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "13",
     "hp": "1",
     "speed": "5 pies, nadar 40 pies",
@@ -507,6 +527,7 @@
     "name": "Pulpo",
     "source": "srd_2024",
     "kind": "Bestia Pequeña",
+    "cr": 0,
     "ac": "12",
     "hp": "3",
     "speed": "5 pies, nadar 30 pies",
@@ -543,6 +564,7 @@
     "name": "Rana",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "11",
     "hp": "1",
     "speed": "20 pies, nadar 20 pies",
@@ -574,6 +596,7 @@
     "name": "Rata",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "10",
     "hp": "1",
     "speed": "20 pies, trepar 20 pies",
@@ -601,6 +624,7 @@
     "name": "Tejón",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0,
     "ac": "11",
     "hp": "5",
     "speed": "20 pies, excavar 5 pies",
@@ -616,6 +640,709 @@
         "damageType": "piercing",
         "reach": "5 pies"
       }
+    ]
+  },
+  {
+    "id": "camel",
+    "name": "Camello",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.125,
+    "ac": "10",
+    "hp": "17",
+    "speed": "50 pies",
+    "abilityScores": { "str": 15, "dex": 8, "con": 17, "int": 2, "wis": 11, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d4+2", "damageType": "bludgeoning", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "giant-crab",
+    "name": "Cangrejo gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.125,
+    "ac": "15",
+    "hp": "13",
+    "speed": "30 pies, nadar 30 pies",
+    "abilityScores": { "str": 13, "dex": 13, "con": 11, "int": 1, "wis": 9, "cha": 3 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 9",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Anfibio", "description": "Puede respirar tanto dentro como fuera del agua." }
+    ],
+    "actions": [
+      { "name": "Pinza", "attackBonus": "3", "damage": "1d6+1", "damageType": "bludgeoning", "reach": "5 pies", "description": "Si el objetivo es Mediano o más pequeño queda agarrado (CD 11 para escapar) por una de las dos pinzas." }
+    ]
+  },
+  {
+    "id": "giant-weasel",
+    "name": "Comadreja gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.125,
+    "ac": "13",
+    "hp": "9",
+    "speed": "40 pies, trepar 30 pies",
+    "abilityScores": { "str": 11, "dex": 17, "con": 10, "int": 4, "wis": 12, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "5", "damage": "1d4+3", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "blood-hawk",
+    "name": "Halcón sangriento",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "cr": 0.125,
+    "ac": "12",
+    "hp": "7",
+    "speed": "10 pies, volar 60 pies",
+    "abilityScores": { "str": 6, "dex": 14, "con": 10, "int": 3, "wis": 14, "cha": 5 },
+    "senses": "Percepción pasiva 16",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Atacar en manada", "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado." }
+    ],
+    "actions": [
+      { "name": "Pico", "attackBonus": "4", "damage": "1d4+2", "damageType": "piercing", "reach": "5 pies", "description": "1d8 + 2 si el objetivo está maltrecho." }
+    ]
+  },
+  {
+    "id": "mastiff",
+    "name": "Mastín",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.125,
+    "ac": "12",
+    "hp": "5",
+    "speed": "40 pies",
+    "abilityScores": { "str": 13, "dex": 14, "con": 12, "int": 3, "wis": 12, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 15",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "3", "damage": "1d6+1", "damageType": "piercing", "reach": "5 pies", "description": "Si el objetivo es Mediano o más pequeño queda derribado." }
+    ]
+  },
+  {
+    "id": "mule",
+    "name": "Mula",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.125,
+    "ac": "10",
+    "hp": "11",
+    "speed": "40 pies",
+    "abilityScores": { "str": 14, "dex": 10, "con": 13, "int": 2, "wis": 10, "cha": 5 },
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Bestia de carga", "description": "Se considera de un tamaño mayor para determinar su capacidad de carga." }
+    ],
+    "actions": [
+      { "name": "Cascos", "attackBonus": "4", "damage": "1d4+2", "damageType": "bludgeoning", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "pony",
+    "name": "Poni",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.125,
+    "ac": "10",
+    "hp": "11",
+    "speed": "40 pies",
+    "abilityScores": { "str": 15, "dex": 10, "con": 13, "int": 2, "wis": 11, "cha": 7 },
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Cascos", "attackBonus": "4", "damage": "1d4+2", "damageType": "bludgeoning", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "giant-rat",
+    "name": "Rata gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "cr": 0.125,
+    "ac": "13",
+    "hp": "7",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 7, "dex": 16, "con": 11, "int": 2, "wis": 10, "cha": 4 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Atacar en manada", "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "5", "damage": "1d4+3", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "elk",
+    "name": "Alce",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.25,
+    "ac": "10",
+    "hp": "11",
+    "speed": "50 pies",
+    "abilityScores": { "str": 16, "dex": 10, "con": 11, "int": 2, "wis": 10, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Embestir", "attackBonus": "5", "damage": "1d6+3", "damageType": "bludgeoning", "reach": "5 pies", "description": "Si el objetivo es Grande o más pequeño y el alce recorrió al menos 20 pies en línea recta hacia él, recibe 1d6 extra y queda derribado." }
+    ]
+  },
+  {
+    "id": "riding-horse",
+    "name": "Caballo de monta",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.25,
+    "ac": "11",
+    "hp": "13",
+    "speed": "60 pies",
+    "abilityScores": { "str": 16, "dex": 13, "con": 12, "int": 2, "wis": 11, "cha": 7 },
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Cascos", "attackBonus": "5", "damage": "1d8+3", "damageType": "bludgeoning", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "draft-horse",
+    "name": "Caballo de tiro",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.25,
+    "ac": "10",
+    "hp": "15",
+    "speed": "40 pies",
+    "abilityScores": { "str": 18, "dex": 10, "con": 15, "int": 2, "wis": 11, "cha": 7 },
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Cascos", "attackBonus": "6", "damage": "1d4+4", "damageType": "bludgeoning", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "giant-centipede",
+    "name": "Ciempiés gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Pequeña",
+    "cr": 0.25,
+    "ac": "14",
+    "hp": "9",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 5, "dex": 14, "con": 12, "int": 1, "wis": 7, "cha": 3 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 8",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d4+2", "damageType": "piercing", "reach": "5 pies", "description": "El objetivo queda envenenado hasta el principio del siguiente turno del ciempiés." }
+    ]
+  },
+  {
+    "id": "boar",
+    "name": "Jabalí",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.25,
+    "ac": "11",
+    "hp": "13",
+    "speed": "40 pies",
+    "abilityScores": { "str": 13, "dex": 11, "con": 14, "int": 2, "wis": 9, "cha": 5 },
+    "senses": "Percepción pasiva 9",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Furia maltrecha", "description": "Mientras esté maltrecho tiene ventaja en las tiradas de ataque." }
+    ],
+    "actions": [
+      { "name": "Colmillos", "attackBonus": "3", "damage": "1d6+1", "damageType": "piercing", "reach": "5 pies", "description": "Si el objetivo es Mediano o más pequeño y el jabalí recorrió al menos 20 pies en línea recta hacia él, recibe 1d6 extra y queda derribado." }
+    ]
+  },
+  {
+    "id": "giant-lizard",
+    "name": "Lagarto gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.25,
+    "ac": "12",
+    "hp": "19",
+    "speed": "40 pies, trepar 40 pies",
+    "abilityScores": { "str": 15, "dex": 12, "con": 13, "int": 2, "wis": 10, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Trepar cual arácnido", "description": "Puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d8+2", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "wolf",
+    "name": "Lobo",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.25,
+    "ac": "12",
+    "hp": "11",
+    "speed": "40 pies",
+    "abilityScores": { "str": 14, "dex": 15, "con": 12, "int": 3, "wis": 12, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 15",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Atacar en manada", "description": "Tiene ventaja en las tiradas de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d6+2", "damageType": "piercing", "reach": "5 pies", "description": "Si el objetivo es Mediano o más pequeño queda derribado." }
+    ]
+  },
+  {
+    "id": "giant-bat",
+    "name": "Murciélago gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.25,
+    "ac": "13",
+    "hp": "22",
+    "speed": "10 pies, volar 60 pies",
+    "abilityScores": { "str": 15, "dex": 16, "con": 11, "int": 2, "wis": 12, "cha": 6 },
+    "senses": "visión ciega 120 pies; Percepción pasiva 11",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "5", "damage": "1d6+3", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "panther",
+    "name": "Pantera",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.25,
+    "ac": "13",
+    "hp": "13",
+    "speed": "50 pies, trepar 40 pies",
+    "abilityScores": { "str": 14, "dex": 16, "con": 10, "int": 3, "wis": 14, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 14",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Desgarro", "attackBonus": "5", "damage": "1d6+3", "damageType": "slashing", "reach": "5 pies" },
+      { "name": "Huida veloz (acción adicional)", "description": "Realiza las acciones de destrabarse o esconderse." }
+    ]
+  },
+  {
+    "id": "pteranodon",
+    "name": "Pteranodon",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana (dinosaurio)",
+    "cr": 0.25,
+    "ac": "13",
+    "hp": "13",
+    "speed": "10 pies, volar 60 pies",
+    "abilityScores": { "str": 12, "dex": 15, "con": 10, "int": 2, "wis": 9, "cha": 5 },
+    "senses": "Percepción pasiva 11",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Pasar volando", "description": "No provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d8+2", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "giant-frog",
+    "name": "Rana gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.25,
+    "ac": "11",
+    "hp": "18",
+    "speed": "30 pies, nadar 30 pies",
+    "abilityScores": { "str": 12, "dex": 13, "con": 11, "int": 2, "wis": 10, "cha": 3 },
+    "senses": "visión en la oscuridad 30 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Anfibia", "description": "Puede respirar tanto dentro como fuera del agua." },
+      { "name": "Saltar sin carrera", "description": "Salta de longitud hasta 20 pies o de altura hasta 10 pies, con carrerilla o sin ella." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "3", "damage": "1d6+2", "damageType": "piercing", "reach": "5 pies", "description": "Si el objetivo es Mediano o más pequeño queda agarrado (CD 11 para escapar)." },
+      { "name": "Engullir", "description": "Engulle a un objetivo Pequeño o menor al que esté agarrando: queda apresado y cegado, con cobertura total contra lo de afuera, y recibe 2d4 de ácido al final del siguiente turno de la rana." }
+    ]
+  },
+  {
+    "id": "constrictor-snake",
+    "name": "Serpiente constrictora",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.25,
+    "ac": "13",
+    "hp": "13",
+    "speed": "30 pies, nadar 30 pies",
+    "abilityScores": { "str": 15, "dex": 14, "con": 12, "int": 1, "wis": 10, "cha": 3 },
+    "senses": "visión ciega 10 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d8+2", "damageType": "piercing", "reach": "5 pies" },
+      { "name": "Constreñir", "damage": "3d4", "damageType": "bludgeoning", "reach": "5 pies", "description": "Salvación de Fuerza CD 12 de una criatura Mediana o más pequeña. Fallo: el daño y queda agarrada (CD 12 para escapar)." }
+    ]
+  },
+  {
+    "id": "giant-poisonous-snake",
+    "name": "Serpiente venenosa gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.25,
+    "ac": "14",
+    "hp": "11",
+    "speed": "40 pies, nadar 40 pies",
+    "abilityScores": { "str": 10, "dex": 18, "con": 13, "int": 2, "wis": 10, "cha": 3 },
+    "senses": "visión ciega 10 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "6", "damage": "1d4+4", "damageType": "piercing", "reach": "10 pies", "description": "Más 4 (1d8) de daño de veneno." }
+    ]
+  },
+  {
+    "id": "giant-tarantula",
+    "name": "Tarántula gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.25,
+    "ac": "13",
+    "hp": "11",
+    "speed": "40 pies, trepar 40 pies",
+    "abilityScores": { "str": 12, "dex": 16, "con": 13, "int": 3, "wis": 12, "cha": 4 },
+    "senses": "visión ciega 10 pies, visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Trepar cual arácnido", "description": "Puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "5", "damage": "1d4+3", "damageType": "piercing", "reach": "5 pies", "description": "Más 5 (2d4) de daño de veneno." }
+    ]
+  },
+  {
+    "id": "giant-badger",
+    "name": "Tejón gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.25,
+    "ac": "13",
+    "hp": "15",
+    "speed": "30 pies, excavar 10 pies",
+    "abilityScores": { "str": 13, "dex": 10, "con": 17, "int": 2, "wis": 12, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "defenses": "Resistencia a veneno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "3", "damage": "2d4+1", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "giant-wasp",
+    "name": "Avispa gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.5,
+    "ac": "13",
+    "hp": "22",
+    "speed": "10 pies, volar 50 pies",
+    "abilityScores": { "str": 10, "dex": 14, "con": 10, "int": 1, "wis": 10, "cha": 3 },
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Pasar volando", "description": "No provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo." }
+    ],
+    "actions": [
+      { "name": "Aguijón", "attackBonus": "4", "damage": "1d6+2", "damageType": "piercing", "reach": "5 pies", "description": "Más 5 (2d4) de daño de veneno." }
+    ]
+  },
+  {
+    "id": "giant-seahorse",
+    "name": "Caballito de mar gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.5,
+    "ac": "14",
+    "hp": "16",
+    "speed": "5 pies, nadar 40 pies",
+    "abilityScores": { "str": 15, "dex": 12, "con": 11, "int": 2, "wis": 12, "cha": 5 },
+    "senses": "Percepción pasiva 11",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Respirar en el agua", "description": "Solo puede respirar bajo el agua." }
+    ],
+    "actions": [
+      { "name": "Embestir", "attackBonus": "4", "damage": "2d6+2", "damageType": "bludgeoning", "reach": "5 pies", "description": "2d8 + 2 si recorrió al menos 20 pies en línea recta hacia el objetivo." },
+      { "name": "Carrera burbujeante (acción adicional)", "description": "Bajo el agua se mueve hasta la mitad de su velocidad nadando sin provocar ataques de oportunidad." }
+    ]
+  },
+  {
+    "id": "warhorse",
+    "name": "Caballo de guerra",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.5,
+    "ac": "11",
+    "hp": "19",
+    "speed": "60 pies",
+    "abilityScores": { "str": 18, "dex": 12, "con": 13, "int": 2, "wis": 12, "cha": 7 },
+    "senses": "Percepción pasiva 11",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Cascos", "attackBonus": "6", "damage": "2d4+4", "damageType": "bludgeoning", "reach": "5 pies", "description": "Si el objetivo es Grande o más pequeño y el caballo recorrió al menos 20 pies en línea recta hacia él, recibe 2d4 extra y queda derribado." }
+    ]
+  },
+  {
+    "id": "giant-goat",
+    "name": "Cabra gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.5,
+    "ac": "11",
+    "hp": "19",
+    "speed": "40 pies, trepar 30 pies",
+    "abilityScores": { "str": 17, "dex": 13, "con": 12, "int": 3, "wis": 12, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Embestir", "attackBonus": "5", "damage": "1d6+3", "damageType": "bludgeoning", "reach": "5 pies", "description": "Si el objetivo es Grande o más pequeño y la cabra recorrió al menos 20 pies en línea recta hacia él, recibe 2d4 extra y queda derribado." }
+    ]
+  },
+  {
+    "id": "crocodile",
+    "name": "Cocodrilo",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 0.5,
+    "ac": "12",
+    "hp": "13",
+    "speed": "20 pies, nadar 30 pies",
+    "abilityScores": { "str": 15, "dex": 10, "con": 13, "int": 2, "wis": 10, "cha": 5 },
+    "senses": "Percepción pasiva 10",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Aguantar la respiración", "description": "Puede aguantar la respiración durante 1 hora." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d8+2", "damageType": "piercing", "reach": "5 pies", "description": "Si el objetivo es Mediano o más pequeño queda agarrado (CD 12 para escapar) y, mientras lo esté, apresado." }
+    ]
+  },
+  {
+    "id": "black-bear",
+    "name": "Oso negro",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.5,
+    "ac": "11",
+    "hp": "19",
+    "speed": "30 pies, nadar 30 pies, trepar 30 pies",
+    "abilityScores": { "str": 15, "dex": 12, "con": 14, "int": 2, "wis": 12, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 15",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Ataque múltiple", "description": "Hace dos ataques de desgarro." },
+      { "name": "Desgarro", "attackBonus": "4", "damage": "1d6+2", "damageType": "slashing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "ape",
+    "name": "Simio",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.5,
+    "ac": "12",
+    "hp": "19",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 16, "dex": 14, "con": 14, "int": 6, "wis": 12, "cha": 7 },
+    "senses": "Percepción pasiva 13",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Ataque múltiple", "description": "Hace dos ataques de puñetazo." },
+      { "name": "Puñetazo", "attackBonus": "5", "damage": "1d4+3", "damageType": "bludgeoning", "reach": "5 pies" },
+      { "name": "Piedra (recarga 6)", "attackBonus": "5", "damage": "2d6+3", "damageType": "bludgeoning", "reach": "25/50 pies" }
+    ]
+  },
+  {
+    "id": "reef-shark",
+    "name": "Tiburón de arrecife",
+    "source": "srd_2024",
+    "kind": "Bestia Mediana",
+    "cr": 0.5,
+    "ac": "12",
+    "hp": "22",
+    "speed": "5 pies, nadar 30 pies",
+    "abilityScores": { "str": 14, "dex": 15, "con": 13, "int": 1, "wis": 10, "cha": 4 },
+    "senses": "visión ciega 30 pies; Percepción pasiva 12",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Atacar en manada", "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado." },
+      { "name": "Respirar en el agua", "description": "Solo puede respirar bajo el agua." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "2d4+2", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "giant-spider",
+    "name": "Araña gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "14",
+    "hp": "26",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 14, "dex": 16, "con": 12, "int": 2, "wis": 11, "cha": 4 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 14",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Caminar por telarañas", "description": "Ignora las restricciones de movimiento de las telarañas y conoce la ubicación de cualquier criatura en contacto con la misma telaraña." },
+      { "name": "Trepar cual arácnido", "description": "Puede trepar por superficies difíciles e incluso recorrer techos sin tener que realizar pruebas de característica." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "5", "damage": "1d8+3", "damageType": "piercing", "reach": "5 pies", "description": "Más 7 (2d6) de daño de veneno." },
+      { "name": "Telaraña (recarga 5-6)", "description": "Salvación de Destreza CD 13 de una criatura que vea a 60 pies o menos. Fallo: queda apresada hasta que se destruya la telaraña (CA 10, 5 PG, vulnerable al fuego, inmune a psíquico y veneno)." }
+    ]
+  },
+  {
+    "id": "giant-hyena",
+    "name": "Hiena gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "12",
+    "hp": "45",
+    "speed": "50 pies",
+    "abilityScores": { "str": 16, "dex": 14, "con": 14, "int": 2, "wis": 12, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "5", "damage": "2d6+3", "damageType": "piercing", "reach": "5 pies" },
+      { "name": "Rabia (1/día, acción adicional)", "description": "Justo después de dañar a una criatura ya maltrecha, se mueve hasta la mitad de su velocidad y hace un ataque de mordisco." }
+    ]
+  },
+  {
+    "id": "lion",
+    "name": "León",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "12",
+    "hp": "22",
+    "speed": "50 pies",
+    "abilityScores": { "str": 17, "dex": 15, "con": 11, "int": 3, "wis": 12, "cha": 8 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Atacar en manada", "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado." },
+      { "name": "Saltar con carrera", "description": "Si se movió al menos 10 pies justo antes, puede saltar de longitud hasta 25 pies." }
+    ],
+    "actions": [
+      { "name": "Ataque múltiple", "description": "Hace dos ataques de desgarro. Puede sustituir uno por un rugido." },
+      { "name": "Desgarro", "attackBonus": "5", "damage": "1d8+3", "damageType": "slashing", "reach": "5 pies" },
+      { "name": "Rugido", "description": "Salvación de Sabiduría CD 11 de una criatura a 15 pies o menos. Fallo: queda asustada hasta el principio del siguiente turno del león." }
+    ]
+  },
+  {
+    "id": "dire-wolf",
+    "name": "Lobo terrible",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "14",
+    "hp": "22",
+    "speed": "50 pies",
+    "abilityScores": { "str": 17, "dex": 15, "con": 15, "int": 3, "wis": 12, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 15",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Atacar en manada", "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "5", "damage": "1d10+3", "damageType": "piercing", "reach": "5 pies", "description": "Si el objetivo es Grande o más pequeño queda derribado." }
+    ]
+  },
+  {
+    "id": "brown-bear",
+    "name": "Oso pardo",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "11",
+    "hp": "22",
+    "speed": "40 pies, trepar 30 pies",
+    "abilityScores": { "str": 17, "dex": 12, "con": 15, "int": 2, "wis": 13, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Ataque múltiple", "description": "Hace un ataque de mordisco y uno con sus garras." },
+      { "name": "Garra", "attackBonus": "5", "damage": "1d4+3", "damageType": "slashing", "reach": "5 pies", "description": "Si el objetivo es Grande o más pequeño queda derribado." },
+      { "name": "Mordisco", "attackBonus": "5", "damage": "1d8+3", "damageType": "piercing", "reach": "5 pies" }
+    ]
+  },
+  {
+    "id": "giant-octopus",
+    "name": "Pulpo gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "11",
+    "hp": "45",
+    "speed": "10 pies, nadar 60 pies",
+    "abilityScores": { "str": 17, "dex": 13, "con": 13, "int": 5, "wis": 10, "cha": 4 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 14",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Respirar en el agua", "description": "Solo puede respirar bajo el agua, aunque aguanta la respiración 1 hora fuera de ella." }
+    ],
+    "actions": [
+      { "name": "Tentáculos", "attackBonus": "5", "damage": "2d6+3", "damageType": "bludgeoning", "reach": "10 pies", "description": "Si el objetivo es Mediano o más pequeño queda agarrado (CD 13 para escapar) por los ocho tentáculos y, mientras lo esté, apresado." },
+      { "name": "Nube de tinta (1/día)", "reaction": true, "description": "Detonante: recibe daño bajo el agua. Respuesta: suelta tinta que llena un cubo de 10 pies centrado en él y se mueve hasta su velocidad nadando. El cubo está muy oscuro 1 minuto." }
+    ]
+  },
+  {
+    "id": "giant-toad",
+    "name": "Sapo gigante",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "11",
+    "hp": "39",
+    "speed": "30 pies, nadar 30 pies",
+    "abilityScores": { "str": 15, "dex": 13, "con": 13, "int": 2, "wis": 10, "cha": 3 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "ninguno",
+    "traits": [
+      { "name": "Anfibio", "description": "Puede respirar tanto dentro como fuera del agua." },
+      { "name": "Saltar sin carrera", "description": "Salta de longitud hasta 20 pies o de altura hasta 10 pies, con carrerilla o sin ella." }
+    ],
+    "actions": [
+      { "name": "Mordisco", "attackBonus": "4", "damage": "1d6+2", "damageType": "piercing", "reach": "5 pies", "description": "Más 5 (2d4) de daño de veneno. Si el objetivo es Mediano o más pequeño queda agarrado (CD 12 para escapar)." },
+      { "name": "Engullir", "description": "Engulle a un objetivo Mediano o menor al que esté agarrando: queda apresado y cegado, con cobertura total contra lo de afuera, y recibe 3d6 de ácido al final de cada turno del sapo." }
+    ]
+  },
+  {
+    "id": "tiger",
+    "name": "Tigre",
+    "source": "srd_2024",
+    "kind": "Bestia Grande",
+    "cr": 1,
+    "ac": "13",
+    "hp": "30",
+    "speed": "40 pies",
+    "abilityScores": { "str": 17, "dex": 16, "con": 14, "int": 3, "wis": 12, "cha": 8 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 13",
+    "languages": "ninguno",
+    "actions": [
+      { "name": "Desgarro", "attackBonus": "5", "damage": "2d6+3", "damageType": "slashing", "reach": "5 pies", "description": "Si el objetivo es Grande o más pequeño queda derribado." },
+      { "name": "Huida veloz (acción adicional)", "description": "Realiza las acciones de destrabarse o esconderse." }
     ]
   },
   {
@@ -836,6 +1563,7 @@
     "name": "Serpiente venenosa",
     "source": "srd_2024",
     "kind": "Bestia Diminuta",
+    "cr": 0.125,
     "ac": "12",
     "hp": "5",
     "speed": "30 pies, nadar 30 pies",

@@ -326,6 +326,12 @@ class Creature {
   /// un compañero no participa del cálculo de daño, solo se muestra.
   final String defenses;
 
+  /// Valor de desafío, o null si no lo declara. Solo las bestias del catálogo
+  /// lo traen: es lo que filtra el pozo de Forma Salvaje, que sube de 1/4 a 1
+  /// con el nivel del druida. Se guarda como número (`0.25`) y no como «1/4»
+  /// para poder compararlo sin parsear una fracción en cada filtro.
+  final num? cr;
+
   /// La criatura se invoca gastando un espacio de conjuro y sus fórmulas usan
   /// `spellLevel` (Corcel Sobrenatural, Sirviente Homúnculo).
   final bool scalesWithSpellLevel;
@@ -345,12 +351,37 @@ class Creature {
     this.senses = '',
     this.languages = '',
     this.defenses = '',
+    this.cr,
     this.scalesWithSpellLevel = false,
     this.traits = const [],
     this.actions = const [],
   });
 
   int abilityModifierFor(Ability a) => abilityModifier(abilityScores[a] ?? 10);
+
+  /// Es una bestia, y por lo tanto forma legal de Forma Salvaje.
+  ///
+  /// Se lee de [kind] en vez de guardarse aparte porque el tipo ya está escrito
+  /// ahí, y un dato duplicado se puede contradecir con el que ya existe.
+  bool get isBeast => kind.startsWith('Bestia');
+
+  /// Tiene velocidad volando, que la Forma Salvaje prohíbe hasta nivel 8.
+  bool get canFly => speed.contains('volar');
+
+  /// Velocidad de caminar en pies, leída del principio de [speed]
+  /// ("30 pies, trepar 30 pies" → 30), o 0 si no arranca con un número.
+  ///
+  /// Derivado y no duplicado, por lo mismo que [isBeast]. Que las 64 criaturas
+  /// den un número mayor que cero lo garantiza `content_integrity_test.dart`.
+  int get walkSpeed =>
+      int.tryParse(RegExp(r'^\s*(\d+)').firstMatch(speed)?.group(1) ?? '') ?? 0;
+
+  /// Alcance de la visión en la oscuridad en pies, leído de [senses], o null si
+  /// la criatura no la tiene.
+  int? get darkvision {
+    final m = RegExp(r'visión en la oscuridad (\d+)').firstMatch(senses);
+    return m == null ? null : int.tryParse(m.group(1)!);
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -367,6 +398,7 @@ class Creature {
         'senses': senses,
         'languages': languages,
         'defenses': defenses,
+        if (cr != null) 'cr': cr,
         'scalesWithSpellLevel': scalesWithSpellLevel,
         'traits': [for (final t in traits) t.toJson()],
         'actions': [for (final a in actions) a.toJson()],
@@ -387,6 +419,7 @@ class Creature {
         senses: j['senses'] as String? ?? '',
         languages: j['languages'] as String? ?? '',
         defenses: j['defenses'] as String? ?? '',
+        cr: j['cr'] as num?,
         scalesWithSpellLevel: j['scalesWithSpellLevel'] as bool? ?? false,
         traits: [
           for (final t in (j['traits'] as List? ?? const []))

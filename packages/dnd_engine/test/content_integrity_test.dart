@@ -897,6 +897,48 @@ void main() {
       }
     });
 
+    /// El pozo de Forma Salvaje: bestias **con** valor de desafío. Los
+    /// espíritus invocados son de tipo Bestia pero el libro les pone «Desafío:
+    /// ninguno», y el rasgo pide un VD máximo — sin VD no califican, que es
+    /// justo lo que corresponde: no son animales, son conjuros.
+    Iterable<Creature> beastForms() =>
+        repo.creatures.values.where((c) => c.isBeast && c.cr != null);
+
+    test('las bestias traen VD y sus números se leen del texto', () {
+      // Las 24 de VD 0 más las 40 de VD 1/8 a 1.
+      expect(beastForms().length, greaterThanOrEqualTo(60));
+
+      for (final beast in beastForms()) {
+        expect(beast.cr, lessThanOrEqualTo(1), reason: beast.id);
+        // Derivar en vez de duplicar solo se sostiene si el texto siempre
+        // parsea: acá se cae si alguien escribe una velocidad de otra forma.
+        expect(beast.walkSpeed, greaterThan(0), reason: beast.id);
+      }
+
+      // Y los espíritus quedan afuera aunque sean bestias.
+      expect(repo.creature('bestial-spirit-air')!.isBeast, isTrue);
+      expect(repo.creature('bestial-spirit-air')!.cr, isNull);
+    });
+
+    test('el pozo por nivel de druida sale de VD y vuelo', () {
+      Iterable<Creature> pool(num maxCr, {required bool allowFly}) =>
+          beastForms().where(
+            (c) => c.cr! <= maxCr && (allowFly || !c.canFly),
+          );
+
+      // Cada tramo de la tabla suma formas sobre el anterior.
+      final atTwo = pool(0.25, allowFly: false).length;
+      final atFour = pool(0.5, allowFly: false).length;
+      final atEight = pool(1, allowFly: true).length;
+      expect(atTwo, greaterThan(20));
+      expect(atFour, greaterThan(atTwo));
+      expect(atEight, greaterThan(atFour));
+
+      // Y hasta nivel 8 no entra nada que vuele.
+      expect(pool(0.5, allowFly: false).any((c) => c.canFly), isFalse);
+      expect(pool(1, allowFly: true).any((c) => c.canFly), isTrue);
+    });
+
     test('una criatura hace round-trip por JSON', () {
       final original = repo.creature('steel-defender')!;
       final back = Creature.fromJson(original.toJson());

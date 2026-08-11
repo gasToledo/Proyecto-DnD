@@ -719,7 +719,7 @@ class CharacterCompiler {
         resources.add(CharacterResource(
           // Se indexa por el conjuro del contenido, no por el reemplazo: si no,
           // cambiar el truco devolvería los usos ya gastados.
-          id: 'innate-${granted.id}',
+          id: innateSpellResourceId(granted.id),
           name: spell.name,
           max: g.use == InnateSpellUse.proficiencyBonusPerLongRest
               ? proficiencyBonus

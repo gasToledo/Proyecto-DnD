@@ -540,6 +540,31 @@ void main() {
       expect(byName['Ataque múltiple']!.description, contains('3 ataques'));
     });
 
+    test('el Corcel Fiel trae su lanzamiento gratis por descanso largo', () {
+      final sheet = build(classId: 'paladin', level: 5);
+      final steed = companion(sheet, 'otherworldly-steed');
+      expect(steed, isNotNull);
+      // Sin el conjuro atado, la ficha no sabe qué gastar ni desde qué nivel:
+      // el corcel salía invocable con un espacio de nivel 1.
+      expect(steed!.spellId, 'find-steed');
+      expect(steed.minSpellLevel, 2);
+
+      final free = sheet.resources.firstWhere(
+        (r) => r.id == innateSpellResourceId('find-steed'),
+        orElse: () => throw StateError('sin recurso de lanzamiento gratis'),
+      );
+      expect(free.max, 1);
+      expect(free.recharge, RechargeOn.longRest);
+
+      // Y antes del nivel 5 no existe, porque el rasgo tampoco.
+      expect(
+        build(classId: 'paladin', level: 4)
+            .resources
+            .where((r) => r.id == innateSpellResourceId('find-steed')),
+        isEmpty,
+      );
+    });
+
     test('un Guerrero no tiene ningún compañero', () {
       expect(build(classId: 'fighter', level: 20).companions, isEmpty);
     });

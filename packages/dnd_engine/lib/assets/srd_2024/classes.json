@@ -1573,8 +1573,9 @@
         "description": "Siempre tenés preparado Hallar Corcel y lo lanzás gratis una vez por descanso largo.",
         "effects": [
           { "type": "alwaysPreparedSpell", "spellId": "find-steed" },
+          { "type": "grantSpell", "spellId": "find-steed", "ability": "charisma", "use": "oncePerLongRest" },
           { "type": "passiveTrait", "name": "Corcel Fiel", "description": "Siempre tenés preparado Hallar Corcel. Además podés lanzarlo una vez sin gastar espacio de conjuro, y recuperás esa capacidad tras un descanso largo." },
-          { "type": "companion", "id": "otherworldly-steed", "name": "Corcel Sobrenatural", "creatureIds": ["otherworldly-steed"] }
+          { "type": "companion", "id": "otherworldly-steed", "name": "Corcel Sobrenatural", "requiresSpell": "find-steed", "creatureIds": ["otherworldly-steed"] }
         ]
       },
       {

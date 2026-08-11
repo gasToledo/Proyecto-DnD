@@ -29,6 +29,14 @@ enum CasterProgression {
 /// Cómo obtiene sus conjuros la clase.
 /// Cómo se puede lanzar un conjuro concedido por un rasgo (linaje, dote…),
 /// aparte de la magia de clase.
+/// Id del recurso que lleva la cuenta de los lanzamientos gratis de un conjuro
+/// concedido por un rasgo.
+///
+/// Vive acá porque lo arman el compilador y lo lee la ficha: con la cadena
+/// escrita a mano en los dos lados, renombrarla en uno la rompía en el otro sin
+/// que nada avisara.
+String innateSpellResourceId(String spellId) => 'innate-$spellId';
+
 enum InnateSpellUse {
   /// A voluntad, sin límite. Es el caso de los trucos.
   atWill,

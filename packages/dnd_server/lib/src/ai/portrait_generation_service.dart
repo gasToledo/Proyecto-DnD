@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'azure_image_service.dart';
-import 'azure_openai_image_service.dart';
 import 'portrait_provider.dart';
 
 /// Fallo al generar, distinto de un pedido mal formado: el proveedor
@@ -59,10 +57,6 @@ class PortraitGenerationService {
         count: count,
       );
     } on ProviderException catch (e) {
-      throw PortraitGenerationFailure(e.message);
-    } on AzureImageException catch (e) {
-      throw PortraitGenerationFailure(e.message);
-    } on AzureOpenAiImageException catch (e) {
       throw PortraitGenerationFailure(e.message);
     } on TimeoutException {
       throw const PortraitGenerationFailure(

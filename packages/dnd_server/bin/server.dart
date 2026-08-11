@@ -33,9 +33,7 @@ Future<void> main() async {
     beginLogin: oidcService.beginLogin,
     completeLogin: oidcService.completeLogin,
     createSessionForIdentity: (identity) => pool.runTx((session) async {
-      final userId = await PostgresAccountRepository(
-        session,
-      ).findOrCreateByOidcSubject(identity.subject);
+      final userId = await findOrCreateAccount(session, identity.subject);
       return PostgresSessionStore(session).create(userId, identity: identity);
     }),
     sessionProfile: (token) => pool.run(

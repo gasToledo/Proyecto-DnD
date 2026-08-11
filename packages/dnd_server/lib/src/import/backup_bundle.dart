@@ -11,7 +11,7 @@ import '../util/safe_path.dart';
 /// escritorio): el escritorio sigue exportando, el servidor solo importa (ver
 /// capacidad `account-data-import`). No se porta `encode()` porque el
 /// servidor nunca produce un ZIP de respaldo.
-enum BackupScope { character, full, legacy }
+enum BackupScope { character, full }
 
 /// Nombres de credencial que nunca pueden viajar en un respaldo. Incluye las de
 /// proveedores retirados: un `settings.json` viejo todavía puede tenerlas.

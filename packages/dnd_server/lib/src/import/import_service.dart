@@ -94,10 +94,9 @@ Future<PreparedImport> prepareImport({
 /// referenciar, que es la misma política de retención pendiente que ya
 /// declara `design.md` como fuera de alcance.
 ///
-/// La escritura en Postgres no tiene prueba unitaria propia, igual que
-/// `saveCharactersAtomically`: la garantía la da `Pool.runTx`, que requiere
-/// una base de datos viva para probarse en los hechos. La resolución de ids
-/// y el guardado de retratos sí la tienen, en [prepareImport].
+/// La garantía de `Pool.runTx` requiere una base de datos viva para probarse
+/// en los hechos. La resolución de ids y el guardado de retratos sí tienen
+/// prueba unitaria, en [prepareImport].
 Future<ImportResult> importBackup({
   required Pool pool,
   required PortraitBlobStore portraits,

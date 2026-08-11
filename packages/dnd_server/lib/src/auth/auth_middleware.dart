@@ -23,8 +23,8 @@ extension AuthenticatedRequest on Request {
 ///
 /// [resolveUserId] recibe el token de la cookie y devuelve el id de cuenta
 /// dueña de esa sesión, o `null` si el token no existe o expiró. Se recibe
-/// como función (no como `SessionStore` concreto) para que este middleware
-/// se pueda probar sin una base de datos real.
+/// como función, y no como el `PostgresSessionStore` concreto, para que este
+/// middleware se pueda probar sin una base de datos real.
 Middleware requireSession(
   Future<String?> Function(String token) resolveUserId,
 ) {

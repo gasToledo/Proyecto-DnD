@@ -2,11 +2,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_server/src/repositories/character_repository.dart';
 import 'package:dnd_server/src/repositories/id_allocation.dart';
 
-/// Doble de [CharacterRepository] en memoria, para probar el contrato
-/// (propiedad por cuenta, asignación de id libre, no sobrescritura) sin una
-/// base de datos real. `upsertAllOrNothing` no forma parte del contrato: solo
-/// existe para simular, en las pruebas, la garantía transaccional que en
-/// producción aporta `Pool.runTx` (ver `saveCharactersAtomically`).
+/// Doble de [CharacterRepository] en memoria para las pruebas HTTP.
 class InMemoryCharacterRepository implements CharacterRepository {
   final Map<String, Map<String, Character>> _byUser = {};
 
@@ -67,23 +63,4 @@ class InMemoryCharacterRepository implements CharacterRepository {
   @override
   Future<Set<String>> existingIds(String userId) async =>
       _byUser[userId]?.keys.toSet() ?? const {};
-
-  /// Simula lo que `Pool.runTx` garantiza en producción: si [action] lanza en
-  /// cualquier punto, ningún cambio hecho a través de [batch] durante esta
-  /// llamada queda aplicado al repositorio real.
-  Future<void> upsertAllOrNothing(
-    String userId,
-    Future<void> Function(CharacterRepository batch) action,
-  ) async {
-    final before = Map<String, Character>.of(_byUser[userId] ?? const {});
-    final staging = InMemoryCharacterRepository()
-      .._byUser[userId] = Map.of(before);
-    try {
-      await action(staging);
-      _byUser[userId] = staging._byUser[userId]!;
-    } catch (_) {
-      _byUser[userId] = before;
-      rethrow;
-    }
-  }
 }

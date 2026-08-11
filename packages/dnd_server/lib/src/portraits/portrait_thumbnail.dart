@@ -26,16 +26,6 @@ const List<int> portraitThumbnailWidths = [
   512,
 ];
 
-/// El peldaño más chico de [portraitThumbnailWidths] que alcanza para dibujar
-/// [neededWidth] píxeles físicos, o `null` si hace falta más que el peldaño
-/// más grande: ahí corresponde el original, no una miniatura estirada.
-int? portraitThumbnailWidthFor(int neededWidth) {
-  for (final width in portraitThumbnailWidths) {
-    if (width >= neededWidth) return width;
-  }
-  return null;
-}
-
 /// Reduce [original] a [width] píxeles de ancho y lo devuelve como PNG.
 ///
 /// Devuelve `null` cuando la miniatura no aporta nada y hay que servir el

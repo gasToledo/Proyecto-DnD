@@ -20,32 +20,6 @@ class SessionProfile {
   });
 }
 
-/// Sesiones de servidor: la cookie del navegador solo lleva un token opaco,
-/// nunca un id de cuenta ni un token del proveedor OIDC. Cerrar sesión o
-/// dejarla expirar invalida el acceso sin que el cliente pueda hacer nada
-/// para revivirla.
-abstract class SessionStore {
-  /// Crea una sesión para [userId] y devuelve el token que va en la cookie.
-  /// [identity] es lo que el proveedor afirmó en este login; se guarda para
-  /// poder mostrar la cuenta en pantalla sin volver a preguntarle.
-  Future<String> create(String userId, {OidcIdentity? identity, Duration ttl});
-
-  /// `null` si el token no existe o ya expiró.
-  Future<String?> userIdForToken(String token);
-
-  /// Perfil cacheado de la sesión, o `null` si el token no existe o venció.
-  /// Consulta aparte de [userIdForToken] a propósito: esa es la que corre en
-  /// cada request autenticado y no necesita leer el perfil.
-  Future<SessionProfile?> profileForToken(String token);
-
-  Future<void> invalidate(String token);
-
-  /// Borra las sesiones ya vencidas. [userIdForToken] igual las ignora, así
-  /// que esto no cambia quién puede entrar: existe solo para que la tabla no
-  /// crezca sin techo.
-  Future<void> deleteExpired();
-}
-
 /// El `WHERE` no es opcional: sin él, esta sentencia cerraría la sesión de
 /// todas las cuentas conectadas. Se expone para que una prueba pueda fijar
 /// ese predicado (ver `session_store_test.dart`), porque el doble de
@@ -53,13 +27,13 @@ abstract class SessionStore {
 const String deleteExpiredSessionsSql =
     'DELETE FROM sessions WHERE expires_at <= now()';
 
-class PostgresSessionStore implements SessionStore {
+/// Sesiones de servidor respaldadas por Postgres.
+class PostgresSessionStore {
   final Session _session;
   static const Duration defaultTtl = Duration(hours: 12);
 
   const PostgresSessionStore(this._session);
 
-  @override
   Future<void> deleteExpired() async {
     await _session.execute(deleteExpiredSessionsSql);
   }
@@ -68,7 +42,6 @@ class PostgresSessionStore implements SessionStore {
   /// vencido, en vez de sumar un proceso periódico al contenedor. Es la
   /// operación menos frecuente del servidor (una por cuenta cada 12 horas),
   /// así que el barrido nunca compite con el tráfico normal de fichas.
-  @override
   Future<String> create(
     String userId, {
     OidcIdentity? identity,
@@ -103,7 +76,6 @@ class PostgresSessionStore implements SessionStore {
     return token;
   }
 
-  @override
   Future<String?> userIdForToken(String token) async {
     final result = await _session.execute(
       Sql.named('''
@@ -116,7 +88,6 @@ class PostgresSessionStore implements SessionStore {
     return result.first.toColumnMap()['user_id'] as String;
   }
 
-  @override
   Future<SessionProfile?> profileForToken(String token) async {
     final result = await _session.execute(
       Sql.named('''
@@ -135,7 +106,6 @@ class PostgresSessionStore implements SessionStore {
     );
   }
 
-  @override
   Future<void> invalidate(String token) async {
     await _session.execute(
       Sql.named('DELETE FROM sessions WHERE token_hash = @tokenHash'),

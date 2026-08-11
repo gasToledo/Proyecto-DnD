@@ -1,12 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
 import '../config.dart';
-import 'azure_image_service.dart';
-import 'azure_openai_image_service.dart';
 
 /// Error legible de un proveedor de imágenes. El mensaje se muestra a la
 /// cuenta que pidió la generación; MUST NOT contener ninguna credencial.
@@ -105,9 +104,51 @@ class PollinationsProvider implements PortraitProvider {
   }
 }
 
-/// gpt-image-2 en Azure. Recurso y deployment fijos (ver
-/// `azure_openai_image_service.dart`); solo necesita la API key. Es el único
-/// proveedor que acepta imagen de referencia.
+List<Map> _imageData(Map<String, dynamic> json) =>
+    (json['data'] as List? ?? const []).whereType<Map>().toList();
+
+List<Uint8List> _base64Images(Map<String, dynamic> json) => [
+  for (final item in _imageData(json))
+    if (item['b64_json'] case final String value when value.isNotEmpty)
+      base64Decode(value),
+];
+
+List<String> _imageUrls(Map<String, dynamic> json) => [
+  for (final item in _imageData(json))
+    if (item['url'] case final String value when value.isNotEmpty) value,
+];
+
+String? _azureErrorMessage(String body) {
+  try {
+    final json = jsonDecode(body);
+    if (json is Map) {
+      final error = json['error'];
+      if (error is Map) {
+        final message = error['message'];
+        if (message is String && message.isNotEmpty) return message;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+/// Recurso y deployment de gpt-image-2. Es un recurso cedido al despliegue, de
+/// un solo dueño: no hace falta que sean configurables.
+///
+/// Ojo: **no** es el mismo recurso que el de Flux ([_azureResourceEndpoint]),
+/// aunque ahora vivan en el mismo archivo. Aquel usa la API propia de Black
+/// Forest Labs bajo `/providers/blackforestlabs/`; este habla la API estilo
+/// OpenAI bajo `/openai/deployments/`. Por eso son dos proveedores y no un
+/// parámetro.
+const _azureOpenAiEndpoint =
+    'https://ia-aplicada-resource.cognitiveservices.azure.com';
+const _azureImageDeployment = 'gpt-image-2';
+
+/// Versión de la API de imágenes. Si Azure devuelve 404 con la ruta correcta,
+/// suele ser esto lo que hay que actualizar contra el recurso.
+const _azureOpenAiApiVersion = '2025-04-01-preview';
+
+/// gpt-image-2 en Azure. Es el único proveedor con imagen de referencia.
 class AzureOpenAiProvider implements PortraitProvider {
   final String apiKey;
   final http.Client? _client;
@@ -125,23 +166,95 @@ class AzureOpenAiProvider implements PortraitProvider {
   @override
   bool get isConfigured => apiKey.isNotEmpty;
 
+  static Uri _uri(String operation) => Uri.parse(
+    '$_azureOpenAiEndpoint/openai/deployments/$_azureImageDeployment/'
+    'images/$operation?api-version=$_azureOpenAiApiVersion',
+  );
+
   @override
   Future<List<Uint8List>> generate({
     required String prompt,
     Uint8List? reference,
     int? count,
-  }) {
-    final service = AzureOpenAiImageService(client: _client);
-    return service
-        .generate(
-          apiKey: apiKey,
-          prompt: prompt,
-          count: count ?? defaultCount,
-          reference: reference,
-        )
-        .whenComplete(service.close);
+  }) async {
+    final client = _client ?? http.Client();
+    try {
+      final n = count ?? defaultCount;
+      final http.Response response;
+      if (reference == null) {
+        response = await client
+            .post(
+              _uri('generations'),
+              headers: {'Content-Type': 'application/json', 'api-key': apiKey},
+              body: jsonEncode({'prompt': prompt, 'n': n, 'size': '1024x1024'}),
+            )
+            .timeout(const Duration(seconds: 120));
+      } else {
+        final request = http.MultipartRequest('POST', _uri('edits'))
+          ..headers['api-key'] = apiKey
+          ..fields['prompt'] = prompt
+          ..fields['n'] = '$n'
+          ..fields['size'] = '1024x1024'
+          ..files.add(
+            http.MultipartFile.fromBytes(
+              'image',
+              reference,
+              filename: 'reference.png',
+            ),
+          );
+        response = await http.Response.fromStream(
+          await client.send(request).timeout(const Duration(seconds: 120)),
+        );
+      }
+
+      if (response.statusCode != 200) {
+        throw ProviderException(
+          _parseError(response.body, response.statusCode),
+        );
+      }
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final images = _base64Images(decoded);
+      if (images.isNotEmpty) return images;
+
+      final urls = _imageUrls(decoded);
+      if (urls.isEmpty) {
+        throw ProviderException(
+          'La respuesta no incluyó ninguna imagen. Puede ser el filtro de '
+          'contenido: probá quitar el arma o suavizar los detalles.',
+        );
+      }
+      return [
+        for (final url in urls) (await client.get(Uri.parse(url))).bodyBytes,
+      ];
+    } finally {
+      client.close();
+    }
+  }
+
+  static String _parseError(String body, int statusCode) {
+    final message = _azureErrorMessage(body);
+    if (message != null) return message;
+    if (statusCode == 401 || statusCode == 403) {
+      return 'La API key de Azure es inválida o no tiene acceso al '
+          'deployment $_azureImageDeployment ($statusCode).';
+    }
+    if (statusCode == 404) {
+      return 'Azure no encontró el deployment $_azureImageDeployment en el '
+          'recurso configurado (404). Revisá el nombre del deployment y la '
+          'versión de API.';
+    }
+    return 'Azure respondió con código $statusCode.';
   }
 }
+
+/// Recurso y modelo del deployment de Flux en Azure AI Foundry (beca Azure
+/// Students). App personal de un solo despliegue: no hace falta que sean
+/// configurables. Es un recurso **distinto** al de gpt-image-2 (ver
+/// [_azureOpenAiEndpoint]).
+const _azureResourceEndpoint =
+    'https://proyecto-dnd-resource.services.ai.azure.com';
+const _azureFluxModel = 'FLUX.2-pro';
+const _azureFluxModelPath = 'flux-2-pro';
 
 /// Flux (Black Forest Labs) en Azure AI Foundry. Endpoint y modelo son fijos;
 /// solo necesita la API key.
@@ -161,16 +274,67 @@ class AzureProvider implements PortraitProvider {
   @override
   bool get isConfigured => apiKey.isNotEmpty;
 
+  static final _uri = Uri.parse(
+    '$_azureResourceEndpoint/providers/blackforestlabs/v1/'
+    '$_azureFluxModelPath?api-version=preview',
+  );
+
   @override
   Future<List<Uint8List>> generate({
     required String prompt,
     Uint8List? reference,
     int? count,
-  }) {
-    final service = AzureImageService(client: _client);
-    return service
-        .generate(apiKey: apiKey, prompt: prompt, count: count ?? defaultCount)
-        .whenComplete(service.close);
+  }) async {
+    final client = _client ?? http.Client();
+    try {
+      final response = await client
+          .post(
+            _uri,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $apiKey',
+            },
+            body: jsonEncode({
+              'model': _azureFluxModel,
+              'prompt': prompt,
+              'width': 1024,
+              'height': 1024,
+              'n': count ?? defaultCount,
+              // Va de 0 (más estricto) a 6 (menos estricto); se pide el máximo
+              // porque el contenido es fantasía/D&D (armas, combate) y con el
+              // valor por defecto (2) el filtro da falsos positivos.
+              'safety_tolerance': 6,
+            }),
+          )
+          .timeout(const Duration(seconds: 120));
+      if (response.statusCode != 200) {
+        throw ProviderException(
+          _azureErrorMessage(response.body) ??
+              'Azure respondió con código ${response.statusCode}.',
+        );
+      }
+
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final images = _base64Images(decoded);
+      if (images.isNotEmpty) return images;
+
+      final urls = _imageUrls(decoded);
+      if (urls.isEmpty) {
+        if (decoded['stop_reason'] == 'refusal') {
+          throw ProviderException(
+            'El modelo rechazó el prompt (filtro de contenido de Azure). '
+            'Suele dispararse con armas o violencia: probá quitar el arma o '
+            'suavizar los detalles.',
+          );
+        }
+        throw ProviderException('La respuesta no incluyó ninguna imagen.');
+      }
+      return [
+        for (final url in urls) (await client.get(Uri.parse(url))).bodyBytes,
+      ];
+    } finally {
+      client.close();
+    }
   }
 }
 

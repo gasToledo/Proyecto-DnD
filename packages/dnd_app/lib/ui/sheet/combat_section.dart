@@ -600,15 +600,43 @@ extension _SheetCombatSection on _SheetScreenState {
 
     final summoned = form;
     final level = spellLevel;
-    _mutateCombat(
-      () => CombatOps.summonCompanion(
+    final spell = option.spellId == null ? null : repo.spell(option.spellId!);
+    // Solo gasta espacio si se eligió un nivel. El familiar y los que concede
+    // un rasgo no pasan por ahí: el primero se lanza como ritual y los otros
+    // no son conjuros.
+    final spendsSlot = level > 0 && s.spellcasting != null;
+    final concentrates = spell?.concentration ?? false;
+    final brokeConcentration =
+        concentrates && _c.combat.concentratingOn != null;
+
+    _mutateCombat(() {
+      if (spendsSlot) {
+        CombatOps.spendSpellSlot(_c.combat, s.spellcasting!, level);
+      }
+      CombatOps.summonCompanion(
         _c.combat,
         option,
         summoned,
         _companionVars(s, spellLevel: level),
-      ),
+        concentration: concentrates,
+        concentratingOn: spell?.name ?? '',
+      );
+    });
+
+    // Que la invocación te haya gastado un espacio o cortado otro conjuro no
+    // puede ser una sorpresa que se descubra después mirando otra tarjeta.
+    final notes = [
+      if (spendsSlot) 'gastaste un espacio de nivel $level',
+      if (brokeConcentration)
+        'perdiste la concentración anterior'
+      else if (concentrates)
+        'quedás concentrado en él',
+    ];
+    _snack(
+      notes.isEmpty
+          ? '${summoned.name} invocado.'
+          : '${summoned.name} invocado: ${notes.join('; ')}.',
     );
-    _snack('${summoned.name} invocado.');
   }
 
   /// Diálogo de una sola elección. Devuelve null si se cancela.
@@ -695,8 +723,6 @@ extension _SheetCombatSection on _SheetScreenState {
                   style: const TextStyle(fontFamily: 'Georgia', fontSize: 17),
                 ),
               ),
-              if (instance.spellLevel > 0)
-                GoldPill('Espacio de nivel ${instance.spellLevel}'),
               const SizedBox(width: 8),
               Text(
                 'CA ${resolved.armorClass}',
@@ -704,6 +730,23 @@ extension _SheetCombatSection on _SheetScreenState {
               ),
             ],
           ),
+          // Las marcas van en su propia línea y no al lado del nombre: en una
+          // columna angosta, nombre + dos píldoras + CA no entran.
+          if (instance.spellLevel > 0 || instance.concentration)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  if (instance.spellLevel > 0)
+                    GoldPill('Espacio de nivel ${instance.spellLevel}'),
+                  // Que se vaya al cortar la concentración tiene que estar
+                  // escrito en el compañero, no solo en la tarjeta de Conjuros.
+                  if (instance.concentration) const GoldPill('Concentración'),
+                ],
+              ),
+            ),
           Text(
             [
               resolved.kind,

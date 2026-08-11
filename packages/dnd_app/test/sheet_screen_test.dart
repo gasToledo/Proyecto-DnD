@@ -706,6 +706,56 @@ void main() {
       expect(character.combat.companions.single.currentHp, 25);
     });
 
+    testWidgets('invocar un espíritu gasta el espacio y concentra', (
+      tester,
+    ) async {
+      final wizard = Character(
+        id: 'maga-dragon',
+        name: 'Ilyra',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'scribe',
+        level: 9,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        spellIds: const ['summon-dragon'],
+        hpPerLevel: List.filled(9, 4),
+        combat: CombatState(currentHp: 40),
+      );
+      // Mucho más alto que el resto de los casos: el bloque del dragón trae
+      // cuatro acciones con sus descripciones, y si la pestaña no entra entera
+      // salta el fallo de semántica de Flutter que explica `pumpSheet`.
+      await pumpSheet(tester, wizard, size: const Size(900, 6000));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      await tapVisible(tester, find.text('Invocar'));
+      // Un mago de nivel 9 tiene espacios de 1 a 5; el conjuro es de nivel 5,
+      // así que el único nivel ofrecido es el 5. Se busca dentro del diálogo:
+      // la tarjeta de Conjuros también rotula sus filas "Nivel N".
+      Finder inDialog(String text) => find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(text),
+      );
+      expect(inDialog('Nivel 5'), findsOneWidget);
+      expect(inDialog('Nivel 4'), findsNothing);
+      await tester.tap(inDialog('Nivel 5'));
+      await tester.pumpAndSettle();
+
+      expect(wizard.combat.companions.single.spellLevel, 5);
+      expect(wizard.combat.spellSlotsUsed[5], 1);
+      expect(wizard.combat.concentratingOn, 'Invocar Dragón');
+      expect(wizard.combat.companions.single.concentration, isTrue);
+
+      // Cortar la concentración se lleva al espíritu.
+      await tapVisible(tester, find.text('Terminar'));
+      expect(wizard.combat.companions, isEmpty);
+      expect(wizard.combat.concentratingOn, isNull);
+      // El espacio gastado no vuelve solo: eso se recupera aparte.
+      expect(wizard.combat.spellSlotsUsed[5], 1);
+
+      await tester.pump(const Duration(seconds: 5));
+    });
+
     testWidgets('un Guerrero no ve la tarjeta', (tester) async {
       await pumpSheet(tester, demoSagan());
       await tester.tap(find.text('Combate'));

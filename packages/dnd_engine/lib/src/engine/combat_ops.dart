@@ -204,15 +204,28 @@ class CombatOps {
     c.companions.removeWhere((i) => identical(i, instance));
   }
 
-  /// Daña a un compañero con la misma regla que al personaje.
+  /// Daña a un compañero con la misma regla que al personaje. Devuelve true si
+  /// el daño lo destruyó.
   ///
-  /// A 0 PG el compañero queda en la lista en vez de borrarse solo: por regla
-  /// desaparece, pero el Defensor de Acero se puede revivir dentro de la hora y
-  /// borrarlo automáticamente le sacaría al jugador la decisión de la mano.
-  static void damageCompanion(CompanionInstance i, int amount) {
+  /// A 0 PG desaparece, que es lo que dicen las reglas: el Cañón Arcano, el
+  /// familiar, el corcel y el homúnculo se desvanecen. Un compañero destruido
+  /// no se cura ni se lleva más: se vuelve a invocar.
+  ///
+  /// ponytail: el Defensor de Acero se puede revivir gastando un espacio de
+  /// conjuro dentro de la hora, y acá también se va. Volver a invocarlo deja el
+  /// mismo resultado en la ficha; modelar el revivir pide llevar la cuenta de
+  /// cuándo murió, que hoy no existe.
+  static bool damageCompanion(
+    CombatState c,
+    CompanionInstance i,
+    int amount,
+  ) {
     final next = _absorbDamage(i.currentHp, i.tempHp, amount);
     i.currentHp = next.hp;
     i.tempHp = next.tempHp;
+    if (i.currentHp > 0) return false;
+    dismissCompanion(c, i);
+    return true;
   }
 
   static void healCompanion(CompanionInstance i, int maxHp, int amount) {

@@ -509,7 +509,7 @@ void main() {
 
     test('invocar de nuevo reemplaza al que había cuando maxActive es 1', () {
       final first = CombatOps.summonCompanion(combat, option, form, vars);
-      CombatOps.damageCompanion(first, 10);
+      CombatOps.damageCompanion(combat, first, 10);
       final second = CombatOps.summonCompanion(combat, option, form, vars);
       expect(combat.companions, hasLength(1));
       expect(combat.companions.single, same(second));
@@ -535,21 +535,36 @@ void main() {
     test('el daño consume primero los PG temporales', () {
       final instance = CombatOps.summonCompanion(combat, option, form, vars);
       CombatOps.setCompanionTempHp(instance, 5);
-      CombatOps.damageCompanion(instance, 8);
+      CombatOps.damageCompanion(combat, instance, 8);
       expect(instance.tempHp, 0);
       expect(instance.currentHp, 27);
     });
 
-    test('los PG no bajan de 0 y el compañero sigue en la lista', () {
+    test('llegar a 0 PG lo destruye y lo saca de la ficha', () {
       final instance = CombatOps.summonCompanion(combat, option, form, vars);
-      CombatOps.damageCompanion(instance, 999);
+      expect(CombatOps.damageCompanion(combat, instance, 999), isTrue);
       expect(instance.currentHp, 0);
+      expect(combat.companions, isEmpty);
+    });
+
+    test('el daño que no llega a 0 no lo destruye', () {
+      final instance = CombatOps.summonCompanion(combat, option, form, vars);
+      expect(CombatOps.damageCompanion(combat, instance, 29), isFalse);
+      expect(combat.companions, hasLength(1));
+      expect(instance.currentHp, 1);
+    });
+
+    test('los PG temporales pueden salvarlo del golpe que lo destruiría', () {
+      final instance = CombatOps.summonCompanion(combat, option, form, vars);
+      CombatOps.setCompanionTempHp(instance, 10);
+      expect(CombatOps.damageCompanion(combat, instance, 35), isFalse);
+      expect(instance.currentHp, 5);
       expect(combat.companions, hasLength(1));
     });
 
     test('curar no pasa del máximo', () {
       final instance = CombatOps.summonCompanion(combat, option, form, vars);
-      CombatOps.damageCompanion(instance, 20);
+      CombatOps.damageCompanion(combat, instance, 20);
       CombatOps.healCompanion(instance, 30, 100);
       expect(instance.currentHp, 30);
     });
@@ -562,7 +577,7 @@ void main() {
 
     test('el descanso largo lo deja a tope y sin condiciones', () {
       final instance = CombatOps.summonCompanion(combat, option, form, vars);
-      CombatOps.damageCompanion(instance, 25);
+      CombatOps.damageCompanion(combat, instance, 25);
       CombatOps.setCompanionTempHp(instance, 4);
       instance.conditions.add('prone');
 
@@ -575,14 +590,14 @@ void main() {
 
     test('el descanso largo sin resolutor no toca a los compañeros', () {
       final instance = CombatOps.summonCompanion(combat, option, form, vars);
-      CombatOps.damageCompanion(instance, 25);
+      CombatOps.damageCompanion(combat, instance, 25);
       CombatOps.longRest(combat, 40, const [], 5);
       expect(instance.currentHp, 5);
     });
 
     test('el estado sobrevive a un ida y vuelta por JSON', () {
       final instance = CombatOps.summonCompanion(combat, option, form, vars);
-      CombatOps.damageCompanion(instance, 7);
+      CombatOps.damageCompanion(combat, instance, 7);
       instance.conditions.add('prone');
 
       final restored = CombatState.fromJson(combat.toJson());

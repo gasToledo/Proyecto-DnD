@@ -25,6 +25,11 @@ class SheetDiff {
   final List<String> newSkillProficiencies;
   final List<Ability> newSaveProficiencies;
 
+  /// Formas de Forma Salvaje ganadas, por la misma razón que [newCompanions]:
+  /// el rasgo del Druida crece a niveles 4 y 8 sin estrenar ningún texto, y sin
+  /// esto el jugador subiría de nivel con dos formas por anotar y sin aviso.
+  final int wildShapeFormsGained;
+
   final int speedGained;
 
   /// Nueva visión en la oscuridad si cambió, en pies (null si no cambió).
@@ -42,6 +47,7 @@ class SheetDiff {
     required this.newCompanions,
     required this.newSkillProficiencies,
     required this.newSaveProficiencies,
+    this.wildShapeFormsGained = 0,
     required this.speedGained,
     required this.newDarkvision,
   });
@@ -60,6 +66,7 @@ class SheetDiff {
       newCompanions.isNotEmpty ||
       newSkillProficiencies.isNotEmpty ||
       newSaveProficiencies.isNotEmpty ||
+      wildShapeFormsGained != 0 ||
       proficiencyBonusChanged ||
       speedGained != 0 ||
       newDarkvision != null;
@@ -108,6 +115,8 @@ SheetDiff diffSheets(ComputedSheet before, ComputedSheet after) {
     newCompanions: newCompanions,
     newSkillProficiencies: newSkills,
     newSaveProficiencies: newSaves,
+    wildShapeFormsGained:
+        (after.wildShape?.count ?? 0) - (before.wildShape?.count ?? 0),
     speedGained: after.speed - before.speed,
     newDarkvision:
         before.darkvision != after.darkvision ? after.darkvision : null,

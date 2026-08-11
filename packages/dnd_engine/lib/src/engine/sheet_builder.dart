@@ -80,6 +80,14 @@ class SheetBuilder {
   /// repositorio, que vive en el compilador.
   final Map<String, CompanionEffect> companions = {};
 
+  /// Cupo de formas de Forma Salvaje, o null si el personaje no lo tiene. Uno
+  /// solo y no un mapa: el rasgo es único y sus tres escalones (niveles 2, 4 y
+  /// 8) se pisan entre sí, quedando el del nivel más alto.
+  WildShapeFormsEffect? wildShapeForms;
+
+  /// Puede lanzar conjuros transformado (Conjurar como Bestia, nivel 18).
+  bool castWhileWildShaped = false;
+
   /// Elecciones abiertas declaradas por el contenido, por grupo. Gana la de
   /// mayor [FeatureChoiceEffect.count], porque el contenido declara el
   /// acumulado a cada nivel y no el incremento.
@@ -259,6 +267,10 @@ class SheetBuilder {
         _resources[id] = e;
       case CompanionEffect(:final id):
         companions[id] = e;
+      case WildShapeFormsEffect():
+        wildShapeForms = e;
+      case CastWhileWildShapedEffect():
+        castWhileWildShaped = true;
     }
   }
 

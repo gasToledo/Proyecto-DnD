@@ -338,6 +338,38 @@ class SpellChoiceSlot {
       };
 }
 
+/// Las formas de Forma Salvaje del druida: el pozo legal a su nivel y las que
+/// tiene anotadas.
+///
+/// Lleva criaturas y no ids, igual que [CompanionOption]: la pantalla que
+/// elige una forma muestra su CA, sus PG y su mordisco, y hacerla volver al
+/// catálogo por cada una sería mandarla a buscar lo que la ficha ya tiene.
+class WildShapeSlot {
+  /// Cuántas formas puede tener anotadas.
+  final int count;
+
+  /// Bestias elegibles, ya filtradas por valor de desafío y vuelo, ordenadas
+  /// por nombre.
+  final List<Creature> options;
+
+  /// Las anotadas, ya revalidadas contra [options]: una forma guardada que
+  /// dejó de calificar —porque bajó de nivel— no llega hasta acá.
+  final List<Creature> chosen;
+
+  /// Puede lanzar conjuros transformado. Falso hasta nivel 18, y lo declara el
+  /// contenido: acá no hay ningún número de nivel escrito.
+  final bool canCast;
+
+  const WildShapeSlot({
+    required this.count,
+    required this.options,
+    this.chosen = const [],
+    this.canCast = false,
+  });
+
+  int get pending => (count - chosen.length).clamp(0, count);
+}
+
 /// Qué economía de acción consume un ataque.
 ///
 /// La resuelve el motor y no la ficha: derivarla en la UI de `offHand` y la
@@ -578,6 +610,9 @@ class ComputedSheet {
   /// que es por donde el resto del sistema lo ve.
   final List<SpellChoiceSlot> spellChoiceSlots;
 
+  /// Formas de Forma Salvaje, o null si el personaje no es druida.
+  final WildShapeSlot? wildShape;
+
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
 
@@ -615,6 +650,7 @@ class ComputedSheet {
     this.proficiencyChoiceSlots = const [],
     this.expertiseChoiceSlots = const [],
     this.spellChoiceSlots = const [],
+    this.wildShape,
     this.languages = const {},
     this.languageChoiceSlots = const [],
     this.spellcasting,

@@ -102,6 +102,12 @@ sealed class Effect {
           maxActive: json['maxActive'] as int? ?? 1,
           requiresSpell: json['requiresSpell'] as String?,
         ),
+      'wildShapeForms' => WildShapeFormsEffect(
+          count: json['count'] as int,
+          maxCr: json['maxCr'] as num,
+          allowFly: json['allowFly'] as bool? ?? false,
+        ),
+      'castWhileWildShaped' => const CastWhileWildShapedEffect(),
       'offHandAbilityDamage' => const OffHandAbilityDamageEffect(),
       'featureChoice' => FeatureChoiceEffect(
           groupId: json['groupId'] as String,
@@ -954,4 +960,53 @@ class CompanionEffect extends Effect {
         'maxActive': maxActive,
         if (requiresSpell != null) 'requiresSpell': requiresSpell,
       };
+}
+
+/// Formas de Forma Salvaje que el druida puede tener anotadas, y el pozo del
+/// que salen.
+///
+/// A diferencia de [CompanionEffect], no nombra criaturas: las formas legales
+/// son *todas* las bestias del catálogo que entren en el filtro, y son
+/// sesenta y pico. Enumerarlas en el contenido sería copiar el catálogo dentro
+/// de la clase y tener que tocar el Druida cada vez que se suma una bestia.
+///
+/// La tabla del Druida sube las tres cosas a la vez a niveles 2, 4 y 8, así que
+/// **gana la declaración de mayor nivel** —igual que [ResourceEffect] y
+/// [CompanionEffect]— y cada una trae el cuadro completo.
+class WildShapeFormsEffect extends Effect {
+  /// Cuántas formas puede tener anotadas a la vez.
+  final int count;
+
+  /// Valor de desafío máximo de una forma (`0.25`, `0.5`, `1`).
+  final num maxCr;
+
+  /// Si se admiten bestias con velocidad de vuelo (recién a nivel 8).
+  final bool allowFly;
+
+  const WildShapeFormsEffect({
+    required this.count,
+    required this.maxCr,
+    this.allowFly = false,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'wildShapeForms',
+        'count': count,
+        'maxCr': maxCr,
+        'allowFly': allowFly,
+      };
+}
+
+/// Levanta la prohibición de lanzar conjuros en Forma Salvaje (Conjurar como
+/// Bestia, nivel 18 del Druida).
+///
+/// Es un efecto y no un `if (nivel >= 18)` en la pantalla: el nivel al que se
+/// concede cada cosa vive en el contenido, y un número de regla escrito en Dart
+/// es el que después nadie encuentra cuando la regla cambia.
+class CastWhileWildShapedEffect extends Effect {
+  const CastWhileWildShapedEffect();
+
+  @override
+  Map<String, dynamic> toJson() => {'type': 'castWhileWildShaped'};
 }

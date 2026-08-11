@@ -1032,7 +1032,24 @@
         "name": "Forma Salvaje",
         "description": "Como acción adicional adoptas la forma de una bestia que conozcas.",
         "effects": [
-          { "type": "resource", "id": "wild_shape", "name": "Forma Salvaje", "max": 2, "recharge": "short", "description": "Como acción adicional te transformas en una bestia. Usos que se recuperan tras un descanso corto o largo." }
+          { "type": "resource", "id": "wild_shape", "name": "Forma Salvaje", "max": 2, "recharge": "short", "description": "Como acción adicional te transformas en una bestia. Usos que se recuperan tras un descanso corto o largo." },
+          { "type": "wildShapeForms", "count": 4, "maxCr": 0.25, "allowFly": false }
+        ]
+      },
+      {
+        "level": 4,
+        "name": "Forma Salvaje (6 formas)",
+        "description": "Conocés 6 formas y podés adoptar bestias de hasta VD 1/2.",
+        "effects": [
+          { "type": "wildShapeForms", "count": 6, "maxCr": 0.5, "allowFly": false }
+        ]
+      },
+      {
+        "level": 8,
+        "name": "Forma Salvaje (8 formas)",
+        "description": "Conocés 8 formas, podés adoptar bestias de hasta VD 1 y con velocidad de vuelo.",
+        "effects": [
+          { "type": "wildShapeForms", "count": 8, "maxCr": 1, "allowFly": true }
         ]
       },
       {
@@ -1089,7 +1106,8 @@
         "name": "Conjurar como Bestia",
         "description": "Podés lanzar conjuros mientras estás en Forma Salvaje.",
         "effects": [
-          { "type": "passiveTrait", "name": "Conjurar como Bestia", "description": "Mientras usás Forma Salvaje podés lanzar conjuros en forma de bestia, salvo los que tengan un componente material con coste indicado o que se consuma como parte del conjuro." }
+          { "type": "passiveTrait", "name": "Conjurar como Bestia", "description": "Mientras usás Forma Salvaje podés lanzar conjuros en forma de bestia, salvo los que tengan un componente material con coste indicado o que se consuma como parte del conjuro." },
+          { "type": "castWhileWildShaped" }
         ]
       },
       {

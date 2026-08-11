@@ -36,6 +36,10 @@ class CombatOps {
     final next = _absorbDamage(c.currentHp, c.tempHp, amount);
     c.currentHp = next.hp;
     c.tempHp = next.tempHp;
+    // A 0 PG quedás Incapacitado, y eso termina la Forma Salvaje. Va acá y no
+    // en la pantalla porque el daño entra por varios lados y una revisión por
+    // cada uno es una revisión que alguno se olvida.
+    if (c.currentHp <= 0) c.wildShapeCreatureId = null;
   }
 
   /// Cura PG hasta el máximo. Curar desde 0 o menos estabiliza y limpia las
@@ -106,6 +110,7 @@ class CombatOps {
       c.resourceUsage[r.id] = 0;
     }
     c.spellSlotsUsed.clear();
+    c.wildShapeCreatureId = null;
     // Por la misma vía que el botón de terminar: el descanso corta la
     // concentración, y con ella se van los espíritus invocados.
     endConcentration(c);
@@ -261,6 +266,37 @@ class CombatOps {
   static void setCompanionTempHp(CompanionInstance i, int value) {
     i.tempHp = max(0, max(i.tempHp, value));
   }
+
+  // --------------------------------------------------------- Forma Salvaje
+
+  /// Recurso que gasta la Forma Salvaje. El contenido lo declara con este id en
+  /// los tres escalones del rasgo (niveles 2, 6 y 17).
+  static const String wildShapeResourceId = 'wild_shape';
+
+  /// Se transforma en [beast] gastando un uso de Forma Salvaje y sumando PG
+  /// temporales iguales al nivel de druida. Devuelve false si no quedan usos.
+  ///
+  /// Solo cambia el estado: los números de la ficha los reemplaza
+  /// `applyWildShape`, que es una función pura sobre la ficha ya compilada.
+  static bool enterWildShape(
+    CombatState c,
+    ComputedSheet sheet,
+    Creature beast,
+  ) {
+    final resource =
+        sheet.resources.where((r) => r.id == wildShapeResourceId).firstOrNull;
+    if (resource == null) return false;
+    final used = c.resourceUsage[wildShapeResourceId] ?? 0;
+    if (used >= resource.max) return false;
+    c.resourceUsage[wildShapeResourceId] = used + 1;
+    c.wildShapeCreatureId = beast.id;
+    setTempHp(c, sheet.level);
+    return true;
+  }
+
+  /// Vuelve a la forma propia. Los PG temporales no se quitan: son PG
+  /// temporales normales y duran hasta que se gastan o hasta el descanso largo.
+  static void leaveWildShape(CombatState c) => c.wildShapeCreatureId = null;
 
   /// Marca una salvación de muerte (éxito o fallo). Devuelve un resultado:
   /// 'stable' a 3 éxitos, 'dead' a 3 fallos, o null si sigue en juego.

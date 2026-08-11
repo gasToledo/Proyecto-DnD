@@ -659,6 +659,34 @@ void main() {
     });
   });
 
+  group('16 → 17: formas de Forma Salvaje', () {
+    Map<String, dynamic> at16() => {
+          'schemaVersion': 16,
+          'id': 'druida',
+          'name': 'Druida',
+          'raceId': 'human',
+          'classId': 'druid',
+          'backgroundId': 'sage',
+          'level': 4,
+          'assignedScores': const <String, int>{},
+          'spellIds': const ['entangle'],
+          'combat': const {'currentHp': 21},
+        };
+
+    test('un druida viejo queda sin formas anotadas y con todo lo demás', () {
+      final migrated = Character.migrateJson(at16());
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['wildShapeForms'], isEmpty);
+
+      final character = Character.fromJson(at16());
+      expect(character.wildShapeForms, isEmpty);
+      expect(character.level, 4);
+      expect(character.spellIds, ['entangle']);
+      expect(character.combat.currentHp, 21);
+      expect(character.combat.wildShapeCreatureId, isNull);
+    });
+  });
+
   test('rechaza una versión futura con un error comprensible', () {
     final future = {
       'schemaVersion': Character.currentSchemaVersion + 1,

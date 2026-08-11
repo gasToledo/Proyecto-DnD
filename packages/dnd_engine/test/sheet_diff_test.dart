@@ -100,4 +100,31 @@ void main() {
     expect(d.newCompanions.map((c) => c.id), ['eldritch-cannon']);
     expect(d.hasChanges, isTrue);
   });
+
+  test('subir a Druida 4 avisa de las dos formas nuevas', () {
+    // Mismo motivo que el cañón: el rasgo crece sin estrenar ningún texto, así
+    // que sin esto el jugador se queda con dos formas por anotar y sin aviso.
+    Character druid(int level) => Character(
+          id: 'sagan',
+          name: 'Sagan',
+          raceId: 'human',
+          classId: 'druid',
+          backgroundId: 'sage',
+          level: level,
+          assignedScores: {for (final a in Ability.values) a: 12},
+          hpPerLevel: List.filled(level, 5),
+        );
+
+    expect(
+      diffSheets(compiler.compile(druid(3)), compiler.compile(druid(4)))
+          .wildShapeFormsGained,
+      2,
+    );
+    // Un nivel que no toca el rasgo no dice nada.
+    expect(
+      diffSheets(compiler.compile(druid(2)), compiler.compile(druid(3)))
+          .wildShapeFormsGained,
+      0,
+    );
+  });
 }

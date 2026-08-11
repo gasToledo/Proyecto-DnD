@@ -161,6 +161,11 @@ class CombatState {
   /// porque el Artillero de nivel 15 tiene dos cañones a la vez.
   final List<CompanionInstance> companions;
 
+  /// Id de la bestia en la que está transformado, o null si va en su forma.
+  /// Solo el id: el perfil sale del catálogo, y copiarlo acá sería congelar
+  /// números que el contenido puede corregir.
+  String? wildShapeCreatureId;
+
   CombatState({
     this.currentHp = 0,
     this.tempHp = 0,
@@ -173,6 +178,7 @@ class CombatState {
     Map<int, int>? spellSlotsUsed,
     this.concentratingOn,
     List<CompanionInstance>? companions,
+    this.wildShapeCreatureId,
   })  : conditions = conditions ?? {},
         resourceUsage = resourceUsage ?? {},
         spellSlotsUsed = spellSlotsUsed ?? {},
@@ -192,6 +198,7 @@ class CombatState {
         },
         'concentratingOn': concentratingOn,
         'companions': [for (final c in companions) c.toJson()],
+        'wildShapeCreatureId': wildShapeCreatureId,
       };
 
   factory CombatState.fromJson(Map<String, dynamic> j) => CombatState(
@@ -217,6 +224,7 @@ class CombatState {
           for (final c in (j['companions'] as List? ?? const []))
             CompanionInstance.fromJson((c as Map).cast<String, dynamic>()),
         ],
+        wildShapeCreatureId: j['wildShapeCreatureId'] as String?,
       );
 }
 
@@ -229,7 +237,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 16;
+  static const int currentSchemaVersion = 17;
 
   final String id;
   String name;
@@ -323,6 +331,13 @@ class Character {
   /// compilador los vuelca en `alwaysPreparedSpellIds`.
   final Map<String, List<String>> spellChoices;
 
+  /// Formas de Forma Salvaje anotadas: ids de criatura del catálogo.
+  ///
+  /// Es una lista suelta y no una entrada de [featureChoices] porque las
+  /// opciones no son dotes ni conjuros sino bestias, y meterlas ahí haría que la
+  /// validación de elecciones las tratara como ids de dote huérfanos.
+  final List<String> wildShapeForms;
+
   /// Grupo del Estilo de Combate. Es un id de contenido, pero vive acá porque
   /// la migración desde `fightingStyleId` tiene que nombrarlo.
   static const String fightingStyleGroup = 'fighting-style';
@@ -409,6 +424,7 @@ class Character {
     this.languageChoices = const {},
     this.featureChoices = const {},
     this.spellChoices = const {},
+    this.wildShapeForms = const [],
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
     this.spellIds = const [],
@@ -451,6 +467,7 @@ class Character {
         'languageChoices': languageChoices,
         'featureChoices': featureChoices,
         'spellChoices': spellChoices,
+        'wildShapeForms': wildShapeForms,
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
         'spellIds': spellIds,
@@ -791,6 +808,13 @@ class Character {
           migrated['combat'] = combat;
           version = 16;
           migrated['schemaVersion'] = version;
+        case 16:
+          // Un druida viejo no tiene formas anotadas: arranca con el cupo
+          // pendiente y las elige desde la ficha, igual que pasó con los
+          // idiomas.
+          migrated.putIfAbsent('wildShapeForms', () => []);
+          version = 17;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -835,6 +859,9 @@ class Character {
       languageChoices: _choiceMap(j['languageChoices']),
       featureChoices: _choiceMap(j['featureChoices']),
       spellChoices: _choiceMap(j['spellChoices']),
+      wildShapeForms: (j['wildShapeForms'] as List? ?? const [])
+          .map((e) => e as String)
+          .toList(),
       weaponMasteryChoices: (j['weaponMasteryChoices'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -886,6 +913,7 @@ class Character {
     List<int>? hpPerLevel,
     Map<String, List<String>>? featureChoices,
     Map<String, List<String>>? spellChoices,
+    List<String>? wildShapeForms,
     List<String>? chosenProficiencies,
     Map<String, List<String>>? proficiencyChoices,
     List<String>? languages,
@@ -932,6 +960,7 @@ class Character {
       languageChoices: languageChoices ?? this.languageChoices,
       featureChoices: featureChoices ?? this.featureChoices,
       spellChoices: spellChoices ?? this.spellChoices,
+      wildShapeForms: wildShapeForms ?? this.wildShapeForms,
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,
       spellIds: spellIds ?? this.spellIds,

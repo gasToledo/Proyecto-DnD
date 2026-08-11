@@ -23,4 +23,5 @@ export 'src/engine/character_compiler.dart';
 export 'src/engine/validation.dart';
 export 'src/engine/dice.dart';
 export 'src/engine/combat_ops.dart';
+export 'src/engine/wild_shape.dart';
 export 'src/engine/sheet_diff.dart';

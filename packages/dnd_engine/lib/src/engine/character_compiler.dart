@@ -489,6 +489,7 @@ class CharacterCompiler {
       proficiencyChoiceSlots: proficiencySlots,
       expertiseChoiceSlots: expertiseSlots,
       spellChoiceSlots: spellChoiceSlots,
+      wildShape: _resolveWildShape(c, builder),
       languages: knownLanguages,
       languageChoiceSlots: languageChoiceSlots,
       spellcasting: spellcasting,
@@ -550,6 +551,45 @@ class CharacterCompiler {
       );
     }
     return options;
+  }
+
+  /// Arma el cupo de formas de Forma Salvaje: filtra el pozo de bestias por el
+  /// valor de desafío y el vuelo que permite el nivel, y revalida lo anotado.
+  ///
+  /// El pozo se rearma en cada compilación y nunca se confía en lo guardado,
+  /// igual que en [_resolveSpellChoices]: un druida que baja de nivel pierde el
+  /// oso de VD 1 de la lista sin que haya que tocar la ficha guardada, y lo
+  /// recupera si vuelve a subir.
+  WildShapeSlot? _resolveWildShape(Character c, SheetBuilder builder) {
+    final e = builder.wildShapeForms;
+    if (e == null) return null;
+
+    // Una bestia sin valor de desafío declarado no entra: los espíritus
+    // invocables también son de tipo Bestia, y el libro les pone «Desafío:
+    // ninguno», con lo que no pueden cumplir un máximo.
+    final options = [
+      for (final beast in repo.creatures.values)
+        if (beast.isBeast &&
+            beast.cr != null &&
+            beast.cr! <= e.maxCr &&
+            (e.allowFly || !beast.canFly))
+          beast,
+    ]..sort((a, b) => a.name.compareTo(b.name));
+
+    final eligible = {for (final o in options) o.id: o};
+    final chosen = <Creature>[];
+    for (final id in c.wildShapeForms) {
+      if (chosen.length >= e.count) break;
+      final beast = eligible[id];
+      if (beast != null && !chosen.contains(beast)) chosen.add(beast);
+    }
+
+    return WildShapeSlot(
+      count: e.count,
+      options: options,
+      chosen: chosen,
+      canCast: builder.castWhileWildShaped,
+    );
   }
 
   /// Resuelve los conjuros concedidos por rasgos contra el repositorio y, para

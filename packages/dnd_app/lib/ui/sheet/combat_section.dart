@@ -349,9 +349,14 @@ extension _SheetCombatSection on _SheetScreenState {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          r.name,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        // Flexible: "Invocaciones Sobrenaturales" y compañía
+                        // desbordaban la fila en un teléfono angosto.
+                        Flexible(
+                          child: Text(
+                            r.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
                         ),
                         if (hasInfo) ...[
                           const SizedBox(width: 5),
@@ -601,8 +606,11 @@ extension _SheetCombatSection on _SheetScreenState {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(title),
+        // `maxFinite` deja que el diálogo imponga su propio ancho. Fijar 360
+        // desbordaba en un teléfono angosto, y el familiar abre acá con sus 24
+        // formas: es el selector más grande de la app.
         content: SizedBox(
-          width: 360,
+          width: double.maxFinite,
           child: ListView(
             shrinkWrap: true,
             children: [

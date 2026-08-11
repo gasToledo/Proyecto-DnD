@@ -20,14 +20,15 @@ void main() {
 
   Future<CharactersController> pumpSheet(
     WidgetTester tester,
-    Character character,
-  ) async {
+    Character character, {
+    Size size = const Size(900, 1400),
+  }) async {
     // Alto de sobra a propósito. Con 700 la pestaña Personaje —que desde los
     // idiomas tiene cuatro tarjetas— dispara un fallo dentro de Flutter, en
     // `_RenderObjectSemantics._updateSemanticsNodeGeometry`: el binding de
     // test recorre el árbol de semántica en cada frame y ahí revienta un `!`
     // suyo. No es código nuestro y no se puede sortear desde acá.
-    tester.view.physicalSize = const Size(900, 1400);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final controller = CharactersController(
@@ -682,6 +683,58 @@ void main() {
       await tester.tap(find.text('Combate'));
       await tester.pumpAndSettle();
       expect(find.text('Compañeros'), findsNothing);
+    });
+
+    testWidgets('la pestaña Combate no desborda en un teléfono angosto', (
+      tester,
+    ) async {
+      // La cabecera con el nombre y las filas de recursos se pasaban de ancho a
+      // 360px. No es cosa de los compañeros, pero es la pantalla donde viven.
+      await pumpSheet(tester, demoSagan(), size: const Size(360, 1600));
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el selector de las 24 formas entra en un teléfono angosto', (
+      tester,
+    ) async {
+      final wizard = Character(
+        id: 'maga-familiar',
+        name: 'Ilyra',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'scribe',
+        assignedScores: {for (final a in Ability.values) a: 12},
+        spellIds: const ['find-familiar'],
+        hpPerLevel: const [6],
+      );
+      await pumpSheet(tester, wizard, size: const Size(360, 1600));
+
+      // Por debajo de 900 la navegación de la ficha vive en un Drawer.
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      // La tarjeta de Conjuros se pasa de ancho a 360px por su cuenta, desde
+      // antes de los compañeros. Se descarta acá para que este caso hable del
+      // diálogo y no herede un desborde ajeno; el del guerrero, más arriba,
+      // cubre la parte de la pantalla que sí arreglamos.
+      tester.takeException();
+      await tapVisible(tester, find.text('Invocar'));
+
+      // El diálogo abre con las formas y sin desbordar: un RenderFlex que se
+      // pasa de ancho deja la excepción acá.
+      expect(find.text('Elegí la forma'), findsOneWidget);
+      expect(find.text('Murciélago'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(find.text('Murciélago'));
+      await tester.pumpAndSettle();
+      expect(wizard.combat.companions.single.creatureId, 'bat');
+      await tester.pump(const Duration(seconds: 5));
     });
   });
 }

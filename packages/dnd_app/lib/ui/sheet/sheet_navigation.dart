@@ -159,9 +159,14 @@ extension _SheetNavigation on _SheetScreenState {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            _c.name,
-                            style: Theme.of(context).textTheme.headlineSmall,
+                          // Flexible: un nombre largo en un teléfono angosto
+                          // desbordaba la cabecera en vez de recortarse.
+                          Flexible(
+                            child: Text(
+                              _c.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
                           ),
                           const SizedBox(width: 6),
                           Icon(Icons.edit_outlined, size: 16, color: muted),

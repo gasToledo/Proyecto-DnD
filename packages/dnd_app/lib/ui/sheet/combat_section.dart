@@ -574,14 +574,16 @@ extension _SheetCombatSection on _SheetScreenState {
 
     var spellLevel = 0;
     if (option.scalesWithSpellLevel) {
-      // El pozo son los niveles con espacios disponibles: invocar gasta uno, y
-      // ofrecer un nivel que no se puede pagar es ofrecer un error.
+      // El pozo son los niveles con espacios disponibles, desde el nivel del
+      // conjuro para arriba: ofrecer un nivel que no se puede pagar es ofrecer
+      // un error, y ofrecer uno por debajo del conjuro da un compañero con los
+      // números al revés.
       final levels = [
         for (final entry in (s.spellcasting?.slotsByLevel ?? const {}).entries)
-          if (entry.value > 0) entry.key,
+          if (entry.value > 0 && entry.key >= option.minSpellLevel) entry.key,
       ]..sort();
       if (levels.isEmpty) {
-        _snack('No te quedan espacios de conjuro para invocarlo.');
+        _snack('No te quedan espacios de nivel ${option.minSpellLevel} o más.');
         return;
       }
       final chosen = await _pickFromList<int>(

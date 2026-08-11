@@ -756,6 +756,50 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
     });
 
+    testWidgets('el Paladín puede invocar el corcel sin gastar espacio', (
+      tester,
+    ) async {
+      final paladin = Character(
+        id: 'paladin-corcel',
+        name: 'Aurel',
+        raceId: 'human',
+        classId: 'paladin',
+        backgroundId: 'soldier',
+        level: 5,
+        assignedScores: {for (final a in Ability.values) a: 14},
+        hpPerLevel: List.filled(5, 6),
+        combat: CombatState(currentHp: 40),
+      );
+      await pumpSheet(tester, paladin, size: const Size(900, 6000));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      await tapVisible(tester, find.text('Invocar'));
+      Finder inDialog(String text) => find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(text),
+      );
+
+      // El uso gratis del Corcel Fiel va primero, antes de los espacios.
+      expect(inDialog('Sin gastar espacio'), findsOneWidget);
+      expect(inDialog('Nivel 2'), findsOneWidget);
+
+      await tester.tap(inDialog('Sin gastar espacio'));
+      await tester.pumpAndSettle();
+
+      expect(paladin.combat.companions.single.spellLevel, 2);
+      // Se consumió el uso del rasgo y ningún espacio de conjuro.
+      expect(
+        paladin.combat.resourceUsage[innateSpellResourceId('find-steed')],
+        1,
+      );
+      expect(paladin.combat.spellSlotsUsed, isEmpty);
+      // Hallar Corcel no es de concentración, así que no la toca.
+      expect(paladin.combat.concentratingOn, isNull);
+
+      await tester.pump(const Duration(seconds: 5));
+    });
+
     testWidgets('un Guerrero no ve la tarjeta', (tester) async {
       await pumpSheet(tester, demoSagan());
       await tester.tap(find.text('Combate'));

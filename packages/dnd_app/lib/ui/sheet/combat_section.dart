@@ -558,6 +558,24 @@ extension _SheetCombatSection on _SheetScreenState {
     );
   }
 
+  int _resourceLeft(CharacterResource r) =>
+      r.max - (_c.combat.resourceUsage[r.id] ?? 0);
+
+  /// El recurso de lanzamiento gratis del conjuro que invoca a [option], si el
+  /// personaje lo tiene y le quedan usos. Null si no hay ninguno.
+  ///
+  /// Lo arma el compilador a partir de un `grantSpell` con usos limitados: es
+  /// el Corcel Fiel del Paladín, que lanza Hallar Corcel una vez por descanso
+  /// largo sin pagar espacio.
+  CharacterResource? _freeCastFor(ComputedSheet s, CompanionOption option) {
+    if (option.spellId == null) return null;
+    final id = innateSpellResourceId(option.spellId!);
+    for (final r in s.resources) {
+      if (r.id == id) return _resourceLeft(r) > 0 ? r : null;
+    }
+    return null;
+  }
+
   /// Pide la forma y el nivel de espacio que hagan falta, e invoca.
   Future<void> _summonCompanion(ComputedSheet s, CompanionOption option) async {
     var form = option.forms.first;
@@ -572,39 +590,55 @@ extension _SheetCombatSection on _SheetScreenState {
       form = chosen;
     }
 
+    // Lanzamiento gratis que concede un rasgo (el Corcel Fiel del Paladín),
+    // con sus usos sin gastar. Se lanza al nivel base del conjuro.
+    final free = _freeCastFor(s, option);
+
     var spellLevel = 0;
+    var castsFree = false;
     if (option.scalesWithSpellLevel) {
       // El pozo son los niveles con espacios disponibles, desde el nivel del
       // conjuro para arriba: ofrecer un nivel que no se puede pagar es ofrecer
       // un error, y ofrecer uno por debajo del conjuro da un compañero con los
-      // números al revés.
-      final levels = [
-        for (final entry in (s.spellcasting?.slotsByLevel ?? const {}).entries)
-          if (entry.value > 0 && entry.key >= option.minSpellLevel) entry.key,
-      ]..sort();
-      if (levels.isEmpty) {
+      // números al revés. El uso gratis va primero, que es como se gasta.
+      final choices =
+          <({int level, bool free})>[
+            if (free != null) (level: option.minSpellLevel, free: true),
+            for (final entry
+                in (s.spellcasting?.slotsByLevel ?? const {}).entries)
+              if (entry.value > 0 && entry.key >= option.minSpellLevel)
+                (level: entry.key, free: false),
+          ]..sort(
+            (a, b) => a.free == b.free
+                ? a.level.compareTo(b.level)
+                : (a.free ? -1 : 1),
+          );
+
+      if (choices.isEmpty) {
         _snack('No te quedan espacios de nivel ${option.minSpellLevel} o más.');
         return;
       }
-      final chosen = await _pickFromList<int>(
-        title: 'Nivel del espacio',
-        options: levels,
-        label: (l) => 'Nivel $l',
-        subtitle: (l) =>
-            '${CombatOps.spellSlotsRemaining(_c.combat, s.spellcasting!, l)}'
-            ' de ${s.spellcasting!.slotsByLevel[l]} disponibles',
+      final chosen = await _pickFromList<({int level, bool free})>(
+        title: 'Cómo lo invocás',
+        options: choices,
+        label: (c) => c.free ? 'Sin gastar espacio' : 'Nivel ${c.level}',
+        subtitle: (c) => c.free
+            ? '${free!.name}: quedan ${_resourceLeft(free)} de ${free.max}'
+            : '${CombatOps.spellSlotsRemaining(_c.combat, s.spellcasting!, c.level)}'
+                  ' de ${s.spellcasting!.slotsByLevel[c.level]} disponibles',
       );
       if (chosen == null) return;
-      spellLevel = chosen;
+      spellLevel = chosen.level;
+      castsFree = chosen.free;
     }
 
     final summoned = form;
     final level = spellLevel;
     final spell = option.spellId == null ? null : repo.spell(option.spellId!);
-    // Solo gasta espacio si se eligió un nivel. El familiar y los que concede
-    // un rasgo no pasan por ahí: el primero se lanza como ritual y los otros
-    // no son conjuros.
-    final spendsSlot = level > 0 && s.spellcasting != null;
+    // Solo gasta espacio si se eligió un nivel y no se usó el lanzamiento
+    // gratis. El familiar y los que concede un rasgo no pasan por acá: el
+    // primero se lanza como ritual y los otros no son conjuros.
+    final spendsSlot = level > 0 && s.spellcasting != null && !castsFree;
     final concentrates = spell?.concentration ?? false;
     final brokeConcentration =
         concentrates && _c.combat.concentratingOn != null;
@@ -612,6 +646,10 @@ extension _SheetCombatSection on _SheetScreenState {
     _mutateCombat(() {
       if (spendsSlot) {
         CombatOps.spendSpellSlot(_c.combat, s.spellcasting!, level);
+      }
+      if (castsFree) {
+        _c.combat.resourceUsage[free!.id] =
+            (_c.combat.resourceUsage[free.id] ?? 0) + 1;
       }
       CombatOps.summonCompanion(
         _c.combat,
@@ -627,6 +665,7 @@ extension _SheetCombatSection on _SheetScreenState {
     // puede ser una sorpresa que se descubra después mirando otra tarjeta.
     final notes = [
       if (spendsSlot) 'gastaste un espacio de nivel $level',
+      if (castsFree) 'sin gastar espacio, por ${free!.name}',
       if (brokeConcentration)
         'perdiste la concentración anterior'
       else if (concentrates)

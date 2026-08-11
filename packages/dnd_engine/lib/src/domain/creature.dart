@@ -81,8 +81,9 @@ String resolveCreatureFormula(String template, CreatureVars vars) {
 int resolveCreatureInt(String expr, CreatureVars vars) =>
     _eval(expr, vars, expr);
 
-/// Evaluador de la aritmética de adentro de las llaves: enteros, `+ - *`,
-/// paréntesis y los nombres de [CreatureVars]. Precedencia normal.
+/// Evaluador de la aritmética de adentro de las llaves: enteros, `+ - * /`,
+/// paréntesis y los nombres de [CreatureVars]. Precedencia normal, y la
+/// división redondea hacia abajo porque así redondea 5e.
 int _eval(String expr, CreatureVars vars, String source) {
   final tokens = _tokenize(expr, source);
   var pos = 0;
@@ -118,9 +119,20 @@ int _eval(String expr, CreatureVars vars, String source) {
 
   int term() {
     var value = primary();
-    while (pos < tokens.length && tokens[pos] == '*') {
-      pos++;
-      value *= primary();
+    while (pos < tokens.length && (tokens[pos] == '*' || tokens[pos] == '/')) {
+      final op = tokens[pos++];
+      final rhs = primary();
+      if (op == '*') {
+        value *= rhs;
+        continue;
+      }
+      if (rhs == 0) {
+        throw CreatureFormulaException(source, 'división por cero');
+      }
+      // División entera hacia abajo, que es como redondea 5e ("la mitad de tu
+      // nivel, redondeando hacia abajo"). El `~/` de Dart trunca hacia cero y
+      // daría el resultado equivocado con negativos.
+      value = (value / rhs).floor();
     }
     return value;
   }
@@ -149,7 +161,7 @@ List<String> _tokenize(String expr, String source) {
     final c = expr[i];
     if (c.trim().isEmpty) {
       i++;
-    } else if ('+-*()'.contains(c)) {
+    } else if ('+-*/()'.contains(c)) {
       tokens.add(c);
       i++;
     } else if (_isWordChar(c)) {

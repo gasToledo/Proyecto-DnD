@@ -472,6 +472,74 @@ void main() {
       expect(at(3).maxHp, 35);
     });
 
+    test('los conjuros de invocación llegan a quien los conoce', () {
+      final wizard = build(
+        classId: 'wizard',
+        level: 11,
+        spellIds: ['summon-dragon', 'summon-undead'],
+      );
+      expect(
+        wizard.companions.map((c) => c.id),
+        containsAll(['summon-dragon', 'summon-undead']),
+      );
+      // Y no los que no aprendió.
+      expect(companion(wizard, 'summon-fiend'), isNull);
+
+      // El druida tiene los suyos, que no son los del mago.
+      final druid = build(
+        classId: 'druid',
+        level: 9,
+        spellIds: ['summon-beast'],
+      );
+      expect(companion(druid, 'summon-beast')!.forms, hasLength(3));
+      expect(companion(druid, 'summon-undead'), isNull);
+    });
+
+    test('un espíritu no se puede invocar por debajo del nivel del conjuro',
+        () {
+      final wizard = build(
+        classId: 'wizard',
+        level: 17,
+        spellIds: ['summon-fiend', 'summon-dragon'],
+      );
+      // Invocar Demonio es de nivel 6 e Invocar Dragón de nivel 5: con un
+      // espacio menor, la fórmula de PG contaría niveles negativos.
+      expect(companion(wizard, 'summon-fiend')!.minSpellLevel, 6);
+      expect(companion(wizard, 'summon-dragon')!.minSpellLevel, 5);
+    });
+
+    test('el Espíritu dracónico sale con los números del libro', () {
+      final sheet = build(
+        classId: 'wizard',
+        level: 17,
+        spellIds: ['summon-dragon'],
+        scores: {Ability.intelligence: 20},
+      );
+      final option = companion(sheet, 'summon-dragon')!;
+      ResolvedCreature at(int slot) => option.forms.single.resolve(
+            CreatureVars.from(
+              level: sheet.level,
+              proficiencyBonus: sheet.proficiencyBonus,
+              abilityModifiers: sheet.abilityModifiers,
+              spellAttackBonus: sheet.spellcasting!.attackBonus,
+              spellSaveDc: sheet.spellcasting!.saveDc,
+              spellLevel: slot,
+            ),
+          );
+
+      // CA 14 + nivel, PG 50 + 10 por cada nivel por encima del 5.
+      expect(at(5).armorClass, 19);
+      expect(at(5).maxHp, 50);
+      expect(at(7).armorClass, 21);
+      expect(at(7).maxHp, 70);
+
+      final byName = {for (final a in at(7).actions) a.name: a};
+      // Desgarro: 1d6 + 4 + el nivel del conjuro.
+      expect(byName['Desgarro']!.damage, '1d6+11');
+      // Ataque múltiple: la mitad del nivel del conjuro, redondeando abajo.
+      expect(byName['Ataque múltiple']!.description, contains('3 ataques'));
+    });
+
     test('un Guerrero no tiene ningún compañero', () {
       expect(build(classId: 'fighter', level: 20).companions, isEmpty);
     });

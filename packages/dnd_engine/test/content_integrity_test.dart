@@ -820,24 +820,66 @@ void main() {
       }
     });
 
+    /// Nivel mínimo de espacio con el que cada criatura se puede invocar: el
+    /// del conjuro que la concede. Sin ese piso, las fórmulas que cuentan
+    /// niveles por encima del propio dan números negativos.
+    Map<String, int> minSpellLevelByCreature() {
+      final mins = <String, int>{};
+      for (final e in allEffects().whereType<CompanionEffect>()) {
+        final level =
+            e.requiresSpell == null ? 0 : repo.spell(e.requiresSpell!)!.level;
+        for (final id in e.creatureIds) {
+          mins[id] = level;
+        }
+      }
+      return mins;
+    }
+
     test('toda fórmula evalúa de nivel 1 a 20 y con cualquier espacio', () {
+      final mins = minSpellLevelByCreature();
       for (final creature in repo.creatures.values) {
         for (var level = 1; level <= 20; level++) {
-          final vars = CreatureVars.from(
-            level: level,
-            proficiencyBonus: proficiencyBonusForLevel(level),
-            abilityModifiers: {for (final a in Ability.values) a: 3},
-            spellAttackBonus: 6,
-            spellSaveDc: 14,
-            // Una criatura que no escala igual recibe un nivel de espacio: si
-            // alguna fórmula lo usa sin declararlo, se ve acá.
-            spellLevel: creature.scalesWithSpellLevel ? 1 + level ~/ 4 : 0,
-          );
-          expect(
-            () => creature.resolve(vars),
-            returnsNormally,
-            reason: '${creature.id} a nivel $level',
-          );
+          for (var slot = mins[creature.id] ?? 0; slot <= 9; slot++) {
+            final vars = CreatureVars.from(
+              level: level,
+              proficiencyBonus: proficiencyBonusForLevel(level),
+              abilityModifiers: {for (final a in Ability.values) a: 3},
+              spellAttackBonus: 6,
+              spellSaveDc: 14,
+              spellLevel: creature.scalesWithSpellLevel ? slot : 0,
+            );
+            expect(
+              () => creature.resolve(vars),
+              returnsNormally,
+              reason: '${creature.id} a nivel $level con espacio $slot',
+            );
+            if (!creature.scalesWithSpellLevel) break;
+          }
+        }
+      }
+    });
+
+    test('nadie se invoca con PG o CA que no se puedan llevar', () {
+      final mins = minSpellLevelByCreature();
+      for (final creature in repo.creatures.values) {
+        final min = mins[creature.id] ?? 0;
+        for (final level in const [1, 5, 11, 20]) {
+          for (var slot = min; slot <= 9; slot++) {
+            final resolved = creature.resolve(
+              CreatureVars.from(
+                level: level,
+                proficiencyBonus: proficiencyBonusForLevel(level),
+                abilityModifiers: {for (final a in Ability.values) a: 3},
+                spellAttackBonus: 6,
+                spellSaveDc: 14,
+                spellLevel: creature.scalesWithSpellLevel ? slot : 0,
+              ),
+            );
+            final where = '${creature.id} a nivel $level con espacio $slot';
+            expect(resolved.maxHp, greaterThan(0), reason: where);
+            expect(resolved.armorClass, greaterThan(0), reason: where);
+            if (!creature.scalesWithSpellLevel) break;
+          }
         }
       }
     });

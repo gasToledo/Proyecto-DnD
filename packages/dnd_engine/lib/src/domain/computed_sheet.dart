@@ -59,12 +59,21 @@ class CompanionOption {
   final List<Creature> forms;
   final int maxActive;
 
+  /// Nivel mínimo del espacio con que se lo puede invocar: el del conjuro que
+  /// lo concede, o 0 si no depende de ninguno.
+  ///
+  /// Sin esto, las fórmulas que cuentan niveles *por encima* del suyo dan
+  /// basura: un Espíritu infernal invocado con un espacio de nivel 1 sale con
+  /// `50 + 15×(1−6)` = −25 puntos de golpe.
+  final int minSpellLevel;
+
   const CompanionOption({
     required this.id,
     required this.name,
     required this.source,
     required this.forms,
     this.maxActive = 1,
+    this.minSpellLevel = 0,
   });
 
   /// Invocarlo gasta un espacio de conjuro y sus números dependen del nivel.

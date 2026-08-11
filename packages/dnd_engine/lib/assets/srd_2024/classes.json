@@ -805,7 +805,14 @@
             "spellList": "wizard",
             "cantripsKnown": 3
           },
-          { "type": "companion", "id": "familiar", "name": "Familiar", "requiresSpell": "find-familiar", "creatureIds": ["bat", "cat", "raven", "crab", "frog", "hawk", "lizard", "octopus", "rat", "seahorse", "spider", "weasel", "owl", "eagle", "vulture", "baboon", "goat", "jackal", "deer", "giant-fire-beetle", "scorpion", "hyena", "piranha", "badger"] }
+          { "type": "companion", "id": "familiar", "name": "Familiar", "requiresSpell": "find-familiar", "creatureIds": ["bat", "cat", "raven", "crab", "frog", "hawk", "lizard", "octopus", "rat", "seahorse", "spider", "weasel", "owl", "eagle", "vulture", "baboon", "goat", "jackal", "deer", "giant-fire-beetle", "scorpion", "hyena", "piranha", "badger"] },
+          { "type": "companion", "id": "summon-fey", "name": "Espíritu feérico", "requiresSpell": "summon-fey", "creatureIds": ["fey-spirit"] },
+          { "type": "companion", "id": "summon-undead", "name": "Espíritu de muerto viviente", "requiresSpell": "summon-undead", "creatureIds": ["undead-spirit-ghostly", "undead-spirit-putrid", "undead-spirit-skeletal"] },
+          { "type": "companion", "id": "summon-aberration", "name": "Espíritu aberrante", "requiresSpell": "summon-aberration", "creatureIds": ["aberrant-spirit-beholderkin", "aberrant-spirit-slaad", "aberrant-spirit-mind-flayer"] },
+          { "type": "companion", "id": "summon-construct", "name": "Espíritu de autómata", "requiresSpell": "summon-construct", "creatureIds": ["construct-spirit-clay", "construct-spirit-metal", "construct-spirit-stone"] },
+          { "type": "companion", "id": "summon-elemental", "name": "Espíritu elemental", "requiresSpell": "summon-elemental", "creatureIds": ["elemental-spirit-air", "elemental-spirit-earth", "elemental-spirit-fire", "elemental-spirit-water"] },
+          { "type": "companion", "id": "summon-dragon", "name": "Espíritu dracónico", "requiresSpell": "summon-dragon", "creatureIds": ["draconic-spirit"] },
+          { "type": "companion", "id": "summon-fiend", "name": "Espíritu infernal", "requiresSpell": "summon-fiend", "creatureIds": ["fiendish-spirit-demon", "fiendish-spirit-devil", "fiendish-spirit-yugoloth"] }
         ]
       },
       {
@@ -898,7 +905,8 @@
         "name": "Lanzamiento de Conjuros",
         "description": "Lanzas conjuros de Clérigo usando Sabiduría; los preparas tras un descanso largo.",
         "effects": [
-          { "type": "spellcasting", "ability": "wisdom", "progression": "full", "preparation": "prepared", "spellList": "cleric", "cantripsKnown": 3 }
+          { "type": "spellcasting", "ability": "wisdom", "progression": "full", "preparation": "prepared", "spellList": "cleric", "cantripsKnown": 3 },
+          { "type": "companion", "id": "summon-celestial", "name": "Espíritu celestial", "requiresSpell": "summon-celestial", "creatureIds": ["celestial-spirit-avenger", "celestial-spirit-defender"] }
         ]
       },
       {
@@ -1003,7 +1011,10 @@
         "name": "Lanzamiento de Conjuros",
         "description": "Lanzas conjuros de Druida usando Sabiduría; los preparas tras un descanso largo.",
         "effects": [
-          { "type": "spellcasting", "ability": "wisdom", "progression": "full", "preparation": "prepared", "spellList": "druid", "cantripsKnown": 2 }
+          { "type": "spellcasting", "ability": "wisdom", "progression": "full", "preparation": "prepared", "spellList": "druid", "cantripsKnown": 2 },
+          { "type": "companion", "id": "summon-beast", "name": "Espíritu bestial", "requiresSpell": "summon-beast", "creatureIds": ["bestial-spirit-land", "bestial-spirit-air", "bestial-spirit-water"] },
+          { "type": "companion", "id": "summon-fey", "name": "Espíritu feérico", "requiresSpell": "summon-fey", "creatureIds": ["fey-spirit"] },
+          { "type": "companion", "id": "summon-elemental", "name": "Espíritu elemental", "requiresSpell": "summon-elemental", "creatureIds": ["elemental-spirit-air", "elemental-spirit-earth", "elemental-spirit-fire", "elemental-spirit-water"] }
         ]
       },
       {
@@ -1325,7 +1336,11 @@
         "name": "Magia de Pacto",
         "description": "Lanzas conjuros de Brujo usando Carisma. Tus espacios son pocos pero siempre del nivel más alto, y se recuperan en descanso corto.",
         "effects": [
-          { "type": "spellcasting", "ability": "charisma", "progression": "pact", "preparation": "prepared", "spellList": "warlock", "cantripsKnown": 2 }
+          { "type": "spellcasting", "ability": "charisma", "progression": "pact", "preparation": "prepared", "spellList": "warlock", "cantripsKnown": 2 },
+          { "type": "companion", "id": "summon-fey", "name": "Espíritu feérico", "requiresSpell": "summon-fey", "creatureIds": ["fey-spirit"] },
+          { "type": "companion", "id": "summon-undead", "name": "Espíritu de muerto viviente", "requiresSpell": "summon-undead", "creatureIds": ["undead-spirit-ghostly", "undead-spirit-putrid", "undead-spirit-skeletal"] },
+          { "type": "companion", "id": "summon-aberration", "name": "Espíritu aberrante", "requiresSpell": "summon-aberration", "creatureIds": ["aberrant-spirit-beholderkin", "aberrant-spirit-slaad", "aberrant-spirit-mind-flayer"] },
+          { "type": "companion", "id": "summon-fiend", "name": "Espíritu infernal", "requiresSpell": "summon-fiend", "creatureIds": ["fiendish-spirit-demon", "fiendish-spirit-devil", "fiendish-spirit-yugoloth"] }
         ]
       },
       {
@@ -1486,7 +1501,8 @@
         "name": "Lanzamiento de Conjuros",
         "description": "Lanzas conjuros de Paladín usando Carisma (semi-lanzador); los preparas tras un descanso largo.",
         "effects": [
-          { "type": "spellcasting", "ability": "charisma", "progression": "half", "preparation": "prepared", "spellList": "paladin", "cantripsKnown": 0 }
+          { "type": "spellcasting", "ability": "charisma", "progression": "half", "preparation": "prepared", "spellList": "paladin", "cantripsKnown": 0 },
+          { "type": "companion", "id": "summon-celestial", "name": "Espíritu celestial", "requiresSpell": "summon-celestial", "creatureIds": ["celestial-spirit-avenger", "celestial-spirit-defender"] }
         ]
       },
       {
@@ -1639,7 +1655,10 @@
         "name": "Lanzamiento de Conjuros",
         "description": "Lanzas conjuros de Explorador usando Sabiduría (semi-lanzador); los preparas tras un descanso largo.",
         "effects": [
-          { "type": "spellcasting", "ability": "wisdom", "progression": "half", "preparation": "prepared", "spellList": "ranger", "cantripsKnown": 0 }
+          { "type": "spellcasting", "ability": "wisdom", "progression": "half", "preparation": "prepared", "spellList": "ranger", "cantripsKnown": 0 },
+          { "type": "companion", "id": "summon-beast", "name": "Espíritu bestial", "requiresSpell": "summon-beast", "creatureIds": ["bestial-spirit-land", "bestial-spirit-air", "bestial-spirit-water"] },
+          { "type": "companion", "id": "summon-fey", "name": "Espíritu feérico", "requiresSpell": "summon-fey", "creatureIds": ["fey-spirit"] },
+          { "type": "companion", "id": "summon-elemental", "name": "Espíritu elemental", "requiresSpell": "summon-elemental", "creatureIds": ["elemental-spirit-air", "elemental-spirit-earth", "elemental-spirit-fire", "elemental-spirit-water"] }
         ]
       },
       {
@@ -1788,7 +1807,8 @@
         "description": "Lanzas conjuros de Artífice usando Inteligencia y un foco de conjuro (Herramientas de Ladrón, de Manitas u otras Herramientas de Artesano con las que tengas competencia). Preparas conjuros de nivel 1+ tras un descanso largo; conoces 2 trucos a nivel 1, y aprendés otro a niveles 10 y 14.",
         "effects": [
           { "type": "spellcasting", "ability": "intelligence", "progression": "half", "preparation": "prepared", "spellList": "artificer", "cantripsKnown": 2, "cantripIncreases": [10, 14] },
-          { "type": "companion", "id": "homunculus-servant", "name": "Sirviente Homúnculo", "requiresSpell": "homunculus-servant", "creatureIds": ["homunculus-servant"] }
+          { "type": "companion", "id": "homunculus-servant", "name": "Sirviente Homúnculo", "requiresSpell": "homunculus-servant", "creatureIds": ["homunculus-servant"] },
+          { "type": "companion", "id": "summon-construct", "name": "Espíritu de autómata", "requiresSpell": "summon-construct", "creatureIds": ["construct-spirit-clay", "construct-spirit-metal", "construct-spirit-stone"] }
         ]
       },
       {

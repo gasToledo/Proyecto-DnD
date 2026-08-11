@@ -50,6 +50,22 @@ void main() {
     expect(r('{(5+5)*level}'), '50');
   });
 
+  test('la división redondea hacia abajo, como 5e', () {
+    // "Una cantidad de ataques igual a la mitad del nivel del conjuro,
+    // redondeando hacia abajo" (Espíritu dracónico).
+    expect(r('{level/2}'), '2');
+    expect(r('{7/2}'), '3');
+    expect(r('{-7/2}'), '-4');
+    expect(r('{level*2/3}'), '3');
+  });
+
+  test('dividir por cero falla en vez de dar infinito', () {
+    expect(
+      () => r('{level/0}'),
+      throwsA(isA<CreatureFormulaException>()),
+    );
+  });
+
   test('acepta resta y signo delante de un valor', () {
     expect(r('{10-level}'), '5');
     expect(r('{-CHA}'), '1');
@@ -107,7 +123,7 @@ void main() {
     test('llaves sin nada adentro', () => invalid('{}'));
     test('paréntesis sin cerrar', () => invalid('{(5+5}'));
     test('operador colgando', () => invalid('{5+}'));
-    test('carácter inesperado', () => invalid('{5/2}'));
+    test('carácter inesperado', () => invalid('{5%2}'));
     test('sobra un token', () => invalid('{5 5}'));
   });
 }

@@ -894,6 +894,760 @@
     ]
   },
   {
+    "id": "bestial-spirit-air",
+    "name": "Espíritu bestial (Aire)",
+    "source": "phb_2024",
+    "kind": "Bestia Pequeña, neutral",
+    "ac": "11+spellLevel",
+    "hp": "20+5*(spellLevel-2)",
+    "speed": "30 pies, volar 60 pies",
+    "abilityScores": { "str": 18, "dex": 11, "con": 16, "int": 4, "wis": 14, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Pasar volando",
+        "description": "No provoca ataques de oportunidad cuando vuela para ponerse fuera del alcance de un enemigo."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de desgarro."
+      },
+      {
+        "name": "Desgarro",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{4+spellLevel}",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "bestial-spirit-land",
+    "name": "Espíritu bestial (Tierra)",
+    "source": "phb_2024",
+    "kind": "Bestia Pequeña, neutral",
+    "ac": "11+spellLevel",
+    "hp": "30+5*(spellLevel-2)",
+    "speed": "30 pies, trepar 30 pies",
+    "abilityScores": { "str": 18, "dex": 11, "con": 16, "int": 4, "wis": 14, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Atacar en manada",
+        "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de desgarro."
+      },
+      {
+        "name": "Desgarro",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{4+spellLevel}",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "bestial-spirit-water",
+    "name": "Espíritu bestial (Agua)",
+    "source": "phb_2024",
+    "kind": "Bestia Pequeña, neutral",
+    "ac": "11+spellLevel",
+    "hp": "30+5*(spellLevel-2)",
+    "speed": "30 pies, nadar 30 pies",
+    "abilityScores": { "str": 18, "dex": 11, "con": 16, "int": 4, "wis": 14, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "entiende los idiomas que conozcas",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Atacar en manada",
+        "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de sus aliados está a 5 pies o menos de ella y no tiene el estado de incapacitado."
+      },
+      {
+        "name": "Respirar en el agua",
+        "description": "Solo puede respirar bajo el agua."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de desgarro."
+      },
+      {
+        "name": "Desgarro",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{4+spellLevel}",
+        "damageType": "piercing",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "fey-spirit",
+    "name": "Espíritu feérico",
+    "source": "phb_2024",
+    "kind": "Feérico Pequeño, neutral",
+    "ac": "12+spellLevel",
+    "hp": "30+10*(spellLevel-3)",
+    "speed": "30 pies, volar 30 pies",
+    "abilityScores": { "str": 13, "dex": 16, "con": 14, "int": 14, "wis": 11, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "silvano, entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a hechizado",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de hoja feérica."
+      },
+      {
+        "name": "Hoja feérica",
+        "attackBonus": "SPELLATK",
+        "damage": "2d6+{3+spellLevel}",
+        "damageType": "force",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Paso feérico (acción adicional)",
+        "description": "Se teletransporta hasta 30 pies a un espacio libre que vea, y según el humor que elegiste al invocarlo: Furioso, tiene ventaja en su siguiente ataque de este turno. Alegre, una criatura a 10 pies hace una salvación de Sabiduría CD {SPELLDC} o queda hechizada por vos y por él 1 minuto, o hasta que reciba daño. Pícaro, llena un cubo de 10 pies a 5 pies suyos de oscuridad mágica hasta el final de su siguiente turno."
+      }
+    ]
+  },
+  {
+    "id": "undead-spirit-ghostly",
+    "name": "Espíritu de muerto viviente (Fantasmal)",
+    "source": "phb_2024",
+    "kind": "Muerto viviente Mediano, neutral",
+    "ac": "11+spellLevel",
+    "hp": "30+10*(spellLevel-3)",
+    "speed": "30 pies, volar 40 pies (levita)",
+    "abilityScores": { "str": 12, "dex": 16, "con": 15, "int": 4, "wis": 10, "cha": 9 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a necrótico y veneno; cansancio, asustado, paralizado, envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Paso incorpóreo",
+        "description": "Puede moverse a través de criaturas y objetos como si fueran terreno difícil. Si termina su turno dentro de un objeto, sale al espacio libre más cercano y recibe 1d10 de daño de fuerza por cada 5 pies recorridos."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Toque mortal",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{3+spellLevel}",
+        "damageType": "necrotic",
+        "reach": "5 pies",
+        "description": "El objetivo queda asustado hasta el final de su siguiente turno."
+      }
+    ]
+  },
+  {
+    "id": "undead-spirit-putrid",
+    "name": "Espíritu de muerto viviente (Putrefacto)",
+    "source": "phb_2024",
+    "kind": "Muerto viviente Mediano, neutral",
+    "ac": "11+spellLevel",
+    "hp": "30+10*(spellLevel-3)",
+    "speed": "30 pies",
+    "abilityScores": { "str": 12, "dex": 16, "con": 15, "int": 4, "wis": 10, "cha": 9 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a necrótico y veneno; cansancio, asustado, paralizado, envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Aura pestilente",
+        "description": "Toda criatura que no seas vos y empiece su turno a 5 pies o menos hace una salvación de Constitución CD {SPELLDC} o queda envenenada hasta el principio de su siguiente turno."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Garra putrefacta",
+        "attackBonus": "SPELLATK",
+        "damage": "1d6+{3+spellLevel}",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "Si el objetivo está envenenado, queda paralizado hasta el final de su siguiente turno."
+      }
+    ]
+  },
+  {
+    "id": "undead-spirit-skeletal",
+    "name": "Espíritu de muerto viviente (Esquelético)",
+    "source": "phb_2024",
+    "kind": "Muerto viviente Mediano, neutral",
+    "ac": "11+spellLevel",
+    "hp": "20+10*(spellLevel-3)",
+    "speed": "30 pies",
+    "abilityScores": { "str": 12, "dex": 16, "con": 15, "int": 4, "wis": 10, "cha": 9 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a necrótico y veneno; cansancio, asustado, paralizado, envenenado",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Virote sepulcral",
+        "attackBonus": "SPELLATK",
+        "damage": "2d4+{3+spellLevel}",
+        "damageType": "necrotic",
+        "reach": "150 pies"
+      }
+    ]
+  },
+  {
+    "id": "aberrant-spirit-beholderkin",
+    "name": "Espíritu aberrante (Ojo avizor)",
+    "source": "phb_2024",
+    "kind": "Aberración Mediana, neutral",
+    "ac": "11+spellLevel",
+    "hp": "40+10*(spellLevel-4)",
+    "speed": "30 pies, volar 30 pies (levita)",
+    "abilityScores": { "str": 16, "dex": 10, "con": 15, "int": 16, "wis": 10, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "habla profunda, entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a psíquico",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Rayo ocular",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{3+spellLevel}",
+        "damageType": "psychic",
+        "reach": "150 pies"
+      }
+    ]
+  },
+  {
+    "id": "aberrant-spirit-slaad",
+    "name": "Espíritu aberrante (Slaad)",
+    "source": "phb_2024",
+    "kind": "Aberración Mediana, neutral",
+    "ac": "11+spellLevel",
+    "hp": "40+10*(spellLevel-4)",
+    "speed": "30 pies",
+    "abilityScores": { "str": 16, "dex": 10, "con": 15, "int": 16, "wis": 10, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "habla profunda, entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a psíquico",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Regeneración",
+        "description": "Recupera 5 puntos de golpe al principio de su turno si le queda al menos 1."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Garra",
+        "attackBonus": "SPELLATK",
+        "damage": "1d10+{3+spellLevel}",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "El objetivo no puede recuperar puntos de golpe hasta el principio del siguiente turno del espíritu."
+      }
+    ]
+  },
+  {
+    "id": "aberrant-spirit-mind-flayer",
+    "name": "Espíritu aberrante (Azotamentes)",
+    "source": "phb_2024",
+    "kind": "Aberración Mediana, neutral",
+    "ac": "11+spellLevel",
+    "hp": "40+10*(spellLevel-4)",
+    "speed": "30 pies",
+    "abilityScores": { "str": 16, "dex": 10, "con": 15, "int": 16, "wis": 10, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "habla profunda, entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a psíquico",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Aura susurrante",
+        "description": "Al principio de cada uno de sus turnos, si no está incapacitado, cada criatura que no seas vos a 5 pies o menos hace una salvación de Sabiduría CD {SPELLDC} o recibe 2d6 de daño psíquico."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Golpe psíquico",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{3+spellLevel}",
+        "damageType": "psychic",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "construct-spirit-clay",
+    "name": "Espíritu de autómata (Arcilla)",
+    "source": "phb_2024",
+    "kind": "Constructo Mediano, neutral",
+    "ac": "13+spellLevel",
+    "hp": "40+15*(spellLevel-4)",
+    "speed": "30 pies",
+    "abilityScores": { "str": 18, "dex": 10, "con": 18, "int": 14, "wis": 11, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "entiende los idiomas que conozcas",
+    "defenses": "Resistencia a veneno. Inmunidad a hechizado, cansancio, asustado, paralizado y envenenado",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de golpe."
+      },
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{4+spellLevel}",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Arrebato furioso",
+        "reaction": true,
+        "description": "Detonante: una criatura le hace daño. Respuesta: hace un ataque de golpe contra ella si puede, o se mueve hasta la mitad de su velocidad hacia ella sin provocar ataques de oportunidad."
+      }
+    ]
+  },
+  {
+    "id": "construct-spirit-metal",
+    "name": "Espíritu de autómata (Metal)",
+    "source": "phb_2024",
+    "kind": "Constructo Mediano, neutral",
+    "ac": "13+spellLevel",
+    "hp": "40+15*(spellLevel-4)",
+    "speed": "30 pies",
+    "abilityScores": { "str": 18, "dex": 10, "con": 18, "int": 14, "wis": 11, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "entiende los idiomas que conozcas",
+    "defenses": "Resistencia a veneno. Inmunidad a hechizado, cansancio, asustado, paralizado y envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Cuerpo al rojo",
+        "description": "Quien lo acierte con un ataque cuerpo a cuerpo, o empiece su turno agarrado con él, recibe 1d10 de daño de fuego."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de golpe."
+      },
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{4+spellLevel}",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "construct-spirit-stone",
+    "name": "Espíritu de autómata (Piedra)",
+    "source": "phb_2024",
+    "kind": "Constructo Mediano, neutral",
+    "ac": "13+spellLevel",
+    "hp": "40+15*(spellLevel-4)",
+    "speed": "30 pies",
+    "abilityScores": { "str": 18, "dex": 10, "con": 18, "int": 14, "wis": 11, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "entiende los idiomas que conozcas",
+    "defenses": "Resistencia a veneno. Inmunidad a hechizado, cansancio, asustado, paralizado y envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Letargo pétreo",
+        "description": "Cuando una criatura empieza su turno a 10 pies o menos y el espíritu la ve, puede apuntarle: salvación de Sabiduría CD {SPELLDC} o, hasta el principio de su siguiente turno, no puede hacer ataques de oportunidad y su velocidad se reduce a la mitad."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de golpe."
+      },
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{4+spellLevel}",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "elemental-spirit-air",
+    "name": "Espíritu elemental (Aire)",
+    "source": "phb_2024",
+    "kind": "Elemental Mediano, neutral",
+    "ac": "11+spellLevel",
+    "hp": "50+10*(spellLevel-4)",
+    "speed": "40 pies, volar 40 pies (levita)",
+    "abilityScores": { "str": 18, "dex": 15, "con": 17, "int": 4, "wis": 10, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "primordial, entiende los idiomas que conozcas",
+    "defenses": "Resistencia a relámpago y trueno. Inmunidad a veneno; cansancio, paralizado, petrificado y envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Forma amorfa",
+        "description": "Puede pasar por un espacio de una pulgada de ancho sin que cuente como terreno difícil."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de golpe."
+      },
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "1d10+{4+spellLevel}",
+        "damageType": "lightning",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "elemental-spirit-earth",
+    "name": "Espíritu elemental (Tierra)",
+    "source": "phb_2024",
+    "kind": "Elemental Mediano, neutral",
+    "ac": "11+spellLevel",
+    "hp": "50+10*(spellLevel-4)",
+    "speed": "40 pies, excavar 40 pies",
+    "abilityScores": { "str": 18, "dex": 15, "con": 17, "int": 4, "wis": 10, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "primordial, entiende los idiomas que conozcas",
+    "defenses": "Resistencia a perforante y cortante. Inmunidad a veneno; cansancio, paralizado, petrificado y envenenado",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de golpe."
+      },
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "1d10+{4+spellLevel}",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "elemental-spirit-fire",
+    "name": "Espíritu elemental (Fuego)",
+    "source": "phb_2024",
+    "kind": "Elemental Mediano, neutral",
+    "ac": "11+spellLevel",
+    "hp": "50+10*(spellLevel-4)",
+    "speed": "40 pies",
+    "abilityScores": { "str": 18, "dex": 15, "con": 17, "int": 4, "wis": 10, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "primordial, entiende los idiomas que conozcas",
+    "defenses": "Inmunidad a fuego y veneno; cansancio, paralizado, petrificado y envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Forma amorfa",
+        "description": "Puede pasar por un espacio de una pulgada de ancho sin que cuente como terreno difícil."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de golpe."
+      },
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "1d10+{4+spellLevel}",
+        "damageType": "fire",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "elemental-spirit-water",
+    "name": "Espíritu elemental (Agua)",
+    "source": "phb_2024",
+    "kind": "Elemental Mediano, neutral",
+    "ac": "11+spellLevel",
+    "hp": "50+10*(spellLevel-4)",
+    "speed": "40 pies, nadar 40 pies",
+    "abilityScores": { "str": 18, "dex": 15, "con": 17, "int": 4, "wis": 10, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "primordial, entiende los idiomas que conozcas",
+    "defenses": "Resistencia a ácido. Inmunidad a veneno; cansancio, paralizado, petrificado y envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Forma amorfa",
+        "description": "Puede pasar por un espacio de una pulgada de ancho sin que cuente como terreno difícil."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de golpe."
+      },
+      {
+        "name": "Golpe",
+        "attackBonus": "SPELLATK",
+        "damage": "1d10+{4+spellLevel}",
+        "damageType": "cold",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "celestial-spirit-avenger",
+    "name": "Espíritu celestial (Vengador)",
+    "source": "phb_2024",
+    "kind": "Celestial Grande, neutral",
+    "ac": "11+spellLevel",
+    "hp": "40+10*(spellLevel-5)",
+    "speed": "30 pies, volar 40 pies",
+    "abilityScores": { "str": 16, "dex": 14, "con": 16, "int": 10, "wis": 14, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "celestial, entiende los idiomas que conozcas",
+    "defenses": "Resistencia a radiante. Inmunidad a hechizado y asustado",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Arco radiante",
+        "attackBonus": "SPELLATK",
+        "damage": "2d6+{2+spellLevel}",
+        "damageType": "radiant",
+        "reach": "600 pies"
+      },
+      {
+        "name": "Toque sanador (1/día)",
+        "description": "Toca a otra criatura, que recupera 2d8 + {spellLevel} puntos de golpe."
+      }
+    ]
+  },
+  {
+    "id": "celestial-spirit-defender",
+    "name": "Espíritu celestial (Defensor)",
+    "source": "phb_2024",
+    "kind": "Celestial Grande, neutral",
+    "ac": "13+spellLevel",
+    "hp": "40+10*(spellLevel-5)",
+    "speed": "30 pies, volar 40 pies",
+    "abilityScores": { "str": 16, "dex": 14, "con": 16, "int": 10, "wis": 14, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "celestial, entiende los idiomas que conozcas",
+    "defenses": "Resistencia a radiante. Inmunidad a hechizado y asustado",
+    "scalesWithSpellLevel": true,
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Maza radiante",
+        "attackBonus": "SPELLATK",
+        "damage": "1d10+{3+spellLevel}",
+        "damageType": "radiant",
+        "reach": "5 pies",
+        "description": "El espíritu elige a sí mismo o a otra criatura que vea a 10 pies o menos del objetivo: esa criatura gana 1d10 puntos de golpe temporales."
+      },
+      {
+        "name": "Toque sanador (1/día)",
+        "description": "Toca a otra criatura, que recupera 2d8 + {spellLevel} puntos de golpe."
+      }
+    ]
+  },
+  {
+    "id": "fiendish-spirit-demon",
+    "name": "Espíritu infernal (Demonio)",
+    "source": "phb_2024",
+    "kind": "Infernal Grande, neutral",
+    "ac": "12+spellLevel",
+    "hp": "50+15*(spellLevel-6)",
+    "speed": "40 pies, trepar 40 pies",
+    "abilityScores": { "str": 13, "dex": 16, "con": 15, "int": 10, "wis": 10, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "abisal, infernal, telepatía 60 pies",
+    "defenses": "Resistencia a fuego. Inmunidad a veneno; envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Resistencia mágica",
+        "description": "Tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+      },
+      {
+        "name": "Estertores de muerte",
+        "description": "Al llegar a 0 PG o al terminar el conjuro, estalla: cada criatura a 10 pies o menos hace una salvación de Destreza CD {SPELLDC} y recibe 2d10 + {spellLevel} de daño de fuego, la mitad si la supera."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Mordisco",
+        "attackBonus": "SPELLATK",
+        "damage": "1d12+{3+spellLevel}",
+        "damageType": "necrotic",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "fiendish-spirit-devil",
+    "name": "Espíritu infernal (Diablo)",
+    "source": "phb_2024",
+    "kind": "Infernal Grande, neutral",
+    "ac": "12+spellLevel",
+    "hp": "40+15*(spellLevel-6)",
+    "speed": "40 pies, volar 60 pies",
+    "abilityScores": { "str": 13, "dex": 16, "con": 15, "int": 10, "wis": 10, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "abisal, infernal, telepatía 60 pies",
+    "defenses": "Resistencia a fuego. Inmunidad a veneno; envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Resistencia mágica",
+        "description": "Tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+      },
+      {
+        "name": "Vista del diablo",
+        "description": "La oscuridad mágica no le estorba la visión en la oscuridad."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Golpe ardiente",
+        "attackBonus": "SPELLATK",
+        "damage": "2d6+{3+spellLevel}",
+        "damageType": "fire",
+        "reach": "5 pies, o a distancia 150 pies"
+      }
+    ]
+  },
+  {
+    "id": "fiendish-spirit-yugoloth",
+    "name": "Espíritu infernal (Yugoloth)",
+    "source": "phb_2024",
+    "kind": "Infernal Grande, neutral",
+    "ac": "12+spellLevel",
+    "hp": "60+15*(spellLevel-6)",
+    "speed": "40 pies",
+    "abilityScores": { "str": 13, "dex": 16, "con": 15, "int": 10, "wis": 10, "cha": 16 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "abisal, infernal, telepatía 60 pies",
+    "defenses": "Resistencia a fuego. Inmunidad a veneno; envenenado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Resistencia mágica",
+        "description": "Tiene ventaja en las tiradas de salvación contra conjuros y otros efectos mágicos."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques."
+      },
+      {
+        "name": "Garras",
+        "attackBonus": "SPELLATK",
+        "damage": "1d8+{3+spellLevel}",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "Justo después de acertar o fallar, puede teletransportarse hasta 30 pies a un espacio libre que vea."
+      }
+    ]
+  },
+  {
+    "id": "draconic-spirit",
+    "name": "Espíritu dracónico",
+    "source": "srd_2024",
+    "kind": "Dragón Grande, neutral",
+    "ac": "14+spellLevel",
+    "hp": "50+10*(spellLevel-5)",
+    "speed": "30 pies, nadar 30 pies, volar 60 pies",
+    "abilityScores": { "str": 19, "dex": 14, "con": 17, "int": 10, "wis": 14, "cha": 14 },
+    "senses": "visión ciega 30 pies, visión en la oscuridad 60 pies; Percepción pasiva 12",
+    "languages": "dracónico, entiende los idiomas que conozcas",
+    "defenses": "Resistencia a ácido, frío, fuego, relámpago y veneno. Inmunidad a asustado, envenenado y hechizado",
+    "scalesWithSpellLevel": true,
+    "traits": [
+      {
+        "name": "Resistencias compartidas",
+        "description": "Al invocarlo elegís una de sus resistencias: tenés resistencia a ese tipo de daño hasta que el conjuro termine."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "Hace {spellLevel/2} ataques de desgarro y usa su ataque de aliento."
+      },
+      {
+        "name": "Desgarro",
+        "attackBonus": "SPELLATK",
+        "damage": "1d6+{4+spellLevel}",
+        "damageType": "piercing",
+        "reach": "10 pies"
+      },
+      {
+        "name": "Ataque de aliento",
+        "damage": "2d6",
+        "reach": "cono de 30 pies",
+        "description": "Salvación de Destreza CD {SPELLDC}; a la mitad si la supera. El daño es de un tipo al que el espíritu tenga resistencia, el que elegiste al lanzar el conjuro."
+      }
+    ]
+  },
+  {
     "id": "eldritch-cannon",
     "name": "Cañón Arcano",
     "source": "foa_2025",

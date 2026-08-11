@@ -617,17 +617,20 @@ void main() {
 
       expect(find.text('Compañeros'), findsOneWidget);
       expect(find.text('No hay ninguno invocado.'), findsOneWidget);
+      // Sin nada invocado el campo no manda a nada, así que no está.
+      expect(find.widgetWithText(TextField, 'Cantidad de PG'), findsNothing);
 
       await tapVisible(tester, find.text('Invocar'));
       await tester.pumpAndSettle();
 
       // PG 5 × nivel de Artífice, sin preguntar forma: el cañón es uno solo.
       expect(character.combat.companions, hasLength(1));
+      expect(find.widgetWithText(TextField, 'Cantidad de PG'), findsOneWidget);
       expect(find.text('25 / 25 PG'), findsOneWidget);
       expect(find.text('CA 18'), findsOneWidget);
 
-      final amounts = find.widgetWithText(TextField, 'Cantidad');
-      await tester.enterText(amounts.last, '7');
+      final amount = find.widgetWithText(TextField, 'Cantidad de PG');
+      await tester.enterText(amount, '7');
       await tapVisible(tester, find.widgetWithText(FilledButton, 'Daño').last);
       await tester.pumpAndSettle();
 
@@ -636,6 +639,31 @@ void main() {
 
       // El daño al compañero no toca los PG del personaje.
       expect(character.combat.currentHp, 30);
+    });
+
+    testWidgets('a 0 PG el cañón se destruye y sale de la ficha', (
+      tester,
+    ) async {
+      final character = artillerist();
+      await pumpSheet(tester, character);
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Invocar'));
+      await tester.pumpAndSettle();
+
+      final amount = find.widgetWithText(TextField, 'Cantidad de PG');
+      await tester.enterText(amount, '25');
+      await tapVisible(tester, find.widgetWithText(FilledButton, 'Daño').last);
+      await tester.pumpAndSettle();
+
+      expect(character.combat.companions, isEmpty);
+      expect(find.text('No hay ninguno invocado.'), findsOneWidget);
+      // Sin instancia no queda nada que curar: se fueron los controles del
+      // compañero y con ellos el campo. Los del personaje siguen, en su tarjeta.
+      expect(find.text('Despedir'), findsNothing);
+      expect(find.widgetWithText(TextField, 'Cantidad de PG'), findsNothing);
+
+      await tester.pump(const Duration(seconds: 5));
     });
 
     testWidgets('despedirlo lo saca de la ficha', (tester) async {
@@ -667,8 +695,8 @@ void main() {
       await tapVisible(tester, find.text('Invocar'));
       await tester.pumpAndSettle();
 
-      final amounts = find.widgetWithText(TextField, 'Cantidad');
-      await tester.enterText(amounts.last, '10');
+      final amount = find.widgetWithText(TextField, 'Cantidad de PG');
+      await tester.enterText(amount, '10');
       await tapVisible(tester, find.widgetWithText(FilledButton, 'Daño').last);
       await tester.pumpAndSettle();
       expect(character.combat.companions.single.currentHp, 15);

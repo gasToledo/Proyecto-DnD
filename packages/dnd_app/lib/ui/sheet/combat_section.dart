@@ -498,18 +498,22 @@ extension _SheetCombatSection on _SheetScreenState {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              width: 110,
-              child: TextField(
-                controller: _companionAmountCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Cantidad',
-                  border: OutlineInputBorder(),
-                  isDense: true,
+            // El campo solo aparece con algo invocado: sin compañeros en juego
+            // no manda a nada, y un "Cantidad" suelto arriba de un botón
+            // "Invocar" se lee como si fuera la cantidad a invocar.
+            if (_c.combat.companions.isNotEmpty)
+              SizedBox(
+                width: 110,
+                child: TextField(
+                  controller: _companionAmountCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Cantidad de PG',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
                 ),
               ),
-            ),
             for (final option in s.companions) ...[
               const SizedBox(height: 16),
               _companionBlock(s, option),
@@ -673,7 +677,6 @@ extension _SheetCombatSection on _SheetScreenState {
     final ratio = resolved.maxHp == 0
         ? 0.0
         : instance.currentHp / resolved.maxHp;
-    final destroyed = instance.currentHp <= 0;
 
     return Padding(
       padding: const EdgeInsets.only(top: 10),
@@ -716,13 +719,11 @@ extension _SheetCombatSection on _SheetScreenState {
                 style: TextStyle(
                   fontFamily: 'Georgia',
                   fontSize: 16,
-                  color: destroyed ? muted : pal.crimson,
+                  color: pal.crimson,
                 ),
               ),
               const SizedBox(width: 8),
               if (instance.tempHp > 0) GoldPill('+${instance.tempHp} temp'),
-              if (destroyed)
-                Text('Destruido', style: TextStyle(fontSize: 13, color: muted)),
             ],
           ),
           const SizedBox(height: 6),
@@ -745,10 +746,16 @@ extension _SheetCombatSection on _SheetScreenState {
                   backgroundColor: pal.crimson,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: () => _mutateCombat(() {
-                  CombatOps.damageCompanion(instance, _companionAmount);
-                  _companionAmountCtrl.clear();
-                }),
+                onPressed: () {
+                  final destroyed = CombatOps.damageCompanion(
+                    _c.combat,
+                    instance,
+                    _companionAmount,
+                  );
+                  _mutateCombat(() => _companionAmountCtrl.clear());
+                  // Desaparecer sin decir nada se lee como un error de la app.
+                  if (destroyed) _snack('${resolved.name} fue destruido.');
+                },
                 icon: const Icon(Icons.remove, size: 18),
                 label: const Text('Daño'),
               ),

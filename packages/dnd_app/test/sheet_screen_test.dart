@@ -698,6 +698,25 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('las salvaciones de muerte entran en un teléfono angosto', (
+      tester,
+    ) async {
+      // A 0 PG aparece la fila de salvaciones, con seis círculos y dos
+      // botones: en un teléfono no entraban en una línea. Es justo la pantalla
+      // que se mira cuando el personaje está cayendo.
+      final dying = demoSagan();
+      dying.combat.currentHp = 0;
+      await pumpSheet(tester, dying, size: const Size(360, 1600));
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('+Éxito'), findsOneWidget);
+      expect(find.text('+Fallo'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('el selector de las 24 formas entra en un teléfono angosto', (
       tester,
     ) async {
@@ -710,6 +729,7 @@ void main() {
         assignedScores: {for (final a in Ability.values) a: 12},
         spellIds: const ['find-familiar'],
         hpPerLevel: const [6],
+        combat: CombatState(currentHp: 6),
       );
       await pumpSheet(tester, wizard, size: const Size(360, 1600));
 
@@ -718,11 +738,6 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Combate'));
       await tester.pumpAndSettle();
-      // La tarjeta de Conjuros se pasa de ancho a 360px por su cuenta, desde
-      // antes de los compañeros. Se descarta acá para que este caso hable del
-      // diálogo y no herede un desborde ajeno; el del guerrero, más arriba,
-      // cubre la parte de la pantalla que sí arreglamos.
-      tester.takeException();
       await tapVisible(tester, find.text('Invocar'));
 
       // El diálogo abre con las formas y sin desbordar: un RenderFlex que se

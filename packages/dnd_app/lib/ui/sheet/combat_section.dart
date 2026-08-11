@@ -139,26 +139,36 @@ extension _SheetCombatSection on _SheetScreenState {
         ),
       ),
     );
-    return Row(
+    Widget group(Widget marks, Widget button) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [marks, const SizedBox(width: 8), button],
+    );
+    // Wrap y no Row: los seis círculos más los dos botones no entran en el
+    // ancho de un teléfono, y es justo la fila que se mira con el personaje a
+    // 0 PG. Si no entran en una línea, éxitos y fallos se apilan.
+    return Wrap(
+      spacing: 16,
+      runSpacing: 8,
       children: [
-        pips(combat.deathSuccesses, context.palette.gold),
-        const SizedBox(width: 8),
-        OutlinedButton(
-          onPressed: () => _mutateCombat(() {
-            final r = CombatOps.recordDeathSave(_c.combat, success: true);
-            if (r == 'stable') _snack('¡Estabilizado!');
-          }),
-          child: const Text('+Éxito'),
+        group(
+          pips(combat.deathSuccesses, context.palette.gold),
+          OutlinedButton(
+            onPressed: () => _mutateCombat(() {
+              final r = CombatOps.recordDeathSave(_c.combat, success: true);
+              if (r == 'stable') _snack('¡Estabilizado!');
+            }),
+            child: const Text('+Éxito'),
+          ),
         ),
-        const Spacer(),
-        pips(combat.deathFailures, context.palette.crimson),
-        const SizedBox(width: 8),
-        OutlinedButton(
-          onPressed: () => _mutateCombat(() {
-            final r = CombatOps.recordDeathSave(_c.combat, success: false);
-            if (r == 'dead') _snack('El personaje ha muerto.');
-          }),
-          child: const Text('+Fallo'),
+        group(
+          pips(combat.deathFailures, context.palette.crimson),
+          OutlinedButton(
+            onPressed: () => _mutateCombat(() {
+              final r = CombatOps.recordDeathSave(_c.combat, success: false);
+              if (r == 'dead') _snack('El personaje ha muerto.');
+            }),
+            child: const Text('+Fallo'),
+          ),
         ),
       ],
     );

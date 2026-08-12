@@ -16,11 +16,15 @@ class _FeatFormState extends State<FeatForm> {
   Widget build(BuildContext context) {
     return _FormScaffold(
       title: 'Dote',
-      onSave: _name.text.trim().isEmpty ? null : _save,
+      onSave: _save,
       children: [
-        _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _text(
+          _name,
+          'Nombre',
+          validator: (v) => _requiredText(v, 'el nombre de la dote'),
+        ),
         _categoryDropdown(
-          ['origin', 'general', 'fighting-style', 'dragonmark', 'epic-boon'],
+          _featCategories,
           _category,
           (v) => setState(() => _category = v),
         ),

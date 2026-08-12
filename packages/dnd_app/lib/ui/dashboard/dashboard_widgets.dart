@@ -26,7 +26,7 @@ class _SaveStatusIndicator extends StatelessWidget {
     return Semantics(
       label: 'Estado del guardado: $label',
       child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 180),
+        duration: context.motion(const Duration(milliseconds: 180)),
         child: Container(
           key: ValueKey(state),
           height: 40,
@@ -143,6 +143,11 @@ class _CharacterCard extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback onTap;
   final VoidCallback onToggleFavorite;
+
+  /// Reordenar sin arrastrar. Null en los extremos de la lista, donde no hay a
+  /// dónde mover.
+  final VoidCallback? onMoveBefore;
+  final VoidCallback? onMoveAfter;
   final VoidCallback onRename;
   final VoidCallback onExport;
   final VoidCallback onDelete;
@@ -154,6 +159,8 @@ class _CharacterCard extends StatefulWidget {
     this.isFavorite = false,
     required this.onTap,
     required this.onToggleFavorite,
+    this.onMoveBefore,
+    this.onMoveAfter,
     required this.onRename,
     required this.onExport,
     required this.onDelete,
@@ -186,7 +193,7 @@ class _CharacterCardState extends State<_CharacterCard> {
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 120),
+        duration: context.motion(const Duration(milliseconds: 120)),
         transform: Matrix4.translationValues(0, _hover ? -2 : 0, 0),
         decoration: BoxDecoration(
           color: scheme.surface,
@@ -310,7 +317,7 @@ class _CharacterCardState extends State<_CharacterCard> {
                       SizedBox(
                         width: 32 * k,
                         child: PopupMenuButton<String>(
-                          tooltip: 'Acciones',
+                          tooltip: 'Acciones de ${c.name}',
                           padding: EdgeInsets.zero,
                           icon: Icon(
                             Icons.more_vert,
@@ -319,6 +326,8 @@ class _CharacterCardState extends State<_CharacterCard> {
                           ),
                           onSelected: (v) {
                             if (v == 'favorite') widget.onToggleFavorite();
+                            if (v == 'move-before') widget.onMoveBefore?.call();
+                            if (v == 'move-after') widget.onMoveAfter?.call();
                             if (v == 'rename') widget.onRename();
                             if (v == 'export') widget.onExport();
                             if (v == 'delete') widget.onDelete();
@@ -331,6 +340,19 @@ class _CharacterCardState extends State<_CharacterCard> {
                                     ? 'Quitar de favorito'
                                     : 'Marcar como favorito',
                               ),
+                            ),
+                            // El arrastre queda como atajo, pero el orden no
+                            // puede depender de él: con teclado o lector de
+                            // pantalla no hay forma de arrastrar nada.
+                            PopupMenuItem(
+                              value: 'move-before',
+                              enabled: widget.onMoveBefore != null,
+                              child: const Text('Mover antes'),
+                            ),
+                            PopupMenuItem(
+                              value: 'move-after',
+                              enabled: widget.onMoveAfter != null,
+                              child: const Text('Mover después'),
                             ),
                             const PopupMenuItem(
                               value: 'rename',

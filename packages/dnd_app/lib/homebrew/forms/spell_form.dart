@@ -49,10 +49,19 @@ class _SpellFormState extends State<SpellForm> {
   Widget build(BuildContext context) {
     return _FormScaffold(
       title: 'Conjuro',
-      onSave: _name.text.trim().isEmpty ? null : _save,
+      onSave: _save,
       children: [
-        _text(_name, 'Nombre', onChanged: () => setState(() {})),
-        _text(_level, 'Nivel (0 = truco)', number: true),
+        _text(
+          _name,
+          'Nombre',
+          validator: (v) => _requiredText(v, 'el nombre del conjuro'),
+        ),
+        _text(
+          _level,
+          'Nivel (0 = truco)',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 9, optional: false),
+        ),
         _text(_school, 'Escuela (p.ej. Evocación)'),
         _text(_castingTime, 'Tiempo de lanzamiento'),
         _text(_range, 'Alcance'),
@@ -72,25 +81,12 @@ class _SpellFormState extends State<SpellForm> {
         ),
         const SizedBox(height: 8),
         const Eyebrow('Listas de clase'),
-        Wrap(
-          spacing: 6,
-          children: _spellClasses.entries
-              .map(
-                (e) => FilterChip(
-                  label: Text(e.value),
-                  selected: _classes.contains(e.key),
-                  onSelected: (v) => setState(
-                    () => v ? _classes.add(e.key) : _classes.remove(e.key),
-                  ),
-                ),
-              )
-              .toList(),
-        ),
+        _idChips(_spellClasses, _classes, () => setState(() {})),
         const SizedBox(height: 12),
         const Eyebrow('Descripción'),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          child: TextField(
+          child: TextFormField(
             controller: _description,
             minLines: 3,
             maxLines: null,
@@ -107,7 +103,9 @@ class _SpellFormState extends State<SpellForm> {
         id: widget.initial?.id ?? homebrewId(_name.text),
         name: _name.text.trim(),
         source: ContentSource.homebrew,
-        level: int.tryParse(_level.text.trim())?.clamp(0, 9) ?? 0,
+        // Sin `clamp`: un 12 escrito por error se guardaba como nivel 9 sin
+        // avisar. Ahora el campo lo rechaza y el conjuro no se guarda.
+        level: int.parse(_level.text.trim()),
         school: _school.text.trim(),
         castingTime: _castingTime.text.trim(),
         range: _range.text.trim(),

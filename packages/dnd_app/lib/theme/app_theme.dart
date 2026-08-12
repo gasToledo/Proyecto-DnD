@@ -23,24 +23,30 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.textMuted,
   });
 
+  /// Los colores que llevan texto están elegidos para llegar a 4.5:1 (WCAG AA)
+  /// contra los **dos** fondos sobre los que se dibujan: `surface` y `plaque`,
+  /// que es el más exigente porque es el más cercano al color del texto. El
+  /// carmesí además lleva los PG de la tarjeta, que son texto chico: por eso es
+  /// más claro que el rojo de marca original (`0xFFC24A3E`, 3.6:1) y el par
+  /// `onError`/`onSecondary` pasa a ser oscuro en el tema oscuro.
   static const dark = AppPalette(
-    gold: Color(0xFFC9A24B),
-    crimson: Color(0xFFC24A3E),
-    verdant: Color(0xFF6FA85C),
+    gold: Color(0xFFC9A24B), // 7.3:1 sobre surface
+    crimson: Color(0xFFD4665A), // 4.9:1 sobre surface, 5.3:1 sobre plaque
+    verdant: Color(0xFF6FA85C), // 6.2:1 sobre surface
     plaque: Color(0xFF12100C),
     hairline: Color(0xFF3A2F25),
     goldSoft: Color(0xFF2E2617),
-    textMuted: Color(0xFF7F7059),
+    textMuted: Color(0xFF9C8B6E), // 5.3:1 sobre surface, 5.8:1 sobre plaque
   );
 
   static const light = AppPalette(
-    gold: Color(0xFF8A6A1E),
-    crimson: Color(0xFFA6392E),
-    verdant: Color(0xFF3E7A33),
+    gold: Color(0xFF8A6A1E), // 4.7:1 sobre surface
+    crimson: Color(0xFFA6392E), // 6.0:1 sobre surface
+    verdant: Color(0xFF3E7A33), // 4.9:1 sobre surface
     plaque: Color(0xFFEBE0C9),
     hairline: Color(0xFFD9C9A8),
     goldSoft: Color(0xFFEEE1BF),
-    textMuted: Color(0xFF9E8E70),
+    textMuted: Color(0xFF6E6047), // 5.7:1 sobre surface, 4.7:1 sobre plaque
   );
 
   @override
@@ -80,6 +86,53 @@ class AppPalette extends ThemeExtension<AppPalette> {
 /// Acceso corto a la paleta desde cualquier widget.
 extension AppPaletteX on BuildContext {
   AppPalette get palette => Theme.of(this).extension<AppPalette>()!;
+
+  /// Duración de una animación, o cero si el sistema pide menos movimiento
+  /// («Reducir movimiento» del sistema operativo, `prefers-reduced-motion` en
+  /// el navegador).
+  ///
+  /// Cero y no "más corta": las animaciones de la aplicación marcan cambios de
+  /// estado, y el cambio de estado se ve igual sin transición. Quien pide menos
+  /// movimiento suele hacerlo por mareo o vértigo, y a esa persona una
+  /// animación rápida no le sirve de menos que una lenta.
+  Duration motion(Duration duration) =>
+      MediaQuery.disableAnimationsOf(this) ? Duration.zero : duration;
+}
+
+/// Tema activo y su guardado.
+///
+/// Vive en la raíz de la aplicación y no en cada pantalla porque el control
+/// aparece en dos paneles (dashboard y ficha) y las dos vistas tienen que
+/// mostrar el mismo estado: una copia por pantalla se desincroniza al volver
+/// atrás desde una ficha.
+///
+/// Arranca en oscuro —el tema prioritario— y adopta lo guardado en cuanto los
+/// ajustes de la cuenta terminan de cargar ([attach]).
+class AppThemeController extends ValueNotifier<ThemeMode> {
+  AppThemeController() : super(ThemeMode.dark);
+
+  Future<void> Function(ThemeMode)? _persist;
+
+  /// Conecta el guardado y adopta la preferencia guardada. Antes de esto,
+  /// elegir un tema lo cambia en pantalla pero no lo persiste: no hay todavía
+  /// un documento de ajustes al que escribirle sin pisar el resto.
+  void attach(ThemeMode saved, Future<void> Function(ThemeMode) persist) {
+    _persist = persist;
+    value = saved;
+  }
+
+  void choose(ThemeMode mode) {
+    if (mode == value) return;
+    value = mode;
+    _persist?.call(mode);
+  }
+
+  /// [ThemeMode] por el nombre con que se guarda. Un valor desconocido (ajuste
+  /// viejo, documento tocado a mano) cae a oscuro, que es el tema por defecto.
+  static ThemeMode parse(String value) => ThemeMode.values.firstWhere(
+    (m) => m.name == value,
+    orElse: () => ThemeMode.dark,
+  );
 }
 
 /// Fuente serif para títulos (el nombre del personaje, rótulos display).
@@ -113,14 +166,20 @@ class AppTheme {
     required Color onSurfaceVariant,
     required AppPalette palette,
   }) {
+    // El carmesí del tema oscuro es claro (hace falta para que los PG lleguen a
+    // AA sobre la tarjeta): encima de él el blanco ya no contrasta, así que lo
+    // que va sobre carmesí es el mismo casi-negro que va sobre el oro.
+    final onCrimson = brightness == Brightness.dark
+        ? const Color(0xFF201A10)
+        : Colors.white;
     final scheme = ColorScheme(
       brightness: brightness,
       primary: palette.gold,
       onPrimary: const Color(0xFF201A10),
       secondary: palette.crimson,
-      onSecondary: Colors.white,
+      onSecondary: onCrimson,
       error: palette.crimson,
-      onError: Colors.white,
+      onError: onCrimson,
       surface: surface,
       onSurface: onSurface,
       onSurfaceVariant: onSurfaceVariant,

@@ -6,7 +6,7 @@
     "background_color": "#1E1915",
     "theme_color": "#1E1915",
     "description": "Fichas de personaje de D&D 5e con las reglas de 2024.",
-    "orientation": "portrait-primary",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

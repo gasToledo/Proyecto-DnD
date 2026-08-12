@@ -97,16 +97,7 @@ extension _DashboardNavigation on _DashboardScreenState {
           ),
           const Spacer(),
           _accountFooter(context),
-          OutlinedButton.icon(
-            onPressed: widget.onToggleTheme,
-            icon: const Icon(Icons.dark_mode, size: 16),
-            label: const Text('Cambiar tema'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              side: BorderSide(color: pal.hairline),
-              textStyle: const TextStyle(fontSize: 12),
-            ),
-          ),
+          ThemeModeButton(controller: widget.theme),
           // Null solo en tests, donde no se resuelve `PackageInfo`.
           if (widget.appVersion case final version?) ...[
             const SizedBox(height: 10),

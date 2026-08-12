@@ -26,33 +26,33 @@ class _WeaponFormState extends State<WeaponForm> {
   Widget build(BuildContext context) {
     return _FormScaffold(
       title: 'Arma',
-      onSave: _name.text.trim().isEmpty ? null : _save,
+      onSave: _save,
       children: [
-        _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _text(
+          _name,
+          'Nombre',
+          validator: (v) => _requiredText(v, 'el nombre del arma'),
+        ),
         _categoryDropdown(
-          ['simple', 'martial'],
+          _weaponCategories,
           _category,
           (v) => setState(() => _category = v),
         ),
-        _text(_dice, 'Dado de daño (p.ej. 1d8)'),
+        _text(
+          _dice,
+          'Dado de daño (p.ej. 1d8)',
+          validator: (v) => _diceValue(v, optional: false),
+        ),
         _damageTypeDropdown(_type, (v) => setState(() => _type = v)),
-        _text(_versatile, 'Dado versátil (opcional, p.ej. 1d10)'),
+        _text(
+          _versatile,
+          'Dado versátil (opcional, p.ej. 1d10)',
+          validator: (v) => _diceValue(v, optional: true),
+        ),
         _text(_mastery, 'Maestría (opcional, p.ej. sap)'),
         const SizedBox(height: 8),
         const Eyebrow('Propiedades'),
-        Wrap(
-          spacing: 6,
-          children: _weaponProps
-              .map(
-                (p) => FilterChip(
-                  label: Text(p),
-                  selected: _props.contains(p),
-                  onSelected: (v) =>
-                      setState(() => v ? _props.add(p) : _props.remove(p)),
-                ),
-              )
-              .toList(),
-        ),
+        _idChips(_weaponPropOptions, _props, () => setState(() {})),
       ],
     );
   }

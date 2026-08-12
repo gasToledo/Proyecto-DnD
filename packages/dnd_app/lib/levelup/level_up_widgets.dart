@@ -158,7 +158,7 @@ class _StepButton extends StatelessWidget {
         child: Row(
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
+              duration: context.motion(const Duration(milliseconds: 180)),
               width: 24,
               height: 24,
               alignment: Alignment.center,
@@ -359,7 +359,7 @@ class _LevelUpCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(13),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: context.motion(const Duration(milliseconds: 180)),
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

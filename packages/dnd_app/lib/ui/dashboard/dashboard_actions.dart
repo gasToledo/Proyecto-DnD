@@ -20,7 +20,7 @@ extension _DashboardActions on _DashboardScreenState {
           character: c,
           repo: repo,
           controller: controller,
-          onToggleTheme: widget.onToggleTheme,
+          theme: widget.theme,
         ),
       ),
     );

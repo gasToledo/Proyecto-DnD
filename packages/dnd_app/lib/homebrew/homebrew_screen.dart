@@ -19,38 +19,49 @@ part 'forms/spell_form.dart';
 part 'forms/weapon_form.dart';
 part 'homebrew_tabs.dart';
 
-const _skills = [
-  'acrobatics',
-  'animal-handling',
-  'arcana',
-  'athletics',
-  'deception',
-  'history',
-  'insight',
-  'intimidation',
-  'investigation',
-  'medicine',
-  'nature',
-  'perception',
-  'performance',
-  'persuasion',
-  'religion',
-  'sleight-of-hand',
-  'stealth',
-  'survival',
-];
-const _weaponProps = [
-  'finesse',
-  'versatile',
-  'two-handed',
-  'light',
-  'heavy',
-  'thrown',
-  'ranged',
-  'ammunition',
-  'reach',
-  'loading',
-];
+// Los ids son el contrato con el motor de reglas y no cambian; lo que cambia
+// es que dejan de estar a la vista. Las habilidades salen de `Skill`, que ya es
+// la única fuente de la traducción (ver `skill.dart`) — repetirlas acá era
+// arriesgarse a que las dos listas se separaran.
+final _skillOptions = {for (final id in Skill.allIds) id: Skill.labelFor(id)};
+
+const _weaponPropOptions = {
+  'finesse': 'Sutil',
+  'versatile': 'Versátil',
+  'two-handed': 'A dos manos',
+  'light': 'Ligera',
+  'heavy': 'Pesada',
+  'thrown': 'Arrojadiza',
+  'ranged': 'A distancia',
+  'ammunition': 'Munición',
+  'reach': 'Alcance',
+  'loading': 'Recarga',
+};
+
+const _weaponCategories = {'simple': 'Simple', 'martial': 'Marcial'};
+
+const _armorCategories = {
+  'light': 'Ligera',
+  'medium': 'Media',
+  'heavy': 'Pesada',
+  'shield': 'Escudo',
+};
+
+const _featCategories = {
+  'origin': 'De origen',
+  'general': 'General',
+  'fighting-style': 'Estilo de combate',
+  'dragonmark': 'Marca dracónica',
+  'epic-boon': 'Don épico',
+};
+
+/// Tamaños que el contenido oficial usa. A diferencia del resto, acá el valor
+/// guardado ya está en español (`Race.size`), así que id y etiqueta coinciden.
+const _raceSizes = {
+  'Pequeño': 'Pequeño',
+  'Mediano': 'Mediano',
+  'Grande': 'Grande',
+};
 
 /// Editor de contenido homebrew. Lo creado se fusiona en el [ContentRepository]
 /// compartido, así queda disponible de inmediato en el wizard y la ficha.
@@ -68,6 +79,25 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
   HomebrewStore get store => widget.store;
 
   void _refresh() => setState(() {});
+
+  /// Confirma un guardado. Sin este aviso, guardar y salir del formulario se
+  /// ve igual que cancelar: se vuelve a la misma lista.
+  void _saved(String name) {
+    _refresh();
+    if (mounted) {
+      showAppMessage(
+        context,
+        '«$name» se guardó.',
+        tone: AppMessageTone.success,
+      );
+    }
+  }
+
+  /// Y su contrario: salir del formulario sin guardar tiene que decirlo, o
+  /// queda la duda de si el cambio entró.
+  void _discarded() {
+    if (mounted) showAppMessage(context, 'No se guardó ningún cambio.');
+  }
 
   /// Ejecuta una escritura en disco del store homebrew; si falla (permisos,
   /// disco lleno) lo muestra en vez de dejar la excepción sin capturar.

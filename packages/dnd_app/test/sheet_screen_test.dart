@@ -42,7 +42,7 @@ void main() {
           character: character,
           repo: repo,
           controller: controller,
-          onToggleTheme: () {},
+          theme: AppThemeController(),
         ),
       ),
     );

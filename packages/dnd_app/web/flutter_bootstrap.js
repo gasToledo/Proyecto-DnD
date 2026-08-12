@@ -26,3 +26,29 @@ if (_mainJsVersion) {
 }
 
 _flutter.loader.load();
+
+// El splash del HTML (ver `index.html`) tapa la pantalla hasta que Flutter
+// monta su vista: es lo que evita el fogonazo blanco contra el tema oscuro.
+//
+// Se saca desde acá y no desde el callback del cargador a propósito: la
+// inicialización es la que lleva la huella del build de arriba, y un error en
+// ese camino no arrancaría la aplicación. Un observador es independiente de
+// ella y no puede romperla.
+//
+// El plazo de respaldo existe porque el nombre del elemento que monta Flutter
+// es un detalle de su implementación: si algún día cambia, es preferible un
+// segundo de splash de más que una pantalla tapada para siempre.
+const _splash = document.getElementById("splash");
+if (_splash) {
+  const observer = new MutationObserver(() => {
+    if (document.querySelector("flutter-view, flt-glass-pane")) {
+      observer.disconnect();
+      _splash.remove();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  setTimeout(() => {
+    observer.disconnect();
+    _splash.remove();
+  }, 8000);
+}

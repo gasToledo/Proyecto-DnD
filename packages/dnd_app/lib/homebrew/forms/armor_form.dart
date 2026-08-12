@@ -26,23 +26,42 @@ class _ArmorFormState extends State<ArmorForm> {
   Widget build(BuildContext context) {
     return _FormScaffold(
       title: 'Armadura',
-      onSave: _name.text.trim().isEmpty ? null : _save,
+      onSave: _save,
       children: [
-        _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _text(
+          _name,
+          'Nombre',
+          validator: (v) => _requiredText(v, 'el nombre de la armadura'),
+        ),
         _categoryDropdown(
-          ['light', 'medium', 'heavy', 'shield'],
+          _armorCategories,
           _category,
           (v) => setState(() => _category = v),
         ),
-        _text(_baseAc, 'CA base', number: true),
+        _text(
+          _baseAc,
+          'CA base',
+          number: true,
+          validator: (v) => _intInRange(v, 1, 30, optional: false),
+        ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Suma modificador de DEX'),
           value: _addDex,
           onChanged: (v) => setState(() => _addDex = v),
         ),
-        _text(_maxDex, 'Tope de DEX (opcional, p.ej. 2)', number: true),
-        _text(_strReq, 'Requisito de Fuerza (opcional)', number: true),
+        _text(
+          _maxDex,
+          'Tope de DEX (opcional, p.ej. 2)',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 10, optional: true),
+        ),
+        _text(
+          _strReq,
+          'Requisito de Fuerza (opcional)',
+          number: true,
+          validator: (v) => _intInRange(v, 1, 30, optional: true),
+        ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Desventaja en Sigilo'),
@@ -60,7 +79,10 @@ class _ArmorFormState extends State<ArmorForm> {
         name: _name.text.trim(),
         source: ContentSource.homebrew,
         category: _category,
-        baseAc: int.tryParse(_baseAc.text.trim()) ?? 10,
+        // Sin `?? 10`: el formulario ya no deja llegar acá un valor que no
+        // parsee, y sustituirlo en silencio guardaba una armadura distinta de
+        // la que se escribió.
+        baseAc: int.parse(_baseAc.text.trim()),
         addDexMod: _addDex,
         maxDexBonus: int.tryParse(_maxDex.text.trim()),
         strengthRequirement: int.tryParse(_strReq.text.trim()),

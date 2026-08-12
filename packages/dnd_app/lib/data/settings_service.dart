@@ -28,11 +28,17 @@ class AppSettings {
   /// sería trabajo que se pierde al recargar.
   String sortMode;
 
+  /// Tema elegido, por el nombre de `ThemeMode` (`system`, `light`, `dark`).
+  /// Se guarda para que no haya que volver a elegirlo en cada recarga; un
+  /// valor desconocido cae a oscuro (ver `AppThemeController.parse`).
+  String themeMode;
+
   AppSettings({
     this.imageProvider = 'pollinations',
     this.favoriteCharacterId,
     List<String>? characterOrder,
     this.sortMode = 'name',
+    this.themeMode = 'dark',
   }) : characterOrder = characterOrder ?? [];
 
   Map<String, dynamic> toJson() => {
@@ -40,6 +46,7 @@ class AppSettings {
     'favoriteCharacterId': favoriteCharacterId,
     'characterOrder': characterOrder,
     'sortMode': sortMode,
+    'themeMode': themeMode,
   };
 
   factory AppSettings.fromJson(Map<String, dynamic>? json) => AppSettings(
@@ -50,6 +57,7 @@ class AppSettings {
         id as String,
     ],
     sortMode: json?['sortMode'] as String? ?? 'name',
+    themeMode: json?['themeMode'] as String? ?? 'dark',
   );
 }
 

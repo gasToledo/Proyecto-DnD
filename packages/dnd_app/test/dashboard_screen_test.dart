@@ -28,8 +28,18 @@ void main() {
     String? appVersion,
     AccountInfo? account,
     AppSettings? settings,
+    AppThemeController? theme,
+    bool reduceMotion = false,
   }) => MaterialApp(
     theme: AppTheme.dark,
+    // El `builder` es la única forma de meter un MediaQuery **por dentro** de
+    // MaterialApp, que es donde lo lee la aplicación.
+    builder: !reduceMotion
+        ? null
+        : (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
     home: DashboardScreen(
       repo: repo,
       controller: ctrl,
@@ -37,7 +47,7 @@ void main() {
       account: account,
       settings: settings,
       appVersion: appVersion,
-      onToggleTheme: () {},
+      theme: theme ?? AppThemeController(),
     ),
   );
 
@@ -70,10 +80,10 @@ void main() {
     expect(version, findsOneWidget);
     expect(tester.widget<Text>(version).data, 'v1.2.3');
     expect(tester.widget<Text>(version).style?.color, AppPalette.dark.gold);
-    // Va debajo del cambio de tema, no encima.
+    // Va debajo del selector de tema, no encima.
     expect(
       tester.getTopLeft(version).dy,
-      greaterThan(tester.getTopLeft(find.text('Cambiar tema')).dy),
+      greaterThan(tester.getTopLeft(find.text('Tema: Oscuro')).dy),
     );
     expect(tester.takeException(), isNull);
   });
@@ -238,7 +248,7 @@ void main() {
     testWidgets('marcar un favorito lo guarda en los ajustes', (tester) async {
       final server = await pumpRoster(tester, AppSettings(sortMode: 'name'));
 
-      await tester.tap(find.byTooltip('Acciones').first);
+      await tester.tap(find.byTooltip('Acciones de Sagan "The Red"'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Marcar como favorito'));
       await tester.pumpAndSettle();
@@ -283,6 +293,140 @@ void main() {
       expect(rosterOrder(tester).first, 'Zzz Ultimo');
       expect(tester.takeException(), isNull);
     });
+
+    // El criterio elegido en el menú se veía hasta la recarga y después el
+    // roster volvía a ordenarse por nombre sin que nadie lo pidiera.
+    testWidgets('el criterio elegido en el menú se guarda', (tester) async {
+      final server = await pumpRoster(
+        tester,
+        AppSettings(favoriteCharacterId: 'zzz', sortMode: 'name'),
+      );
+
+      await tester.tap(find.byTooltip('Ordenar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Nivel').last);
+      await tester.pumpAndSettle();
+
+      expect(server.settings?['sortMode'], 'level');
+      // Guardar una preferencia no puede llevarse puesto el resto del
+      // documento: el favorito sigue donde estaba.
+      expect(server.settings?['favoriteCharacterId'], 'zzz');
+    });
+
+    // Arrastrar no puede ser la única vía: con teclado o lector de pantalla no
+    // existe el gesto.
+    testWidgets('mover una tarjeta desde su menú reordena sin arrastrar', (
+      tester,
+    ) async {
+      final server = await pumpRoster(tester, AppSettings(sortMode: 'name'));
+      expect(rosterOrder(tester), ['Sagan "The Red"', 'Zzz Ultimo']);
+
+      await tester.tap(find.byTooltip('Acciones de Sagan "The Red"'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Mover después'));
+      await tester.pumpAndSettle();
+
+      expect(rosterOrder(tester), ['Zzz Ultimo', 'Sagan "The Red"']);
+      expect(server.settings?['sortMode'], 'manual');
+      expect(server.settings?['characterOrder'], ['zzz', 'sagan']);
+    });
+
+    // En el primer lugar no hay a dónde mover hacia arriba: la opción tiene
+    // que estar y estar deshabilitada, no desaparecer.
+    testWidgets('en el extremo la opción de mover queda deshabilitada', (
+      tester,
+    ) async {
+      await pumpRoster(tester, AppSettings(sortMode: 'name'));
+
+      await tester.tap(find.byTooltip('Acciones de Sagan "The Red"'));
+      await tester.pumpAndSettle();
+
+      final before = tester.widget<PopupMenuItem<String>>(
+        find.ancestor(
+          of: find.text('Mover antes'),
+          matching: find.byType(PopupMenuItem<String>),
+        ),
+      );
+      expect(before.enabled, isFalse);
+      expect(find.text('Mover después'), findsOneWidget);
+    });
+
+    // El tema se guardaba en ningún lado: elegirlo y recargar lo perdía.
+    testWidgets('elegir un tema lo aplica y conserva el resto de ajustes', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1400, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      final server = FakeApiServer();
+      final ctrl = CharactersController(ApiClient(client: server.client))
+        ..add(demoSagan());
+      final settings = AppSettings(favoriteCharacterId: 'sagan');
+      final service = SettingsService(ApiClient(client: server.client));
+      final theme = AppThemeController();
+      // Mismo cableado que hace `main.dart` al terminar de cargar los ajustes:
+      // se guarda sobre el objeto vivo, no sobre uno nuevo.
+      theme.attach(
+        ThemeMode.dark,
+        (mode) => service.save(settings..themeMode = mode.name),
+      );
+      addTearDown(theme.dispose);
+
+      await tester.pumpWidget(
+        harness(ctrl, server, settings: settings, theme: theme),
+      );
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Tema: Oscuro'), findsOneWidget);
+      await tester.tap(find.byTooltip('Elegir tema'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Claro'));
+      await tester.pumpAndSettle();
+
+      expect(theme.value, ThemeMode.light);
+      expect(find.text('Tema: Claro'), findsOneWidget);
+      expect(server.settings?['themeMode'], 'light');
+      expect(server.settings?['favoriteCharacterId'], 'sagan');
+    });
+  });
+
+  // Requisito de la fase de movimiento: nada de lo animado puede romperse
+  // cuando el sistema pide menos movimiento, y la información tiene que seguir
+  // estando (el estado del guardado, los PG, el roster).
+  testWidgets('el dashboard monta con animaciones reducidas', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final server = FakeApiServer();
+    final ctrl = CharactersController(ApiClient(client: server.client))
+      ..add(demoSagan());
+
+    await tester.pumpWidget(harness(ctrl, server, reduceMotion: true));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('Sagan "The Red"'), findsOneWidget);
+    expect(find.text('Guardado'), findsOneWidget);
+    expect(find.text('PG'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('el estado vacío ofrece crear e importar', (tester) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final server = FakeApiServer();
+    final ctrl = CharactersController(ApiClient(client: server.client));
+
+    await tester.pumpWidget(harness(ctrl, server));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Todavía no hay personajes'), findsOneWidget);
+    // Un estado vacío sin salida deja al usuario mirando un ícono.
+    expect(find.text('Crear personaje'), findsWidgets);
+    expect(find.text('Importar respaldo'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('sin versión resuelta no se muestra el rótulo', (tester) async {
@@ -335,10 +479,10 @@ void main() {
     await tester.enterText(find.byType(TextField), 'zzzz');
     await tester.pumpAndSettle();
     expect(find.text('Sagan "The Red"'), findsNothing);
-    expect(
-      find.text('Ningún personaje coincide con la búsqueda.'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Ningún personaje coincide'), findsOneWidget);
+    // "Sin coincidencias" no es "sin personajes": la salida es corregir la
+    // búsqueda, no crear uno nuevo.
+    expect(find.text('Limpiar búsqueda'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'sagan');
     await tester.pumpAndSettle();

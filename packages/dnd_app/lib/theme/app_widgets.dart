@@ -88,6 +88,76 @@ Widget appNavItem(
   );
 }
 
+/// Selector de tema del pie del panel lateral.
+///
+/// Muestra cuál está activo en vez de un botón que siempre decía «Cambiar
+/// tema» sin decir a qué: con dos temas ese botón ya era ambiguo, y con
+/// «Sistema» de por medio no se podía saber en qué estado se estaba.
+class ThemeModeButton extends StatelessWidget {
+  final AppThemeController controller;
+  const ThemeModeButton({super.key, required this.controller});
+
+  static const _options = {
+    ThemeMode.system: (label: 'Sistema', icon: Icons.brightness_auto),
+    ThemeMode.light: (label: 'Claro', icon: Icons.light_mode),
+    ThemeMode.dark: (label: 'Oscuro', icon: Icons.dark_mode),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: controller,
+      builder: (context, mode, _) {
+        final current = _options[mode]!;
+        return PopupMenuButton<ThemeMode>(
+          tooltip: 'Elegir tema',
+          initialValue: mode,
+          onSelected: controller.choose,
+          itemBuilder: (_) => [
+            for (final entry in _options.entries)
+              PopupMenuItem(
+                value: entry.key,
+                child: Row(
+                  children: [
+                    Icon(entry.value.icon, size: 18),
+                    const SizedBox(width: 10),
+                    Text(entry.value.label),
+                  ],
+                ),
+              ),
+          ],
+          // Mismo molde que el resto del pie del panel (borde fino, texto
+          // atenuado), pero abre el menú en vez de alternar a ciegas.
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              border: Border.all(color: pal.hairline),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(current.icon, size: 16, color: muted),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Tema: ${current.label}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: muted),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class AppBusyLabel extends StatelessWidget {
   final String label;
   final double indicatorSize;
@@ -109,6 +179,160 @@ class AppBusyLabel extends StatelessWidget {
           const SizedBox(width: 10),
           Text(label),
         ],
+      ),
+    );
+  }
+}
+
+/// Pantalla de fallo: qué pasó, qué se puede hacer, y el detalle técnico
+/// detrás de «Ver detalles».
+///
+/// El texto crudo de una excepción no le dice a nadie qué hacer, pero
+/// esconderlo del todo deja sin nada que reportar cuando el problema no cede:
+/// va plegado, no borrado.
+class AppErrorView extends StatelessWidget {
+  final IconData icon;
+
+  /// Qué pasó, en castellano y sin jerga. Se anuncia como región viva.
+  final String message;
+
+  /// Qué se puede hacer al respecto, si hay algo además de reintentar.
+  final String? hint;
+
+  /// El error tal cual. Null cuando no hay ninguno que mostrar (p.ej. una
+  /// petición que falló sin excepción legible).
+  final Object? details;
+
+  /// Null si la operación no es recuperable reintentando.
+  final VoidCallback? onRetry;
+
+  const AppErrorView({
+    super.key,
+    this.icon = Icons.error_outline,
+    required this.message,
+    this.hint,
+    this.details,
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 460),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 44, color: scheme.error),
+              const SizedBox(height: 12),
+              Semantics(
+                liveRegion: true,
+                child: Text(message, textAlign: TextAlign.center),
+              ),
+              if (hint != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  hint!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              if (onRetry != null) ...[
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Reintentar'),
+                ),
+              ],
+              if (details != null) ...[
+                const SizedBox(height: 12),
+                Theme(
+                  // El divisor propio del ExpansionTile parte la caja en dos
+                  // aunque esté plegada, y acá no separa nada.
+                  data: Theme.of(
+                    context,
+                  ).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    title: Text(
+                      'Ver detalles',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                    children: [
+                      SelectableText(
+                        '$details',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Estado vacío: por qué no hay nada y qué se puede hacer al respecto.
+///
+/// Separa «no hay datos» de «no hay coincidencias»: el primero pide crear o
+/// importar algo, el segundo solo cambiar la búsqueda, y confundirlos deja al
+/// usuario buscando un botón que no corresponde.
+class AppEmptyState extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  final List<Widget> actions;
+  const AppEmptyState({
+    super.key,
+    required this.icon,
+    required this.message,
+    this.actions = const [],
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 40, color: muted),
+            const SizedBox(height: 12),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: muted),
+              ),
+            ),
+            if (actions.isNotEmpty) ...[
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: actions,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -294,11 +518,21 @@ class ThinBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: BorderRadius.circular(3),
-    child: LinearProgressIndicator(
-      value: ratio.clamp(0, 1),
-      minHeight: 5,
-      backgroundColor: track,
-      valueColor: AlwaysStoppedAnimation(color),
+    // La barra recorre el tramo en vez de saltar: al aplicar daño o curación,
+    // ver de dónde a dónde fue es lo que hace legible el golpe. El número de
+    // al lado ya está en su valor final desde el primer cuadro, así que la
+    // información no depende de la animación. Sin `begin`, el primer dibujo no
+    // anima: montar la ficha no llena las barras desde cero.
+    child: TweenAnimationBuilder<double>(
+      tween: Tween(end: ratio.clamp(0.0, 1.0)),
+      duration: context.motion(const Duration(milliseconds: 220)),
+      curve: Curves.easeOut,
+      builder: (context, value, _) => LinearProgressIndicator(
+        value: value,
+        minHeight: 5,
+        backgroundColor: track,
+        valueColor: AlwaysStoppedAnimation(color),
+      ),
     ),
   );
 }

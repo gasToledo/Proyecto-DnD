@@ -72,7 +72,10 @@ class DashboardScreen extends StatefulWidget {
   /// persiste nada.
   final AppSettings? settings;
   final String? appVersion;
-  final VoidCallback onToggleTheme;
+
+  /// Tema activo, compartido con la ficha para que el control muestre lo mismo
+  /// en las dos pantallas.
+  final AppThemeController theme;
   const DashboardScreen({
     super.key,
     required this.repo,
@@ -81,7 +84,7 @@ class DashboardScreen extends StatefulWidget {
     this.account,
     this.settings,
     this.appVersion,
-    required this.onToggleTheme,
+    required this.theme,
   });
 
   @override
@@ -140,6 +143,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   bool _isFavorite(Character c) => _settings.favoriteCharacterId == c.id;
+
+  /// Cambia el criterio de orden y lo guarda. Sin guardarlo, elegir «Nivel» o
+  /// «Clase» duraba hasta la próxima recarga y el roster volvía a ordenarse
+  /// por nombre sin que nadie lo hubiera pedido.
+  void _selectSort(_SortMode mode) {
+    setState(() {
+      _sort = mode;
+      _settings.sortMode = mode.name;
+    });
+    _persistSettings();
+    if (mode == _SortMode.manual) {
+      // El orden manual no se explica solo: hay que decir cómo se reordena, y
+      // sobre todo que no hace falta arrastrar.
+      showAppMessage(
+        context,
+        'Orden manual: usá «Mover antes» y «Mover después» en el menú de cada '
+        'tarjeta, o arrastrala sobre otra.',
+        duration: const Duration(seconds: 6),
+      );
+    }
+  }
+
+  /// Alternativa accesible al arrastre: mueve un personaje un lugar en la
+  /// dirección dada. El arrastre sigue estando como atajo, pero no puede ser la
+  /// única forma de reordenar — con teclado o lector de pantalla no existe.
+  void _moveBy(Character c, int delta, List<Character> visible) {
+    final target = visible.indexOf(c) + delta;
+    if (target < 0 || target >= visible.length) return;
+    _reorder(c.id, visible[target].id, visible);
+  }
 
   /// Mueve [id] a la posición que ocupa [targetId] dentro del orden manual, y
   /// pasa a ese modo: arrastrar es la forma de pedirlo, no hace falta además

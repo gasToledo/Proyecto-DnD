@@ -84,6 +84,7 @@ class _EffectEditorState extends State<EffectEditor> {
                     children: [
                       Expanded(child: Text(describeEffect(entry.value))),
                       IconButton(
+                        tooltip: 'Quitar efecto',
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () {
                           setState(() => widget.effects.removeAt(entry.key));

@@ -42,6 +42,15 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
   );
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Con movimiento reducido el resumen aparece entero de una vez: lo que
+    // importa es qué cambió al subir de nivel, y eso se lee igual sin la
+    // entrada animada.
+    if (MediaQuery.disableAnimationsOf(context)) _ctrl.value = 1;
+  }
+
+  @override
   void dispose() {
     _ctrl.dispose();
     super.dispose();

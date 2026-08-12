@@ -126,13 +126,13 @@ class SheetScreen extends StatefulWidget {
   final Character character;
   final ContentRepository repo;
   final CharactersController controller;
-  final VoidCallback onToggleTheme;
+  final AppThemeController theme;
   const SheetScreen({
     super.key,
     required this.character,
     required this.repo,
     required this.controller,
-    required this.onToggleTheme,
+    required this.theme,
   });
 
   @override

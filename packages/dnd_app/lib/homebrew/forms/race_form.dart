@@ -9,9 +9,7 @@ class RaceForm extends StatefulWidget {
 
 class _RaceFormState extends State<RaceForm> {
   late final _name = TextEditingController(text: widget.initial?.name ?? '');
-  late final _size = TextEditingController(
-    text: widget.initial?.size ?? 'Mediano',
-  );
+  late String _size = widget.initial?.size ?? 'Mediano';
   late final _creatureType = TextEditingController(
     text: widget.initial?.creatureType ?? 'Humanoide',
   );
@@ -30,14 +28,35 @@ class _RaceFormState extends State<RaceForm> {
   Widget build(BuildContext context) {
     return _FormScaffold(
       title: 'Raza / Especie',
-      onSave: _name.text.trim().isEmpty ? null : _save,
+      onSave: _save,
       children: [
-        _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _text(
+          _name,
+          'Nombre',
+          validator: (v) => _requiredText(v, 'el nombre de la especie'),
+        ),
         _text(_description, 'Descripción', maxLines: 5),
         _text(_creatureType, 'Tipo de criatura'),
-        _text(_size, 'Tamaño (Pequeño/Mediano/Grande)'),
-        _text(_speed, 'Velocidad (ft)', number: true),
-        _text(_skillCount, 'Habilidades a elegir', number: true),
+        // Tamaño es un valor cerrado: escribirlo a mano dejaba pasar un
+        // "mediano" en minúscula que el resto del motor no reconoce.
+        _idDropdown(
+          label: 'Tamaño',
+          value: _size,
+          options: _raceSizes,
+          onChanged: (v) => setState(() => _size = v),
+        ),
+        _text(
+          _speed,
+          'Velocidad (ft)',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 120, optional: false),
+        ),
+        _text(
+          _skillCount,
+          'Habilidades a elegir',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 18, optional: false),
+        ),
         const SizedBox(height: 12),
         const Eyebrow('Rasgos (efectos)'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
@@ -53,12 +72,14 @@ class _RaceFormState extends State<RaceForm> {
         source: ContentSource.homebrew,
         creatureType: _creatureType.text.trim(),
         description: _description.text.trim(),
-        size: _size.text.trim(),
+        size: _size,
         // El formulario no edita la elección de tamaño, así que se conserva la
         // que traiga el original: editar la velocidad no debería borrarla.
         sizeOptions: widget.initial?.sizeOptions ?? const [],
-        speed: int.tryParse(_speed.text.trim()) ?? 30,
-        skillChoiceCount: int.tryParse(_skillCount.text.trim()) ?? 0,
+        // Sin `?? 30` ni `?? 0`: el formulario ya validó los dos, y taparlos
+        // con un defecto guardaba una especie distinta de la escrita.
+        speed: int.parse(_speed.text.trim()),
+        skillChoiceCount: int.parse(_skillCount.text.trim()),
         effects: _effects,
       ),
     );

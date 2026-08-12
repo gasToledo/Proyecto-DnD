@@ -58,4 +58,100 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  /// Deja abierto el formulario de arma nueva.
+  Future<void> openWeaponForm(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1000, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Agregar arma'));
+    await tester.pumpAndSettle();
+  }
+
+  // Antes, un dado ilegible se guardaba tal cual y una CA sin número se
+  // reemplazaba por un 10 en silencio: la entrada inválida no puede
+  // convertirse sola en otra cosa ni pasar de largo.
+  testWidgets('un dado inválido frena el guardado y lo explica', (
+    tester,
+  ) async {
+    await openWeaponForm(tester);
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Nombre'), 'Hoz');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Dado de daño (p.ej. 1d8)'),
+      'muchos',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Formato de dado inválido'), findsOneWidget);
+    // No se guardó ni se navegó: seguimos en el formulario.
+    expect(find.text('Arma'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sin nombre el guardado dice qué falta', (tester) async {
+    await openWeaponForm(tester);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Escribí el nombre del arma.'), findsOneWidget);
+    expect(find.text('Arma'), findsOneWidget);
+  });
+
+  // Los ids internos (`simple`, `finesse`) son el contrato con el motor, pero
+  // no tienen por qué estar a la vista de quien crea contenido.
+  testWidgets('el formulario muestra etiquetas en español, no ids', (
+    tester,
+  ) async {
+    await openWeaponForm(tester);
+
+    expect(find.text('Marcial'), findsNothing, reason: 'está sin desplegar');
+    expect(find.text('Simple'), findsOneWidget);
+    expect(find.text('Sutil'), findsOneWidget);
+    expect(find.text('finesse'), findsNothing);
+    expect(find.text('two-handed'), findsNothing);
+  });
+
+  testWidgets('borrar contenido homebrew pide confirmación', (tester) async {
+    tester.view.physicalSize = const Size(1000, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = HomebrewStore(ApiClient())
+      ..weapons['hb-hoz'] = const Weapon(
+        id: 'hb-hoz',
+        name: 'Hoz de guerra',
+        source: ContentSource.homebrew,
+        category: 'martial',
+        damageDice: '1d8',
+        damageType: 'slashing',
+      );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: store),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Eliminar Hoz de guerra'));
+    await tester.pumpAndSettle();
+
+    // Sin deshacer y a un toque de distancia, borrar no puede ser inmediato.
+    expect(find.text('¿Eliminar el arma «Hoz de guerra»?'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    expect(store.weapons.containsKey('hb-hoz'), isTrue);
+    expect(find.text('Hoz de guerra'), findsOneWidget);
+  });
 }

@@ -23,44 +23,37 @@ class _BackgroundFormState extends State<BackgroundForm> {
     final feats = widget.repo.featsSorted;
     return _FormScaffold(
       title: 'Trasfondo',
-      onSave: _name.text.trim().isEmpty ? null : _save,
+      onSave: _save,
       children: [
-        _text(_name, 'Nombre', onChanged: () => setState(() {})),
+        _text(
+          _name,
+          'Nombre',
+          validator: (v) => _requiredText(v, 'el nombre del trasfondo'),
+        ),
         const SizedBox(height: 8),
         const Eyebrow('Características (elegí 3)'),
         Wrap(
           spacing: 6,
+          runSpacing: 6,
           children: Ability.values
               .map(
                 (a) => FilterChip(
                   label: Text(a.abbr),
                   selected: _abilities.contains(a),
-                  onSelected: (v) => setState(() {
-                    if (v && _abilities.length < 3) {
-                      _abilities.add(a);
-                    } else {
-                      _abilities.remove(a);
-                    }
-                  }),
+                  // Al tope, las no elegidas se deshabilitan en vez de ignorar
+                  // el toque en silencio: un chip que no responde parece roto.
+                  onSelected: _abilities.length >= 3 && !_abilities.contains(a)
+                      ? null
+                      : (v) => setState(
+                          () => v ? _abilities.add(a) : _abilities.remove(a),
+                        ),
                 ),
               )
               .toList(),
         ),
         const SizedBox(height: 8),
         const Eyebrow('Competencias de habilidad'),
-        Wrap(
-          spacing: 6,
-          children: _skills
-              .map(
-                (s) => FilterChip(
-                  label: Text(s),
-                  selected: _skills2.contains(s),
-                  onSelected: (v) =>
-                      setState(() => v ? _skills2.add(s) : _skills2.remove(s)),
-                ),
-              )
-              .toList(),
-        ),
+        _idChips(_skillOptions, _skills2, () => setState(() {})),
         _text(_tools, 'Herramientas (separadas por coma)'),
         const SizedBox(height: 8),
         DropdownButtonFormField<String?>(

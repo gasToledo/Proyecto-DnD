@@ -28,23 +28,28 @@ class DndApp extends StatefulWidget {
 }
 
 class _DndAppState extends State<DndApp> {
-  // El oscuro es el tema prioritario y el que arranca; el claro se alcanza con
-  // el botón del panel lateral.
-  ThemeMode _mode = ThemeMode.dark;
+  // El oscuro es el tema prioritario y el que arranca; el guardado de la cuenta
+  // lo reemplaza en cuanto los ajustes cargan (ver `AppThemeController`).
+  final _theme = AppThemeController();
 
-  void _toggleTheme() => setState(
-    () => _mode = _mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark,
-  );
+  @override
+  void dispose() {
+    _theme.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Milantus — Asistente de Aventuras',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: _mode,
-      home: _Bootstrap(onToggleTheme: _toggleTheme),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: _theme,
+      builder: (context, mode, _) => MaterialApp(
+        title: 'Milantus — Asistente de Aventuras',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: mode,
+        home: _Bootstrap(theme: _theme),
+      ),
     );
   }
 }
@@ -69,8 +74,8 @@ class _AppData {
 /// Comprueba la sesión, carga el contenido oficial y los personajes de la
 /// cuenta autenticada antes del dashboard (ver capacidad `web-client`).
 class _Bootstrap extends StatefulWidget {
-  final VoidCallback onToggleTheme;
-  const _Bootstrap({required this.onToggleTheme});
+  final AppThemeController theme;
+  const _Bootstrap({required this.theme});
   @override
   State<_Bootstrap> createState() => _BootstrapState();
 }
@@ -118,6 +123,27 @@ class _BootstrapState extends State<_Bootstrap> {
       settings = AppSettings();
     }
 
+    // El tema se aplica acá, no en el dashboard: el control aparece también en
+    // la ficha y las dos vistas leen del mismo controlador. Se guarda sobre el
+    // **mismo** objeto de ajustes que usa el dashboard, así elegir un tema no
+    // pisa el favorito ni el orden manual del roster.
+    widget.theme.attach(AppThemeController.parse(settings.themeMode), (
+      mode,
+    ) async {
+      settings.themeMode = mode.name;
+      try {
+        await SettingsService(_api).save(settings);
+      } catch (_) {
+        if (mounted) {
+          showAppMessage(
+            context,
+            'El tema cambió, pero no se pudo guardar la preferencia.',
+            tone: AppMessageTone.error,
+          );
+        }
+      }
+    });
+
     final version = await currentAppVersion();
     return _AppData(repo, controller, homebrew, account, settings, version);
   }
@@ -135,33 +161,13 @@ class _BootstrapState extends State<_Bootstrap> {
       builder: (context, snap) {
         if (snap.hasError) {
           return Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 44,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text('No se pudo iniciar la aplicación.'),
-                    const SizedBox(height: 8),
-                    SelectableText(
-                      '${snap.error}',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: _retry,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                    ),
-                  ],
-                ),
-              ),
+            body: AppErrorView(
+              message: 'No se pudo iniciar la aplicación.',
+              hint:
+                  'Suele ser un problema momentáneo de conexión. Probá de '
+                  'nuevo; si sigue igual, recargá la página.',
+              details: snap.error,
+              onRetry: _retry,
             ),
           );
         }
@@ -176,28 +182,13 @@ class _BootstrapState extends State<_Bootstrap> {
           // los tiene, porque no se pudo hablar con el servidor (ver
           // capacidad `web-client`).
           return Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.cloud_off,
-                      size: 44,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text('No se pudo conectar con el servidor.'),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: _retry,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                    ),
-                  ],
-                ),
-              ),
+            body: AppErrorView(
+              icon: Icons.cloud_off,
+              message: 'No se pudo conectar con el servidor.',
+              hint:
+                  'Tus personajes están a salvo: no se pudieron leer, pero no '
+                  'se perdió nada. Revisá la conexión y reintentá.',
+              onRetry: _retry,
             ),
           );
         }
@@ -208,7 +199,7 @@ class _BootstrapState extends State<_Bootstrap> {
           account: data.account,
           settings: data.settings,
           appVersion: data.appVersion,
-          onToggleTheme: widget.onToggleTheme,
+          theme: widget.theme,
         );
       },
     );

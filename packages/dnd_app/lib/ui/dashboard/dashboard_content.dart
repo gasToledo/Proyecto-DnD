@@ -21,16 +21,44 @@ extension _DashboardContent on _DashboardScreenState {
             ),
             Expanded(
               child: all.isEmpty
-                  ? _emptyState(
-                      context,
-                      Icons.shield_outlined,
-                      'Todavía no hay personajes.',
+                  // "Todavía no creaste ninguno" y "ninguno coincide con lo
+                  // que buscaste" son situaciones distintas y piden acciones
+                  // distintas: la primera, empezar; la segunda, corregir la
+                  // búsqueda.
+                  ? AppEmptyState(
+                      icon: Icons.shield_outlined,
+                      message:
+                          'Todavía no hay personajes en esta cuenta.\n'
+                          'Creá el primero, o traé los que ya tenías.',
+                      actions: [
+                        FilledButton.icon(
+                          onPressed: _openWizard,
+                          icon: const Icon(Icons.add, size: 20),
+                          label: const Text('Crear personaje'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: _import,
+                          icon: const Icon(Icons.download, size: 20),
+                          label: const Text('Importar respaldo'),
+                        ),
+                      ],
                     )
                   : list.isEmpty
-                  ? _emptyState(
-                      context,
-                      Icons.search_off,
-                      'Ningún personaje coincide con la búsqueda.',
+                  ? AppEmptyState(
+                      icon: Icons.search_off,
+                      message:
+                          'Ningún personaje coincide con «$_query».\n'
+                          'Se busca por nombre, clase y especie.',
+                      actions: [
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            _updateState(() => _query = '');
+                          },
+                          icon: const Icon(Icons.close, size: 20),
+                          label: const Text('Limpiar búsqueda'),
+                        ),
+                      ],
                     )
                   : _grid(list),
             ),
@@ -105,7 +133,9 @@ extension _DashboardContent on _DashboardScreenState {
         isDense: true,
         filled: true,
         fillColor: pal.plaque,
-        hintText: 'Buscar por nombre o clase…',
+        // El buscador también filtra por especie desde que `_visible` la mira:
+        // decir solo "nombre o clase" escondía media función.
+        hintText: 'Buscar por nombre, clase o especie…',
         hintStyle: TextStyle(fontSize: 13, color: pal.textMuted),
         prefixIcon: Icon(Icons.search, size: 19, color: pal.textMuted),
         prefixIconConstraints: const BoxConstraints(
@@ -115,6 +145,7 @@ extension _DashboardContent on _DashboardScreenState {
         suffixIcon: _query.isEmpty
             ? null
             : IconButton(
+                tooltip: 'Limpiar búsqueda',
                 icon: Icon(Icons.close, size: 16, color: pal.textMuted),
                 onPressed: () {
                   _searchCtrl.clear();
@@ -134,7 +165,7 @@ extension _DashboardContent on _DashboardScreenState {
     return PopupMenuButton<_SortMode>(
       tooltip: 'Ordenar',
       initialValue: _sort,
-      onSelected: (v) => _updateState(() => _sort = v),
+      onSelected: _selectSort,
       itemBuilder: (_) => [
         for (final m in _SortMode.values)
           PopupMenuItem(value: m, child: Text(m.label)),
@@ -207,6 +238,13 @@ extension _DashboardContent on _DashboardScreenState {
               isFavorite: _isFavorite(c),
               onTap: () => _openSheet(c),
               onToggleFavorite: () => _toggleFavorite(c),
+              // En los extremos no hay a dónde mover: la opción queda
+              // deshabilitada, no escondida, para que la lista de acciones no
+              // cambie de forma según dónde esté la tarjeta.
+              onMoveBefore: i == 0 ? null : () => _moveBy(c, -1, list),
+              onMoveAfter: i == list.length - 1
+                  ? null
+                  : () => _moveBy(c, 1, list),
               onRename: () => _renameCharacter(c),
               onExport: () => _exportCharacter(c),
               onDelete: () => _confirmDelete(c),
@@ -220,20 +258,6 @@ extension _DashboardContent on _DashboardScreenState {
           },
         );
       },
-    );
-  }
-
-  Widget _emptyState(BuildContext context, IconData icon, String message) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 40, color: muted),
-          const SizedBox(height: 12),
-          Text(message, style: TextStyle(color: muted)),
-        ],
-      ),
     );
   }
 }

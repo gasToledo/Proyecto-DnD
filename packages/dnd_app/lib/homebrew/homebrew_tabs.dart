@@ -59,6 +59,7 @@ extension _HomebrewTabs on _HomebrewScreenState {
               ),
             ),
             IconButton(
+              tooltip: 'Eliminar $title',
               icon: const Icon(Icons.delete_outline),
               onPressed: onDelete,
             ),
@@ -76,10 +77,12 @@ extension _HomebrewTabs on _HomebrewScreenState {
         .map(
           (w) => _tile(
             w.name,
-            '${w.category} · ${w.damageDice} '
+            '${_weaponCategories[w.category] ?? w.category} · ${w.damageDice} '
             '${DamageType.labelFor(w.damageType)}',
             onEdit: () => _editWeapon(w),
             onDelete: () => _delete(
+              'el arma',
+              w.name,
               () => store.deleteWeapon(w.id),
               () => repo.weapons.remove(w.id),
             ),
@@ -92,10 +95,10 @@ extension _HomebrewTabs on _HomebrewScreenState {
     final w = await Navigator.of(context).push<Weapon>(
       MaterialPageRoute(builder: (_) => WeaponForm(initial: initial)),
     );
-    if (w == null) return;
+    if (w == null) return _discarded();
     if (!await _persist(() => store.saveWeapon(w))) return;
     repo.weapons[w.id] = w;
-    _refresh();
+    _saved(w.name);
   }
 
   // ---------------------------------------------------------- Armaduras
@@ -106,9 +109,11 @@ extension _HomebrewTabs on _HomebrewScreenState {
         .map(
           (a) => _tile(
             a.name,
-            '${a.category} · CA ${a.baseAc}',
+            '${_armorCategories[a.category] ?? a.category} · CA ${a.baseAc}',
             onEdit: () => _editArmor(a),
             onDelete: () => _delete(
+              'la armadura',
+              a.name,
               () => store.deleteArmor(a.id),
               () => repo.armor.remove(a.id),
             ),
@@ -121,10 +126,10 @@ extension _HomebrewTabs on _HomebrewScreenState {
     final a = await Navigator.of(context).push<Armor>(
       MaterialPageRoute(builder: (_) => ArmorForm(initial: initial)),
     );
-    if (a == null) return;
+    if (a == null) return _discarded();
     if (!await _persist(() => store.saveArmor(a))) return;
     repo.armor[a.id] = a;
-    _refresh();
+    _saved(a.name);
   }
 
   // --------------------------------------------------------------- Dotes
@@ -135,9 +140,12 @@ extension _HomebrewTabs on _HomebrewScreenState {
         .map(
           (f) => _tile(
             f.name,
-            '${f.category} · ${f.effects.length} efecto(s)',
+            '${_featCategories[f.category] ?? f.category} · '
+            '${f.effects.length} efecto(s)',
             onEdit: () => _editFeat(f),
             onDelete: () => _delete(
+              'la dote',
+              f.name,
               () => store.deleteFeat(f.id),
               () => repo.feats.remove(f.id),
             ),
@@ -150,10 +158,10 @@ extension _HomebrewTabs on _HomebrewScreenState {
     final f = await Navigator.of(
       context,
     ).push<Feat>(MaterialPageRoute(builder: (_) => FeatForm(initial: initial)));
-    if (f == null) return;
+    if (f == null) return _discarded();
     if (!await _persist(() => store.saveFeat(f))) return;
     repo.feats[f.id] = f;
-    _refresh();
+    _saved(f.name);
   }
 
   // --------------------------------------------------------------- Razas
@@ -167,6 +175,8 @@ extension _HomebrewTabs on _HomebrewScreenState {
             '${r.size} · ${r.speed} ft · ${r.effects.length} rasgo(s)',
             onEdit: () => _editRace(r),
             onDelete: () => _delete(
+              'la especie',
+              r.name,
               () => store.deleteRace(r.id),
               () => repo.races.remove(r.id),
             ),
@@ -179,10 +189,10 @@ extension _HomebrewTabs on _HomebrewScreenState {
     final r = await Navigator.of(
       context,
     ).push<Race>(MaterialPageRoute(builder: (_) => RaceForm(initial: initial)));
-    if (r == null) return;
+    if (r == null) return _discarded();
     if (!await _persist(() => store.saveRace(r))) return;
     repo.races[r.id] = r;
-    _refresh();
+    _saved(r.name);
   }
 
   // ---------------------------------------------------------- Trasfondos
@@ -193,9 +203,11 @@ extension _HomebrewTabs on _HomebrewScreenState {
         .map(
           (b) => _tile(
             b.name,
-            b.skillProficiencies.join(', '),
+            b.skillProficiencies.map(Skill.labelFor).join(', '),
             onEdit: () => _editBackground(b),
             onDelete: () => _delete(
+              'el trasfondo',
+              b.name,
               () => store.deleteBackground(b.id),
               () => repo.backgrounds.remove(b.id),
             ),
@@ -210,10 +222,10 @@ extension _HomebrewTabs on _HomebrewScreenState {
         builder: (_) => BackgroundForm(initial: initial, repo: repo),
       ),
     );
-    if (b == null) return;
+    if (b == null) return _discarded();
     if (!await _persist(() => store.saveBackground(b))) return;
     repo.backgrounds[b.id] = b;
-    _refresh();
+    _saved(b.name);
   }
 
   // ---------------------------------------------------------- Conjuros
@@ -231,9 +243,11 @@ extension _HomebrewTabs on _HomebrewScreenState {
                 s.name,
                 '${s.isCantrip ? "Truco" : "Nivel ${s.level}"}'
                 '${s.school.isEmpty ? "" : " · ${s.school}"}'
-                '${s.classes.isEmpty ? "" : " · ${s.classes.join(", ")}"}',
+                '${s.classes.isEmpty ? "" : " · ${s.classes.map((c) => _spellClasses[c] ?? c).join(", ")}"}',
                 onEdit: () => _editSpell(s),
                 onDelete: () => _delete(
+                  'el conjuro',
+                  s.name,
                   () => store.deleteSpell(s.id),
                   () => repo.spells.remove(s.id),
                 ),
@@ -246,18 +260,54 @@ extension _HomebrewTabs on _HomebrewScreenState {
     final s = await Navigator.of(context).push<Spell>(
       MaterialPageRoute(builder: (_) => SpellForm(initial: initial)),
     );
-    if (s == null) return;
+    if (s == null) return _discarded();
     if (!await _persist(() => store.saveSpell(s))) return;
     repo.spells[s.id] = s;
-    _refresh();
+    _saved(s.name);
   }
 
+  /// Borra una entrada homebrew, preguntando primero.
+  ///
+  /// Preguntar no es ceremonia: el botón de borrar está a un toque en cada
+  /// fila, no hay deshacer, y lo borrado puede estar en uso en una ficha ya
+  /// creada. El aviso además nombra qué se va a borrar, para que un toque en
+  /// la fila equivocada se note antes y no después.
   Future<void> _delete(
+    String kind,
+    String name,
     Future<void> Function() fromStore,
     VoidCallback fromRepo,
   ) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('¿Eliminar $kind «$name»?'),
+        content: const Text(
+          'Esta acción no se puede deshacer. Los personajes que ya lo estén '
+          'usando van a quedar con una advertencia en la ficha.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
     if (!await _persist(fromStore)) return;
     fromRepo();
     _refresh();
+    if (mounted) {
+      showAppMessage(
+        context,
+        '$name se eliminó.',
+        tone: AppMessageTone.success,
+      );
+    }
   }
 }

@@ -579,7 +579,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 1060),
                     child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 240),
+                      duration: context.motion(
+                        const Duration(milliseconds: 240),
+                      ),
                       child: SingleChildScrollView(
                         key: ValueKey(active.kind),
                         padding: EdgeInsets.fromLTRB(

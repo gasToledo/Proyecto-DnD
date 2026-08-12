@@ -40,7 +40,7 @@ class _ChoiceCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(13),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
+            duration: context.motion(const Duration(milliseconds: 120)),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),

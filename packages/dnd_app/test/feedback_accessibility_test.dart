@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
@@ -8,7 +10,73 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes/fake_api_server.dart';
 
+/// Contraste WCAG entre dos colores opacos.
+double _contrast(Color a, Color b) {
+  final x = a.computeLuminance();
+  final y = b.computeLuminance();
+  return (max(x, y) + 0.05) / (min(x, y) + 0.05);
+}
+
 void main() {
+  // La paleta se elige a mano; sin esto, ajustar un tono para que "quede
+  // lindo" puede dejar los rótulos por debajo de AA sin que nadie se entere
+  // hasta que alguien no los pueda leer.
+  group('contraste de la paleta', () {
+    void checkTheme(ThemeData theme, String name) {
+      final palette = theme.extension<AppPalette>()!;
+      final surface = theme.colorScheme.surface;
+      final backgrounds = {
+        'surface': surface,
+        'plaque': palette.plaque,
+        'scaffold': theme.scaffoldBackgroundColor,
+      };
+
+      for (final bg in backgrounds.entries) {
+        // Texto normal: 4.5:1. `textMuted` lleva rótulos y hints, y el carmesí
+        // los PG de la tarjeta, que son chicos.
+        for (final fg in {
+          'textMuted': palette.textMuted,
+          'crimson': palette.crimson,
+          'onSurfaceVariant': theme.colorScheme.onSurfaceVariant,
+        }.entries) {
+          expect(
+            _contrast(fg.value, bg.value),
+            greaterThanOrEqualTo(4.5),
+            reason: '$name: ${fg.key} sobre ${bg.key} no llega a AA',
+          );
+        }
+        // El oro solo lleva números grandes (24 px en `StatPlaque`) y bordes:
+        // ahí el umbral de AA es 3:1. Sobre `surface` igual llega a 4.5, que
+        // es donde aparece como texto corriente.
+        expect(
+          _contrast(palette.gold, bg.value),
+          greaterThanOrEqualTo(3.0),
+          reason: '$name: el oro sobre ${bg.key} no llega a 3:1',
+        );
+      }
+      expect(_contrast(palette.gold, surface), greaterThanOrEqualTo(4.5));
+      // El verde marca el tipo de acción en íconos: 3:1 alcanza.
+      expect(_contrast(palette.verdant, surface), greaterThanOrEqualTo(3.0));
+    }
+
+    test(
+      'el tema oscuro llega a AA',
+      () => checkTheme(AppTheme.dark, 'oscuro'),
+    );
+    test('el tema claro llega a AA', () => checkTheme(AppTheme.light, 'claro'));
+
+    // Lo que va encima del carmesí (texto de un botón de error, de un chip
+    // secundario) también tiene que leerse: al aclarar el carmesí para los PG,
+    // el blanco de antes dejó de servir en el tema oscuro.
+    test('lo que va sobre carmesí se lee en los dos temas', () {
+      for (final theme in [AppTheme.dark, AppTheme.light]) {
+        expect(
+          _contrast(theme.colorScheme.onError, theme.colorScheme.error),
+          greaterThanOrEqualTo(4.5),
+        );
+      }
+    });
+  });
   testWidgets('los avisos se anuncian como región viva', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -90,5 +158,126 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     expect(FocusManager.instance.primaryFocus, isNotNull);
     expect(tester.takeException(), isNull);
+  });
+
+  // Toda animación tiene que poder desactivarse: quien pide menos movimiento
+  // suele hacerlo por mareo, no por gusto.
+  testWidgets('las animaciones duran cero con movimiento reducido', (
+    tester,
+  ) async {
+    late Duration reduced;
+    late Duration normal;
+
+    Widget probe(bool disableAnimations, void Function(Duration) sink) =>
+        MediaQuery(
+          data: MediaQueryData(disableAnimations: disableAnimations),
+          child: Builder(
+            builder: (context) {
+              sink(context.motion(const Duration(milliseconds: 220)));
+              return const SizedBox.shrink();
+            },
+          ),
+        );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Column(
+          children: [
+            probe(true, (d) => reduced = d),
+            probe(false, (d) => normal = d),
+          ],
+        ),
+      ),
+    );
+
+    expect(reduced, Duration.zero);
+    expect(normal, const Duration(milliseconds: 220));
+  });
+
+  // La barra de PG interpola, así que con movimiento reducido tiene que
+  // mostrar el valor final de una vez, no quedarse a medio camino.
+  testWidgets('la barra de PG llega a su valor sin animación', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: MediaQuery(
+          data: const MediaQueryData(disableAnimations: true),
+          child: Scaffold(
+            body: ThinBar(
+              ratio: 0.4,
+              color: AppPalette.dark.crimson,
+              track: AppPalette.dark.plaque,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final bar = tester.widget<LinearProgressIndicator>(
+      find.byType(LinearProgressIndicator),
+    );
+    expect(bar.value, closeTo(0.4, 0.001));
+    expect(tester.takeException(), isNull);
+  });
+
+  // Un botón que solo es un ícono no tiene nombre para un lector de pantalla
+  // si nadie se lo pone: el tooltip es lo que se lo da.
+  testWidgets('los botones de solo ícono tienen nombre accesible', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: SpendRecoverButtons(
+            onSpend: () {},
+            onRecover: () {},
+            spendTooltip: 'Gastar un uso',
+            recoverTooltip: 'Recuperar un uso',
+          ),
+        ),
+      ),
+    );
+    final semantics = tester.ensureSemantics();
+
+    // El tooltip llega al árbol de semántica como `tooltip`: es lo que anuncia
+    // un lector de pantalla al posarse sobre un botón que solo tiene ícono.
+    for (final label in ['Gastar un uso', 'Recuperar un uso']) {
+      expect(find.byTooltip(label), findsOneWidget);
+      expect(tester.getSemantics(find.byTooltip(label)).tooltip, label);
+    }
+    semantics.dispose();
+  });
+
+  testWidgets('un fallo explica qué pasó y deja el detalle a un toque', (
+    tester,
+  ) async {
+    var retried = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: AppErrorView(
+            message: 'No se pudo conectar con el servidor.',
+            hint: 'Revisá la conexión y reintentá.',
+            details: 'SocketException: connection refused (errno = 111)',
+            onRetry: () => retried++,
+          ),
+        ),
+      ),
+    );
+
+    // El detalle técnico no es el mensaje principal: está, pero plegado.
+    expect(find.text('No se pudo conectar con el servidor.'), findsOneWidget);
+    expect(find.textContaining('SocketException'), findsNothing);
+
+    await tester.tap(find.text('Ver detalles'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('SocketException'), findsOneWidget);
+
+    await tester.tap(find.text('Reintentar'));
+    expect(retried, 1);
   });
 }

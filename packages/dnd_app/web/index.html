@@ -31,8 +31,45 @@
 
   <title>Milantus — Asistente de Aventuras</title>
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#151210">
+
+  <!--
+    El primer cuadro de Flutter tarda: hasta que llega, el navegador pinta el
+    fondo por defecto, que es blanco. Contra un tema oscuro eso es un
+    fogonazo en la cara cada vez que se abre la aplicación.
+
+    El fondo va acá, en el HTML, y no en Dart: cuando Dart puede pintar algo
+    el problema ya pasó. Los colores son los mismos que `AppTheme.dark`
+    (`scaffold` y `gold`), así que la pantalla de carga y la aplicación no se
+    ven como dos productos distintos.
+
+    El rombo es el mismo emblema del panel lateral: un cuadrado girado 45°,
+    sin imágenes que pedir ni fuentes que esperar. Late despacio para que se
+    note que algo está pasando, y se queda quieto si el sistema pide menos
+    movimiento.
+  -->
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background-color: #151210; }
+    #splash {
+      position: fixed; inset: 0; display: flex; align-items: center;
+      justify-content: center; background-color: #151210;
+    }
+    #splash div {
+      width: 34px; height: 34px; background-color: #C9A24B; border-radius: 6px;
+      transform: rotate(45deg); animation: splash-pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes splash-pulse {
+      0%, 100% { opacity: .35; }
+      50%      { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #splash div { animation: none; opacity: .8; }
+    }
+  </style>
 </head>
 <body>
+  <div id="splash" aria-label="Cargando Milantus" role="status"><div></div></div>
+
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

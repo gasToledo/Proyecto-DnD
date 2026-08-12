@@ -109,16 +109,7 @@ extension _SheetNavigation on _SheetScreenState {
             onTap: () => run(_openLevelUp),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: widget.onToggleTheme,
-            icon: const Icon(Icons.dark_mode, size: 16),
-            label: const Text('Cambiar tema'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              side: BorderSide(color: pal.hairline),
-              textStyle: const TextStyle(fontSize: 12),
-            ),
-          ),
+          ThemeModeButton(controller: widget.theme),
         ],
       ),
     );
@@ -274,7 +265,7 @@ extension _SheetNavigation on _SheetScreenState {
                   if (!collapsed && trailing != null) trailing,
                   AnimatedRotation(
                     turns: collapsed ? -0.25 : 0,
-                    duration: const Duration(milliseconds: 150),
+                    duration: context.motion(const Duration(milliseconds: 150)),
                     child: Icon(
                       Icons.expand_more,
                       size: 20,

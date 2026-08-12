@@ -25,6 +25,45 @@ if (_mainJsVersion) {
   }
 }
 
+// Los assets tienen el mismo problema, y hasta ahora no la misma solución.
+//
+// `assets/fonts/MaterialIcons-Regular.otf` sale recortada a los íconos que la
+// aplicación efectivamente usa, así que agregar uno produce un archivo
+// distinto **en la misma URL**. Un navegador con la entrada vieja en caché
+// sigue dibujando la fuente vieja y los íconos nuevos salen en blanco, con el
+// bundle nuevo funcionando perfectamente al lado — porque ese sí cambia de
+// URL en cada build.
+//
+// Una recarga forzada no lo arregla: el motor pide estos archivos con `fetch`
+// bastante después de que la navegación terminó, y a esos pedidos ya no les
+// alcanza el modo "sin caché" de la recarga.
+//
+// Se envuelve `fetch` porque el motor no expone ningún otro punto donde
+// intervenir: `assetBase` es un prefijo de ruta y no admite query. Solo se
+// tocan las rutas bajo `assets/`; cualquier otro pedido —la API incluida—
+// pasa sin mirarlo siquiera. Y si algo sale mal al reescribir, se manda el
+// pedido original: esto no puede ser lo que impida arrancar.
+if (_mainJsVersion) {
+  const _assetPath = /(^|\/)assets\//;
+  const _fetch = window.fetch;
+  window.fetch = function (input, init) {
+    try {
+      const url = typeof input === "string" ? input : input && input.url;
+      if (typeof url === "string" && !url.includes("?") && _assetPath.test(url)) {
+        const versioned = url + "?v=" + _mainJsVersion;
+        return _fetch.call(
+          this,
+          typeof input === "string" ? versioned : new Request(versioned, input),
+          init,
+        );
+      }
+    } catch (_) {
+      // Cae al pedido sin tocar.
+    }
+    return _fetch.call(this, input, init);
+  };
+}
+
 _flutter.loader.load();
 
 // El splash del HTML (ver `index.html`) tapa la pantalla hasta que Flutter

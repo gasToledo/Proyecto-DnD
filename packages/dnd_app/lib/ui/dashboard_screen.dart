@@ -13,7 +13,6 @@ import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
 import '../web/browser.dart' as browser;
-import 'settings_dialog.dart';
 import 'sheet_screen.dart';
 
 part 'dashboard/dashboard_actions.dart';
@@ -31,7 +30,7 @@ const _kWideBreakpoint = 900.0;
 /// escala hasta un 30% con el ancho que efectivamente le tocó (ver `_grid`).
 /// Por debajo de la base no se achica: ahí el diseño ya está al límite.
 const _kCardBaseWidth = 420.0;
-const _kCardBaseHeight = 212.0;
+const _kCardBaseHeight = 264.0;
 const _kCardMaxExtent = 560.0;
 const _kCardSpacing = 16.0;
 
@@ -53,6 +52,12 @@ enum _SortMode {
 }
 
 String _signed(int v) => v >= 0 ? '+$v' : '$v';
+
+/// Personaje sin puntos de golpe. No es un estado guardado aparte: es lo que
+/// dicen sus PG, y por eso no hace falta marcarlo ni desmarcarlo a mano. La
+/// tarjeta lo señala con etiqueta, retrato atenuado y barra vacía, y el roster
+/// lo manda al final: sigue estando, pero no encabeza lo que se juega hoy.
+bool _isFallen(Character c) => c.combat.currentHp <= 0;
 
 /// Dashboard del roster: panel lateral con las secciones, buscador, orden y una
 /// grilla de tarjetas que muestran los datos clave de cada personaje de un
@@ -289,6 +294,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         list.sort((a, b) => b.level.compareTo(a.level));
       case _SortMode.klass:
         list.sort((a, b) => _klassName(a).compareTo(_klassName(b)));
+    }
+
+    // Los caídos van al final de cualquier criterio, conservando entre ellos el
+    // orden que les tocó: lo que se está jugando va primero.
+    final fallen = list.where(_isFallen).toList();
+    if (fallen.isNotEmpty) {
+      list
+        ..removeWhere(_isFallen)
+        ..addAll(fallen);
     }
 
     // El favorito encabeza cualquiera sea el criterio: para eso se marca.

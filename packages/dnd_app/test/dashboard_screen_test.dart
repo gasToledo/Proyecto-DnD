@@ -200,14 +200,15 @@ void main() {
     /// dados, y devuelve el servidor falso para poder mirar qué se guardó.
     Future<FakeApiServer> pumpRoster(
       WidgetTester tester,
-      AppSettings settings,
-    ) async {
+      AppSettings settings, {
+      bool saganFallen = false,
+    }) async {
       tester.view.physicalSize = const Size(1400, 900);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
       final server = FakeApiServer();
       final ctrl = CharactersController(ApiClient(client: server.client))
-        ..add(demoSagan())
+        ..add(saganFallen ? (demoSagan()..combat.currentHp = 0) : demoSagan())
         ..add(
           Character.fromJson(
             demoSagan().toJson()
@@ -353,6 +354,24 @@ void main() {
       expect(find.text('Mover después'), findsOneWidget);
     });
 
+    // Sin PG el personaje no se esconde ni se bloquea: se marca y baja al
+    // final, para que lo que se está jugando encabece el roster. El estado no
+    // depende del color: hay etiqueta junto al nombre y rótulo en los PG.
+    testWidgets('un caído se marca y va al final del roster', (tester) async {
+      await pumpRoster(
+        tester,
+        AppSettings(sortMode: 'name'),
+        saganFallen: true,
+      );
+
+      // Por nombre "Sagan" iría primero; caído, va después de "Zzz Ultimo".
+      expect(rosterOrder(tester), ['Zzz Ultimo', 'Sagan "The Red"']);
+      expect(find.text('CAÍDO'), findsOneWidget);
+      expect(find.text('SIN PUNTOS DE GOLPE'), findsOneWidget);
+      expect(find.text('2 personajes · 1 caído'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     // El tema se guardaba en ningún lado: elegirlo y recargar lo perdía.
     testWidgets('elegir un tema lo aplica y conserva el resto de ajustes', (
       tester,
@@ -421,7 +440,7 @@ void main() {
 
     expect(find.text('Sagan "The Red"'), findsOneWidget);
     expect(find.text('Guardado'), findsOneWidget);
-    expect(find.text('PG'), findsOneWidget);
+    expect(find.text('PUNTOS DE GOLPE'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -475,11 +494,11 @@ void main() {
     expect(find.text('Personajes'), findsOneWidget);
     expect(find.text('Homebrew'), findsOneWidget);
     expect(find.text('Importar / Exportar'), findsOneWidget);
-    expect(find.text('Ajustes'), findsOneWidget);
 
     // La tarjeta muestra los datos que antes obligaban a abrir la ficha.
     expect(find.text('Sagan "The Red"'), findsOneWidget);
-    expect(find.text('PG'), findsOneWidget);
+    expect(find.text('PUNTOS DE GOLPE'), findsOneWidget);
+    expect(find.text('CA'), findsOneWidget);
     expect(find.text('VEL'), findsOneWidget);
     expect(find.text('INIC'), findsOneWidget);
     // Sin overflow: un RenderFlex desbordado dispararía una excepción acá.

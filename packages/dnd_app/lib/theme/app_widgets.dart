@@ -1042,6 +1042,10 @@ class GoldPill extends StatelessWidget {
       ),
       child: Text(
         text,
+        // Una pill es de una línea por definición: un trasfondo largo se
+        // recorta en vez de desbordar la tarjeta que la contiene.
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: 11,
           color: highlighted ? p.gold : p.textMuted,

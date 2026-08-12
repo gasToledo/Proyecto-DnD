@@ -33,7 +33,11 @@ class _SaveStatusIndicator extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
             color: pal.plaque,
-            border: Border.all(color: pal.hairline),
+            border: Border.all(
+              color: state == CharacterSaveState.error
+                  ? Theme.of(context).colorScheme.error
+                  : pal.hairline,
+            ),
             borderRadius: BorderRadius.circular(9),
           ),
           child: Row(
@@ -123,6 +127,141 @@ class _ReorderableCardState extends State<_ReorderableCard> {
   }
 }
 
+/// Etiqueta de personaje sin puntos de golpe.
+///
+/// Va junto al nombre y no en un rincón: es lo primero que hay que saber de esa
+/// tarjeta. El retrato atenuado y la barra vacía dicen lo mismo, para que el
+/// estado no dependa de un solo indicador ni del color.
+class _FallenBadge extends StatelessWidget {
+  final double scale;
+  const _FallenBadge({required this.scale});
+
+  @override
+  Widget build(BuildContext context) {
+    final crimson = context.palette.crimson;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 7 * scale, vertical: 1),
+      decoration: BoxDecoration(
+        border: Border.all(color: crimson.withAlpha(140)),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.heart_broken, size: 11 * scale, color: crimson),
+          SizedBox(width: 4 * scale),
+          Text(
+            'CAÍDO',
+            style: TextStyle(
+              fontSize: 9.5 * scale,
+              letterSpacing: 0.6,
+              fontWeight: FontWeight.w600,
+              color: crimson,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Una celda de la tira de estadísticas del pie de la tarjeta (CA, velocidad,
+/// iniciativa). Cifras tabulares, para que tres tarjetas en fila alineen sus
+/// números en vez de bailar según el ancho de cada dígito.
+class _StatCell extends StatelessWidget {
+  final String label;
+  final String value;
+
+  /// Unidad, en chico y atenuada detrás del valor («30 pies»).
+  final String? suffix;
+  final IconData? icon;
+
+  /// Lo que lee un lector de pantalla: el rótulo abreviado no se entiende
+  /// dicho en voz alta.
+  final String semantics;
+  final double scale;
+
+  const _StatCell({
+    required this.label,
+    required this.value,
+    required this.semantics,
+    required this.scale,
+    this.suffix,
+    this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final k = scale;
+    return Semantics(
+      label: semantics,
+      excludeSemantics: true,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(10 * k, 8 * k, 8 * k, 9 * k),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Alto fijo para la línea del rótulo: el ícono de CA es más alto
+            // que el texto y sin esto esa celda crece, con lo que los
+            // separadores de la tira dejan de alinear con las otras dos.
+            SizedBox(
+              height: 14 * k,
+              child: Row(
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 11 * k, color: pal.gold),
+                    SizedBox(width: 4 * k),
+                  ],
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 9.5 * k,
+                        letterSpacing: 0.7,
+                        color: pal.textMuted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 2 * k),
+            Text.rich(
+              TextSpan(
+                text: value,
+                children: [
+                  if (suffix case final unit?)
+                    TextSpan(
+                      text: unit,
+                      style: TextStyle(
+                        fontSize: 11 * k,
+                        fontWeight: FontWeight.normal,
+                        color: pal.textMuted,
+                      ),
+                    ),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 22 * k,
+                height: 1.1,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Tarjeta de personaje: identidad arriba (retrato, nombre, especie·clase,
 /// trasfondo y nivel) y los datos de combate abajo (PG, CA, velocidad,
 /// iniciativa), para no tener que abrir la ficha para verlos.
@@ -189,12 +328,43 @@ class _CharacterCardState extends State<_CharacterCard> {
     final hp = c.combat.currentHp;
     final k = widget.scale;
 
+    final fallen = _isFallen(c);
+    final ratio = s.maxHp == 0 ? 0.0 : hp / s.maxHp;
+    // Un cuarto de los PG: a partir de ahí el rótulo lo dice con todas las
+    // letras, en vez de dejarlo librado a lo corta que se ve la barra. Sin
+    // parpadeo: es información, no una alarma.
+    final critical = !fallen && ratio <= 0.25;
+    final (hpLabel, hpIcon) = switch ((fallen, critical)) {
+      (true, _) => ('SIN PUNTOS DE GOLPE', Icons.heart_broken),
+      (_, true) => ('PG CRÍTICOS', Icons.warning_amber_rounded),
+      _ => ('PUNTOS DE GOLPE', null),
+    };
+
+    Widget medallion = ClassMedallion(
+      klass: klassObj,
+      portraitKey: portrait,
+      fallback: c.name.characters.first,
+      size: 76 * k,
+    );
+    if (fallen) {
+      medallion = Opacity(
+        opacity: 0.55,
+        child: ColorFiltered(
+          colorFilter: const ColorFilter.mode(
+            Colors.grey,
+            BlendMode.saturation,
+          ),
+          child: medallion,
+        ),
+      );
+    }
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
       child: AnimatedContainer(
         duration: context.motion(const Duration(milliseconds: 120)),
-        transform: Matrix4.translationValues(0, _hover ? -2 : 0, 0),
+        transform: Matrix4.translationValues(0, _hover ? -3 : 0, 0),
         decoration: BoxDecoration(
           color: scheme.surface,
           // El favorito lleva el borde de acento y más grueso, para que se
@@ -219,231 +389,313 @@ class _CharacterCardState extends State<_CharacterCard> {
                 ]
               : null,
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(14),
-            child: Padding(
-              padding: EdgeInsets.all(16 * k),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+        // El filete de la clase llega hasta el borde: sin recortar, sus
+        // esquinas se salen del radio de la tarjeta.
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(13),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onTap,
+              child: Stack(
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClassMedallion(
-                        klass: klassObj,
-                        portraitKey: portrait,
-                        fallback: c.name.characters.first,
-                        size: 76 * k,
-                      ),
-                      SizedBox(width: 14 * k),
-                      Expanded(
-                        child: Column(
+                  // Va posicionado y no como primera columna de una fila: en
+                  // el arrastre la tarjeta se dibuja sin alto acotado, y una
+                  // fila estirada ahí no tiene contra qué estirarse.
+                  PositionedDirectional(
+                    start: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 3,
+                    child: ColoredBox(color: fallen ? pal.hairline : accent),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(16 * k),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              children: [
-                                if (widget.isFavorite) ...[
-                                  Icon(
-                                    Icons.star,
-                                    key: const ValueKey('favorite-star'),
-                                    size: 15 * k,
-                                    color: pal.gold,
+                            medallion,
+                            SizedBox(width: 14 * k),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      if (widget.isFavorite) ...[
+                                        Icon(
+                                          Icons.star,
+                                          key: const ValueKey('favorite-star'),
+                                          size: 15 * k,
+                                          color: pal.gold,
+                                        ),
+                                        SizedBox(width: 5 * k),
+                                      ],
+                                      Flexible(
+                                        child: Text(
+                                          c.name,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontFamily: 'Georgia',
+                                            fontSize: 18 * k,
+                                            color: fallen
+                                                ? muted
+                                                : scheme.onSurface,
+                                          ),
+                                        ),
+                                      ),
+                                      if (fallen) ...[
+                                        SizedBox(width: 7 * k),
+                                        _FallenBadge(scale: k),
+                                      ],
+                                    ],
                                   ),
-                                  SizedBox(width: 5 * k),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        classIcon(klassObj),
+                                        size: 14 * k,
+                                        color: accent,
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Expanded(
+                                        child: Text(
+                                          '$race · $klass',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12.5 * k,
+                                            color: muted,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 7 * k),
+                                  // Nivel y trasfondo como badges y no como
+                                  // medallón aparte: son dos datos del mismo
+                                  // rango, y el medallón le disputaba el sitio
+                                  // al retrato.
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
+                                    children: [
+                                      GoldPill(
+                                        'Nivel ${c.level}',
+                                        highlighted: !fallen,
+                                      ),
+                                      if (background case final bg?)
+                                        ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            maxWidth: 190 * k,
+                                          ),
+                                          child: GoldPill(
+                                            bg,
+                                            highlighted: false,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ],
-                                Flexible(
-                                  child: Text(
-                                    c.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontFamily: 'Georgia',
-                                      fontSize: 18 * k,
-                                      color: scheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                Icon(
-                                  classIcon(klassObj),
-                                  size: 14 * k,
-                                  color: accent,
-                                ),
-                                const SizedBox(width: 5),
-                                Expanded(
-                                  child: Text(
-                                    '$race · $klass',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12.5 * k,
-                                      color: muted,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (background != null) ...[
-                              const SizedBox(height: 6),
-                              GoldPill(background),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Medallion(fallback: '${c.level}', size: 40 * k),
-                          SizedBox(height: 3 * k),
-                          Text(
-                            'NIVEL',
-                            style: TextStyle(
-                              fontSize: 8.5 * k,
-                              letterSpacing: 1,
-                              color: pal.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: 32 * k,
-                        child: PopupMenuButton<String>(
-                          tooltip: 'Acciones de ${c.name}',
-                          padding: EdgeInsets.zero,
-                          icon: Icon(
-                            Icons.more_vert,
-                            size: 18 * k,
-                            color: muted,
-                          ),
-                          onSelected: (v) {
-                            if (v == 'favorite') widget.onToggleFavorite();
-                            if (v == 'move-before') widget.onMoveBefore?.call();
-                            if (v == 'move-after') widget.onMoveAfter?.call();
-                            if (v == 'rename') widget.onRename();
-                            if (v == 'export') widget.onExport();
-                            if (v == 'delete') widget.onDelete();
-                          },
-                          itemBuilder: (_) => [
-                            PopupMenuItem(
-                              value: 'favorite',
-                              child: Text(
-                                widget.isFavorite
-                                    ? 'Quitar de favorito'
-                                    : 'Marcar como favorito',
                               ),
                             ),
-                            // El arrastre queda como atajo, pero el orden no
-                            // puede depender de él: con teclado o lector de
-                            // pantalla no hay forma de arrastrar nada.
-                            PopupMenuItem(
-                              value: 'move-before',
-                              enabled: widget.onMoveBefore != null,
-                              child: const Text('Mover antes'),
-                            ),
-                            PopupMenuItem(
-                              value: 'move-after',
-                              enabled: widget.onMoveAfter != null,
-                              child: const Text('Mover después'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'rename',
-                              child: Text('Renombrar'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'export',
-                              child: Text('Exportar'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Eliminar'),
+                            SizedBox(
+                              width: 40 * k,
+                              child: PopupMenuButton<String>(
+                                tooltip: 'Acciones de ${c.name}',
+                                padding: EdgeInsets.zero,
+                                icon: Icon(
+                                  Icons.more_vert,
+                                  size: 18 * k,
+                                  color: muted,
+                                ),
+                                onSelected: (v) {
+                                  if (v == 'favorite') {
+                                    widget.onToggleFavorite();
+                                  }
+                                  if (v == 'move-before') {
+                                    widget.onMoveBefore?.call();
+                                  }
+                                  if (v == 'move-after') {
+                                    widget.onMoveAfter?.call();
+                                  }
+                                  if (v == 'rename') widget.onRename();
+                                  if (v == 'export') widget.onExport();
+                                  if (v == 'delete') widget.onDelete();
+                                },
+                                itemBuilder: (_) => [
+                                  PopupMenuItem(
+                                    value: 'favorite',
+                                    child: Text(
+                                      widget.isFavorite
+                                          ? 'Quitar de favorito'
+                                          : 'Marcar como favorito',
+                                    ),
+                                  ),
+                                  // El arrastre queda como atajo, pero el orden
+                                  // no puede depender de él: con teclado o
+                                  // lector de pantalla no hay forma de
+                                  // arrastrar nada.
+                                  PopupMenuItem(
+                                    value: 'move-before',
+                                    enabled: widget.onMoveBefore != null,
+                                    child: const Text('Mover antes'),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'move-after',
+                                    enabled: widget.onMoveAfter != null,
+                                    child: const Text('Mover después'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'rename',
+                                    child: Text('Renombrar'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'export',
+                                    child: Text('Exportar'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Text('Eliminar'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    height: 1,
-                    margin: EdgeInsets.symmetric(vertical: 12 * k),
-                    color: pal.hairline,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                        Container(
+                          height: 1,
+                          margin: EdgeInsets.symmetric(vertical: 12 * k),
+                          color: pal.hairline,
+                        ),
+                        Row(
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            if (hpIcon != null) ...[
+                              Icon(hpIcon, size: 13 * k, color: pal.crimson),
+                              SizedBox(width: 5 * k),
+                            ],
+                            Expanded(
+                              child: Text(
+                                hpLabel,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 9.5 * k,
+                                  letterSpacing: 1,
+                                  fontWeight: hpIcon == null
+                                      ? FontWeight.normal
+                                      : FontWeight.w600,
+                                  color: hpIcon == null
+                                      ? pal.textMuted
+                                      : pal.crimson,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 6 * k),
+                            Text(
+                              '$hp',
+                              style: TextStyle(
+                                fontFamily: 'Georgia',
+                                fontSize: 13 * k,
+                                height: 1,
+                                color: pal.crimson,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              ' / ${s.maxHp}',
+                              style: TextStyle(
+                                fontFamily: 'Georgia',
+                                fontSize: 13 * k,
+                                height: 1,
+                                color: pal.textMuted,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 6 * k),
+                        // Sin PG la barra queda vacía y con el borde en
+                        // carmesí: un relleno de ancho cero no se distingue de
+                        // uno que no se dibujó.
+                        Container(
+                          height: 9 * k,
+                          padding: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: pal.plaque,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: fallen || critical
+                                  ? pal.crimson.withAlpha(140)
+                                  : pal.hairline,
+                            ),
+                          ),
+                          child: fallen
+                              ? null
+                              : ThinBar(
+                                  ratio: ratio,
+                                  color: pal.crimson,
+                                  track: pal.plaque,
+                                ),
+                        ),
+                        SizedBox(height: 12 * k),
+                        IntrinsicHeight(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: pal.plaque,
+                              border: Border.all(color: pal.hairline),
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                // Rótulo flexible: con 3 columnas la tarjeta es
-                                // angosta y el valor nunca debe quedar tapado.
                                 Expanded(
-                                  child: Text(
-                                    'PG',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 9.5 * k,
-                                      letterSpacing: 1,
-                                      color: pal.textMuted,
-                                    ),
+                                  child: _StatCell(
+                                    label: 'CA',
+                                    value: '${s.armorClass}',
+                                    icon: Icons.shield,
+                                    semantics:
+                                        'Clase de armadura: ${s.armorClass}',
+                                    scale: k,
                                   ),
                                 ),
-                                SizedBox(width: 6 * k),
-                                Text(
-                                  '$hp/${s.maxHp}',
-                                  style: TextStyle(
-                                    fontFamily: 'Georgia',
-                                    fontSize: 13 * k,
-                                    height: 1,
-                                    color: pal.crimson,
+                                Container(width: 1, color: pal.hairline),
+                                Expanded(
+                                  child: _StatCell(
+                                    label: 'VEL',
+                                    value: '${s.speed}',
+                                    suffix: ' pies',
+                                    semantics: 'Velocidad: ${s.speed} pies',
+                                    scale: k,
+                                  ),
+                                ),
+                                Container(width: 1, color: pal.hairline),
+                                Expanded(
+                                  child: _StatCell(
+                                    label: 'INIC',
+                                    value: _signed(s.initiative),
+                                    semantics:
+                                        'Iniciativa: ${_signed(s.initiative)}',
+                                    scale: k,
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 5 * k),
-                            ThinBar(
-                              ratio: s.maxHp == 0 ? 0 : hp / s.maxHp,
-                              color: pal.crimson,
-                              track: pal.plaque,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      ShieldBadge('${s.armorClass}', height: 52 * k),
-                      SizedBox(width: 10 * k),
-                      SizedBox(
-                        width: 56 * k,
-                        child: StatPlaque(
-                          label: 'Vel',
-                          value: '${s.speed}',
-                          dense: true,
-                          valueColor: scheme.onSurface,
-                        ),
-                      ),
-                      SizedBox(width: 10 * k),
-                      SizedBox(
-                        width: 56 * k,
-                        child: StatPlaque(
-                          label: 'Inic',
-                          value: _signed(s.initiative),
-                          dense: true,
-                          valueColor: scheme.onSurface,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

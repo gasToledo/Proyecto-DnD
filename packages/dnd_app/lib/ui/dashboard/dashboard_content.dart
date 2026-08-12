@@ -14,11 +14,7 @@ extension _DashboardContent on _DashboardScreenState {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _header(context, all.length),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
-              child: SectionRule(),
-            ),
+            _header(context, all),
             Expanded(
               child: all.isEmpty
                   // "Todavía no creaste ninguno" y "ninguno coincide con lo
@@ -68,45 +64,46 @@ extension _DashboardContent on _DashboardScreenState {
     );
   }
 
-  Widget _header(BuildContext context, int total) {
-    final pal = context.palette;
-    final onSurface = Theme.of(context).colorScheme.onSurface;
+  Widget _header(BuildContext context, List<Character> all) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(32, 26, 32, 0),
-      child: Wrap(
-        alignment: WrapAlignment.spaceBetween,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 14,
-        runSpacing: 12,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Wrap(
+            alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 6,
+            spacing: 14,
+            runSpacing: 12,
             children: [
-              Text(
-                'Mis personajes',
-                style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 28,
-                  color: onSurface,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Mis personajes',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 28,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _rosterSummary(all),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: scheme.onSurfaceVariant,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
               ),
-              GoldPill('$total'),
-            ],
-          ),
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _SaveStatusIndicator(controller: controller),
-              if (_activeOperation != null)
-                AppBusyLabel(_activeOperation!, indicatorSize: 16),
-              SizedBox(width: 230, height: 40, child: _searchField(pal)),
-              _sortButton(context),
+              // El único botón primario del encabezado: importar y el resto
+              // viven en el panel lateral o en el estado vacío.
               SizedBox(
-                height: 40,
+                height: 44,
                 child: FilledButton.icon(
                   onPressed: _openWizard,
                   icon: const Icon(Icons.add, size: 20),
@@ -115,7 +112,72 @@ extension _DashboardContent on _DashboardScreenState {
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          _toolbar(context),
         ],
+      ),
+    );
+  }
+
+  /// «4 personajes · 1 caído»: el recuento del roster y, solo si hay alguno,
+  /// cuántos están sin PG. Sin caídos no se menciona el estado — un «0 caídos»
+  /// permanente no informa nada.
+  String _rosterSummary(List<Character> all) {
+    final fallen = all.where(_isFallen).length;
+    final total =
+        '${all.length} ${all.length == 1 ? 'personaje' : 'personajes'}';
+    if (fallen == 0) return total;
+    return '$total · $fallen ${fallen == 1 ? 'caído' : 'caídos'}';
+  }
+
+  /// Búsqueda, orden y estado del guardado en una sola región, como pide §8.3.
+  ///
+  /// El buscador es lo que crece con el ancho disponible; los controles de al
+  /// lado conservan su tamaño. Cuando no queda ancho para las dos cosas, el
+  /// buscador pasa a su propia línea en vez de comprimirse hasta perder el
+  /// texto de ayuda.
+  Widget _toolbar(BuildContext context) {
+    final pal = context.palette;
+    final search = SizedBox(height: 40, child: _searchField(pal));
+    final controls = [
+      _sortButton(context),
+      Container(width: 1, height: 24, color: pal.hairline),
+      _SaveStatusIndicator(controller: controller),
+      if (_activeOperation != null)
+        AppBusyLabel(_activeOperation!, indicatorSize: 16),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: LayoutBuilder(
+        builder: (context, box) => box.maxWidth < 520
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  search,
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 10,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: controls,
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(child: search),
+                  for (final control in controls) ...[
+                    const SizedBox(width: 12),
+                    control,
+                  ],
+                ],
+              ),
       ),
     );
   }

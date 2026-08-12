@@ -84,17 +84,6 @@ extension _DashboardNavigation on _DashboardScreenState {
             label: 'Importar / Exportar',
             onTap: () => run(_transferDialog),
           ),
-          appNavItem(
-            context,
-            icon: Icons.settings,
-            label: 'Ajustes',
-            onTap: () => run(
-              () => showDialog<bool>(
-                context: this.context,
-                builder: (_) => SettingsDialog(api: controller.api),
-              ),
-            ),
-          ),
           const Spacer(),
           _accountFooter(context),
           DisplayPreferences(controller: widget.theme),

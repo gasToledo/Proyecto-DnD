@@ -262,6 +262,20 @@ class _StatCell extends StatelessWidget {
   }
 }
 
+/// Gris para el retrato de un caído: cada canal de color pasa a la luminancia
+/// del píxel y el alfa queda intacto.
+///
+/// Es una matriz y no `ColorFilter.mode(grey, BlendMode.saturation)`, que hace
+/// lo mismo con el color pero deja opaco lo que era transparente: el medallón
+/// es un círculo dentro de una caja cuadrada, así que ese modo le dibujaba
+/// alrededor el cuadrado gris de la caja.
+const _grayscale = ColorFilter.matrix(<double>[
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0.2126, 0.7152, 0.0722, 0, 0, //
+  0, 0, 0, 1, 0, //
+]);
+
 /// Tarjeta de personaje: identidad arriba (retrato, nombre, especie·clase,
 /// trasfondo y nivel) y los datos de combate abajo (PG, CA, velocidad,
 /// iniciativa), para no tener que abrir la ficha para verlos.
@@ -349,13 +363,7 @@ class _CharacterCardState extends State<_CharacterCard> {
     if (fallen) {
       medallion = Opacity(
         opacity: 0.55,
-        child: ColorFiltered(
-          colorFilter: const ColorFilter.mode(
-            Colors.grey,
-            BlendMode.saturation,
-          ),
-          child: medallion,
-        ),
+        child: ColorFiltered(colorFilter: _grayscale, child: medallion),
       );
     }
 

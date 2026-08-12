@@ -35,6 +35,7 @@ Map<String, dynamic> _choiceEffect({
   int count = 1,
   bool replaceable = false,
   String category = 'test-option',
+  List<Map<String, dynamic>> options = const [],
 }) =>
     {
       'type': 'featureChoice',
@@ -43,6 +44,16 @@ Map<String, dynamic> _choiceEffect({
       'featCategory': category,
       'count': count,
       'replaceable': replaceable,
+      if (options.isNotEmpty) 'options': options,
+    };
+
+/// Una opción que el propio rasgo declara en línea, como Orden Divina: no es
+/// una dote y no está en el catálogo.
+Map<String, dynamic> _inlineOption(String id) => {
+      'id': id,
+      'name': 'Opción $id',
+      'source': 'homebrew',
+      'effects': <Map<String, dynamic>>[],
     };
 
 Map<String, dynamic> _option(
@@ -376,6 +387,50 @@ void main() {
           _character(
             choices: const {
               'test-group': ['de-otra-categoria'],
+            },
+          ),
+        ),
+        contains('feature_choice_invalid'),
+      );
+    });
+
+    test('una opción en línea es válida aunque no esté en el catálogo', () {
+      // Orden Divina y Orden Primordial traen sus opciones dentro del rasgo.
+      // Buscándolas en el catálogo de dotes, la elección correcta salía como
+      // inválida y el jugador no tenía forma de sacarse la advertencia: la
+      // única opción que la callaba era una que el selector no ofrece.
+      final repoEnLinea = _repo(
+        classFeatures: [
+          {
+            'level': 1,
+            'name': 'Rasgo',
+            'effects': [
+              _choiceEffect(options: [_inlineOption('en-linea-a')]),
+            ],
+          },
+        ],
+      );
+      List<String> codesEnLinea(Character c) => CharacterValidator(repoEnLinea)
+          .validate(c)
+          .map((w) => w.code)
+          .toList();
+
+      expect(
+        codesEnLinea(
+          _character(
+            choices: const {
+              'test-group': ['en-linea-a'],
+            },
+          ),
+        ),
+        isNot(contains('feature_choice_invalid')),
+      );
+      // Lo que no está en el pozo en línea sigue avisando.
+      expect(
+        codesEnLinea(
+          _character(
+            choices: const {
+              'test-group': ['en-linea-z'],
             },
           ),
         ),

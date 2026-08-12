@@ -384,9 +384,13 @@ class CharacterValidator {
         ));
       }
 
+      // Se compara contra el pozo resuelto, no contra el catálogo de dotes: un
+      // rasgo puede traer sus opciones en línea (Orden Divina, Orden Primordial)
+      // y esas nunca están en `feats`. Mirando solo el catálogo, la elección
+      // correcta quedaba marcada como inválida y no había forma de arreglarla.
+      final pool = {for (final o in repo.featureChoiceOptions(slot)) o.id};
       for (final id in chosen) {
-        final feat = repo.feat(id);
-        if (feat == null || feat.category != slot.featCategory) {
+        if (!pool.contains(id)) {
           w.add(ValidationWarning(
             'feature_choice_invalid',
             '"$id" no es una opción de ${slot.name}.',

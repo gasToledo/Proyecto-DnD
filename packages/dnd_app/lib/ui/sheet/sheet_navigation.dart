@@ -109,7 +109,7 @@ extension _SheetNavigation on _SheetScreenState {
             onTap: () => run(_openLevelUp),
           ),
           const SizedBox(height: 8),
-          ThemeModeButton(controller: widget.theme),
+          DisplayPreferences(controller: widget.theme),
         ],
       ),
     );

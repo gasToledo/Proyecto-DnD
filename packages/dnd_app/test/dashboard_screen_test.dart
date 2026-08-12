@@ -80,10 +80,12 @@ void main() {
     expect(version, findsOneWidget);
     expect(tester.widget<Text>(version).data, 'v1.2.3');
     expect(tester.widget<Text>(version).style?.color, AppPalette.dark.gold);
-    // Va debajo del selector de tema, no encima.
+    // Va debajo de las preferencias de presentación, no encima.
     expect(
       tester.getTopLeft(version).dy,
-      greaterThan(tester.getTopLeft(find.text('Tema: Oscuro')).dy),
+      greaterThan(
+        tester.getTopLeft(find.byType(SegmentedButton<ThemeMode>)).dy,
+      ),
     );
     expect(tester.takeException(), isNull);
   });
@@ -378,14 +380,25 @@ void main() {
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
 
-      expect(find.text('Tema: Oscuro'), findsOneWidget);
-      await tester.tap(find.byTooltip('Elegir tema'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Claro'));
+      // Las tres opciones están a la vista sin abrir nada, y el idioma se
+      // muestra aunque todavía no se pueda cambiar.
+      expect(find.byTooltip('Tema claro'), findsOneWidget);
+      expect(find.byTooltip('Seguir el tema del sistema'), findsOneWidget);
+      expect(find.byTooltip('Tema oscuro'), findsOneWidget);
+      expect(find.text('Español'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Tema claro'));
       await tester.pumpAndSettle();
 
       expect(theme.value, ThemeMode.light);
-      expect(find.text('Tema: Claro'), findsOneWidget);
+      expect(
+        tester
+            .widget<SegmentedButton<ThemeMode>>(
+              find.byType(SegmentedButton<ThemeMode>),
+            )
+            .selected,
+        {ThemeMode.light},
+      );
       expect(server.settings?['themeMode'], 'light');
       expect(server.settings?['favoriteCharacterId'], 'sagan');
     });

@@ -222,6 +222,88 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // El pie del panel lateral mide 208 (236 menos 14 de padding a cada lado):
+  // los tres segmentos y el idioma tienen que entrar ahí sin desbordar, y cada
+  // segmento tiene que ser un objetivo táctil de 48 px.
+  group('preferencias de presentación', () {
+    const contentWidth = 236.0 - 14 * 2;
+
+    Future<AppThemeController> pump(WidgetTester tester) async {
+      final controller = AppThemeController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: contentWidth,
+                child: DisplayPreferences(controller: controller),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return controller;
+    }
+
+    testWidgets('entran en el ancho del panel', (tester) async {
+      await pump(tester);
+
+      final group = tester.getSize(find.byType(SegmentedButton<ThemeMode>));
+      expect(group.width, lessThanOrEqualTo(contentWidth));
+      expect(
+        group.height,
+        greaterThanOrEqualTo(40),
+        reason: 'los segmentos quedaron por debajo de un objetivo táctil',
+      );
+      expect(
+        tester.getSize(find.text('Español')).width,
+        lessThan(contentWidth),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('tocar un segmento cambia el tema y marca cuál está activo', (
+      tester,
+    ) async {
+      final controller = await pump(tester);
+      expect(controller.value, ThemeMode.dark);
+
+      await tester.tap(find.byTooltip('Seguir el tema del sistema'));
+      await tester.pumpAndSettle();
+
+      expect(controller.value, ThemeMode.system);
+      expect(
+        tester
+            .widget<SegmentedButton<ThemeMode>>(
+              find.byType(SegmentedButton<ThemeMode>),
+            )
+            .selected,
+        {ThemeMode.system},
+      );
+    });
+
+    // El idioma se muestra aunque no se pueda cambiar; lo que no puede pasar es
+    // que parezca interactivo sin decir por qué no lo es.
+    testWidgets('el idioma se anuncia como no disponible todavía', (
+      tester,
+    ) async {
+      await pump(tester);
+      final semantics = tester.ensureSemantics();
+
+      expect(find.text('Español'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(
+          'Idioma: Español. Todavía no hay otros idiomas disponibles.',
+        ),
+        findsOneWidget,
+      );
+      semantics.dispose();
+    });
+  });
+
   // Un botón que solo es un ícono no tiene nombre para un lector de pantalla
   // si nadie se lo pone: el tooltip es lo que se lo da.
   testWidgets('los botones de solo ícono tienen nombre accesible', (

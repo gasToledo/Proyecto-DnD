@@ -97,7 +97,7 @@ extension _DashboardNavigation on _DashboardScreenState {
           ),
           const Spacer(),
           _accountFooter(context),
-          ThemeModeButton(controller: widget.theme),
+          DisplayPreferences(controller: widget.theme),
           // Null solo en tests, donde no se resuelve `PackageInfo`.
           if (widget.appVersion case final version?) ...[
             const SizedBox(height: 10),

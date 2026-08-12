@@ -88,72 +88,136 @@ Widget appNavItem(
   );
 }
 
-/// Selector de tema del pie del panel lateral.
+/// Preferencias de presentación del pie del panel lateral: idioma y tema.
 ///
-/// Muestra cuál está activo en vez de un botón que siempre decía «Cambiar
-/// tema» sin decir a qué: con dos temas ese botón ya era ambiguo, y con
-/// «Sistema» de por medio no se podía saber en qué estado se estaba.
-class ThemeModeButton extends StatelessWidget {
+/// Van juntas porque son lo mismo —cómo se ve y en qué se lee la aplicación—
+/// y porque separadas cada una parecería un ajuste suelto entre las secciones
+/// de navegación.
+class DisplayPreferences extends StatelessWidget {
   final AppThemeController controller;
-  const ThemeModeButton({super.key, required this.controller});
+  const DisplayPreferences({super.key, required this.controller});
 
-  static const _options = {
-    ThemeMode.system: (label: 'Sistema', icon: Icons.brightness_auto),
-    ThemeMode.light: (label: 'Claro', icon: Icons.light_mode),
-    ThemeMode.dark: (label: 'Oscuro', icon: Icons.dark_mode),
-  };
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const LanguageSelector(),
+      const SizedBox(height: 8),
+      ThemeModeSelector(controller: controller),
+    ],
+  );
+}
+
+/// Selector de idioma.
+///
+/// Está deshabilitado a propósito: la aplicación existe solo en español y no
+/// hay traducción que ofrecer todavía. Se muestra igual —y no se esconde—
+/// porque deja ver que el idioma es una preferencia prevista y no una
+/// imposición, y porque el día que haya una segunda no cambia el layout del
+/// panel. El tooltip dice por qué no se puede tocar, que es lo que un control
+/// gris sin explicación no dice.
+class LanguageSelector extends StatelessWidget {
+  const LanguageSelector({super.key});
 
   @override
   Widget build(BuildContext context) {
     final pal = context.palette;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: controller,
-      builder: (context, mode, _) {
-        final current = _options[mode]!;
-        return PopupMenuButton<ThemeMode>(
-          tooltip: 'Elegir tema',
-          initialValue: mode,
-          onSelected: controller.choose,
-          itemBuilder: (_) => [
-            for (final entry in _options.entries)
-              PopupMenuItem(
-                value: entry.key,
-                child: Row(
-                  children: [
-                    Icon(entry.value.icon, size: 18),
-                    const SizedBox(width: 10),
-                    Text(entry.value.label),
-                  ],
+    return Tooltip(
+      message: 'Por ahora la aplicación está solo en español.',
+      child: Semantics(
+        label: 'Idioma: Español. Todavía no hay otros idiomas disponibles.',
+        excludeSemantics: true,
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: pal.hairline),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.language, size: 16, color: muted),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'Español',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12, color: muted),
                 ),
               ),
-          ],
-          // Mismo molde que el resto del pie del panel (borde fino, texto
-          // atenuado), pero abre el menú en vez de alternar a ciegas.
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-            decoration: BoxDecoration(
-              border: Border.all(color: pal.hairline),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(current.icon, size: 16, color: muted),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    'Tema: ${current.label}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: muted),
-                  ),
-                ),
-              ],
-            ),
+              const SizedBox(width: 4),
+              Icon(Icons.expand_more, size: 16, color: pal.textMuted),
+            ],
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+}
+
+/// Tema activo, como grupo de tres.
+///
+/// Grupo y no menú desplegable: son tres opciones excluyentes con un ícono
+/// cada una, así que mostrarlas todas dice cuál está activa **y** qué otras
+/// hay, sin abrir nada. Un menú obligaba a abrirlo para descubrir que existía
+/// «Sistema». De paso, cada segmento es un objetivo táctil de 48 px, que el
+/// botón anterior no alcanzaba.
+class ThemeModeSelector extends StatelessWidget {
+  final AppThemeController controller;
+  const ThemeModeSelector({super.key, required this.controller});
+
+  /// El orden es claro → sistema → oscuro: «Sistema» va al medio porque es el
+  /// punto intermedio entre los otros dos, no una tercera opción suelta.
+  static const _segments = [
+    (
+      mode: ThemeMode.light,
+      icon: Icons.light_mode_outlined,
+      label: 'Tema claro',
+    ),
+    (
+      mode: ThemeMode.system,
+      icon: Icons.desktop_windows_outlined,
+      label: 'Seguir el tema del sistema',
+    ),
+    (
+      mode: ThemeMode.dark,
+      icon: Icons.dark_mode_outlined,
+      label: 'Tema oscuro',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: controller,
+      builder: (context, mode, _) => SegmentedButton<ThemeMode>(
+        segments: [
+          for (final segment in _segments)
+            ButtonSegment(
+              value: segment.mode,
+              icon: Icon(segment.icon, size: 18),
+              // Sin esto los tres botones no tienen nombre: son solo íconos.
+              tooltip: segment.label,
+            ),
+        ],
+        selected: {mode},
+        onSelectionChanged: (selection) => controller.choose(selection.first),
+        // El tilde de seleccionado desplazaría el ícono que identifica cada
+        // segmento; el fondo dorado ya marca cuál está activo.
+        showSelectedIcon: false,
+        style: SegmentedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          selectedBackgroundColor: pal.goldSoft,
+          selectedForegroundColor: pal.gold,
+          side: BorderSide(color: pal.hairline),
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
     );
   }
 }

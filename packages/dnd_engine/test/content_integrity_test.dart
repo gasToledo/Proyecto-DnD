@@ -166,6 +166,20 @@ void main() {
       expect(Item.fromJson(repo.item('arrows')!.toJson()).bundleSize, 20);
     });
 
+    test('los siete paquetes detallan su contenido en español', () {
+      final packs =
+          repo.items.values.where((i) => i.category == 'pack').toList();
+      expect(packs, hasLength(7));
+      for (final pack in packs) {
+        expect(pack.description, startsWith('Contiene: '), reason: pack.id);
+      }
+      expect(repo.item('burglars-pack')!.description, contains('10 × Vela'));
+      expect(
+        repo.item('dungeoneers-pack')!.description,
+        contains('10 × Antorcha'),
+      );
+    });
+
     test('la rareza y la sintonización solo existen en objetos mágicos', () {
       const rarities = {
         'common',

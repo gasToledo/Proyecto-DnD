@@ -115,16 +115,6 @@ class _ItemFormState extends State<ItemForm> {
     );
   }
 
-  /// Peso en libras, con medias libras. A diferencia del precio no es entero:
-  /// la tabla del manual tiene objetos de ¼ y de ½ libra.
-  String? _weightValue(String? value) {
-    final text = (value ?? '').trim();
-    if (text.isEmpty) return 'Escribí un peso, 0 si no cuenta.';
-    final n = double.tryParse(text);
-    if (n == null) return 'Tiene que ser un número.';
-    return n < 0 ? 'No puede ser negativo.' : null;
-  }
-
   void _save() {
     final acBonus = int.parse(_acBonus.text.trim());
     Navigator.of(context).pop(

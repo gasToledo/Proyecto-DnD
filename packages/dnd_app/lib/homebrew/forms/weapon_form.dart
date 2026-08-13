@@ -19,6 +19,15 @@ class _WeaponFormState extends State<WeaponForm> {
   late final _mastery = TextEditingController(
     text: widget.initial?.mastery ?? '',
   );
+  late final _weight = TextEditingController(
+    text: widget.initial == null ? '0' : '${widget.initial!.weight}',
+  );
+  late final _costCp = TextEditingController(
+    text: '${widget.initial?.costCp ?? 0}',
+  );
+  late final _magicBonus = TextEditingController(
+    text: '${widget.initial?.magicBonus ?? 0}',
+  );
   late String _category = widget.initial?.category ?? 'simple';
   late final Set<String> _props = {...?widget.initial?.properties};
 
@@ -50,6 +59,24 @@ class _WeaponFormState extends State<WeaponForm> {
           validator: (v) => _diceValue(v, optional: true),
         ),
         _text(_mastery, 'Maestría (opcional, p.ej. sap)'),
+        _text(
+          _weight,
+          'Peso en libras (0 si no cuenta)',
+          number: true,
+          validator: _weightValue,
+        ),
+        _text(
+          _costCp,
+          'Precio en piezas de cobre (1 po = 100)',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 100000000, optional: false),
+        ),
+        _text(
+          _magicBonus,
+          'Bonificador mágico (+0 a +3)',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 3, optional: false),
+        ),
         const SizedBox(height: 8),
         const Eyebrow('Propiedades'),
         _idChips(_weaponPropOptions, _props, () => setState(() {})),
@@ -71,6 +98,9 @@ class _WeaponFormState extends State<WeaponForm> {
             ? null
             : _versatile.text.trim(),
         mastery: _mastery.text.trim().isEmpty ? null : _mastery.text.trim(),
+        weight: double.parse(_weight.text.trim()),
+        costCp: int.parse(_costCp.text.trim()),
+        magicBonus: int.parse(_magicBonus.text.trim()),
       ),
     );
   }

@@ -115,6 +115,16 @@ String? _intInRange(String? value, int min, int max, {required bool optional}) {
   return n < min || n > max ? 'Tiene que estar entre $min y $max.' : null;
 }
 
+/// Peso en libras. Admite fracciones decimales porque el catálogo incluye
+/// objetos de media libra y de un cuarto de libra.
+String? _weightValue(String? value) {
+  final text = (value ?? '').trim();
+  if (text.isEmpty) return 'Escribí un peso, 0 si no cuenta.';
+  final n = double.tryParse(text);
+  if (n == null) return 'Tiene que ser un número.';
+  return n < 0 ? 'No puede ser negativo.' : null;
+}
+
 // ------------------------------------------------------------------ Campos
 
 Widget _text(

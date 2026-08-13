@@ -206,7 +206,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
         );
         if (overwrite != true || !mounted) return;
       }
-      final count = await store.importContent(content);
+      final count = await store.importContent(content, repository: repo);
       // Fusiona lo importado en el repo compartido, así queda disponible de
       // inmediato en el wizard y las fichas (igual que al guardar un ítem).
       repo.addAll(store.toRepository());

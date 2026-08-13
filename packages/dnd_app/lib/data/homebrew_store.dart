@@ -116,8 +116,10 @@ class HomebrewStore {
   /// principal, de menor cuenta que el flujo de `/api/import`). Devuelve la
   /// cantidad total de entradas importadas.
   Future<int> importContent(
-    Map<String, List<Map<String, dynamic>>> content,
-  ) async {
+    Map<String, List<Map<String, dynamic>>> content, {
+    required ContentRepository repository,
+  }) async {
+    _validateInventoryIds(content, repository);
     var count = 0;
     for (final entry in content.entries) {
       for (final json in entry.value) {
@@ -127,6 +129,62 @@ class HomebrewStore {
     }
     await load();
     return count;
+  }
+
+  /// Evita que un id de inventario cambie de significado según qué catálogo
+  /// lo resuelva primero. Se permite sobrescribir homebrew del mismo tipo; el
+  /// contenido oficial y los cruces arma/armadura/objeto son inmutables.
+  void _validateInventoryIds(
+    Map<String, List<Map<String, dynamic>>> content,
+    ContentRepository repository,
+  ) {
+    final incomingKinds = <String, String>{};
+    for (final entry in content.entries) {
+      if (!const {'weapons', 'armor', 'items'}.contains(entry.key)) continue;
+      for (final json in entry.value) {
+        final id = json['id'];
+        if (id is! String || id.trim().isEmpty) {
+          throw const FormatException(
+            'Un arma, armadura u objeto del pack no tiene un id válido.',
+          );
+        }
+        final previousKind = incomingKinds[id];
+        if (previousKind != null && previousKind != entry.key) {
+          throw FormatException(
+            'El id "$id" aparece en $previousKind y ${entry.key}.',
+          );
+        }
+        incomingKinds[id] = entry.key;
+
+        final matches = <({String kind, ContentSource source})>[
+          if (repository.weapons[id] case final value?)
+            (kind: 'weapons', source: value.source),
+          if (repository.armor[id] case final value?)
+            (kind: 'armor', source: value.source),
+          if (repository.items[id] case final value?)
+            (kind: 'items', source: value.source),
+        ];
+        if (matches.isEmpty) continue;
+        if (matches.length > 1) {
+          throw FormatException(
+            'El id "$id" ya está repetido entre los catálogos de inventario.',
+          );
+        }
+        final existing = matches.single;
+        if (existing.kind != entry.key) {
+          throw FormatException(
+            'El id "$id" ya pertenece a ${existing.kind} y no puede usarse '
+            'en ${entry.key}.',
+          );
+        }
+        if (existing.source != ContentSource.homebrew) {
+          throw FormatException(
+            'El id "$id" pertenece al catálogo oficial y no puede '
+            'sobrescribirse.',
+          );
+        }
+      }
+    }
   }
 
   /// Copia del contenido homebrew como repositorio, para fusionar con el oficial.

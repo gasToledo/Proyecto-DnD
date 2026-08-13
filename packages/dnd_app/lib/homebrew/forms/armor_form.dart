@@ -18,6 +18,12 @@ class _ArmorFormState extends State<ArmorForm> {
   late final _strReq = TextEditingController(
     text: widget.initial?.strengthRequirement?.toString() ?? '',
   );
+  late final _weight = TextEditingController(
+    text: widget.initial == null ? '0' : '${widget.initial!.weight}',
+  );
+  late final _costCp = TextEditingController(
+    text: '${widget.initial?.costCp ?? 0}',
+  );
   late String _category = widget.initial?.category ?? 'light';
   late bool _addDex = widget.initial?.addDexMod ?? true;
   late bool _stealth = widget.initial?.stealthDisadvantage ?? false;
@@ -62,6 +68,18 @@ class _ArmorFormState extends State<ArmorForm> {
           number: true,
           validator: (v) => _intInRange(v, 1, 30, optional: true),
         ),
+        _text(
+          _weight,
+          'Peso en libras (0 si no cuenta)',
+          number: true,
+          validator: _weightValue,
+        ),
+        _text(
+          _costCp,
+          'Precio en piezas de cobre (1 po = 100)',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 100000000, optional: false),
+        ),
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Desventaja en Sigilo'),
@@ -87,6 +105,8 @@ class _ArmorFormState extends State<ArmorForm> {
         maxDexBonus: int.tryParse(_maxDex.text.trim()),
         strengthRequirement: int.tryParse(_strReq.text.trim()),
         stealthDisadvantage: _stealth,
+        weight: double.parse(_weight.text.trim()),
+        costCp: int.parse(_costCp.text.trim()),
       ),
     );
   }

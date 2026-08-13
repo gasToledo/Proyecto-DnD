@@ -3,6 +3,8 @@ import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'fakes/fake_api_server.dart';
+
 void main() {
   test(
     'countCollisions cuenta solo los ids que ya existen en el store',
@@ -33,4 +35,52 @@ void main() {
       expect(HomebrewStore(ApiClient()).countCollisions(content), 0);
     },
   );
+
+  test('importContent no permite sobrescribir un id oficial', () async {
+    final repo = await ContentRepository.loadFromDirectory(
+      '../dnd_engine/lib/assets/srd_2024',
+    );
+    final server = FakeApiServer();
+    final store = HomebrewStore(ApiClient(client: server.client));
+    final official = repo.weapons.values.first;
+
+    await expectLater(
+      store.importContent({
+        'weapons': [official.toJson()..['source'] = 'homebrew'],
+      }, repository: repo),
+      throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          contains('catálogo oficial'),
+        ),
+      ),
+    );
+    expect(server.homebrew, isEmpty);
+  });
+
+  test('importContent rechaza un id repetido entre catálogos', () async {
+    final repo = await ContentRepository.loadFromDirectory(
+      '../dnd_engine/lib/assets/srd_2024',
+    );
+    final server = FakeApiServer();
+    final store = HomebrewStore(ApiClient(client: server.client));
+    final weapon = repo.weapons.values.first.toJson()..['id'] = 'compartido';
+    final armor = repo.armor.values.first.toJson()..['id'] = 'compartido';
+
+    await expectLater(
+      store.importContent({
+        'weapons': [weapon],
+        'armor': [armor],
+      }, repository: repo),
+      throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          contains('weapons y armor'),
+        ),
+      ),
+    );
+    expect(server.homebrew, isEmpty);
+  });
 }

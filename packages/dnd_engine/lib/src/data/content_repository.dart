@@ -119,7 +119,7 @@ class ContentRepository {
   /// **El compilador no pasa por acá**: sigue resolviendo con [weapon] y
   /// [armorPiece], así que una colisión de ids nunca puede alterar un cálculo.
   /// `content_integrity_test.dart` verifica que los tres conjuntos sean
-  /// disjuntos y el formulario homebrew rechaza un id ya tomado.
+  /// disjuntos y la importación homebrew rechaza un id ya tomado.
   ({String name, double weight, int costCp, String kind})? catalogEntry(
     String id,
   ) {

@@ -239,15 +239,22 @@ enum CharacterStatus { active, archivedInactive, dead }
 /// sería un segundo origen de verdad que se desincroniza en cuanto un id
 /// cambia de catálogo.
 class InventoryEntry {
+  /// Identidad del ejemplar. Permite llevar dos objetos iguales con distinto
+  /// estado, nota o procedencia sin que una operación afecte al otro.
+  final String entryId;
   final String itemId;
+
+  /// Arma, armadura o escudo mundano sobre el que se aplica una plantilla
+  /// mágica.
+  final String? baseItemId;
+
+  /// Procedencia opaca, por ejemplo `artificer:replicate-magic-item:<plan>`.
+  final String? origin;
 
   /// Siempre >= 1. Una entrada con cantidad 0 se borra, no se guarda.
   final int quantity;
 
-  /// Solo es autoritativo cuando [itemId] es un objeto. Para armas y armaduras
-  /// manda el equipo de la ficha (`equippedWeaponIds`, `equippedArmorId`,
-  /// `shieldEquipped`), que es lo que lee el compilador. La única puerta de
-  /// entrada correcta es [Character.isEquipped].
+  /// Fuente de verdad para cualquier clase de entrada.
   final bool equipped;
 
   final bool attuned;
@@ -257,7 +264,10 @@ class InventoryEntry {
   final String note;
 
   const InventoryEntry({
+    this.entryId = '',
     required this.itemId,
+    this.baseItemId,
+    this.origin,
     this.quantity = 1,
     this.equipped = false,
     this.attuned = false,
@@ -265,13 +275,21 @@ class InventoryEntry {
   });
 
   InventoryEntry copyWith({
+    String? entryId,
+    Object? baseItemId = _unset,
+    Object? origin = _unset,
     int? quantity,
     bool? equipped,
     bool? attuned,
     String? note,
   }) =>
       InventoryEntry(
+        entryId: entryId ?? this.entryId,
         itemId: itemId,
+        baseItemId: identical(baseItemId, _unset)
+            ? this.baseItemId
+            : baseItemId as String?,
+        origin: identical(origin, _unset) ? this.origin : origin as String?,
         quantity: quantity ?? this.quantity,
         equipped: equipped ?? this.equipped,
         attuned: attuned ?? this.attuned,
@@ -279,7 +297,10 @@ class InventoryEntry {
       );
 
   Map<String, dynamic> toJson() => {
+        'entryId': entryId,
         'itemId': itemId,
+        if (baseItemId != null) 'baseItemId': baseItemId,
+        if (origin != null) 'origin': origin,
         if (quantity != 1) 'quantity': quantity,
         if (equipped) 'equipped': true,
         if (attuned) 'attuned': true,
@@ -287,7 +308,10 @@ class InventoryEntry {
       };
 
   factory InventoryEntry.fromJson(Map<String, dynamic> j) => InventoryEntry(
+        entryId: j['entryId'] as String? ?? '',
         itemId: j['itemId'] as String,
+        baseItemId: j['baseItemId'] as String?,
+        origin: j['origin'] as String?,
         // Una importación puede traer 0 o un negativo; la ficha no tiene forma
         // de mostrar eso, así que se sube a 1 en vez de propagar el disparate.
         quantity: (j['quantity'] as int? ?? 1).clamp(1, 1 << 30),
@@ -304,7 +328,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 19;
+  static const int currentSchemaVersion = 20;
 
   final String id;
   String name;
@@ -468,6 +492,9 @@ class Character {
   /// cambio de cero mecánica nueva. Ver [isEquipped].
   final List<InventoryEntry> inventory;
 
+  /// Planos de objeto mágico conocidos por el Artífice.
+  final List<String> magicItemChoices;
+
   /// Monedas por denominación (`cp`, `sp`, `ep`, `gp`, `pp`). Las que no están
   /// valen cero.
   ///
@@ -530,15 +557,23 @@ class Character {
     this.equippedWeaponIds = const [],
     this.weaponTwoHanded = const {},
     this.weaponOffHand = const {},
-    this.inventory = const [],
+    List<InventoryEntry> inventory = const [],
+    this.magicItemChoices = const [],
     this.coins = const {},
     this.portraitPaths = const [],
     this.notes = '',
     this.alignment,
     this.personalityTrait = '',
     this.tableConfig = const TableConfig(),
+    bool normalizeLegacyEquipment = true,
     CombatState? combat,
-  }) : combat = combat ?? CombatState();
+  })  : inventory = _normalizeInventory(
+          inventory,
+          normalizeLegacyEquipment ? equippedArmorId : null,
+          normalizeLegacyEquipment && shieldEquipped,
+          normalizeLegacyEquipment ? equippedWeaponIds : const [],
+        ),
+        combat = combat ?? CombatState();
 
   Map<String, dynamic> toJson() => {
         'schemaVersion': currentSchemaVersion,
@@ -577,6 +612,7 @@ class Character {
         'equippedArmorId': equippedArmorId,
         'shieldEquipped': shieldEquipped,
         'inventory': [for (final e in inventory) e.toJson()],
+        'magicItemChoices': magicItemChoices,
         'coins': coins,
         'equippedWeaponIds': equippedWeaponIds,
         'weaponTwoHanded': weaponTwoHanded,
@@ -958,6 +994,33 @@ class Character {
           );
           version = 19;
           migrated['schemaVersion'] = version;
+        case 19:
+          final rawInventory = migrated['inventory'];
+          final inventory = rawInventory is List
+              ? [
+                  for (var i = 0; i < rawInventory.length; i++)
+                    if (rawInventory[i] is Map)
+                      Map<String, dynamic>.from(rawInventory[i] as Map),
+                ]
+              : <Map<String, dynamic>>[];
+          final armorId = migrated['equippedArmorId'];
+          final weaponIds = (migrated['equippedWeaponIds'] as List? ?? const [])
+              .whereType<String>()
+              .toSet();
+          for (var i = 0; i < inventory.length; i++) {
+            final entry = inventory[i];
+            final itemId = entry['itemId'];
+            entry.putIfAbsent('entryId', () => 'legacy-$i-$itemId');
+            if (itemId == armorId ||
+                itemId == 'shield' && migrated['shieldEquipped'] == true ||
+                weaponIds.contains(itemId)) {
+              entry['equipped'] = true;
+            }
+          }
+          migrated['inventory'] = inventory;
+          migrated.putIfAbsent('magicItemChoices', () => []);
+          version = 20;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -1037,6 +1100,9 @@ class Character {
         for (final e in (j['inventory'] as List? ?? const []))
           InventoryEntry.fromJson((e as Map).cast<String, dynamic>()),
       ],
+      magicItemChoices: (j['magicItemChoices'] as List? ?? const [])
+          .whereType<String>()
+          .toList(),
       coins: _coinMap(j['coins']),
       portraitPaths: (j['portraitPaths'] as List? ?? const [])
           .map((e) => e as String)
@@ -1079,6 +1145,7 @@ class Character {
     bool? shieldEquipped,
     List<String>? equippedWeaponIds,
     List<InventoryEntry>? inventory,
+    List<String>? magicItemChoices,
     Map<String, int>? coins,
     Map<String, bool>? weaponTwoHanded,
     Map<String, bool>? weaponOffHand,
@@ -1133,6 +1200,7 @@ class Character {
       shieldEquipped: shieldEquipped ?? this.shieldEquipped,
       equippedWeaponIds: equippedWeaponIds ?? this.equippedWeaponIds,
       inventory: inventory ?? this.inventory,
+      magicItemChoices: magicItemChoices ?? this.magicItemChoices,
       coins: coins ?? this.coins,
       weaponTwoHanded: weaponTwoHanded ?? this.weaponTwoHanded,
       weaponOffHand: weaponOffHand ?? this.weaponOffHand,
@@ -1144,9 +1212,41 @@ class Character {
           : alignment as CharacterAlignment?,
       personalityTrait: personalityTrait ?? this.personalityTrait,
       tableConfig: tableConfig,
+      normalizeLegacyEquipment: inventory == null,
       combat: combat ?? this.combat,
     );
   }
+}
+
+List<InventoryEntry> _normalizeInventory(
+  List<InventoryEntry> entries,
+  String? legacyArmorId,
+  bool legacyShield,
+  List<String> legacyWeaponIds,
+) {
+  final out = <InventoryEntry>[];
+  final equippedIds = {
+    if (legacyArmorId != null) legacyArmorId,
+    if (legacyShield) 'shield',
+    ...legacyWeaponIds,
+  };
+  for (final (index, entry) in entries.indexed) {
+    out.add(entry.copyWith(
+      entryId: entry.entryId.isEmpty
+          ? 'entry-$index-${entry.itemId}'
+          : entry.entryId,
+      equipped: entry.equipped || equippedIds.contains(entry.itemId),
+    ));
+    equippedIds.remove(entry.itemId);
+  }
+  for (final itemId in equippedIds) {
+    out.add(InventoryEntry(
+      entryId: 'legacy-${out.length}-$itemId',
+      itemId: itemId,
+      equipped: true,
+    ));
+  }
+  return out;
 }
 
 Ability? _abilityFromJson(Object? value) {

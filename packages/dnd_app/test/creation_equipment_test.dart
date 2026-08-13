@@ -106,6 +106,18 @@ void main() {
     }
     await pickLanguages(tester);
     await next();
+
+    Future<void> pickStartingOption(String key, String label) async {
+      await tester.tap(find.byKey(ValueKey(key)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+    }
+
+    await pickStartingOption('starting-equipment-clase', 'Opción A');
+    // La opción monetaria evita elecciones internas del trasfondo: estos tests
+    // verifican el equipo de clase y no necesitan resolver el juego de Soldado.
+    await pickStartingOption('starting-equipment-trasfondo', 'Opción B');
   }
 
   testWidgets('lanzador: muestra trucos y conjuros con sus contadores', (
@@ -113,9 +125,10 @@ void main() {
   ) async {
     await gotoEquipo(tester, 'Mago');
 
-    expect(find.text('ARMADURA'), findsOneWidget);
-    expect(find.text('Sin armadura'), findsOneWidget);
-    expect(find.text('Escudo (+2 CA)'), findsOneWidget);
+    expect(find.text('EQUIPO INICIAL'), findsOneWidget);
+    expect(find.text('EQUIPO PUESTO'), findsOneWidget);
+    expect(find.text('Daga'), findsWidgets);
+    expect(find.text('Bastón'), findsWidgets);
     expect(find.text('CONJUROS'), findsOneWidget);
     expect(find.text('Trucos'), findsOneWidget);
     expect(find.text('Tu clase no lanza conjuros'), findsNothing);
@@ -140,7 +153,7 @@ void main() {
 
     Future<void> tapWeapon(String name) async {
       final chip = find.ancestor(
-        of: find.textContaining('$name ('),
+        of: find.text(name),
         matching: find.byType(FilterChip),
       );
       await tester.ensureVisible(chip.first);
@@ -178,16 +191,24 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('el selector de arma scrollea solo', (tester) async {
+  testWidgets('solo permite equipar armas recibidas', (tester) async {
     await gotoEquipo(tester, 'Mago');
 
-    // Hay dos listas acotadas posibles en el wizard; en Equipo, la del arma.
-    final list = find.descendant(
-      of: find.byType(Scrollbar),
-      matching: find.byType(ListView),
+    expect(
+      find.ancestor(of: find.text('Daga'), matching: find.byType(FilterChip)),
+      findsOneWidget,
     );
-    expect(list, findsOneWidget);
-    expect(tester.getSize(list).height, lessThanOrEqualTo(300.0));
+    expect(
+      find.ancestor(of: find.text('Bastón'), matching: find.byType(FilterChip)),
+      findsOneWidget,
+    );
+    expect(
+      find.ancestor(
+        of: find.text('Espada larga'),
+        matching: find.byType(FilterChip),
+      ),
+      findsNothing,
+    );
     expect(tester.takeException(), isNull);
   });
 }

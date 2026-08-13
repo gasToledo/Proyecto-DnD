@@ -13,6 +13,8 @@ class SheetBuilder {
   final Map<Ability, int> abilityBonuses = {
     for (final a in Ability.values) a: 0,
   };
+  final Map<Ability, int> minimumAbilityScores = {};
+  int savingThrowBonus = 0;
 
   /// Los mismos aportes que suma [abilityBonuses], pero uno por uno y con su
   /// fuente. El mapa responde "cuánto"; esta lista responde "por qué".
@@ -105,6 +107,7 @@ class SheetBuilder {
   /// mayor [FeatureChoiceEffect.count], porque el contenido declara el
   /// acumulado a cada nivel y no el incremento.
   final Map<String, FeatureChoiceEffect> featureChoiceSlots = {};
+  final Map<String, ItemChoiceEffect> itemChoiceSlots = {};
 
   int weaponMasterySlots = 0;
   int maxExtraAttack = 0;
@@ -171,7 +174,11 @@ class SheetBuilder {
     );
   }
 
-  int finalScore(Ability a) => (baseScores[a] ?? 10) + abilityBonuses[a]!;
+  int finalScore(Ability a) {
+    final calculated = (baseScores[a] ?? 10) + abilityBonuses[a]!;
+    final minimum = minimumAbilityScores[a] ?? calculated;
+    return calculated > minimum ? calculated : minimum;
+  }
 
   /// Interpreta un efecto sobre este acumulador. Único lugar donde la semántica
   /// de cada tipo de efecto vive; agregar contenido no toca este switch.
@@ -186,6 +193,11 @@ class SheetBuilder {
     switch (e) {
       case AbilityScoreBonusEffect(:final ability, :final amount):
         addAbilityBonus(ability, amount, source: sourceName);
+      case SetAbilityScoreEffect(:final ability, :final score):
+        final previous = minimumAbilityScores[ability] ?? 0;
+        if (score > previous) minimumAbilityScores[ability] = score;
+      case SavingThrowBonusEffect(:final amount):
+        savingThrowBonus += amount;
       case SetSpeedEffect(:final feet):
         speed = feet;
       case SpeedBonusEffect(:final feet):
@@ -275,6 +287,8 @@ class SheetBuilder {
         if (prev == null || count > prev.count) {
           featureChoiceSlots[groupId] = e;
         }
+      case ItemChoiceEffect(:final groupId):
+        itemChoiceSlots[groupId] = e;
       case WeaponMasterySlotsEffect(:final count):
         if (count > weaponMasterySlots) weaponMasterySlots = count;
       case ExtraAttackEffect(:final extra):

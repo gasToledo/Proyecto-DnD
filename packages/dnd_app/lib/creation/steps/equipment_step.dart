@@ -7,75 +7,16 @@ class _EquipmentStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pal = context.palette;
-    final repo = draft.repo;
-    final armors = repo.armorSorted.where((a) => !a.isShield).toList();
+    draft.pruneEquipment();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeader(title: 'Armadura'),
-        const SizedBox(height: 12),
-        LayoutBuilder(
-          builder: (context, box) {
-            final cols = (box.maxWidth / 236).floor().clamp(1, 4);
-            final w = (box.maxWidth - 12 * (cols - 1)) / cols;
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                SizedBox(
-                  width: w,
-                  child: _ChoiceCard(
-                    icon: Icons.no_accounts,
-                    title: 'Sin armadura',
-                    subtitle: 'CA 10 + DES',
-                    accent: pal.gold,
-                    selected: draft.equippedArmorId == null,
-                    onTap: () {
-                      draft.equippedArmorId = null;
-                      onChanged();
-                    },
-                  ),
-                ),
-                for (final a in armors)
-                  SizedBox(
-                    width: w,
-                    child: _ChoiceCard(
-                      icon: Icons.shield_moon,
-                      title: a.name,
-                      subtitle:
-                          'CA ${a.baseAc} · '
-                          '${_armorCategoryLabel(a.category)}',
-                      accent: pal.gold,
-                      selected: draft.equippedArmorId == a.id,
-                      onTap: () {
-                        draft.equippedArmorId = a.id;
-                        onChanged();
-                      },
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 14),
-        _ShieldToggle(draft: draft, onChanged: onChanged),
+        _StartingEquipmentSection(draft: draft, onChanged: onChanged),
         const SizedBox(height: 26),
-        const _SectionHeader(title: 'Armas equipadas'),
+        const _SectionHeader(title: 'Equipo puesto'),
         const SizedBox(height: 12),
-        _WeaponSelect(
-          weapons: repo.weaponsSorted,
-          selected: draft.weaponIds,
-          onToggle: (id) {
-            if (!draft.weaponIds.remove(id)) draft.weaponIds.add(id);
-            onChanged();
-          },
-          onClear: () {
-            draft.weaponIds.clear();
-            onChanged();
-          },
-        ),
+        _ReceivedEquipmentSection(draft: draft, onChanged: onChanged),
         _WeaponGripSection(draft: draft, onChanged: onChanged),
         const SizedBox(height: 26),
         const _SectionHeader(title: 'Conjuros'),
@@ -91,6 +32,161 @@ class _EquipmentStep extends StatelessWidget {
           _SpellsSection(draft: draft, onChanged: onChanged)
         else
           const _NoSpellsNotice(),
+      ],
+    );
+  }
+}
+
+class _StartingEquipmentSection extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _StartingEquipmentSection({
+    required this.draft,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const _SectionHeader(title: 'Equipo inicial'),
+      const SizedBox(height: 12),
+      _optionPicker(
+        'Clase',
+        draft.klass?.startingEquipment ?? const [],
+        draft.classEquipmentOptionId,
+        (id) {
+          draft.classEquipmentOptionId = id;
+          draft.pruneEquipment();
+          onChanged();
+        },
+      ),
+      const SizedBox(height: 12),
+      _optionPicker(
+        'Trasfondo',
+        draft.background?.startingEquipment ?? const [],
+        draft.backgroundEquipmentOptionId,
+        (id) {
+          draft.backgroundEquipmentOptionId = id;
+          draft.pruneEquipment();
+          onChanged();
+        },
+      ),
+      for (final (:key, :grant) in draft.selectedEquipmentGrants)
+        if (grant.isChoice) ...[
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            key: ValueKey('equipment-choice-$key'),
+            initialValue:
+                grant.chooseFromItemIds.contains(draft.equipmentChoices[key])
+                ? draft.equipmentChoices[key]
+                : null,
+            decoration: const InputDecoration(labelText: 'Elegí un objeto'),
+            items: [
+              for (final id in grant.chooseFromItemIds)
+                DropdownMenuItem(
+                  value: id,
+                  child: Text(draft.repo.catalogEntry(id)?.name ?? id),
+                ),
+            ],
+            onChanged: (id) {
+              if (id != null) draft.equipmentChoices[key] = id;
+              draft.pruneEquipment();
+              onChanged();
+            },
+          ),
+        ],
+      if (draft.startingInventory.isNotEmpty ||
+          draft.startingCoins.isNotEmpty) ...[
+        const SizedBox(height: 16),
+        Text(
+          [
+            ...draft.startingInventory.map((e) {
+              final name = draft.repo.catalogEntry(e.itemId)?.name ?? e.itemId;
+              return e.quantity == 1 ? name : '$name ×${e.quantity}';
+            }),
+            ...draft.startingCoins.entries.map(
+              (e) => '${e.value} ${coinLabels[e.key]}',
+            ),
+          ].join(' · '),
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
+    ],
+  );
+
+  Widget _optionPicker(
+    String label,
+    List<StartingEquipmentOption> options,
+    String? selected,
+    ValueChanged<String?> changed,
+  ) => DropdownButtonFormField<String>(
+    key: ValueKey('starting-equipment-${label.toLowerCase()}'),
+    initialValue: options.any((e) => e.id == selected) ? selected : null,
+    decoration: InputDecoration(labelText: 'Opción de $label'),
+    items: [
+      for (final option in options)
+        DropdownMenuItem(value: option.id, child: Text(option.label)),
+    ],
+    onChanged: changed,
+  );
+}
+
+class _ReceivedEquipmentSection extends StatelessWidget {
+  final CreationDraft draft;
+  final VoidCallback onChanged;
+  const _ReceivedEquipmentSection({
+    required this.draft,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final armor = [
+      for (final id in draft.receivedItemIds) ?draft.repo.armorPiece(id),
+    ];
+    final weapons = [
+      for (final id in draft.receivedItemIds) ?draft.repo.weapon(id),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final item in armor)
+              FilterChip(
+                label: Text(item.name),
+                selected: item.isShield
+                    ? draft.shieldEquipped
+                    : draft.equippedArmorId == item.id,
+                onSelected: (on) {
+                  if (item.isShield) {
+                    draft.shieldEquipped = on;
+                  } else {
+                    draft.equippedArmorId = on ? item.id : null;
+                  }
+                  onChanged();
+                },
+              ),
+            for (final item in weapons)
+              FilterChip(
+                label: Text(item.name),
+                selected: draft.weaponIds.contains(item.id),
+                onSelected: (on) {
+                  draft.weaponIds.remove(item.id);
+                  if (on) draft.weaponIds.add(item.id);
+                  onChanged();
+                },
+              ),
+          ],
+        ),
+        if (armor.isEmpty && weapons.isEmpty)
+          Text(
+            'El paquete elegido no trae equipo para vestir o empuñar.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
       ],
     );
   }
@@ -163,64 +259,6 @@ class _WeaponGripSection extends StatelessWidget {
             ],
           ),
       ],
-    );
-  }
-}
-
-/// Escudo: es una elección aparte de la armadura (suma +2 CA).
-class _ShieldToggle extends StatelessWidget {
-  final CreationDraft draft;
-  final VoidCallback onChanged;
-  const _ShieldToggle({required this.draft, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final pal = context.palette;
-    final scheme = Theme.of(context).colorScheme;
-    final on = draft.shieldEquipped;
-    return Material(
-      color: on ? pal.goldSoft : scheme.surface,
-      borderRadius: BorderRadius.circular(13),
-      child: InkWell(
-        onTap: () {
-          draft.shieldEquipped = !on;
-          onChanged();
-        },
-        borderRadius: BorderRadius.circular(13),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(13),
-            border: Border.all(color: on ? pal.gold : pal.hairline),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.shield,
-                size: 20,
-                color: on ? pal.gold : pal.textMuted,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Escudo (+2 CA)',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: on ? pal.gold : scheme.onSurface,
-                  ),
-                ),
-              ),
-              Switch(
-                value: on,
-                onChanged: (v) {
-                  draft.shieldEquipped = v;
-                  onChanged();
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

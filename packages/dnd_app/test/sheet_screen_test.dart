@@ -53,7 +53,12 @@ void main() {
 
   /// Abre el menú contextual de una fila del inventario.
   Future<void> openItemMenu(WidgetTester tester, String itemId) async {
-    final menu = find.byKey(ValueKey('menu-$itemId'));
+    final menu = find.byWidgetPredicate(
+      (widget) =>
+          widget.key is ValueKey<String> &&
+          (widget.key! as ValueKey<String>).value.startsWith('menu-') &&
+          (widget.key! as ValueKey<String>).value.endsWith('-$itemId'),
+    );
     await tester.ensureVisible(menu);
     await tester.pumpAndSettle();
     await tester.tap(menu);
@@ -102,8 +107,14 @@ void main() {
     expect(find.text('SINTONIZADOS'), findsOneWidget);
     // La ficha de demostración se arma en código y no toca `inventory`, así
     // que su arma y su armadura equipadas llegan a la lista por derivación.
-    expect(find.byKey(const ValueKey('inv-longsword')), findsOneWidget);
-    expect(find.byKey(const ValueKey('inv-leather')), findsOneWidget);
+    final sword = character.inventory.firstWhere(
+      (entry) => entry.itemId == 'longsword',
+    );
+    final leather = character.inventory.firstWhere(
+      (entry) => entry.itemId == 'leather',
+    );
+    expect(find.byKey(ValueKey('inv-${sword.entryId}')), findsOneWidget);
+    expect(find.byKey(ValueKey('inv-${leather.entryId}')), findsOneWidget);
 
     await tester.tap(find.text('Notas'));
     await tester.pumpAndSettle();
@@ -149,7 +160,12 @@ void main() {
       expect(find.text('65 / 150 lb'), findsOneWidget);
       expect(saved(controller).inventory.single.itemId, 'plate');
 
-      final equip = find.byKey(const ValueKey('equip-plate'));
+      final equip = find.byWidgetPredicate(
+        (widget) =>
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>).value.startsWith('equip-') &&
+            (widget.key! as ValueKey<String>).value.endsWith('-plate'),
+      );
       await tester.ensureVisible(equip);
       await tester.tap(equip);
       await tester.pumpAndSettle();
@@ -196,7 +212,15 @@ void main() {
         saved(controller).inventory.single.note,
         'La carta del alcalde va entre las páginas.',
       );
-      expect(find.byKey(const ValueKey('note-book')), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget.key is ValueKey<String> &&
+              (widget.key! as ValueKey<String>).value.startsWith('note-') &&
+              (widget.key! as ValueKey<String>).value.endsWith('-book'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('la munición aclara el tamaño del paquete', (tester) async {

@@ -1,7 +1,7 @@
 name: dnd_app
 description: "App de fichas de personaje D&D 5e (offline-first, multiplataforma)."
 publish_to: 'none'
-version: 0.7.0+1
+version: 0.8.0+1
 
 environment:
   # No subir a un patch (3.12.2) sin necesidad real: las imágenes
@@ -39,5 +39,7 @@ flutter:
     - packages/dnd_engine/assets/srd_2024/weapons.json
     - packages/dnd_engine/assets/srd_2024/armor.json
     - packages/dnd_engine/assets/srd_2024/items.json
+    - packages/dnd_engine/assets/srd_2024/magic_items.json
+    - packages/dnd_engine/assets/srd_2024/efa_magic_items.json
     - packages/dnd_engine/assets/srd_2024/spells.json
     - packages/dnd_engine/assets/srd_2024/creatures.json

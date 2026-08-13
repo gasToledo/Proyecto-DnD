@@ -177,10 +177,22 @@ extension _SheetInventorySection on _SheetScreenState {
           const SizedBox(height: 14),
           Align(
             alignment: Alignment.centerLeft,
-            child: OutlinedButton.icon(
-              onPressed: _addInventoryItem,
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Agregar objeto'),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _addInventoryItem,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Agregar objeto'),
+                ),
+                if (sheet.itemChoiceSlots.isNotEmpty)
+                  OutlinedButton.icon(
+                    onPressed: _manageMagicItemPlans,
+                    icon: const Icon(Icons.auto_fix_high, size: 18),
+                    label: const Text('Planos y réplicas'),
+                  ),
+              ],
             ),
           ),
         ],
@@ -220,7 +232,7 @@ extension _SheetInventorySection on _SheetScreenState {
   Widget _inventoryRowWide(InventoryEntry e) {
     final info = _itemInfo(e);
     return Padding(
-      key: ValueKey('inv-${e.itemId}'),
+      key: ValueKey('inv-${e.entryId}'),
       padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
       child: Row(
         children: [
@@ -251,7 +263,7 @@ extension _SheetInventorySection on _SheetScreenState {
   Widget _inventoryRowCompact(InventoryEntry e) {
     final info = _itemInfo(e);
     return Padding(
-      key: ValueKey('inv-${e.itemId}'),
+      key: ValueKey('inv-${e.entryId}'),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -317,7 +329,7 @@ extension _SheetInventorySection on _SheetScreenState {
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
                     e.note,
-                    key: ValueKey('note-${e.itemId}'),
+                    key: ValueKey('note-${e.entryId}'),
                     style: muted.copyWith(fontStyle: FontStyle.italic),
                   ),
                 ),
@@ -338,10 +350,10 @@ extension _SheetInventorySection on _SheetScreenState {
   }) {
     if (!info.equippable) return const SizedBox.shrink();
     final box = Checkbox(
-      key: ValueKey('equip-${e.itemId}'),
+      key: ValueKey('equip-${e.entryId}'),
       value: info.equipped,
       onChanged: (v) =>
-          _replace(InventoryOps.setEquipped(_c, e.itemId, v ?? false, repo)),
+          _replace(InventoryOps.setEquipped(_c, e.entryId, v ?? false, repo)),
     );
     if (!withLabel) return Center(child: box);
     return Row(
@@ -353,9 +365,9 @@ extension _SheetInventorySection on _SheetScreenState {
   /// Acciones secundarias en menú contextual, como pide §8.7. La casilla de
   /// equipar se queda afuera porque es la acción frecuente.
   Widget _itemMenu(InventoryEntry e, _ItemInfo info) {
-    final weapon = repo.weapon(e.itemId);
+    final weapon = InventoryOps.resolve(e, repo).weapon;
     return PopupMenuButton<String>(
-      key: ValueKey('menu-${e.itemId}'),
+      key: ValueKey('menu-${e.entryId}'),
       tooltip: 'Acciones de ${info.name}',
       icon: const Icon(Icons.more_vert, size: 18),
       onSelected: (action) => _runItemAction(action, e),
@@ -379,6 +391,11 @@ extension _SheetInventorySection on _SheetScreenState {
             checked: _c.weaponTwoHanded[e.itemId] ?? false,
             child: const Text('A dos manos'),
           ),
+        if (e.origin?.startsWith('artificer:replicate-magic-item:') == true)
+          const PopupMenuItem(
+            value: 'transmute',
+            child: Text('Transmutar réplica…'),
+          ),
         const PopupMenuItem(value: 'remove', child: Text('Quitar')),
       ],
     );
@@ -399,7 +416,7 @@ extension _SheetInventorySection on _SheetScreenState {
         );
         final value = int.tryParse(raw ?? '');
         if (value == null || value < 1) return;
-        _updateEntry(e.itemId, (entry) => entry.copyWith(quantity: value));
+        _updateEntry(e.entryId, (entry) => entry.copyWith(quantity: value));
       case 'note':
         final note = await showTextPromptDialog(
           context,
@@ -410,10 +427,10 @@ extension _SheetInventorySection on _SheetScreenState {
           maxLines: 4,
         );
         if (note == null) return;
-        _updateEntry(e.itemId, (entry) => entry.copyWith(note: note));
+        _updateEntry(e.entryId, (entry) => entry.copyWith(note: note));
       case 'attune':
         _updateEntry(
-          e.itemId,
+          e.entryId,
           (entry) => entry.copyWith(attuned: !entry.attuned),
         );
       case 'off-hand':
@@ -425,11 +442,13 @@ extension _SheetInventorySection on _SheetScreenState {
         _replace(
           _c.copyWith(weaponTwoHanded: {..._c.weaponTwoHanded, e.itemId: !on}),
         );
+      case 'transmute':
+        await _transmuteReplica(e);
       case 'remove':
         _replace(
           InventoryOps.remove(
             _c.copyWith(inventory: _inventoryEntries),
-            e.itemId,
+            e.entryId,
             repo,
             quantity: e.quantity,
           ),
@@ -437,17 +456,51 @@ extension _SheetInventorySection on _SheetScreenState {
     }
   }
 
+  Future<void> _transmuteReplica(InventoryEntry entry) async {
+    final itemId = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Transmutar en'),
+        children: [
+          for (final id in _c.magicItemChoices)
+            if (id != entry.itemId)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, id),
+                child: Text(repo.item(id)?.name ?? id),
+              ),
+        ],
+      ),
+    );
+    if (itemId == null) return;
+    final item = repo.item(itemId);
+    if (item == null) return;
+    String? baseItemId;
+    if (item.baseItemKind != null) {
+      baseItemId = await _chooseMagicBase(item);
+      if (baseItemId == null) return;
+    }
+    _replace(
+      InventoryOps.transmuteReplica(
+        _c,
+        entry.entryId,
+        itemId,
+        repo,
+        baseItemId: baseItemId,
+      ),
+    );
+  }
+
   /// Aplica un cambio a una línea. Guarda la lista **materializada**, así una
   /// entrada que hasta ahora solo existía porque el objeto estaba equipado pasa
   /// a ser una línea de verdad en cuanto se la edita.
   void _updateEntry(
-    String itemId,
+    String entryId,
     InventoryEntry Function(InventoryEntry) change,
   ) => _replace(
     _c.copyWith(
       inventory: [
         for (final entry in _inventoryEntries)
-          entry.itemId == itemId ? change(entry) : entry,
+          entry.entryId == entryId ? change(entry) : entry,
       ],
     ),
   );
@@ -461,11 +514,137 @@ extension _SheetInventorySection on _SheetScreenState {
     _replace(InventoryOps.add(_c, id));
   }
 
+  Future<void> _manageMagicItemPlans() async {
+    final slot = sheet.itemChoiceSlots.first;
+    final selected = {..._c.magicItemChoices};
+    final choices = await showDialog<Set<String>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('${slot.name} (${selected.length}/${slot.count})'),
+          content: SizedBox(
+            width: 560,
+            child: SingleChildScrollView(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final id in slot.optionItemIds)
+                    FilterChip(
+                      label: Text(repo.item(id)?.name ?? id),
+                      selected: selected.contains(id),
+                      onSelected: (on) {
+                        setState(() {
+                          if (on && selected.length < slot.count) {
+                            selected.add(id);
+                          } else if (!on) {
+                            selected.remove(id);
+                          }
+                        });
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: selected.length == slot.count
+                  ? () => Navigator.pop(context, selected)
+                  : null,
+              child: const Text('Guardar planos'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (choices == null) return;
+    var next = _c.copyWith(
+      magicItemChoices: choices.toList(),
+      inventory: [
+        for (final entry in _c.inventory)
+          if (entry.origin?.startsWith('artificer:replicate-magic-item:') !=
+                  true ||
+              choices.contains(entry.itemId))
+            entry,
+      ],
+    );
+    _replace(next);
+    if (!mounted) return;
+    final create = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text('Crear réplica (${slot.maxActive} máx.)'),
+        children: [
+          for (final id in choices)
+            if (!next.inventory.any(
+              (e) => e.origin == 'artificer:replicate-magic-item:$id',
+            ))
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(context, id),
+                child: Text(repo.item(id)?.name ?? id),
+              ),
+        ],
+      ),
+    );
+    if (create == null) return;
+    final item = repo.item(create)!;
+    String? baseItemId;
+    if (item.baseItemKind != null) {
+      baseItemId = await _chooseMagicBase(item);
+      if (baseItemId == null) return;
+    }
+    next = InventoryOps.replicateMagicItem(
+      next,
+      create,
+      repo,
+      baseItemId: baseItemId,
+    );
+    _replace(next);
+  }
+
+  Future<String?> _chooseMagicBase(Item item) => showDialog<String>(
+    context: context,
+    builder: (context) {
+      final ids = item.eligibleBaseItemIds.isNotEmpty
+          ? item.eligibleBaseItemIds
+          : switch (item.baseItemKind) {
+              'weapon' => repo.weaponsSorted.map((e) => e.id).toList(),
+              'armor' =>
+                repo.armorSorted
+                    .where((e) => !e.isShield)
+                    .map((e) => e.id)
+                    .toList(),
+              'shield' =>
+                repo.armorSorted
+                    .where((e) => e.isShield)
+                    .map((e) => e.id)
+                    .toList(),
+              _ => <String>[],
+            };
+      return SimpleDialog(
+        title: const Text('Elegí el objeto base'),
+        children: [
+          for (final id in ids)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, id),
+              child: Text(repo.catalogEntry(id)?.name ?? id),
+            ),
+        ],
+      );
+    },
+  );
+
   /// Todo lo que la fila necesita saber del objeto, resuelto una sola vez.
   _ItemInfo _itemInfo(InventoryEntry e) {
     final entry = repo.catalogEntry(e.itemId);
     final item = repo.item(e.itemId);
-    final weapon = repo.weapon(e.itemId);
+    final resolved = InventoryOps.resolve(e, repo);
+    final weapon = resolved.weapon;
     if (entry == null) {
       // El id quedó huérfano: homebrew que no se cargó, o un pack de contenido
       // que ya no está. Se muestra igual, porque borrárselo al jugador sin
@@ -483,13 +662,29 @@ extension _SheetInventorySection on _SheetScreenState {
       );
     }
     return _ItemInfo(
-      name: entry.name,
-      kindLabel: _itemKindLabel(entry.kind, item?.category),
-      icon: _itemIcon(entry.kind, item?.category),
-      weight: entry.weight,
+      name: resolved.name,
+      kindLabel: _itemKindLabel(
+        resolved.weapon != null
+            ? 'weapon'
+            : resolved.armor != null
+            ? 'armor'
+            : entry.kind,
+        item?.category,
+      ),
+      icon: _itemIcon(
+        resolved.weapon != null
+            ? 'weapon'
+            : resolved.armor != null
+            ? 'armor'
+            : entry.kind,
+        item?.category,
+      ),
+      weight: resolved.weight,
       bundleSize: item?.bundleSize ?? 1,
       equippable:
-          entry.kind != 'item' || (item!.effects.isNotEmpty || item.isMagic),
+          resolved.weapon != null ||
+          resolved.armor != null ||
+          (item != null && (item.effects.isNotEmpty || item.isMagic)),
       equipped: InventoryOps.isEquipped(_c, e, repo),
       attunable: item?.requiresAttunement ?? false,
       twoHandedHint: weapon == null || !weapon.requiresTwoHands()
@@ -541,43 +736,68 @@ class _AddItemDialog extends StatefulWidget {
 
 class _AddItemDialogState extends State<_AddItemDialog> {
   String _query = '';
+  String _kind = 'all';
+  String _rarity = 'all';
+  String _attunement = 'all';
 
   @override
   Widget build(BuildContext context) {
     final repo = widget.repo;
-    final all = <({String id, String name, String detail, int costCp})>[
-      for (final w in repo.weaponsSorted)
-        (
-          id: w.id,
-          name: w.name,
-          detail: _itemKindLabel('weapon', null),
-          costCp: w.costCp,
-        ),
-      for (final a in repo.armorSorted)
-        (
-          id: a.id,
-          name: a.name,
-          detail: a.isShield ? 'Escudo' : _itemKindLabel('armor', null),
-          costCp: a.costCp,
-        ),
-      for (final i in repo.itemsSorted)
-        (
-          id: i.id,
-          name: i.name,
-          detail: [
-            _itemKindLabel('item', i.category),
-            if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
-          ].join(' · '),
-          costCp: i.costCp,
-        ),
-    ];
+    final all =
+        <
+          ({
+            String id,
+            String name,
+            String detail,
+            int costCp,
+            String kind,
+            String? rarity,
+            bool attune,
+          })
+        >[
+          for (final w in repo.weaponsSorted)
+            (
+              id: w.id,
+              name: w.name,
+              detail: _itemKindLabel('weapon', null),
+              costCp: w.costCp,
+              kind: 'weapon',
+              rarity: null,
+              attune: false,
+            ),
+          for (final a in repo.armorSorted)
+            (
+              id: a.id,
+              name: a.name,
+              detail: a.isShield ? 'Escudo' : _itemKindLabel('armor', null),
+              costCp: a.costCp,
+              kind: a.isShield ? 'shield' : 'armor',
+              rarity: null,
+              attune: false,
+            ),
+          for (final i in repo.itemsSorted)
+            (
+              id: i.id,
+              name: i.name,
+              detail: [
+                _itemKindLabel('item', i.category),
+                if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
+              ].join(' · '),
+              costCp: i.costCp,
+              kind: i.baseItemKind ?? (i.isMagic ? 'magic' : 'item'),
+              rarity: i.rarity,
+              attune: i.requiresAttunement,
+            ),
+        ];
     final needle = _query.trim().toLowerCase();
-    final matches = needle.isEmpty
-        ? all
-        : [
-            for (final e in all)
-              if (e.name.toLowerCase().contains(needle)) e,
-          ];
+    final matches = [
+      for (final e in all)
+        if ((needle.isEmpty || e.name.toLowerCase().contains(needle)) &&
+            (_kind == 'all' || e.kind == _kind) &&
+            (_rarity == 'all' || e.rarity == _rarity) &&
+            (_attunement == 'all' || (_attunement == 'yes') == e.attune))
+          e,
+    ];
 
     return AlertDialog(
       title: const Text('Agregar objeto'),
@@ -595,6 +815,35 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 border: OutlineInputBorder(),
               ),
               onChanged: (v) => setState(() => _query = v),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _filter('Tipo', _kind, const {
+                  'all': 'Todos',
+                  'weapon': 'Arma',
+                  'armor': 'Armadura',
+                  'shield': 'Escudo',
+                  'magic': 'Objeto mágico',
+                  'item': 'Equipo',
+                }, (v) => _kind = v),
+                _filter('Rareza', _rarity, const {
+                  'all': 'Todas',
+                  'common': 'Común',
+                  'uncommon': 'Infrecuente',
+                  'rare': 'Raro',
+                  'very-rare': 'Muy raro',
+                  'legendary': 'Legendario',
+                  'artifact': 'Artefacto',
+                }, (v) => _rarity = v),
+                _filter('Sintonización', _attunement, const {
+                  'all': 'Cualquiera',
+                  'yes': 'Requiere',
+                  'no': 'No requiere',
+                }, (v) => _attunement = v),
+              ],
             ),
             const SizedBox(height: 10),
             Expanded(
@@ -625,4 +874,26 @@ class _AddItemDialogState extends State<_AddItemDialog> {
       ],
     );
   }
+
+  Widget _filter(
+    String label,
+    String value,
+    Map<String, String> options,
+    ValueChanged<String> changed,
+  ) => SizedBox(
+    width: 128,
+    child: DropdownButtonFormField<String>(
+      initialValue: value,
+      isDense: true,
+      isExpanded: true,
+      decoration: InputDecoration(labelText: label),
+      items: [
+        for (final entry in options.entries)
+          DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+      ],
+      onChanged: (next) {
+        if (next != null) setState(() => changed(next));
+      },
+    ),
+  );
 }

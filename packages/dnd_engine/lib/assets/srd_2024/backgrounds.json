@@ -18,7 +18,57 @@
       "gaming-set"
     ],
     "originFeatId": "savage-attacker",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "spear"
+          },
+          {
+            "itemId": "shortbow"
+          },
+          {
+            "itemId": "arrows"
+          },
+          {
+            "chooseFromItemIds": [
+              "dice-set",
+              "dragonchess-set",
+              "playing-card-set",
+              "three-dragon-ante-set"
+            ]
+          },
+          {
+            "itemId": "healers-kit"
+          },
+          {
+            "itemId": "quiver"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 14
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "guard",
@@ -39,7 +89,60 @@
       "gaming-set"
     ],
     "originFeatId": "alert",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "spear"
+          },
+          {
+            "itemId": "light-crossbow"
+          },
+          {
+            "itemId": "bolts"
+          },
+          {
+            "chooseFromItemIds": [
+              "dice-set",
+              "dragonchess-set",
+              "playing-card-set",
+              "three-dragon-ante-set"
+            ]
+          },
+          {
+            "itemId": "lantern-hooded"
+          },
+          {
+            "itemId": "manacles"
+          },
+          {
+            "itemId": "quiver"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 12
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "wayfarer",
@@ -60,7 +163,56 @@
       "thieves-tools"
     ],
     "originFeatId": "lucky",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "dagger",
+            "quantity": 2
+          },
+          {
+            "itemId": "thieves-tools"
+          },
+          {
+            "chooseFromItemIds": [
+              "dice-set",
+              "dragonchess-set",
+              "playing-card-set",
+              "three-dragon-ante-set"
+            ]
+          },
+          {
+            "itemId": "bedroll"
+          },
+          {
+            "itemId": "pouch",
+            "quantity": 2
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 16
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "artisan",
@@ -81,7 +233,59 @@
       "artisans-tools"
     ],
     "originFeatId": "crafter",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "chooseFromItemIds": [
+              "alchemists-supplies",
+              "brewers-supplies",
+              "calligraphers-supplies",
+              "carpenters-tools",
+              "cartographers-tools",
+              "cobblers-tools",
+              "cooks-utensils",
+              "glassblowers-tools",
+              "jewelers-tools",
+              "leatherworkers-tools",
+              "masons-tools",
+              "painters-supplies",
+              "potters-tools",
+              "smiths-tools",
+              "tinkers-tools",
+              "weavers-tools",
+              "woodcarvers-tools"
+            ]
+          },
+          {
+            "itemId": "pouch",
+            "quantity": 2
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 32
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "charlatan",
@@ -102,7 +306,40 @@
       "forgery-kit"
     ],
     "originFeatId": "skilled",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "forgery-kit"
+          },
+          {
+            "itemId": "costume"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "coins": {
+              "gp": 15
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "criminal",
@@ -123,7 +360,48 @@
       "thieves-tools"
     ],
     "originFeatId": "alert",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "dagger",
+            "quantity": 2
+          },
+          {
+            "itemId": "thieves-tools"
+          },
+          {
+            "itemId": "crowbar"
+          },
+          {
+            "itemId": "pouch",
+            "quantity": 2
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 16
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "entertainer",
@@ -144,7 +422,58 @@
       "musical-instrument"
     ],
     "originFeatId": "musician",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "chooseFromItemIds": [
+              "bagpipes",
+              "drum",
+              "dulcimer",
+              "flute",
+              "horn",
+              "lute",
+              "lyre",
+              "pan-flute",
+              "shawm",
+              "viol"
+            ]
+          },
+          {
+            "itemId": "costume",
+            "quantity": 2
+          },
+          {
+            "itemId": "mirror"
+          },
+          {
+            "itemId": "perfume"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 11
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "farmer",
@@ -165,7 +494,49 @@
       "carpenters-tools"
     ],
     "originFeatId": "tough",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "sickle"
+          },
+          {
+            "itemId": "carpenters-tools"
+          },
+          {
+            "itemId": "healers-kit"
+          },
+          {
+            "itemId": "pot-iron"
+          },
+          {
+            "itemId": "shovel"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 30
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "hermit",
@@ -186,7 +557,53 @@
       "herbalism-kit"
     ],
     "originFeatId": "healer",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "quarterstaff"
+          },
+          {
+            "itemId": "herbalism-kit"
+          },
+          {
+            "itemId": "bedroll"
+          },
+          {
+            "itemId": "book"
+          },
+          {
+            "itemId": "lamp"
+          },
+          {
+            "itemId": "oil",
+            "quantity": 3
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 16
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "merchant",
@@ -207,7 +624,41 @@
       "navigators-tools"
     ],
     "originFeatId": "lucky",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "navigators-tools"
+          },
+          {
+            "itemId": "pouch",
+            "quantity": 2
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 22
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "noble",
@@ -228,7 +679,45 @@
       "gaming-set"
     ],
     "originFeatId": "skilled",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "chooseFromItemIds": [
+              "dice-set",
+              "dragonchess-set",
+              "playing-card-set",
+              "three-dragon-ante-set"
+            ]
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "perfume"
+          },
+          {
+            "coins": {
+              "gp": 29
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "scribe",
@@ -249,7 +738,46 @@
       "calligraphers-supplies"
     ],
     "originFeatId": "skilled",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "calligraphers-supplies"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "lamp"
+          },
+          {
+            "itemId": "oil"
+          },
+          {
+            "itemId": "parchment"
+          },
+          {
+            "coins": {
+              "gp": 23
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "acolyte",
@@ -270,7 +798,51 @@
       "calligraphers-supplies"
     ],
     "originFeatId": "magic-initiate-cleric",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "book"
+          },
+          {
+            "itemId": "calligraphers-supplies"
+          },
+          {
+            "chooseFromItemIds": [
+              "amulet",
+              "emblem",
+              "reliquary"
+            ]
+          },
+          {
+            "itemId": "parchment",
+            "quantity": 10
+          },
+          {
+            "itemId": "robe"
+          },
+          {
+            "coins": {
+              "gp": 8
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "sage",
@@ -291,7 +863,47 @@
       "calligraphers-supplies"
     ],
     "originFeatId": "magic-initiate-wizard",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "quarterstaff"
+          },
+          {
+            "itemId": "calligraphers-supplies"
+          },
+          {
+            "itemId": "book"
+          },
+          {
+            "itemId": "parchment",
+            "quantity": 8
+          },
+          {
+            "itemId": "robe"
+          },
+          {
+            "coins": {
+              "gp": 8
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "guide",
@@ -312,7 +924,52 @@
       "cartographers-tools"
     ],
     "originFeatId": "magic-initiate-druid",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "shortbow"
+          },
+          {
+            "itemId": "arrows"
+          },
+          {
+            "itemId": "cartographers-tools"
+          },
+          {
+            "itemId": "bedroll"
+          },
+          {
+            "itemId": "quiver"
+          },
+          {
+            "itemId": "tent"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 3
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "sailor",
@@ -333,7 +990,43 @@
       "navigators-tools"
     ],
     "originFeatId": "tavern-brawler",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "dagger"
+          },
+          {
+            "itemId": "navigators-tools"
+          },
+          {
+            "itemId": "rope"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 20
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "aberrant-heir",
@@ -354,7 +1047,43 @@
       "disguise-kit"
     ],
     "originFeatId": "aberrant-dragonmark",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "dagger"
+          },
+          {
+            "itemId": "disguise-kit"
+          },
+          {
+            "itemId": "costume"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 16
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "archaeologist",
@@ -375,7 +1104,52 @@
       "cartographers-tools"
     ],
     "originFeatId": "skilled",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "cartographers-tools"
+          },
+          {
+            "itemId": "lantern-bullseye"
+          },
+          {
+            "itemId": "map"
+          },
+          {
+            "itemId": "case-map-or-scroll"
+          },
+          {
+            "itemId": "shovel"
+          },
+          {
+            "itemId": "tent"
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 17
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-agent",
@@ -396,7 +1170,55 @@
       "artisans-tools"
     ],
     "originFeatId": "lucky",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "chooseFromItemIds": [
+              "alchemists-supplies",
+              "brewers-supplies",
+              "calligraphers-supplies",
+              "carpenters-tools",
+              "cartographers-tools",
+              "cobblers-tools",
+              "cooks-utensils",
+              "glassblowers-tools",
+              "jewelers-tools",
+              "leatherworkers-tools",
+              "masons-tools",
+              "painters-supplies",
+              "potters-tools",
+              "smiths-tools",
+              "tinkers-tools",
+              "weavers-tools",
+              "woodcarvers-tools"
+            ]
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "coins": {
+              "gp": 20
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-cannith-heir",
@@ -417,7 +1239,62 @@
       "artisans-tools"
     ],
     "originFeatId": "mark-of-making",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "chooseFromItemIds": [
+              "alchemists-supplies",
+              "brewers-supplies",
+              "calligraphers-supplies",
+              "carpenters-tools",
+              "cartographers-tools",
+              "cobblers-tools",
+              "cooks-utensils",
+              "glassblowers-tools",
+              "jewelers-tools",
+              "leatherworkers-tools",
+              "masons-tools",
+              "painters-supplies",
+              "potters-tools",
+              "smiths-tools",
+              "tinkers-tools",
+              "weavers-tools",
+              "woodcarvers-tools"
+            ]
+          },
+          {
+            "itemId": "crowbar"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "pouch",
+            "quantity": 2
+          },
+          {
+            "coins": {
+              "gp": 17
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-deneith-heir",
@@ -438,7 +1315,57 @@
       "gaming-set"
     ],
     "originFeatId": "mark-of-sentinel",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "spear"
+          },
+          {
+            "itemId": "shortbow"
+          },
+          {
+            "itemId": "arrows"
+          },
+          {
+            "chooseFromItemIds": [
+              "dice-set",
+              "dragonchess-set",
+              "playing-card-set",
+              "three-dragon-ante-set"
+            ]
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "healers-kit"
+          },
+          {
+            "itemId": "quiver"
+          },
+          {
+            "coins": {
+              "gp": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-ghallanda-heir",
@@ -459,7 +1386,50 @@
       "cooks-utensils"
     ],
     "originFeatId": "mark-of-hospitality",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "cooks-utensils"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "pot-iron"
+          },
+          {
+            "itemId": "lamp"
+          },
+          {
+            "itemId": "oil",
+            "quantity": 5
+          },
+          {
+            "itemId": "perfume"
+          },
+          {
+            "coins": {
+              "gp": 26
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-jorasco-heir",
@@ -480,7 +1450,40 @@
       "herbalism-kit"
     ],
     "originFeatId": "mark-of-healing",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "herbalism-kit"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "healers-kit"
+          },
+          {
+            "coins": {
+              "gp": 25
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-kundarak-heir",
@@ -501,7 +1504,37 @@
       "thieves-tools"
     ],
     "originFeatId": "mark-of-warding",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "thieves-tools"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "coins": {
+              "gp": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-lyrandar-heir",
@@ -522,7 +1555,37 @@
       "navigators-tools"
     ],
     "originFeatId": "mark-of-storm",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "navigators-tools"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "coins": {
+              "gp": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-medani-heir",
@@ -543,7 +1606,37 @@
       "disguise-kit"
     ],
     "originFeatId": "mark-of-detection",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "disguise-kit"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "coins": {
+              "gp": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-orien-heir",
@@ -564,7 +1657,43 @@
       "cartographers-tools"
     ],
     "originFeatId": "mark-of-passage",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "cartographers-tools"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "map"
+          },
+          {
+            "itemId": "case-map-or-scroll"
+          },
+          {
+            "coins": {
+              "gp": 18
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-phiarlan-heir",
@@ -585,7 +1714,37 @@
       "disguise-kit"
     ],
     "originFeatId": "mark-of-shadow",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "disguise-kit"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "coins": {
+              "gp": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-sivis-heir",
@@ -606,7 +1765,52 @@
       "calligraphers-supplies"
     ],
     "originFeatId": "mark-of-scribing",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "calligraphers-supplies"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "ink"
+          },
+          {
+            "itemId": "ink-pen",
+            "quantity": 5
+          },
+          {
+            "itemId": "paper",
+            "quantity": 30
+          },
+          {
+            "itemId": "parchment",
+            "quantity": 9
+          },
+          {
+            "coins": {
+              "gp": 8
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-tharashk-heir",
@@ -627,7 +1831,51 @@
       "gaming-set"
     ],
     "originFeatId": "mark-of-finding",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "chooseFromItemIds": [
+              "dice-set",
+              "dragonchess-set",
+              "playing-card-set",
+              "three-dragon-ante-set"
+            ]
+          },
+          {
+            "itemId": "climbers-kit"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "hunting-trap"
+          },
+          {
+            "itemId": "manacles"
+          },
+          {
+            "coins": {
+              "gp": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-thuranni-heir",
@@ -648,7 +1896,51 @@
       "musical-instrument"
     ],
     "originFeatId": "mark-of-shadow",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "chooseFromItemIds": [
+              "bagpipes",
+              "drum",
+              "dulcimer",
+              "flute",
+              "horn",
+              "lute",
+              "lyre",
+              "pan-flute",
+              "shawm",
+              "viol"
+            ]
+          },
+          {
+            "itemId": "costume"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "coins": {
+              "gp": 13
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "house-vadalis-heir",
@@ -669,7 +1961,40 @@
       "herbalism-kit"
     ],
     "originFeatId": "mark-of-handling",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "herbalism-kit"
+          },
+          {
+            "itemId": "clothes-fine"
+          },
+          {
+            "itemId": "net"
+          },
+          {
+            "coins": {
+              "gp": 29
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   },
   {
     "id": "inquisitive",
@@ -690,6 +2015,46 @@
       "thieves-tools"
     ],
     "originFeatId": "alert",
-    "effects": []
+    "effects": [],
+    "startingEquipment": [
+      {
+        "id": "A",
+        "label": "Opción A",
+        "grants": [
+          {
+            "itemId": "thieves-tools"
+          },
+          {
+            "itemId": "lantern-bullseye"
+          },
+          {
+            "itemId": "crowbar"
+          },
+          {
+            "itemId": "oil",
+            "quantity": 10
+          },
+          {
+            "itemId": "clothes-travelers"
+          },
+          {
+            "coins": {
+              "gp": 10
+            }
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "label": "Opción B",
+        "grants": [
+          {
+            "coins": {
+              "gp": 50
+            }
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -28,9 +28,16 @@ class _ItemFormState extends State<ItemForm> {
   late final _acBonus = TextEditingController(
     text: '${_initialAcBonus(widget.initial)}',
   );
+  late final _magicBonus = TextEditingController(
+    text: '${widget.initial?.magicBonus ?? 0}',
+  );
+  late final _eligibleBases = TextEditingController(
+    text: widget.initial?.eligibleBaseItemIds.join(', ') ?? '',
+  );
   late String _category = widget.initial?.category ?? 'gear';
   late String? _rarity = widget.initial?.rarity;
   late bool _attunement = widget.initial?.requiresAttunement ?? false;
+  late String _baseItemKind = widget.initial?.baseItemKind ?? 'none';
   late final Set<String> _resistances = {
     for (final e in widget.initial?.effects ?? const <Effect>[])
       if (e is ResistanceEffect) e.damageType,
@@ -95,6 +102,27 @@ class _ItemFormState extends State<ItemForm> {
               ? null
               : (v) => setState(() => _attunement = v),
         ),
+        _idDropdown(
+          label: 'Objeto base',
+          value: _baseItemKind,
+          options: const {
+            'none': 'Ninguno',
+            'weapon': 'Arma',
+            'armor': 'Armadura',
+            'shield': 'Escudo',
+          },
+          onChanged: (v) => setState(() => _baseItemKind = v),
+        ),
+        _text(
+          _magicBonus,
+          'Bonificador mágico del objeto base',
+          number: true,
+          validator: (v) => _intInRange(v, -5, 10, optional: false),
+        ),
+        _text(
+          _eligibleBases,
+          'IDs de bases permitidas (separados por coma, opcional)',
+        ),
         const SizedBox(height: 8),
         const Eyebrow('Efectos mientras esté equipado'),
         _text(
@@ -129,6 +157,13 @@ class _ItemFormState extends State<ItemForm> {
         description: _description.text.trim(),
         rarity: _rarity,
         requiresAttunement: _attunement,
+        magicBonus: int.parse(_magicBonus.text.trim()),
+        baseItemKind: _baseItemKind == 'none' ? null : _baseItemKind,
+        eligibleBaseItemIds: _eligibleBases.text
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList(),
         effects: [
           if (acBonus != 0) ArmorClassBonusEffect(acBonus),
           for (final type in _resistances) ResistanceEffect(type),

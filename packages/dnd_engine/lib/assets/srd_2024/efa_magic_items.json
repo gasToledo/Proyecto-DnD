@@ -1,0 +1,120 @@
+[
+  {
+    "id": "boots-of-the-winding-path",
+    "name": "Boots of the Winding Path",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "uncommon",
+    "requiresAttunement": true,
+    "description": "Mientras llevas estas botas, como acción adicional puedes teletransportarte hasta 15 pies a un espacio desocupado que puedas ver y que hayas ocupado durante el turno actual.",
+    "costCp": 40000
+  },
+  {
+    "id": "dazzling-weapon",
+    "name": "Dazzling Weapon",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "rare",
+    "requiresAttunement": true,
+    "magicBonus": 1,
+    "baseItemKind": "weapon",
+    "description": "El arma concede +1 a sus tiradas de ataque y daño. Puede emitir luz brillante a 30 pies y tenue otros 30. Tiene 4 cargas: como reacción tras recibir un impacto, puedes gastar 1 para forzar una salvación de Constitución CD 15; si falla, el atacante queda cegado hasta el final de su siguiente turno. Recupera 1d4 cargas al amanecer.",
+    "costCp": 400000
+  },
+  {
+    "id": "helm-of-awareness",
+    "name": "Helm of Awareness",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "uncommon",
+    "description": "Mientras llevas este yelmo, tienes ventaja en las tiradas de iniciativa.",
+    "costCp": 40000
+  },
+  {
+    "id": "manifold-tool",
+    "name": "Manifold Tool",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "common",
+    "requiresAttunement": true,
+    "description": "Como acción de magia, la herramienta se transforma en las herramientas de artesano que elijas. Tienes competencia con la forma adoptada mientras la utilizas.",
+    "costCp": 10000
+  },
+  {
+    "id": "mind-sharpener",
+    "name": "Mind Sharpener",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "uncommon",
+    "requiresAttunement": true,
+    "description": "Tiene 4 cargas. Cuando fallas una salvación de Constitución para mantener concentración, puedes usar tu reacción y gastar 1 carga para tener éxito en su lugar. Recupera 1d4 cargas al amanecer.",
+    "costCp": 40000
+  },
+  {
+    "id": "repeating-shot",
+    "name": "Repeating Shot",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "uncommon",
+    "requiresAttunement": true,
+    "magicBonus": 1,
+    "baseItemKind": "weapon",
+    "eligibleBaseItemIds": [
+      "light-crossbow",
+      "shortbow",
+      "sling",
+      "hand-crossbow",
+      "heavy-crossbow",
+      "longbow",
+      "blowgun",
+      "musket",
+      "pistol"
+    ],
+    "description": "El arma concede +1 a las tiradas de ataque y daño a distancia, ignora la propiedad Recarga y genera su propia munición mágica si está vacía.",
+    "costCp": 40000
+  },
+  {
+    "id": "repulsion-shield",
+    "name": "Repulsion Shield",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "uncommon",
+    "magicBonus": 1,
+    "baseItemKind": "shield",
+    "eligibleBaseItemIds": [
+      "shield"
+    ],
+    "description": "Concede +1 a la CA mientras lo empuñas. Tiene 4 cargas: cuando una criatura Grande o menor a 5 pies te impacta con un ataque cuerpo a cuerpo, puedes gastar 1 carga como reacción para empujarla hasta 15 pies. Recupera 1d4 cargas al amanecer.",
+    "costCp": 40000
+  },
+  {
+    "id": "returning-weapon",
+    "name": "Returning Weapon",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "uncommon",
+    "magicBonus": 1,
+    "baseItemKind": "weapon",
+    "eligibleBaseItemIds": [
+      "dagger",
+      "handaxe",
+      "javelin",
+      "light-hammer",
+      "spear",
+      "dart",
+      "trident"
+    ],
+    "description": "El arma concede +1 a sus tiradas de ataque y daño y vuelve inmediatamente a tu mano después de usarla para un ataque a distancia. Solo es aplicable a un arma con la propiedad Arrojadiza.",
+    "costCp": 40000
+  },
+  {
+    "id": "spell-refueling-ring",
+    "name": "Spell-Refueling Ring",
+    "source": "foa_2025",
+    "category": "magic",
+    "rarity": "uncommon",
+    "requiresAttunement": true,
+    "description": "Requiere sintonización por un lanzador de conjuros. Como acción adicional recuperas un espacio de conjuro gastado de nivel 3 o menor. No puede volver a usarse hasta el siguiente amanecer.",
+    "costCp": 40000
+  }
+]

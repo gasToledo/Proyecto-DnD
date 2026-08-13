@@ -21,14 +21,12 @@ class _SummaryStep extends StatelessWidget {
     final skills = [...draft.classSkills, ...draft.raceSkills];
 
     final equipment = <String>[
-      draft.equippedArmorId == null
-          ? 'Sin armadura'
-          : repo.armor[draft.equippedArmorId]?.name ?? draft.equippedArmorId!,
-      if (draft.shieldEquipped) 'Escudo',
-      if (draft.weaponIds.isEmpty)
-        'Sin arma (puños)'
-      else
-        for (final id in draft.weaponIds) repo.weapons[id]?.name ?? id,
+      for (final entry in character.inventory)
+        '${repo.catalogEntry(entry.itemId)?.name ?? entry.itemId}'
+            '${entry.quantity == 1 ? '' : ' ×${entry.quantity}'}'
+            '${entry.equipped ? ' (puesto)' : ''}',
+      for (final coin in character.coins.entries)
+        if (coin.value != 0) '${coin.value} ${coinLabels[coin.key]}',
     ];
 
     final feats = <String>[

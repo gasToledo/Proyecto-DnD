@@ -68,8 +68,9 @@ void main() {
       expect(repo.armor, hasLength(13));
       // 78 de equipo de aventurero (61 sueltos + 10 contenedores + 7 paquetes),
       // 23 herramientas + 14 variantes de juego e instrumento, 5 municiones y
-      // 11 canalizadores y símbolos sagrados.
-      expect(repo.items, hasLength(131));
+      // 11 canalizadores y símbolos sagrados, libro de conjuros, 261 entradas
+      // mágicas SRD y 9 EFA.
+      expect(repo.items, hasLength(402));
       expect(repo.spells, hasLength(392));
       expect(repo.creatures, hasLength(107));
     });
@@ -80,7 +81,10 @@ void main() {
         ContentSource.foa2025: 4,
       });
       expect(porFuente(repo.weapons.values), {ContentSource.srd2024: 38});
-      expect(porFuente(repo.items.values), {ContentSource.srd2024: 131});
+      expect(porFuente(repo.items.values), {
+        ContentSource.srd2024: 393,
+        ContentSource.foa2025: 9,
+      });
       expect(porFuente(repo.spells.values), {
         ContentSource.srd2024: 339,
         ContentSource.phb2024: 52,
@@ -142,7 +146,11 @@ void main() {
       };
       for (final i in repo.items.values) {
         expect(categories, contains(i.category), reason: i.id);
-        expect(i.costCp, greaterThan(0), reason: 'objeto sin precio: ${i.id}');
+        expect(
+          i.costCp,
+          i.rarity == 'artifact' ? greaterThanOrEqualTo(0) : greaterThan(0),
+          reason: 'objeto sin precio: ${i.id}',
+        );
         expect(i.weight, greaterThanOrEqualTo(0), reason: i.id);
       }
     });
@@ -197,9 +205,11 @@ void main() {
           expect(i.rarity, isNotNull, reason: 'mundano sintonizable: ${i.id}');
         }
       }
-      // El catálogo sembrado es mundano: los objetos mágicos llegan por
-      // homebrew hasta que se importe el bloque del SRD.
-      expect(repo.items.values.where((i) => i.isMagic), isEmpty);
+      expect(repo.items.values.where((i) => i.isMagic), hasLength(270));
+      expect(
+        repo.items.values.where((i) => i.isMagic && i.category != 'magic'),
+        isEmpty,
+      );
     });
 
     test('el objeto herramienta y su competencia se llaman igual', () {

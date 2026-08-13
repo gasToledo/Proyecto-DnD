@@ -376,6 +376,53 @@ void main() {
     });
   });
 
+  group('v19 → v20: equipado vive en cada entrada', () {
+    test('conserva armadura, escudo, armas y metadatos del inventario', () {
+      final character = Character.fromJson({
+        'schemaVersion': 19,
+        'id': 'v19',
+        'name': 'Veterana',
+        'raceId': 'human',
+        'classId': 'fighter',
+        'backgroundId': 'soldier',
+        'assignedScores': const <String, int>{},
+        'equippedArmorId': 'plate',
+        'shieldEquipped': true,
+        'equippedWeaponIds': ['longsword'],
+        'inventory': [
+          {'itemId': 'plate', 'quantity': 1, 'note': 'Abollada'},
+          {'itemId': 'shield', 'quantity': 1},
+          {
+            'itemId': 'longsword',
+            'quantity': 2,
+            'attuned': true,
+            'note': 'La segunda queda de repuesto',
+          },
+          {'itemId': 'torch', 'quantity': 7},
+        ],
+      });
+
+      expect(character.inventory.map((entry) => entry.entryId).toSet(), {
+        'legacy-0-plate',
+        'legacy-1-shield',
+        'legacy-2-longsword',
+        'legacy-3-torch',
+      });
+      expect(
+        character.inventory
+            .where((entry) => entry.equipped)
+            .map((entry) => entry.itemId),
+        containsAll(['plate', 'shield', 'longsword']),
+      );
+      final sword = character.inventory[2];
+      expect(sword.quantity, 2);
+      expect(sword.attuned, isTrue);
+      expect(sword.note, 'La segunda queda de repuesto');
+      expect(character.inventory[3].quantity, 7);
+      expect(character.magicItemChoices, isEmpty);
+    });
+  });
+
   group('la entrada de inventario sobrevive el ida y vuelta', () {
     test('conserva cantidad, equipado, sintonizado y nota', () {
       final original = Character(

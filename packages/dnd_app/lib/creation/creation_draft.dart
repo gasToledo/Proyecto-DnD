@@ -225,6 +225,22 @@ class CreationDraft {
       }
     }
 
+    final classEquipmentOptionId = json['classEquipmentOptionId'];
+    if (classEquipmentOptionId is String) {
+      draft.classEquipmentOptionId = classEquipmentOptionId;
+    }
+    final backgroundEquipmentOptionId = json['backgroundEquipmentOptionId'];
+    if (backgroundEquipmentOptionId is String) {
+      draft.backgroundEquipmentOptionId = backgroundEquipmentOptionId;
+    }
+    final rawEquipmentChoices = json['equipmentChoices'];
+    if (rawEquipmentChoices is Map) {
+      for (final e in rawEquipmentChoices.entries) {
+        if (e.key is String && e.value is String) {
+          draft.equipmentChoices[e.key as String] = e.value as String;
+        }
+      }
+    }
     final armorId = json['equippedArmorId'];
     if (armorId is String && repo.armorPiece(armorId) != null) {
       draft.equippedArmorId = armorId;
@@ -323,6 +339,9 @@ class CreationDraft {
   final Map<Ability, int> assignedScores = {};
 
   // Equipo.
+  String? classEquipmentOptionId;
+  String? backgroundEquipmentOptionId;
+  final Map<String, String> equipmentChoices = {};
   String? equippedArmorId;
   bool shieldEquipped = false;
 
@@ -369,6 +388,9 @@ class CreationDraft {
       for (final entry in assignedScores.entries) entry.key.name: entry.value,
     },
     'equippedArmorId': equippedArmorId,
+    'classEquipmentOptionId': classEquipmentOptionId,
+    'backgroundEquipmentOptionId': backgroundEquipmentOptionId,
+    'equipmentChoices': equipmentChoices,
     'shieldEquipped': shieldEquipped,
     'weaponIds': weaponIds,
     'weaponOffHand': weaponOffHand,
@@ -399,6 +421,80 @@ class CreationDraft {
 
   Background? get background =>
       backgroundId == null ? null : repo.background(backgroundId!);
+
+  StartingEquipmentOption? get classEquipmentOption =>
+      _option(klass?.startingEquipment ?? const [], classEquipmentOptionId);
+
+  StartingEquipmentOption? get backgroundEquipmentOption => _option(
+    background?.startingEquipment ?? const [],
+    backgroundEquipmentOptionId,
+  );
+
+  StartingEquipmentOption? _option(
+    List<StartingEquipmentOption> options,
+    String? id,
+  ) => options.where((e) => e.id == id).firstOrNull;
+
+  List<({String key, EquipmentGrant grant})> get selectedEquipmentGrants => [
+    if (classEquipmentOption case final option?)
+      for (final (index, grant) in option.grants.indexed)
+        (key: 'class:${option.id}:$index', grant: grant),
+    if (backgroundEquipmentOption case final option?)
+      for (final (index, grant) in option.grants.indexed)
+        (key: 'background:${option.id}:$index', grant: grant),
+  ];
+
+  List<InventoryEntry> get startingInventory {
+    final quantities = <String, int>{};
+    for (final (:key, :grant) in selectedEquipmentGrants) {
+      final itemId = grant.itemId ?? equipmentChoices[key];
+      if (itemId != null) {
+        quantities[itemId] = (quantities[itemId] ?? 0) + grant.quantity;
+      }
+    }
+    final equipped = {
+      ?equippedArmorId,
+      if (shieldEquipped) 'shield',
+      ...weaponIds,
+    };
+    return [
+      for (final (index, entry) in quantities.entries.indexed)
+        InventoryEntry(
+          entryId: 'starting-$index-${entry.key}',
+          itemId: entry.key,
+          quantity: entry.value,
+          equipped: equipped.contains(entry.key),
+        ),
+    ];
+  }
+
+  Map<String, int> get startingCoins {
+    final out = <String, int>{};
+    for (final selected in selectedEquipmentGrants) {
+      final grant = selected.grant;
+      for (final entry in grant.coins.entries) {
+        out[entry.key] = (out[entry.key] ?? 0) + entry.value;
+      }
+    }
+    return out;
+  }
+
+  Set<String> get receivedItemIds =>
+      startingInventory.map((e) => e.itemId).toSet();
+
+  void pruneEquipment() {
+    final received = receivedItemIds;
+    if (!received.contains(equippedArmorId)) equippedArmorId = null;
+    shieldEquipped = shieldEquipped && received.contains('shield');
+    weaponIds.removeWhere((id) => !received.contains(id));
+    equipmentChoices.removeWhere((key, value) {
+      final grant = selectedEquipmentGrants
+          .where((e) => e.key == key)
+          .map((e) => e.grant)
+          .firstOrNull;
+      return grant == null || !grant.chooseFromItemIds.contains(value);
+    });
+  }
 
   /// Armas con las que la clase elegida es competente. La Maestría de Armas
   /// 2024 solo puede aplicarse a estas.
@@ -871,12 +967,25 @@ class CreationDraft {
         // Los conjuros a elección se cuentan aunque la clase no lance: el rasgo
         // que los concede no depende de la magia de clase. El selector está en
         // este mismo paso, así que exigirlos nunca deja al jugador sin salida.
+        final equipmentPending = <String>[
+          if (classEquipmentOption == null) 'Elegí el equipo de clase.',
+          if (backgroundEquipmentOption == null)
+            'Elegí el equipo de trasfondo.',
+          if (selectedEquipmentGrants.any(
+            (e) => e.grant.isChoice && equipmentChoices[e.key] == null,
+          ))
+            'Completá las elecciones internas de equipo.',
+        ];
         final elegidos = pendingSpellChoices;
         final sc = spellcasting;
         if (sc == null) {
-          return elegidos > 0 ? ['Conjuros a elección: $elegidos.'] : const [];
+          return [
+            ...equipmentPending,
+            if (elegidos > 0) 'Conjuros a elección: $elegidos.',
+          ];
         }
         final out = <String>[
+          ...equipmentPending,
           if (elegidos > 0) 'Conjuros a elección: $elegidos.',
         ];
         if (cantrips.length < sc.cantripsKnown) {
@@ -967,11 +1076,8 @@ class CreationDraft {
       // personaje nacería con una espada equipada que no figura en su
       // inventario, que es la misma incoherencia que arregla la migración a
       // esquema 19 para las fichas viejas.
-      inventory: [
-        if (equippedArmorId != null) InventoryEntry(itemId: equippedArmorId!),
-        if (shieldEquipped) const InventoryEntry(itemId: 'shield'),
-        for (final id in weaponIds) InventoryEntry(itemId: id),
-      ],
+      inventory: startingInventory,
+      coins: startingCoins,
       alignment: alignment,
       personalityTrait: personalityTrait.trim(),
     );

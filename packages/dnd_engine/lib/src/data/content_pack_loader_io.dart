@@ -33,6 +33,11 @@ Future<ContentRepository> loadContentRepositoryFromDirectory(
         .cast<String, dynamic>(),
   );
 
+  final items = [
+    ...await read('items.json'),
+    ...await read('magic_items.json'),
+    ...await read('efa_magic_items.json'),
+  ];
   return ContentRepository.fromJsonPacks(
     races: await read('races.json'),
     classes: await read('classes.json'),
@@ -42,7 +47,7 @@ Future<ContentRepository> loadContentRepositoryFromDirectory(
     feats: await read('feats.json'),
     weapons: await read('weapons.json'),
     armor: await read('armor.json'),
-    items: await read('items.json'),
+    items: items,
     spells: await read('spells.json'),
     creatures: await read('creatures.json'),
   );

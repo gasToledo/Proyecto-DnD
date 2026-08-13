@@ -192,6 +192,13 @@ void main() {
     ..._subTable(chapter, 'Arcane Focuses', 'focus'),
     ..._subTable(chapter, 'Druidic Focuses', 'focus'),
     ..._subTable(chapter, 'Holy Symbols', 'focus'),
+    {
+      'id': 'spellbook',
+      'name': 'Spellbook',
+      'category': 'gear',
+      'weight': 3,
+      'costCp': 5000,
+    },
   ];
 
   final seen = <String>{};

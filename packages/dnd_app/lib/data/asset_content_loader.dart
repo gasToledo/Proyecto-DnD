@@ -16,6 +16,11 @@ Future<ContentRepository> loadOfficialContent() async {
     await rootBundle.loadString('$_base/manifest.json'),
   );
   ContentPackManifest.fromJson((manifest as Map).cast<String, dynamic>());
+  final items = [
+    ...await _load('items.json'),
+    ...await _load('magic_items.json'),
+    ...await _load('efa_magic_items.json'),
+  ];
   return ContentRepository.fromJsonPacks(
     races: await _load('races.json'),
     classes: await _load('classes.json'),
@@ -25,7 +30,7 @@ Future<ContentRepository> loadOfficialContent() async {
     feats: await _load('feats.json'),
     weapons: await _load('weapons.json'),
     armor: await _load('armor.json'),
-    items: await _load('items.json'),
+    items: items,
     spells: await _load('spells.json'),
     creatures: await _load('creatures.json'),
   );

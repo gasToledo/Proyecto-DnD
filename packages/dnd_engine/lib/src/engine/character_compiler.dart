@@ -21,6 +21,56 @@ class CharacterCompiler {
   final ContentRepository repo;
   const CharacterCompiler(this.repo);
 
+  ItemChoiceSlot _itemChoiceSlot(ItemChoiceEffect effect, Character character) {
+    final eligible = <String>{
+      for (final option in effect.options)
+        if (option.minLevel <= character.level &&
+            repo.item(option.itemId) != null)
+          option.itemId,
+    };
+
+    // EFA permite además planes abiertos por categoría. Se resuelven contra el
+    // catálogo real para que agregar contenido no obligue a duplicar cientos de
+    // IDs dentro de la clase. Los bloques de rareza variable no califican como
+    // una rareza concreta, aunque su registro de catálogo conserve una rareza
+    // de presentación.
+    if (effect.groupId == 'artificer-magic-item-plans') {
+      for (final item in repo.itemsSorted) {
+        final description = item.description.trimLeft().toLowerCase();
+        final cursed =
+            description.contains('maldici') || description.contains('maldito');
+        final variable = description.contains('rareza variable');
+        final potionOrScroll = description.startsWith('poción') ||
+            description.startsWith('pergamino');
+        final wondrous = description.startsWith('objeto maravilloso');
+        if (!cursed &&
+            !variable &&
+            (character.level >= 2 &&
+                    item.rarity == 'common' &&
+                    !potionOrScroll ||
+                character.level >= 10 &&
+                    item.rarity == 'uncommon' &&
+                    wondrous ||
+                character.level >= 14 && item.rarity == 'rare' && wondrous)) {
+          eligible.add(item.id);
+        }
+      }
+    }
+
+    return ItemChoiceSlot(
+      groupId: effect.groupId,
+      name: effect.name,
+      count: effect.countAt(character.level),
+      maxActive: artificerReplicasAtLevel(character.level),
+      replaceable: effect.replaceable,
+      optionItemIds: eligible.toList(),
+      chosenItemIds: character.magicItemChoices
+          .where(eligible.contains)
+          .take(effect.countAt(character.level))
+          .toList(),
+    );
+  }
+
   ComputedSheet compile(Character c) {
     final race = repo.race(c.raceId);
     final klass = repo.characterClass(c.classId);
@@ -448,10 +498,22 @@ class CharacterCompiler {
     final attacksPerAction = 1 + builder.maxExtraAttack;
 
     final attacks = <Attack>[];
-    for (final wid in c.equippedWeaponIds) {
-      final w = repo.weapon(wid);
+    for (final entry in c.inventory.where((e) => e.equipped)) {
+      final resolved = InventoryOps.resolve(entry, repo);
+      final w = resolved.weapon;
       if (w == null) continue;
-      attacks.add(_attack(c, w, mods, profBonus, builder));
+      for (var unit = 0; unit < entry.quantity; unit++) {
+        attacks.add(_attack(
+          c,
+          w,
+          mods,
+          profBonus,
+          builder,
+          magicBonus: resolved.magicBonus,
+          weaponId: resolved.item == null ? w.id : entry.entryId,
+          name: resolved.name,
+        ));
+      }
     }
 
     final spellcasting = _spellcasting(builder, c.level, mods, profBonus);
@@ -501,6 +563,7 @@ class CharacterCompiler {
       abilityModifiers: mods,
       abilityBonuses: List.unmodifiable(builder.abilityBonusSources),
       savingThrowProficiencies: builder.saveProficiencies,
+      savingThrowBonus: builder.savingThrowBonus,
       skillProficiencies: builder.skillProficiencies,
       expertiseSkills: builder.expertiseSkills,
       skillBonuses: builder.resolveSkillBonuses(mods),
@@ -550,6 +613,9 @@ class CharacterCompiler {
             replaceable: e.replaceable,
             options: e.options,
           ),
+      ],
+      itemChoiceSlots: [
+        for (final e in builder.itemChoiceSlots.values) _itemChoiceSlot(e, c),
       ],
       proficiencyChoiceSlots: proficiencySlots,
       expertiseChoiceSlots: expertiseSlots,
@@ -910,15 +976,21 @@ class CharacterCompiler {
   int _speed(Character c, SheetBuilder b) {
     var speed = b.speed;
     if (b.unarmoredMovementBonus != 0) {
-      final armor = c.equippedArmorId == null
-          ? null
-          : repo.armorPiece(c.equippedArmorId!);
+      final equipped = c.inventory
+          .where((e) => e.equipped)
+          .map((e) => InventoryOps.resolve(e, repo));
+      final armor = equipped
+          .map((e) => e.armor)
+          .whereType<Armor>()
+          .where((e) => !e.isShield)
+          .firstOrNull;
       var voided = false;
       if (armor != null && !armor.isShield) {
         voided =
             b.unarmoredMovementHeavyOnly ? armor.category == 'heavy' : true;
       }
-      if (c.shieldEquipped && !b.unarmoredMovementAllowShield) voided = true;
+      final hasShield = equipped.any((e) => e.armor?.isShield == true);
+      if (hasShield && !b.unarmoredMovementAllowShield) voided = true;
       if (!voided) speed += b.unarmoredMovementBonus;
     }
     return speed;
@@ -942,8 +1014,16 @@ class CharacterCompiler {
   int _armorClass(Character c, SheetBuilder b, Map<Ability, int> mods) {
     final dexMod = mods[Ability.dexterity]!;
     var ac = 10 + dexMod; // Sin armadura.
-    final armor =
-        c.equippedArmorId == null ? null : repo.armorPiece(c.equippedArmorId!);
+    final equipped = c.inventory
+        .where((e) => e.equipped)
+        .map((e) => InventoryOps.resolve(e, repo))
+        .toList();
+    final armor = equipped
+        .map((e) => e.armor)
+        .whereType<Armor>()
+        .where((e) => !e.isShield)
+        .firstOrNull;
+    final shield = equipped.where((e) => e.armor?.isShield == true).firstOrNull;
     if (armor != null && !armor.isShield) {
       ac = armor.baseAc;
       if (armor.addDexMod) {
@@ -954,23 +1034,23 @@ class CharacterCompiler {
     } else if (b.unarmoredDefenseAbility != null) {
       // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
       // El Monje la pierde si empuña un escudo; el Bárbaro la conserva.
-      final voidedByShield = c.shieldEquipped && !b.unarmoredDefenseAllowShield;
+      final voidedByShield = shield != null && !b.unarmoredDefenseAllowShield;
       if (!voidedByShield) {
         ac = 10 + dexMod + mods[b.unarmoredDefenseAbility!]!;
       }
     }
-    if (c.shieldEquipped) ac += 2;
+    if (shield != null) ac += shield.armor!.baseAc + shield.magicBonus;
+    if (armor != null) {
+      final armorEntry = equipped.firstWhere((e) => e.armor == armor);
+      ac += armorEntry.magicBonus;
+    }
     ac += b.acBonus;
     return ac;
   }
 
-  Attack _attack(
-    Character c,
-    Weapon w,
-    Map<Ability, int> mods,
-    int profBonus,
-    SheetBuilder b,
-  ) {
+  Attack _attack(Character c, Weapon w, Map<Ability, int> mods, int profBonus,
+      SheetBuilder b,
+      {int magicBonus = 0, String? weaponId, String? name}) {
     final int abilityMod;
     if (w.isRanged) {
       abilityMod = mods[Ability.dexterity]!;
@@ -984,7 +1064,7 @@ class CharacterCompiler {
     // El bono mágico suma al ataque y al daño. Vive en el arma y no como
     // efecto porque ningún efecto sabe decir "solo esta arma".
     final attackBonus =
-        abilityMod + (proficient ? profBonus : 0) + w.magicBonus;
+        abilityMod + (proficient ? profBonus : 0) + w.magicBonus + magicBonus;
 
     final twoHanded = c.weaponTwoHanded[w.id] ?? false;
     final dice = (twoHanded && w.versatileDice != null)
@@ -1015,10 +1095,10 @@ class CharacterCompiler {
         (offHand && !nick) ? AttackAction.bonusAction : AttackAction.action;
 
     return Attack(
-      weaponId: w.id,
-      name: w.name,
+      weaponId: weaponId ?? w.id,
+      name: name ?? w.name,
       attackBonus: attackBonus,
-      damage: _damageString(dice, damageMod + w.magicBonus),
+      damage: _damageString(dice, damageMod + w.magicBonus + magicBonus),
       damageType: w.damageType,
       mastery: hasMastery ? w.mastery : null,
       offHand: offHand,

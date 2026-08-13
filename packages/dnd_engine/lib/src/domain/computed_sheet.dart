@@ -267,6 +267,28 @@ class FeatureChoiceSlot {
       };
 }
 
+class ItemChoiceSlot {
+  final String groupId;
+  final String name;
+  final int count;
+  final int maxActive;
+  final bool replaceable;
+  final List<String> optionItemIds;
+  final List<String> chosenItemIds;
+
+  const ItemChoiceSlot({
+    required this.groupId,
+    required this.name,
+    required this.count,
+    required this.maxActive,
+    required this.replaceable,
+    this.optionItemIds = const [],
+    this.chosenItemIds = const [],
+  });
+
+  int get pending => (count - chosenItemIds.length).clamp(0, count);
+}
+
 /// Una elección de idiomas pendiente, con el pozo ya resuelto: lo que el
 /// personaje ya sabe por otra vía no se ofrece.
 class LanguageChoiceSlot {
@@ -530,6 +552,7 @@ class ComputedSheet {
   final List<AbilityBonus> abilityBonuses;
 
   final Set<Ability> savingThrowProficiencies;
+  final int savingThrowBonus;
   final Set<String> skillProficiencies;
 
   /// Habilidades con **Pericia**: el bonificador por competencia cuenta doble.
@@ -603,6 +626,7 @@ class ComputedSheet {
   /// Elecciones abiertas del personaje a este nivel (Estilo de Combate,
   /// Invocaciones Sobrenaturales…), con su cantidad ya resuelta.
   final List<FeatureChoiceSlot> featureChoiceSlots;
+  final List<ItemChoiceSlot> itemChoiceSlots;
 
   /// Competencias que el personaje todavía tiene que elegir por una dote
   /// (Habilidoso, Mente Aguda), con sus opciones ya resueltas.
@@ -649,6 +673,7 @@ class ComputedSheet {
     required this.abilityModifiers,
     this.abilityBonuses = const [],
     required this.savingThrowProficiencies,
+    this.savingThrowBonus = 0,
     required this.skillProficiencies,
     this.expertiseSkills = const {},
     this.skillBonuses = const {},
@@ -675,6 +700,7 @@ class ComputedSheet {
     this.alwaysPreparedSpellIds = const {},
     this.spellListAdditionIds = const {},
     this.featureChoiceSlots = const [],
+    this.itemChoiceSlots = const [],
     this.proficiencyChoiceSlots = const [],
     this.expertiseChoiceSlots = const [],
     this.spellChoiceSlots = const [],
@@ -710,7 +736,8 @@ class ComputedSheet {
   /// Tirada de salvación total para [a] (mod + competencia si aplica).
   int savingThrow(Ability a) =>
       abilityModifiers[a]! +
-      (savingThrowProficiencies.contains(a) ? proficiencyBonus : 0);
+      (savingThrowProficiencies.contains(a) ? proficiencyBonus : 0) +
+      savingThrowBonus;
 
   /// Modificador total de una habilidad: **único lugar donde vive esta suma**.
   /// Antes la hacían a mano la Percepción pasiva y la ficha, cada una por su

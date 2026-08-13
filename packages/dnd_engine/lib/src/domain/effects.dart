@@ -36,6 +36,11 @@ sealed class Effect {
           ability: Ability.fromKey(json['ability'] as String),
           amount: json['amount'] as int,
         ),
+      'setAbilityScore' => SetAbilityScoreEffect(
+          ability: Ability.fromKey(json['ability'] as String),
+          score: json['score'] as int,
+        ),
+      'savingThrowBonus' => SavingThrowBonusEffect(json['amount'] as int),
       'speedBonus' => SpeedBonusEffect(json['feet'] as int),
       'setSpeed' => SetSpeedEffect(json['feet'] as int),
       'darkvision' => DarkvisionEffect(json['range'] as int),
@@ -120,6 +125,17 @@ sealed class Effect {
           options: (json['options'] as List? ?? const [])
               .map((e) => FeatureOption.fromJson(e as Map<String, dynamic>))
               .toList(),
+        ),
+      'itemChoice' => ItemChoiceEffect(
+          groupId: json['groupId'] as String,
+          name: json['name'] as String,
+          countByLevel: (json['countByLevel'] as Map? ?? const {})
+              .map((k, v) => MapEntry(int.parse(k as String), v as int)),
+          options: (json['options'] as List? ?? const [])
+              .map((e) =>
+                  ItemChoiceOption.fromJson((e as Map).cast<String, dynamic>()))
+              .toList(),
+          replaceable: json['replaceable'] as bool? ?? false,
         ),
       'grantSpell' => GrantSpellEffect(
           spellId: json['spellId'] as String,
@@ -209,6 +225,60 @@ sealed class Effect {
       .toList();
 }
 
+class ItemChoiceOption {
+  final String itemId;
+  final int minLevel;
+  const ItemChoiceOption({required this.itemId, this.minLevel = 1});
+
+  Map<String, dynamic> toJson() => {
+        'itemId': itemId,
+        if (minLevel != 1) 'minLevel': minLevel,
+      };
+
+  factory ItemChoiceOption.fromJson(Map<String, dynamic> json) =>
+      ItemChoiceOption(
+        itemId: json['itemId'] as String,
+        minLevel: json['minLevel'] as int? ?? 1,
+      );
+}
+
+/// Elección de planos: conocer una opción no aplica los efectos del objeto.
+class ItemChoiceEffect extends Effect {
+  final String groupId;
+  final String name;
+  final Map<int, int> countByLevel;
+  final List<ItemChoiceOption> options;
+  final bool replaceable;
+
+  const ItemChoiceEffect({
+    required this.groupId,
+    required this.name,
+    required this.countByLevel,
+    this.options = const [],
+    this.replaceable = false,
+  });
+
+  int countAt(int level) {
+    var result = 0;
+    for (final entry in countByLevel.entries) {
+      if (entry.key <= level && entry.value > result) result = entry.value;
+    }
+    return result;
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'itemChoice',
+        'groupId': groupId,
+        'name': name,
+        'countByLevel': {
+          for (final e in countByLevel.entries) '${e.key}': e.value
+        },
+        'options': options.map((e) => e.toJson()).toList(),
+        if (replaceable) 'replaceable': true,
+      };
+}
+
 /// Suma (o resta) puntos a una característica. Fuente: trasfondo 2024, ASI, dote.
 class AbilityScoreBonusEffect extends Effect {
   final Ability ability;
@@ -217,6 +287,25 @@ class AbilityScoreBonusEffect extends Effect {
   @override
   Map<String, dynamic> toJson() =>
       {'type': 'abilityScoreBonus', 'ability': ability.name, 'amount': amount};
+}
+
+/// Fija un mínimo de puntuación mientras la fuente está activa.
+class SetAbilityScoreEffect extends Effect {
+  final Ability ability;
+  final int score;
+  const SetAbilityScoreEffect({required this.ability, required this.score});
+  @override
+  Map<String, dynamic> toJson() =>
+      {'type': 'setAbilityScore', 'ability': ability.name, 'score': score};
+}
+
+/// Bono plano a todas las salvaciones (Anillo/Capa de Protección).
+class SavingThrowBonusEffect extends Effect {
+  final int amount;
+  const SavingThrowBonusEffect(this.amount);
+  @override
+  Map<String, dynamic> toJson() =>
+      {'type': 'savingThrowBonus', 'amount': amount};
 }
 
 /// Suma pies a la velocidad base.

@@ -908,6 +908,14 @@
     "costCp": 5000
   },
   {
+    "id": "spellbook",
+    "name": "Libro de conjuros",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 3.0,
+    "costCp": 5000
+  },
+  {
     "id": "spikes-iron",
     "name": "Puntas de hierro",
     "source": "srd_2024",

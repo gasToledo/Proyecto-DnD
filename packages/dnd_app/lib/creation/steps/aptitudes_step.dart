@@ -689,12 +689,4 @@ class _FeatCard extends StatelessWidget {
   }
 }
 
-/// Etiqueta en español de la categoría de armadura.
-String _armorCategoryLabel(String c) => switch (c) {
-  'light' => 'Ligera',
-  'medium' => 'Media',
-  'heavy' => 'Pesada',
-  _ => 'Escudo',
-};
-
 /// Paso 6 · Equipo (y conjuros, para las clases lanzadoras).

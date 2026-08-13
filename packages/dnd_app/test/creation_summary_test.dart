@@ -88,6 +88,15 @@ void main() {
 
     // Equipo: dejamos el equipo por defecto y llenamos los cupos de conjuros,
     // guiándonos por lo que el propio footer dice que falta.
+    Future<void> pickStartingOption(String key, String label) async {
+      await tester.tap(find.byKey(ValueKey(key)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+    }
+
+    await pickStartingOption('starting-equipment-clase', 'Opción A');
+    await pickStartingOption('starting-equipment-trasfondo', 'Opción B');
     var cantrip = 0, spell = 0;
     for (var guard = 0; guard < 40; guard++) {
       final btn = tester.widget<FilledButton>(
@@ -141,6 +150,11 @@ void main() {
     expect(created!.backgroundId, 'soldier');
     expect(created!.alignment, CharacterAlignment.neutralGood);
     expect(created!.chosenSkills, containsAll(['arcana', 'history']));
+    expect(
+      created!.inventory.map((entry) => entry.itemId),
+      contains('spellbook'),
+    );
+    expect(created!.coins, {'gp': 55});
     // Los PG arrancan al máximo.
     final sheet = CharacterCompiler(repo).compile(created!);
     expect(created!.combat.currentHp, sheet.maxHp);

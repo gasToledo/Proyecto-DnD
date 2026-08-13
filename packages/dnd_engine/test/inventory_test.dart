@@ -262,15 +262,14 @@ void main() {
   });
 
   group('equipar desde la mochila', () {
-    test('para un arma manda la lista de equipadas, no la entrada', () {
+    test('para un arma manda InventoryEntry.equipped', () {
       final c = _guerrera(
         inventory: const [InventoryEntry(itemId: 'club', equipped: true)],
       );
 
       expect(
         InventoryOps.isEquipped(c, c.inventory.single, repo),
-        isFalse,
-        reason: 'la entrada dice que sí pero el arma no está empuñada',
+        isTrue,
       );
 
       final equipada = InventoryOps.setEquipped(c, 'club', true, repo);
@@ -299,7 +298,10 @@ void main() {
 
     test('una armadura nueva desplaza a la puesta', () {
       final c = InventoryOps.setEquipped(
-        _guerrera(armorId: 'leather'),
+        _guerrera(
+          armorId: 'leather',
+          inventory: const [InventoryEntry(itemId: 'plate')],
+        ),
         'plate',
         true,
         repo,

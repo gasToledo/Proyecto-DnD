@@ -72,6 +72,7 @@ ComputedSheet applyWildShape(ComputedSheet base, Creature beast) {
     abilityModifiers: mods,
     abilityBonuses: base.abilityBonuses,
     savingThrowProficiencies: base.savingThrowProficiencies,
+    savingThrowBonus: base.savingThrowBonus,
     skillProficiencies: base.skillProficiencies,
     expertiseSkills: base.expertiseSkills,
     armorProficiencies: base.armorProficiencies,

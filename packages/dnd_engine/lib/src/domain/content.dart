@@ -174,6 +174,7 @@ class CharacterClass {
   final String? iconId;
 
   final List<ClassFeature> features;
+  final List<StartingEquipmentOption> startingEquipment;
 
   const CharacterClass({
     required this.id,
@@ -190,6 +191,7 @@ class CharacterClass {
     this.accentColor,
     this.iconId,
     this.features = const [],
+    this.startingEquipment = const [],
   });
 
   /// Rasgos activos hasta [level] inclusive, en orden de nivel.
@@ -227,6 +229,10 @@ class CharacterClass {
         iconId: j['iconId'] as String?,
         features: (j['features'] as List? ?? const [])
             .map((e) => ClassFeature.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        startingEquipment: (j['startingEquipment'] as List? ?? const [])
+            .map((e) => StartingEquipmentOption.fromJson(
+                (e as Map).cast<String, dynamic>()))
             .toList(),
       );
 }
@@ -347,6 +353,7 @@ class Background {
   final List<String> toolProficiencies;
   final String? originFeatId;
   final List<Effect> effects;
+  final List<StartingEquipmentOption> startingEquipment;
 
   /// Identificador del ícono (mapeado a un ícono de Material en la app).
   final String? iconId;
@@ -363,6 +370,7 @@ class Background {
     this.toolProficiencies = const [],
     this.originFeatId,
     this.effects = const [],
+    this.startingEquipment = const [],
     this.iconId,
     this.tagline,
   });
@@ -378,6 +386,7 @@ class Background {
         'iconId': iconId,
         'tagline': tagline,
         'effects': effects.map((e) => e.toJson()).toList(),
+        'startingEquipment': startingEquipment.map((e) => e.toJson()).toList(),
       };
 
   factory Background.fromJson(Map<String, dynamic> j) => Background(
@@ -397,6 +406,78 @@ class Background {
         effects: Effect.listFromJson(j['effects']),
         iconId: j['iconId'] as String?,
         tagline: j['tagline'] as String?,
+        startingEquipment: (j['startingEquipment'] as List? ?? const [])
+            .map((e) => StartingEquipmentOption.fromJson(
+                (e as Map).cast<String, dynamic>()))
+            .toList(),
+      );
+}
+
+/// Una alternativa cerrada de equipo inicial (A, B o C).
+class StartingEquipmentOption {
+  final String id;
+  final String label;
+  final List<EquipmentGrant> grants;
+
+  const StartingEquipmentOption({
+    required this.id,
+    required this.label,
+    this.grants = const [],
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'label': label,
+        'grants': grants.map((e) => e.toJson()).toList(),
+      };
+
+  factory StartingEquipmentOption.fromJson(Map<String, dynamic> j) =>
+      StartingEquipmentOption(
+        id: j['id'] as String,
+        label: j['label'] as String? ?? j['id'] as String,
+        grants: (j['grants'] as List? ?? const [])
+            .map((e) =>
+                EquipmentGrant.fromJson((e as Map).cast<String, dynamic>()))
+            .toList(),
+      );
+}
+
+/// Un objeto, una cantidad de monedas o una elección dentro de un paquete.
+class EquipmentGrant {
+  final String? itemId;
+  final int quantity;
+  final Map<String, int> coins;
+  final List<String> chooseFromItemIds;
+  final int chooseCount;
+
+  const EquipmentGrant({
+    this.itemId,
+    this.quantity = 1,
+    this.coins = const {},
+    this.chooseFromItemIds = const [],
+    this.chooseCount = 1,
+  });
+
+  bool get isChoice => chooseFromItemIds.isNotEmpty;
+
+  Map<String, dynamic> toJson() => {
+        if (itemId != null) 'itemId': itemId,
+        if (quantity != 1) 'quantity': quantity,
+        if (coins.isNotEmpty) 'coins': coins,
+        if (chooseFromItemIds.isNotEmpty)
+          'chooseFromItemIds': chooseFromItemIds,
+        if (chooseCount != 1) 'chooseCount': chooseCount,
+      };
+
+  factory EquipmentGrant.fromJson(Map<String, dynamic> j) => EquipmentGrant(
+        itemId: j['itemId'] as String?,
+        quantity: j['quantity'] as int? ?? 1,
+        coins: (j['coins'] as Map? ?? const {})
+            .map((k, v) => MapEntry(k as String, v as int)),
+        chooseFromItemIds: (j['chooseFromItemIds'] as List? ?? const [])
+            .whereType<String>()
+            .toList(),
+        chooseCount: j['chooseCount'] as int? ?? 1,
       );
 }
 
@@ -882,6 +963,15 @@ class Item {
 
   final bool requiresAttunement;
 
+  /// Bonificador estable aplicado al arma, armadura o escudo base.
+  final int magicBonus;
+
+  /// `weapon`, `armor` o `shield` cuando el objeto es una plantilla mágica.
+  final String? baseItemKind;
+
+  /// Bases concretas admitidas. Vacío significa cualquier base del tipo.
+  final List<String> eligibleBaseItemIds;
+
   /// Efectos que el objeto aporta a la ficha mientras está equipado (y
   /// sintonizado, si lo exige). Vacío = objeto sin mecánica, que es el caso de
   /// todo el catálogo mundano.
@@ -898,6 +988,9 @@ class Item {
     this.description = '',
     this.rarity,
     this.requiresAttunement = false,
+    this.magicBonus = 0,
+    this.baseItemKind,
+    this.eligibleBaseItemIds = const [],
     this.effects = const [],
   });
 
@@ -914,6 +1007,10 @@ class Item {
         if (description.isNotEmpty) 'description': description,
         if (rarity != null) 'rarity': rarity,
         if (requiresAttunement) 'requiresAttunement': true,
+        if (magicBonus != 0) 'magicBonus': magicBonus,
+        if (baseItemKind != null) 'baseItemKind': baseItemKind,
+        if (eligibleBaseItemIds.isNotEmpty)
+          'eligibleBaseItemIds': eligibleBaseItemIds,
         if (effects.isNotEmpty)
           'effects': [for (final e in effects) e.toJson()],
       };
@@ -929,6 +1026,11 @@ class Item {
         description: j['description'] as String? ?? '',
         rarity: j['rarity'] as String?,
         requiresAttunement: j['requiresAttunement'] as bool? ?? false,
+        magicBonus: j['magicBonus'] as int? ?? 0,
+        baseItemKind: j['baseItemKind'] as String?,
+        eligibleBaseItemIds: (j['eligibleBaseItemIds'] as List? ?? const [])
+            .whereType<String>()
+            .toList(),
         effects: Effect.listFromJson(j['effects']),
       );
 }

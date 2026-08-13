@@ -456,6 +456,8 @@ void main() {
         ..classId = 'rogue'
         ..raceId = 'human'
         ..backgroundId = 'soldier'
+        ..classEquipmentOptionId = 'A'
+        ..backgroundEquipmentOptionId = 'A'
         ..weaponIds.addAll(['dagger', 'dagger'])
         ..applyScoreMethod(ScoreMethod.standardArray);
       for (final a in Ability.values) {
@@ -856,8 +858,13 @@ void main() {
       expect(d.pendingFor(CreationStep.aptitudes), isEmpty);
     });
 
-    test('Equipo (clase no lanzadora), Detalles y Resumen nunca bloquean', () {
-      final d = newDraft(); // Guerrero: no lanza conjuros
+    test('Equipo exige paquetes; Detalles y Resumen no bloquean', () {
+      final d = newDraft()
+        ..backgroundId = 'soldier'; // Guerrero: no lanza conjuros
+      expect(d.pendingFor(CreationStep.equipo), isNotEmpty);
+      d
+        ..classEquipmentOptionId = 'C'
+        ..backgroundEquipmentOptionId = 'B';
       expect(d.pendingFor(CreationStep.equipo), isEmpty);
       expect(d.pendingFor(CreationStep.detalles), isEmpty);
       expect(d.pendingFor(CreationStep.resumen), isEmpty);

@@ -66,6 +66,10 @@ void main() {
       expect(repo.feats, hasLength(189));
       expect(repo.weapons, hasLength(38));
       expect(repo.armor, hasLength(13));
+      // 78 de equipo de aventurero (61 sueltos + 10 contenedores + 7 paquetes),
+      // 23 herramientas + 14 variantes de juego e instrumento, 5 municiones y
+      // 11 canalizadores y símbolos sagrados.
+      expect(repo.items, hasLength(131));
       expect(repo.spells, hasLength(392));
       expect(repo.creatures, hasLength(107));
     });
@@ -76,6 +80,7 @@ void main() {
         ContentSource.foa2025: 4,
       });
       expect(porFuente(repo.weapons.values), {ContentSource.srd2024: 38});
+      expect(porFuente(repo.items.values), {ContentSource.srd2024: 131});
       expect(porFuente(repo.spells.values), {
         ContentSource.srd2024: 339,
         ContentSource.phb2024: 52,
@@ -85,6 +90,127 @@ void main() {
         ContentSource.srd2024: 26,
         ContentSource.phb2024: 135,
         ContentSource.foa2025: 28,
+      });
+    });
+  });
+
+  group('objetos, peso y precio', () {
+    test('los tres catálogos de la mochila no comparten ids', () {
+      // Una entrada de inventario guarda un id pelado y `catalogEntry` lo
+      // resuelve en cascada. Si dos catálogos usaran el mismo id, la ficha
+      // mostraría una cosa distinta de la que el compilador calcula.
+      final weapons = repo.weapons.keys.toSet();
+      final armor = repo.armor.keys.toSet();
+      final items = repo.items.keys.toSet();
+      expect(weapons.intersection(armor), isEmpty);
+      expect(weapons.intersection(items), isEmpty);
+      expect(armor.intersection(items), isEmpty);
+    });
+
+    test('todas las armas y armaduras tienen precio', () {
+      for (final w in repo.weapons.values) {
+        expect(w.costCp, greaterThan(0), reason: 'arma sin precio: ${w.id}');
+      }
+      for (final a in repo.armor.values) {
+        expect(a.costCp, greaterThan(0),
+            reason: 'armadura sin precio: ${a.id}');
+      }
+    });
+
+    test('el único peso despreciable del equipo es el de la honda', () {
+      // El manual escribe "—" cuando el peso no cuenta, y la honda es el único
+      // caso entre armas y armaduras. Fijarlo detecta un parcheo a medias.
+      expect(
+        [
+          for (final w in repo.weapons.values)
+            if (w.weight == 0) w.id
+        ],
+        ['sling'],
+      );
+      expect(repo.armor.values.where((a) => a.weight == 0), isEmpty);
+    });
+
+    test('todo objeto tiene precio y una categoría conocida', () {
+      const categories = {
+        'gear',
+        'tool',
+        'ammunition',
+        'focus',
+        'pack',
+        'container',
+        'magic',
+      };
+      for (final i in repo.items.values) {
+        expect(categories, contains(i.category), reason: i.id);
+        expect(i.costCp, greaterThan(0), reason: 'objeto sin precio: ${i.id}');
+        expect(i.weight, greaterThanOrEqualTo(0), reason: i.id);
+      }
+    });
+
+    test('la munición conserva cuántas unidades trae cada paquete', () {
+      expect(
+        {
+          for (final i in repo.items.values.where(
+            (i) => i.category == 'ammunition',
+          ))
+            i.id: i.bundleSize,
+        },
+        {
+          'arrows': 20,
+          'bolts': 20,
+          'bullets-firearm': 10,
+          'bullets-sling': 20,
+          'needles': 50,
+        },
+      );
+      expect(Item.fromJson(repo.item('arrows')!.toJson()).bundleSize, 20);
+    });
+
+    test('la rareza y la sintonización solo existen en objetos mágicos', () {
+      const rarities = {
+        'common',
+        'uncommon',
+        'rare',
+        'very-rare',
+        'legendary',
+        'artifact',
+      };
+      for (final i in repo.items.values) {
+        if (i.rarity != null) {
+          expect(rarities, contains(i.rarity), reason: i.id);
+        }
+        if (i.requiresAttunement) {
+          expect(i.rarity, isNotNull, reason: 'mundano sintonizable: ${i.id}');
+        }
+      }
+      // El catálogo sembrado es mundano: los objetos mágicos llegan por
+      // homebrew hasta que se importe el bloque del SRD.
+      expect(repo.items.values.where((i) => i.isMagic), isEmpty);
+    });
+
+    test('el objeto herramienta y su competencia se llaman igual', () {
+      // Comparten id a propósito, así que un cambio de nombre en un lado sin el
+      // otro dejaría la ficha diciendo dos cosas distintas de la misma cosa.
+      for (final i in repo.items.values.where((i) => i.category == 'tool')) {
+        expect(knownToolLabel(i.id), i.name, reason: i.id);
+      }
+    });
+
+    test('el único nombre repetido es el que repite el propio SRD', () {
+      // "Vara" traduce tanto *Pole* (equipo) como *Rod* (canalizador arcano).
+      // Los nombres visibles salen del SRD en español y no se inventan, así que
+      // la colisión se acepta y se resuelve mostrando la categoría en la lista.
+      // Fijarla acá evita que aparezca una segunda sin que nadie se entere.
+      final porNombre = <String, List<String>>{};
+      for (final i in repo.items.values) {
+        porNombre.putIfAbsent(i.name, () => []).add(i.id);
+      }
+      final repetidos = {
+        for (final e in porNombre.entries)
+          if (e.value.length > 1) e.key: (e.value..sort()),
+      };
+      expect(repetidos, {
+        'Vara': ['pole', 'rod'],
       });
     });
   });

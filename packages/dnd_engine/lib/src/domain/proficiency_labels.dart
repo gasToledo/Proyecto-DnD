@@ -137,6 +137,14 @@ String weaponProficiencyLabel(String id) =>
 /// Nombre de la herramienta [id] ("thieves-tools" → "Herramientas de ladrón").
 String toolProficiencyLabel(String id) => _toolLabels[id] ?? titleCaseId(id);
 
+/// El nombre español de una herramienta conocida, o null si el id no es una.
+///
+/// A diferencia de [toolProficiencyLabel], que siempre devuelve algo, esto
+/// distingue "no la conozco" de "se llama así". Lo usan el generador del
+/// catálogo de objetos —para que el objeto y la competencia compartan nombre
+/// además de id— y la ficha, para marcar en la fila si sos competente.
+String? knownToolLabel(String id) => _toolLabels[id];
+
 /// Herramientas concretas que se pueden elegir, sin las entradas genéricas.
 ///
 /// `artisans-tools`, `gaming-set` y `musical-instrument` quedan afuera a

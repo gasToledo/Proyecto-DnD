@@ -551,6 +551,12 @@ class ComputedSheet {
   final int hitDie;
   final int armorClass;
 
+  /// Peso total de la mochila en libras, monedas incluidas.
+  ///
+  /// Se calcula acá y no en la pantalla porque lo miran dos consumidores —la
+  /// ficha y la validación— y dos cuentas separadas se desincronizan.
+  final double carriedWeight;
+
   /// Tamaño ya resuelto: el elegido por el personaje si la especie ofrece la
   /// elección, y si no el de la especie. La UI lee esto y nunca `Race.size`,
   /// que para las especies con `sizeOptions` es solo el valor por defecto.
@@ -652,6 +658,7 @@ class ComputedSheet {
     required this.maxHp,
     required this.hitDie,
     required this.armorClass,
+    this.carriedWeight = 0,
     this.size = 'Mediano',
     required this.speed,
     required this.initiative,
@@ -676,6 +683,16 @@ class ComputedSheet {
     this.languageChoiceSlots = const [],
     this.spellcasting,
   });
+
+  /// Cuánto peso podés llevar: Fuerza × 15 libras (capítulo 1, "Carrying
+  /// Capacity"). Getter y no campo guardado: es una multiplicación sobre una
+  /// puntuación que ya está acá.
+  int get carryingCapacity => (abilityScores[Ability.strength] ?? 10) * 15;
+
+  /// Si la mochila pasa la capacidad. Solo informativo: en 2024 el núcleo no
+  /// trae penalizaciones por sobrecarga, así que nada de esto toca la velocidad
+  /// ni las tiradas.
+  bool get isEncumbered => carriedWeight > carryingCapacity;
 
   /// Los bonus que recibió [a], en orden de aplicación.
   List<AbilityBonus> bonusesFor(Ability a) => [

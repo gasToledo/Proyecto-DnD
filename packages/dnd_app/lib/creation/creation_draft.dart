@@ -963,6 +963,15 @@ class CreationDraft {
       equippedWeaponIds: List.of(weaponIds),
       weaponOffHand: Map.of(weaponOffHand),
       weaponTwoHanded: Map.of(weaponTwoHanded),
+      // La mochila arranca con lo elegido en el paso de equipo. Sin esto, el
+      // personaje nacería con una espada equipada que no figura en su
+      // inventario, que es la misma incoherencia que arregla la migración a
+      // esquema 19 para las fichas viejas.
+      inventory: [
+        if (equippedArmorId != null) InventoryEntry(itemId: equippedArmorId!),
+        if (shieldEquipped) const InventoryEntry(itemId: 'shield'),
+        for (final id in weaponIds) InventoryEntry(itemId: id),
+      ],
       alignment: alignment,
       personalityTrait: personalityTrait.trim(),
     );

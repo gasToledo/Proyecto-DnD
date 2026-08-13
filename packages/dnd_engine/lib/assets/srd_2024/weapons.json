@@ -6,8 +6,12 @@
     "category": "simple",
     "damageDice": "1d4",
     "damageType": "bludgeoning",
-    "properties": ["light"],
-    "mastery": "slow"
+    "properties": [
+      "light"
+    ],
+    "mastery": "slow",
+    "weight": 2.0,
+    "costCp": 10
   },
   {
     "id": "dagger",
@@ -16,8 +20,14 @@
     "category": "simple",
     "damageDice": "1d4",
     "damageType": "piercing",
-    "properties": ["finesse", "light", "thrown"],
-    "mastery": "nick"
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
+    "mastery": "nick",
+    "weight": 1.0,
+    "costCp": 200
   },
   {
     "id": "greatclub",
@@ -26,8 +36,12 @@
     "category": "simple",
     "damageDice": "1d8",
     "damageType": "bludgeoning",
-    "properties": ["two-handed"],
-    "mastery": "push"
+    "properties": [
+      "two-handed"
+    ],
+    "mastery": "push",
+    "weight": 10.0,
+    "costCp": 20
   },
   {
     "id": "handaxe",
@@ -36,8 +50,13 @@
     "category": "simple",
     "damageDice": "1d6",
     "damageType": "slashing",
-    "properties": ["light", "thrown"],
-    "mastery": "vex"
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "mastery": "vex",
+    "weight": 2.0,
+    "costCp": 500
   },
   {
     "id": "javelin",
@@ -46,8 +65,12 @@
     "category": "simple",
     "damageDice": "1d6",
     "damageType": "piercing",
-    "properties": ["thrown"],
-    "mastery": "slow"
+    "properties": [
+      "thrown"
+    ],
+    "mastery": "slow",
+    "weight": 2.0,
+    "costCp": 50
   },
   {
     "id": "light-hammer",
@@ -56,8 +79,13 @@
     "category": "simple",
     "damageDice": "1d4",
     "damageType": "bludgeoning",
-    "properties": ["light", "thrown"],
-    "mastery": "nick"
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "mastery": "nick",
+    "weight": 2.0,
+    "costCp": 200
   },
   {
     "id": "mace",
@@ -67,7 +95,9 @@
     "damageDice": "1d6",
     "damageType": "bludgeoning",
     "properties": [],
-    "mastery": "sap"
+    "mastery": "sap",
+    "weight": 4.0,
+    "costCp": 500
   },
   {
     "id": "quarterstaff",
@@ -76,9 +106,13 @@
     "category": "simple",
     "damageDice": "1d6",
     "damageType": "bludgeoning",
-    "properties": ["versatile"],
+    "properties": [
+      "versatile"
+    ],
     "versatileDice": "1d8",
-    "mastery": "topple"
+    "mastery": "topple",
+    "weight": 4.0,
+    "costCp": 20
   },
   {
     "id": "sickle",
@@ -87,8 +121,12 @@
     "category": "simple",
     "damageDice": "1d4",
     "damageType": "slashing",
-    "properties": ["light"],
-    "mastery": "nick"
+    "properties": [
+      "light"
+    ],
+    "mastery": "nick",
+    "weight": 2.0,
+    "costCp": 100
   },
   {
     "id": "spear",
@@ -97,9 +135,14 @@
     "category": "simple",
     "damageDice": "1d6",
     "damageType": "piercing",
-    "properties": ["thrown", "versatile"],
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
     "versatileDice": "1d8",
-    "mastery": "sap"
+    "mastery": "sap",
+    "weight": 3.0,
+    "costCp": 100
   },
   {
     "id": "dart",
@@ -108,8 +151,14 @@
     "category": "simple",
     "damageDice": "1d4",
     "damageType": "piercing",
-    "properties": ["finesse", "thrown", "ranged"],
-    "mastery": "vex"
+    "properties": [
+      "finesse",
+      "thrown",
+      "ranged"
+    ],
+    "mastery": "vex",
+    "weight": 0.25,
+    "costCp": 5
   },
   {
     "id": "light-crossbow",
@@ -118,8 +167,15 @@
     "category": "simple",
     "damageDice": "1d8",
     "damageType": "piercing",
-    "properties": ["ammunition", "loading", "two-handed", "ranged"],
-    "mastery": "slow"
+    "properties": [
+      "ammunition",
+      "loading",
+      "two-handed",
+      "ranged"
+    ],
+    "mastery": "slow",
+    "weight": 5.0,
+    "costCp": 2500
   },
   {
     "id": "shortbow",
@@ -128,8 +184,14 @@
     "category": "simple",
     "damageDice": "1d6",
     "damageType": "piercing",
-    "properties": ["ranged", "two-handed", "ammunition"],
-    "mastery": "vex"
+    "properties": [
+      "ranged",
+      "two-handed",
+      "ammunition"
+    ],
+    "mastery": "vex",
+    "weight": 2.0,
+    "costCp": 2500
   },
   {
     "id": "sling",
@@ -138,8 +200,13 @@
     "category": "simple",
     "damageDice": "1d4",
     "damageType": "bludgeoning",
-    "properties": ["ammunition", "ranged"],
-    "mastery": "slow"
+    "properties": [
+      "ammunition",
+      "ranged"
+    ],
+    "mastery": "slow",
+    "weight": 0.0,
+    "costCp": 10
   },
   {
     "id": "battleaxe",
@@ -148,9 +215,13 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "slashing",
-    "properties": ["versatile"],
+    "properties": [
+      "versatile"
+    ],
     "versatileDice": "1d10",
-    "mastery": "topple"
+    "mastery": "topple",
+    "weight": 4.0,
+    "costCp": 1000
   },
   {
     "id": "flail",
@@ -160,7 +231,9 @@
     "damageDice": "1d8",
     "damageType": "bludgeoning",
     "properties": [],
-    "mastery": "sap"
+    "mastery": "sap",
+    "weight": 2.0,
+    "costCp": 1000
   },
   {
     "id": "glaive",
@@ -169,8 +242,14 @@
     "category": "martial",
     "damageDice": "1d10",
     "damageType": "slashing",
-    "properties": ["heavy", "reach", "two-handed"],
-    "mastery": "graze"
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
+    "mastery": "graze",
+    "weight": 6.0,
+    "costCp": 2000
   },
   {
     "id": "greataxe",
@@ -179,8 +258,13 @@
     "category": "martial",
     "damageDice": "1d12",
     "damageType": "slashing",
-    "properties": ["heavy", "two-handed"],
-    "mastery": "cleave"
+    "properties": [
+      "heavy",
+      "two-handed"
+    ],
+    "mastery": "cleave",
+    "weight": 7.0,
+    "costCp": 3000
   },
   {
     "id": "greatsword",
@@ -189,8 +273,13 @@
     "category": "martial",
     "damageDice": "2d6",
     "damageType": "slashing",
-    "properties": ["heavy", "two-handed"],
-    "mastery": "graze"
+    "properties": [
+      "heavy",
+      "two-handed"
+    ],
+    "mastery": "graze",
+    "weight": 6.0,
+    "costCp": 5000
   },
   {
     "id": "halberd",
@@ -199,8 +288,14 @@
     "category": "martial",
     "damageDice": "1d10",
     "damageType": "slashing",
-    "properties": ["heavy", "reach", "two-handed"],
-    "mastery": "cleave"
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
+    "mastery": "cleave",
+    "weight": 6.0,
+    "costCp": 2000
   },
   {
     "id": "lance",
@@ -209,9 +304,15 @@
     "category": "martial",
     "damageDice": "1d10",
     "damageType": "piercing",
-    "properties": ["heavy", "reach", "two-handed"],
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
     "twoHandedUnlessMounted": true,
-    "mastery": "topple"
+    "mastery": "topple",
+    "weight": 6.0,
+    "costCp": 1000
   },
   {
     "id": "longsword",
@@ -220,9 +321,13 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "slashing",
-    "properties": ["versatile"],
+    "properties": [
+      "versatile"
+    ],
     "versatileDice": "1d10",
-    "mastery": "sap"
+    "mastery": "sap",
+    "weight": 3.0,
+    "costCp": 1500
   },
   {
     "id": "maul",
@@ -231,8 +336,13 @@
     "category": "martial",
     "damageDice": "2d6",
     "damageType": "bludgeoning",
-    "properties": ["heavy", "two-handed"],
-    "mastery": "topple"
+    "properties": [
+      "heavy",
+      "two-handed"
+    ],
+    "mastery": "topple",
+    "weight": 10.0,
+    "costCp": 1000
   },
   {
     "id": "morningstar",
@@ -242,7 +352,9 @@
     "damageDice": "1d8",
     "damageType": "piercing",
     "properties": [],
-    "mastery": "sap"
+    "mastery": "sap",
+    "weight": 4.0,
+    "costCp": 1500
   },
   {
     "id": "pike",
@@ -251,8 +363,14 @@
     "category": "martial",
     "damageDice": "1d10",
     "damageType": "piercing",
-    "properties": ["heavy", "reach", "two-handed"],
-    "mastery": "push"
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
+    "mastery": "push",
+    "weight": 18.0,
+    "costCp": 500
   },
   {
     "id": "rapier",
@@ -261,8 +379,12 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "piercing",
-    "properties": ["finesse"],
-    "mastery": "vex"
+    "properties": [
+      "finesse"
+    ],
+    "mastery": "vex",
+    "weight": 2.0,
+    "costCp": 2500
   },
   {
     "id": "scimitar",
@@ -271,8 +393,13 @@
     "category": "martial",
     "damageDice": "1d6",
     "damageType": "slashing",
-    "properties": ["finesse", "light"],
-    "mastery": "nick"
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery": "nick",
+    "weight": 3.0,
+    "costCp": 2500
   },
   {
     "id": "shortsword",
@@ -281,8 +408,13 @@
     "category": "martial",
     "damageDice": "1d6",
     "damageType": "piercing",
-    "properties": ["finesse", "light"],
-    "mastery": "vex"
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery": "vex",
+    "weight": 2.0,
+    "costCp": 1000
   },
   {
     "id": "trident",
@@ -291,9 +423,14 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "piercing",
-    "properties": ["thrown", "versatile"],
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
     "versatileDice": "1d10",
-    "mastery": "topple"
+    "mastery": "topple",
+    "weight": 4.0,
+    "costCp": 500
   },
   {
     "id": "war-pick",
@@ -302,9 +439,13 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "piercing",
-    "properties": ["versatile"],
+    "properties": [
+      "versatile"
+    ],
     "versatileDice": "1d10",
-    "mastery": "sap"
+    "mastery": "sap",
+    "weight": 2.0,
+    "costCp": 500
   },
   {
     "id": "warhammer",
@@ -313,9 +454,13 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "bludgeoning",
-    "properties": ["versatile"],
+    "properties": [
+      "versatile"
+    ],
     "versatileDice": "1d10",
-    "mastery": "push"
+    "mastery": "push",
+    "weight": 5.0,
+    "costCp": 1500
   },
   {
     "id": "whip",
@@ -324,8 +469,13 @@
     "category": "martial",
     "damageDice": "1d4",
     "damageType": "slashing",
-    "properties": ["finesse", "reach"],
-    "mastery": "slow"
+    "properties": [
+      "finesse",
+      "reach"
+    ],
+    "mastery": "slow",
+    "weight": 3.0,
+    "costCp": 200
   },
   {
     "id": "hand-crossbow",
@@ -334,8 +484,15 @@
     "category": "martial",
     "damageDice": "1d6",
     "damageType": "piercing",
-    "properties": ["ammunition", "light", "loading", "ranged"],
-    "mastery": "vex"
+    "properties": [
+      "ammunition",
+      "light",
+      "loading",
+      "ranged"
+    ],
+    "mastery": "vex",
+    "weight": 3.0,
+    "costCp": 7500
   },
   {
     "id": "heavy-crossbow",
@@ -344,8 +501,16 @@
     "category": "martial",
     "damageDice": "1d10",
     "damageType": "piercing",
-    "properties": ["ammunition", "heavy", "loading", "two-handed", "ranged"],
-    "mastery": "push"
+    "properties": [
+      "ammunition",
+      "heavy",
+      "loading",
+      "two-handed",
+      "ranged"
+    ],
+    "mastery": "push",
+    "weight": 18.0,
+    "costCp": 5000
   },
   {
     "id": "longbow",
@@ -354,8 +519,15 @@
     "category": "martial",
     "damageDice": "1d8",
     "damageType": "piercing",
-    "properties": ["ammunition", "heavy", "two-handed", "ranged"],
-    "mastery": "slow"
+    "properties": [
+      "ammunition",
+      "heavy",
+      "two-handed",
+      "ranged"
+    ],
+    "mastery": "slow",
+    "weight": 2.0,
+    "costCp": 5000
   },
   {
     "id": "blowgun",
@@ -364,8 +536,14 @@
     "category": "martial",
     "damageDice": "1",
     "damageType": "piercing",
-    "properties": ["ammunition", "loading", "ranged"],
-    "mastery": "vex"
+    "properties": [
+      "ammunition",
+      "loading",
+      "ranged"
+    ],
+    "mastery": "vex",
+    "weight": 1.0,
+    "costCp": 1000
   },
   {
     "id": "musket",
@@ -374,8 +552,15 @@
     "category": "martial",
     "damageDice": "1d12",
     "damageType": "piercing",
-    "properties": ["ammunition", "loading", "two-handed", "ranged"],
-    "mastery": "slow"
+    "properties": [
+      "ammunition",
+      "loading",
+      "two-handed",
+      "ranged"
+    ],
+    "mastery": "slow",
+    "weight": 10.0,
+    "costCp": 50000
   },
   {
     "id": "pistol",
@@ -384,7 +569,13 @@
     "category": "martial",
     "damageDice": "1d10",
     "damageType": "piercing",
-    "properties": ["ammunition", "loading", "ranged"],
-    "mastery": "vex"
+    "properties": [
+      "ammunition",
+      "loading",
+      "ranged"
+    ],
+    "mastery": "vex",
+    "weight": 3.0,
+    "costCp": 25000
   }
 ]

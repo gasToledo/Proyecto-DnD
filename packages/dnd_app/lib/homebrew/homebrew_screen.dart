@@ -14,6 +14,7 @@ part 'forms/armor_form.dart';
 part 'forms/background_form.dart';
 part 'forms/feat_form.dart';
 part 'forms/form_widgets.dart';
+part 'forms/item_form.dart';
 part 'forms/race_form.dart';
 part 'forms/spell_form.dart';
 part 'forms/weapon_form.dart';
@@ -45,6 +46,32 @@ const _armorCategories = {
   'medium': 'Media',
   'heavy': 'Pesada',
   'shield': 'Escudo',
+};
+
+/// Familias de objeto. `magic` no está: lo que hace mágico a un objeto es
+/// tener rareza, y ofrecer las dos cosas dejaría guardar un objeto de categoría
+/// mágica sin rareza, que el motor trata como mundano.
+const _itemCategories = {
+  'gear': 'Equipo',
+  'tool': 'Herramienta',
+  'ammunition': 'Munición',
+  'focus': 'Canalizador',
+  'pack': 'Paquete',
+  'container': 'Contenedor',
+};
+
+/// Valor del desplegable de rareza que significa "no es mágico". Va como texto
+/// y no como null porque el desplegable no acepta una opción nula.
+const _mundane = 'mundane';
+
+const _itemRarities = {
+  _mundane: 'Mundano',
+  'common': 'Común',
+  'uncommon': 'Infrecuente',
+  'rare': 'Raro',
+  'very-rare': 'Muy raro',
+  'legendary': 'Legendario',
+  'artifact': 'Artefacto',
 };
 
 const _featCategories = {
@@ -204,7 +231,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 6,
+      length: 7,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Contenido homebrew'),
@@ -225,6 +252,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
             tabs: [
               Tab(text: 'Armas'),
               Tab(text: 'Armaduras'),
+              Tab(text: 'Objetos'),
               Tab(text: 'Dotes'),
               Tab(text: 'Razas'),
               Tab(text: 'Trasfondos'),
@@ -236,6 +264,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
           children: [
             _weaponsTab(),
             _armorTab(),
+            _itemsTab(),
             _featsTab(),
             _racesTab(),
             _backgroundsTab(),

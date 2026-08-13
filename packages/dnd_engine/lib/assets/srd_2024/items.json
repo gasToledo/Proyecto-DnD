@@ -1,0 +1,1055 @@
+[
+  {
+    "id": "acid",
+    "name": "Ácido",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 2500
+  },
+  {
+    "id": "alchemists-fire",
+    "name": "Fuego de alquimista",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 5000
+  },
+  {
+    "id": "alchemists-supplies",
+    "name": "Suministros de alquimista",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 8.0,
+    "costCp": 5000
+  },
+  {
+    "id": "amulet",
+    "name": "Amuleto",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 1.0,
+    "costCp": 500
+  },
+  {
+    "id": "antitoxin",
+    "name": "Antitoxina",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 5000
+  },
+  {
+    "id": "arrows",
+    "name": "Flechas",
+    "source": "srd_2024",
+    "category": "ammunition",
+    "weight": 1.0,
+    "costCp": 100,
+    "bundleSize": 20
+  },
+  {
+    "id": "backpack",
+    "name": "Mochila",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 5.0,
+    "costCp": 200
+  },
+  {
+    "id": "bagpipes",
+    "name": "Gaita",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 6.0,
+    "costCp": 3000
+  },
+  {
+    "id": "ball-bearings",
+    "name": "Bolas de metal",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 2.0,
+    "costCp": 100
+  },
+  {
+    "id": "barrel",
+    "name": "Barril",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 70.0,
+    "costCp": 200
+  },
+  {
+    "id": "basket",
+    "name": "Cesta",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 2.0,
+    "costCp": 40
+  },
+  {
+    "id": "bedroll",
+    "name": "Petate",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 7.0,
+    "costCp": 100
+  },
+  {
+    "id": "bell",
+    "name": "Campana",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 100
+  },
+  {
+    "id": "blanket",
+    "name": "Manta",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 3.0,
+    "costCp": 50
+  },
+  {
+    "id": "block-and-tackle",
+    "name": "Polipasto",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 5.0,
+    "costCp": 100
+  },
+  {
+    "id": "bolts",
+    "name": "Virotes",
+    "source": "srd_2024",
+    "category": "ammunition",
+    "weight": 1.5,
+    "costCp": 100,
+    "bundleSize": 20
+  },
+  {
+    "id": "book",
+    "name": "Libro",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 5.0,
+    "costCp": 2500
+  },
+  {
+    "id": "bottle-glass",
+    "name": "Botella de cristal",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 2.0,
+    "costCp": 200
+  },
+  {
+    "id": "brewers-supplies",
+    "name": "Suministros de cervecero",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 9.0,
+    "costCp": 2000
+  },
+  {
+    "id": "bucket",
+    "name": "Cubo",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 2.0,
+    "costCp": 5
+  },
+  {
+    "id": "bullets-firearm",
+    "name": "Balas de arma de fuego",
+    "source": "srd_2024",
+    "category": "ammunition",
+    "weight": 2.0,
+    "costCp": 300,
+    "bundleSize": 10
+  },
+  {
+    "id": "bullets-sling",
+    "name": "Proyectiles de honda",
+    "source": "srd_2024",
+    "category": "ammunition",
+    "weight": 1.5,
+    "costCp": 4,
+    "bundleSize": 20
+  },
+  {
+    "id": "burglars-pack",
+    "name": "Paquete de ladrón",
+    "source": "srd_2024",
+    "category": "pack",
+    "weight": 42.0,
+    "costCp": 1600
+  },
+  {
+    "id": "calligraphers-supplies",
+    "name": "Suministros de calígrafo",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 1000
+  },
+  {
+    "id": "caltrops",
+    "name": "Abrojos",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 2.0,
+    "costCp": 100
+  },
+  {
+    "id": "candle",
+    "name": "Vela",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 1
+  },
+  {
+    "id": "carpenters-tools",
+    "name": "Herramientas de carpintero",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 6.0,
+    "costCp": 800
+  },
+  {
+    "id": "cartographers-tools",
+    "name": "Herramientas de cartógrafo",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 6.0,
+    "costCp": 1500
+  },
+  {
+    "id": "case-crossbow-bolt",
+    "name": "Estuche para virotes de ballesta",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 1.0,
+    "costCp": 100
+  },
+  {
+    "id": "case-map-or-scroll",
+    "name": "Estuche para mapas o pergaminos",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 1.0,
+    "costCp": 100
+  },
+  {
+    "id": "chain",
+    "name": "Cadena",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 10.0,
+    "costCp": 500
+  },
+  {
+    "id": "chest",
+    "name": "Cofre",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 25.0,
+    "costCp": 500
+  },
+  {
+    "id": "climbers-kit",
+    "name": "Útiles de escalada",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 12.0,
+    "costCp": 2500
+  },
+  {
+    "id": "clothes-fine",
+    "name": "Ropas de calidad",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 6.0,
+    "costCp": 1500
+  },
+  {
+    "id": "clothes-travelers",
+    "name": "Ropas de viaje",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 4.0,
+    "costCp": 200
+  },
+  {
+    "id": "cobblers-tools",
+    "name": "Herramientas de zapatero",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 500
+  },
+  {
+    "id": "component-pouch",
+    "name": "Saquito de componentes",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 2.0,
+    "costCp": 2500
+  },
+  {
+    "id": "cooks-utensils",
+    "name": "Útiles de cocinero",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 8.0,
+    "costCp": 100
+  },
+  {
+    "id": "costume",
+    "name": "Disfraz",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 4.0,
+    "costCp": 500
+  },
+  {
+    "id": "crowbar",
+    "name": "Palanqueta",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 5.0,
+    "costCp": 200
+  },
+  {
+    "id": "crystal",
+    "name": "Cristal",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 1.0,
+    "costCp": 1000
+  },
+  {
+    "id": "dice-set",
+    "name": "Juego de dados",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 0.0,
+    "costCp": 10
+  },
+  {
+    "id": "diplomats-pack",
+    "name": "Paquete de diplomático",
+    "source": "srd_2024",
+    "category": "pack",
+    "weight": 39.0,
+    "costCp": 3900
+  },
+  {
+    "id": "disguise-kit",
+    "name": "Útiles para disfrazarse",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 3.0,
+    "costCp": 2500
+  },
+  {
+    "id": "dragonchess-set",
+    "name": "Ajedrez dragón",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 0.0,
+    "costCp": 100
+  },
+  {
+    "id": "drum",
+    "name": "Tambor",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 3.0,
+    "costCp": 600
+  },
+  {
+    "id": "dulcimer",
+    "name": "Dulcémele",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 10.0,
+    "costCp": 2500
+  },
+  {
+    "id": "dungeoneers-pack",
+    "name": "Paquete de explorador de mazmorras",
+    "source": "srd_2024",
+    "category": "pack",
+    "weight": 55.0,
+    "costCp": 1200
+  },
+  {
+    "id": "emblem",
+    "name": "Emblema",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 0.0,
+    "costCp": 500
+  },
+  {
+    "id": "entertainers-pack",
+    "name": "Paquete de artista",
+    "source": "srd_2024",
+    "category": "pack",
+    "weight": 58.5,
+    "costCp": 4000
+  },
+  {
+    "id": "explorers-pack",
+    "name": "Paquete de explorador",
+    "source": "srd_2024",
+    "category": "pack",
+    "weight": 55.0,
+    "costCp": 1000
+  },
+  {
+    "id": "flask",
+    "name": "Frasco",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 2
+  },
+  {
+    "id": "flute",
+    "name": "Flauta",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 1.0,
+    "costCp": 200
+  },
+  {
+    "id": "forgery-kit",
+    "name": "Útiles para falsificar",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 1500
+  },
+  {
+    "id": "glassblowers-tools",
+    "name": "Herramientas de soplador de vidrio",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 3000
+  },
+  {
+    "id": "grappling-hook",
+    "name": "Garfio de escalada",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 4.0,
+    "costCp": 200
+  },
+  {
+    "id": "healers-kit",
+    "name": "Útiles de sanador",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 3.0,
+    "costCp": 500
+  },
+  {
+    "id": "herbalism-kit",
+    "name": "Útiles de herborista",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 3.0,
+    "costCp": 500
+  },
+  {
+    "id": "holy-water",
+    "name": "Agua bendita",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 2500
+  },
+  {
+    "id": "horn",
+    "name": "Cuerno",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 2.0,
+    "costCp": 300
+  },
+  {
+    "id": "hunting-trap",
+    "name": "Trampa para cazar",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 25.0,
+    "costCp": 500
+  },
+  {
+    "id": "ink",
+    "name": "Tinta",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 1000
+  },
+  {
+    "id": "ink-pen",
+    "name": "Pluma",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 2
+  },
+  {
+    "id": "jewelers-tools",
+    "name": "Herramientas de joyero",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 2.0,
+    "costCp": 2500
+  },
+  {
+    "id": "jug",
+    "name": "Jarro",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 4.0,
+    "costCp": 2
+  },
+  {
+    "id": "ladder",
+    "name": "Escalera",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 25.0,
+    "costCp": 10
+  },
+  {
+    "id": "lamp",
+    "name": "Lámpara",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 50
+  },
+  {
+    "id": "lantern-bullseye",
+    "name": "Linterna de ojo de buey",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 2.0,
+    "costCp": 1000
+  },
+  {
+    "id": "lantern-hooded",
+    "name": "Linterna sorda",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 2.0,
+    "costCp": 500
+  },
+  {
+    "id": "leatherworkers-tools",
+    "name": "Herramientas de curtidor",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 500
+  },
+  {
+    "id": "lock",
+    "name": "Cerradura",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 1000
+  },
+  {
+    "id": "lute",
+    "name": "Laúd",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 2.0,
+    "costCp": 3500
+  },
+  {
+    "id": "lyre",
+    "name": "Lira",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 2.0,
+    "costCp": 3000
+  },
+  {
+    "id": "magnifying-glass",
+    "name": "Lupa",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 10000
+  },
+  {
+    "id": "manacles",
+    "name": "Esposas",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 6.0,
+    "costCp": 200
+  },
+  {
+    "id": "map",
+    "name": "Mapa",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 100
+  },
+  {
+    "id": "masons-tools",
+    "name": "Herramientas de albañil",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 8.0,
+    "costCp": 1000
+  },
+  {
+    "id": "mirror",
+    "name": "Espejo",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.5,
+    "costCp": 500
+  },
+  {
+    "id": "navigators-tools",
+    "name": "Herramientas de navegante",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 2.0,
+    "costCp": 2500
+  },
+  {
+    "id": "needles",
+    "name": "Dardos",
+    "source": "srd_2024",
+    "category": "ammunition",
+    "weight": 1.0,
+    "costCp": 100,
+    "bundleSize": 50
+  },
+  {
+    "id": "net",
+    "name": "Red",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 3.0,
+    "costCp": 100
+  },
+  {
+    "id": "oil",
+    "name": "Aceite",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 10
+  },
+  {
+    "id": "orb",
+    "name": "Orbe",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 3.0,
+    "costCp": 2000
+  },
+  {
+    "id": "painters-supplies",
+    "name": "Suministros de pintor",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 1000
+  },
+  {
+    "id": "pan-flute",
+    "name": "Flauta de pan",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 2.0,
+    "costCp": 1200
+  },
+  {
+    "id": "paper",
+    "name": "Papel",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 20
+  },
+  {
+    "id": "parchment",
+    "name": "Pergamino",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 10
+  },
+  {
+    "id": "perfume",
+    "name": "Perfume",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 500
+  },
+  {
+    "id": "playing-card-set",
+    "name": "Baraja de cartas",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 0.0,
+    "costCp": 50
+  },
+  {
+    "id": "poison-basic",
+    "name": "Veneno básico",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 10000
+  },
+  {
+    "id": "poisoner-kit",
+    "name": "Útiles de envenenador",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 2.0,
+    "costCp": 5000
+  },
+  {
+    "id": "pole",
+    "name": "Vara",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 7.0,
+    "costCp": 5
+  },
+  {
+    "id": "pot-iron",
+    "name": "Olla de hierro",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 10.0,
+    "costCp": 200
+  },
+  {
+    "id": "potion-of-healing",
+    "name": "Poción de curación",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.5,
+    "costCp": 5000
+  },
+  {
+    "id": "potters-tools",
+    "name": "Herramientas de alfarero",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 3.0,
+    "costCp": 1000
+  },
+  {
+    "id": "pouch",
+    "name": "Bolsa",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 1.0,
+    "costCp": 50
+  },
+  {
+    "id": "priests-pack",
+    "name": "Paquete de sacerdote",
+    "source": "srd_2024",
+    "category": "pack",
+    "weight": 29.0,
+    "costCp": 3300
+  },
+  {
+    "id": "quiver",
+    "name": "Aljaba",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 1.0,
+    "costCp": 100
+  },
+  {
+    "id": "ram-portable",
+    "name": "Ariete portátil",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 35.0,
+    "costCp": 400
+  },
+  {
+    "id": "rations",
+    "name": "Raciones",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 2.0,
+    "costCp": 50
+  },
+  {
+    "id": "reliquary",
+    "name": "Relicario",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 2.0,
+    "costCp": 500
+  },
+  {
+    "id": "robe",
+    "name": "Túnica",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 4.0,
+    "costCp": 100
+  },
+  {
+    "id": "rod",
+    "name": "Vara",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 2.0,
+    "costCp": 1000
+  },
+  {
+    "id": "rope",
+    "name": "Cuerda",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 5.0,
+    "costCp": 100
+  },
+  {
+    "id": "sack",
+    "name": "Saco",
+    "source": "srd_2024",
+    "category": "container",
+    "weight": 0.5,
+    "costCp": 1
+  },
+  {
+    "id": "scholars-pack",
+    "name": "Paquete de erudito",
+    "source": "srd_2024",
+    "category": "pack",
+    "weight": 22.0,
+    "costCp": 4000
+  },
+  {
+    "id": "shawm",
+    "name": "Chirimía",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 1.0,
+    "costCp": 200
+  },
+  {
+    "id": "shovel",
+    "name": "Pala",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 5.0,
+    "costCp": 200
+  },
+  {
+    "id": "signal-whistle",
+    "name": "Silbato de supervivencia",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 5
+  },
+  {
+    "id": "smiths-tools",
+    "name": "Herramientas de herrero",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 8.0,
+    "costCp": 2000
+  },
+  {
+    "id": "spell-scroll-cantrip",
+    "name": "Pergamino de conjuro (truco)",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 3000
+  },
+  {
+    "id": "spell-scroll-level-1",
+    "name": "Pergamino de conjuro (nivel 1)",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 5000
+  },
+  {
+    "id": "spikes-iron",
+    "name": "Puntas de hierro",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 5.0,
+    "costCp": 100
+  },
+  {
+    "id": "sprig-of-mistletoe",
+    "name": "Rama de muérdago",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 0.0,
+    "costCp": 100
+  },
+  {
+    "id": "spyglass",
+    "name": "Catalejo",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 100000
+  },
+  {
+    "id": "staff",
+    "name": "Bastón",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 4.0,
+    "costCp": 500
+  },
+  {
+    "id": "string",
+    "name": "Cordel",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 10
+  },
+  {
+    "id": "tent",
+    "name": "Tienda",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 20.0,
+    "costCp": 200
+  },
+  {
+    "id": "thieves-tools",
+    "name": "Herramientas de ladrón",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 1.0,
+    "costCp": 2500
+  },
+  {
+    "id": "three-dragon-ante-set",
+    "name": "Tres Dragones",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 0.0,
+    "costCp": 100
+  },
+  {
+    "id": "tinderbox",
+    "name": "Yesquero",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 50
+  },
+  {
+    "id": "tinkers-tools",
+    "name": "Herramientas de manitas",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 10.0,
+    "costCp": 5000
+  },
+  {
+    "id": "torch",
+    "name": "Antorcha",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 1.0,
+    "costCp": 1
+  },
+  {
+    "id": "vial",
+    "name": "Vial",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 0.0,
+    "costCp": 100
+  },
+  {
+    "id": "viol",
+    "name": "Viola",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 1.0,
+    "costCp": 3000
+  },
+  {
+    "id": "wand",
+    "name": "Varita",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 1.0,
+    "costCp": 1000
+  },
+  {
+    "id": "waterskin",
+    "name": "Cantimplora",
+    "source": "srd_2024",
+    "category": "gear",
+    "weight": 5.0,
+    "costCp": 20
+  },
+  {
+    "id": "weavers-tools",
+    "name": "Herramientas de tejedor",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 100
+  },
+  {
+    "id": "woodcarvers-tools",
+    "name": "Herramientas de ebanista",
+    "source": "srd_2024",
+    "category": "tool",
+    "weight": 5.0,
+    "costCp": 100
+  },
+  {
+    "id": "wooden-staff",
+    "name": "Bastón de madera",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 4.0,
+    "costCp": 500
+  },
+  {
+    "id": "yew-wand",
+    "name": "Varita de tejo",
+    "source": "srd_2024",
+    "category": "focus",
+    "weight": 1.0,
+    "costCp": 1000
+  }
+]

@@ -42,6 +42,7 @@ Future<ContentRepository> loadContentRepositoryFromDirectory(
     feats: await read('feats.json'),
     weapons: await read('weapons.json'),
     armor: await read('armor.json'),
+    items: await read('items.json'),
     spells: await read('spells.json'),
     creatures: await read('creatures.json'),
   );

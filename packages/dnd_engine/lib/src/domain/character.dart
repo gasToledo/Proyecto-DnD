@@ -1,5 +1,6 @@
 import 'ability.dart';
 import 'alignment.dart';
+import 'content.dart';
 import 'data_version.dart';
 
 Map<String, int> _abilityMapToJson(Map<Ability, int> m) =>
@@ -230,6 +231,72 @@ class CombatState {
 
 enum CharacterStatus { active, archivedInactive, dead }
 
+/// Una línea de la mochila: qué objeto, cuántos y en qué estado.
+///
+/// [itemId] se resuelve contra los tres catálogos que pueden aparecer en el
+/// inventario —armas, armaduras y objetos— con
+/// `ContentRepository.catalogEntry`. No guarda de cuál salió: un campo así
+/// sería un segundo origen de verdad que se desincroniza en cuanto un id
+/// cambia de catálogo.
+class InventoryEntry {
+  final String itemId;
+
+  /// Siempre >= 1. Una entrada con cantidad 0 se borra, no se guarda.
+  final int quantity;
+
+  /// Solo es autoritativo cuando [itemId] es un objeto. Para armas y armaduras
+  /// manda el equipo de la ficha (`equippedWeaponIds`, `equippedArmorId`,
+  /// `shieldEquipped`), que es lo que lee el compilador. La única puerta de
+  /// entrada correcta es [Character.isEquipped].
+  final bool equipped;
+
+  final bool attuned;
+
+  /// Texto libre del jugador. Es lo que convierte una entrada en la carta que
+  /// le dio el alcalde o en el libro que sacó de la biblioteca.
+  final String note;
+
+  const InventoryEntry({
+    required this.itemId,
+    this.quantity = 1,
+    this.equipped = false,
+    this.attuned = false,
+    this.note = '',
+  });
+
+  InventoryEntry copyWith({
+    int? quantity,
+    bool? equipped,
+    bool? attuned,
+    String? note,
+  }) =>
+      InventoryEntry(
+        itemId: itemId,
+        quantity: quantity ?? this.quantity,
+        equipped: equipped ?? this.equipped,
+        attuned: attuned ?? this.attuned,
+        note: note ?? this.note,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'itemId': itemId,
+        if (quantity != 1) 'quantity': quantity,
+        if (equipped) 'equipped': true,
+        if (attuned) 'attuned': true,
+        if (note.isNotEmpty) 'note': note,
+      };
+
+  factory InventoryEntry.fromJson(Map<String, dynamic> j) => InventoryEntry(
+        itemId: j['itemId'] as String,
+        // Una importación puede traer 0 o un negativo; la ficha no tiene forma
+        // de mostrar eso, así que se sube a 1 en vez de propagar el disparate.
+        quantity: (j['quantity'] as int? ?? 1).clamp(1, 1 << 30),
+        equipped: j['equipped'] as bool? ?? false,
+        attuned: j['attuned'] as bool? ?? false,
+        note: j['note'] as String? ?? '',
+      );
+}
+
 /// Centinela para distinguir "no se pasó el argumento" de "se pasó null" en
 /// [Character.copyWith] (necesario para poder **desequipar** la armadura).
 const Object _unset = Object();
@@ -237,7 +304,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 18;
+  static const int currentSchemaVersion = 19;
 
   final String id;
   String name;
@@ -393,6 +460,22 @@ class Character {
   /// adivinarlo daría una ficha distinta sin que el jugador lo haya pedido.
   final Map<String, bool> weaponOffHand;
 
+  /// Todo lo que el personaje lleva encima, equipado o no.
+  ///
+  /// Convive con los cinco campos de equipado de arriba en vez de
+  /// reemplazarlos: fundirlos obligaría a reescribir el cálculo de CA, el de
+  /// ataques, la validación de mano secundaria y el asistente de creación a
+  /// cambio de cero mecánica nueva. Ver [isEquipped].
+  final List<InventoryEntry> inventory;
+
+  /// Monedas por denominación (`cp`, `sp`, `ep`, `gp`, `pp`). Las que no están
+  /// valen cero.
+  ///
+  /// No se convierten solas entre denominaciones: en la mesa el jugador decide
+  /// con qué paga, y una conversión automática le cambiaría la bolsa sin que la
+  /// haya tocado.
+  final Map<String, int> coins;
+
   /// Claves opacas de retrato guardado, resueltas por la plataforma que las
   /// muestra (disco local en la aplicación de escritorio, blob de la cuenta
   /// en el cliente web). MUST NOT contener rutas absolutas del sistema de
@@ -447,6 +530,8 @@ class Character {
     this.equippedWeaponIds = const [],
     this.weaponTwoHanded = const {},
     this.weaponOffHand = const {},
+    this.inventory = const [],
+    this.coins = const {},
     this.portraitPaths = const [],
     this.notes = '',
     this.alignment,
@@ -491,6 +576,8 @@ class Character {
         'hpPerLevel': hpPerLevel,
         'equippedArmorId': equippedArmorId,
         'shieldEquipped': shieldEquipped,
+        'inventory': [for (final e in inventory) e.toJson()],
+        'coins': coins,
         'equippedWeaponIds': equippedWeaponIds,
         'weaponTwoHanded': weaponTwoHanded,
         'weaponOffHand': weaponOffHand,
@@ -509,6 +596,18 @@ class Character {
         if (raw is Map)
           for (final e in raw.entries)
             if (e.key is String && e.value is bool) e.key as String: e.value,
+      };
+
+  /// Monedas por denominación, descartando claves desconocidas y cantidades
+  /// negativas: una bolsa con −3 piezas de oro no se puede mostrar ni gastar.
+  static Map<String, int> _coinMap(dynamic raw) => {
+        if (raw is Map)
+          for (final e in raw.entries)
+            if (e.key is String &&
+                coinDenominations.contains(e.key) &&
+                e.value is int &&
+                (e.value as int) > 0)
+              e.key as String: e.value as int,
       };
 
   /// Mapa "grupo → ids elegidos" tolerante, por el mismo motivo que [_boolMap].
@@ -838,6 +937,27 @@ class Character {
           migrated.putIfAbsent('featSpellcastingAbilities', () => {});
           version = 18;
           migrated['schemaVersion'] = version;
+        case 18:
+          // El inventario arranca con lo que la ficha ya llevaba puesto. Dejarlo
+          // vacío sería correcto en lo formal y desastroso en la práctica: al
+          // abrir la pestaña, a un personaje de años le habrían desaparecido la
+          // espada y la armadura de la lista aunque siguieran equipadas.
+          migrated.putIfAbsent('coins', () => <String, dynamic>{});
+          migrated.putIfAbsent(
+            'inventory',
+            () => [
+              if (migrated['equippedArmorId'] is String)
+                {'itemId': migrated['equippedArmorId']},
+              // 'shield' es el id que tenía el catálogo en el esquema 18. Va
+              // literal a propósito: una migración describe el pasado.
+              if (migrated['shieldEquipped'] == true) {'itemId': 'shield'},
+              for (final w
+                  in (migrated['equippedWeaponIds'] as List? ?? const []))
+                {'itemId': w},
+            ],
+          );
+          version = 19;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -913,6 +1033,11 @@ class Character {
           .toList(),
       weaponTwoHanded: _boolMap(j['weaponTwoHanded']),
       weaponOffHand: _boolMap(j['weaponOffHand']),
+      inventory: [
+        for (final e in (j['inventory'] as List? ?? const []))
+          InventoryEntry.fromJson((e as Map).cast<String, dynamic>()),
+      ],
+      coins: _coinMap(j['coins']),
       portraitPaths: (j['portraitPaths'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
@@ -953,6 +1078,8 @@ class Character {
     Object? equippedArmorId = _unset,
     bool? shieldEquipped,
     List<String>? equippedWeaponIds,
+    List<InventoryEntry>? inventory,
+    Map<String, int>? coins,
     Map<String, bool>? weaponTwoHanded,
     Map<String, bool>? weaponOffHand,
     List<String>? portraitPaths,
@@ -1005,6 +1132,8 @@ class Character {
           : equippedArmorId as String?,
       shieldEquipped: shieldEquipped ?? this.shieldEquipped,
       equippedWeaponIds: equippedWeaponIds ?? this.equippedWeaponIds,
+      inventory: inventory ?? this.inventory,
+      coins: coins ?? this.coins,
       weaponTwoHanded: weaponTwoHanded ?? this.weaponTwoHanded,
       weaponOffHand: weaponOffHand ?? this.weaponOffHand,
       portraitPaths: portraitPaths ?? this.portraitPaths,

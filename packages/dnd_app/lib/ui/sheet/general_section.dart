@@ -139,6 +139,10 @@ extension _SheetGeneralSection on _SheetScreenState {
         when sheet.proficiencyChoiceSlots.isNotEmpty ||
             sheet.expertiseChoiceSlots.isNotEmpty =>
       _resolveProficiencyChoices,
+    // La mochila no se arregla con un diálogo: hay que decidir qué se suelta o
+    // qué se dessintoniza, y eso se hace mirando la lista entera.
+    'encumbered' ||
+    'attunement_over_limit' => () => _selectTab(_SheetTab.inventario),
     _ => null,
   };
 

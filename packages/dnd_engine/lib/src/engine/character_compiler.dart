@@ -11,6 +11,7 @@ import '../domain/language.dart';
 import '../domain/proficiency_labels.dart';
 import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
+import 'inventory_ops.dart';
 import 'sheet_builder.dart';
 
 /// Toma un [Character] con elecciones resueltas + el [ContentRepository] y
@@ -233,6 +234,22 @@ class CharacterCompiler {
       if (elegida != null) {
         builder.addAbilityBonus(elegida, effect.amount, source: source);
       }
+    }
+
+    // Objetos como fuente de efectos: la capa de protección, el anillo de
+    // resistencia. Va acá, después de las dotes y antes de que se cierren las
+    // puntuaciones y se calcule la CA.
+    //
+    // Un objeto solo aporta si lo llevás puesto y, cuando lo exige, si está
+    // sintonizado. Pasar del límite de tres no recorta nada: el patrón del
+    // motor es avisar sin bloquear, y la validación emite
+    // `attunement_over_limit`.
+    for (final entry in c.inventory) {
+      final item = repo.item(entry.itemId);
+      if (item == null || item.effects.isEmpty) continue;
+      if (!InventoryOps.isEquipped(c, entry, repo)) continue;
+      if (item.requiresAttunement && !entry.attuned) continue;
+      applySource('item:${item.id}', item.name, item.effects);
     }
 
     // Habilidades elegidas en el wizard (raza/clase/trasfondo).
@@ -493,6 +510,7 @@ class CharacterCompiler {
       maxHp: maxHp,
       hitDie: klass?.hitDie ?? 8,
       armorClass: ac,
+      carriedWeight: InventoryOps.carriedWeight(c, repo),
       size: size,
       speed: speed,
       initiative: dexMod,
@@ -963,7 +981,10 @@ class CharacterCompiler {
     }
 
     final proficient = w.isProficientWith(b.weaponProficiencies);
-    final attackBonus = abilityMod + (proficient ? profBonus : 0);
+    // El bono mágico suma al ataque y al daño. Vive en el arma y no como
+    // efecto porque ningún efecto sabe decir "solo esta arma".
+    final attackBonus =
+        abilityMod + (proficient ? profBonus : 0) + w.magicBonus;
 
     final twoHanded = c.weaponTwoHanded[w.id] ?? false;
     final dice = (twoHanded && w.versatileDice != null)
@@ -997,7 +1018,7 @@ class CharacterCompiler {
       weaponId: w.id,
       name: w.name,
       attackBonus: attackBonus,
-      damage: _damageString(dice, damageMod),
+      damage: _damageString(dice, damageMod + w.magicBonus),
       damageType: w.damageType,
       mastery: hasMastery ? w.mastery : null,
       offHand: offHand,

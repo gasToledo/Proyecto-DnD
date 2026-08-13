@@ -1234,6 +1234,45 @@ void main() {
       ]);
     });
 
+    test('los objetos son una categoría válida y se pueden borrar', () async {
+      final token = await login('subject-hb-items');
+      final cookie = {'cookie': 'dnd_session=$token'};
+
+      final saved = await handler(
+        Request(
+          'PUT',
+          Uri.parse('http://localhost/api/homebrew/items/hb-capa'),
+          headers: cookie,
+          body: jsonEncode({'id': 'hb-capa', 'name': 'Capa de protección'}),
+        ),
+      );
+      expect(saved.statusCode, 200);
+
+      Future<dynamic> listItems() async => jsonDecode(
+        await (await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/homebrew'),
+            headers: cookie,
+          ),
+        )).readAsString(),
+      )['content']['items'];
+
+      expect(await listItems(), [
+        {'id': 'hb-capa', 'name': 'Capa de protección'},
+      ]);
+
+      final deleted = await handler(
+        Request(
+          'DELETE',
+          Uri.parse('http://localhost/api/homebrew/items/hb-capa'),
+          headers: cookie,
+        ),
+      );
+      expect(deleted.statusCode, 200);
+      expect(await listItems(), isEmpty);
+    });
+
     test('una categoría desconocida responde 400', () async {
       final token = await login('subject-hb-2');
       final response = await handler(

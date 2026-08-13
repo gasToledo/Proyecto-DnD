@@ -1,4 +1,5 @@
 import 'package:dnd_engine/dnd_engine.dart';
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -190,11 +191,27 @@ class _SheetScreenState extends State<SheetScreen> {
   // footgun de TextFormField(initialValue:), que ignora cambios posteriores.
   late final _notesCtrl = TextEditingController(text: widget.character.notes);
 
+  /// Un controlador por denominación de moneda, por el mismo motivo que las
+  /// notas. Se crean acá y no en la tarjeta: la pestaña se reconstruye en cada
+  /// cambio y un controlador creado en `build` perdería el cursor a mitad de
+  /// escribir un número.
+  late final Map<String, TextEditingController> _coinCtrls = {
+    for (final k in coinDenominations)
+      k: TextEditingController(
+        text: (widget.character.coins[k] ?? 0) == 0
+            ? ''
+            : '${widget.character.coins[k]}',
+      ),
+  };
+
   @override
   void dispose() {
     _amountCtrl.dispose();
     _companionAmountCtrl.dispose();
     _notesCtrl.dispose();
+    for (final c in _coinCtrls.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 

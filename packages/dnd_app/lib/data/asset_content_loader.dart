@@ -25,6 +25,7 @@ Future<ContentRepository> loadOfficialContent() async {
     feats: await _load('feats.json'),
     weapons: await _load('weapons.json'),
     armor: await _load('armor.json'),
+    items: await _load('items.json'),
     spells: await _load('spells.json'),
     creatures: await _load('creatures.json'),
   );

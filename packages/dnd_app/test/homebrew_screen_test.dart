@@ -16,7 +16,7 @@ void main() {
   });
 
   testWidgets(
-    'las seis categorías y el formulario de armas siguen accesibles',
+    'las siete categorías y el formulario de armas siguen accesibles',
     (tester) async {
       tester.view.physicalSize = const Size(1000, 700);
       tester.view.devicePixelRatio = 1;
@@ -35,6 +35,7 @@ void main() {
 
       const categories = {
         'Armaduras': 'Agregar armadura',
+        'Objetos': 'Agregar objeto',
         'Dotes': 'Agregar dote',
         'Razas': 'Agregar raza',
         'Trasfondos': 'Agregar trasfondo',
@@ -119,6 +120,37 @@ void main() {
     expect(find.text('Sutil'), findsOneWidget);
     expect(find.text('finesse'), findsNothing);
     expect(find.text('two-handed'), findsNothing);
+  });
+
+  testWidgets('un objeto mundano no puede exigir sintonización', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Objetos'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Agregar objeto'));
+    await tester.pumpAndSettle();
+
+    final toggle = find.widgetWithText(
+      SwitchListTile,
+      'Requiere sintonización',
+    );
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).onChanged, isNull);
+    expect(
+      find.text('Solo los objetos mágicos se sintonizan.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('borrar contenido homebrew pide confirmación', (tester) async {

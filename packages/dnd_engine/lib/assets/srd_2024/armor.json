@@ -6,7 +6,9 @@
     "category": "light",
     "baseAc": 11,
     "addDexMod": true,
-    "stealthDisadvantage": true
+    "stealthDisadvantage": true,
+    "weight": 8.0,
+    "costCp": 500
   },
   {
     "id": "leather",
@@ -14,7 +16,9 @@
     "source": "srd_2024",
     "category": "light",
     "baseAc": 11,
-    "addDexMod": true
+    "addDexMod": true,
+    "weight": 10.0,
+    "costCp": 1000
   },
   {
     "id": "studded-leather",
@@ -22,7 +26,9 @@
     "source": "srd_2024",
     "category": "light",
     "baseAc": 12,
-    "addDexMod": true
+    "addDexMod": true,
+    "weight": 13.0,
+    "costCp": 4500
   },
   {
     "id": "hide",
@@ -31,7 +37,9 @@
     "category": "medium",
     "baseAc": 12,
     "addDexMod": true,
-    "maxDexBonus": 2
+    "maxDexBonus": 2,
+    "weight": 12.0,
+    "costCp": 1000
   },
   {
     "id": "chain-shirt",
@@ -40,7 +48,9 @@
     "category": "medium",
     "baseAc": 13,
     "addDexMod": true,
-    "maxDexBonus": 2
+    "maxDexBonus": 2,
+    "weight": 20.0,
+    "costCp": 5000
   },
   {
     "id": "scale-mail",
@@ -50,7 +60,9 @@
     "baseAc": 14,
     "addDexMod": true,
     "maxDexBonus": 2,
-    "stealthDisadvantage": true
+    "stealthDisadvantage": true,
+    "weight": 45.0,
+    "costCp": 5000
   },
   {
     "id": "breastplate",
@@ -59,7 +71,9 @@
     "category": "medium",
     "baseAc": 14,
     "addDexMod": true,
-    "maxDexBonus": 2
+    "maxDexBonus": 2,
+    "weight": 20.0,
+    "costCp": 40000
   },
   {
     "id": "half-plate",
@@ -69,7 +83,9 @@
     "baseAc": 15,
     "addDexMod": true,
     "maxDexBonus": 2,
-    "stealthDisadvantage": true
+    "stealthDisadvantage": true,
+    "weight": 40.0,
+    "costCp": 75000
   },
   {
     "id": "ring-mail",
@@ -78,7 +94,9 @@
     "category": "heavy",
     "baseAc": 14,
     "addDexMod": false,
-    "stealthDisadvantage": true
+    "stealthDisadvantage": true,
+    "weight": 40.0,
+    "costCp": 3000
   },
   {
     "id": "chain-mail",
@@ -88,7 +106,9 @@
     "baseAc": 16,
     "addDexMod": false,
     "strengthRequirement": 13,
-    "stealthDisadvantage": true
+    "stealthDisadvantage": true,
+    "weight": 55.0,
+    "costCp": 7500
   },
   {
     "id": "splint",
@@ -98,7 +118,9 @@
     "baseAc": 17,
     "addDexMod": false,
     "strengthRequirement": 15,
-    "stealthDisadvantage": true
+    "stealthDisadvantage": true,
+    "weight": 60.0,
+    "costCp": 20000
   },
   {
     "id": "plate",
@@ -108,7 +130,9 @@
     "baseAc": 18,
     "addDexMod": false,
     "strengthRequirement": 15,
-    "stealthDisadvantage": true
+    "stealthDisadvantage": true,
+    "weight": 65.0,
+    "costCp": 150000
   },
   {
     "id": "shield",
@@ -116,6 +140,8 @@
     "source": "srd_2024",
     "category": "shield",
     "baseAc": 2,
-    "addDexMod": false
+    "addDexMod": false,
+    "weight": 6.0,
+    "costCp": 1000
   }
 ]

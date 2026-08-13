@@ -68,6 +68,7 @@ class ContentRepository {
   final Map<String, Feat> feats;
   final Map<String, Weapon> weapons;
   final Map<String, Armor> armor;
+  final Map<String, Item> items;
   final Map<String, Spell> spells;
   final Map<String, Creature> creatures;
 
@@ -80,6 +81,7 @@ class ContentRepository {
     Map<String, Feat>? feats,
     Map<String, Weapon>? weapons,
     Map<String, Armor>? armor,
+    Map<String, Item>? items,
     Map<String, Spell>? spells,
     Map<String, Creature>? creatures,
   })  : races = races ?? {},
@@ -90,6 +92,7 @@ class ContentRepository {
         feats = feats ?? {},
         weapons = weapons ?? {},
         armor = armor ?? {},
+        items = items ?? {},
         spells = spells ?? {},
         creatures = creatures ?? {};
 
@@ -101,8 +104,39 @@ class ContentRepository {
   Feat? feat(String id) => feats[id];
   Weapon? weapon(String id) => weapons[id];
   Armor? armorPiece(String id) => armor[id];
+  Item? item(String id) => items[id];
   Spell? spell(String id) => spells[id];
   Creature? creature(String id) => creatures[id];
+
+  /// Resuelve un id de inventario contra los tres catálogos que pueden
+  /// aparecer en la mochila, en orden: armas → armaduras → objetos.
+  ///
+  /// Existe porque una entrada de inventario guarda un id pelado y no de qué
+  /// colección salió: un campo `kind` persistido sería un segundo origen de
+  /// verdad que se desincroniza en cuanto un objeto cambia de catálogo. El
+  /// [kind] que devuelve solo decide qué controles muestra la fila.
+  ///
+  /// **El compilador no pasa por acá**: sigue resolviendo con [weapon] y
+  /// [armorPiece], así que una colisión de ids nunca puede alterar un cálculo.
+  /// `content_integrity_test.dart` verifica que los tres conjuntos sean
+  /// disjuntos y el formulario homebrew rechaza un id ya tomado.
+  ({String name, double weight, int costCp, String kind})? catalogEntry(
+    String id,
+  ) {
+    final w = weapons[id];
+    if (w != null) {
+      return (name: w.name, weight: w.weight, costCp: w.costCp, kind: 'weapon');
+    }
+    final a = armor[id];
+    if (a != null) {
+      return (name: a.name, weight: a.weight, costCp: a.costCp, kind: 'armor');
+    }
+    final i = items[id];
+    if (i != null) {
+      return (name: i.name, weight: i.weight, costCp: i.costCp, kind: 'item');
+    }
+    return null;
+  }
 
   /// Catálogos completos en orden alfabético, que es como los lista la UI. Los
   /// mapas conservan el orden de carga del JSON, que no le sirve a nadie para
@@ -143,6 +177,7 @@ class ContentRepository {
             ];
   List<Weapon> get weaponsSorted => sortedByName(weapons.values, (e) => e.name);
   List<Armor> get armorSorted => sortedByName(armor.values, (e) => e.name);
+  List<Item> get itemsSorted => sortedByName(items.values, (e) => e.name);
 
   /// Subclases que pertenecen a una clase (id de clase), ordenadas por nombre.
   List<Subclass> subclassesForClass(String classId) => sortedByName(
@@ -199,6 +234,7 @@ class ContentRepository {
     feats.addAll(other.feats);
     weapons.addAll(other.weapons);
     armor.addAll(other.armor);
+    items.addAll(other.items);
     spells.addAll(other.spells);
     creatures.addAll(other.creatures);
   }
@@ -214,6 +250,7 @@ class ContentRepository {
     List<Map<String, dynamic>> feats = const [],
     List<Map<String, dynamic>> weapons = const [],
     List<Map<String, dynamic>> armor = const [],
+    List<Map<String, dynamic>> items = const [],
     List<Map<String, dynamic>> spells = const [],
     List<Map<String, dynamic>> creatures = const [],
   }) {
@@ -234,6 +271,7 @@ class ContentRepository {
       feats: {for (final j in feats) j['id'] as String: Feat.fromJson(j)},
       weapons: {for (final j in weapons) j['id'] as String: Weapon.fromJson(j)},
       armor: {for (final j in armor) j['id'] as String: Armor.fromJson(j)},
+      items: {for (final j in items) j['id'] as String: Item.fromJson(j)},
       spells: {for (final j in spells) j['id'] as String: Spell.fromJson(j)},
       creatures: {
         for (final j in creatures) j['id'] as String: Creature.fromJson(j),

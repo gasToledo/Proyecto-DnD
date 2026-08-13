@@ -327,6 +327,114 @@ void main() {
     });
   });
 
+  group('v18 → v19: inventario y monedas', () {
+    test('el inventario arranca con lo que la ficha ya llevaba puesto', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 18,
+        'id': 'v18',
+        'name': 'Exploradora',
+        'raceId': 'human',
+        'classId': 'ranger',
+        'backgroundId': 'outlander',
+        'assignedScores': const <String, int>{},
+        'equippedArmorId': 'leather',
+        'shieldEquipped': true,
+        'equippedWeaponIds': ['longbow', 'shortsword'],
+      });
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['coins'], isEmpty);
+      expect(
+        [for (final e in migrated['inventory'] as List) e['itemId']],
+        ['leather', 'shield', 'longbow', 'shortsword'],
+      );
+    });
+
+    test('una ficha sin nada equipado migra a un inventario vacío', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 18,
+        'id': 'v18-desnudo',
+        'assignedScores': const <String, int>{},
+      });
+
+      expect(migrated['inventory'], isEmpty);
+      expect(migrated['coins'], isEmpty);
+    });
+
+    test('no pisa un inventario que ya venía', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 18,
+        'inventory': [
+          {'itemId': 'torch', 'quantity': 5},
+        ],
+        'coins': {'gp': 12},
+        'equippedWeaponIds': ['club'],
+      });
+
+      expect(migrated['inventory'], hasLength(1));
+      expect(migrated['coins'], {'gp': 12});
+    });
+  });
+
+  group('la entrada de inventario sobrevive el ida y vuelta', () {
+    test('conserva cantidad, equipado, sintonizado y nota', () {
+      final original = Character(
+        id: 'ficha',
+        name: 'Bruja',
+        raceId: 'human',
+        classId: 'warlock',
+        backgroundId: 'sage',
+        assignedScores: const {},
+        inventory: const [
+          InventoryEntry(
+            itemId: 'book',
+            quantity: 3,
+            equipped: true,
+            attuned: true,
+            note: 'La carta del alcalde va entre las páginas.',
+          ),
+        ],
+        coins: const {'gp': 25, 'sp': 4},
+      );
+
+      final round = Character.fromJson(
+        Character.migrateJson(jsonDecode(jsonEncode(original.toJson()))),
+      );
+
+      expect(round.inventory, hasLength(1));
+      final entry = round.inventory.single;
+      expect(entry.itemId, 'book');
+      expect(entry.quantity, 3);
+      expect(entry.equipped, isTrue);
+      expect(entry.attuned, isTrue);
+      expect(entry.note, 'La carta del alcalde va entre las páginas.');
+      expect(round.coins, {'gp': 25, 'sp': 4});
+    });
+
+    test('descarta cantidades y monedas que no se pueden mostrar', () {
+      // Una importación no es dato confiable: una cantidad de 0 o una bolsa con
+      // −3 piezas de oro tienen que degradar, no romper la carga de la ficha.
+      final round = Character.fromJson(
+        Character.migrateJson({
+          'schemaVersion': Character.currentSchemaVersion,
+          'id': 'importada',
+          'name': 'Importada',
+          'raceId': 'human',
+          'classId': 'fighter',
+          'backgroundId': 'soldier',
+          'assignedScores': const <String, int>{},
+          'inventory': [
+            {'itemId': 'rope', 'quantity': 0},
+          ],
+          'coins': {'gp': -3, 'sp': 5, 'chapitas': 99},
+        }),
+      );
+
+      expect(round.inventory.single.quantity, 1);
+      expect(round.coins, {'sp': 5});
+    });
+  });
+
   group('v13 → v14: elección de conjuros', () {
     test('la ficha vieja arranca sin ninguna elegida', () {
       final migrated = Character.migrateJson({

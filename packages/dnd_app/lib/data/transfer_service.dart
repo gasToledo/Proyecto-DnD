@@ -91,6 +91,7 @@ class TransferService {
         for (final key in const [
           'weapons',
           'armor',
+          'items',
           'feats',
           'races',
           'backgrounds',

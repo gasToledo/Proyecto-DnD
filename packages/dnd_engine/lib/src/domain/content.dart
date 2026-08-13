@@ -595,6 +595,21 @@ class Weapon {
   /// que un arma sin el campo (todo el homebrew anterior) siga siendo estricta.
   final bool twoHandedUnlessMounted;
 
+  /// Peso en libras. 0 = sin peso declarado (homebrew viejo).
+  final double weight;
+
+  /// Precio en piezas de cobre. Se guarda en cobre y no en oro decimal porque
+  /// la tabla del capítulo 6 tiene precios de 5 pc y 1 pp: con `double` en oro
+  /// la suma del inventario acumula error de redondeo.
+  final int costCp;
+
+  /// Bonificador mágico del arma (+1, +2, +3), que suma al ataque y al daño.
+  ///
+  /// Vive en el arma y no como efecto porque un efecto no tiene forma de decir
+  /// "solo esta arma": `ArmorClassBonusEffect` y compañía son planos. Un arma
+  /// mágica es un arma más del catálogo, homebrew o no.
+  final int magicBonus;
+
   const Weapon({
     required this.id,
     required this.name,
@@ -606,6 +621,9 @@ class Weapon {
     this.versatileDice,
     this.mastery,
     this.twoHandedUnlessMounted = false,
+    this.weight = 0,
+    this.costCp = 0,
+    this.magicBonus = 0,
   });
 
   bool get isRanged => properties.contains('ranged');
@@ -649,6 +667,9 @@ class Weapon {
         'versatileDice': versatileDice,
         'mastery': mastery,
         if (twoHandedUnlessMounted) 'twoHandedUnlessMounted': true,
+        'weight': weight,
+        'costCp': costCp,
+        if (magicBonus != 0) 'magicBonus': magicBonus,
       };
 
   factory Weapon.fromJson(Map<String, dynamic> j) => Weapon(
@@ -664,6 +685,9 @@ class Weapon {
         versatileDice: j['versatileDice'] as String?,
         mastery: j['mastery'] as String?,
         twoHandedUnlessMounted: j['twoHandedUnlessMounted'] as bool? ?? false,
+        weight: (j['weight'] as num? ?? 0).toDouble(),
+        costCp: j['costCp'] as int? ?? 0,
+        magicBonus: j['magicBonus'] as int? ?? 0,
       );
 }
 
@@ -770,6 +794,12 @@ class Armor {
   final int? strengthRequirement;
   final bool stealthDisadvantage;
 
+  /// Peso en libras. 0 = sin peso declarado (homebrew viejo).
+  final double weight;
+
+  /// Precio en piezas de cobre. Ver [Weapon.costCp].
+  final int costCp;
+
   const Armor({
     required this.id,
     required this.name,
@@ -780,6 +810,8 @@ class Armor {
     this.maxDexBonus,
     this.strengthRequirement,
     this.stealthDisadvantage = false,
+    this.weight = 0,
+    this.costCp = 0,
   });
 
   bool get isShield => category == 'shield';
@@ -794,6 +826,8 @@ class Armor {
         'maxDexBonus': maxDexBonus,
         'strengthRequirement': strengthRequirement,
         'stealthDisadvantage': stealthDisadvantage,
+        'weight': weight,
+        'costCp': costCp,
       };
 
   factory Armor.fromJson(Map<String, dynamic> j) => Armor(
@@ -806,5 +840,145 @@ class Armor {
         maxDexBonus: j['maxDexBonus'] as int?,
         strengthRequirement: j['strengthRequirement'] as int?,
         stealthDisadvantage: j['stealthDisadvantage'] as bool? ?? false,
+        weight: (j['weight'] as num? ?? 0).toDouble(),
+        costCp: j['costCp'] as int? ?? 0,
       );
+}
+
+/// Objeto de inventario que no es arma ni armadura: equipo de aventurero,
+/// herramientas, munición, canalizadores, paquetes, contenedores y objetos
+/// mágicos.
+///
+/// Es un solo tipo con campos opcionales y no una jerarquía (`Gear`, `Tool`,
+/// `Container`) porque nada en el motor ramifica por "es una herramienta": la
+/// [category] es un dato de presentación. Un tipo por familia multiplicaría los
+/// cinco puntos de carga del catálogo, el formulario homebrew y los tests sin
+/// comprar ninguna regla.
+class Item {
+  final String id;
+  final String name;
+  final ContentSource source;
+
+  /// 'gear' | 'tool' | 'ammunition' | 'focus' | 'pack' | 'container' | 'magic'.
+  final String category;
+
+  /// Peso en libras de un paquete de [bundleSize] unidades.
+  final double weight;
+
+  /// Precio en piezas de cobre. Ver [Weapon.costCp].
+  final int costCp;
+
+  /// Cantidad incluida en una compra. Es mayor que 1 para munición: el peso y
+  /// el precio de "Flechas" corresponden al paquete de 20 de la tabla.
+  final int bundleSize;
+
+  /// Texto libre. En el catálogo oficial es la descripción del manual; en un
+  /// objeto del jugador es donde viven las cartas, las notas y los libros.
+  final String description;
+
+  /// null = objeto mundano. 'common' | 'uncommon' | 'rare' | 'very-rare' |
+  /// 'legendary' | 'artifact'.
+  final String? rarity;
+
+  final bool requiresAttunement;
+
+  /// Efectos que el objeto aporta a la ficha mientras está equipado (y
+  /// sintonizado, si lo exige). Vacío = objeto sin mecánica, que es el caso de
+  /// todo el catálogo mundano.
+  final List<Effect> effects;
+
+  const Item({
+    required this.id,
+    required this.name,
+    required this.source,
+    required this.category,
+    this.weight = 0,
+    this.costCp = 0,
+    this.bundleSize = 1,
+    this.description = '',
+    this.rarity,
+    this.requiresAttunement = false,
+    this.effects = const [],
+  });
+
+  bool get isMagic => rarity != null;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'source': source.toJson(),
+        'category': category,
+        'weight': weight,
+        'costCp': costCp,
+        if (bundleSize != 1) 'bundleSize': bundleSize,
+        if (description.isNotEmpty) 'description': description,
+        if (rarity != null) 'rarity': rarity,
+        if (requiresAttunement) 'requiresAttunement': true,
+        if (effects.isNotEmpty)
+          'effects': [for (final e in effects) e.toJson()],
+      };
+
+  factory Item.fromJson(Map<String, dynamic> j) => Item(
+        id: j['id'] as String,
+        name: j['name'] as String,
+        source: ContentSource.fromJson(j['source'] as String?),
+        category: j['category'] as String,
+        weight: (j['weight'] as num? ?? 0).toDouble(),
+        costCp: j['costCp'] as int? ?? 0,
+        bundleSize: (j['bundleSize'] as int? ?? 1).clamp(1, 1 << 30),
+        description: j['description'] as String? ?? '',
+        rarity: j['rarity'] as String?,
+        requiresAttunement: j['requiresAttunement'] as bool? ?? false,
+        effects: Effect.listFromJson(j['effects']),
+      );
+}
+
+/// Denominaciones de moneda, de menor a mayor. Las claves son las que viajan
+/// en `Character.coins`; las etiquetas, las abreviaturas del SRD en español.
+const coinDenominations = <String>['cp', 'sp', 'ep', 'gp', 'pp'];
+const coinValueCp = <String, int>{
+  'cp': 1,
+  'sp': 10,
+  'ep': 50,
+  'gp': 100,
+  'pp': 1000,
+};
+const coinLabels = <String, String>{
+  'cp': 'pc',
+  'sp': 'pp',
+  'ep': 'pe',
+  'gp': 'po',
+  'pp': 'ppt',
+};
+
+/// Cincuenta monedas pesan una libra, sin importar el metal (capítulo 6).
+const coinsPerPound = 50;
+
+/// Espacios de sintonización de un personaje (capítulo 6, "Sintonización").
+const attunementSlots = 3;
+
+/// Formatea un precio guardado en cobre con la denominación más grande que lo
+/// exprese sin fracción: 1500 → "15 po", 5 → "5 pc".
+///
+/// Solo cobre, plata y oro. El manual cotiza en esas tres y nada más: con
+/// electro, "50 pc" saldría como "1 pe", y con platino el catalejo de 1000 po
+/// saldría como "100 ppt". Las cinco denominaciones existen igual en la bolsa
+/// del personaje, que es otra cosa que un precio de tabla.
+///
+/// Vive en el motor y no en la app para que la ficha, el catálogo homebrew y
+/// los tests no formateen cada uno a su manera.
+/// Peso legible en libras, conservando centésimas (las monedas pesan de a
+/// 1/50 lb y el dardo pesa 1/4 lb) pero sin ceros finales.
+String formatPounds(double value) =>
+    value.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+
+String formatCost(int cp) {
+  if (cp == 0) return '—';
+  for (final key in const ['gp', 'sp']) {
+    final value = coinValueCp[key]!;
+    if (cp >= value && cp % value == 0) {
+      return '${cp ~/ value} ${coinLabels[key]}';
+    }
+  }
+  return '$cp ${coinLabels['cp']}';
 }

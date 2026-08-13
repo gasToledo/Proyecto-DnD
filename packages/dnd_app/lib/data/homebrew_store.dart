@@ -11,6 +11,7 @@ class HomebrewStore {
   final ApiClient api;
   final Map<String, Weapon> weapons = {};
   final Map<String, Armor> armor = {};
+  final Map<String, Item> items = {};
   final Map<String, Feat> feats = {};
   final Map<String, Race> races = {};
   final Map<String, Background> backgrounds = {};
@@ -32,6 +33,13 @@ class HomebrewStore {
       ..addEntries(
         (content['armor'] ?? const []).map(
           (j) => MapEntry(j['id'] as String, Armor.fromJson(j)),
+        ),
+      );
+    items
+      ..clear()
+      ..addEntries(
+        (content['items'] ?? const []).map(
+          (j) => MapEntry(j['id'] as String, Item.fromJson(j)),
         ),
       );
     feats
@@ -69,6 +77,7 @@ class HomebrewStore {
   Map<String, List<Map<String, dynamic>>> exportContent() => {
     'weapons': weapons.values.map((e) => e.toJson()).toList(),
     'armor': armor.values.map((e) => e.toJson()).toList(),
+    'items': items.values.map((e) => e.toJson()).toList(),
     'feats': feats.values.map((e) => e.toJson()).toList(),
     'races': races.values.map((e) => e.toJson()).toList(),
     'backgrounds': backgrounds.values.map((e) => e.toJson()).toList(),
@@ -83,6 +92,7 @@ class HomebrewStore {
     final existingIds = <String, Set<String>>{
       'weapons': weapons.keys.toSet(),
       'armor': armor.keys.toSet(),
+      'items': items.keys.toSet(),
       'feats': feats.keys.toSet(),
       'races': races.keys.toSet(),
       'backgrounds': backgrounds.keys.toSet(),
@@ -123,6 +133,7 @@ class HomebrewStore {
   ContentRepository toRepository() => ContentRepository(
     weapons: Map.of(weapons),
     armor: Map.of(armor),
+    items: Map.of(items),
     feats: Map.of(feats),
     races: Map.of(races),
     backgrounds: Map.of(backgrounds),
@@ -137,6 +148,11 @@ class HomebrewStore {
   Future<void> saveArmor(Armor a) async {
     await api.upsertHomebrew('armor', a.toJson());
     armor[a.id] = a;
+  }
+
+  Future<void> saveItem(Item i) async {
+    await api.upsertHomebrew('items', i.toJson());
+    items[i.id] = i;
   }
 
   Future<void> saveFeat(Feat f) async {
@@ -167,6 +183,11 @@ class HomebrewStore {
   Future<void> deleteArmor(String id) async {
     await api.deleteHomebrew('armor', id);
     armor.remove(id);
+  }
+
+  Future<void> deleteItem(String id) async {
+    await api.deleteHomebrew('items', id);
+    items.remove(id);
   }
 
   Future<void> deleteFeat(String id) async {

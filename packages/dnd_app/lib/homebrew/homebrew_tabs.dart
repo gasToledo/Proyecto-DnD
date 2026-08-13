@@ -132,6 +132,43 @@ extension _HomebrewTabs on _HomebrewScreenState {
     _saved(a.name);
   }
 
+  // ------------------------------------------------------------- Objetos
+  Widget _itemsTab() => _list(
+    addLabel: 'Agregar objeto',
+    onAdd: () => _editItem(),
+    items: sortedByName(store.items.values, (e) => e.name)
+        .map(
+          (i) => _tile(
+            i.name,
+            [
+              _itemCategories[i.category] ?? i.category,
+              formatCost(i.costCp),
+              if (i.weight > 0) '${formatPounds(i.weight)} lb',
+              if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
+              if (i.rarity != null) _itemRarities[i.rarity] ?? i.rarity!,
+            ].join(' · '),
+            onEdit: () => _editItem(i),
+            onDelete: () => _delete(
+              'el objeto',
+              i.name,
+              () => store.deleteItem(i.id),
+              () => repo.items.remove(i.id),
+            ),
+          ),
+        )
+        .toList(),
+  );
+
+  Future<void> _editItem([Item? initial]) async {
+    final i = await Navigator.of(
+      context,
+    ).push<Item>(MaterialPageRoute(builder: (_) => ItemForm(initial: initial)));
+    if (i == null) return _discarded();
+    if (!await _persist(() => store.saveItem(i))) return;
+    repo.items[i.id] = i;
+    _saved(i.name);
+  }
+
   // --------------------------------------------------------------- Dotes
   Widget _featsTab() => _list(
     addLabel: 'Agregar dote',

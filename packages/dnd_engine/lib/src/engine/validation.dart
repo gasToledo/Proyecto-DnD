@@ -8,6 +8,7 @@ import '../domain/language.dart';
 import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
 import 'character_compiler.dart';
+import 'inventory_ops.dart';
 
 enum WarningSeverity { info, warning }
 
@@ -184,6 +185,7 @@ class CharacterValidator {
       }
     }
 
+    _validateInventory(c, sheet, w);
     _validateOffHand(c, repo, w);
     _validateFeatureChoices(c, sheet, w);
     _validateSpellChoices(c, sheet, w);
@@ -540,6 +542,33 @@ class CharacterValidator {
               'por un rasgo.',
         ));
       }
+    }
+  }
+
+  /// Chequeos de la mochila: carga y sintonización. Los dos son informativos y
+  /// no recortan nada; el compilador aplica los efectos igual, porque el motor
+  /// avisa y deja actuar.
+  void _validateInventory(
+    Character c,
+    ComputedSheet sheet,
+    List<ValidationWarning> w,
+  ) {
+    if (sheet.isEncumbered) {
+      w.add(ValidationWarning(
+        'encumbered',
+        'Llevás ${formatPounds(sheet.carriedWeight)} lb y tu capacidad es '
+            '${sheet.carryingCapacity} lb.',
+        WarningSeverity.info,
+      ));
+    }
+
+    final attuned = InventoryOps.attunedCount(c, repo);
+    if (attuned > attunementSlots) {
+      w.add(ValidationWarning(
+        'attunement_over_limit',
+        'Tenés $attuned objetos sintonizados y solo podés mantener '
+            '$attunementSlots.',
+      ));
     }
   }
 

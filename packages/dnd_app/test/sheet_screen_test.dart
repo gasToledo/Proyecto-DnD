@@ -5,6 +5,7 @@ import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes/fake_api_server.dart';
@@ -50,6 +51,31 @@ void main() {
     return controller;
   }
 
+  /// Abre el menú contextual de una fila del inventario.
+  Future<void> openItemMenu(WidgetTester tester, String itemId) async {
+    final menu = find.byKey(ValueKey('menu-$itemId'));
+    await tester.ensureVisible(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> closeItemMenu(WidgetTester tester) async {
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+  }
+
+  /// Abre el menú de una fila y elige una acción por su etiqueta.
+  Future<void> tapItemAction(
+    WidgetTester tester,
+    String itemId,
+    String action,
+  ) async {
+    await openItemMenu(tester, itemId);
+    await tester.tap(find.text(action));
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('las pestañas marciales conservan sus flujos principales', (
     tester,
   ) async {
@@ -71,13 +97,144 @@ void main() {
 
     await tester.tap(find.text('Inventario'));
     await tester.pumpAndSettle();
-    expect(find.text('ARMADURA EQUIPADA'), findsOneWidget);
-    expect(find.text('ARMAS EQUIPADAS'), findsOneWidget);
+    expect(find.text('MONEDAS'), findsOneWidget);
+    expect(find.text('CARGA'), findsOneWidget);
+    expect(find.text('SINTONIZADOS'), findsOneWidget);
+    // La ficha de demostración se arma en código y no toca `inventory`, así
+    // que su arma y su armadura equipadas llegan a la lista por derivación.
+    expect(find.byKey(const ValueKey('inv-longsword')), findsOneWidget);
+    expect(find.byKey(const ValueKey('inv-leather')), findsOneWidget);
 
     await tester.tap(find.text('Notas'));
     await tester.pumpAndSettle();
     expect(find.text('Notas del personaje'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  group('Inventario', () {
+    Character mochilera() => Character(
+      id: 'mochilera',
+      name: 'Mochilera',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      assignedScores: {for (final ability in Ability.values) ability: 10},
+      hpPerLevel: const [10],
+    );
+
+    // Editar el inventario produce un `Character` nuevo vía `copyWith`, así
+    // que lo guardado hay que leerlo del controlador y no del objeto original.
+    Character saved(CharactersController controller) =>
+        controller.characters.firstWhere((c) => c.id == 'mochilera');
+
+    testWidgets('agregar y equipar una armadura mueve la CA y la carga', (
+      tester,
+    ) async {
+      final controller = await pumpSheet(tester, mochilera());
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('La mochila está vacía.'), findsOneWidget);
+      expect(find.text('0 / 150 lb'), findsOneWidget);
+
+      await tester.tap(find.text('Agregar objeto'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'Armadura de placas');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Armadura de placas').last);
+      await tester.pumpAndSettle();
+
+      // Aparece una sola vez: la línea guardada no se duplica con la derivada.
+      expect(find.text('Armadura de placas'), findsOneWidget);
+      expect(find.text('65 / 150 lb'), findsOneWidget);
+      expect(saved(controller).inventory.single.itemId, 'plate');
+
+      final equip = find.byKey(const ValueKey('equip-plate'));
+      await tester.ensureVisible(equip);
+      await tester.tap(equip);
+      await tester.pumpAndSettle();
+
+      expect(saved(controller).equippedArmorId, 'plate');
+      expect(CharacterCompiler(repo).compile(saved(controller)).armorClass, 18);
+    });
+
+    testWidgets('cargar monedas suma a la carga: 50 hacen una libra', (
+      tester,
+    ) async {
+      final controller = await pumpSheet(tester, mochilera());
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.widgetWithText(TextField, 'PO'), '100');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      // El guardado va con rebote de 400 ms; sin dejarlo correr, el temporizador
+      // sigue vivo cuando el árbol se desmonta y el binding lo marca como error.
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(saved(controller).coins, {'gp': 100});
+      expect(find.text('2 / 150 lb'), findsOneWidget);
+    });
+
+    testWidgets('la nota queda escrita en la línea del objeto', (tester) async {
+      final controller = await pumpSheet(
+        tester,
+        mochilera().copyWith(inventory: const [InventoryEntry(itemId: 'book')]),
+      );
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      await tapItemAction(tester, 'book', 'Nota…');
+      await tester.enterText(
+        find.byType(TextField).last,
+        'La carta del alcalde va entre las páginas.',
+      );
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(
+        saved(controller).inventory.single.note,
+        'La carta del alcalde va entre las páginas.',
+      );
+      expect(find.byKey(const ValueKey('note-book')), findsOneWidget);
+    });
+
+    testWidgets('la munición aclara el tamaño del paquete', (tester) async {
+      await pumpSheet(
+        tester,
+        mochilera().copyWith(
+          inventory: const [InventoryEntry(itemId: 'arrows')],
+        ),
+      );
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Munición · paquete de 20'), findsOneWidget);
+      await tapItemAction(tester, 'arrows', 'Cantidad…');
+      expect(find.widgetWithText(TextField, 'Paquetes de 20'), findsOneWidget);
+    });
+
+    testWidgets('en un teléfono angosto las filas no fuerzan scroll lateral', (
+      tester,
+    ) async {
+      final character = mochilera().copyWith(
+        inventory: const [
+          InventoryEntry(itemId: 'dungeoneers-pack'),
+          InventoryEntry(itemId: 'case-map-or-scroll'),
+          InventoryEntry(itemId: 'plate'),
+        ],
+      );
+      await pumpSheet(tester, character, size: const Size(360, 1400));
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      // En compacto no hay encabezados de tabla: cada fila es una tarjeta.
+      expect(find.text('OBJETO'), findsNothing);
+      expect(find.text('Paquete de explorador de mazmorras'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   testWidgets('un lanzador conserva la pestaña y datos de conjuros', (
@@ -511,12 +668,7 @@ void main() {
 
       await tester.tap(find.text('Inventario'));
       await tester.pumpAndSettle();
-      final offHand = find.byKey(const ValueKey('off-hand-dagger'));
-      await tester.ensureVisible(offHand);
-      await tester.pumpAndSettle();
-      await tester.tap(offHand);
-      await tester.pumpAndSettle();
-      expect(tester.widget<FilterChip>(offHand).selected, isTrue);
+      await tapItemAction(tester, 'dagger', 'Mano secundaria');
 
       // La ficha refleja la regla sin que la UI la calcule: el daño pierde el
       // modificador y el ataque pasa a ser acción adicional.
@@ -551,11 +703,7 @@ void main() {
 
       await tester.tap(find.text('Inventario'));
       await tester.pumpAndSettle();
-      final twoHanded = find.byKey(const ValueKey('two-handed-longsword'));
-      await tester.ensureVisible(twoHanded);
-      await tester.pumpAndSettle();
-      await tester.tap(twoHanded);
-      await tester.pumpAndSettle();
+      await tapItemAction(tester, 'longsword', 'A dos manos');
 
       await tester.tap(find.text('Combate'));
       await tester.pumpAndSettle();
@@ -566,14 +714,25 @@ void main() {
     testWidgets('el arma no Ligera no ofrece mandarla a la secundaria', (
       tester,
     ) async {
-      await pumpSheet(tester, dualWielder());
+      // La daga es Ligera y el espadón no; el espadón tampoco es versátil, así
+      // que su menú no tiene que ofrecer ninguna de las dos empuñaduras.
+      await pumpSheet(
+        tester,
+        dualWielder().copyWith(
+          equippedWeaponIds: const ['dagger', 'greatsword'],
+        ),
+      );
       await tester.tap(find.text('Inventario'));
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const ValueKey('off-hand-dagger')), findsOneWidget);
-      expect(find.byKey(const ValueKey('off-hand-longsword')), findsNothing);
-      // Y el aviso viejo de que la regla no se aplicaba sola ya no está.
-      expect(find.textContaining('todavía no se aplica'), findsNothing);
+      await openItemMenu(tester, 'dagger');
+      expect(find.text('Mano secundaria'), findsOneWidget);
+      await closeItemMenu(tester);
+
+      await openItemMenu(tester, 'greatsword');
+      expect(find.text('Mano secundaria'), findsNothing);
+      expect(find.text('A dos manos'), findsNothing);
+      await closeItemMenu(tester);
     });
 
     testWidgets('la Lanza de caballería avisa que montado no exige dos manos', (
@@ -593,19 +752,12 @@ void main() {
       await tester.tap(find.text('Inventario'));
       await tester.pumpAndSettle();
 
-      final lanza = find.byKey(const ValueKey('hands-lance'));
-      await tester.ensureVisible(lanza);
       expect(
-        tester.widget<Text>(lanza).data,
-        'Exige dos manos salvo que estés montado',
+        find.textContaining('exige dos manos salvo montado'),
+        findsOneWidget,
       );
       // El espadón sigue siendo incondicional.
-      expect(
-        tester
-            .widget<Text>(find.byKey(const ValueKey('hands-greatsword')))
-            .data,
-        'Exige dos manos',
-      );
+      expect(find.text('Arma · exige dos manos'), findsOneWidget);
     });
   });
 

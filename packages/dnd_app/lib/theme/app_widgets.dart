@@ -424,40 +424,114 @@ class PageBody extends StatelessWidget {
   );
 }
 
-/// Diálogo para renombrar un personaje. Devuelve el nombre nuevo (recortado) o
-/// null si se canceló o quedó vacío. Compartido entre la ficha y el dashboard.
-Future<String?> showRenameDialog(BuildContext context, String current) async {
-  final ctrl = TextEditingController(text: current);
+/// Diálogo de un solo campo de texto. Devuelve el valor recortado, o null si se
+/// canceló o quedó vacío.
+///
+/// [allowEmpty] deja devolver la cadena vacía, que es lo que hace falta para
+/// **borrar** un dato opcional (la nota de un objeto) en vez de dejarlo como
+/// estaba.
+Future<String?> showTextPromptDialog(
+  BuildContext context, {
+  required String title,
+  required String label,
+  String current = '',
+  TextInputType? keyboardType,
+  TextCapitalization textCapitalization = TextCapitalization.none,
+  bool allowEmpty = false,
+  int maxLines = 1,
+}) async {
   final result = await showDialog<String>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Editar nombre'),
-      content: TextField(
-        controller: ctrl,
-        autofocus: true,
-        textCapitalization: TextCapitalization.words,
-        decoration: const InputDecoration(
-          labelText: 'Nombre del personaje',
-          border: OutlineInputBorder(),
-        ),
-        onSubmitted: (v) => Navigator.pop(ctx, v),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, ctrl.text),
-          child: const Text('Guardar'),
-        ),
-      ],
+    builder: (ctx) => _TextPromptDialog(
+      title: title,
+      label: label,
+      current: current,
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      maxLines: maxLines,
     ),
   );
-  ctrl.dispose();
-  final trimmed = result?.trim() ?? '';
-  return trimmed.isEmpty ? null : trimmed;
+  if (result == null) return null;
+  final trimmed = result.trim();
+  return trimmed.isEmpty && !allowEmpty ? null : trimmed;
 }
+
+/// El diálogo es un widget con estado propio y no un `AlertDialog` armado en
+/// línea porque el controlador tiene que vivir exactamente lo que vive el
+/// campo. Liberarlo apenas vuelve `showDialog` lo mata mientras la ruta todavía
+/// se está cerrando, y el `TextField` se reconstruye con un controlador ya
+/// liberado.
+class _TextPromptDialog extends StatefulWidget {
+  final String title;
+  final String label;
+  final String current;
+  final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
+  final int maxLines;
+
+  const _TextPromptDialog({
+    required this.title,
+    required this.label,
+    required this.current,
+    required this.keyboardType,
+    required this.textCapitalization,
+    required this.maxLines,
+  });
+
+  @override
+  State<_TextPromptDialog> createState() => _TextPromptDialogState();
+}
+
+class _TextPromptDialogState extends State<_TextPromptDialog> {
+  late final _ctrl = TextEditingController(text: widget.current);
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: Text(widget.title),
+    content: TextField(
+      controller: _ctrl,
+      autofocus: true,
+      keyboardType: widget.keyboardType,
+      textCapitalization: widget.textCapitalization,
+      maxLines: widget.maxLines,
+      decoration: InputDecoration(
+        labelText: widget.label,
+        border: const OutlineInputBorder(),
+      ),
+      // Con varias líneas, Enter escribe un salto en vez de confirmar.
+      onSubmitted: widget.maxLines == 1
+          ? (v) => Navigator.pop(context, v)
+          : null,
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancelar'),
+      ),
+      FilledButton(
+        onPressed: () => Navigator.pop(context, _ctrl.text),
+        child: const Text('Guardar'),
+      ),
+    ],
+  );
+}
+
+/// Diálogo para renombrar un personaje. Devuelve el nombre nuevo (recortado) o
+/// null si se canceló o quedó vacío. Compartido entre la ficha y el dashboard.
+Future<String?> showRenameDialog(BuildContext context, String current) =>
+    showTextPromptDialog(
+      context,
+      title: 'Editar nombre',
+      label: 'Nombre del personaje',
+      current: current,
+      textCapitalization: TextCapitalization.words,
+    );
 
 /// Rótulo tipo "eyebrow": mayúsculas, espaciado, apagado.
 class Eyebrow extends StatelessWidget {

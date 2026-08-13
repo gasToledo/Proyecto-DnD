@@ -23,6 +23,7 @@ import 'util/safe_path.dart';
 const _homebrewCategories = {
   'weapons',
   'armor',
+  'items',
   'feats',
   'races',
   'backgrounds',

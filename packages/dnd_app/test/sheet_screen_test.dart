@@ -349,6 +349,104 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // Lo que la pestaña Personaje decidió mostrar y dónde. Son decisiones de
+  // presentación, pero cada una nació de un malentendido concreto en la mesa:
+  // la puntuación leída como el número que se tira, la percepción pasiva
+  // confundida con una cifra de combate, la Pericia invisible.
+  group('Personaje · jerarquía de la pestaña', () {
+    /// Pícaro enano: enano trae visión en la oscuridad y el Pícaro concede
+    /// Pericia a nivel 1, que son las dos cosas que esta tanda mira.
+    Character rogue() => Character(
+      id: 'rogue-sheet',
+      name: 'Dain',
+      raceId: 'dwarf',
+      classId: 'rogue',
+      backgroundId: 'criminal',
+      level: 1,
+      assignedScores: const {
+        Ability.strength: 8,
+        Ability.dexterity: 15,
+        Ability.constitution: 14,
+        Ability.intelligence: 13,
+        Ability.wisdom: 12,
+        Ability.charisma: 10,
+      },
+      chosenSkills: const ['stealth', 'perception', 'acrobatics', 'insight'],
+      proficiencyChoices: const {
+        'class:rogue:expertise-1': ['stealth', 'perception'],
+      },
+      hpPerLevel: const [8],
+    );
+
+    testWidgets('la banda táctica se queda con las cinco cifras de combate', (
+      tester,
+    ) async {
+      await pumpSheet(tester, rogue());
+
+      for (final label in [
+        'ARMADURA',
+        'PUNTOS DE GOLPE',
+        'INICIATIVA',
+        'VELOCIDAD',
+        'COMPETENCIA',
+      ]) {
+        expect(find.text(label), findsOneWidget, reason: 'falta $label');
+      }
+      // Tamaño ya vive en Identidad, y los sentidos en su propia tarjeta:
+      // repetirlos acá era lo que empujaba la banda a un segundo renglón.
+      expect(find.text('TAMAÑO'), findsNothing);
+      expect(find.text('PERC. PASIVA'), findsNothing);
+      expect(find.text('VISIÓN OSC.'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('los sentidos tienen tarjeta propia', (tester) async {
+      final character = rogue();
+      final s = CharacterCompiler(repo).compile(character);
+      expect(
+        s.darkvision,
+        isNotNull,
+        reason: 'el enano tiene que traer visión en la oscuridad',
+      );
+      await pumpSheet(tester, character);
+
+      expect(find.text('Sentidos'), findsOneWidget);
+      expect(find.text('Percepción pasiva'), findsOneWidget);
+      expect(find.text('Visión en la oscuridad'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('la plaqueta pone grande el modificador, no la puntuación', (
+      tester,
+    ) async {
+      await pumpSheet(tester, rogue());
+
+      // DEX 15 → +2. El +2 es el número que se tira; la puntuación queda como
+      // dato de apoyo y por eso viaja rotulada.
+      expect(find.text('Punt. 15'), findsOneWidget);
+      // El Pícaro es competente en salvaciones de Destreza e Inteligencia, y
+      // ahora eso se nombra en vez de insinuarse con un punto sin rótulo.
+      expect(find.text('SALV'), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('la Pericia se nombra y no queda solo en el anillo', (
+      tester,
+    ) async {
+      final character = rogue();
+      expect(
+        CharacterCompiler(repo).compile(character).expertiseSkills,
+        containsAll(<String>['stealth', 'perception']),
+      );
+      await pumpSheet(tester, character);
+
+      expect(find.text('PERICIA'), findsNWidgets(2));
+      expect(find.text('Competente'), findsOneWidget);
+      expect(find.text('Pericia · bonificador duplicado'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('plegar una tarjeta esconde su contenido y no el de las otras', (
     tester,
   ) async {
@@ -371,8 +469,16 @@ void main() {
     expect(find.text('Armadura ligera'), findsOneWidget);
     expect(find.text('STR'), findsWidgets);
 
-    await tester.tap(find.text('Competencias'));
-    await tester.pumpAndSettle();
+    // La cabecera de Competencias queda por debajo del pliegue: hay que
+    // traerla a la vista antes de tocarla o el toque no le llega.
+    Future<void> toggleCompetencias() async {
+      await tester.ensureVisible(find.text('Competencias'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Competencias'));
+      await tester.pumpAndSettle();
+    }
+
+    await toggleCompetencias();
 
     expect(find.text('Armadura ligera'), findsNothing);
     // El título sigue, que es de lo que se trata: se pliega, no se esconde.
@@ -380,8 +486,7 @@ void main() {
     // Y plegar una no toca a las demás.
     expect(find.text('STR'), findsWidgets);
 
-    await tester.tap(find.text('Competencias'));
-    await tester.pumpAndSettle();
+    await toggleCompetencias();
 
     expect(find.text('Armadura ligera'), findsOneWidget);
     expect(tester.takeException(), isNull);

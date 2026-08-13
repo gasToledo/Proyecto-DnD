@@ -180,7 +180,7 @@ extension _SheetNavigation on _SheetScreenState {
           _wildShapeBanner(beast),
           const SizedBox(height: 16),
         ],
-        _statPlaques(s),
+        _tacticalBand(s),
         const SectionRule(),
         _tabContent(_tab),
       ],

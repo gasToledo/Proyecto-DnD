@@ -642,6 +642,119 @@ class StatPlaque extends StatelessWidget {
   }
 }
 
+/// Placa de la banda táctica de la ficha: rótulo con ícono arriba y la cifra
+/// grande debajo, alineadas a la izquierda.
+///
+/// Convive con [StatPlaque] en vez de reemplazarla: la placa centrada en
+/// Georgia sigue siendo la de las tiras cortas dentro de una tarjeta (carga,
+/// sintonizados, CD de salvación). Esta es la de la banda que encabeza la
+/// ficha, donde el rótulo puede llevar ícono y la cifra una unidad, y donde la
+/// sans en negrita con cifras tabulares se lee mejor de un vistazo que el
+/// serif: son números que se comparan entre placas, no títulos.
+class StatTile extends StatelessWidget {
+  final IconData? icon;
+  final String label;
+
+  /// Dato accesorio al final del rótulo (el porcentaje de PG). Va del otro
+  /// lado de la fila, no pegado al rótulo, para que no se lea como parte de él.
+  final String? labelTrailing;
+  final String value;
+
+  /// Lo que acompaña a la cifra en cuerpo chico y atenuado (« pies», «/ 29»).
+  final String? suffix;
+  final Color? valueColor;
+  final Widget? footer;
+
+  const StatTile({
+    super.key,
+    required this.label,
+    required this.value,
+    this.icon,
+    this.labelTrailing,
+    this.suffix,
+    this.valueColor,
+    this.footer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Semantics(
+      label: '$label: $value${suffix ?? ''}',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: p.plaque,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: p.hairline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 13, color: p.gold),
+                  const SizedBox(width: 6),
+                ],
+                Expanded(
+                  child: Text(
+                    label.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      letterSpacing: 1.1,
+                      color: p.textMuted,
+                    ),
+                  ),
+                ),
+                if (labelTrailing != null)
+                  Text(
+                    labelTrailing!,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: p.textMuted,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text.rich(
+              TextSpan(
+                text: value,
+                children: [
+                  if (suffix != null)
+                    TextSpan(
+                      text: suffix,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: p.textMuted,
+                      ),
+                    ),
+                ],
+              ),
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                height: 1.05,
+                color: valueColor,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            if (footer != null) ...[const SizedBox(height: 8), footer!],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Barra fina (para PG dentro de una placa).
 class ThinBar extends StatelessWidget {
   final double ratio;
@@ -743,7 +856,18 @@ class ShieldBadge extends StatelessWidget {
   }
 }
 
-/// Plaqueta de característica con pip de salvación.
+/// Plaqueta de característica: **el modificador es la cifra principal** y la
+/// puntuación queda como dato de apoyo.
+///
+/// Al revés de como estaba. El número que se tira es el modificador; la
+/// puntuación solo sirve para explicar de dónde sale y para los pocos rasgos
+/// que la miran. Dejarla grande obligaba a hacer la cuenta mental en cada
+/// tirada.
+///
+/// La salvación competente se **nombra** («SALV») en vez de insinuarse con un
+/// punto en la esquina: un pip sin rótulo no dice qué marca, y el color solo no
+/// alcanza. La altura de la plaqueta no depende de eso, así que las seis se
+/// alinean tenga o no salvación cada una.
 class AbilityPlaque extends StatelessWidget {
   final String abbr;
   final int score;
@@ -763,71 +887,74 @@ class AbilityPlaque extends StatelessWidget {
     final mod = modifier >= 0 ? '+$modifier' : '$modifier';
     return Semantics(
       label:
-          '$abbr: $score, modificador $mod'
+          '$abbr: modificador $mod, puntuación $score'
           '${saveProficient ? ', competente en salvación' : ''}',
       excludeSemantics: true,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(6, 12, 6, 10),
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 9),
         decoration: BoxDecoration(
           color: p.plaque,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: p.hairline),
         ),
-        child: Stack(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Positioned(
-              top: -2,
-              right: -2,
-              child: Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: saveProficient ? p.gold : p.hairline,
-                ),
+            Text(
+              abbr,
+              style: TextStyle(
+                fontSize: 10,
+                letterSpacing: 0.8,
+                color: p.textMuted,
               ),
             ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  abbr,
-                  style: TextStyle(
-                    fontSize: 11,
-                    letterSpacing: 1,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$score',
-                  style: const TextStyle(
-                    fontFamily: 'Georgia',
-                    fontSize: 26,
-                    height: 1.1,
-                    fontFeatures: [FontFeature.tabularFigures()],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 1,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: p.hairline),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    mod,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: p.gold,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 5),
+            Text(
+              mod,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                height: 1,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              'Punt. $score',
+              style: TextStyle(
+                fontSize: 11,
+                color: p.textMuted,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+            // Reserva el alto de la marca de salvación aunque no la haya: sin
+            // esto las seis plaquetas quedan a distinta altura según quién sea
+            // competente, que es ruido y no información.
+            SizedBox(
+              height: 13,
+              child: saveProficient
+                  // El escudo y las cuatro letras piden unos 52 px. Quien
+                  // dispone la fila de plaquetas se encarga de que los haya,
+                  // pero un ancho justo no puede desbordar: acá se achica.
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.shield, size: 9, color: p.gold),
+                          const SizedBox(width: 3),
+                          Text(
+                            'SALV',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              letterSpacing: 0.5,
+                              color: p.gold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : null,
             ),
           ],
         ),

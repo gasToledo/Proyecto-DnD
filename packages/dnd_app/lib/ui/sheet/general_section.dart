@@ -35,24 +35,7 @@ extension _SheetGeneralSection on _SheetScreenState {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (final (title, icon, onPressed) in canReplace) ...[
-          sheetCard(
-            icon: icon,
-            title: title,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Este rasgo permite cambiar la elecci\u00f3n.'),
-                  const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: onPressed,
-                    child: const Text('Cambiar'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _replaceableNotice(title: title, icon: icon, onPressed: onPressed),
           const SizedBox(height: 16),
         ],
         if (warnings.isNotEmpty) ...[
@@ -93,12 +76,78 @@ extension _SheetGeneralSection on _SheetScreenState {
             _identityCard(),
             _abilitiesCard(s),
             _proficienciesCard(s),
+            _sensesCard(s),
             _languagesCard(s),
           ],
           [_skillsCard(s)],
           [_passivesCard(s)],
         ]),
       ],
+    );
+  }
+
+  /// Aviso de que una elección ya hecha se puede cambiar: una franja de una
+  /// línea con filete dorado, no una tarjeta.
+  ///
+  /// Los tres avisos pueden salir a la vez, y apilados como tarjetas con botón
+  /// relleno le ganaban en peso a Subir nivel, que es el CTA primario de la
+  /// ficha. El filete dorado ya dice «hay algo que elegir»; el botón queda
+  /// secundario porque la acción es opcional: nada está mal si no se toca.
+  Widget _replaceableNotice({
+    required String title,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    final pal = context.palette;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      // El filete acompaña el alto real de la franja: en un teléfono el título
+      // y la explicación ocupan más de una línea cada uno.
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 3, color: pal.gold),
+            const SizedBox(width: 16),
+            Align(child: Icon(icon, size: 19, color: pal.gold)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Este rasgo permite cambiar la elección que ya hiciste.',
+                      style: TextStyle(fontSize: 13, color: pal.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Align(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: OutlinedButton(
+                  onPressed: onPressed,
+                  child: const Text('Cambiar'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -773,10 +822,51 @@ extension _SheetGeneralSection on _SheetScreenState {
   }
 
   Widget _abilitiesCard(ComputedSheet s) {
+    final pal = context.palette;
     return sheetCard(
       icon: Icons.fitness_center,
       title: 'Características',
-      child: Padding(padding: const EdgeInsets.all(14), child: _abilityRow(s)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(padding: const EdgeInsets.all(14), child: _abilityRow(s)),
+          // La plaqueta cambió de qué número pone grande: decirlo una vez acá
+          // sale más barato que dejar a cada quien descubrirlo comparando.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 13),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, size: 13, color: pal.textMuted),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      text: 'La cifra grande es el modificador. ',
+                      children: [
+                        TextSpan(
+                          text: 'SALV',
+                          style: TextStyle(color: pal.gold),
+                        ),
+                        const TextSpan(
+                          text:
+                              ' marca las salvaciones competentes; tocá una '
+                              'placa para ver de dónde sale.',
+                        ),
+                      ],
+                    ),
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      height: 1.45,
+                      color: pal.textMuted,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -797,153 +887,10 @@ extension _SheetGeneralSection on _SheetScreenState {
     );
   }
 
-  Widget _languagesCard(ComputedSheet s) {
-    // Común primero, que lo sabe todo personaje; el resto por nombre. Se
-    // ordena por etiqueta y no por id para que salga alfabético en español.
-    final labels = [
-      for (final id in s.languages)
-        if (id != Language.universal.id) Language.labelFor(id),
-    ]..sort(compareContentNames);
-    return sheetCard(
-      icon: Icons.translate,
-      title: 'Idiomas',
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: _chips([Language.labelFor(Language.universal.id), ...labels]),
-      ),
-    );
-  }
-
-  Widget _skillsCard(ComputedSheet s) {
-    return sheetCard(
-      icon: Icons.psychology,
-      title: 'Habilidades',
-      child: DenseRows(
-        children: [for (final skill in Skill.values) _skillRow(s, skill)],
-      ),
-    );
-  }
-
-  Widget _skillRow(ComputedSheet s, Skill skill) {
-    final pal = context.palette;
-    final proficient = s.skillProficiencies.contains(skill.id);
-    final expertise = s.expertiseSkills.contains(skill.id);
-    // La cuenta vive en la ficha, no acá: es el mismo método que usa la
-    // Percepción pasiva, así que la Pericia no puede llegar a una y no a otra.
-    final mod = s.skillModifier(skill.id);
-    final color = proficient ? pal.gold : null;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      child: Row(
-        children: [
-          // Con Pericia el punto lleva un anillo, para distinguirla de la
-          // competencia simple sin depender solo del número.
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: proficient ? pal.gold : pal.hairline,
-              shape: BoxShape.circle,
-              border: expertise ? Border.all(color: pal.gold, width: 3) : null,
-            ),
-          ),
-          SizedBox(width: expertise ? 4 : 10),
-          Expanded(
-            child: Text(
-              expertise ? '${skill.label} ··' : skill.label,
-              style: TextStyle(
-                color: color,
-                fontWeight: expertise ? FontWeight.w600 : null,
-              ),
-            ),
-          ),
-          Text(
-            skill.ability.abbr,
-            style: TextStyle(fontSize: 10.5, color: pal.textMuted),
-          ),
-          SizedBox(
-            width: 42,
-            child: Text(
-              _signed(mod),
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 16,
-                color: color,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _passivesCard(ComputedSheet s) {
-    if (s.passives.isEmpty) return const SizedBox.shrink();
-    return sheetCard(
-      icon: Icons.auto_awesome,
-      title: 'Rasgos y dotes',
-      trailing: GoldPill('${s.passives.length}'),
-      child: Column(
-        children: [
-          for (var i = 0; i < s.passives.length; i++) ...[
-            if (i > 0) Divider(height: 1, color: context.palette.hairline),
-            ExpansionTile(
-              title: Text(s.passives[i].name),
-              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-              expandedAlignment: Alignment.centerLeft,
-              children: [
-                Text(
-                  s.passives[i].description,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _statPlaques(ComputedSheet s) {
-    final pal = context.palette;
-    final c = _c.combat;
-    // 108 alcanza para las placas numéricas. Tamaño es la única cuyo valor es
-    // una palabra ("Mediano" a Georgia 24 no entra) y por eso pide más ancho.
-    Widget box(Widget child, {double width = 108}) =>
-        SizedBox(width: width, child: child);
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      alignment: WrapAlignment.center,
-      children: [
-        box(
-          StatPlaque(
-            label: 'Puntos de golpe',
-            value: '${c.currentHp}/${s.maxHp}',
-            valueColor: pal.crimson,
-            footer: ThinBar(
-              ratio: s.maxHp == 0 ? 0 : c.currentHp / s.maxHp,
-              color: pal.crimson,
-              track: pal.plaque,
-            ),
-          ),
-        ),
-        box(_acPlaque(s.armorClass)),
-        box(StatPlaque(label: 'Velocidad', value: '${s.speed}')),
-        box(StatPlaque(label: 'Tamaño', value: s.size), width: 152),
-        box(StatPlaque(label: 'Iniciativa', value: _signed(s.initiative))),
-        box(StatPlaque(label: 'Perc. pasiva', value: '${s.passivePerception}')),
-        box(StatPlaque(label: 'Competencia', value: '+${s.proficiencyBonus}')),
-        if (s.darkvision != null)
-          box(StatPlaque(label: 'Visión osc.', value: '${s.darkvision}')),
-      ],
-    );
-  }
-
+  /// La CA dentro de un escudo. Ya no la usa la banda táctica —ahí la CA es una
+  /// cifra más, comparable con las otras cuatro— pero sigue siendo la forma en
+  /// que la muestran las tarjetas donde la CA es el tema: Defensa, en Combate,
+  /// e Inventario, donde lo que se equipa la cambia.
   Widget _acPlaque(int ac) {
     final pal = context.palette;
     return Container(
@@ -971,29 +918,380 @@ extension _SheetGeneralSection on _SheetScreenState {
     );
   }
 
-  Widget _abilityRow(ComputedSheet s) {
-    final a = Ability.values;
-    return Row(
+  /// Percepción pasiva y visión en la oscuridad, que salieron de la banda
+  /// táctica. Las dos responden la misma pregunta —qué nota el personaje sin
+  /// buscarlo— y juntas se leen como un par; sueltas entre la CA y la velocidad
+  /// parecían cifras de combate.
+  Widget _sensesCard(ComputedSheet s) {
+    final pal = context.palette;
+    final rows = <(String, String, String?)>[
+      ('Percepción pasiva', '${s.passivePerception}', null),
+      if (s.darkvision != null)
+        ('Visión en la oscuridad', '${s.darkvision}', ' pies'),
+    ];
+    return sheetCard(
+      icon: Icons.visibility,
+      title: 'Sentidos',
+      child: DenseRows(
+        children: [
+          for (final (label, value, suffix) in rows)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  Text.rich(
+                    TextSpan(
+                      text: value,
+                      children: [
+                        if (suffix != null)
+                          TextSpan(
+                            text: suffix,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: pal.textMuted,
+                            ),
+                          ),
+                      ],
+                    ),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _languagesCard(ComputedSheet s) {
+    // Común primero, que lo sabe todo personaje; el resto por nombre. Se
+    // ordena por etiqueta y no por id para que salga alfabético en español.
+    final labels = [
+      for (final id in s.languages)
+        if (id != Language.universal.id) Language.labelFor(id),
+    ]..sort(compareContentNames);
+    return sheetCard(
+      icon: Icons.translate,
+      title: 'Idiomas',
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: _chips([Language.labelFor(Language.universal.id), ...labels]),
+      ),
+    );
+  }
+
+  Widget _skillsCard(ComputedSheet s) {
+    final pal = context.palette;
+    Widget legend(Widget mark, String text) => Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        for (var i = 0; i < a.length; i++) ...[
+        mark,
+        const SizedBox(width: 6),
+        // Flexible y no a secas: en un teléfono los dos rótulos ya no entran
+        // uno al lado del otro y el largo tiene que poder cortarse.
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 11.5, color: pal.textMuted),
+          ),
+        ),
+      ],
+    );
+    return sheetCard(
+      icon: Icons.psychology,
+      title: 'Habilidades',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final skill in Skill.values) _skillRow(s, skill),
+          // La leyenda nombra las dos marcas. Sin ella el anillo del punto es
+          // una diferencia que hay que adivinar, y quien no distingue el oro
+          // del gris no tiene de dónde deducirla.
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: pal.hairline)),
+            ),
+            child: Wrap(
+              spacing: 14,
+              runSpacing: 6,
+              children: [
+                legend(_skillDot(proficient: true), 'Competente'),
+                legend(
+                  _skillDot(proficient: true, expertise: true),
+                  'Pericia · bonificador duplicado',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Marca de competencia de una habilidad: punto lleno, o anillo si hay
+  /// Pericia. Compartido por las filas y por la leyenda para que no puedan
+  /// dibujarse distinto.
+  Widget _skillDot({required bool proficient, bool expertise = false}) {
+    final pal = context.palette;
+    final size = expertise ? 12.0 : 8.0;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: expertise ? null : (proficient ? pal.gold : pal.hairline),
+        shape: BoxShape.circle,
+        border: expertise ? Border.all(color: pal.gold, width: 3) : null,
+      ),
+    );
+  }
+
+  Widget _skillRow(ComputedSheet s, Skill skill) {
+    final pal = context.palette;
+    final proficient = s.skillProficiencies.contains(skill.id);
+    final expertise = s.expertiseSkills.contains(skill.id);
+    // La cuenta vive en la ficha, no acá: es el mismo método que usa la
+    // Percepción pasiva, así que la Pericia no puede llegar a una y no a otra.
+    final mod = s.skillModifier(skill.id);
+    final color = proficient ? pal.gold : null;
+    return Container(
+      // Las competentes llevan además un fondo tonal: son las filas que se
+      // buscan, y encontrarlas no puede depender solo de que el número esté
+      // dorado.
+      color: proficient ? pal.gold.withAlpha(12) : null,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      child: Row(
+        children: [
+          _skillDot(proficient: proficient, expertise: expertise),
+          SizedBox(width: expertise ? 8 : 10),
           Expanded(
-            // Toque en vez de tooltip: el tooltip en el celular casi no se
-            // descubre, y este es justo el número que hay que poder explicar
-            // en la mesa cuando el DM pregunta de dónde sale.
-            child: InkWell(
-              onTap: () => _showAbilityBreakdown(s, a[i]),
-              borderRadius: BorderRadius.circular(12),
-              child: AbilityPlaque(
-                abbr: a[i].abbr,
-                score: s.abilityScores[a[i]]!,
-                modifier: s.abilityModifiers[a[i]]!,
-                saveProficient: s.savingThrowProficiencies.contains(a[i]),
+            child: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    skill.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: proficient ? FontWeight.w600 : null,
+                    ),
+                  ),
+                ),
+                // La etiqueta nombra la Pericia en vez de insinuarla: el anillo
+                // solo la distingue si ya sabés que existe.
+                if (expertise) ...[
+                  const SizedBox(width: 7),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: pal.gold.withAlpha(128)),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'PERICIA',
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        letterSpacing: 0.6,
+                        color: pal.gold,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            skill.ability.abbr,
+            style: TextStyle(fontSize: 10.5, color: pal.textMuted),
+          ),
+          SizedBox(
+            width: 42,
+            child: Text(
+              _signed(mod),
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: color,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
           ),
-          if (i < a.length - 1) const SizedBox(width: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _passivesCard(ComputedSheet s) {
+    if (s.passives.isEmpty) return const SizedBox.shrink();
+    return sheetCard(
+      icon: Icons.auto_awesome,
+      title: 'Rasgos y dotes',
+      trailing: GoldPill('${s.passives.length}'),
+      child: Column(
+        children: [
+          for (var i = 0; i < s.passives.length; i++) ...[
+            if (i > 0) Divider(height: 1, color: context.palette.hairline),
+            ExpansionTile(
+              title: Text(s.passives[i].name),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              expandedAlignment: Alignment.centerLeft,
+              children: [
+                // Un rasgo largo es un párrafo, no una celda: se acota a unos
+                // 60 caracteres por línea y se interlinea, que es lo que hace
+                // que se lea de corrido. En la columna ancha del escritorio,
+                // sin tope, la línea llegaba a los 120 y el ojo perdía el
+                // renglón al volver.
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 60 * 7.2),
+                  child: Text(
+                    s.passives[i].description,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 13.5,
+                      height: 1.55,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Banda táctica: las cinco cifras que se consultan a mitad de turno, en el
+  /// orden en que se preguntan en la mesa (CA, PG, iniciativa, velocidad,
+  /// competencia).
+  ///
+  /// Son cinco y no ocho. **Tamaño** ya vive en Identidad, y **Percepción
+  /// pasiva** y **Visión en la oscuridad** pasaron a la tarjeta Sentidos: son
+  /// sentidos, no cifras de combate, y ocupando lugar acá empujaban a un
+  /// segundo renglón las que sí lo son.
+  Widget _tacticalBand(ComputedSheet s) {
+    final pal = context.palette;
+    final c = _c.combat;
+    final ratio = s.maxHp == 0 ? 0.0 : c.currentHp / s.maxHp;
+    // 152 es el ancho al que «COMPETENCIA» entra en un renglón; menos que eso
+    // partía el rótulo en dos. PG pide más porque lleva el par actual/máximo.
+    Widget box(Widget child, {double width = 152}) =>
+        SizedBox(width: width, child: child);
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        box(
+          StatTile(
+            icon: Icons.shield,
+            label: 'Armadura',
+            value: '${s.armorClass}',
+          ),
+        ),
+        box(
+          StatTile(
+            label: 'Puntos de golpe',
+            labelTrailing: '${(ratio * 100).round()}%',
+            value: '${c.currentHp}',
+            suffix: ' / ${s.maxHp}',
+            valueColor: pal.crimson,
+            footer: ThinBar(
+              ratio: ratio,
+              color: pal.crimson,
+              track: Theme.of(context).colorScheme.surface,
+            ),
+          ),
+          width: 208,
+        ),
+        box(
+          StatTile(
+            icon: Icons.bolt,
+            label: 'Iniciativa',
+            value: _signed(s.initiative),
+          ),
+        ),
+        box(
+          StatTile(
+            icon: Icons.keyboard_double_arrow_right,
+            label: 'Velocidad',
+            value: '${s.speed}',
+            suffix: ' pies',
+          ),
+        ),
+        box(
+          StatTile(
+            icon: Icons.military_tech,
+            label: 'Competencia',
+            value: '+${s.proficiencyBonus}',
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Las seis plaquetas de característica, en una fila o en dos de tres.
+  ///
+  /// Seis columnas en un teléfono dejan cada plaqueta en unos 30 px, y ahí no
+  /// entra ni «Punt. 20» ni la marca de salvación: la plaqueta pasó a decir
+  /// tres cosas, no una. Con dos filas de tres cada una queda al doble de
+  /// ancho y se lee entera, que es preferible a mostrarla recortada.
+  ///
+  /// El corte está en 420: la marca «SALV» pide unos 52 px de contenido, que
+  /// con el relleno de la plaqueta y los seis huecos da ese total.
+  Widget _abilityRow(ComputedSheet s) {
+    final a = Ability.values;
+
+    // Toque en vez de tooltip: el tooltip en el celular casi no se descubre, y
+    // este es justo el número que hay que poder explicar en la mesa cuando el
+    // DM pregunta de dónde sale.
+    Widget plaque(Ability ability) => InkWell(
+      onTap: () => _showAbilityBreakdown(s, ability),
+      borderRadius: BorderRadius.circular(12),
+      child: AbilityPlaque(
+        abbr: ability.abbr,
+        score: s.abilityScores[ability]!,
+        modifier: s.abilityModifiers[ability]!,
+        saveProficient: s.savingThrowProficiencies.contains(ability),
+      ),
+    );
+
+    Widget row(List<Ability> abilities) => Row(
+      children: [
+        for (var i = 0; i < abilities.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(child: plaque(abilities[i])),
         ],
       ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, box) => box.maxWidth >= 420
+          ? row(a)
+          : Column(
+              children: [
+                row(a.sublist(0, 3)),
+                const SizedBox(height: 8),
+                row(a.sublist(3)),
+              ],
+            ),
     );
   }
 

@@ -104,7 +104,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('MONEDAS'), findsOneWidget);
     expect(find.text('CARGA'), findsOneWidget);
-    expect(find.text('SINTONIZADOS'), findsOneWidget);
+    expect(find.text('SINTONIZACIÓN'), findsOneWidget);
+    // Los cupos libres se ven vacíos, no contados: «0 / 3» no decía con qué.
+    expect(find.text('Cupo libre'), findsNWidgets(attunementSlots));
     // La ficha de demostración se arma en código y no toca `inventory`, así
     // que su arma y su armadura equipadas llegan a la lista por derivación.
     final sword = character.inventory.firstWhere(
@@ -152,7 +154,12 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).last, 'Armadura de placas');
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Armadura de placas').last);
+      await tester.tap(find.byKey(const ValueKey('add-plate')));
+      await tester.pumpAndSettle();
+
+      // El diálogo no se cierra al agregar: se cargan varias compras seguidas.
+      expect(find.text('1 objeto agregado a la mochila.'), findsOneWidget);
+      await tester.tap(find.text('Cerrar'));
       await tester.pumpAndSettle();
 
       // Aparece una sola vez: la línea guardada no se duplica con la derivada.
@@ -181,7 +188,7 @@ void main() {
       await tester.tap(find.text('Inventario'));
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.widgetWithText(TextField, 'PO'), '100');
+      await tester.enterText(find.byKey(const ValueKey('coin-gp')), '100');
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
       // El guardado va con rebote de 400 ms; sin dejarlo correr, el temporizador
@@ -234,8 +241,85 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Munición · paquete de 20'), findsOneWidget);
-      await tapItemAction(tester, 'arrows', 'Cantidad…');
+      await tapItemAction(tester, 'arrows', 'Cantidad exacta…');
       expect(find.widgetWithText(TextField, 'Paquetes de 20'), findsOneWidget);
+    });
+
+    testWidgets('el − y el + de la fila cambian la cantidad sin abrir nada', (
+      tester,
+    ) async {
+      final controller = await pumpSheet(
+        tester,
+        mochilera().copyWith(
+          inventory: const [InventoryEntry(itemId: 'arrows')],
+        ),
+      );
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      // Por la fila y no por el ícono suelto: «Agregar objeto» también es un +.
+      final row = find.byWidgetPredicate(
+        (widget) =>
+            widget.key is ValueKey<String> &&
+            (widget.key! as ValueKey<String>).value.startsWith('inv-') &&
+            (widget.key! as ValueKey<String>).value.endsWith('-arrows'),
+      );
+      Finder step(IconData icon) =>
+          find.descendant(of: row, matching: find.byIcon(icon));
+
+      await tester.tap(step(Icons.add));
+      await tester.pumpAndSettle();
+      expect(saved(controller).inventory.single.quantity, 2);
+
+      await tester.tap(step(Icons.remove));
+      await tester.pumpAndSettle();
+      expect(saved(controller).inventory.single.quantity, 1);
+
+      // En 1 el − se apaga: bajar a cero es quitar la línea, y eso está en el
+      // menú.
+      final minus = tester.widget<OutlinedButton>(
+        find.ancestor(
+          of: step(Icons.remove),
+          matching: find.byType(OutlinedButton),
+        ),
+      );
+      expect(minus.onPressed, isNull);
+    });
+
+    testWidgets('el buscador y los filtros achican el listado', (tester) async {
+      await pumpSheet(
+        tester,
+        mochilera().copyWith(
+          inventory: const [
+            InventoryEntry(itemId: 'plate'),
+            InventoryEntry(itemId: 'arrows'),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      // Las familias se agrupan con el mismo nombre que calcula el catálogo.
+      expect(find.text('ARMADURAS'), findsOneWidget);
+      expect(find.text('MUNICIÓN'), findsOneWidget);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar en la mochila…'),
+        'flech',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Armadura de placas'), findsNothing);
+      expect(find.text('ARMADURAS'), findsNothing);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar en la mochila…'),
+        'nada de esto existe',
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Ningún objeto coincide con ese filtro.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('en un teléfono angosto las filas no fuerzan scroll lateral', (

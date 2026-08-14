@@ -5,11 +5,16 @@ part of '../sheet_screen.dart';
 /// Son constantes y no `Expanded` porque el criterio de aceptación de §8.7 es
 /// que cantidad, equipado y acciones **no cambien de columna entre filas**: con
 /// anchos elásticos, una fila con nombre largo corre las demás celdas y la
-/// tabla deja de leerse en vertical.
-const _colQuantity = 44.0;
+/// tabla deja de leerse en vertical. Los encabezados de familia no rompen esa
+/// alineación: separan grupos, pero las columnas siguen siendo las mismas.
+const _colQuantity = 92.0;
 const _colEquipped = 76.0;
 const _colWeight = 76.0;
 const _colMenu = 44.0;
+
+const _invFilterAll = 'Todos';
+const _invFilterEquipped = 'Equipados';
+const _invFilterMagic = 'Mágicos';
 
 /// Etiqueta visible de la familia. La comparten la fila y el buscador para que
 /// el jugador lea lo mismo en los dos lados.
@@ -27,8 +32,36 @@ String _itemKindLabel(String kind, String? category) => switch (kind) {
   },
 };
 
-/// Ícono por familia de objeto. Es lo único que distingue el tipo en la lista:
-/// §8.7 prohíbe explícitamente asignar un color distinto a cada uno.
+/// Orden en que se muestran las familias, y su título en plural.
+///
+/// El orden no es alfabético: primero lo que se empuña, después lo que se
+/// gasta, y al final lo que solo se lleva encima. Una familia que no esté acá
+/// —homebrew con una categoría nueva— va al fondo con su propio nombre, en vez
+/// de desaparecer.
+const _groupTitles = <String, String>{
+  'Arma': 'Armas',
+  'Armadura': 'Armaduras',
+  'Munición': 'Munición',
+  'Canalizador': 'Canalizadores',
+  'Objeto mágico': 'Objetos mágicos',
+  'Herramienta': 'Herramientas',
+  'Contenedor': 'Contenedores',
+  'Paquete': 'Paquetes',
+  'Equipo': 'Equipo',
+};
+
+/// Nombre largo de cada denominación. La abreviatura sola («PE») es un rótulo
+/// de formulario: en la mesa nadie recuerda cuál es electro y cuál platino.
+const _coinNames = <String, String>{
+  'cp': 'cobre',
+  'sp': 'plata',
+  'ep': 'electro',
+  'gp': 'oro',
+  'pp': 'platino',
+};
+
+/// Ícono por familia de objeto. Es lo único que distingue el tipo dentro de un
+/// grupo: §8.7 prohíbe explícitamente asignar un color distinto a cada uno.
 IconData _itemIcon(String kind, String? category) {
   if (kind == 'weapon') return Icons.hardware;
   if (kind == 'armor') return Icons.shield_outlined;
@@ -43,88 +76,156 @@ IconData _itemIcon(String kind, String? category) {
   };
 }
 
+/// Una línea de la mochila con todo lo que la fila necesita, resuelto una sola
+/// vez: agrupar y dibujar leen lo mismo en vez de consultar el catálogo dos
+/// veces por objeto.
+typedef _Line = ({InventoryEntry entry, _ItemInfo info});
+
 extension _SheetInventorySection on _SheetScreenState {
   // ----------------------------------------------------------- Inventario
 
   Widget _buildInventory() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      _coinsAndLoadCard(),
-      const SizedBox(height: 16),
-      _inventoryCard(),
-    ],
+    children: [_bagCard(), const SizedBox(height: 16), _inventoryCard()],
   );
 
-  /// Resumen separado del listado, como pide §8.7: monedas, carga y
-  /// sintonización no son filas de la mochila sino totales sobre ella.
-  Widget _coinsAndLoadCard() {
+  /// Los totales **sobre** la mochila, separados del listado como pide §8.7:
+  /// monedas, carga y sintonización no son filas.
+  ///
+  /// La CA salió de acá: ya está en la banda táctica que encabeza las cuatro
+  /// pestañas, y repetida dejaba de leerse como dato. El lugar que ocupaba es
+  /// justo el que necesitaban la barra de carga y los cupos.
+  Widget _bagCard() => sheetCard(
+    icon: Icons.savings_outlined,
+    title: 'Bolsa',
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: responsiveColumns([
+        [_coinsBlock()],
+        [_loadTile(), _attunementTile()],
+      ]),
+    ),
+  );
+
+  Widget _coinsBlock() {
     final pal = context.palette;
-    final s = sheet;
-    final attuned = InventoryOps.attunedCount(_c, repo);
-    return sheetCard(
-      icon: Icons.savings_outlined,
-      title: 'Monedas y carga',
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Eyebrow('Monedas'),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [for (final k in coinDenominations) _coinField(k)],
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                SizedBox(width: 108, child: _acPlaque(s.armorClass)),
-                SizedBox(
-                  width: 148,
-                  child: StatPlaque(
-                    label: 'CARGA',
-                    value:
-                        '${formatPounds(s.carriedWeight)} / '
-                        '${s.carryingCapacity} lb',
-                    valueColor: s.isEncumbered ? pal.crimson : null,
-                  ),
-                ),
-                SizedBox(
-                  width: 148,
-                  child: StatPlaque(
-                    label: 'SINTONIZADOS',
-                    value: '$attuned / $attunementSlots',
-                    valueColor: attuned > attunementSlots ? pal.crimson : null,
-                  ),
-                ),
-              ],
-            ),
-          ],
+    final coins = _c.coins;
+    var totalCp = 0;
+    var count = 0;
+    for (final k in coinDenominations) {
+      final n = coins[k] ?? 0;
+      totalCp += n * coinValueCp[k]!;
+      count += n;
+    }
+    final strong = TextStyle(
+      color: Theme.of(context).colorScheme.onSurface,
+      fontWeight: FontWeight.w600,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('Monedas'),
+        Wrap(
+          spacing: 9,
+          runSpacing: 9,
+          children: [for (final k in coinDenominations) _coinField(k)],
         ),
-      ),
+        const SizedBox(height: 12),
+        // Lo que se pregunta en la mesa cuando hay que pagar algo no es cuánto
+        // cobre hay, sino cuánto suma todo junto y cuánto pesa.
+        Text.rich(
+          TextSpan(
+            children: [
+              const TextSpan(text: 'Equivale a '),
+              TextSpan(text: formatPounds(totalCp / 100), style: strong),
+              const TextSpan(text: ' po · pesan '),
+              TextSpan(
+                text: formatPounds(count / coinsPerPound),
+                style: strong,
+              ),
+              const TextSpan(text: ' lb'),
+            ],
+          ),
+          style: TextStyle(fontSize: 12.5, color: pal.textMuted),
+        ),
+      ],
     );
   }
 
   /// Un campo por denominación. Lo que se escribe se guarda al salir del campo
   /// y no en cada tecla: escribir "120" pasaría por 1 y por 12, y cada paso
   /// intermedio sería un guardado y un recálculo de la carga.
-  Widget _coinField(String key) => SizedBox(
-    width: 84,
-    child: TextField(
-      controller: _coinCtrls[key],
-      keyboardType: TextInputType.number,
-      textAlign: TextAlign.end,
-      decoration: InputDecoration(
-        isDense: true,
-        labelText: coinLabels[key]!.toUpperCase(),
-        border: const OutlineInputBorder(),
+  ///
+  /// El rótulo salió de dentro del campo: con `labelText`, la abreviatura se
+  /// encoge sobre el borde al escribir y el nombre largo no entra en ningún
+  /// lado. Va arriba, fijo, y el [Semantics] lo vuelve a atar al campo para
+  /// quien no lo ve.
+  Widget _coinField(String key) {
+    final pal = context.palette;
+    final abbr = coinLabels[key]!.toUpperCase();
+    return Semantics(
+      label: 'Monedas de ${_coinNames[key]} ($abbr)',
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.fromLTRB(10, 7, 10, 2),
+        decoration: BoxDecoration(
+          color: pal.plaque,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: pal.hairline),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Text(
+                  abbr,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: pal.gold,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _coinNames[key]!,
+                    textAlign: TextAlign.end,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 10, color: pal.textMuted),
+                  ),
+                ),
+              ],
+            ),
+            TextField(
+              key: ValueKey('coin-$key'),
+              controller: _coinCtrls[key],
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w600,
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
+              decoration: InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                hintText: '0',
+                hintStyle: TextStyle(fontSize: 19, color: pal.textMuted),
+              ),
+              onTapOutside: (_) => _commitCoins(),
+              onSubmitted: (_) => _commitCoins(),
+            ),
+          ],
+        ),
       ),
-      onTapOutside: (_) => _commitCoins(),
-      onSubmitted: (_) => _commitCoins(),
-    ),
-  );
+    );
+  }
 
   void _commitCoins() {
     final next = <String, int>{};
@@ -136,69 +237,417 @@ extension _SheetInventorySection on _SheetScreenState {
     _replace(_c.copyWith(coins: next));
   }
 
-  /// Lo que se lista: la mochila guardada más lo que esté equipado sin línea
-  /// propia (una ficha armada en código, una importación vieja).
-  List<InventoryEntry> get _inventoryEntries => InventoryOps.entries(_c, repo);
-
-  Widget _inventoryCard() => sheetCard(
-    icon: Icons.backpack,
-    title: 'Inventario',
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+  /// La carga como proporción y no como par de números.
+  ///
+  /// «74 / 135 lb» obliga a hacer la división mentalmente y solo avisa cuando
+  /// ya te pasaste. La barra muestra el margen que queda y separa el peso de
+  /// los objetos del de las monedas, que el motor ya suma a la carga y que
+  /// hasta ahora no aparecía en ningún lado.
+  Widget _loadTile() {
+    final pal = context.palette;
+    final s = sheet;
+    final cap = s.carryingCapacity;
+    final coinWeight = _c.coins.values.fold(0, (a, b) => a + b) / coinsPerPound;
+    // Restar en vez de volver a sumar: así los dos tramos de la barra suman
+    // exactamente el total que muestra la cifra, aunque el motor cambie de
+    // criterio sobre qué entra en la carga.
+    final itemsWeight = (s.carriedWeight - coinWeight).clamp(
+      0.0,
+      double.infinity,
+    );
+    final over = s.isEncumbered;
+    final color = over ? pal.crimson : pal.gold;
+    return StatTile(
+      label: 'Carga',
+      labelTrailing: cap <= 0
+          ? null
+          : '${(s.carriedWeight / cap * 100).round()}% de la capacidad',
+      value: formatPounds(s.carriedWeight),
+      suffix: ' / $cap lb',
+      valueColor: color,
+      footer: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (_inventoryEntries.isEmpty)
+          _loadBar(itemsWeight, coinWeight, cap.toDouble(), color),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 4,
+            children: [
+              _loadLegend(color, 'Objetos ${formatPounds(itemsWeight)} lb'),
+              _loadLegend(
+                pal.textMuted,
+                'Monedas ${formatPounds(coinWeight)} lb',
+              ),
+            ],
+          ),
+          if (over)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'La mochila está vacía.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+              padding: const EdgeInsets.only(top: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.warning_amber_rounded, size: 15, color: color),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      'Pasás tu capacidad de carga. En 2024 no hay penalización '
+                      'de reglas: es un aviso, no un bloqueo.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.45,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Barra de dos tramos: objetos y monedas, sobre el hueco que falta para
+  /// llenar la capacidad. Los `flex` van en milésimos porque son enteros y con
+  /// porcentajes redondeados una mochila casi vacía desaparecía del todo.
+  Widget _loadBar(double items, double coins, double capacity, Color color) {
+    int flex(double weight) =>
+        capacity <= 0 ? 0 : (weight / capacity * 1000).round().clamp(0, 1000);
+    final itemsFlex = flex(items);
+    final coinsFlex = flex(coins);
+    final free = 1000 - itemsFlex - coinsFlex;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        height: 7,
+        child: Row(
+          children: [
+            if (itemsFlex > 0)
+              Expanded(
+                flex: itemsFlex,
+                child: ColoredBox(color: color),
+              ),
+            if (coinsFlex > 0)
+              Expanded(
+                flex: coinsFlex,
+                child: ColoredBox(color: context.palette.textMuted),
+              ),
+            if (free > 0)
+              Expanded(
+                flex: free,
+                child: ColoredBox(color: Theme.of(context).colorScheme.surface),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _loadLegend(Color color, String label) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+      const SizedBox(width: 5),
+      Text(
+        label,
+        style: TextStyle(fontSize: 11.5, color: context.palette.textMuted),
+      ),
+    ],
+  );
+
+  /// Los cupos de sintonización **ocupados**, no solo contados.
+  ///
+  /// «0 / 3» no dice con qué. Tres casillas con el nombre adentro responden la
+  /// pregunta real —qué tengo sintonizado y cuánto me queda— con el mismo
+  /// lenguaje que los recursos de Combate.
+  Widget _attunementTile() {
+    final pal = context.palette;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+    // El mismo criterio que `InventoryOps.attunedCount`, pero conservando los
+    // nombres: un flag viejo sobre un objeto que no exige sintonización no
+    // ocupa cupo y tampoco tiene por qué mostrarse acá.
+    final attuned = [
+      for (final e in _inventoryEntries)
+        if (e.attuned && repo.item(e.itemId)?.requiresAttunement == true)
+          InventoryOps.resolve(e, repo).name,
+    ];
+    final over = attuned.length > attunementSlots;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      decoration: BoxDecoration(
+        color: pal.plaque,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: pal.hairline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'SINTONIZACIÓN',
+                  style: TextStyle(
+                    fontSize: 11,
+                    letterSpacing: 1.1,
+                    color: pal.textMuted,
+                  ),
                 ),
               ),
-            )
-          else
-            LayoutBuilder(
-              builder: (context, box) {
-                // El mismo corte que usa `responsiveColumns`, para que la ficha
-                // entera cambie de forma en el mismo ancho.
-                final wide = box.maxWidth >= 640;
-                return DenseRows(
-                  children: [
-                    if (wide) _inventoryHeader(),
-                    for (final e in _inventoryEntries)
-                      wide ? _inventoryRowWide(e) : _inventoryRowCompact(e),
-                  ],
-                );
-              },
-            ),
-          const SizedBox(height: 14),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: _addInventoryItem,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Agregar objeto'),
+              Text(
+                '${attuned.length} / $attunementSlots',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: over ? pal.crimson : onSurface,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
-                if (sheet.itemChoiceSlots.isNotEmpty)
-                  OutlinedButton.icon(
-                    onPressed: _manageMagicItemPlans,
-                    icon: const Icon(Icons.auto_fix_high, size: 18),
-                    label: const Text('Planos y réplicas'),
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 9),
+          Row(
+            children: [
+              for (var i = 0; i < attunementSlots; i++) ...[
+                if (i > 0) const SizedBox(width: 7),
+                Expanded(
+                  child: _attunementPip(i < attuned.length ? attuned[i] : null),
+                ),
               ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Se sintoniza desde el menú de cada objeto; acá se ve cuántos cupos '
+            'quedan y con qué están ocupados.',
+            style: TextStyle(
+              fontSize: 11.5,
+              height: 1.45,
+              color: pal.textMuted,
             ),
           ),
         ],
       ),
-    ),
+    );
+  }
+
+  Widget _attunementPip(String? name) {
+    final pal = context.palette;
+    final free = name == null;
+    return Tooltip(
+      message: free ? 'Cupo de sintonización libre' : '$name — sintonizado',
+      child: Container(
+        height: 26,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 7),
+        decoration: BoxDecoration(
+          color: free ? Colors.transparent : pal.goldSoft,
+          borderRadius: BorderRadius.circular(7),
+          border: Border.all(color: free ? pal.hairline : pal.gold),
+        ),
+        child: Text(
+          free ? 'Cupo libre' : name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 11,
+            color: free ? pal.textMuted : pal.gold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Lo que se lista: la mochila guardada más lo que esté equipado sin línea
+  /// propia (una ficha armada en código, una importación vieja).
+  List<InventoryEntry> get _inventoryEntries => InventoryOps.entries(_c, repo);
+
+  /// Las líneas que pasan el buscador y el filtro, ya resueltas.
+  List<_Line> get _visibleLines {
+    final needle = _invQuery.trim().toLowerCase();
+    final lines = <_Line>[];
+    for (final e in _inventoryEntries) {
+      final info = _itemInfo(e);
+      if (needle.isNotEmpty && !info.name.toLowerCase().contains(needle)) {
+        continue;
+      }
+      final passes = switch (_invFilter) {
+        _invFilterEquipped => info.equipped,
+        _invFilterMagic => info.magic,
+        _ => true,
+      };
+      if (passes) lines.add((entry: e, info: info));
+    }
+    return lines;
+  }
+
+  /// Agrupa por la misma familia que ya calcula el catálogo, en el orden de
+  /// [_groupTitles]. Las familias desconocidas van al final, en el orden en que
+  /// aparecen.
+  List<({String title, List<_Line> lines})> _grouped(List<_Line> lines) {
+    final byKind = <String, List<_Line>>{};
+    for (final line in lines) {
+      byKind.putIfAbsent(line.info.kindLabel, () => []).add(line);
+    }
+    final order = [
+      ...(_groupTitles.keys.where(byKind.containsKey)),
+      ...byKind.keys.where((k) => !_groupTitles.containsKey(k)),
+    ];
+    return [
+      for (final kind in order)
+        (title: _groupTitles[kind] ?? kind, lines: byKind[kind]!),
+    ];
+  }
+
+  Widget _inventoryCard() {
+    final total = _inventoryEntries.length;
+    final lines = _visibleLines;
+    return sheetCard(
+      icon: Icons.backpack,
+      title: 'Inventario',
+      trailing: total == 0
+          ? null
+          : GoldPill(
+              lines.length == total
+                  ? '$total ${total == 1 ? 'objeto' : 'objetos'}'
+                  : '${lines.length} de $total',
+              highlighted: false,
+            ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (total == 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'La mochila está vacía.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              )
+            else ...[
+              _inventoryToolbar(),
+              const SizedBox(height: 12),
+              if (lines.isEmpty)
+                _noMatches()
+              else
+                LayoutBuilder(
+                  builder: (context, box) {
+                    // El mismo corte que usa `responsiveColumns`, para que la
+                    // ficha entera cambie de forma en el mismo ancho.
+                    final wide = box.maxWidth >= 640;
+                    return DenseRows(
+                      children: [
+                        if (wide) _inventoryHeader(),
+                        for (final group in _grouped(lines)) ...[
+                          _groupHeader(group.title, group.lines),
+                          for (final line in group.lines)
+                            wide
+                                ? _inventoryRowWide(line)
+                                : _inventoryRowCompact(line),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+            ],
+            const SizedBox(height: 14),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: _addInventoryItem,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Agregar objeto'),
+                  ),
+                  if (sheet.itemChoiceSlots.isNotEmpty)
+                    OutlinedButton.icon(
+                      onPressed: _manageMagicItemPlans,
+                      icon: const Icon(Icons.auto_fix_high, size: 18),
+                      label: Text(
+                        'Planos y réplicas '
+                        '(${_c.magicItemChoices.length}/'
+                        '${sheet.itemChoiceSlots.first.count})',
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Buscador y filtro. Píldoras y no un desplegable: son tres opciones y
+  /// mostrarlas dice cuál está activa **y** qué otras hay, sin abrir nada.
+  Widget _inventoryToolbar() => Wrap(
+    spacing: 10,
+    runSpacing: 10,
+    crossAxisAlignment: WrapCrossAlignment.center,
+    children: [
+      SizedBox(
+        width: 240,
+        child: TextField(
+          controller: _invSearchCtrl,
+          decoration: const InputDecoration(
+            isDense: true,
+            prefixIcon: Icon(Icons.search, size: 18),
+            hintText: 'Buscar en la mochila…',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: _searchInventory,
+        ),
+      ),
+      for (final filter in const [
+        _invFilterAll,
+        _invFilterEquipped,
+        _invFilterMagic,
+      ])
+        ChoiceChip(
+          label: Text(filter),
+          selected: _invFilter == filter,
+          showCheckmark: false,
+          onSelected: (_) => _filterInventory(filter),
+        ),
+    ],
   );
+
+  Widget _noMatches() {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+          Icon(Icons.search_off, size: 18, color: muted),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Ningún objeto coincide con ese filtro.',
+              style: TextStyle(fontSize: 13, color: muted),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _inventoryHeader() {
     final style = TextStyle(
@@ -229,26 +678,70 @@ extension _SheetInventorySection on _SheetScreenState {
     );
   }
 
-  Widget _inventoryRowWide(InventoryEntry e) {
-    final info = _itemInfo(e);
+  /// Encabezado de familia, con su subtotal de peso. Ningún grupo recibe color
+  /// propio: lo que separa es el fondo hundido, igual para todos.
+  Widget _groupHeader(String title, List<_Line> lines) {
+    final pal = context.palette;
+    final weight = lines.fold(
+      0.0,
+      (total, l) => total + l.info.weight * l.entry.quantity,
+    );
+    return Container(
+      color: pal.plaque,
+      padding: const EdgeInsets.fromLTRB(12, 7, 12, 7),
+      child: Row(
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '${lines.length}',
+            style: TextStyle(
+              fontSize: 11,
+              color: pal.textMuted,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          const Spacer(),
+          Text(
+            weight == 0 ? '—' : '${formatPounds(weight)} lb',
+            style: TextStyle(
+              fontSize: 11.5,
+              color: pal.textMuted,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _inventoryRowWide(_Line line) {
+    final e = line.entry;
+    final info = line.info;
     return Padding(
       key: ValueKey('inv-${e.entryId}'),
       padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
       child: Row(
         children: [
           Expanded(child: _itemName(e, info)),
-          SizedBox(
-            width: _colQuantity,
-            child: Text('${e.quantity}', textAlign: TextAlign.center),
-          ),
+          SizedBox(width: _colQuantity, child: _quantityStepper(e, info)),
           SizedBox(width: _colEquipped, child: _equippedControl(e, info)),
           SizedBox(
             width: _colWeight,
             child: Text(
-              info.weight == 0
-                  ? '—'
-                  : '${formatPounds(info.weight * e.quantity)} lb',
+              _rowWeight(e, info),
               textAlign: TextAlign.end,
+              style: const TextStyle(
+                fontFeatures: [FontFeature.tabularFigures()],
+              ),
             ),
           ),
           SizedBox(width: _colMenu, child: _itemMenu(e, info)),
@@ -260,8 +753,9 @@ extension _SheetInventorySection on _SheetScreenState {
   /// En compacto cada fila es una tarjeta de dos líneas. Los controles van en
   /// un [Wrap] y no en una fila: con un nombre largo, una fila fuerza scroll
   /// horizontal, que es justo lo que §8.7 prohíbe.
-  Widget _inventoryRowCompact(InventoryEntry e) {
-    final info = _itemInfo(e);
+  Widget _inventoryRowCompact(_Line line) {
+    final e = line.entry;
+    final info = line.info;
     return Padding(
       key: ValueKey('inv-${e.entryId}'),
       padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
@@ -271,7 +765,6 @@ extension _SheetInventorySection on _SheetScreenState {
           Row(
             children: [
               Expanded(child: _itemName(e, info)),
-              if (e.quantity > 1) Text('×${e.quantity}'),
               SizedBox(width: _colMenu, child: _itemMenu(e, info)),
             ],
           ),
@@ -281,6 +774,7 @@ extension _SheetInventorySection on _SheetScreenState {
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
+              _quantityStepper(e, info),
               if (info.equippable) _equippedControl(e, info, withLabel: true),
               Text(
                 info.weight == 0
@@ -298,6 +792,68 @@ extension _SheetInventorySection on _SheetScreenState {
     );
   }
 
+  String _rowWeight(InventoryEntry e, _ItemInfo info) =>
+      info.weight == 0 ? '—' : '${formatPounds(info.weight * e.quantity)} lb';
+
+  /// Cantidad editable en la fila. Sumar una bala pasaba por el menú, un
+  /// diálogo, escribir el número y confirmar; con − y + el caso frecuente son
+  /// dos clics, y el diálogo queda para poner una cantidad exacta grande.
+  ///
+  /// El − se apaga en 1 y no baja a 0: quitar la línea es otra acción, y está
+  /// en el menú.
+  Widget _quantityStepper(InventoryEntry e, _ItemInfo info) {
+    void set(int value) =>
+        _updateEntry(e.entryId, (entry) => entry.copyWith(quantity: value));
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _stepButton(
+          Icons.remove,
+          'Quitar una unidad de ${info.name}',
+          e.quantity > 1 ? () => set(e.quantity - 1) : null,
+        ),
+        SizedBox(
+          width: 28,
+          child: Text(
+            '${e.quantity}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+        ),
+        _stepButton(
+          Icons.add,
+          'Agregar una unidad de ${info.name}',
+          () => set(e.quantity + 1),
+        ),
+      ],
+    );
+  }
+
+  Widget _stepButton(IconData icon, String tooltip, VoidCallback? onPressed) {
+    final pal = context.palette;
+    return Tooltip(
+      message: tooltip,
+      child: SizedBox.square(
+        dimension: 28,
+        child: OutlinedButton(
+          onPressed: onPressed,
+          style: OutlinedButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            side: BorderSide(color: pal.hairline),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(7),
+            ),
+          ),
+          child: Icon(icon, size: 15, semanticLabel: tooltip),
+        ),
+      ),
+    );
+  }
+
   Widget _itemName(InventoryEntry e, _ItemInfo info) {
     final muted = TextStyle(
       fontSize: 12,
@@ -308,7 +864,6 @@ extension _SheetInventorySection on _SheetScreenState {
     final detail = <String>[
       info.kindLabel,
       if (info.bundleSize > 1) 'paquete de ${info.bundleSize}',
-      if (e.attuned && info.attunable) 'sintonizado',
       if (info.twoHandedHint != null) info.twoHandedHint!,
     ].join(' · ');
     return Row(
@@ -322,7 +877,21 @@ extension _SheetInventorySection on _SheetScreenState {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(info.name),
+              // Sintonizado y Réplica salieron de la línea de detalle: son
+              // estados del ejemplar, no parte de qué clase de objeto es, y
+              // enterrados entre puntos medios no se veían.
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(info.name),
+                  if (e.attuned && info.attunable)
+                    const GoldPill('Sintonizado'),
+                  if (info.replica)
+                    const GoldPill('Réplica', highlighted: false),
+                ],
+              ),
               Text(detail, style: muted),
               if (e.note.isNotEmpty)
                 Padding(
@@ -341,14 +910,26 @@ extension _SheetInventorySection on _SheetScreenState {
   }
 
   /// Casilla de equipado. Para lo que no se puede equipar —una cuerda, una
-  /// antorcha— la celda queda vacía pero conserva su ancho, así la columna no
-  /// se corre entre filas.
+  /// antorcha— la celda lleva una raya y conserva su ancho, así la columna no
+  /// se corre entre filas y se ve que no es un olvido.
   Widget _equippedControl(
     InventoryEntry e,
     _ItemInfo info, {
     bool withLabel = false,
   }) {
-    if (!info.equippable) return const SizedBox.shrink();
+    if (!info.equippable) {
+      return withLabel
+          ? const SizedBox.shrink()
+          : Tooltip(
+              message: 'No se equipa',
+              child: Center(
+                child: Text(
+                  '—',
+                  style: TextStyle(color: context.palette.textMuted),
+                ),
+              ),
+            );
+    }
     final box = Checkbox(
       key: ValueKey('equip-${e.entryId}'),
       value: info.equipped,
@@ -363,7 +944,7 @@ extension _SheetInventorySection on _SheetScreenState {
   }
 
   /// Acciones secundarias en menú contextual, como pide §8.7. La casilla de
-  /// equipar se queda afuera porque es la acción frecuente.
+  /// equipar y la cantidad se quedan afuera porque son las frecuentes.
   Widget _itemMenu(InventoryEntry e, _ItemInfo info) {
     final weapon = InventoryOps.resolve(e, repo).weapon;
     return PopupMenuButton<String>(
@@ -372,11 +953,12 @@ extension _SheetInventorySection on _SheetScreenState {
       icon: const Icon(Icons.more_vert, size: 18),
       onSelected: (action) => _runItemAction(action, e),
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'quantity', child: Text('Cantidad…')),
+        const PopupMenuItem(value: 'quantity', child: Text('Cantidad exacta…')),
         const PopupMenuItem(value: 'note', child: Text('Nota…')),
         if (info.attunable)
-          PopupMenuItem(
+          CheckedPopupMenuItem(
             value: 'attune',
+            checked: e.attuned,
             child: Text(e.attuned ? 'Quitar sintonización' : 'Sintonizar'),
           ),
         if (weapon != null && weapon.isLight)
@@ -391,7 +973,7 @@ extension _SheetInventorySection on _SheetScreenState {
             checked: _c.weaponTwoHanded[e.itemId] ?? false,
             child: const Text('A dos manos'),
           ),
-        if (e.origin?.startsWith('artificer:replicate-magic-item:') == true)
+        if (info.replica)
           const PopupMenuItem(
             value: 'transmute',
             child: Text('Transmutar réplica…'),
@@ -505,106 +1087,224 @@ extension _SheetInventorySection on _SheetScreenState {
     ),
   );
 
-  Future<void> _addInventoryItem() async {
-    final id = await showDialog<String>(
-      context: context,
-      builder: (_) => _AddItemDialog(repo: repo),
-    );
-    if (id == null) return;
-    _replace(InventoryOps.add(_c, id));
-  }
+  /// El buscador no se cierra al agregar: en la mesa se cargan varias compras
+  /// seguidas, y reabrirlo y volver a escribir para cada una era el grueso del
+  /// trabajo.
+  void _addInventoryItem() => showDialog<void>(
+    context: context,
+    builder: (_) => _AddItemDialog(
+      repo: repo,
+      onAdd: (id) => _replace(InventoryOps.add(_c, id)),
+    ),
+  );
 
+  // ------------------------------------------------- Planos y réplicas
+
+  /// Planos elegidos y réplicas activas, en un solo cuadro.
+  ///
+  /// Antes eran tres diálogos encadenados —elegir planos, elegir cuál replicar,
+  /// elegir la base— y solo se podía crear una réplica por vuelta. Acá los
+  /// planos se guardan al tocarlos, como el resto de la ficha, y las réplicas
+  /// se crean y se quitan sin salir.
   Future<void> _manageMagicItemPlans() async {
     final slot = sheet.itemChoiceSlots.first;
-    final selected = {..._c.magicItemChoices};
-    final choices = await showDialog<Set<String>>(
+    await showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('${slot.name} (${selected.length}/${slot.count})'),
-          content: SizedBox(
-            width: 560,
-            child: SingleChildScrollView(
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final id in slot.optionItemIds)
-                    FilterChip(
-                      label: Text(repo.item(id)?.name ?? id),
-                      selected: selected.contains(id),
-                      onSelected: (on) {
-                        setState(() {
-                          if (on && selected.length < slot.count) {
-                            selected.add(id);
-                          } else if (!on) {
-                            selected.remove(id);
-                          }
-                        });
-                      },
+        builder: (context, refresh) {
+          // `_c` cambia con cada `_replace`; releerlo en cada dibujo es lo que
+          // mantiene el diálogo y la ficha diciendo lo mismo.
+          final chosen = _c.magicItemChoices;
+          final missing = slot.count - chosen.length;
+          void apply(Character next) {
+            _replace(next);
+            refresh(() {});
+          }
+
+          return AlertDialog(
+            title: Row(
+              children: [
+                Expanded(child: Text(slot.name)),
+                GoldPill('${chosen.length}/${slot.count}'),
+              ],
+            ),
+            content: SizedBox(
+              width: 560,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Elegís ${slot.count} planos. Después decidís cuál '
+                      'replicar: podés tener ${slot.maxActive} '
+                      '${slot.maxActive == 1 ? 'réplica activa' : 'réplicas activas'} '
+                      'a la vez.',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        height: 1.5,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                ],
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final id in slot.optionItemIds)
+                          FilterChip(
+                            label: Text(repo.item(id)?.name ?? id),
+                            selected: chosen.contains(id),
+                            onSelected:
+                                !chosen.contains(id) &&
+                                    chosen.length >= slot.count
+                                ? null
+                                : (on) => apply(_togglePlan(id, on)),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                    const SizedBox(height: 14),
+                    const Eyebrow('Réplicas activas'),
+                    _replicaBlock(slot, apply),
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: selected.length == slot.count
-                  ? () => Navigator.pop(context, selected)
-                  : null,
-              child: const Text('Guardar planos'),
-            ),
-          ],
-        ),
+            actions: [
+              if (missing > 0)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Text(
+                    'Falta elegir $missing.',
+                    style: TextStyle(fontSize: 12, color: context.palette.gold),
+                  ),
+                ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Listo'),
+              ),
+            ],
+          );
+        },
       ),
     );
-    if (choices == null) return;
-    var next = _c.copyWith(
-      magicItemChoices: choices.toList(),
+  }
+
+  /// Marca o desmarca un plano. Al desmarcarlo se lleva su réplica: una réplica
+  /// de un plano que ya no conocés no puede seguir en la mochila.
+  Character _togglePlan(String id, bool on) {
+    final choices = [..._c.magicItemChoices];
+    if (on) {
+      choices.add(id);
+    } else {
+      choices.remove(id);
+    }
+    return _c.copyWith(
+      magicItemChoices: choices,
       inventory: [
-        for (final entry in _c.inventory)
-          if (entry.origin?.startsWith('artificer:replicate-magic-item:') !=
-                  true ||
-              choices.contains(entry.itemId))
-            entry,
+        for (final e in _c.inventory)
+          if (e.origin?.startsWith('artificer:replicate-magic-item:') != true ||
+              choices.contains(e.itemId))
+            e,
       ],
     );
-    _replace(next);
-    if (!mounted) return;
-    final create = await showDialog<String>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: Text('Crear réplica (${slot.maxActive} máx.)'),
-        children: [
-          for (final id in choices)
-            if (!next.inventory.any(
-              (e) => e.origin == 'artificer:replicate-magic-item:$id',
-            ))
-              SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, id),
-                child: Text(repo.item(id)?.name ?? id),
-              ),
-        ],
-      ),
+  }
+
+  InventoryEntry? _replicaOf(String itemId) {
+    for (final e in _c.inventory) {
+      if (e.origin == 'artificer:replicate-magic-item:$itemId') return e;
+    }
+    return null;
+  }
+
+  Widget _replicaBlock(ItemChoiceSlot slot, void Function(Character) apply) {
+    final chosen = _c.magicItemChoices;
+    if (chosen.isEmpty) {
+      return Text(
+        'Elegí un plano para poder replicarlo.',
+        style: TextStyle(fontSize: 12.5, color: context.palette.textMuted),
+      );
+    }
+    final active = [
+      for (final id in chosen)
+        if (_replicaOf(id) != null) id,
+    ];
+    final free = slot.maxActive - active.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final id in chosen)
+              _replicaChip(id, active.contains(id), free > 0, apply),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(
+          free > 0
+              ? 'Quedan $free ${free == 1 ? 'cupo libre' : 'cupos libres'}.'
+              : 'Sin cupos libres: quitá una réplica para crear otra.',
+          style: TextStyle(fontSize: 12, color: context.palette.textMuted),
+        ),
+      ],
     );
-    if (create == null) return;
-    final item = repo.item(create)!;
+  }
+
+  Widget _replicaChip(
+    String id,
+    bool active,
+    bool hasFreeSlot,
+    void Function(Character) apply,
+  ) {
+    final name = repo.item(id)?.name ?? id;
+    final replica = _replicaOf(id);
+    if (active && replica != null) {
+      return InputChip(
+        avatar: Icon(Icons.check, size: 16, color: context.palette.gold),
+        label: Text(name),
+        selected: true,
+        showCheckmark: false,
+        onDeleted: () => apply(
+          InventoryOps.remove(
+            _c,
+            replica.entryId,
+            repo,
+            quantity: replica.quantity,
+          ),
+        ),
+        deleteIcon: const Icon(Icons.close, size: 16),
+        deleteButtonTooltipMessage: 'Quitar la réplica de $name',
+      );
+    }
+    return ActionChip(
+      avatar: const Icon(Icons.add, size: 16),
+      label: Text(name),
+      // Sin cupo el chip queda apagado en vez de desaparecer: la lista de
+      // planos elegidos no debería cambiar de largo según cuántas réplicas haya.
+      onPressed: hasFreeSlot ? () => _createReplica(id, apply) : null,
+      tooltip: hasFreeSlot
+          ? 'Crear la réplica de $name'
+          : 'No quedan cupos de réplica',
+    );
+  }
+
+  Future<void> _createReplica(String id, void Function(Character) apply) async {
+    final item = repo.item(id);
+    if (item == null) return;
     String? baseItemId;
     if (item.baseItemKind != null) {
+      // La base sigue siendo un cuadro aparte porque es una lista larga (todas
+      // las armas del catálogo), no un par de opciones que entren acá.
       baseItemId = await _chooseMagicBase(item);
       if (baseItemId == null) return;
     }
-    next = InventoryOps.replicateMagicItem(
-      next,
-      create,
-      repo,
-      baseItemId: baseItemId,
+    apply(
+      InventoryOps.replicateMagicItem(_c, id, repo, baseItemId: baseItemId),
     );
-    _replace(next);
   }
 
   Future<String?> _chooseMagicBase(Item item) => showDialog<String>(
@@ -645,6 +1345,8 @@ extension _SheetInventorySection on _SheetScreenState {
     final item = repo.item(e.itemId);
     final resolved = InventoryOps.resolve(e, repo);
     final weapon = resolved.weapon;
+    final replica =
+        e.origin?.startsWith('artificer:replicate-magic-item:') == true;
     if (entry == null) {
       // El id quedó huérfano: homebrew que no se cargó, o un pack de contenido
       // que ya no está. Se muestra igual, porque borrárselo al jugador sin
@@ -658,27 +1360,20 @@ extension _SheetInventorySection on _SheetScreenState {
         equippable: false,
         equipped: false,
         attunable: false,
+        magic: false,
+        replica: replica,
         twoHandedHint: null,
       );
     }
+    final kind = resolved.weapon != null
+        ? 'weapon'
+        : resolved.armor != null
+        ? 'armor'
+        : entry.kind;
     return _ItemInfo(
       name: resolved.name,
-      kindLabel: _itemKindLabel(
-        resolved.weapon != null
-            ? 'weapon'
-            : resolved.armor != null
-            ? 'armor'
-            : entry.kind,
-        item?.category,
-      ),
-      icon: _itemIcon(
-        resolved.weapon != null
-            ? 'weapon'
-            : resolved.armor != null
-            ? 'armor'
-            : entry.kind,
-        item?.category,
-      ),
+      kindLabel: _itemKindLabel(kind, item?.category),
+      icon: _itemIcon(kind, item?.category),
       weight: resolved.weight,
       bundleSize: item?.bundleSize ?? 1,
       equippable:
@@ -687,6 +1382,8 @@ extension _SheetInventorySection on _SheetScreenState {
           (item != null && (item.effects.isNotEmpty || item.isMagic)),
       equipped: InventoryOps.isEquipped(_c, e, repo),
       attunable: item?.requiresAttunement ?? false,
+      magic: (item?.isMagic ?? false) || replica,
+      replica: replica,
       twoHandedHint: weapon == null || !weapon.requiresTwoHands()
           ? null
           // La lanza de caballería es el único caso: montado deja de exigirlas.
@@ -707,6 +1404,8 @@ class _ItemInfo {
   final bool equippable;
   final bool equipped;
   final bool attunable;
+  final bool magic;
+  final bool replica;
   final String? twoHandedHint;
 
   const _ItemInfo({
@@ -718,6 +1417,8 @@ class _ItemInfo {
     required this.equippable,
     required this.equipped,
     required this.attunable,
+    required this.magic,
+    required this.replica,
     required this.twoHandedHint,
   });
 }
@@ -726,84 +1427,92 @@ class _ItemInfo {
 ///
 /// Muestra la categoría al lado del nombre porque los ids son distintos pero
 /// los nombres no siempre: el SRD traduce *Pole* y *Rod* como "Vara".
+///
+/// Los tres desplegables de antes (tipo, rareza, sintonización) ocupaban media
+/// pantalla para filtrar una lista que casi siempre cabe entera: quedaron
+/// reducidos a las mismas familias con que se agrupa la mochila, en píldoras.
+/// El peso viaja al lado del precio, que es lo que decide si el objeto entra.
 class _AddItemDialog extends StatefulWidget {
   final ContentRepository repo;
-  const _AddItemDialog({required this.repo});
+  final ValueChanged<String> onAdd;
+  const _AddItemDialog({required this.repo, required this.onAdd});
 
   @override
   State<_AddItemDialog> createState() => _AddItemDialogState();
 }
 
+typedef _CatalogRow = ({
+  String id,
+  String name,
+  String family,
+  String detail,
+  double weight,
+  int costCp,
+});
+
 class _AddItemDialogState extends State<_AddItemDialog> {
   String _query = '';
-  String _kind = 'all';
-  String _rarity = 'all';
-  String _attunement = 'all';
+  String _family = _invFilterAll;
+  int _added = 0;
+
+  List<_CatalogRow> get _all {
+    final repo = widget.repo;
+    return [
+      for (final w in repo.weaponsSorted)
+        (
+          id: w.id,
+          name: w.name,
+          family: 'Arma',
+          detail: _itemKindLabel('weapon', null),
+          weight: w.weight,
+          costCp: w.costCp,
+        ),
+      for (final a in repo.armorSorted)
+        (
+          id: a.id,
+          name: a.name,
+          family: 'Armadura',
+          detail: a.isShield ? 'Escudo' : _itemKindLabel('armor', null),
+          weight: a.weight,
+          costCp: a.costCp,
+        ),
+      for (final i in repo.itemsSorted)
+        (
+          id: i.id,
+          name: i.name,
+          family: _itemKindLabel('item', i.category),
+          detail: [
+            _itemKindLabel('item', i.category),
+            if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
+            if (i.requiresAttunement) 'sintonización',
+          ].join(' · '),
+          weight: i.weight,
+          costCp: i.costCp,
+        ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final repo = widget.repo;
-    final all =
-        <
-          ({
-            String id,
-            String name,
-            String detail,
-            int costCp,
-            String kind,
-            String? rarity,
-            bool attune,
-          })
-        >[
-          for (final w in repo.weaponsSorted)
-            (
-              id: w.id,
-              name: w.name,
-              detail: _itemKindLabel('weapon', null),
-              costCp: w.costCp,
-              kind: 'weapon',
-              rarity: null,
-              attune: false,
-            ),
-          for (final a in repo.armorSorted)
-            (
-              id: a.id,
-              name: a.name,
-              detail: a.isShield ? 'Escudo' : _itemKindLabel('armor', null),
-              costCp: a.costCp,
-              kind: a.isShield ? 'shield' : 'armor',
-              rarity: null,
-              attune: false,
-            ),
-          for (final i in repo.itemsSorted)
-            (
-              id: i.id,
-              name: i.name,
-              detail: [
-                _itemKindLabel('item', i.category),
-                if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
-              ].join(' · '),
-              costCp: i.costCp,
-              kind: i.baseItemKind ?? (i.isMagic ? 'magic' : 'item'),
-              rarity: i.rarity,
-              attune: i.requiresAttunement,
-            ),
-        ];
+    final pal = context.palette;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final all = _all;
     final needle = _query.trim().toLowerCase();
     final matches = [
       for (final e in all)
         if ((needle.isEmpty || e.name.toLowerCase().contains(needle)) &&
-            (_kind == 'all' || e.kind == _kind) &&
-            (_rarity == 'all' || e.rarity == _rarity) &&
-            (_attunement == 'all' || (_attunement == 'yes') == e.attune))
+            (_family == _invFilterAll || e.family == _family))
           e,
     ];
+    // Solo las familias que existen en el catálogo cargado: con homebrew, una
+    // píldora fija dejaría fuera categorías nuevas y ofrecería vacías.
+    final families = {for (final e in all) e.family};
 
     return AlertDialog(
       title: const Text('Agregar objeto'),
       content: SizedBox(
-        width: 420,
-        height: 420,
+        width: 460,
+        height: 460,
         child: Column(
           children: [
             TextField(
@@ -817,48 +1526,99 @@ class _AddItemDialogState extends State<_AddItemDialog> {
               onChanged: (v) => setState(() => _query = v),
             ),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _filter('Tipo', _kind, const {
-                  'all': 'Todos',
-                  'weapon': 'Arma',
-                  'armor': 'Armadura',
-                  'shield': 'Escudo',
-                  'magic': 'Objeto mágico',
-                  'item': 'Equipo',
-                }, (v) => _kind = v),
-                _filter('Rareza', _rarity, const {
-                  'all': 'Todas',
-                  'common': 'Común',
-                  'uncommon': 'Infrecuente',
-                  'rare': 'Raro',
-                  'very-rare': 'Muy raro',
-                  'legendary': 'Legendario',
-                  'artifact': 'Artefacto',
-                }, (v) => _rarity = v),
-                _filter('Sintonización', _attunement, const {
-                  'all': 'Cualquiera',
-                  'yes': 'Requiere',
-                  'no': 'No requiere',
-                }, (v) => _attunement = v),
-              ],
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final family in [
+                    _invFilterAll,
+                    ..._groupTitles.keys.where(families.contains),
+                    ...families.where((f) => !_groupTitles.containsKey(f)),
+                  ])
+                    ChoiceChip(
+                      label: Text(
+                        family == _invFilterAll
+                            ? family
+                            : _groupTitles[family] ?? family,
+                      ),
+                      selected: _family == family,
+                      showCheckmark: false,
+                      visualDensity: VisualDensity.compact,
+                      onSelected: (_) => setState(() => _family = family),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 10),
             Expanded(
               child: matches.isEmpty
                   ? const Center(child: Text('Sin resultados.'))
-                  : ListView.builder(
+                  : ListView.separated(
                       itemCount: matches.length,
+                      separatorBuilder: (_, _) =>
+                          Divider(height: 1, color: pal.hairline),
                       itemBuilder: (_, i) {
                         final e = matches[i];
-                        return ListTile(
-                          dense: true,
-                          title: Text(e.name),
-                          subtitle: Text(e.detail),
-                          trailing: Text(formatCost(e.costCp)),
-                          onTap: () => Navigator.pop(context, e.id),
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      e.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      e.detail,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: muted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                width: 60,
+                                child: Text(
+                                  e.weight == 0
+                                      ? '—'
+                                      : '${formatPounds(e.weight)} lb',
+                                  textAlign: TextAlign.end,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: muted,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 66,
+                                child: Text(
+                                  formatCost(e.costCp),
+                                  textAlign: TextAlign.end,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: pal.gold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              OutlinedButton(
+                                key: ValueKey('add-${e.id}'),
+                                onPressed: () {
+                                  widget.onAdd(e.id);
+                                  setState(() => _added++);
+                                },
+                                child: const Text('Agregar'),
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),
@@ -866,34 +1626,23 @@ class _AddItemDialogState extends State<_AddItemDialog> {
           ],
         ),
       ),
+      // `actions` es un OverflowBar y no una fila: `Expanded` ahí revienta, así
+      // que el contador se separa del botón con la alineación del propio bar.
+      actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
+        Text(
+          _added == 0
+              ? 'Se pueden agregar varios sin cerrar.'
+              : _added == 1
+              ? '1 objeto agregado a la mochila.'
+              : '$_added objetos agregados a la mochila.',
+          style: TextStyle(fontSize: 12, color: muted),
+        ),
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: const Text('Cerrar'),
         ),
       ],
     );
   }
-
-  Widget _filter(
-    String label,
-    String value,
-    Map<String, String> options,
-    ValueChanged<String> changed,
-  ) => SizedBox(
-    width: 128,
-    child: DropdownButtonFormField<String>(
-      initialValue: value,
-      isDense: true,
-      isExpanded: true,
-      decoration: InputDecoration(labelText: label),
-      items: [
-        for (final entry in options.entries)
-          DropdownMenuItem(value: entry.key, child: Text(entry.value)),
-      ],
-      onChanged: (next) {
-        if (next != null) setState(() => changed(next));
-      },
-    ),
-  );
 }

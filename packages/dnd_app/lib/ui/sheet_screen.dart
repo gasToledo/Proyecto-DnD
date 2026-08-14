@@ -180,6 +180,17 @@ class _SheetScreenState extends State<SheetScreen> {
   /// tampoco corresponde compartirla entre dispositivos.
   final Set<String> _collapsedCards = {};
 
+  /// Búsqueda y filtro de la mochila. Viven en la pantalla y no en la tarjeta
+  /// porque cada edición de un objeto reconstruye la pestaña entera, y un
+  /// estado local se perdería en cuanto se tocara un «+».
+  ///
+  /// El texto va en un controlador y no solo en el campo: la barra se esconde
+  /// cuando la mochila queda vacía, y sin esto volvería en blanco con el filtro
+  /// todavía puesto, escondiendo el primer objeto que se agregara.
+  final _invSearchCtrl = TextEditingController();
+  String _invQuery = '';
+  String _invFilter = _invFilterAll;
+
   final _amountCtrl = TextEditingController();
 
   /// Cantidad para los compañeros invocados. Aparte del [_amountCtrl] del
@@ -209,6 +220,7 @@ class _SheetScreenState extends State<SheetScreen> {
     _amountCtrl.dispose();
     _companionAmountCtrl.dispose();
     _notesCtrl.dispose();
+    _invSearchCtrl.dispose();
     for (final c in _coinCtrls.values) {
       c.dispose();
     }
@@ -230,6 +242,10 @@ class _SheetScreenState extends State<SheetScreen> {
   void _toggleCard(String title) => setState(() {
     if (!_collapsedCards.remove(title)) _collapsedCards.add(title);
   });
+
+  void _searchInventory(String query) => setState(() => _invQuery = query);
+
+  void _filterInventory(String filter) => setState(() => _invFilter = filter);
 
   void _replace(Character next) {
     setState(() => _c = next);

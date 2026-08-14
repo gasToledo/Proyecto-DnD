@@ -178,6 +178,12 @@ class AppTheme {
       onPrimary: const Color(0xFF201A10),
       secondary: palette.crimson,
       onSecondary: onCrimson,
+      // Sin estos dos, `secondaryContainer` cae en `secondary` —el carmesí— y
+      // todo lo seleccionable de Material 3 (chips, sobre todo) se pinta del
+      // único color que en esta aplicación significa peligro. Lo elegido va en
+      // oro, como el resto de lo activo.
+      secondaryContainer: palette.goldSoft,
+      onSecondaryContainer: palette.gold,
       error: palette.crimson,
       onError: onCrimson,
       surface: surface,
@@ -238,7 +244,15 @@ class AppTheme {
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: palette.plaque,
-        side: BorderSide(color: palette.hairline),
+        // El borde también marca la selección: sobre el fondo dorado suave, un
+        // filete gris deja la píldora elegida casi igual que las demás.
+        side: WidgetStateBorderSide.resolveWith(
+          (states) => BorderSide(
+            color: states.contains(WidgetState.selected)
+                ? palette.gold
+                : palette.hairline,
+          ),
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
           side: BorderSide(color: palette.hairline),

@@ -72,7 +72,7 @@ void main() {
       // mágicas SRD y 9 EFA.
       expect(repo.items, hasLength(402));
       expect(repo.spells, hasLength(392));
-      expect(repo.creatures, hasLength(107));
+      expect(repo.creatures, hasLength(117));
     });
 
     test('las procedencias coinciden con el cruce contra el SRD 5.2.1', () {

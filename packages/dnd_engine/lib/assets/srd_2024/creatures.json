@@ -2816,5 +2816,314 @@
         "reach": "10 pies"
       }
     ]
+  },
+  {
+    "id": "goblin-warrior",
+    "name": "Guerrero goblin",
+    "source": "srd_2024",
+    "kind": "Feérico Pequeño (trasgo), caótico neutral",
+    "cr": 0.25,
+    "ac": "15",
+    "hp": "10",
+    "speed": "30 pies",
+    "abilityScores": { "str": 8, "dex": 15, "con": 10, "int": 10, "wis": 8, "cha": 8 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 9",
+    "languages": "común, goblin",
+    "actions": [
+      {
+        "name": "Cimitarra",
+        "attackBonus": "4",
+        "damage": "1d6+2",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "Más 2 (1d4) de daño cortante si la tirada de ataque tenía ventaja."
+      },
+      {
+        "name": "Arco corto",
+        "attackBonus": "4",
+        "damage": "1d6+2",
+        "damageType": "piercing",
+        "reach": "80/320 pies",
+        "description": "Más 2 (1d4) de daño perforante si la tirada de ataque tenía ventaja."
+      },
+      {
+        "name": "Huida veloz (acción adicional)",
+        "description": "El goblin realiza las acciones de destrabarse o esconderse."
+      }
+    ]
+  },
+  {
+    "id": "kobold-warrior",
+    "name": "Guerrero kobold",
+    "source": "srd_2024",
+    "kind": "Dragón Pequeño, neutral",
+    "cr": 0.125,
+    "ac": "14",
+    "hp": "7",
+    "speed": "30 pies",
+    "abilityScores": { "str": 7, "dex": 15, "con": 9, "int": 8, "wis": 7, "cha": 8 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 8",
+    "languages": "común, dracónico",
+    "traits": [
+      {
+        "name": "Atacar en manada",
+        "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del kobold está a 5 pies o menos de la criatura y no tiene el estado de incapacitado."
+      },
+      {
+        "name": "Sensibilidad a la luz solar",
+        "description": "Bajo la luz del sol, tiene desventaja en las pruebas de característica y las tiradas de ataque."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Daga",
+        "attackBonus": "4",
+        "damage": "1d4+2",
+        "damageType": "piercing",
+        "reach": "5 pies o 20/60 pies a distancia"
+      }
+    ]
+  },
+  {
+    "id": "zombie",
+    "name": "Zombi",
+    "source": "srd_2024",
+    "kind": "Muerto viviente Mediano, neutral malvado",
+    "cr": 0.25,
+    "ac": "8",
+    "hp": "15",
+    "speed": "20 pies",
+    "abilityScores": { "str": 13, "dex": 6, "con": 16, "int": 3, "wis": 6, "cha": 5 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 8",
+    "languages": "entiende común y otro idioma, pero no puede hablar",
+    "defenses": "Inmunidad a veneno; cansancio, envenenado",
+    "traits": [
+      {
+        "name": "Fortaleza de muerto viviente",
+        "description": "Si el daño reduce al zombi a 0 puntos de golpe, hace una tirada de salvación de Constitución (CD 5 más el daño sufrido), a menos que el daño sea radiante o de un golpe crítico. Si la supera, el zombi se queda con 1 punto de golpe."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Golpe",
+        "attackBonus": "3",
+        "damage": "1d8+1",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      }
+    ]
+  },
+  {
+    "id": "bandit",
+    "name": "Bandido",
+    "source": "srd_2024",
+    "kind": "Humanoide Mediano o Pequeño, neutral",
+    "cr": 0.125,
+    "ac": "12",
+    "hp": "11",
+    "speed": "30 pies",
+    "abilityScores": { "str": 11, "dex": 12, "con": 12, "int": 10, "wis": 10, "cha": 10 },
+    "senses": "Percepción pasiva 10",
+    "languages": "común, jerga de ladrones",
+    "actions": [
+      {
+        "name": "Cimitarra",
+        "attackBonus": "3",
+        "damage": "1d6+1",
+        "damageType": "slashing",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Ballesta ligera",
+        "attackBonus": "3",
+        "damage": "1d8+1",
+        "damageType": "piercing",
+        "reach": "80/320 pies"
+      }
+    ]
+  },
+  {
+    "id": "cultist",
+    "name": "Sectario",
+    "source": "srd_2024",
+    "kind": "Humanoide Mediano o Pequeño, neutral",
+    "cr": 0.125,
+    "ac": "12",
+    "hp": "9",
+    "speed": "30 pies",
+    "abilityScores": { "str": 11, "dex": 12, "con": 10, "int": 10, "wis": 11, "cha": 10 },
+    "senses": "Percepción pasiva 10",
+    "languages": "común",
+    "actions": [
+      {
+        "name": "Hoz ritual",
+        "attackBonus": "3",
+        "damage": "1d4+1",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "Más 1 de daño necrótico."
+      }
+    ]
+  },
+  {
+    "id": "ogre",
+    "name": "Ogro",
+    "source": "srd_2024",
+    "kind": "Gigante Grande, caótico malvado",
+    "cr": 2,
+    "ac": "11",
+    "hp": "68",
+    "speed": "40 pies",
+    "abilityScores": { "str": 19, "dex": 8, "con": 16, "int": 5, "wis": 7, "cha": 7 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 8",
+    "languages": "común, gigante",
+    "actions": [
+      {
+        "name": "Garrote grande",
+        "attackBonus": "6",
+        "damage": "2d8+4",
+        "damageType": "bludgeoning",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Jabalina",
+        "attackBonus": "6",
+        "damage": "2d6+4",
+        "damageType": "piercing",
+        "reach": "5 pies o 30/120 pies a distancia"
+      }
+    ]
+  },
+  {
+    "id": "hobgoblin-warrior",
+    "name": "Guerrero hobgoblin",
+    "source": "srd_2024",
+    "kind": "Feérico Mediano (trasgo), legal malvado",
+    "cr": 0.5,
+    "ac": "18",
+    "hp": "11",
+    "speed": "30 pies",
+    "abilityScores": { "str": 13, "dex": 12, "con": 12, "int": 10, "wis": 10, "cha": 9 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "común, goblin",
+    "traits": [
+      {
+        "name": "Atacar en grupo",
+        "description": "Tiene ventaja en una tirada de ataque contra una criatura si al menos uno de los aliados del hobgoblin está a 5 pies o menos de la criatura y no tiene el estado de incapacitado."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Espada larga",
+        "attackBonus": "3",
+        "damage": "2d10+1",
+        "damageType": "slashing",
+        "reach": "5 pies"
+      },
+      {
+        "name": "Arco largo",
+        "attackBonus": "3",
+        "damage": "1d8+1",
+        "damageType": "piercing",
+        "reach": "150/600 pies",
+        "description": "Más 7 (3d4) de daño de veneno."
+      }
+    ]
+  },
+  {
+    "id": "bugbear-warrior",
+    "name": "Guerrero osgo",
+    "source": "srd_2024",
+    "kind": "Feérico Mediano (trasgo), caótico malvado",
+    "cr": 1,
+    "ac": "14",
+    "hp": "33",
+    "speed": "30 pies",
+    "abilityScores": { "str": 15, "dex": 14, "con": 13, "int": 8, "wis": 11, "cha": 9 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "común, goblin",
+    "traits": [
+      {
+        "name": "Rapto",
+        "description": "No necesita gastar movimiento adicional para desplazar a una criatura que tenga agarrada."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Agarre",
+        "attackBonus": "4",
+        "damage": "2d6+2",
+        "damageType": "bludgeoning",
+        "reach": "10 pies",
+        "description": "Si el objetivo es una criatura Mediana o más pequeña, queda agarrada (CD 12 para escapar)."
+      },
+      {
+        "name": "Martillo ligero",
+        "attackBonus": "4",
+        "damage": "3d4+2",
+        "damageType": "bludgeoning",
+        "reach": "10 pies o 20/60 pies a distancia",
+        "description": "Tiene ventaja si el osgo tiene agarrado al objetivo."
+      }
+    ]
+  },
+  {
+    "id": "ghoul",
+    "name": "Gul",
+    "source": "srd_2024",
+    "kind": "Muerto viviente Mediano, caótico malvado",
+    "cr": 1,
+    "ac": "12",
+    "hp": "22",
+    "speed": "30 pies",
+    "abilityScores": { "str": 13, "dex": 15, "con": 10, "int": 7, "wis": 10, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 10",
+    "languages": "común",
+    "defenses": "Inmunidad a veneno; encantado, cansancio, envenenado",
+    "actions": [
+      {
+        "name": "Ataque múltiple",
+        "description": "El gul realiza dos ataques de mordisco."
+      },
+      {
+        "name": "Garra",
+        "attackBonus": "4",
+        "damage": "1d4+2",
+        "damageType": "slashing",
+        "reach": "5 pies",
+        "description": "Si el objetivo no es un muerto viviente ni un elfo, tirada de salvación de Constitución CD 10. Fallo: queda paralizado hasta el final de su siguiente turno."
+      },
+      {
+        "name": "Mordisco",
+        "attackBonus": "4",
+        "damage": "1d6+2",
+        "damageType": "piercing",
+        "reach": "5 pies",
+        "description": "Más 3 (1d6) de daño necrótico."
+      }
+    ]
+  },
+  {
+    "id": "stirge",
+    "name": "Estirge",
+    "source": "srd_2024",
+    "kind": "Monstruosidad Diminuta, sin alineamiento",
+    "cr": 0.125,
+    "ac": "13",
+    "hp": "5",
+    "speed": "10 pies, volar 40 pies",
+    "abilityScores": { "str": 4, "dex": 16, "con": 11, "int": 2, "wis": 8, "cha": 6 },
+    "senses": "visión en la oscuridad 60 pies; Percepción pasiva 9",
+    "languages": "ninguno",
+    "actions": [
+      {
+        "name": "Probóscide",
+        "attackBonus": "5",
+        "damage": "1d6+3",
+        "damageType": "piercing",
+        "reach": "5 pies",
+        "description": "La estirge se engancha al objetivo. Mientras esté enganchada, no puede hacer ataques de probóscide y el objetivo sufre 5 (2d4) de daño necrótico al principio de cada turno de la estirge. La estirge puede usar 5 pies de su movimiento para desengancharse; el objetivo o una criatura a 5 pies o menos de él puede desengancharla como acción."
+      }
+    ]
   }
 ]

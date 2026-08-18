@@ -14,7 +14,9 @@ import 'package:dnd_server/src/import/import_service.dart';
 
 import 'fakes/fake_auth_dependencies.dart';
 import 'fakes/fake_portrait_provider.dart';
+import 'fakes/in_memory_campaign_repository.dart';
 import 'fakes/in_memory_character_repository.dart';
+import 'fakes/in_memory_event_repository.dart';
 import 'fakes/in_memory_homebrew_repository.dart';
 import 'fakes/in_memory_portrait_blob_store.dart';
 import 'fakes/in_memory_settings_repository.dart';
@@ -25,6 +27,8 @@ void main() {
   late PortraitGenerationService generation;
   late ImportBackupFn importBackup;
   late InMemoryCharacterRepository characters;
+  late InMemoryCampaignRepository campaigns;
+  late InMemoryEventRepository events;
   late InMemoryHomebrewRepository homebrewRepo;
   late InMemorySettingsRepository settingsRepo;
   late Handler handler;
@@ -38,6 +42,8 @@ void main() {
     importBackup = ({required userId, required bundle}) async =>
         const ImportResult(charactersImported: 0, portraitsImported: 0);
     characters = InMemoryCharacterRepository();
+    campaigns = InMemoryCampaignRepository(characters);
+    events = InMemoryEventRepository();
     homebrewRepo = InMemoryHomebrewRepository();
     settingsRepo = InMemorySettingsRepository();
     handler = buildHandler(
@@ -46,6 +52,8 @@ void main() {
       generation: generation,
       importBackup: importBackup,
       characters: characters,
+      campaigns: campaigns,
+      events: events,
       homebrew: homebrewRepo,
       settings: settingsRepo,
     );
@@ -651,6 +659,8 @@ void main() {
           generation: generation,
           importBackup: importBackup,
           characters: characters,
+          campaigns: campaigns,
+          events: events,
           homebrew: homebrewRepo,
           settings: settingsRepo,
         );
@@ -721,6 +731,8 @@ void main() {
         generation: generation,
         importBackup: importBackup,
         characters: characters,
+        campaigns: campaigns,
+        events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
       );
@@ -783,6 +795,8 @@ void main() {
           );
         },
         characters: characters,
+        campaigns: campaigns,
+        events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
       );
@@ -824,6 +838,8 @@ void main() {
           );
         },
         characters: characters,
+        campaigns: campaigns,
+        events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
       );
@@ -1452,6 +1468,8 @@ void main() {
         generation: generation,
         importBackup: importBackup,
         characters: characters,
+        campaigns: campaigns,
+        events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
         webStaticHandler: (request) =>
@@ -1473,6 +1491,8 @@ void main() {
         generation: generation,
         importBackup: importBackup,
         characters: characters,
+        campaigns: campaigns,
+        events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
         webStaticHandler: (request) =>
@@ -1484,6 +1504,614 @@ void main() {
       );
 
       expect(response.headers['x-fuente'], isNull);
+    });
+  });
+
+  // Es la única parte del servidor donde una cuenta alcanza datos de otra, así
+  // que lo que más importa acá es lo que NO se puede hacer.
+  group('/api/campaigns y compartir personajes', () {
+    Map<String, dynamic> characterJson(String id, {String name = 'Sagan'}) => {
+      'id': id,
+      'name': name,
+      'raceId': 'human',
+      'classId': 'fighter',
+      'backgroundId': 'soldier',
+      'assignedScores': <String, dynamic>{},
+    };
+
+    Map<String, dynamic> campaignJson(String id, {String name = 'La Tumba'}) =>
+        {'id': id, 'name': name};
+
+    Future<String> login(String subject) async {
+      fakeAuth.nextVerifiedSubject = subject;
+      final callback = await handler(
+        Request(
+          'GET',
+          Uri.parse('http://localhost/auth/callback?code=c&state=xyz'),
+        ),
+      );
+      return _extractToken(callback.headers['set-cookie']!);
+    }
+
+    Future<Map<String, dynamic>> send(
+      String method,
+      String path, {
+      String? token,
+      Object? body,
+    }) async {
+      final response = await handler(
+        Request(
+          method,
+          Uri.parse('http://localhost$path'),
+          headers: {if (token != null) 'cookie': 'dnd_session=$token'},
+          body: body == null ? null : jsonEncode(body),
+        ),
+      );
+      final text = await response.readAsString();
+      return {
+        'status': response.statusCode,
+        'body': text.isEmpty ? null : jsonDecode(text),
+      };
+    }
+
+    /// Deja un personaje creado y devuelve un código para compartirlo.
+    Future<String> shareCharacter(String token, String characterId) async {
+      await send(
+        'POST',
+        '/api/characters',
+        token: token,
+        body: {'character': characterJson(characterId)},
+      );
+      final shared = await send(
+        'POST',
+        '/api/characters/$characterId/share',
+        token: token,
+      );
+      return shared['body']['code'] as String;
+    }
+
+    Future<void> createCampaign(String token, String id) => send(
+      'POST',
+      '/api/campaigns',
+      token: token,
+      body: {'campaign': campaignJson(id)},
+    );
+
+    test('sin sesión ninguna operación responde', () async {
+      for (final request in [
+        Request('GET', Uri.parse('http://localhost/api/campaigns')),
+        Request(
+          'POST',
+          Uri.parse('http://localhost/api/campaigns'),
+          body: jsonEncode({'campaign': campaignJson('c1')}),
+        ),
+        Request(
+          'PUT',
+          Uri.parse('http://localhost/api/campaigns/c1'),
+          body: jsonEncode({'campaign': campaignJson('c1')}),
+        ),
+        Request('DELETE', Uri.parse('http://localhost/api/campaigns/c1')),
+        Request('GET', Uri.parse('http://localhost/api/campaigns/c1/members')),
+        Request(
+          'POST',
+          Uri.parse('http://localhost/api/campaigns/c1/members'),
+          body: jsonEncode({'code': 'ABCD-EFGH'}),
+        ),
+        Request('POST', Uri.parse('http://localhost/api/characters/x/share')),
+        Request('GET', Uri.parse('http://localhost/api/characters/x/shares')),
+        Request(
+          'DELETE',
+          Uri.parse(
+            'http://localhost/api/campaign-links/'
+            '00000000-0000-4000-8000-000000000000',
+          ),
+        ),
+        Request('GET', Uri.parse('http://localhost/api/events')),
+        Request(
+          'POST',
+          Uri.parse('http://localhost/api/events/seen'),
+          body: jsonEncode({'ids': <String>[]}),
+        ),
+      ]) {
+        expect(
+          (await handler(request)).statusCode,
+          401,
+          reason: '${request.url}',
+        );
+      }
+    });
+
+    test(
+      'el listado de campañas de una cuenta no incluye las de otra',
+      () async {
+        final tokenA = await login('camp-a');
+        await createCampaign(tokenA, 'tumba');
+
+        final tokenB = await login('camp-b');
+        final listed = await send('GET', '/api/campaigns', token: tokenB);
+
+        expect(listed['body']['campaigns'], isEmpty);
+      },
+    );
+
+    test('no se puede editar ni borrar la campaña de otra cuenta', () async {
+      final tokenA = await login('camp-edit-a');
+      await createCampaign(tokenA, 'tumba');
+
+      final tokenB = await login('camp-edit-b');
+      final edited = await send(
+        'PUT',
+        '/api/campaigns/tumba',
+        token: tokenB,
+        body: {'campaign': campaignJson('tumba', name: 'Secuestrada')},
+      );
+      expect(edited['status'], 404);
+
+      await send('DELETE', '/api/campaigns/tumba', token: tokenB);
+
+      final stillThere = await send('GET', '/api/campaigns', token: tokenA);
+      expect(stillThere['body']['campaigns'], hasLength(1));
+      expect(stillThere['body']['campaigns'][0]['name'], 'La Tumba');
+    });
+
+    test(
+      'el DM ve la ficha después de canjear el código del jugador',
+      () async {
+        final tokenA = await login('link-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('link-b');
+        await createCampaign(tokenB, 'tumba');
+        final redeemed = await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        expect(redeemed['status'], 200);
+
+        final members = await send(
+          'GET',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+        );
+        expect(members['body']['members'], hasLength(1));
+        expect(members['body']['members'][0]['character']['id'], 'sagan');
+      },
+    );
+
+    // El vínculo es una referencia, no una copia: el DM tiene que ver lo que
+    // el jugador tiene ahora, no lo que tenía al compartir.
+    test(
+      'el DM ve los cambios que el jugador hace después de vincular',
+      () async {
+        final tokenA = await login('live-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('live-b');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+
+        await send(
+          'PUT',
+          '/api/characters/sagan',
+          token: tokenA,
+          body: {'character': characterJson('sagan', name: 'Sagan el Rojo')},
+        );
+
+        final members = await send(
+          'GET',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+        );
+        expect(
+          members['body']['members'][0]['character']['name'],
+          'Sagan el Rojo',
+        );
+      },
+    );
+
+    test('un código no se puede canjear dos veces', () async {
+      final tokenA = await login('once-a');
+      final code = await shareCharacter(tokenA, 'sagan');
+
+      final tokenB = await login('once-b');
+      await createCampaign(tokenB, 'tumba');
+      await createCampaign(tokenB, 'otra');
+      await send(
+        'POST',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+        body: {'code': code},
+      );
+
+      final second = await send(
+        'POST',
+        '/api/campaigns/otra/members',
+        token: tokenB,
+        body: {'code': code},
+      );
+      expect(second['status'], 404);
+    });
+
+    test('un código inventado no sirve y no dice por qué', () async {
+      final tokenB = await login('fake-code-b');
+      await createCampaign(tokenB, 'tumba');
+
+      final response = await send(
+        'POST',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+        body: {'code': 'ZZZZ-ZZZZ'},
+      );
+
+      expect(response['status'], 404);
+      expect(response['body']['error'], 'Código inválido o vencido.');
+    });
+
+    // Intentar contra una campaña ajena no puede costarle el código al jugador:
+    // la sentencia se revierte entera y el código sigue sirviendo.
+    test(
+      'canjear contra una campaña ajena falla y no quema el código',
+      () async {
+        final tokenA = await login('steal-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenC = await login('steal-c');
+        await createCampaign(tokenC, 'ajena');
+
+        final tokenB = await login('steal-b');
+        final stolen = await send(
+          'POST',
+          '/api/campaigns/ajena/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        expect(stolen['status'], 404);
+
+        await createCampaign(tokenB, 'propia');
+        final legit = await send(
+          'POST',
+          '/api/campaigns/propia/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        expect(legit['status'], 200);
+      },
+    );
+
+    test('sin vínculo, la campaña no muestra ninguna ficha', () async {
+      final tokenA = await login('nolink-a');
+      await send(
+        'POST',
+        '/api/characters',
+        token: tokenA,
+        body: {'character': characterJson('sagan')},
+      );
+
+      final tokenB = await login('nolink-b');
+      await createCampaign(tokenB, 'tumba');
+      final members = await send(
+        'GET',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+      );
+
+      expect(members['body']['members'], isEmpty);
+    });
+
+    test(
+      'compartir un personaje ajeno responde como si no existiera',
+      () async {
+        final tokenA = await login('share-a');
+        await send(
+          'POST',
+          '/api/characters',
+          token: tokenA,
+          body: {'character': characterJson('sagan')},
+        );
+
+        final tokenB = await login('share-b');
+        final response = await send(
+          'POST',
+          '/api/characters/sagan/share',
+          token: tokenB,
+        );
+
+        expect(response['status'], 404);
+      },
+    );
+
+    test('el jugador ve en qué campañas está su personaje', () async {
+      final tokenA = await login('shares-a');
+      final code = await shareCharacter(tokenA, 'sagan');
+
+      final tokenB = await login('shares-b');
+      await createCampaign(tokenB, 'tumba');
+      await send(
+        'POST',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+        body: {'code': code},
+      );
+
+      final shares = await send(
+        'GET',
+        '/api/characters/sagan/shares',
+        token: tokenA,
+      );
+      expect(shares['body']['shares'], hasLength(1));
+      expect(shares['body']['shares'][0]['campaignName'], 'La Tumba');
+      // El id del DM es de uso interno: sirve para avisarle, no para mostrarlo.
+      expect(shares['body']['shares'][0].containsKey('dmUserId'), isFalse);
+    });
+
+    test('el jugador corta el vínculo y el DM deja de ver la ficha', () async {
+      final tokenA = await login('unlink-a');
+      final code = await shareCharacter(tokenA, 'sagan');
+
+      final tokenB = await login('unlink-b');
+      await createCampaign(tokenB, 'tumba');
+      await send(
+        'POST',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+        body: {'code': code},
+      );
+
+      final shares = await send(
+        'GET',
+        '/api/characters/sagan/shares',
+        token: tokenA,
+      );
+      final memberId = shares['body']['shares'][0]['memberId'];
+      final cut = await send(
+        'DELETE',
+        '/api/campaign-links/$memberId',
+        token: tokenA,
+      );
+      expect(cut['status'], 200);
+
+      final members = await send(
+        'GET',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+      );
+      expect(members['body']['members'], isEmpty);
+    });
+
+    test('un tercero no puede cortar un vínculo del que no es parte', () async {
+      final tokenA = await login('third-a');
+      final code = await shareCharacter(tokenA, 'sagan');
+
+      final tokenB = await login('third-b');
+      await createCampaign(tokenB, 'tumba');
+      final redeemed = await send(
+        'POST',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+        body: {'code': code},
+      );
+      final memberId = redeemed['body']['member']['memberId'];
+
+      final tokenC = await login('third-c');
+      final attempt = await send(
+        'DELETE',
+        '/api/campaign-links/$memberId',
+        token: tokenC,
+      );
+      expect(attempt['status'], 404);
+
+      final members = await send(
+        'GET',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+      );
+      expect(members['body']['members'], hasLength(1));
+    });
+
+    test('borrar el personaje se lleva el vínculo', () async {
+      final tokenA = await login('cascade-a');
+      final code = await shareCharacter(tokenA, 'sagan');
+
+      final tokenB = await login('cascade-b');
+      await createCampaign(tokenB, 'tumba');
+      await send(
+        'POST',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+        body: {'code': code},
+      );
+
+      await send('DELETE', '/api/characters/sagan', token: tokenA);
+
+      final members = await send(
+        'GET',
+        '/api/campaigns/tumba/members',
+        token: tokenB,
+      );
+      expect(members['body']['members'], isEmpty);
+    });
+
+    group('avisos', () {
+      Future<List<dynamic>> pending(String token) async {
+        final response = await send('GET', '/api/events', token: token);
+        return response['body']['events'] as List<dynamic>;
+      }
+
+      test('vincular avisa al jugador y no al DM que lo hizo', () async {
+        final tokenA = await login('ev-link-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ev-link-b');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+
+        final forPlayer = await pending(tokenA);
+        expect(forPlayer, hasLength(1));
+        expect(forPlayer[0]['kind'], 'character_linked');
+        expect(forPlayer[0]['payload']['characterName'], 'Sagan');
+        expect(forPlayer[0]['payload']['campaignName'], 'La Tumba');
+
+        expect(await pending(tokenB), isEmpty);
+      });
+
+      test('echar avisa al jugador; irse avisa al DM', () async {
+        final tokenA = await login('ev-kick-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ev-kick-b');
+        await createCampaign(tokenB, 'tumba');
+        final redeemed = await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        await send(
+          'POST',
+          '/api/events/seen',
+          token: tokenA,
+          body: {
+            'ids': [for (final e in await pending(tokenA)) e['id']],
+          },
+        );
+
+        // El DM echa al personaje: se entera el jugador.
+        await send(
+          'DELETE',
+          '/api/campaign-links/${redeemed['body']['member']['memberId']}',
+          token: tokenB,
+        );
+        final afterKick = await pending(tokenA);
+        expect(afterKick, hasLength(1));
+        expect(afterKick[0]['kind'], 'character_unlinked_by_dm');
+        expect(await pending(tokenB), isEmpty);
+
+        // El jugador se va por su cuenta: se entera el DM.
+        final code2 = await send(
+          'POST',
+          '/api/characters/sagan/share',
+          token: tokenA,
+        );
+        final again = await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code2['body']['code']},
+        );
+        await send(
+          'DELETE',
+          '/api/campaign-links/${again['body']['member']['memberId']}',
+          token: tokenA,
+        );
+        final forDm = await pending(tokenB);
+        expect(forDm.last['kind'], 'character_unlinked_by_owner');
+      });
+
+      // Sin esto el personaje desaparece del panel del DM sin explicación.
+      test('borrar el personaje avisa al DM que lo tenía', () async {
+        final tokenA = await login('ev-del-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ev-del-b');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+
+        await send('DELETE', '/api/characters/sagan', token: tokenA);
+
+        final forDm = await pending(tokenB);
+        expect(forDm, hasLength(1));
+        expect(forDm[0]['kind'], 'character_deleted_by_owner');
+        expect(forDm[0]['payload']['characterName'], 'Sagan');
+      });
+
+      test('un aviso se entrega una sola vez', () async {
+        final tokenA = await login('ev-once-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ev-once-b');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+
+        final first = await pending(tokenA);
+        expect(first, hasLength(1));
+
+        await send(
+          'POST',
+          '/api/events/seen',
+          token: tokenA,
+          body: {
+            'ids': [first[0]['id']],
+          },
+        );
+
+        expect(await pending(tokenA), isEmpty);
+      });
+
+      test('una cuenta no puede marcar vistos los avisos de otra', () async {
+        final tokenA = await login('ev-steal-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ev-steal-b');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+
+        final forPlayer = await pending(tokenA);
+        final response = await send(
+          'POST',
+          '/api/events/seen',
+          token: tokenB,
+          body: {
+            'ids': [forPlayer[0]['id']],
+          },
+        );
+
+        // No falla, pero tampoco hace nada: quien manda un id ajeno no debe
+        // poder distinguirlo de uno que no existe.
+        expect(response['status'], 200);
+        expect(await pending(tokenA), hasLength(1));
+      });
+
+      test('un id de aviso mal formado no rompe nada', () async {
+        final token = await login('ev-junk');
+
+        final response = await send(
+          'POST',
+          '/api/events/seen',
+          token: token,
+          body: {
+            'ids': ['no-soy-un-uuid'],
+          },
+        );
+
+        expect(response['status'], 200);
+      });
     });
   });
 }

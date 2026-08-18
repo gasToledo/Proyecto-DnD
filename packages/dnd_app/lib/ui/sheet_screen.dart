@@ -8,6 +8,7 @@ import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
+import 'dm/share_character_dialog.dart';
 import 'portrait_image.dart';
 import 'portrait_screen.dart';
 import 'spell_edit_screen.dart';
@@ -289,6 +290,18 @@ class _SheetScreenState extends State<SheetScreen> {
           onUpdated: _replace,
         ),
       ),
+    );
+  }
+
+  /// Le da al jugador el código con el que su DM suma este personaje a una
+  /// mesa. El acceso a una ficha siempre empieza por acá: sin este paso, no hay
+  /// forma de que otra cuenta la alcance.
+  void _shareCharacter() {
+    showShareCharacterDialog(
+      context,
+      api: ctrl.api,
+      characterId: _c.id,
+      characterName: _c.name,
     );
   }
 

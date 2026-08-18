@@ -10,9 +10,11 @@ import 'data/asset_content_loader.dart';
 import 'data/characters_controller.dart';
 import 'data/homebrew_store.dart';
 import 'data/settings_service.dart';
+import 'data/user_events_service.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_widgets.dart';
 import 'ui/dashboard_screen.dart';
+import 'ui/user_event_messages.dart';
 import 'web/browser.dart' as browser;
 
 void main() {
@@ -192,16 +194,78 @@ class _BootstrapState extends State<_Bootstrap> {
             ),
           );
         }
-        return DashboardScreen(
-          repo: data.repo,
-          controller: data.controller,
-          homebrew: data.homebrew,
-          account: data.account,
-          settings: data.settings,
-          appVersion: data.appVersion,
-          theme: widget.theme,
+        return _PendingEvents(
+          api: _api,
+          child: DashboardScreen(
+            repo: data.repo,
+            controller: data.controller,
+            homebrew: data.homebrew,
+            account: data.account,
+            settings: data.settings,
+            appVersion: data.appVersion,
+            theme: widget.theme,
+          ),
         );
       },
     );
   }
+}
+
+/// Muestra lo que pasó mientras esta cuenta no estaba mirando.
+///
+/// Va acá y no dentro del dashboard porque los avisos son de la cuenta, no de
+/// una pantalla: da igual desde dónde se los reciba. Se leen después del primer
+/// cuadro para no demorar el arranque, y un fallo se traga en silencio — no
+/// poder mostrar un aviso no es motivo para dejar a nadie sin su ficha.
+class _PendingEvents extends StatefulWidget {
+  final ApiClient api;
+  final Widget child;
+
+  const _PendingEvents({required this.api, required this.child});
+
+  @override
+  State<_PendingEvents> createState() => _PendingEventsState();
+}
+
+class _PendingEventsState extends State<_PendingEvents> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _show());
+  }
+
+  Future<void> _show() async {
+    final service = UserEventsService(widget.api);
+    final List<UserEvent> pending;
+    try {
+      pending = await service.loadUnseen();
+    } catch (_) {
+      return;
+    }
+
+    var first = true;
+    for (final event in pending) {
+      if (!mounted) return;
+      final message = messageForEvent(event);
+      // Un `kind` que este cliente no conoce igual se marca visto: el servidor
+      // puede ser más nuevo que la pestaña abierta, y dejarlo pendiente lo
+      // volvería a traer para siempre.
+      if (message != null) {
+        // Uno detrás de otro: `showAppMessage` reemplaza el anterior, así que
+        // sin la espera solo se vería el último.
+        if (!first) await Future<void>.delayed(const Duration(seconds: 4));
+        if (!mounted) return;
+        showAppMessage(context, message.text, tone: message.tone);
+        first = false;
+      }
+      try {
+        await service.markSeen([event]);
+      } catch (_) {
+        // Se volverá a mostrar la próxima vez: preferible a perderlo.
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

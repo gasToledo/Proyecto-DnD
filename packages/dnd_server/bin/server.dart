@@ -11,7 +11,9 @@ import 'package:dnd_server/src/db/migration_runner.dart';
 import 'package:dnd_server/src/import/import_service.dart' as import_service;
 import 'package:dnd_server/src/portraits/disk_portrait_blob_store.dart';
 import 'package:dnd_server/src/repositories/account_repository.dart';
+import 'package:dnd_server/src/repositories/campaign_repository.dart';
 import 'package:dnd_server/src/repositories/character_repository.dart';
+import 'package:dnd_server/src/repositories/event_repository.dart';
 import 'package:dnd_server/src/repositories/homebrew_repository.dart';
 import 'package:dnd_server/src/repositories/settings_repository.dart';
 import 'package:dnd_server/src/web/cache_headers.dart';
@@ -70,6 +72,8 @@ Future<void> main() async {
       // sesión por request (cada método de repositorio ya adquiere su propia
       // conexión del pool al ejecutar).
       characters: PostgresCharacterRepository(pool),
+      campaigns: PostgresCampaignRepository(pool),
+      events: PostgresEventRepository(pool),
       homebrew: PostgresHomebrewRepository(pool),
       settings: PostgresSettingsRepository(pool),
       webStaticHandler: webStaticHandler,

@@ -108,6 +108,14 @@ extension _SheetNavigation on _SheetScreenState {
             label: 'Subir nivel',
             onTap: () => run(_openLevelUp),
           ),
+          // Va en el panel y no en el AppBar porque el AppBar solo existe en
+          // ventana angosta: acá se ve en los dos layouts.
+          appNavItem(
+            context,
+            icon: Icons.ios_share,
+            label: 'Compartir',
+            onTap: () => run(_shareCharacter),
+          ),
           const SizedBox(height: 8),
           DisplayPreferences(controller: widget.theme),
         ],

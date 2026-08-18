@@ -113,4 +113,96 @@ ALTER TABLE characters
   ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 ''',
   ),
+  Migration(
+    id: '0006_campaigns_and_character_sharing',
+    sql: '''
+-- Primera vez que una cuenta puede leer algo de otra. Hasta acá cada tabla era
+-- de un solo dueño y toda consulta filtraba por `user_id`; lo que sigue abre
+-- esa puerta, y la abre únicamente cuando el dueño del personaje la abrió
+-- antes con un código generado por él.
+CREATE TABLE campaigns (
+  dm_user_id UUID NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+  id TEXT NOT NULL,
+  document JSONB NOT NULL,
+  name TEXT NOT NULL GENERATED ALWAYS AS (document ->> 'name') STORED,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (dm_user_id, id)
+);
+
+CREATE INDEX campaigns_dm_user_id_name_idx ON campaigns (dm_user_id, name);
+
+-- El vínculo es una referencia viva, no una copia: guarda a qué personaje
+-- apuntar, y la ficha se lee de su fila real en cada consulta. Nunca hay dos
+-- versiones del mismo personaje que puedan desalinearse.
+--
+-- Tiene clave sustituta además de la combinación natural porque el vínculo se
+-- corta desde los dos lados: con un id opaco, la URL con la que el jugador
+-- deja de compartir no necesita nombrar al DM.
+--
+-- Las dos rutas de borrado en cascada son intencionales: si se va la cuenta
+-- del DM se van sus campañas y con ellas estos vínculos; si el jugador borra
+-- su personaje (o su cuenta), el vínculo se va solo y nunca queda una
+-- referencia colgada apuntando a una ficha que ya no existe.
+CREATE TABLE campaign_members (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dm_user_id UUID NOT NULL,
+  campaign_id TEXT NOT NULL,
+  owner_user_id UUID NOT NULL,
+  character_id TEXT NOT NULL,
+  linked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (dm_user_id, campaign_id, owner_user_id, character_id),
+  FOREIGN KEY (dm_user_id, campaign_id)
+    REFERENCES campaigns (dm_user_id, id) ON DELETE CASCADE,
+  FOREIGN KEY (owner_user_id, character_id)
+    REFERENCES characters (user_id, id) ON DELETE CASCADE
+);
+
+-- Para "¿en qué campañas está este personaje?", que es la pregunta que hace la
+-- ficha del jugador. La combinación única de arriba arranca por `dm_user_id`,
+-- así que no sirve para buscar por dueño.
+CREATE INDEX campaign_members_owner_idx
+  ON campaign_members (owner_user_id, character_id);
+
+-- El código nunca se guarda en claro, por la misma razón que el token de
+-- sesión (ver `0002`): un volcado de la base no debe entregar accesos válidos.
+-- La fila se borra al canjearse, así que un código sirve una sola vez.
+CREATE TABLE character_share_codes (
+  code_hash TEXT PRIMARY KEY,
+  owner_user_id UUID NOT NULL,
+  character_id TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  FOREIGN KEY (owner_user_id, character_id)
+    REFERENCES characters (user_id, id) ON DELETE CASCADE
+);
+
+-- El barrido de vencidos corre en el camino de escritura, igual que el de
+-- `sessions`: sin este índice sería un recorrido completo de la tabla.
+CREATE INDEX character_share_codes_expires_at_idx
+  ON character_share_codes (expires_at);
+
+-- Avisos pendientes de ver. Quien ejecuta una acción recibe respuesta en el
+-- momento; esta tabla existe para la otra parte, que no estaba mirando cuando
+-- pasó. Es genérica a propósito: los avisos de capítulo que vienen después
+-- usan esta misma vía.
+--
+-- No guarda el texto sino qué pasó (`kind` más los datos en `payload`): el
+-- mensaje en español lo redacta el cliente, así se puede corregir una
+-- redacción sin migrar la base.
+CREATE TABLE user_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  seen_at TIMESTAMPTZ
+);
+
+-- Índice parcial: la única consulta es "lo que esta cuenta todavía no vio", y
+-- los avisos ya vistos no tienen por qué ocupar lugar en él.
+CREATE INDEX user_events_pending_idx
+  ON user_events (user_id, created_at) WHERE seen_at IS NULL;
+''',
+  ),
 ];

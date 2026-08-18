@@ -67,3 +67,72 @@ class ImportSummary {
     required this.portraitsImported,
   });
 }
+
+/// Un personaje que un jugador compartió con una campaña del DM.
+///
+/// [memberId] identifica el **vínculo**, no al personaje: es con lo que se
+/// corta y con lo que se pide el retrato, y el mismo personaje tendría uno
+/// distinto en otra campaña.
+class CampaignMember {
+  final String memberId;
+  final Character character;
+
+  const CampaignMember({required this.memberId, required this.character});
+
+  factory CampaignMember.fromJson(Map<String, dynamic> json) => CampaignMember(
+    memberId: json['memberId'] as String,
+    character: Character.fromJson(
+      (json['character'] as Map).cast<String, dynamic>(),
+    ),
+  );
+}
+
+/// Una campaña con la que este personaje está compartido, vista desde la ficha
+/// del jugador. Solo trae el nombre: es lo que necesita para reconocerla y
+/// decidir si sigue compartiéndola.
+class CharacterShare {
+  final String memberId;
+  final String campaignName;
+
+  const CharacterShare({required this.memberId, required this.campaignName});
+
+  factory CharacterShare.fromJson(Map<String, dynamic> json) => CharacterShare(
+    memberId: json['memberId'] as String,
+    campaignName: json['campaignName'] as String? ?? '',
+  );
+}
+
+/// El código recién emitido para compartir un personaje, con su vencimiento.
+class ShareCode {
+  final String code;
+  final DateTime expiresAt;
+
+  const ShareCode({required this.code, required this.expiresAt});
+
+  factory ShareCode.fromJson(Map<String, dynamic> json) => ShareCode(
+    code: json['code'] as String,
+    expiresAt: DateTime.parse(json['expiresAt'] as String),
+  );
+}
+
+/// Algo que pasó mientras esta cuenta no estaba mirando.
+///
+/// El servidor guarda qué pasó, no cómo se dice: el texto lo arma
+/// `user_event_messages.dart` a partir de [kind] y [payload].
+class UserEvent {
+  final String id;
+  final String kind;
+  final Map<String, dynamic> payload;
+
+  const UserEvent({
+    required this.id,
+    required this.kind,
+    required this.payload,
+  });
+
+  factory UserEvent.fromJson(Map<String, dynamic> json) => UserEvent(
+    id: json['id'] as String,
+    kind: json['kind'] as String? ?? '',
+    payload: (json['payload'] as Map? ?? const {}).cast<String, dynamic>(),
+  );
+}

@@ -34,6 +34,16 @@ extension _DashboardActions on _DashboardScreenState {
     );
   }
 
+  /// Entra al Modo DM. Es una pantalla más sobre el Navigator, como Homebrew:
+  /// volver atrás es salir, y no queda ningún estado prendido que recordar.
+  void _openDmMode() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DmModeScreen(api: controller.api, repo: repo),
+      ),
+    );
+  }
+
   /// Las dos acciones de transferencia en un diálogo (antes era el menú del
   /// AppBar, que ya no existe con el panel lateral). "Abrir carpeta de
   /// exportación" no tiene sentido en el cliente web: cada exportación ya es

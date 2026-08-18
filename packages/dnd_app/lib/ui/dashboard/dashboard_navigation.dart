@@ -85,6 +85,25 @@ extension _DashboardNavigation on _DashboardScreenState {
             onTap: () => run(_transferDialog),
           ),
           const Spacer(),
+          // El Modo DM va junto a la cuenta y no arriba con la navegación
+          // primaria: no es otra sección de lo mismo, es el otro sombrero de
+          // esta misma cuenta. Entrar y salir es abrir y cerrar una puerta, no
+          // cambiar de rol — quien dirige una mesa puede ser jugador en otra
+          // sin necesitar una segunda cuenta.
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: OutlinedButton.icon(
+              key: const ValueKey('dm-mode-button'),
+              onPressed: () => run(_openDmMode),
+              icon: const Icon(Icons.shield_moon_outlined, size: 16),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: pal.gold,
+                side: BorderSide(color: pal.gold.withAlpha(110)),
+                textStyle: const TextStyle(fontSize: 12),
+              ),
+              label: const Text('Modo DM'),
+            ),
+          ),
           _accountFooter(context),
           DisplayPreferences(controller: widget.theme),
           // Null solo en tests, donde no se resuelve `PackageInfo`.

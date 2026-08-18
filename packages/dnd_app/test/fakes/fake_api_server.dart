@@ -30,6 +30,26 @@ class FakeApiServer {
   List<Map<String, dynamic>> providers = [];
   int _generatedIdCounter = 0;
 
+  /// Campañas que dirige la cuenta, y los vínculos con personajes.
+  ///
+  /// El doble modela una sola cuenta, así que no hay nada que aislar entre
+  /// dueños: eso ya lo prueba `dnd_server` contra su propia batería. Acá
+  /// interesa el contrato que ve el cliente.
+  final Map<String, Campaign> campaigns = {};
+  final Map<String, ({String campaignId, String characterId})> campaignMembers =
+      {};
+
+  /// Códigos emitidos y todavía sin canjear, por el id del personaje.
+  final Map<String, String> shareCodes = {};
+
+  /// Avisos pendientes, con la forma que devuelve `GET /api/events`. La prueba
+  /// los siembra directamente.
+  final List<Map<String, dynamic>> events = [];
+  final Set<String> seenEventIds = {};
+
+  int _memberCounter = 0;
+  int _shareCounter = 0;
+
   bool authenticated = true;
 
   /// Perfil que devuelve `/api/me`. Ambos pueden ser null: el proveedor OIDC
@@ -172,7 +192,168 @@ class FakeApiServer {
       return _json({'charactersImported': 0, 'portraitsImported': 0});
     }
 
+    final campaignResponse = _handleCampaigns(request, method, path);
+    if (campaignResponse != null) return campaignResponse;
+
     return _json({'error': 'no encontrado'}, 404);
+  }
+
+  /// Rutas de campañas, vínculo y avisos. Reproduce el contrato observable del
+  /// servidor: un código sirve una sola vez, un código desconocido responde
+  /// 404, y un aviso se entrega hasta que se marca visto.
+  http.Response? _handleCampaigns(
+    http.Request request,
+    String method,
+    String path,
+  ) {
+    if (method == 'GET' && path == '/api/campaigns') {
+      final all = campaigns.values.toList()
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      return _json({
+        'campaigns': [for (final c in all) c.toJson()],
+      });
+    }
+
+    if (method == 'POST' && path == '/api/campaigns') {
+      var campaign = Campaign.fromJson(
+        (_body(request)['campaign'] as Map).cast<String, dynamic>(),
+      );
+      if (campaigns.containsKey(campaign.id)) {
+        campaign = Campaign.fromJson(
+          campaign.toJson()..['id'] = 'generated-${_generatedIdCounter++}',
+        );
+      }
+      campaigns[campaign.id] = campaign;
+      return _json({'campaign': campaign.toJson()});
+    }
+
+    if (method == 'PUT' && path.startsWith('/api/campaigns/')) {
+      final campaign = Campaign.fromJson(
+        (_body(request)['campaign'] as Map).cast<String, dynamic>(),
+      );
+      if (!campaigns.containsKey(campaign.id)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      campaigns[campaign.id] = campaign;
+      return _json({'status': 'ok'});
+    }
+
+    if (method == 'DELETE' &&
+        path.startsWith('/api/campaigns/') &&
+        !path.contains('/members')) {
+      final id = _segment(path, '/api/campaigns/');
+      campaigns.remove(id);
+      campaignMembers.removeWhere((_, m) => m.campaignId == id);
+      return _json({'status': 'ok'});
+    }
+
+    if (method == 'GET' &&
+        path.startsWith('/api/campaigns/') &&
+        path.endsWith('/members')) {
+      final id = path.split('/')[3];
+      if (!campaigns.containsKey(id)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      return _json({
+        'members': [
+          for (final entry in campaignMembers.entries)
+            if (entry.value.campaignId == id &&
+                characters.containsKey(entry.value.characterId))
+              {
+                'memberId': entry.key,
+                'character': characters[entry.value.characterId]!.toJson(),
+              },
+        ],
+      });
+    }
+
+    if (method == 'POST' &&
+        path.startsWith('/api/campaigns/') &&
+        path.endsWith('/members')) {
+      final campaignId = path.split('/')[3];
+      if (!campaigns.containsKey(campaignId)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      final code = _body(request)['code'] as String;
+      final characterId = shareCodes.remove(code.toUpperCase());
+      if (characterId == null) {
+        return _json({'error': 'Código inválido o vencido.'}, 404);
+      }
+      final memberId =
+          '00000000-0000-4000-8000-${(_memberCounter++).toString().padLeft(12, '0')}';
+      campaignMembers[memberId] = (
+        campaignId: campaignId,
+        characterId: characterId,
+      );
+      return _json({
+        'member': {
+          'memberId': memberId,
+          if (characters.containsKey(characterId))
+            'character': characters[characterId]!.toJson(),
+        },
+      });
+    }
+
+    if (method == 'DELETE' && path.startsWith('/api/campaign-links/')) {
+      final memberId = _segment(path, '/api/campaign-links/');
+      if (campaignMembers.remove(memberId) == null) {
+        return _json({'error': 'Vínculo no encontrado.'}, 404);
+      }
+      return _json({'status': 'ok'});
+    }
+
+    if (method == 'POST' &&
+        path.startsWith('/api/characters/') &&
+        path.endsWith('/share')) {
+      final characterId = path.split('/')[3];
+      if (!characters.containsKey(characterId)) {
+        return _json({'error': 'Personaje no encontrado.'}, 404);
+      }
+      final code = 'CODE-${(_shareCounter++).toString().padLeft(4, '0')}';
+      shareCodes[code] = characterId;
+      return _json({
+        'code': code,
+        'expiresAt': DateTime.now()
+            .toUtc()
+            .add(const Duration(hours: 24))
+            .toIso8601String(),
+      });
+    }
+
+    if (method == 'GET' &&
+        path.startsWith('/api/characters/') &&
+        path.endsWith('/shares')) {
+      final characterId = path.split('/')[3];
+      if (!characters.containsKey(characterId)) {
+        return _json({'error': 'Personaje no encontrado.'}, 404);
+      }
+      return _json({
+        'shares': [
+          for (final entry in campaignMembers.entries)
+            if (entry.value.characterId == characterId)
+              {
+                'memberId': entry.key,
+                'campaignName': campaigns[entry.value.campaignId]?.name ?? '',
+              },
+        ],
+      });
+    }
+
+    if (method == 'GET' && path == '/api/events') {
+      return _json({
+        'events': [
+          for (final event in events)
+            if (!seenEventIds.contains(event['id'])) event,
+        ],
+      });
+    }
+
+    if (method == 'POST' && path == '/api/events/seen') {
+      seenEventIds.addAll((_body(request)['ids'] as List).cast<String>());
+      return _json({'status': 'ok'});
+    }
+
+    return null;
   }
 
   Character _characterFrom(Object? json) =>

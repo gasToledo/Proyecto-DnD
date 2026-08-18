@@ -15,7 +15,7 @@ seguir igual: en la mesa la última palabra la tiene el DM, no el programa.
 Las fichas viven en el servidor. Podés armar el personaje en la compu del
 escritorio y abrirlo desde el teléfono cuando llega el jueves de partida, con
 los puntos de golpe donde los dejaste la sesión pasada. Cada cuenta ve
-únicamente lo suyo.
+únicamente lo suyo, salvo lo que elija compartir con la mesa que juega.
 
 El contenido oficial que trae cargado sale del SRD 5.2.1, ampliado con
 opciones del PHB 2024 y de *Forge of the Artificer*. Todo pasa por la misma
@@ -76,6 +76,24 @@ Desde la sección Homebrew creás armas, armaduras, dotes, especies, trasfondos
 y conjuros propios, que quedan en tu cuenta y aparecen mezclados con el
 contenido oficial en el asistente, en la subida de nivel y en la ficha.
 
+### Modo DM
+
+El botón **Modo DM**, junto a tu cuenta en el panel lateral, abre el otro
+sombrero de la misma cuenta: en vez de tus personajes, tus campañas. No hace
+falta una segunda cuenta para dirigir, ni deja de existir la primera: entrás
+cuando dirigís y volvés atrás cuando terminaste.
+
+Para que un jugador entre a tu mesa, él abre su personaje, toca **Compartir** y
+te pasa el código que aparece. Vos lo pegás en **Sumar personaje** dentro de la
+campaña y desde ahí ves su ficha con los puntos de golpe y la clase de armadura
+al día — no es una copia, es la ficha real, así que lo que él cambie lo ves vos.
+Lo que no podés es editarla: el personaje sigue siendo suyo.
+
+El código sirve una sola vez y vence a las 24 horas. El vínculo se corta desde
+los dos lados —vos con **Echar personaje**, él dejando de compartir— y ninguna
+de las dos cosas toca la ficha. Cada vez que algo de esto pasa, a la otra parte
+le llega el aviso la próxima vez que abre la aplicación.
+
 ### Respaldos y traspaso
 
 Exportás un personaje suelto, o un ZIP completo con todas las fichas, los
@@ -103,9 +121,12 @@ Cada personaje usa una sola clase por ahora. Multiclase es lo próximo grande,
 y la arquitectura dirigida por efectos ya está pensada para soportarla sin
 rehacer la ficha.
 
-Después de eso: un Modo DM para llevar la mesa completa, la foto de perfil de
-la cuenta en el panel lateral (hoy se guarda pero no se dibuja) y poder marcar
-varios favoritos en vez de uno.
+El Modo DM recién empieza: hoy son campañas y las fichas de los jugadores
+vinculadas. Faltan los capítulos con sus recompensas, el cuaderno de campaña y
+el seguidor de combate.
+
+Después de eso: la foto de perfil de la cuenta en el panel lateral (hoy se
+guarda pero no se dibuja) y poder marcar varios favoritos en vez de uno.
 
 ## Puesta en marcha
 

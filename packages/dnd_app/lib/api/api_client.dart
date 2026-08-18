@@ -234,4 +234,108 @@ class ApiClient {
       portraitsImported: body['portraitsImported'] as int,
     );
   }
+
+  // --- Campañas ---------------------------------------------------------
+
+  Future<List<Campaign>> listCampaigns() async {
+    final response = await _send('GET', '/api/campaigns');
+    final list = _json(response)['campaigns'] as List;
+    return [
+      for (final json in list)
+        Campaign.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
+  /// Devuelve la campaña efectivamente guardada: si el id ya estaba en uso, el
+  /// servidor asigna uno libre en vez de sobrescribir.
+  Future<Campaign> createCampaign(Campaign campaign) async {
+    final response = await _send(
+      'POST',
+      '/api/campaigns',
+      jsonBody: {'campaign': campaign.toJson()},
+    );
+    return Campaign.fromJson(
+      (_json(response)['campaign'] as Map).cast<String, dynamic>(),
+    );
+  }
+
+  Future<void> upsertCampaign(Campaign campaign) => _send(
+    'PUT',
+    '/api/campaigns/${Uri.encodeComponent(campaign.id)}',
+    jsonBody: {'campaign': campaign.toJson()},
+  );
+
+  Future<void> deleteCampaign(String id) =>
+      _send('DELETE', '/api/campaigns/${Uri.encodeComponent(id)}');
+
+  /// Las fichas vinculadas a una campaña, leídas de su fila real: es lo que el
+  /// jugador tiene ahora, no una copia del momento en que se vinculó.
+  Future<List<CampaignMember>> listCampaignMembers(String campaignId) async {
+    final response = await _send(
+      'GET',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}/members',
+    );
+    final list = _json(response)['members'] as List;
+    return [
+      for (final json in list)
+        CampaignMember.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
+  /// Canjea el código que el jugador le pasó al DM. Un código que no sirve
+  /// llega como [ApiException] con 404 y el mensaje del servidor.
+  Future<CampaignMember> addCampaignMember({
+    required String campaignId,
+    required String code,
+  }) async {
+    final response = await _send(
+      'POST',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}/members',
+      jsonBody: {'code': code},
+    );
+    return CampaignMember.fromJson(
+      (_json(response)['member'] as Map).cast<String, dynamic>(),
+    );
+  }
+
+  /// Corta el vínculo. Sirve para las dos puntas: el DM echando a un personaje
+  /// y el jugador dejando de compartirlo.
+  Future<void> deleteCampaignLink(String memberId) =>
+      _send('DELETE', '/api/campaign-links/${Uri.encodeComponent(memberId)}');
+
+  // --- Compartir un personaje propio ------------------------------------
+
+  Future<ShareCode> shareCharacter(String characterId) async {
+    final response = await _send(
+      'POST',
+      '/api/characters/${Uri.encodeComponent(characterId)}/share',
+    );
+    return ShareCode.fromJson(_json(response));
+  }
+
+  Future<List<CharacterShare>> listCharacterShares(String characterId) async {
+    final response = await _send(
+      'GET',
+      '/api/characters/${Uri.encodeComponent(characterId)}/shares',
+    );
+    final list = _json(response)['shares'] as List;
+    return [
+      for (final json in list)
+        CharacterShare.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
+  // --- Avisos -----------------------------------------------------------
+
+  Future<List<UserEvent>> listUnseenEvents() async {
+    final response = await _send('GET', '/api/events');
+    final list = _json(response)['events'] as List;
+    return [
+      for (final json in list)
+        UserEvent.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
+  Future<void> markEventsSeen(List<String> ids) =>
+      _send('POST', '/api/events/seen', jsonBody: {'ids': ids});
 }

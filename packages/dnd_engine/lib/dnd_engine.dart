@@ -17,6 +17,7 @@ export 'src/domain/spell_slots.dart';
 export 'src/domain/content.dart';
 export 'src/domain/creature.dart';
 export 'src/domain/character.dart';
+export 'src/domain/campaign.dart';
 export 'src/domain/computed_sheet.dart';
 export 'src/data/content_repository.dart';
 export 'src/engine/sheet_builder.dart';

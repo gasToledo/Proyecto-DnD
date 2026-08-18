@@ -13,7 +13,9 @@ import 'auth/session_store.dart';
 import 'import/backup_bundle.dart';
 import 'import/import_service.dart';
 import 'portraits/portrait_blob_store.dart';
+import 'repositories/campaign_repository.dart';
 import 'repositories/character_repository.dart';
+import 'repositories/event_repository.dart';
 import 'repositories/homebrew_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'util/safe_path.dart';
@@ -86,6 +88,8 @@ Handler buildHandler({
   required PortraitGenerationService generation,
   required ImportBackupFn importBackup,
   required CharacterRepository characters,
+  required CampaignRepository campaigns,
+  required EventRepository events,
   required HomebrewRepository homebrew,
   required SettingsRepository settings,
 
@@ -133,8 +137,100 @@ Handler buildHandler({
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
           .addHandler(
-            (request) => _deleteCharacterHandler(request, characters),
+            (request) =>
+                _deleteCharacterHandler(request, characters, campaigns, events),
           ),
+    )
+    ..post(
+      '/api/characters/<id>/share',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _shareCharacterHandler(request, characters, campaigns),
+          ),
+    )
+    ..get(
+      '/api/characters/<id>/shares',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) =>
+                _listCharacterSharesHandler(request, characters, campaigns),
+          ),
+    )
+    ..get(
+      '/api/campaigns',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler((request) => _listCampaignsHandler(request, campaigns)),
+    )
+    ..post(
+      '/api/campaigns',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler((request) => _createCampaignHandler(request, campaigns)),
+    )
+    ..put(
+      '/api/campaigns/<id>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler((request) => _upsertCampaignHandler(request, campaigns)),
+    )
+    ..delete(
+      '/api/campaigns/<id>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler((request) => _deleteCampaignHandler(request, campaigns)),
+    )
+    ..get(
+      '/api/campaigns/<id>/members',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _listCampaignMembersHandler(request, campaigns),
+          ),
+    )
+    ..post(
+      '/api/campaigns/<id>/members',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) =>
+                _redeemShareCodeHandler(request, campaigns, characters, events),
+          ),
+    )
+    ..get(
+      '/api/campaigns/<campaignId>/members/<memberId>/portrait/<fileName>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _memberPortraitHandler(request, campaigns, portraits),
+          ),
+    )
+    ..delete(
+      '/api/campaign-links/<memberId>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _deleteCampaignLinkHandler(
+              request,
+              campaigns,
+              characters,
+              events,
+            ),
+          ),
+    )
+    ..get(
+      '/api/events',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler((request) => _listEventsHandler(request, events)),
+    )
+    ..post(
+      '/api/events/seen',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler((request) => _markEventsSeenHandler(request, events)),
     )
     ..get(
       '/api/homebrew',
@@ -389,15 +485,353 @@ Future<Response> _upsertCharacterHandler(
   return _jsonOk({'status': 'ok'});
 }
 
+/// Borra un personaje de la cuenta y avisa a los DM que lo tenían en su mesa.
+///
+/// El aviso se arma **antes** de borrar: la clave foránea se lleva los vínculos
+/// en cascada, así que después ya no hay forma de saber a quién avisarle. Sin
+/// esto, el personaje desaparecería del panel del DM sin ninguna explicación.
 Future<Response> _deleteCharacterHandler(
   Request request,
   CharacterRepository characters,
+  CampaignRepository campaigns,
+  EventRepository events,
 ) async {
   final id = requireSafePathSegment(
     request.params['id']!,
     label: 'id de personaje',
   );
+  final character = await characters.find(request.userId, id);
+  final shares = character == null
+      ? const <CharacterShare>[]
+      : await campaigns.listSharesForCharacter(
+          ownerUserId: request.userId,
+          characterId: id,
+        );
+
   await characters.delete(request.userId, id);
+
+  for (final share in shares) {
+    await events.append(share.dmUserId, 'character_deleted_by_owner', {
+      'characterName': character!.name,
+      'campaignName': share.campaignName,
+    });
+  }
+  return _jsonOk({'status': 'ok'});
+}
+
+// --- Campañas y vínculo con personajes ajenos ---
+//
+// Es la única parte del servidor donde una cuenta alcanza datos de otra. Dos
+// reglas gobiernan todo lo que sigue:
+//
+// 1. El acceso nace siempre de una acción del dueño del personaje: sin un
+//    vínculo creado a partir de un código que él generó, no hay nada que ver.
+// 2. Lo ajeno y lo inexistente responden igual (404, mensajes inespecíficos).
+//    Distinguirlos convertiría estas rutas en una forma de averiguar qué
+//    personajes existen en otras cuentas.
+
+Response _notFound(String message) => Response.notFound(
+  jsonEncode({'error': message}),
+  headers: {'content-type': 'application/json'},
+);
+
+Campaign _campaignFromRequestJson(Map<String, dynamic> json) {
+  try {
+    return Campaign.fromJson(json);
+  } on UnsupportedDataVersionException {
+    rethrow;
+  } catch (error) {
+    throw FormatException('Campaña inválida: $error');
+  }
+}
+
+Future<Response> _listCampaignsHandler(
+  Request request,
+  CampaignRepository campaigns,
+) async {
+  final all = await campaigns.listForDm(request.userId);
+  return _jsonOk({
+    'campaigns': [for (final campaign in all) campaign.toJson()],
+  });
+}
+
+Future<Response> _createCampaignHandler(
+  Request request,
+  CampaignRepository campaigns,
+) async {
+  final body = await _readJsonBody(request);
+  final requested = body['campaign'];
+  if (requested is! Map<String, dynamic>) {
+    throw const FormatException('Falta "campaign".');
+  }
+  final campaign = _campaignFromRequestJson(requested);
+  requireSafePathSegment(campaign.id, label: 'id de campaña');
+  final stored = await campaigns.create(request.userId, campaign);
+  return _jsonOk({'campaign': stored.toJson()});
+}
+
+Future<Response> _upsertCampaignHandler(
+  Request request,
+  CampaignRepository campaigns,
+) async {
+  final id = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final body = await _readJsonBody(request);
+  final requested = body['campaign'];
+  if (requested is! Map<String, dynamic>) {
+    throw const FormatException('Falta "campaign".');
+  }
+  final campaign = _campaignFromRequestJson(requested);
+  if (campaign.id != id) {
+    throw const FormatException('El id de la campaña no coincide con la ruta.');
+  }
+  // Editar solo lo propio: sin esta comprobación, el `upsert` crearía la
+  // campaña ajena dentro de la cuenta que la pidió.
+  if (await campaigns.find(request.userId, id) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  await campaigns.upsert(request.userId, campaign);
+  return _jsonOk({'status': 'ok'});
+}
+
+Future<Response> _deleteCampaignHandler(
+  Request request,
+  CampaignRepository campaigns,
+) async {
+  final id = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  await campaigns.delete(request.userId, id);
+  return _jsonOk({'status': 'ok'});
+}
+
+/// Las fichas que los jugadores compartieron con esta campaña.
+///
+/// Se leen de la fila real del personaje en cada llamada: el vínculo es una
+/// referencia, no una copia, así que el DM siempre ve el estado actual.
+Future<Response> _listCampaignMembersHandler(
+  Request request,
+  CampaignRepository campaigns,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final members = await campaigns.listMembers(request.userId, campaignId);
+  return _jsonOk({
+    'members': [
+      for (final member in members)
+        {'memberId': member.memberId, 'character': member.character.toJson()},
+    ],
+  });
+}
+
+/// Canjea el código que el jugador le pasó al DM.
+///
+/// Un código que no sirve responde siempre lo mismo, sin decir si no existió,
+/// si venció o si ya se usó: los tres casos son "ese código no vale" y
+/// distinguirlos solo ayudaría a quien esté probando códigos.
+Future<Response> _redeemShareCodeHandler(
+  Request request,
+  CampaignRepository campaigns,
+  CharacterRepository characters,
+  EventRepository events,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final body = await _readJsonBody(request);
+  final code = body['code'];
+  if (code is! String || code.isEmpty) {
+    throw const FormatException('Falta "code".');
+  }
+
+  final campaign = await campaigns.find(request.userId, campaignId);
+  if (campaign == null) return _notFound('Campaña no encontrada.');
+
+  final link = await campaigns.redeemShareCode(
+    dmUserId: request.userId,
+    campaignId: campaignId,
+    code: code,
+  );
+  if (link == null) return _notFound('Código inválido o vencido.');
+
+  final character = await characters.find(link.ownerUserId, link.characterId);
+  await events.append(link.ownerUserId, 'character_linked', {
+    'characterName': character?.name ?? '',
+    'campaignName': campaign.name,
+  });
+
+  return _jsonOk({
+    'member': {
+      'memberId': link.memberId,
+      if (character != null) 'character': character.toJson(),
+    },
+  });
+}
+
+/// Sirve el retrato de un personaje vinculado.
+///
+/// El retrato se lee del almacenamiento de su **dueño**, no del que mira, y
+/// solo después de comprobar que el vínculo existe y es de esta campaña. La
+/// ruta propia (`_portraitHandler`) queda intacta: deriva la propiedad de la
+/// sesión y no tiene por qué aprender sobre campañas.
+Future<Response> _memberPortraitHandler(
+  Request request,
+  CampaignRepository campaigns,
+  PortraitBlobStore portraits,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['campaignId']!,
+    label: 'id de campaña',
+  );
+  final memberId = request.params['memberId']!;
+  if (!isUuid(memberId)) return _notFound('Retrato no encontrado.');
+
+  final link = await campaigns.findMemberLink(
+    dmUserId: request.userId,
+    campaignId: campaignId,
+    memberId: memberId,
+  );
+  if (link == null) return _notFound('Retrato no encontrado.');
+
+  final width = int.tryParse(request.url.queryParameters['w'] ?? '');
+  final blob = await portraits.read(
+    userId: link.ownerUserId,
+    portraitKey: '${link.characterId}/${request.params['fileName']}',
+    width: width != null && width > 0 ? width : null,
+  );
+  if (blob == null) return _notFound('Retrato no encontrado.');
+
+  return Response.ok(
+    blob.bytes,
+    headers: {
+      'content-type': blob.contentType,
+      'cache-control': 'private, max-age=31536000, immutable',
+    },
+  );
+}
+
+/// Emite un código para compartir un personaje propio.
+Future<Response> _shareCharacterHandler(
+  Request request,
+  CharacterRepository characters,
+  CampaignRepository campaigns,
+) async {
+  final id = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de personaje',
+  );
+  if (await characters.find(request.userId, id) == null) {
+    return _notFound('Personaje no encontrado.');
+  }
+  final code = await campaigns.createShareCode(
+    ownerUserId: request.userId,
+    characterId: id,
+  );
+  return _jsonOk({
+    'code': code,
+    'expiresAt': DateTime.now()
+        .toUtc()
+        .add(PostgresCampaignRepository.defaultShareTtl)
+        .toIso8601String(),
+  });
+}
+
+/// En qué campañas está metido un personaje propio.
+///
+/// Se devuelve solo el nombre de la campaña: es lo que el jugador necesita para
+/// saber con quién la compartió y decidir si sigue haciéndolo.
+Future<Response> _listCharacterSharesHandler(
+  Request request,
+  CharacterRepository characters,
+  CampaignRepository campaigns,
+) async {
+  final id = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de personaje',
+  );
+  if (await characters.find(request.userId, id) == null) {
+    return _notFound('Personaje no encontrado.');
+  }
+  final shares = await campaigns.listSharesForCharacter(
+    ownerUserId: request.userId,
+    characterId: id,
+  );
+  return _jsonOk({
+    'shares': [
+      for (final share in shares)
+        {'memberId': share.memberId, 'campaignName': share.campaignName},
+    ],
+  });
+}
+
+/// Corta un vínculo desde cualquiera de las dos puntas.
+///
+/// El aviso va siempre a la otra parte: quien ejecuta la acción ya sabe lo que
+/// hizo y recibe la respuesta en el momento.
+Future<Response> _deleteCampaignLinkHandler(
+  Request request,
+  CampaignRepository campaigns,
+  CharacterRepository characters,
+  EventRepository events,
+) async {
+  final memberId = request.params['memberId']!;
+  if (!isUuid(memberId)) return _notFound('Vínculo no encontrado.');
+
+  final link = await campaigns.deleteMember(request.userId, memberId);
+  if (link == null) return _notFound('Vínculo no encontrado.');
+
+  final character = await characters.find(link.ownerUserId, link.characterId);
+  final campaign = await campaigns.find(link.dmUserId, link.campaignId);
+  final payload = {
+    'characterName': character?.name ?? '',
+    'campaignName': campaign?.name ?? '',
+  };
+
+  final dmActed = request.userId == link.dmUserId;
+  await events.append(
+    dmActed ? link.ownerUserId : link.dmUserId,
+    dmActed ? 'character_unlinked_by_dm' : 'character_unlinked_by_owner',
+    payload,
+  );
+  return _jsonOk({'status': 'ok'});
+}
+
+// --- Avisos ---
+
+Future<Response> _listEventsHandler(
+  Request request,
+  EventRepository events,
+) async {
+  final pending = await events.listUnseen(request.userId);
+  return _jsonOk({
+    'events': [for (final event in pending) event.toJson()],
+  });
+}
+
+Future<Response> _markEventsSeenHandler(
+  Request request,
+  EventRepository events,
+) async {
+  final body = await _readJsonBody(request);
+  final ids = body['ids'];
+  if (ids is! List) throw const FormatException('Falta "ids".');
+  // Un id mal formado no puede llegar a la consulta: Postgres lo rechazaría
+  // por tipo. Se descarta acá, que además es lo que corresponde — marcar como
+  // visto algo que no existe no es un error.
+  final valid = [
+    for (final id in ids.whereType<String>())
+      if (isUuid(id)) id,
+  ];
+  await events.markSeen(request.userId, valid);
   return _jsonOk({'status': 'ok'});
 }
 

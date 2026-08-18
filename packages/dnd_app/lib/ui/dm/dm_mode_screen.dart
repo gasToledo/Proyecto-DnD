@@ -8,6 +8,7 @@ import '../../data/campaigns_controller.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
+import '../pending_events_gate.dart';
 
 /// El otro sombrero de la misma cuenta.
 ///
@@ -350,6 +351,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
         '${member.character.name} se sumó a ${widget.campaign.name}.',
         tone: AppMessageTone.success,
       );
+      _checkEventsSoon();
     } on ApiException catch (e) {
       if (mounted) {
         showAppMessage(context, e.message, tone: AppMessageTone.error);
@@ -357,6 +359,15 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// Vuelve a preguntar por avisos pendientes un rato después de una acción
+  /// propia, para no taparle el cartel de confirmación de esa acción a la
+  /// persona que la acaba de hacer.
+  void _checkEventsSoon() {
+    Future<void>.delayed(const Duration(seconds: 3), () {
+      if (mounted) checkPendingEvents(context, widget.api);
+    });
   }
 
   Future<void> _removeMember(CampaignMember member) async {
@@ -392,6 +403,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       await _loadMembers();
       if (mounted) {
         showAppMessage(context, '${member.character.name} salió de la mesa.');
+        _checkEventsSoon();
       }
     } on ApiException catch (e) {
       if (mounted) {

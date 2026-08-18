@@ -14,6 +14,7 @@ import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
 import '../web/browser.dart' as browser;
 import 'dm/dm_mode_screen.dart';
+import 'pending_events_gate.dart';
 import 'sheet_screen.dart';
 
 part 'dashboard/dashboard_actions.dart';

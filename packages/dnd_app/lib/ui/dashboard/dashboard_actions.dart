@@ -16,11 +16,17 @@ extension _DashboardActions on _DashboardScreenState {
   void _openSheet(Character c) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => SheetScreen(
-          character: c,
-          repo: repo,
-          controller: controller,
-          theme: widget.theme,
+        // Envuelta en el mismo punto de entrada donde de verdad importa
+        // enterarse pronto: abrir un personaje es el lugar natural para ver
+        // "che, te echaron de esta campaña" o similar.
+        builder: (_) => PendingEventsGate(
+          api: controller.api,
+          child: SheetScreen(
+            character: c,
+            repo: repo,
+            controller: controller,
+            theme: widget.theme,
+          ),
         ),
       ),
     );
@@ -36,10 +42,18 @@ extension _DashboardActions on _DashboardScreenState {
 
   /// Entra al Modo DM. Es una pantalla más sobre el Navigator, como Homebrew:
   /// volver atrás es salir, y no queda ningún estado prendido que recordar.
+  ///
+  /// Envuelta en `PendingEventsGate` porque el chequeo del arranque de la app
+  /// (ver `main.dart`) pasa una sola vez: si la pestaña ya estaba abierta y un
+  /// jugador dejó de compartir mientras tanto, sin esto el DM no se entera
+  /// hasta recargar la página entera.
   void _openDmMode() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => DmModeScreen(api: controller.api, repo: repo),
+        builder: (_) => PendingEventsGate(
+          api: controller.api,
+          child: DmModeScreen(api: controller.api, repo: repo),
+        ),
       ),
     );
   }

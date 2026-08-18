@@ -63,6 +63,11 @@ void main() {
     await tester.enterText(find.byType(TextField), code);
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
+    // Sumar (y echar) reprograma un chequeo de avisos a los 3 segundos para no
+    // taparle el cartel de confirmación a quien acaba de actuar: hay que
+    // dejarlo correr, o el timer queda pendiente al desmontar el árbol.
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
   }
 
   // Una cuenta que entra por primera vez tiene que entender qué hacer, no ver
@@ -132,6 +137,9 @@ void main() {
     await tester.tap(find.byTooltip('Echar a Sagan'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Echar personaje'));
+    await tester.pumpAndSettle();
+    // Igual que sumar: reprograma un chequeo de avisos a los 3 segundos.
+    await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
     expect(server.campaignMembers, isEmpty);

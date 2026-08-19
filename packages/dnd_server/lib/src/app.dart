@@ -14,6 +14,7 @@ import 'import/backup_bundle.dart';
 import 'import/import_service.dart';
 import 'portraits/portrait_blob_store.dart';
 import 'repositories/campaign_repository.dart';
+import 'repositories/chapter_repository.dart';
 import 'repositories/character_repository.dart';
 import 'repositories/encounter_repository.dart';
 import 'repositories/event_repository.dart';
@@ -90,6 +91,7 @@ Handler buildHandler({
   required ImportBackupFn importBackup,
   required CharacterRepository characters,
   required CampaignRepository campaigns,
+  required ChapterRepository chapters,
   required EncounterRepository encounters,
   required EventRepository events,
   required HomebrewRepository homebrew,
@@ -220,6 +222,47 @@ Handler buildHandler({
               characters,
               events,
             ),
+          ),
+    )
+    ..get(
+      '/api/campaigns/<id>/chapters',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _listChaptersHandler(request, campaigns, chapters),
+          ),
+    )
+    ..post(
+      '/api/campaigns/<id>/chapters',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _createChapterHandler(request, campaigns, chapters),
+          ),
+    )
+    ..put(
+      '/api/campaigns/<id>/chapters/<chapterId>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _upsertChapterHandler(request, campaigns, chapters),
+          ),
+    )
+    ..delete(
+      '/api/campaigns/<id>/chapters/<chapterId>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _deleteChapterHandler(request, campaigns, chapters),
+          ),
+    )
+    ..post(
+      '/api/campaigns/<id>/chapters/<chapterId>/close',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) =>
+                _closeChapterHandler(request, campaigns, chapters, events),
           ),
     )
     ..get(
@@ -836,6 +879,209 @@ Future<Response> _deleteCampaignLinkHandler(
     dmActed ? 'character_unlinked_by_dm' : 'character_unlinked_by_owner',
     payload,
   );
+  return _jsonOk({'status': 'ok'});
+}
+
+// --- Capítulos ---
+//
+// Los tramos en que el DM divide una campaña. No los lee ningún jugador: de un
+// capítulo solo se enteran cuando se cierra, y por un aviso, nunca leyendo el
+// documento.
+
+Chapter _chapterFromRequestJson(Map<String, dynamic> json) {
+  try {
+    return Chapter.fromJson(json);
+  } on UnsupportedDataVersionException {
+    rethrow;
+  } catch (error) {
+    throw FormatException('Capítulo inválido: $error');
+  }
+}
+
+/// Lee `chapter` del cuerpo y comprueba las dos reglas que no puede garantizar
+/// el documento por sí solo.
+///
+/// La primera: **no se cierra un capítulo con un `PUT`**. Cerrar le manda
+/// avisos a otras cuentas, y por esta ruta un reguardado idempotente los
+/// volvería a disparar. La segunda: **un solo capítulo en marcha por campaña**,
+/// comprobado contra los que ya están guardados.
+Future<Chapter> _validChapterFromBody(
+  Request request,
+  ChapterRepository chapters,
+  String campaignId, {
+  required String? replacingId,
+}) async {
+  final body = await _readJsonBody(request);
+  final requested = body['chapter'];
+  if (requested is! Map<String, dynamic>) {
+    throw const FormatException('Falta "chapter".');
+  }
+  final chapter = _chapterFromRequestJson(requested);
+
+  if (chapter.state == ChapterState.completed) {
+    throw const FormatException(
+      'Un capítulo se cierra desde su propia acción, no editándolo.',
+    );
+  }
+  if (chapter.state == ChapterState.active) {
+    final running = (await chapters.listFor(request.userId, campaignId))
+        .where((c) => c.state == ChapterState.active && c.id != replacingId)
+        .firstOrNull;
+    if (running != null) {
+      throw FormatException(
+        'Ya hay un capítulo en marcha: «${running.name}». Cerralo antes de '
+        'empezar otro.',
+      );
+    }
+  }
+  return chapter;
+}
+
+Future<Response> _listChaptersHandler(
+  Request request,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final all = await chapters.listFor(request.userId, campaignId);
+  return _jsonOk({
+    'chapters': [for (final c in all) c.toJson()],
+  });
+}
+
+Future<Response> _createChapterHandler(
+  Request request,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final chapter = await _validChapterFromBody(
+    request,
+    chapters,
+    campaignId,
+    replacingId: null,
+  );
+  requireSafePathSegment(chapter.id, label: 'id de capítulo');
+  final stored = await chapters.create(request.userId, campaignId, chapter);
+  return _jsonOk({'chapter': stored.toJson()});
+}
+
+Future<Response> _upsertChapterHandler(
+  Request request,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final chapterId = requireSafePathSegment(
+    request.params['chapterId']!,
+    label: 'id de capítulo',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  // Editar solo lo propio: sin esto el `upsert` crearía el capítulo ajeno
+  // dentro de esta cuenta, igual que ya cuida `_upsertCampaignHandler`.
+  final existing = await chapters.find(request.userId, campaignId, chapterId);
+  if (existing == null) return _notFound('Capítulo no encontrado.');
+
+  final chapter = await _validChapterFromBody(
+    request,
+    chapters,
+    campaignId,
+    replacingId: chapterId,
+  );
+  if (chapter.id != chapterId) {
+    throw const FormatException('El id del capítulo no coincide con la ruta.');
+  }
+  await chapters.upsert(request.userId, campaignId, chapter);
+  return _jsonOk({'status': 'ok'});
+}
+
+Future<Response> _deleteChapterHandler(
+  Request request,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final chapterId = requireSafePathSegment(
+    request.params['chapterId']!,
+    label: 'id de capítulo',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  await chapters.delete(request.userId, campaignId, chapterId);
+  return _jsonOk({'status': 'ok'});
+}
+
+/// Cierra un capítulo y le avisa a cada jugador de la mesa.
+///
+/// Tiene ruta propia y no es un `PUT` con `state: completed` justamente por
+/// esto: es una acción con efecto sobre otras cuentas, y una ruta de edición
+/// repetiría los avisos en cada guardado.
+///
+/// El aviso va al **dueño** de cada personaje vinculado y nunca al DM, que ya
+/// ve la respuesta en el momento — la misma regla de todos los avisos del
+/// proyecto. Lleva `grantsLevel` para que el cliente redacte la línea de subir
+/// de nivel: acá no se sube a nadie, porque el nivel de un personaje solo lo
+/// toca su propio asistente de subida.
+Future<Response> _closeChapterHandler(
+  Request request,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+  EventRepository events,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final chapterId = requireSafePathSegment(
+    request.params['chapterId']!,
+    label: 'id de capítulo',
+  );
+  final campaign = await campaigns.find(request.userId, campaignId);
+  if (campaign == null) return _notFound('Campaña no encontrada.');
+
+  final chapter = await chapters.find(request.userId, campaignId, chapterId);
+  if (chapter == null) return _notFound('Capítulo no encontrado.');
+  if (chapter.state == ChapterState.completed) {
+    // Cerrar dos veces no es un error, pero tampoco vuelve a avisar.
+    return _jsonOk({'status': 'ok'});
+  }
+
+  await chapters.upsert(
+    request.userId,
+    campaignId,
+    chapter.copyWith(state: ChapterState.completed),
+  );
+
+  final members = await campaigns.listMembers(request.userId, campaignId);
+  for (final member in members) {
+    await events.append(member.ownerUserId, 'chapter_completed', {
+      'characterName': member.character.name,
+      'campaignName': campaign.name,
+      'chapterName': chapter.name,
+      'grantsLevel': chapter.grantsLevel,
+    });
+  }
   return _jsonOk({'status': 'ok'});
 }
 

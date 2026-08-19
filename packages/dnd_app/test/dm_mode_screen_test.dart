@@ -155,6 +155,151 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  group('Capítulos', () {
+    Future<void> openCapitulos(WidgetTester tester) async {
+      await tester.tap(find.text('Capítulos'));
+      await tester.pumpAndSettle();
+    }
+
+    /// Crea un capítulo desde el diálogo. El primer campo es el nombre.
+    Future<void> newChapter(
+      WidgetTester tester,
+      String name, {
+      bool grantsLevel = false,
+    }) async {
+      await tester.tap(find.text('Nuevo capítulo').last);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, name);
+      if (grantsLevel) {
+        await tester.tap(find.byType(CheckboxListTile));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sin capítulos explica para qué sirven', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+
+      expect(find.textContaining('Todavía no dividiste'), findsOneWidget);
+      expect(find.text('Nuevo capítulo'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('crear un capítulo lo deja en Próximamente', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+
+      await newChapter(tester, 'La Cripta');
+
+      expect(find.text('La Cripta'), findsOneWidget);
+      // `Eyebrow` pasa su texto a mayúsculas, así que el encabezado del grupo
+      // no se busca por la etiqueta tal cual.
+      expect(find.text('PRÓXIMAMENTE'), findsOneWidget);
+      final chapter = server.chapters['tumba']!.single;
+      expect(chapter.name, 'La Cripta');
+      expect(chapter.state, ChapterState.planned);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('empezar un capítulo lo pone en marcha', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+      await newChapter(tester, 'La Cripta');
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Empezar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('EN MARCHA'), findsOneWidget);
+      expect(server.chapters['tumba']!.single.state, ChapterState.active);
+      expect(tester.takeException(), isNull);
+    });
+
+    // La regla es del servidor; acá se comprueba que el DM vea el porqué en
+    // vez de un fallo mudo.
+    testWidgets('empezar un segundo capítulo muestra el mensaje del servidor', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+      await newChapter(tester, 'La Cripta');
+      await newChapter(tester, 'El Regreso');
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Empezar').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Empezar'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('Ya hay un capítulo en marcha'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('La Cripta'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('cerrar un capítulo pide confirmación y lo completa', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+      await newChapter(tester, 'La Cripta');
+      await tester.tap(find.widgetWithText(FilledButton, 'Empezar'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Cerrar capítulo'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('le llega el aviso'), findsOneWidget);
+
+      // El de la tarjeta y el del diálogo dicen lo mismo; el del diálogo es el
+      // último en el árbol.
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Cerrar capítulo').last,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('COMPLETADO'), findsOneWidget);
+      expect(server.chapters['tumba']!.single.state, ChapterState.completed);
+      expect(tester.takeException(), isNull);
+    });
+
+    // El flag no reparte nada: solo cambia lo que dice el aviso, así que el
+    // DM tiene que verlo marcado en la lista antes de cerrar.
+    testWidgets('un capítulo que da nivel lo muestra en la lista', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+
+      await newChapter(tester, 'La Cripta', grantsLevel: true);
+
+      expect(find.text('Sube de nivel'), findsOneWidget);
+      expect(server.chapters['tumba']!.single.grantsLevel, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('borrar un capítulo pide confirmación', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+      await newChapter(tester, 'La Cripta');
+
+      await tester.tap(find.widgetWithText(TextButton, 'Borrar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.pumpAndSettle();
+      expect(server.chapters['tumba']!, hasLength(1));
+
+      await tester.tap(find.widgetWithText(TextButton, 'Borrar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Borrar capítulo'));
+      await tester.pumpAndSettle();
+
+      expect(server.chapters['tumba']!, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   group('Combate', () {
     Future<void> openCombate(WidgetTester tester) async {
       await tester.tap(find.text('Combate'));

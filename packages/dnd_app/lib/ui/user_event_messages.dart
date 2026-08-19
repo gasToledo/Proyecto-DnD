@@ -39,13 +39,34 @@ UserEventMessage? messageForEvent(UserEvent event) {
       '$character ya no está disponible en $campaign.',
       AppMessageTone.info,
     ),
+    // Los datos propios de este aviso se leen acá adentro y no arriba: los
+    // otros cuatro `kind` no los traen.
+    'chapter_completed' => _chapterCompleted(event, character, campaign),
     _ => null,
   };
 }
 
+/// Cierre de un capítulo. Cuando otorga nivel, el aviso lo dice y sube de tono:
+/// es lo único accionable que puede traer, y la app **no sube a nadie de
+/// nivel** — eso lo hace el jugador desde su propio asistente.
+UserEventMessage _chapterCompleted(
+  UserEvent event,
+  String character,
+  String campaign,
+) {
+  final chapter = _quotedOr(event.payload['chapterName'], 'Un capítulo');
+  final grantsLevel = event.payload['grantsLevel'] == true;
+  final text = '$character terminó el capítulo $chapter en $campaign.';
+  return grantsLevel
+      ? UserEventMessage('$text Podés subir de nivel.', AppMessageTone.success)
+      : UserEventMessage(text, AppMessageTone.info);
+}
+
 /// Nombre entre comillas angulares, o un genérico si el aviso vino sin él
 /// (por ejemplo si lo borraron entre que pasó y que se leyó).
-String _quoted(Object? value) {
+String _quoted(Object? value) => _quotedOr(value, 'Un personaje');
+
+String _quotedOr(Object? value, String fallback) {
   final text = value is String ? value.trim() : '';
-  return text.isEmpty ? 'Un personaje' : '«$text»';
+  return text.isEmpty ? fallback : '«$text»';
 }

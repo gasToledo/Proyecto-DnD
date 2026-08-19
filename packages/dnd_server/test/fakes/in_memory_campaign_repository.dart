@@ -32,6 +32,16 @@ class InMemoryCampaignRepository implements CampaignRepository {
   final List<CampaignLink> _links = [];
   int _memberCounter = 0;
 
+  /// Lo que cuelga de una campaña y tiene que irse con ella.
+  ///
+  /// Reproduce las claves foráneas `ON DELETE CASCADE` que apuntan a
+  /// `campaigns` (capítulos, encuentros, sus logs). Se dispara **en el
+  /// momento del borrado** y no al leer: si se resolviera al leer, volver a
+  /// crear una campaña con el mismo id resucitaría lo que la base ya había
+  /// borrado, y una prueba de cascada pasaría sin probar nada.
+  final List<void Function(String dmUserId, String campaignId)>
+  onCampaignDeleted = [];
+
   /// Los ids de vínculo son UUID en la base y los handlers validan su forma,
   /// así que el doble tiene que producir algo con esa misma forma.
   String _nextMemberId() =>
@@ -85,6 +95,9 @@ class InMemoryCampaignRepository implements CampaignRepository {
   Future<void> delete(String dmUserId, String id) async {
     _byDm[dmUserId]?.remove(id);
     _links.removeWhere((l) => l.dmUserId == dmUserId && l.campaignId == id);
+    for (final cascade in onCampaignDeleted) {
+      cascade(dmUserId, id);
+    }
   }
 
   @override
@@ -158,7 +171,11 @@ class InMemoryCampaignRepository implements CampaignRepository {
       );
       if (character == null) continue;
       members.add(
-        CampaignMember(memberId: link.memberId, character: character),
+        CampaignMember(
+          memberId: link.memberId,
+          character: character,
+          ownerUserId: link.ownerUserId,
+        ),
       );
     }
     members.sort(
@@ -186,7 +203,11 @@ class InMemoryCampaignRepository implements CampaignRepository {
       link.characterId,
     );
     if (character == null) return null;
-    return CampaignMember(memberId: link.memberId, character: character);
+    return CampaignMember(
+      memberId: link.memberId,
+      character: character,
+      ownerUserId: link.ownerUserId,
+    );
   }
 
   @override

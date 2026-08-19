@@ -15,6 +15,7 @@ import 'package:dnd_server/src/import/import_service.dart';
 import 'fakes/fake_auth_dependencies.dart';
 import 'fakes/fake_portrait_provider.dart';
 import 'fakes/in_memory_campaign_repository.dart';
+import 'fakes/in_memory_chapter_repository.dart';
 import 'fakes/in_memory_character_repository.dart';
 import 'fakes/in_memory_encounter_repository.dart';
 import 'fakes/in_memory_event_repository.dart';
@@ -29,6 +30,7 @@ void main() {
   late ImportBackupFn importBackup;
   late InMemoryCharacterRepository characters;
   late InMemoryCampaignRepository campaigns;
+  late InMemoryChapterRepository chapters;
   late InMemoryEncounterRepository encounters;
   late InMemoryEventRepository events;
   late InMemoryHomebrewRepository homebrewRepo;
@@ -45,6 +47,7 @@ void main() {
         const ImportResult(charactersImported: 0, portraitsImported: 0);
     characters = InMemoryCharacterRepository();
     campaigns = InMemoryCampaignRepository(characters);
+    chapters = InMemoryChapterRepository(campaigns);
     encounters = InMemoryEncounterRepository(campaigns);
     events = InMemoryEventRepository();
     homebrewRepo = InMemoryHomebrewRepository();
@@ -56,6 +59,7 @@ void main() {
       importBackup: importBackup,
       characters: characters,
       campaigns: campaigns,
+      chapters: chapters,
       encounters: encounters,
       events: events,
       homebrew: homebrewRepo,
@@ -664,6 +668,7 @@ void main() {
           importBackup: importBackup,
           characters: characters,
           campaigns: campaigns,
+          chapters: chapters,
           encounters: encounters,
           events: events,
           homebrew: homebrewRepo,
@@ -737,6 +742,7 @@ void main() {
         importBackup: importBackup,
         characters: characters,
         campaigns: campaigns,
+        chapters: chapters,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -802,6 +808,7 @@ void main() {
         },
         characters: characters,
         campaigns: campaigns,
+        chapters: chapters,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -846,6 +853,7 @@ void main() {
         },
         characters: characters,
         campaigns: campaigns,
+        chapters: chapters,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -1477,6 +1485,7 @@ void main() {
         importBackup: importBackup,
         characters: characters,
         campaigns: campaigns,
+        chapters: chapters,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -1501,6 +1510,7 @@ void main() {
         importBackup: importBackup,
         characters: characters,
         campaigns: campaigns,
+        chapters: chapters,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -2121,6 +2131,408 @@ void main() {
         );
 
         expect(response['status'], 200);
+      });
+    });
+
+    group('capítulos', () {
+      Map<String, dynamic> chapterJson(
+        String id, {
+        String name = 'La Cripta',
+        String state = 'planned',
+        bool grantsLevel = false,
+      }) => {
+        'schemaVersion': 1,
+        'id': id,
+        'name': name,
+        'summary': '',
+        'state': state,
+        'grantsLevel': grantsLevel,
+      };
+
+      Future<Map<String, dynamic>> createChapter(
+        String token,
+        String campaignId,
+        String id, {
+        String name = 'La Cripta',
+        bool grantsLevel = false,
+      }) => send(
+        'POST',
+        '/api/campaigns/$campaignId/chapters',
+        token: token,
+        body: {
+          'chapter': chapterJson(id, name: name, grantsLevel: grantsLevel),
+        },
+      );
+
+      Future<List<dynamic>> listChapters(
+        String token,
+        String campaignId,
+      ) async {
+        final response = await send(
+          'GET',
+          '/api/campaigns/$campaignId/chapters',
+          token: token,
+        );
+        return response['body']['chapters'] as List<dynamic>;
+      }
+
+      test('sin sesión ninguna operación responde 401', () async {
+        for (final request in [
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/campaigns/c1/chapters'),
+          ),
+          Request(
+            'POST',
+            Uri.parse('http://localhost/api/campaigns/c1/chapters'),
+            body: jsonEncode({'chapter': chapterJson('ch1')}),
+          ),
+          Request(
+            'PUT',
+            Uri.parse('http://localhost/api/campaigns/c1/chapters/ch1'),
+            body: jsonEncode({'chapter': chapterJson('ch1')}),
+          ),
+          Request(
+            'DELETE',
+            Uri.parse('http://localhost/api/campaigns/c1/chapters/ch1'),
+          ),
+          Request(
+            'POST',
+            Uri.parse('http://localhost/api/campaigns/c1/chapters/ch1/close'),
+          ),
+        ]) {
+          expect(
+            (await handler(request)).statusCode,
+            401,
+            reason: '${request.url}',
+          );
+        }
+      });
+
+      test('crear, listar y editar un capítulo', () async {
+        final token = await login('ch-crud');
+        await createCampaign(token, 'tumba');
+
+        final created = await createChapter(token, 'tumba', 'cripta');
+        expect(created['status'], 200);
+        expect(created['body']['chapter']['name'], 'La Cripta');
+
+        expect(await listChapters(token, 'tumba'), hasLength(1));
+
+        final edited = await send(
+          'PUT',
+          '/api/campaigns/tumba/chapters/cripta',
+          token: token,
+          body: {'chapter': chapterJson('cripta', name: 'La Cripta Profunda')},
+        );
+        expect(edited['status'], 200);
+        expect(
+          (await listChapters(token, 'tumba'))[0]['name'],
+          'La Cripta Profunda',
+        );
+      });
+
+      test('borrar un capítulo lo saca de la lista', () async {
+        final token = await login('ch-delete');
+        await createCampaign(token, 'tumba');
+        await createChapter(token, 'tumba', 'cripta');
+
+        await send(
+          'DELETE',
+          '/api/campaigns/tumba/chapters/cripta',
+          token: token,
+        );
+
+        expect(await listChapters(token, 'tumba'), isEmpty);
+      });
+
+      test(
+        'los capítulos de una campaña ajena no se ven ni se tocan',
+        () async {
+          final tokenA = await login('ch-owner');
+          await createCampaign(tokenA, 'tumba');
+          await createChapter(tokenA, 'tumba', 'cripta');
+
+          final tokenB = await login('ch-intruder');
+          expect(
+            (await send(
+              'GET',
+              '/api/campaigns/tumba/chapters',
+              token: tokenB,
+            ))['status'],
+            404,
+          );
+          expect(
+            (await send(
+              'POST',
+              '/api/campaigns/tumba/chapters',
+              token: tokenB,
+              body: {'chapter': chapterJson('robado')},
+            ))['status'],
+            404,
+          );
+          expect(
+            (await send(
+              'PUT',
+              '/api/campaigns/tumba/chapters/cripta',
+              token: tokenB,
+              body: {'chapter': chapterJson('cripta', name: 'Secuestrado')},
+            ))['status'],
+            404,
+          );
+          expect(
+            (await send(
+              'DELETE',
+              '/api/campaigns/tumba/chapters/cripta',
+              token: tokenB,
+            ))['status'],
+            404,
+          );
+          expect(
+            (await send(
+              'POST',
+              '/api/campaigns/tumba/chapters/cripta/close',
+              token: tokenB,
+            ))['status'],
+            404,
+          );
+
+          // Y lo del dueño quedó intacto.
+          expect((await listChapters(tokenA, 'tumba'))[0]['name'], 'La Cripta');
+        },
+      );
+
+      // Cerrar avisa a otras cuentas: si viajara por el PUT, un reguardado
+      // idempotente repetiría los avisos.
+      test('un PUT no puede cerrar un capítulo', () async {
+        final token = await login('ch-put-close');
+        await createCampaign(token, 'tumba');
+        await createChapter(token, 'tumba', 'cripta');
+
+        final response = await send(
+          'PUT',
+          '/api/campaigns/tumba/chapters/cripta',
+          token: token,
+          body: {'chapter': chapterJson('cripta', state: 'completed')},
+        );
+
+        expect(response['status'], 400);
+        expect(response['body']['error'], contains('su propia acción'));
+        expect((await listChapters(token, 'tumba'))[0]['state'], 'planned');
+      });
+
+      test('no se pueden poner dos capítulos en marcha', () async {
+        final token = await login('ch-two-active');
+        await createCampaign(token, 'tumba');
+        await createChapter(token, 'tumba', 'cripta');
+        await createChapter(token, 'tumba', 'regreso', name: 'El Regreso');
+
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/chapters/cripta',
+          token: token,
+          body: {'chapter': chapterJson('cripta', state: 'active')},
+        );
+
+        final second = await send(
+          'PUT',
+          '/api/campaigns/tumba/chapters/regreso',
+          token: token,
+          body: {
+            'chapter': chapterJson(
+              'regreso',
+              name: 'El Regreso',
+              state: 'active',
+            ),
+          },
+        );
+
+        expect(second['status'], 400);
+        expect(second['body']['error'], contains('La Cripta'));
+      });
+
+      // Reguardar el que ya está en marcha (para corregirle el nombre) no
+      // puede chocar contra sí mismo.
+      test(
+        'editar el capítulo en marcha sin sacarlo de marcha funciona',
+        () async {
+          final token = await login('ch-edit-active');
+          await createCampaign(token, 'tumba');
+          await createChapter(token, 'tumba', 'cripta');
+          await send(
+            'PUT',
+            '/api/campaigns/tumba/chapters/cripta',
+            token: token,
+            body: {'chapter': chapterJson('cripta', state: 'active')},
+          );
+
+          final again = await send(
+            'PUT',
+            '/api/campaigns/tumba/chapters/cripta',
+            token: token,
+            body: {
+              'chapter': chapterJson(
+                'cripta',
+                name: 'La Cripta Profunda',
+                state: 'active',
+              ),
+            },
+          );
+
+          expect(again['status'], 200);
+        },
+      );
+
+      test('cerrar un capítulo lo completa y avisa a cada jugador', () async {
+        final tokenA = await login('ch-close-player');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ch-close-dm');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        await createChapter(tokenB, 'tumba', 'cripta', grantsLevel: true);
+        // El aviso de haberse vinculado ya llegó; se limpia para mirar solo el
+        // del capítulo.
+        await send(
+          'POST',
+          '/api/events/seen',
+          token: tokenA,
+          body: {
+            'ids': [
+              for (final e
+                  in (await send(
+                        'GET',
+                        '/api/events',
+                        token: tokenA,
+                      ))['body']['events']
+                      as List)
+                e['id'],
+            ],
+          },
+        );
+
+        final closed = await send(
+          'POST',
+          '/api/campaigns/tumba/chapters/cripta/close',
+          token: tokenB,
+        );
+        expect(closed['status'], 200);
+        expect((await listChapters(tokenB, 'tumba'))[0]['state'], 'completed');
+
+        final forPlayer =
+            (await send('GET', '/api/events', token: tokenA))['body']['events']
+                as List;
+        expect(forPlayer, hasLength(1));
+        expect(forPlayer[0]['kind'], 'chapter_completed');
+        expect(forPlayer[0]['payload']['characterName'], 'Sagan');
+        expect(forPlayer[0]['payload']['campaignName'], 'La Tumba');
+        expect(forPlayer[0]['payload']['chapterName'], 'La Cripta');
+        expect(forPlayer[0]['payload']['grantsLevel'], isTrue);
+
+        // Al DM que lo cerró no le llega nada: ya vio la respuesta.
+        final forDm =
+            (await send('GET', '/api/events', token: tokenB))['body']['events']
+                as List;
+        expect(forDm, isEmpty);
+      });
+
+      test('un capítulo sin nivel avisa sin la marca de nivel', () async {
+        final tokenA = await login('ch-close-nolevel-player');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ch-close-nolevel-dm');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        await createChapter(tokenB, 'tumba', 'cripta');
+
+        await send(
+          'POST',
+          '/api/campaigns/tumba/chapters/cripta/close',
+          token: tokenB,
+        );
+
+        final forPlayer =
+            (await send('GET', '/api/events', token: tokenA))['body']['events']
+                as List;
+        final chapterEvent = forPlayer.firstWhere(
+          (e) => e['kind'] == 'chapter_completed',
+        );
+        expect(chapterEvent['payload']['grantsLevel'], isFalse);
+      });
+
+      // Cerrar dos veces no es un error, pero tampoco vuelve a avisar.
+      test('cerrar un capítulo ya cerrado no repite el aviso', () async {
+        final tokenA = await login('ch-close-twice-player');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ch-close-twice-dm');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        await createChapter(tokenB, 'tumba', 'cripta');
+
+        await send(
+          'POST',
+          '/api/campaigns/tumba/chapters/cripta/close',
+          token: tokenB,
+        );
+        final afterFirst =
+            ((await send('GET', '/api/events', token: tokenA))['body']['events']
+                    as List)
+                .where((e) => e['kind'] == 'chapter_completed')
+                .length;
+
+        final second = await send(
+          'POST',
+          '/api/campaigns/tumba/chapters/cripta/close',
+          token: tokenB,
+        );
+        expect(second['status'], 200);
+
+        final afterSecond =
+            ((await send('GET', '/api/events', token: tokenA))['body']['events']
+                    as List)
+                .where((e) => e['kind'] == 'chapter_completed')
+                .length;
+        expect(afterSecond, afterFirst);
+      });
+
+      test('cerrar un capítulo inexistente responde 404', () async {
+        final token = await login('ch-close-missing');
+        await createCampaign(token, 'tumba');
+
+        final response = await send(
+          'POST',
+          '/api/campaigns/tumba/chapters/fantasma/close',
+          token: token,
+        );
+
+        expect(response['status'], 404);
+      });
+
+      test('borrar la campaña se lleva sus capítulos', () async {
+        final token = await login('ch-cascade');
+        await createCampaign(token, 'tumba');
+        await createChapter(token, 'tumba', 'cripta');
+
+        await send('DELETE', '/api/campaigns/tumba', token: token);
+        await createCampaign(token, 'tumba');
+
+        expect(await listChapters(token, 'tumba'), isEmpty);
       });
     });
 

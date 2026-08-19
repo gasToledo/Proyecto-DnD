@@ -94,6 +94,14 @@ los dos lados —vos con **Echar personaje**, él dejando de compartir— y ning
 de las dos cosas toca la ficha. Cada vez que algo de esto pasa, a la otra parte
 le llega el aviso la próxima vez que abre la aplicación.
 
+La pestaña **Capítulos** divide la campaña en tramos: cada uno con su nombre y
+su descripción, y pasando de **Próximamente** a **En marcha** y a **Completado**.
+Solo podés tener uno en marcha a la vez. Al cerrar uno, a cada jugador de la
+mesa le llega el aviso — y si marcaste que ese capítulo sube de nivel, el aviso
+se lo dice. Subir de nivel lo sigue haciendo cada jugador desde su ficha: la
+aplicación no se lo aplica a nadie. La descripción que escribís en un capítulo
+es solo tuya, los jugadores no la ven.
+
 Dentro de una campaña, la pestaña **Combate** lleva el orden de iniciativa de
 tu mesa: sumás a tus jugadores con la iniciativa que tiraron y monstruos del
 bestiario, que tiran la suya sola (cada copia la suya, nunca la misma para
@@ -131,8 +139,9 @@ y la arquitectura dirigida por efectos ya está pensada para soportarla sin
 rehacer la ficha.
 
 El Modo DM sigue creciendo: hoy son campañas, las fichas de los jugadores
-vinculadas y el seguidor de combate. Faltan los capítulos con sus recompensas
-y el cuaderno de campaña.
+vinculadas, los capítulos y el seguidor de combate. Falta el cuaderno de
+campaña, y que un capítulo pueda repartir oro y objetos además de avisar que
+toca subir de nivel.
 
 Después de eso: la foto de perfil de la cuenta en el panel lateral (hoy se
 guarda pero no se dibuja) y poder marcar varios favoritos en vez de uno.

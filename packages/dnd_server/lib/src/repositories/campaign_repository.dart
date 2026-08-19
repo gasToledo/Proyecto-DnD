@@ -12,7 +12,17 @@ class CampaignMember {
   final String memberId;
   final Character character;
 
-  const CampaignMember({required this.memberId, required this.character});
+  /// Cuenta dueña del personaje, para poder avisarle cuando pasa algo en la
+  /// campaña (cerrar un capítulo, por ejemplo). **No se le muestra al DM**:
+  /// los handlers arman la respuesta campo por campo y este no viaja, igual
+  /// que el `dmUserId` de [CharacterShare].
+  final String ownerUserId;
+
+  const CampaignMember({
+    required this.memberId,
+    required this.character,
+    required this.ownerUserId,
+  });
 }
 
 /// El vínculo visto desde el lado del jugador: en qué campaña está metido este
@@ -301,7 +311,7 @@ class PostgresCampaignRepository implements CampaignRepository {
   ) async {
     final result = await _session.execute(
       Sql.named('''
-        SELECT m.id AS member_id, c.document
+        SELECT m.id AS member_id, m.owner_user_id, c.document
         FROM campaign_members m
         JOIN characters c
           ON c.user_id = m.owner_user_id AND c.id = m.character_id
@@ -314,10 +324,13 @@ class PostgresCampaignRepository implements CampaignRepository {
       },
     );
     return [
-      for (final row in result)
+      for (final columns in result.map((row) => row.toColumnMap()))
         CampaignMember(
-          memberId: row.toColumnMap()['member_id'] as String,
-          character: Character.fromJson(_documentOf(row)),
+          memberId: columns['member_id'] as String,
+          character: Character.fromJson(
+            (columns['document'] as Map).cast<String, dynamic>(),
+          ),
+          ownerUserId: columns['owner_user_id'] as String,
         ),
     ];
   }
@@ -330,7 +343,7 @@ class PostgresCampaignRepository implements CampaignRepository {
   }) async {
     final result = await _session.execute(
       Sql.named('''
-        SELECT m.id AS member_id, c.document
+        SELECT m.id AS member_id, m.owner_user_id, c.document
         FROM campaign_members m
         JOIN characters c
           ON c.user_id = m.owner_user_id AND c.id = m.character_id
@@ -345,9 +358,13 @@ class PostgresCampaignRepository implements CampaignRepository {
       },
     );
     if (result.isEmpty) return null;
+    final columns = result.first.toColumnMap();
     return CampaignMember(
-      memberId: result.first.toColumnMap()['member_id'] as String,
-      character: Character.fromJson(_documentOf(result.first)),
+      memberId: columns['member_id'] as String,
+      character: Character.fromJson(
+        (columns['document'] as Map).cast<String, dynamic>(),
+      ),
+      ownerUserId: columns['owner_user_id'] as String,
     );
   }
 

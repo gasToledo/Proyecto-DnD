@@ -325,6 +325,56 @@ class ApiClient {
     ];
   }
 
+  // --- Capítulos ----------------------------------------------------------
+
+  Future<List<Chapter>> listChapters(String campaignId) async {
+    final response = await _send(
+      'GET',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}/chapters',
+    );
+    final list = _json(response)['chapters'] as List;
+    return [
+      for (final json in list)
+        Chapter.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
+  /// Devuelve el capítulo efectivamente guardado: si el id ya estaba en uso, el
+  /// servidor asigna uno libre en vez de sobrescribir.
+  Future<Chapter> createChapter(String campaignId, Chapter chapter) async {
+    final response = await _send(
+      'POST',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}/chapters',
+      jsonBody: {'chapter': chapter.toJson()},
+    );
+    return Chapter.fromJson(
+      (_json(response)['chapter'] as Map).cast<String, dynamic>(),
+    );
+  }
+
+  /// Guarda los cambios de un capítulo. **No sirve para cerrarlo**: el servidor
+  /// rechaza el estado `completed` por acá y lo dice en el mensaje, porque
+  /// cerrar avisa a los jugadores y una ruta de edición repetiría los avisos.
+  Future<void> upsertChapter(String campaignId, Chapter chapter) => _send(
+    'PUT',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/chapters/'
+        '${Uri.encodeComponent(chapter.id)}',
+    jsonBody: {'chapter': chapter.toJson()},
+  );
+
+  Future<void> deleteChapter(String campaignId, String chapterId) => _send(
+    'DELETE',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/chapters/'
+        '${Uri.encodeComponent(chapterId)}',
+  );
+
+  /// Cierra el capítulo y le avisa a cada jugador de la mesa.
+  Future<void> closeChapter(String campaignId, String chapterId) => _send(
+    'POST',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/chapters/'
+        '${Uri.encodeComponent(chapterId)}/close',
+  );
+
   // --- Combate ------------------------------------------------------------
 
   /// El combate abierto de una campaña, o `null` si no hay ninguno. Sin

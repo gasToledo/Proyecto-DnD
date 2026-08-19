@@ -242,4 +242,32 @@ CREATE INDEX encounter_logs_campaign_idx
   ON encounter_logs (dm_user_id, campaign_id, ended_at DESC);
 ''',
   ),
+  Migration(
+    id: '0008_chapters',
+    sql: '''
+-- Los tramos en que se divide una campaña. Misma forma que `campaigns` y
+-- `encounters`: documento JSONB, y la campaña como dueña vía clave foránea en
+-- cascada.
+--
+-- Tabla propia y no una lista adentro del documento de la campaña: así
+-- renombrar una campaña no reescribe todos sus capítulos, y el documento de
+-- la campaña no crece sin techo con cada tramo que se juega.
+CREATE TABLE chapters (
+  dm_user_id UUID NOT NULL,
+  campaign_id TEXT NOT NULL,
+  id TEXT NOT NULL,
+  document JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (dm_user_id, campaign_id, id),
+  FOREIGN KEY (dm_user_id, campaign_id)
+    REFERENCES campaigns (dm_user_id, id) ON DELETE CASCADE
+);
+
+-- Se listan siempre en orden de alta dentro de una campaña, que es el orden en
+-- que el DM los planificó.
+CREATE INDEX chapters_campaign_idx
+  ON chapters (dm_user_id, campaign_id, created_at);
+''',
+  ),
 ];

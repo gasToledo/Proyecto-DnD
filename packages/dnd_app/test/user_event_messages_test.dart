@@ -69,4 +69,51 @@ void main() {
       expect(message.text, isNot(contains('null')));
     });
   });
+
+  group('messageForEvent — capítulos', () {
+    UserEvent chapterEvent({bool grantsLevel = false}) => UserEvent(
+      id: 'e1',
+      kind: 'chapter_completed',
+      payload: {
+        'characterName': 'Thorin',
+        'campaignName': 'La Tumba',
+        'chapterName': 'La Cripta',
+        'grantsLevel': grantsLevel,
+      },
+    );
+
+    test('nombra al personaje, al capítulo y a la campaña', () {
+      final message = messageForEvent(chapterEvent())!;
+
+      expect(message.text, contains('Thorin'));
+      expect(message.text, contains('La Cripta'));
+      expect(message.text, contains('La Tumba'));
+    });
+
+    // Cerrar un capítulo sin recompensa es una noticia, no un logro.
+    test('sin nivel es informativo y no menciona subir', () {
+      final message = messageForEvent(chapterEvent())!;
+
+      expect(message.tone, AppMessageTone.info);
+      expect(message.text, isNot(contains('subir de nivel')));
+    });
+
+    // Es lo único accionable que puede traer un aviso, así que se destaca.
+    test('con nivel lo dice y sube de tono', () {
+      final message = messageForEvent(chapterEvent(grantsLevel: true))!;
+
+      expect(message.text, contains('Podés subir de nivel.'));
+      expect(message.tone, AppMessageTone.success);
+    });
+
+    test('un aviso de capítulo sin nombres igual dice algo legible', () {
+      final message = messageForEvent(
+        const UserEvent(id: 'e1', kind: 'chapter_completed', payload: {}),
+      );
+
+      expect(message, isNotNull);
+      expect(message!.text, contains('Un capítulo'));
+      expect(message.text, isNot(contains('null')));
+    });
+  });
 }

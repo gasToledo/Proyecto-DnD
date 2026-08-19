@@ -119,6 +119,56 @@ más nuevo que la pestaña abierta.
 `_deleteCharacterHandler` arma los avisos **antes** de borrar, porque la cascada
 se lleva los vínculos y después ya no hay a quién avisarle.
 
+## Capítulos
+
+Los capítulos (migración `0008_chapters`) viven en su propia tabla, keyeada por
+`(dm_user_id, campaign_id, id)` y con la misma clave foránea en cascada contra
+`campaigns` que ya usan los encuentros. No van adentro del documento de la
+campaña porque entonces renombrarla reescribiría todos sus capítulos, y ese
+documento crecería sin techo.
+
+**Ningún jugador lee un capítulo.** La descripción la escribe el DM y no viaja a
+ninguna cuenta ajena; de un capítulo el jugador solo se entera por el aviso de
+cierre. Por eso `ChapterRepository` no cruza cuentas: filtra por `dm_user_id`
+como cualquier tabla de un solo dueño.
+
+### Dos reglas que no puede garantizar el documento
+
+Un `Chapter` bien formado igual puede pedir algo inválido, así que el servidor
+comprueba dos cosas antes de guardar (`_validChapterFromBody` en `app.dart`):
+
+1. **Un `PUT` no puede cerrar un capítulo.** Cerrar le manda avisos a otras
+   cuentas, y por una ruta de edición un reguardado idempotente los repetiría.
+   El estado `completed` por `PUT` se rechaza con un 400 que apunta a
+   `POST .../chapters/<id>/close`.
+2. **Un solo capítulo en marcha por campaña.** Poner uno en `active` con otro ya
+   corriendo devuelve 400 nombrando al que corre. Se comprueba en el handler y
+   no con un índice único parcial sobre una columna generada: la restricción de
+   base cambiaría un mensaje legible por una violación opaca, y el único riesgo
+   que deja abierto (dos pestañas del mismo DM) es cosmético.
+
+Las dos son 400 y no 409 porque en este proyecto "pedido inválido" se escribe
+400 con mensaje, igual que "prohibido" se escribe 404.
+
+### El aviso de cierre, y por qué no sube a nadie de nivel
+
+`POST .../close` marca el capítulo como completado y le deja un `user_event` de
+tipo `chapter_completed` **al dueño** de cada personaje vinculado (nunca al DM,
+que ya vio la respuesta). El `payload` lleva `characterName`, `campaignName`,
+`chapterName` y `grantsLevel`; el texto lo redacta el cliente, como todos los
+avisos.
+
+`grantsLevel` es **solo un aviso**, y no por timidez: `Character.level` y
+`hpPerLevel` son dos listas que el asistente de subida mantiene en sincronía, y
+subir el nivel sin agregar su entrada de PG dejaría al personaje con los PG de un
+nivel menos. La subida tiene que pasar por ese asistente, que es del jugador. Hoy
+**no existe ninguna ruta por la que el DM escriba la ficha de otra cuenta**, y
+capítulos no abrió la primera — cuando se agreguen oro e ítems como recompensa,
+esa será la fase que la abra, y necesitará sus propios límites y pruebas
+negativas.
+
+Cerrar dos veces responde 200 y no vuelve a avisar.
+
 ## El combate y el turno
 
 El combat tracker (Fase 2 de Modo DM) agrega la **segunda** consulta del
@@ -215,6 +265,19 @@ Las pruebas negativas de `packages/dnd_server/test/app_test.dart`, grupo
 - compartir un personaje ajeno responde como si no existiera;
 - un tercero no puede cortar un vínculo del que no es parte;
 - una cuenta no puede marcar vistos los avisos de otra.
+
+El subgrupo `capítulos` agrega:
+
+- los capítulos de una campaña ajena no se ven ni se tocan por ninguno de los
+  cinco verbos;
+- un `PUT` con `state: completed` se rechaza;
+- no se pueden poner dos capítulos en marcha, y el error nombra al que corre;
+- reguardar el que ya está en marcha (para corregirle el nombre) no choca contra
+  sí mismo;
+- cerrar avisa a cada jugador y a ninguno al DM, con `grantsLevel` según el
+  capítulo;
+- cerrar dos veces no repite el aviso;
+- borrar la campaña se lleva sus capítulos.
 
 El subgrupo `combate`, dentro del mismo archivo, agrega:
 

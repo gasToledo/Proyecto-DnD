@@ -12,6 +12,8 @@ import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
 import '../pending_events_gate.dart';
 import '../portrait_image.dart';
+import 'chapter_editor_dialog.dart';
+import 'chapters_view.dart';
 import 'encounter_view.dart';
 
 /// El otro sombrero de la misma cuenta.
@@ -310,7 +312,7 @@ class _CampaignDetail extends StatefulWidget {
   State<_CampaignDetail> createState() => _CampaignDetailState();
 }
 
-enum _CampaignSection { mesa, combate }
+enum _CampaignSection { mesa, capitulos, combate }
 
 class _CampaignDetailState extends State<_CampaignDetail> {
   List<CampaignMember>? _members;
@@ -318,6 +320,11 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   bool _busy = false;
 
   _CampaignSection _section = _CampaignSection.mesa;
+
+  List<Chapter>? _chapters;
+  bool _chaptersLoading = true;
+  Object? _chaptersError;
+
   Encounter? _encounter;
   bool _encounterLoading = true;
   Object? _encounterError;
@@ -334,6 +341,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   void initState() {
     super.initState();
     _loadMembers();
+    _loadChapters();
     _loadEncounter();
   }
 
@@ -437,6 +445,93 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       }
     }
   }
+
+  // --- Capítulos ----------------------------------------------------------
+
+  Future<void> _loadChapters() async {
+    setState(() {
+      _chaptersLoading = true;
+      _chaptersError = null;
+    });
+    try {
+      final chapters = await widget.api.listChapters(widget.campaign.id);
+      if (!mounted) return;
+      setState(() {
+        _chapters = chapters;
+        _chaptersLoading = false;
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _chaptersError = error;
+          _chaptersLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Envuelve una acción sobre capítulos: recarga la lista al terminar y
+  /// muestra el mensaje del servidor si algo no se pudo. Los errores que
+  /// importan acá llegan con texto propio y legible (dos capítulos en marcha,
+  /// cerrar con un `PUT`), así que se muestran tal cual.
+  Future<void> _chapterAction(Future<void> Function() action) async {
+    try {
+      await action();
+      await _loadChapters();
+    } on ApiException catch (e) {
+      if (mounted) {
+        showAppMessage(context, e.message, tone: AppMessageTone.error);
+      }
+    }
+  }
+
+  Future<void> _createChapter() async {
+    final draft = await showChapterEditorDialog(
+      context,
+      current: Chapter(id: _newId('chapter'), name: ''),
+      title: 'Nuevo capítulo',
+    );
+    if (draft == null) return;
+    await _chapterAction(
+      () => widget.api.createChapter(widget.campaign.id, draft),
+    );
+  }
+
+  Future<void> _editChapter(Chapter chapter) async {
+    final edited = await showChapterEditorDialog(
+      context,
+      current: chapter,
+      title: 'Editar capítulo',
+    );
+    if (edited == null) return;
+    await _chapterAction(
+      () => widget.api.upsertChapter(widget.campaign.id, edited),
+    );
+  }
+
+  Future<void> _startChapter(Chapter chapter) => _chapterAction(
+    () => widget.api.upsertChapter(
+      widget.campaign.id,
+      chapter.copyWith(state: ChapterState.active),
+    ),
+  );
+
+  Future<void> _closeChapter(Chapter chapter) async {
+    await _chapterAction(
+      () => widget.api.closeChapter(widget.campaign.id, chapter.id),
+    );
+    if (mounted) {
+      showAppMessage(
+        context,
+        'Se cerró «${chapter.name}». Les llega el aviso a los jugadores.',
+        tone: AppMessageTone.success,
+      );
+    }
+  }
+
+  Future<void> _deleteChapter(Chapter chapter) => _chapterAction(
+    () => widget.api.deleteChapter(widget.campaign.id, chapter.id),
+  );
 
   // --- Combate ------------------------------------------------------------
 
@@ -639,6 +734,11 @@ class _CampaignDetailState extends State<_CampaignDetail> {
                   label: Text('Mesa'),
                 ),
                 ButtonSegment(
+                  value: _CampaignSection.capitulos,
+                  icon: Icon(Icons.auto_stories_outlined),
+                  label: Text('Capítulos'),
+                ),
+                ButtonSegment(
                   value: _CampaignSection.combate,
                   icon: Icon(Icons.local_fire_department_outlined),
                   label: Text('Combate'),
@@ -653,6 +753,17 @@ class _CampaignDetailState extends State<_CampaignDetail> {
         Expanded(
           child: switch (_section) {
             _CampaignSection.mesa => _roster(context),
+            _CampaignSection.capitulos => ChaptersView(
+              chapters: _chapters,
+              loading: _chaptersLoading,
+              error: _chaptersError,
+              onRetry: _loadChapters,
+              onCreate: _createChapter,
+              onEdit: _editChapter,
+              onStart: _startChapter,
+              onClose: _closeChapter,
+              onDelete: _deleteChapter,
+            ),
             _CampaignSection.combate => EncounterView(
               repo: widget.repo,
               encounter: _encounter,

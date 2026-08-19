@@ -18,6 +18,7 @@ export 'src/domain/content.dart';
 export 'src/domain/creature.dart';
 export 'src/domain/character.dart';
 export 'src/domain/campaign.dart';
+export 'src/domain/chapter.dart';
 export 'src/domain/encounter.dart';
 export 'src/domain/computed_sheet.dart';
 export 'src/data/content_repository.dart';

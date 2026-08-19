@@ -13,7 +13,16 @@ import 'in_memory_campaign_repository.dart';
 class InMemoryEncounterRepository implements EncounterRepository {
   final InMemoryCampaignRepository _campaigns;
 
-  InMemoryEncounterRepository(this._campaigns);
+  InMemoryEncounterRepository(this._campaigns) {
+    // Reproduce la clave foránea en cascada: borrada la campaña, su combate
+    // abierto y sus logs se van con ella, en el acto.
+    _campaigns.onCampaignDeleted.add((dmUserId, campaignId) {
+      _byCampaign.remove(_key(dmUserId, campaignId));
+      logs.removeWhere(
+        (l) => l.dmUserId == dmUserId && l.campaignId == campaignId,
+      );
+    });
+  }
 
   final Map<String, Encounter> _byCampaign = {};
 

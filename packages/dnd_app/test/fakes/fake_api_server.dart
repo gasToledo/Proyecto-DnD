@@ -39,6 +39,9 @@ class FakeApiServer {
   final Map<String, ({String campaignId, String characterId})> campaignMembers =
       {};
 
+  /// Los capítulos de cada campaña, por id de campaña y en orden de alta.
+  final Map<String, List<Chapter>> chapters = {};
+
   /// El combate abierto de cada campaña, por id de campaña.
   final Map<String, Encounter> encounters = {};
 
@@ -235,7 +238,8 @@ class FakeApiServer {
 
     if (method == 'PUT' &&
         path.startsWith('/api/campaigns/') &&
-        !path.contains('/encounter')) {
+        !path.contains('/encounter') &&
+        !path.contains('/chapters')) {
       final campaign = Campaign.fromJson(
         (_body(request)['campaign'] as Map).cast<String, dynamic>(),
       );
@@ -249,11 +253,13 @@ class FakeApiServer {
     if (method == 'DELETE' &&
         path.startsWith('/api/campaigns/') &&
         !path.contains('/members') &&
-        !path.contains('/encounter')) {
+        !path.contains('/encounter') &&
+        !path.contains('/chapters')) {
       final id = _segment(path, '/api/campaigns/');
       campaigns.remove(id);
       campaignMembers.removeWhere((_, m) => m.campaignId == id);
       encounters.remove(id);
+      chapters.remove(id);
       return _json({'status': 'ok'});
     }
 
@@ -347,6 +353,72 @@ class FakeApiServer {
               },
         ],
       });
+    }
+
+    // --- Capítulos. Reproduce las dos reglas que el servidor hace cumplir:
+    // un PUT no cierra un capítulo, y solo hay uno en marcha por campaña.
+    if (path.contains('/chapters')) {
+      final campaignId = path.split('/')[3];
+      if (!campaigns.containsKey(campaignId)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      final list = chapters.putIfAbsent(campaignId, () => []);
+
+      if (method == 'GET') {
+        return _json({
+          'chapters': [for (final c in list) c.toJson()],
+        });
+      }
+
+      if (method == 'POST' && path.endsWith('/close')) {
+        final id = path.split('/')[5];
+        final at = list.indexWhere((c) => c.id == id);
+        if (at < 0) return _json({'error': 'Capítulo no encontrado.'}, 404);
+        list[at] = list[at].copyWith(state: ChapterState.completed);
+        return _json({'status': 'ok'});
+      }
+
+      if (method == 'POST' || method == 'PUT') {
+        final chapter = Chapter.fromJson(
+          (_body(request)['chapter'] as Map).cast<String, dynamic>(),
+        );
+        if (chapter.state == ChapterState.completed) {
+          return _json({
+            'error':
+                'Un capítulo se cierra desde su propia acción, no '
+                'editándolo.',
+          }, 400);
+        }
+        if (chapter.state == ChapterState.active) {
+          final running = list
+              .where(
+                (c) => c.state == ChapterState.active && c.id != chapter.id,
+              )
+              .firstOrNull;
+          if (running != null) {
+            return _json({
+              'error':
+                  'Ya hay un capítulo en marcha: «${running.name}». '
+                  'Cerralo antes de empezar otro.',
+            }, 400);
+          }
+        }
+        final at = list.indexWhere((c) => c.id == chapter.id);
+        if (at < 0) {
+          list.add(chapter);
+        } else {
+          list[at] = chapter;
+        }
+        return method == 'POST'
+            ? _json({'chapter': chapter.toJson()})
+            : _json({'status': 'ok'});
+      }
+
+      if (method == 'DELETE') {
+        final id = path.split('/')[5];
+        list.removeWhere((c) => c.id == id);
+        return _json({'status': 'ok'});
+      }
     }
 
     if (method == 'GET' &&

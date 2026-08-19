@@ -556,9 +556,9 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     }
   }
 
-  Future<void> _closeEncounter() async {
+  Future<void> _closeEncounter({bool discard = false}) async {
     try {
-      await widget.api.endEncounter(widget.campaign.id);
+      await widget.api.endEncounter(widget.campaign.id, discard: discard);
       if (!mounted) return;
       setState(() => _encounter = null);
       _syncMemberPolling();

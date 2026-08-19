@@ -355,9 +355,14 @@ class ApiClient {
   );
 
   /// Cierra el combate y archiva su log del lado del servidor.
-  Future<void> endEncounter(String campaignId) => _send(
+  ///
+  /// Con [discard] no queda registro: es para el combate que se abrió por
+  /// error o se armó mal, que no tiene por qué figurar en la campaña como si
+  /// se hubiera jugado.
+  Future<void> endEncounter(String campaignId, {bool discard = false}) => _send(
     'DELETE',
-    '/api/campaigns/${Uri.encodeComponent(campaignId)}/encounter',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/encounter'
+        '${discard ? '?discard=true' : ''}',
   );
 
   /// El turno de un personaje propio, para el cartel de la ficha. Nunca

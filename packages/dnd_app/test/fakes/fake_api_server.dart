@@ -42,6 +42,9 @@ class FakeApiServer {
   /// El combate abierto de cada campaña, por id de campaña.
   final Map<String, Encounter> encounters = {};
 
+  /// Combates terminados, y si se archivaron o se descartaron.
+  final List<({String campaignId, bool discarded})> endedEncounters = [];
+
   /// Códigos emitidos y todavía sin canjear, por el id del personaje.
   final Map<String, String> shareCodes = {};
 
@@ -381,6 +384,13 @@ class FakeApiServer {
         return _json({'error': 'Campaña no encontrada.'}, 404);
       }
       encounters.remove(id);
+      // El doble no guarda logs, pero sí anota si el combate se archivó o se
+      // descartó: es la única diferencia observable entre los dos caminos, y
+      // sin esto una prueba no podría distinguirlos.
+      endedEncounters.add((
+        campaignId: id,
+        discarded: request.url.queryParameters['discard'] == 'true',
+      ));
       return _json({'status': 'ok'});
     }
 

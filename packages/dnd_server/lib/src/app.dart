@@ -898,6 +898,12 @@ Future<Response> _saveEncounterHandler(
 
 /// Cierra el combate y archiva su log. Sin combate abierto no hace nada —
 /// cerrar dos veces no es un error, mismo criterio que cerrar sesión.
+///
+/// Con `?discard=true` lo descarta **sin archivarlo**: el combate que se abrió
+/// por error o se armó mal no tiene por qué figurar en el registro de la
+/// campaña como si se hubiera jugado. Cualquier otro valor (o ninguno) archiva,
+/// que es lo que corresponde por defecto: perder lo jugado tiene que ser una
+/// decisión explícita, nunca lo que pasa si el parámetro viene mal escrito.
 Future<Response> _endEncounterHandler(
   Request request,
   CampaignRepository campaigns,
@@ -910,6 +916,12 @@ Future<Response> _endEncounterHandler(
   if (await campaigns.find(request.userId, campaignId) == null) {
     return _notFound('Campaña no encontrada.');
   }
+
+  if (request.url.queryParameters['discard'] == 'true') {
+    await encounters.discard(request.userId, campaignId);
+    return _jsonOk({'status': 'ok'});
+  }
+
   final encounter = await encounters.find(request.userId, campaignId);
   if (encounter != null) {
     await encounters.close(

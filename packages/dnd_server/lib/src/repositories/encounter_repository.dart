@@ -29,6 +29,13 @@ abstract class EncounterRepository {
     Map<String, dynamic> log,
   );
 
+  /// Descarta el combate **sin archivarlo**: no deja ninguna fila en
+  /// `encounter_logs`. Es para el que se abrió por error o se armó mal, que
+  /// no tiene por qué quedar en el registro de la campaña como si se hubiera
+  /// jugado. Separado de [close] a propósito: son dos intenciones distintas,
+  /// y un parámetro nullable las escondería detrás de la misma llamada.
+  Future<void> discard(String dmUserId, String campaignId);
+
   /// El turno de [characterId], visto por su dueño [userId]. `none` si el
   /// personaje no está vinculado a ninguna campaña con combate abierto — el
   /// mismo valor que si el vínculo o el combate no existieran, para no
@@ -105,6 +112,20 @@ class PostgresEncounterRepository implements EncounterRepository {
         'dmUserId': TypedValue(Type.uuid, dmUserId),
         'campaignId': TypedValue(Type.text, campaignId),
         'document': TypedValue(Type.jsonb, log),
+      },
+    );
+  }
+
+  @override
+  Future<void> discard(String dmUserId, String campaignId) async {
+    await _session.execute(
+      Sql.named('''
+        DELETE FROM encounters
+        WHERE dm_user_id = @dmUserId AND campaign_id = @campaignId
+      '''),
+      parameters: {
+        'dmUserId': TypedValue(Type.uuid, dmUserId),
+        'campaignId': TypedValue(Type.text, campaignId),
       },
     );
   }

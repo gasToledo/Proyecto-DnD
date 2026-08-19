@@ -268,11 +268,51 @@ void main() {
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Terminar combate'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Terminar y guardar'));
       await tester.pumpAndSettle();
 
       expect(server.encounters, isNot(contains('tumba')));
+      expect(server.endedEncounters.single.discarded, isFalse);
       expect(find.text('No hay ningún combate en curso.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Un combate abierto por error se tiene que poder tirar sin que quede en
+    // el registro de la campaña como si se hubiera jugado.
+    testWidgets('descartar el combate lo cierra sin guardarlo', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(TextButton, 'Descartar sin guardar'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(server.encounters, isNot(contains('tumba')));
+      expect(server.endedEncounters.single.discarded, isTrue);
+      expect(find.text('No hay ningún combate en curso.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // "Cancelar" cierra el diálogo y nada más: no puede confundirse con
+    // descartar el combate, que está al lado y es irreversible.
+    testWidgets('cancelar el diálogo no termina el combate', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.pumpAndSettle();
+
+      expect(server.encounters, contains('tumba'));
+      expect(server.endedEncounters, isEmpty);
       expect(tester.takeException(), isNull);
     });
 

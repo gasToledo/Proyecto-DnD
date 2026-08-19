@@ -52,6 +52,11 @@ class InMemoryEncounterRepository implements EncounterRepository {
   }
 
   @override
+  Future<void> discard(String dmUserId, String campaignId) async {
+    _byCampaign.remove(_key(dmUserId, campaignId));
+  }
+
+  @override
   Future<TurnStatus> turnFor({
     required String userId,
     required String characterId,

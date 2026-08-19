@@ -6,6 +6,10 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import 'add_monster_dialog.dart';
 
+/// Cómo termina un combate: archivado en el registro de la campaña, o
+/// descartado sin dejar rastro.
+enum _CloseKind { save, discard }
+
 /// El combate de una campaña: iniciativa, turnos y los PG de los monstruos.
 ///
 /// No tiene estado de red propio — el dueño es `_CampaignDetailState`, que ya
@@ -35,7 +39,10 @@ class EncounterView extends StatelessWidget {
   /// clampeo a `0..maxHp` lo hace `Encounter.withHp`, no esta pantalla.
   final void Function(String combatantId, int delta) onAdjustHp;
   final void Function(String combatantId) onRemoveCombatant;
-  final VoidCallback onCloseEncounter;
+
+  /// Termina el combate. Con `discard: true` no queda registro — ver
+  /// [_confirmClose].
+  final void Function({bool discard}) onCloseEncounter;
 
   const EncounterView({
     super.key,
@@ -297,32 +304,48 @@ class EncounterView extends StatelessWidget {
     onAddPlayer(member.memberId, member.character.name, initiative);
   }
 
+  /// Pregunta cómo termina el combate: archivándolo o descartándolo.
+  ///
+  /// Las dos salidas viven en el mismo diálogo porque es exactamente el
+  /// momento en que se decide, y un cuarto botón en la barra la haría más
+  /// difícil de leer sin ganar nada. El descarte no se llama "cancelar" a
+  /// propósito: en esta app "Cancelar" ya significa "cerrar este diálogo" en
+  /// todos lados, y usar la misma palabra para una acción irreversible sería
+  /// pedir un clic equivocado.
   Future<void> _confirmClose(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final pal = context.palette;
+    final choice = await showDialog<_CloseKind>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Terminar combate'),
         content: const Text(
-          'Se borra el orden de turnos. Queda un registro liviano de lo que '
-          'pasó, sin PG ni daños: eso lo lleva cada jugador en su ficha.',
+          'Se borra el orden de turnos en los dos casos. Si lo terminás queda '
+          'un registro liviano de lo que pasó (sin PG ni daños: eso lo lleva '
+          'cada jugador en su ficha). Si lo descartás no queda nada, como si '
+          'nunca hubiera empezado.',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
+            onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('Cancelar'),
           ),
+          TextButton.icon(
+            onPressed: () => Navigator.of(ctx).pop(_CloseKind.discard),
+            icon: const Icon(Icons.delete_outline),
+            label: const Text('Descartar sin guardar'),
+            style: TextButton.styleFrom(foregroundColor: pal.crimson),
+          ),
           FilledButton.icon(
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () => Navigator.of(ctx).pop(_CloseKind.save),
             icon: const Icon(Icons.done_all),
-            label: const Text('Terminar combate'),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.palette.crimson,
-            ),
+            label: const Text('Terminar y guardar'),
+            style: FilledButton.styleFrom(backgroundColor: pal.crimson),
           ),
         ],
       ),
     );
-    if (confirmed == true) onCloseEncounter();
+    if (choice == null) return;
+    onCloseEncounter(discard: choice == _CloseKind.discard);
   }
 }
 

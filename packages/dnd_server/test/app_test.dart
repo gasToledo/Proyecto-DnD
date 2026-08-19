@@ -2298,6 +2298,86 @@ void main() {
         },
       );
 
+      // Un combate abierto por error no tiene por qué quedar en el registro
+      // de la campaña como si se hubiera jugado.
+      test('descartar el combate no deja log', () async {
+        final token = await login('enc-discard');
+        await createCampaign(token, 'tumba');
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+          body: {
+            'encounter': encounterJson(combatants: [monsterCombatant('m1')]),
+          },
+        );
+
+        final discarded = await send(
+          'DELETE',
+          '/api/campaigns/tumba/encounter?discard=true',
+          token: token,
+        );
+        expect(discarded['status'], 200);
+
+        final afterDiscard = await send(
+          'GET',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+        );
+        expect(afterDiscard['status'], 404);
+        expect(encounters.logs, isEmpty);
+      });
+
+      // Perder lo jugado tiene que ser una decisión explícita: un parámetro
+      // mal escrito archiva, no descarta.
+      test('un "discard" que no es exactamente true archiva igual', () async {
+        final token = await login('enc-discard-typo');
+        await createCampaign(token, 'tumba');
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+          body: {
+            'encounter': encounterJson(combatants: [monsterCombatant('m1')]),
+          },
+        );
+
+        await send(
+          'DELETE',
+          '/api/campaigns/tumba/encounter?discard=si',
+          token: token,
+        );
+
+        expect(encounters.logs, hasLength(1));
+      });
+
+      test('un DM ajeno no puede descartar el combate de otro', () async {
+        final tokenA = await login('enc-discard-owner');
+        await createCampaign(tokenA, 'tumba');
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: tokenA,
+          body: {'encounter': encounterJson(combatants: [])},
+        );
+
+        final tokenB = await login('enc-discard-intruder');
+        final response = await send(
+          'DELETE',
+          '/api/campaigns/tumba/encounter?discard=true',
+          token: tokenB,
+        );
+        expect(response['status'], 404);
+
+        // Y el combate del dueño sigue en pie.
+        final stillThere = await send(
+          'GET',
+          '/api/campaigns/tumba/encounter',
+          token: tokenA,
+        );
+        expect(stillThere['status'], 200);
+      });
+
       test('cerrar sin combate abierto no hace nada', () async {
         final token = await login('enc-close-empty');
         await createCampaign(token, 'tumba');

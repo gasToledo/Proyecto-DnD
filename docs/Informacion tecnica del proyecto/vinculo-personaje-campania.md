@@ -130,6 +130,13 @@ tablas nuevas (migración `0007_encounters`):
 | `encounters` | El combate abierto de una campaña. Clave `(dm_user_id, campaign_id)`: no hay forma de tener dos combates abiertos a la vez en la misma mesa. |
 | `encounter_logs` | Lo que queda al cerrar uno. Se graba, no se muestra todavía — falta el Cuaderno de campaña. |
 
+Terminar un combate tiene dos salidas, y son intenciones distintas:
+`DELETE .../encounter` lo archiva en `encounter_logs`, y
+`DELETE .../encounter?discard=true` lo borra sin dejar rastro, para el que se
+abrió por error o se armó mal. **Solo el valor exacto `true` descarta**:
+cualquier otra cosa archiva, porque perder lo jugado tiene que ser una decisión
+explícita y nunca lo que pasa si el parámetro viene mal escrito.
+
 El documento de `encounters` se reemplaza entero en cada guardado
 (`PUT /api/campaigns/<id>/encounter`), igual que una ficha. No hay rutas finas
 de "avanzar turno" o "dañar monstruo": el cliente del DM es dueño del estado

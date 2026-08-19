@@ -15,6 +15,7 @@ import 'import/import_service.dart';
 import 'portraits/portrait_blob_store.dart';
 import 'repositories/campaign_repository.dart';
 import 'repositories/character_repository.dart';
+import 'repositories/encounter_repository.dart';
 import 'repositories/event_repository.dart';
 import 'repositories/homebrew_repository.dart';
 import 'repositories/settings_repository.dart';
@@ -89,6 +90,7 @@ Handler buildHandler({
   required ImportBackupFn importBackup,
   required CharacterRepository characters,
   required CampaignRepository campaigns,
+  required EncounterRepository encounters,
   required EventRepository events,
   required HomebrewRepository homebrew,
   required SettingsRepository settings,
@@ -218,6 +220,38 @@ Handler buildHandler({
               characters,
               events,
             ),
+          ),
+    )
+    ..get(
+      '/api/campaigns/<id>/encounter',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _getEncounterHandler(request, campaigns, encounters),
+          ),
+    )
+    ..put(
+      '/api/campaigns/<id>/encounter',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _saveEncounterHandler(request, campaigns, encounters),
+          ),
+    )
+    ..delete(
+      '/api/campaigns/<id>/encounter',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _endEncounterHandler(request, campaigns, encounters),
+          ),
+    )
+    ..get(
+      '/api/characters/<id>/turn',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _turnHandler(request, characters, encounters),
           ),
     )
     ..get(
@@ -803,6 +837,140 @@ Future<Response> _deleteCampaignLinkHandler(
     payload,
   );
   return _jsonOk({'status': 'ok'});
+}
+
+// --- Combate ---
+//
+// El combate vive en el servidor mientras está abierto: el puntero de turno
+// es lo único que la cuenta del DM y la del jugador comparten, y sin esto el
+// aviso de "seguís vos" no tendría de dónde salir. Igual que una ficha, se
+// guarda como documento entero (`PUT`) — no hay rutas finas de "avanzar
+// turno" o "dañar monstruo" que puedan desincronizarse entre sí.
+
+/// El combate abierto de una campaña, si lo hay.
+Future<Response> _getEncounterHandler(
+  Request request,
+  CampaignRepository campaigns,
+  EncounterRepository encounters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final encounter = await encounters.find(request.userId, campaignId);
+  if (encounter == null) return _notFound('No hay ningún combate en curso.');
+  return _jsonOk({'encounter': encounter.toJson()});
+}
+
+/// Guarda el combate entero. El cliente del DM es dueño del estado; acá solo
+/// se verifica que la campaña sea suya antes de guardarlo.
+Future<Response> _saveEncounterHandler(
+  Request request,
+  CampaignRepository campaigns,
+  EncounterRepository encounters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final body = await _readJsonBody(request);
+  final requested = body['encounter'];
+  if (requested is! Map<String, dynamic>) {
+    throw const FormatException('Falta "encounter".');
+  }
+  final Encounter encounter;
+  try {
+    encounter = Encounter.fromJson(requested);
+  } on UnsupportedDataVersionException {
+    rethrow;
+  } catch (error) {
+    throw FormatException('Encuentro inválido: $error');
+  }
+  await encounters.save(request.userId, campaignId, encounter);
+  return _jsonOk({'status': 'ok'});
+}
+
+/// Cierra el combate y archiva su log. Sin combate abierto no hace nada —
+/// cerrar dos veces no es un error, mismo criterio que cerrar sesión.
+Future<Response> _endEncounterHandler(
+  Request request,
+  CampaignRepository campaigns,
+  EncounterRepository encounters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final encounter = await encounters.find(request.userId, campaignId);
+  if (encounter != null) {
+    await encounters.close(
+      request.userId,
+      campaignId,
+      _buildEncounterLog(encounter),
+    );
+  }
+  return _jsonOk({'status': 'ok'});
+}
+
+/// El log de un combate cerrado: solo lo que pasó del lado del DM (quiénes
+/// pelearon, contra qué, cuántas rondas, qué monstruos cayeron). No puede
+/// registrar quién hizo qué daño porque el servidor nunca se entera de eso —
+/// cada jugador anota sus propios PG en su ficha, no el DM en el tracker.
+Map<String, dynamic> _buildEncounterLog(Encounter encounter) {
+  final players = [
+    for (final c in encounter.combatants)
+      if (c.kind == CombatantKind.player) c.name,
+  ];
+  final monsterGroups = <String, List<Combatant>>{};
+  for (final c in encounter.combatants) {
+    if (c.kind != CombatantKind.monster) continue;
+    monsterGroups.putIfAbsent(c.creatureId ?? c.name, () => []).add(c);
+  }
+  return {
+    'schemaVersion': 1,
+    'rounds': encounter.round,
+    'players': players,
+    'monsters': [
+      for (final group in monsterGroups.values)
+        {
+          'name': group.first.name.replaceFirst(RegExp(r'\s+\d+$'), ''),
+          'count': group.length,
+          'defeated': group.where((c) => c.currentHp <= 0).length,
+        },
+    ],
+  };
+}
+
+/// El turno de un personaje propio, para que su ficha muestre el aviso.
+///
+/// Nunca revela el orden completo ni a los monstruos: [TurnStatus] es
+/// deliberadamente los cuatro únicos valores que un jugador puede ver.
+Future<Response> _turnHandler(
+  Request request,
+  CharacterRepository characters,
+  EncounterRepository encounters,
+) async {
+  final id = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de personaje',
+  );
+  if (await characters.find(request.userId, id) == null) {
+    return _notFound('Personaje no encontrado.');
+  }
+  final status = await encounters.turnFor(
+    userId: request.userId,
+    characterId: id,
+  );
+  return _jsonOk({'turn': status.toJson()});
 }
 
 // --- Avisos ---

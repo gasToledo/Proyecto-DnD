@@ -205,4 +205,41 @@ CREATE INDEX user_events_pending_idx
   ON user_events (user_id, created_at) WHERE seen_at IS NULL;
 ''',
   ),
+  Migration(
+    id: '0007_encounters',
+    sql: '''
+-- Un combate activo por campaña, y la clave primaria lo garantiza: no hay
+-- estado "¿cuál de los dos combates abiertos es el bueno?" que resolver
+-- después. El documento entero se reemplaza en cada guardado (orden de
+-- iniciativa, ronda, turno, PG de los monstruos) igual que una ficha: no hay
+-- rutas finas de "avanzar turno" o "dañar monstruo" que puedan discrepar
+-- entre sí.
+CREATE TABLE encounters (
+  dm_user_id UUID NOT NULL,
+  campaign_id TEXT NOT NULL,
+  document JSONB NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (dm_user_id, campaign_id),
+  FOREIGN KEY (dm_user_id, campaign_id)
+    REFERENCES campaigns (dm_user_id, id) ON DELETE CASCADE
+);
+
+-- El log de un combate cerrado. Hoy se graba y no se muestra: cuando exista
+-- el Cuaderno de campaña se reagrupa por capítulo, y lo jugado hasta entonces
+-- no se pierde por no tener todavía dónde mostrarlo.
+CREATE TABLE encounter_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dm_user_id UUID NOT NULL,
+  campaign_id TEXT NOT NULL,
+  document JSONB NOT NULL,
+  ended_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  FOREIGN KEY (dm_user_id, campaign_id)
+    REFERENCES campaigns (dm_user_id, id) ON DELETE CASCADE
+);
+
+CREATE INDEX encounter_logs_campaign_idx
+  ON encounter_logs (dm_user_id, campaign_id, ended_at DESC);
+''',
+  ),
 ];

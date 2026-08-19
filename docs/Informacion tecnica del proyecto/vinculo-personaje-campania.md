@@ -119,6 +119,84 @@ más nuevo que la pestaña abierta.
 `_deleteCharacterHandler` arma los avisos **antes** de borrar, porque la cascada
 se lleva los vínculos y después ya no hay a quién avisarle.
 
+## El combate y el turno
+
+El combat tracker (Fase 2 de Modo DM) agrega la **segunda** consulta del
+servidor que cruza cuentas — la primera fue el vínculo mismo. Vive en dos
+tablas nuevas (migración `0007_encounters`):
+
+| Tabla | Para qué |
+|---|---|
+| `encounters` | El combate abierto de una campaña. Clave `(dm_user_id, campaign_id)`: no hay forma de tener dos combates abiertos a la vez en la misma mesa. |
+| `encounter_logs` | Lo que queda al cerrar uno. Se graba, no se muestra todavía — falta el Cuaderno de campaña. |
+
+El documento de `encounters` se reemplaza entero en cada guardado
+(`PUT /api/campaigns/<id>/encounter`), igual que una ficha. No hay rutas finas
+de "avanzar turno" o "dañar monstruo": el cliente del DM es dueño del estado
+completo, así que no hay nada que se pueda desincronizar entre dos rutas que
+deberían ir juntas.
+
+### `turnFor`, la consulta que ve el jugador
+
+Es la única ruta de esta fase que ejecuta el **jugador**, no el DM
+(`GET /api/characters/<id>/turn`). La autorización sigue la misma regla que
+todo lo demás — dentro del `WHERE`, no en el handler:
+
+```sql
+SELECT m.id AS member_id, e.document
+FROM campaign_members m
+JOIN encounters e
+  ON e.dm_user_id = m.dm_user_id AND e.campaign_id = m.campaign_id
+WHERE m.owner_user_id = @userId AND m.character_id = @characterId
+LIMIT 1
+```
+
+El `INNER JOIN` hace el trabajo: una membresía sin combate abierto no
+devuelve fila, así que la falta de vínculo y la falta de combate responden
+exactamente igual (`TurnStatus.none`). `LIMIT 1` resuelve el mismo borde ya
+aceptado en el vínculo — un personaje en dos campañas con combate
+simultáneo — quedándose con cualquiera de las dos, sin inventar una UI para
+desempatar.
+
+### Lo que el jugador nunca ve
+
+`TurnStatus` (`packages/dnd_engine/lib/src/domain/encounter.dart`) tiene
+deliberadamente cuatro valores y ninguno es "el orden completo" ni "quién más
+está peleando": `none` / `waiting` / `next` / `active`. El servidor nunca le
+manda al jugador el documento del combate, solo esa proyección de cuatro
+estados. Es la misma frontera que ya separaba Modo DM del resto de la app,
+aplicada a una superficie nueva.
+
+### Por qué esto es lo único casi-en-vivo del proyecto
+
+El resto de Milantus se refresca al entrar a una pantalla o después de una
+acción propia — nunca con un timer. El turno es la excepción a propósito: el
+aviso "preparate, seguís vos" solo sirve si llega mientras la ficha está
+abierta, así que `SheetScreen._pollTurn` sondea cada 5 segundos con combate
+abierto (20 si no hay ninguno), con un `Timer` que se reprograma solo y se
+cancela en `dispose`. No usa la cola de avisos (`user_events`): esa cola es
+para "esto pasó mientras no mirabas" y se entrega una sola vez; el turno es
+"esto es verdad ahora", y si viajara por la misma vía se acumularían avisos de
+rondas viejas sin vencer nunca. Ver el comentario de
+`packages/dnd_app/lib/ui/pending_events_gate.dart` para la distinción completa.
+
+Del lado del DM pasa lo mismo con los PG de los jugadores: mientras hay
+combate abierto, `_CampaignDetail` vuelve a pedir `listCampaignMembers` cada 5
+segundos —sin importar qué pestaña esté mirando el DM—, porque el vínculo es
+referencia viva y el jugador puede anotarse el daño con la pestaña de Mesa al
+frente.
+
+### Los PG que el DM no toca
+
+El DM **no** escribe la ficha del jugador en ningún momento — es una decisión
+tomada explícitamente después de haber diseñado lo contrario, y vale la pena
+dejar constancia de por qué se dio vuelta: en una mesa presencial el DM dice
+"te pega por 8" y el jugador lo anota; que el DM edite en vivo la ficha ajena
+es comportamiento de VTT, no de apoyo a la mesa. Cada jugador sigue anotando
+sus propios PG. La única escritura del DM en toda esta fase son los PG de los
+**monstruos**, que son suyos y efímeros — se pierden al cerrar el combate,
+salvo el resumen que queda en `encounter_logs`.
+
 ## Qué probar al tocar esto
 
 Las pruebas negativas de `packages/dnd_server/test/app_test.dart`, grupo
@@ -130,5 +208,15 @@ Las pruebas negativas de `packages/dnd_server/test/app_test.dart`, grupo
 - compartir un personaje ajeno responde como si no existiera;
 - un tercero no puede cortar un vínculo del que no es parte;
 - una cuenta no puede marcar vistos los avisos de otra.
+
+El subgrupo `combate`, dentro del mismo archivo, agrega:
+
+- un DM ajeno recibe 404 al leer o guardar el combate de otra cuenta;
+- cerrar el combate borra el encuentro y deja el log grabado, incluso sin uno
+  abierto (no hace nada, no es un error);
+- borrar la campaña deja el combate inalcanzable;
+- un jugador sin vínculo obtiene `none`, nunca un error que revele que el
+  combate existe;
+- un jugador no puede preguntar por el turno de un personaje ajeno.
 
 Ninguna se puede relajar para hacer pasar otra cosa.

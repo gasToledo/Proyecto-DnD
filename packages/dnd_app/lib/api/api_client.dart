@@ -325,6 +325,52 @@ class ApiClient {
     ];
   }
 
+  // --- Combate ------------------------------------------------------------
+
+  /// El combate abierto de una campaña, o `null` si no hay ninguno. Sin
+  /// controller propio: el estado del combate lo tiene la pantalla que lo usa,
+  /// igual que `_CampaignDetail` con la mesa — son acciones discretas y
+  /// contadas, no algo que se edite tecleando.
+  Future<Encounter?> getEncounter(String campaignId) async {
+    try {
+      final response = await _send(
+        'GET',
+        '/api/campaigns/${Uri.encodeComponent(campaignId)}/encounter',
+      );
+      return Encounter.fromJson(
+        (_json(response)['encounter'] as Map).cast<String, dynamic>(),
+      );
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// Guarda el combate entero. No hay rutas finas de "avanzar turno" o "dañar
+  /// monstruo": el cliente del DM manda el documento completo en cada acción.
+  Future<void> saveEncounter(String campaignId, Encounter encounter) => _send(
+    'PUT',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/encounter',
+    jsonBody: {'encounter': encounter.toJson()},
+  );
+
+  /// Cierra el combate y archiva su log del lado del servidor.
+  Future<void> endEncounter(String campaignId) => _send(
+    'DELETE',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/encounter',
+  );
+
+  /// El turno de un personaje propio, para el cartel de la ficha. Nunca
+  /// revela el orden completo ni a los monstruos: es deliberadamente uno de
+  /// los cuatro valores de [TurnStatus].
+  Future<TurnStatus> turnStatus(String characterId) async {
+    final response = await _send(
+      'GET',
+      '/api/characters/${Uri.encodeComponent(characterId)}/turn',
+    );
+    return TurnStatus.fromJson(_json(response)['turn'] as String?);
+  }
+
   // --- Avisos -----------------------------------------------------------
 
   Future<List<UserEvent>> listUnseenEvents() async {

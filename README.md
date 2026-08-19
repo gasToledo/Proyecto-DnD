@@ -94,6 +94,15 @@ los dos lados —vos con **Echar personaje**, él dejando de compartir— y ning
 de las dos cosas toca la ficha. Cada vez que algo de esto pasa, a la otra parte
 le llega el aviso la próxima vez que abre la aplicación.
 
+Dentro de una campaña, la pestaña **Combate** lleva el orden de iniciativa de
+tu mesa: sumás a tus jugadores con la iniciativa que tiraron y monstruos del
+bestiario, que tiran la suya sola (cada copia la suya, nunca la misma para
+todo un grupo). Avanzás turno y ronda, y sos vos quien lleva los puntos de
+golpe de los monstruos — los de tus jugadores los ve en vivo, pero se los
+siguen anotando ellos en su propia ficha, para que sigan atentos a la mesa.
+El jugador al que le toca recibe un aviso discreto en su ficha un turno antes,
+sin enterarse de nada más: ni el orden, ni contra qué está peleando.
+
 ### Respaldos y traspaso
 
 Exportás un personaje suelto, o un ZIP completo con todas las fichas, los
@@ -121,9 +130,9 @@ Cada personaje usa una sola clase por ahora. Multiclase es lo próximo grande,
 y la arquitectura dirigida por efectos ya está pensada para soportarla sin
 rehacer la ficha.
 
-El Modo DM recién empieza: hoy son campañas y las fichas de los jugadores
-vinculadas. Faltan los capítulos con sus recompensas, el cuaderno de campaña y
-el seguidor de combate.
+El Modo DM sigue creciendo: hoy son campañas, las fichas de los jugadores
+vinculadas y el seguidor de combate. Faltan los capítulos con sus recompensas
+y el cuaderno de campaña.
 
 Después de eso: la foto de perfil de la cuenta en el panel lateral (hoy se
 guarda pero no se dibuja) y poder marcar varios favoritos en vez de uno.

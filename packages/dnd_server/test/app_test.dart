@@ -16,6 +16,7 @@ import 'fakes/fake_auth_dependencies.dart';
 import 'fakes/fake_portrait_provider.dart';
 import 'fakes/in_memory_campaign_repository.dart';
 import 'fakes/in_memory_character_repository.dart';
+import 'fakes/in_memory_encounter_repository.dart';
 import 'fakes/in_memory_event_repository.dart';
 import 'fakes/in_memory_homebrew_repository.dart';
 import 'fakes/in_memory_portrait_blob_store.dart';
@@ -28,6 +29,7 @@ void main() {
   late ImportBackupFn importBackup;
   late InMemoryCharacterRepository characters;
   late InMemoryCampaignRepository campaigns;
+  late InMemoryEncounterRepository encounters;
   late InMemoryEventRepository events;
   late InMemoryHomebrewRepository homebrewRepo;
   late InMemorySettingsRepository settingsRepo;
@@ -43,6 +45,7 @@ void main() {
         const ImportResult(charactersImported: 0, portraitsImported: 0);
     characters = InMemoryCharacterRepository();
     campaigns = InMemoryCampaignRepository(characters);
+    encounters = InMemoryEncounterRepository(campaigns);
     events = InMemoryEventRepository();
     homebrewRepo = InMemoryHomebrewRepository();
     settingsRepo = InMemorySettingsRepository();
@@ -53,6 +56,7 @@ void main() {
       importBackup: importBackup,
       characters: characters,
       campaigns: campaigns,
+      encounters: encounters,
       events: events,
       homebrew: homebrewRepo,
       settings: settingsRepo,
@@ -660,6 +664,7 @@ void main() {
           importBackup: importBackup,
           characters: characters,
           campaigns: campaigns,
+          encounters: encounters,
           events: events,
           homebrew: homebrewRepo,
           settings: settingsRepo,
@@ -732,6 +737,7 @@ void main() {
         importBackup: importBackup,
         characters: characters,
         campaigns: campaigns,
+        encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -796,6 +802,7 @@ void main() {
         },
         characters: characters,
         campaigns: campaigns,
+        encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -839,6 +846,7 @@ void main() {
         },
         characters: characters,
         campaigns: campaigns,
+        encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -1469,6 +1477,7 @@ void main() {
         importBackup: importBackup,
         characters: characters,
         campaigns: campaigns,
+        encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -1492,6 +1501,7 @@ void main() {
         importBackup: importBackup,
         characters: characters,
         campaigns: campaigns,
+        encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -2112,6 +2122,289 @@ void main() {
 
         expect(response['status'], 200);
       });
+    });
+
+    group('combate', () {
+      Map<String, dynamic> playerCombatant(
+        String id, {
+        required String memberId,
+        int initiative = 10,
+      }) => {
+        'id': id,
+        'kind': 'player',
+        'name': 'PJ',
+        'initiative': initiative,
+        'memberId': memberId,
+      };
+
+      Map<String, dynamic> monsterCombatant(
+        String id, {
+        int initiative = 5,
+        int currentHp = 7,
+        int maxHp = 7,
+        String name = 'Goblin',
+      }) => {
+        'id': id,
+        'kind': 'monster',
+        'name': name,
+        'initiative': initiative,
+        'creatureId': 'goblin',
+        'currentHp': currentHp,
+        'maxHp': maxHp,
+      };
+
+      Map<String, dynamic> encounterJson({
+        String id = 'e1',
+        int round = 1,
+        int turnIndex = 0,
+        required List<Map<String, dynamic>> combatants,
+      }) => {
+        'schemaVersion': 1,
+        'id': id,
+        'round': round,
+        'turnIndex': turnIndex,
+        'combatants': combatants,
+      };
+
+      test('sin sesión ninguna operación responde 401', () async {
+        for (final request in [
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/campaigns/c1/encounter'),
+          ),
+          Request(
+            'PUT',
+            Uri.parse('http://localhost/api/campaigns/c1/encounter'),
+            body: jsonEncode({'encounter': encounterJson(combatants: [])}),
+          ),
+          Request(
+            'DELETE',
+            Uri.parse('http://localhost/api/campaigns/c1/encounter'),
+          ),
+          Request('GET', Uri.parse('http://localhost/api/characters/x/turn')),
+        ]) {
+          expect(
+            (await handler(request)).statusCode,
+            401,
+            reason: '${request.url}',
+          );
+        }
+      });
+
+      test('guardar y releer un encuentro', () async {
+        final token = await login('enc-roundtrip');
+        await createCampaign(token, 'tumba');
+
+        final saved = await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+          body: {
+            'encounter': encounterJson(combatants: [monsterCombatant('m1')]),
+          },
+        );
+        expect(saved['status'], 200);
+
+        final read = await send(
+          'GET',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+        );
+        expect(read['status'], 200);
+        expect(read['body']['encounter']['combatants'], hasLength(1));
+      });
+
+      test('sin combate abierto, la lectura responde 404', () async {
+        final token = await login('enc-none');
+        await createCampaign(token, 'tumba');
+
+        final read = await send(
+          'GET',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+        );
+        expect(read['status'], 404);
+        expect(read['body']['error'], 'No hay ningún combate en curso.');
+      });
+
+      test('un DM ajeno recibe 404 al leer y al guardar', () async {
+        final tokenA = await login('enc-owner');
+        await createCampaign(tokenA, 'tumba');
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: tokenA,
+          body: {'encounter': encounterJson(combatants: [])},
+        );
+
+        final tokenB = await login('enc-intruder');
+        final read = await send(
+          'GET',
+          '/api/campaigns/tumba/encounter',
+          token: tokenB,
+        );
+        expect(read['status'], 404);
+
+        final write = await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: tokenB,
+          body: {'encounter': encounterJson(combatants: [])},
+        );
+        expect(write['status'], 404);
+      });
+
+      test(
+        'cerrar el combate borra el encuentro y deja el log grabado',
+        () async {
+          final token = await login('enc-close');
+          await createCampaign(token, 'tumba');
+          await send(
+            'PUT',
+            '/api/campaigns/tumba/encounter',
+            token: token,
+            body: {
+              'encounter': encounterJson(
+                round: 3,
+                combatants: [
+                  playerCombatant(
+                    'p1',
+                    memberId: '00000000-0000-4000-8000-000000000000',
+                  ),
+                  monsterCombatant('m1', currentHp: 0),
+                ],
+              ),
+            },
+          );
+
+          final closed = await send(
+            'DELETE',
+            '/api/campaigns/tumba/encounter',
+            token: token,
+          );
+          expect(closed['status'], 200);
+
+          final afterClose = await send(
+            'GET',
+            '/api/campaigns/tumba/encounter',
+            token: token,
+          );
+          expect(afterClose['status'], 404);
+
+          expect(encounters.logs, hasLength(1));
+          expect(encounters.logs.single.document['rounds'], 3);
+          expect(encounters.logs.single.document['monsters'], hasLength(1));
+          expect(encounters.logs.single.document['monsters'][0]['defeated'], 1);
+        },
+      );
+
+      test('cerrar sin combate abierto no hace nada', () async {
+        final token = await login('enc-close-empty');
+        await createCampaign(token, 'tumba');
+
+        final closed = await send(
+          'DELETE',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+        );
+        expect(closed['status'], 200);
+        expect(encounters.logs, isEmpty);
+      });
+
+      test('borrar la campaña deja el combate inaccesible', () async {
+        final token = await login('enc-cascade');
+        await createCampaign(token, 'tumba');
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+          body: {'encounter': encounterJson(combatants: [])},
+        );
+
+        await send('DELETE', '/api/campaigns/tumba', token: token);
+
+        final read = await send(
+          'GET',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+        );
+        expect(read['status'], 404);
+      });
+
+      test('el jugador vinculado obtiene su turno correcto', () async {
+        final tokenA = await login('turn-a');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('turn-b');
+        await createCampaign(tokenB, 'tumba');
+        final redeemed = await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        final memberId = redeemed['body']['member']['memberId'] as String;
+
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: tokenB,
+          body: {
+            'encounter': encounterJson(
+              combatants: [
+                playerCombatant('p1', memberId: memberId, initiative: 20),
+                monsterCombatant('m1', initiative: 10),
+              ],
+            ),
+          },
+        );
+
+        final turn = await send(
+          'GET',
+          '/api/characters/sagan/turn',
+          token: tokenA,
+        );
+        expect(turn['body']['turn'], 'active');
+      });
+
+      test('un jugador sin vínculo obtiene "none", no un error', () async {
+        final token = await login('turn-none');
+        await send(
+          'POST',
+          '/api/characters',
+          token: token,
+          body: {'character': characterJson('sagan')},
+        );
+
+        final turn = await send(
+          'GET',
+          '/api/characters/sagan/turn',
+          token: token,
+        );
+        expect(turn['status'], 200);
+        expect(turn['body']['turn'], 'none');
+      });
+
+      test(
+        'un jugador no puede preguntar por el turno de un personaje ajeno',
+        () async {
+          final tokenA = await login('turn-owner');
+          await send(
+            'POST',
+            '/api/characters',
+            token: tokenA,
+            body: {'character': characterJson('sagan')},
+          );
+
+          final tokenB = await login('turn-intruder');
+          final turn = await send(
+            'GET',
+            '/api/characters/sagan/turn',
+            token: tokenB,
+          );
+          expect(turn['status'], 404);
+        },
+      );
     });
   });
 }

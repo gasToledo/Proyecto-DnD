@@ -7,10 +7,19 @@ import '../theme/app_widgets.dart';
 import 'user_event_messages.dart';
 
 /// Pide los avisos pendientes de esta cuenta, los muestra uno detrás de otro
-/// y los marca vistos. No hay tiempo real: esto se llama en un punto de
-/// entrada concreto (montar una pantalla, terminar una acción), nunca en un
-/// timer — eso exigiría el service worker y los permisos de notificación push
-/// que se descartaron a propósito.
+/// y los marca vistos. Se llama en un punto de entrada concreto (montar una
+/// pantalla, terminar una acción), nunca en un timer propio — eso exigiría el
+/// service worker y los permisos de notificación push que se descartaron a
+/// propósito.
+///
+/// Esto es **tiempo real diferido, no en vivo**, y la distinción importa: los
+/// avisos son una cola durable de "esto pasó mientras no mirabas" — se piden
+/// al entrar a algún lado y se marcan vistos, uno por uno, para siempre. El
+/// aviso de turno del combat tracker (`SheetScreen._pollTurn`, en
+/// `sheet_screen.dart`) es distinto a propósito: es estado efímero de "esto
+/// es verdad ahora mismo", así que **sí** usa su propio timer que se
+/// reprograma solo, en vez de esta cola — si viajara por acá, una ronda vieja
+/// dejaría "es tu turno" acumulados sin vencer nunca.
 ///
 /// Un fallo al pedirlos se traga en silencio: no poder mostrar un aviso no es
 /// motivo para interrumpir lo que la persona vino a hacer.

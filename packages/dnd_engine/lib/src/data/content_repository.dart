@@ -179,6 +179,19 @@ class ContentRepository {
   List<Armor> get armorSorted => sortedByName(armor.values, (e) => e.name);
   List<Item> get itemsSorted => sortedByName(items.values, (e) => e.name);
 
+  /// Monstruos del bestiario para el buscador del combat tracker, alfabético.
+  ///
+  /// Excluye a propósito las criaturas con `scalesWithSpellLevel` (corceles,
+  /// cañones y demás invocaciones): su CA y sus PG son fórmulas que dependen
+  /// de quien las invoca (`spellLevel`, `SPELLATK`...) y lanzan
+  /// [CreatureFormulaException] si se resuelven con una bolsa de variables
+  /// vacía, que es como las resuelve el DM al sumar un monstruo suelto. Las
+  /// entradas de monstruo, en cambio, tienen CA/PG en dígitos literales.
+  List<Creature> get creaturesSorted => sortedByName(
+        creatures.values.where((c) => !c.scalesWithSpellLevel),
+        (e) => e.name,
+      );
+
   /// Subclases que pertenecen a una clase (id de clase), ordenadas por nombre.
   List<Subclass> subclassesForClass(String classId) => sortedByName(
         subclasses.values.where((s) => s.classId == classId),

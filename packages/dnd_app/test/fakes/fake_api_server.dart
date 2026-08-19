@@ -39,6 +39,9 @@ class FakeApiServer {
   final Map<String, ({String campaignId, String characterId})> campaignMembers =
       {};
 
+  /// El combate abierto de cada campaña, por id de campaña.
+  final Map<String, Encounter> encounters = {};
+
   /// Códigos emitidos y todavía sin canjear, por el id del personaje.
   final Map<String, String> shareCodes = {};
 
@@ -227,7 +230,9 @@ class FakeApiServer {
       return _json({'campaign': campaign.toJson()});
     }
 
-    if (method == 'PUT' && path.startsWith('/api/campaigns/')) {
+    if (method == 'PUT' &&
+        path.startsWith('/api/campaigns/') &&
+        !path.contains('/encounter')) {
       final campaign = Campaign.fromJson(
         (_body(request)['campaign'] as Map).cast<String, dynamic>(),
       );
@@ -240,10 +245,12 @@ class FakeApiServer {
 
     if (method == 'DELETE' &&
         path.startsWith('/api/campaigns/') &&
-        !path.contains('/members')) {
+        !path.contains('/members') &&
+        !path.contains('/encounter')) {
       final id = _segment(path, '/api/campaigns/');
       campaigns.remove(id);
       campaignMembers.removeWhere((_, m) => m.campaignId == id);
+      encounters.remove(id);
       return _json({'status': 'ok'});
     }
 
@@ -337,6 +344,63 @@ class FakeApiServer {
               },
         ],
       });
+    }
+
+    if (method == 'GET' &&
+        path.startsWith('/api/campaigns/') &&
+        path.endsWith('/encounter')) {
+      final id = path.split('/')[3];
+      if (!campaigns.containsKey(id)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      final encounter = encounters[id];
+      if (encounter == null) {
+        return _json({'error': 'No hay ningún combate en curso.'}, 404);
+      }
+      return _json({'encounter': encounter.toJson()});
+    }
+
+    if (method == 'PUT' &&
+        path.startsWith('/api/campaigns/') &&
+        path.endsWith('/encounter')) {
+      final id = path.split('/')[3];
+      if (!campaigns.containsKey(id)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      encounters[id] = Encounter.fromJson(
+        (_body(request)['encounter'] as Map).cast<String, dynamic>(),
+      );
+      return _json({'status': 'ok'});
+    }
+
+    if (method == 'DELETE' &&
+        path.startsWith('/api/campaigns/') &&
+        path.endsWith('/encounter')) {
+      final id = path.split('/')[3];
+      if (!campaigns.containsKey(id)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      encounters.remove(id);
+      return _json({'status': 'ok'});
+    }
+
+    if (method == 'GET' &&
+        path.startsWith('/api/characters/') &&
+        path.endsWith('/turn')) {
+      final characterId = path.split('/')[3];
+      if (!characters.containsKey(characterId)) {
+        return _json({'error': 'Personaje no encontrado.'}, 404);
+      }
+      final member = campaignMembers.entries
+          .where((e) => e.value.characterId == characterId)
+          .firstOrNull;
+      final encounter = member == null
+          ? null
+          : encounters[member.value.campaignId];
+      final status = member == null || encounter == null
+          ? TurnStatus.none
+          : encounter.statusFor(member.key);
+      return _json({'turn': status.toJson()});
     }
 
     if (method == 'GET' && path == '/api/events') {

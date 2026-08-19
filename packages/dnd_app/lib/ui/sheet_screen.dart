@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
@@ -216,8 +218,40 @@ class _SheetScreenState extends State<SheetScreen> {
       ),
   };
 
+  /// Estado del turno de esta ficha, para el cartel de `_sheetBody`. Se
+  /// consulta con un `Timer` que se reprograma solo — nunca `Timer.periodic`,
+  /// porque la cadencia cambia según si hay combate (`_pollTurnInterval`) — y
+  /// nunca por la cola de avisos de `pending_events_gate.dart`: el turno es
+  /// estado efímero ("esto es verdad ahora"), no un hecho pasado que haya que
+  /// entregar una sola vez. Si viajara por esa cola, una ronda vieja dejaría
+  /// avisos de "es tu turno" acumulados para siempre.
+  TurnStatus _turn = TurnStatus.none;
+  Timer? _turnTimer;
+
+  Duration get _pollTurnInterval => _turn == TurnStatus.none
+      ? const Duration(seconds: 20)
+      : const Duration(seconds: 5);
+
+  Future<void> _pollTurn() async {
+    try {
+      final status = await ctrl.api.turnStatus(_c.id);
+      if (mounted) setState(() => _turn = status);
+    } catch (_) {
+      // No poder leer el turno no debe interrumpir la ficha: se reintenta en
+      // el próximo ciclo.
+    }
+    if (mounted) _turnTimer = Timer(_pollTurnInterval, _pollTurn);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _pollTurn();
+  }
+
   @override
   void dispose() {
+    _turnTimer?.cancel();
     _amountCtrl.dispose();
     _companionAmountCtrl.dispose();
     _notesCtrl.dispose();

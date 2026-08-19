@@ -154,4 +154,126 @@ void main() {
     expect(find.text('Modo DM'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
+
+  group('Combate', () {
+    Future<void> openCombate(WidgetTester tester) async {
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sin combate abierto ofrece empezarlo', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+
+      expect(find.text('No hay ningún combate en curso.'), findsOneWidget);
+      expect(find.text('Empezar combate'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+      'empezar combate ofrece sumar a la iniciativa al jugador de la mesa',
+      (tester) async {
+        final server = await pumpDmMode(tester, seed: seedTable);
+        await enterCode(tester, 'CODE-0001');
+        await openCombate(tester);
+
+        await tester.tap(find.text('Empezar combate'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Todavía no tiraron iniciativa'), findsOneWidget);
+        expect(find.text('Sumar a la iniciativa'), findsOneWidget);
+        expect(server.encounters, contains('tumba'));
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('sumar un jugador a la iniciativa lo deja en el orden', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sumar a la iniciativa'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '15');
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Todavía no tiraron iniciativa'), findsNothing);
+      final combatants = server.encounters['tumba']!.combatants;
+      expect(combatants, hasLength(1));
+      expect(combatants.single.name, 'Sagan');
+      expect(combatants.single.initiative, 15);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Sumar tres copias tira una iniciativa por cada una: nunca deben
+    // terminar todas con el mismo número, a diferencia de lo que sugiere el
+    // atajo de "tirar de una".
+    testWidgets('sumar varios monstruos les tira una iniciativa a cada uno', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sumar monstruo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'goblin');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Guerrero goblin'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+      await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+
+      final combatants = server.encounters['tumba']!.combatants;
+      expect(combatants, hasLength(3));
+      expect(
+        combatants.map((c) => c.name),
+        containsAll([
+          'Guerrero goblin',
+          'Guerrero goblin 2',
+          'Guerrero goblin 3',
+        ]),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('avanzar turno y cerrar el combate lo borra del servidor', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar monstruo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'goblin');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Guerrero goblin'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Siguiente turno'));
+      await tester.pumpAndSettle();
+      expect(server.encounters['tumba']!.round, 2);
+
+      await tester.tap(find.byTooltip('Cerrar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Cerrar combate'));
+      await tester.pumpAndSettle();
+
+      expect(server.encounters, isNot(contains('tumba')));
+      expect(find.text('No hay ningún combate en curso.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
 }

@@ -181,6 +181,13 @@ extension _SheetNavigation on _SheetScreenState {
           ],
         ),
         const SizedBox(height: 16),
+        // Antes que la Forma Salvaje: es lo más urgente que puede decir esta
+        // pantalla, y se ve en todas las pestañas porque nadie mira Combate
+        // todo el tiempo esperando su turno.
+        if (_turnBanner() case final banner?) ...[
+          banner,
+          const SizedBox(height: 16),
+        ],
         // Va arriba de las placas y en todas las pestañas: son justo los
         // números que cambiaron, y una ficha que muestra otra CA sin decir por
         // qué se lee como un error de la app.
@@ -192,6 +199,40 @@ extension _SheetNavigation on _SheetScreenState {
         const SectionRule(),
         _tabContent(_tab),
       ],
+    );
+  }
+
+  /// El cartel de turno, o `null` fuera de combate o cuando todavía falta.
+  ///
+  /// Deliberadamente no dice nada más: nunca el orden, nunca cuántos faltan,
+  /// nunca quién más está en la mesa. Verlo delataría cuántos enemigos hay
+  /// antes de que aparezcan — la misma frontera que ya separa Modo DM del
+  /// resto de la app.
+  Widget? _turnBanner() {
+    final pal = context.palette;
+    final (icon, color, text) = switch (_turn) {
+      TurnStatus.next => (
+        Icons.hourglass_top,
+        pal.gold,
+        'Preparate, seguís vos.',
+      ),
+      TurnStatus.active => (Icons.bolt, pal.verdant, 'Es tu turno.'),
+      TurnStatus.waiting || TurnStatus.none => (null, null, null),
+    };
+    if (text == null) return null;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: color!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text)),
+        ],
+      ),
     );
   }
 

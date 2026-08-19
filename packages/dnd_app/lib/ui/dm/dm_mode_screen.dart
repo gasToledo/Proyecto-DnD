@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
@@ -10,6 +12,7 @@ import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
 import '../pending_events_gate.dart';
 import '../portrait_image.dart';
+import 'encounter_view.dart';
 
 /// El otro sombrero de la misma cuenta.
 ///
@@ -307,15 +310,37 @@ class _CampaignDetail extends StatefulWidget {
   State<_CampaignDetail> createState() => _CampaignDetailState();
 }
 
+enum _CampaignSection { mesa, combate }
+
 class _CampaignDetailState extends State<_CampaignDetail> {
   List<CampaignMember>? _members;
   Object? _error;
   bool _busy = false;
 
+  _CampaignSection _section = _CampaignSection.mesa;
+  Encounter? _encounter;
+  bool _encounterLoading = true;
+  Object? _encounterError;
+
+  /// Sondea los PG de los jugadores mientras haya combate abierto — no según
+  /// qué sección esté mirando el DM, porque el vínculo es referencia viva y
+  /// el jugador puede anotarse el daño con la pestaña de Mesa al frente.
+  /// Se arranca/para acá y no en `EncounterView` para no tener dos copias del
+  /// mismo "¿hay combate?" que puedan desalinearse.
+  Timer? _memberPollTimer;
+  int _idCounter = 0;
+
   @override
   void initState() {
     super.initState();
     _loadMembers();
+    _loadEncounter();
+  }
+
+  @override
+  void dispose() {
+    _memberPollTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadMembers() async {
@@ -413,6 +438,137 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     }
   }
 
+  // --- Combate ------------------------------------------------------------
+
+  Future<void> _loadEncounter() async {
+    setState(() {
+      _encounterLoading = true;
+      _encounterError = null;
+    });
+    try {
+      final encounter = await widget.api.getEncounter(widget.campaign.id);
+      if (!mounted) return;
+      setState(() {
+        _encounter = encounter;
+        _encounterLoading = false;
+      });
+      _syncMemberPolling();
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _encounterError = error;
+          _encounterLoading = false;
+        });
+      }
+    }
+  }
+
+  void _syncMemberPolling() {
+    final shouldPoll = _encounter != null;
+    if (shouldPoll && _memberPollTimer == null) {
+      _memberPollTimer = Timer.periodic(
+        const Duration(seconds: 5),
+        (_) => _loadMembers(),
+      );
+    } else if (!shouldPoll) {
+      _memberPollTimer?.cancel();
+      _memberPollTimer = null;
+    }
+  }
+
+  Future<void> _saveEncounter(Encounter encounter) async {
+    try {
+      await widget.api.saveEncounter(widget.campaign.id, encounter);
+      if (!mounted) return;
+      setState(() => _encounter = encounter);
+      _syncMemberPolling();
+    } on ApiException catch (e) {
+      if (mounted) {
+        showAppMessage(context, e.message, tone: AppMessageTone.error);
+      }
+    }
+  }
+
+  String _newId(String prefix) =>
+      '$prefix-${DateTime.now().microsecondsSinceEpoch}-${_idCounter++}';
+
+  void _startEncounter() => _saveEncounter(Encounter(id: _newId('encounter')));
+
+  void _addPlayerToEncounter(String memberId, String name, int initiative) {
+    final encounter = _encounter ?? Encounter(id: _newId('encounter'));
+    _saveEncounter(
+      encounter.withCombatant(
+        Combatant(
+          id: _newId('c'),
+          kind: CombatantKind.player,
+          name: name,
+          initiative: initiative,
+          memberId: memberId,
+        ),
+      ),
+    );
+  }
+
+  /// Tira una iniciativa independiente por copia (nunca la misma para todo el
+  /// grupo) y numera los repetidos: "Goblin", "Goblin 2", "Goblin 3".
+  void _addMonsters(Creature creature, int count) {
+    var encounter = _encounter ?? Encounter(id: _newId('encounter'));
+    final already = encounter.combatants
+        .where((c) => c.creatureId == creature.id)
+        .length;
+    final resolved = creature.resolve(const CreatureVars({}));
+    for (var i = 0; i < count; i++) {
+      final n = already + i + 1;
+      encounter = encounter.withCombatant(
+        Combatant(
+          id: _newId('c'),
+          kind: CombatantKind.monster,
+          name: n == 1 ? creature.name : '${creature.name} $n',
+          initiative: rollInitiative(creature),
+          creatureId: creature.id,
+          currentHp: resolved.maxHp,
+          maxHp: resolved.maxHp,
+        ),
+      );
+    }
+    _saveEncounter(encounter);
+  }
+
+  void _nextTurn() {
+    final encounter = _encounter;
+    if (encounter != null) _saveEncounter(encounter.next());
+  }
+
+  void _adjustCombatantHp(String combatantId, int delta) {
+    final encounter = _encounter;
+    if (encounter == null) return;
+    final combatant = encounter.combatants
+        .where((c) => c.id == combatantId)
+        .firstOrNull;
+    if (combatant == null) return;
+    _saveEncounter(encounter.withHp(combatantId, combatant.currentHp + delta));
+  }
+
+  void _removeCombatant(String combatantId) {
+    final encounter = _encounter;
+    if (encounter != null) {
+      _saveEncounter(encounter.withoutCombatant(combatantId));
+    }
+  }
+
+  Future<void> _closeEncounter() async {
+    try {
+      await widget.api.endEncounter(widget.campaign.id);
+      if (!mounted) return;
+      setState(() => _encounter = null);
+      _syncMemberPolling();
+    } on ApiException catch (e) {
+      if (mounted) {
+        showAppMessage(context, e.message, tone: AppMessageTone.error);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final pal = context.palette;
@@ -471,7 +627,49 @@ class _CampaignDetailState extends State<_CampaignDetail> {
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: AppBusyLabel('Sumando personaje…'),
           ),
-        Expanded(child: _roster(context)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: SegmentedButton<_CampaignSection>(
+              segments: const [
+                ButtonSegment(
+                  value: _CampaignSection.mesa,
+                  icon: Icon(Icons.groups_outlined),
+                  label: Text('Mesa'),
+                ),
+                ButtonSegment(
+                  value: _CampaignSection.combate,
+                  icon: Icon(Icons.local_fire_department_outlined),
+                  label: Text('Combate'),
+                ),
+              ],
+              selected: {_section},
+              onSelectionChanged: (selection) =>
+                  setState(() => _section = selection.first),
+            ),
+          ),
+        ),
+        Expanded(
+          child: switch (_section) {
+            _CampaignSection.mesa => _roster(context),
+            _CampaignSection.combate => EncounterView(
+              repo: widget.repo,
+              encounter: _encounter,
+              loading: _encounterLoading,
+              error: _encounterError,
+              members: _members ?? const [],
+              onRetry: _loadEncounter,
+              onStart: _startEncounter,
+              onAddPlayer: _addPlayerToEncounter,
+              onAddMonster: _addMonsters,
+              onNextTurn: _nextTurn,
+              onAdjustHp: _adjustCombatantHp,
+              onRemoveCombatant: _removeCombatant,
+              onCloseEncounter: _closeEncounter,
+            ),
+          },
+        ),
       ],
     );
   }

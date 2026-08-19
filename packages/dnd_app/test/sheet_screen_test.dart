@@ -140,6 +140,60 @@ void main() {
     Character saved(CharactersController controller) =>
         controller.characters.firstWhere((c) => c.id == 'mochilera');
 
+    testWidgets('un cupo de arma contextual se gestiona sin lógica de clase', (
+      tester,
+    ) async {
+      final warlock = Character(
+        id: 'mochilera',
+        name: 'Bruja del Filo',
+        raceId: 'human',
+        classId: 'warlock',
+        backgroundId: 'sage',
+        assignedScores: const {
+          Ability.strength: 8,
+          Ability.dexterity: 14,
+          Ability.constitution: 14,
+          Ability.intelligence: 10,
+          Ability.wisdom: 10,
+          Ability.charisma: 18,
+        },
+        hpPerLevel: const [8],
+        featureChoices: const {
+          'warlock-invocation': ['pact-of-the-blade'],
+        },
+      );
+      final controller = await pumpSheet(tester, warlock);
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Arma de pacto (0/1)'), findsOneWidget);
+      await tester.tap(find.text('Arma de pacto (0/1)'));
+      await tester.pumpAndSettle();
+
+      final rapier = find.byKey(
+        const ValueKey('target-create-pact-weapon-rapier'),
+      );
+      await tester.ensureVisible(rapier);
+      await tester.tap(rapier);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cerrar'));
+      await tester.pumpAndSettle();
+
+      final stored = saved(controller);
+      final generated = stored.inventory.singleWhere(
+        (entry) => entry.origin == 'effect-target:pact-weapon',
+      );
+      expect(generated.itemId, 'rapier');
+      expect(generated.equipped, isTrue);
+      expect(stored.effectTargets['pact-weapon'], [generated.entryId]);
+      expect(find.text('Arma de pacto (1/1)'), findsOneWidget);
+      expect(find.text('Arma de pacto'), findsOneWidget);
+
+      final attack = CharacterCompiler(repo).compile(stored).attacks.single;
+      expect(attack.proficient, isTrue);
+      expect(attack.abilityUsed, Ability.charisma);
+    });
+
     testWidgets('agregar y equipar una armadura mueve la CA y la carga', (
       tester,
     ) async {

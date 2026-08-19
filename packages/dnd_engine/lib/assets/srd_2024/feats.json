@@ -84,6 +84,7 @@
     "category": "warlock-invocation",
     "repeatable": false,
     "effects": [
+      { "type": "weaponRule", "targetGroupId": "pact-weapon", "extraAttacks": 1 },
       { "type": "passiveTrait", "name": "Filo Sediento", "description": "Obtenés Ataque Adicional, pero solo con tu arma de pacto: hacés dos ataques con ella en vez de uno al realizar la acción de Atacar." }
     ],
     "prerequisite": { "minLevel": 5, "requiredFeatIds": ["pact-of-the-blade"] }
@@ -95,6 +96,7 @@
     "category": "warlock-invocation",
     "repeatable": false,
     "effects": [
+      { "type": "weaponRule", "targetGroupId": "pact-weapon", "extraAttacks": 2 },
       { "type": "passiveTrait", "name": "Hoja Devoradora", "description": "El Ataque Adicional de Filo Sediento otorga dos ataques adicionales en vez de uno." }
     ],
     "prerequisite": { "minLevel": 12, "requiredFeatIds": ["thirsting-blade"] }
@@ -312,6 +314,23 @@
     "category": "warlock-invocation",
     "repeatable": false,
     "effects": [
+      {
+        "type": "targetChoice",
+        "groupId": "pact-weapon",
+        "name": "Arma de pacto",
+        "count": 1,
+        "replaceable": true,
+        "existingFilter": { "magic": true },
+        "createFilter": { "melee": true, "categories": ["simple", "martial"] }
+      },
+      {
+        "type": "weaponRule",
+        "targetGroupId": "pact-weapon",
+        "grantsProficiency": true,
+        "abilityOptions": ["charisma"],
+        "damageTypeOptions": ["necrotic", "psychic", "radiant"],
+        "spellcastingFocus": true
+      },
       {
         "type": "passiveTrait",
         "name": "Pacto del Filo",

@@ -423,6 +423,42 @@ void main() {
     });
   });
 
+  group('v20 → v21: objetivos contextuales', () {
+    test('una ficha anterior arranca sin vínculos inferidos', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 20,
+        'inventory': [
+          {'entryId': 'rapier-1', 'itemId': 'rapier', 'equipped': true},
+        ],
+      });
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['effectTargets'], isEmpty);
+    });
+
+    test('los vínculos sobreviven el ida y vuelta de la versión actual', () {
+      final original = Character(
+        id: 'vinculada',
+        name: 'Vinculada',
+        raceId: 'human',
+        classId: 'warlock',
+        backgroundId: 'sage',
+        assignedScores: const {},
+        effectTargets: const {
+          'pact-weapon': ['rapier-1'],
+        },
+        inventory: const [
+          InventoryEntry(entryId: 'rapier-1', itemId: 'rapier'),
+        ],
+      );
+
+      final round = Character.fromJson(original.toJson());
+      expect(round.effectTargets, {
+        'pact-weapon': ['rapier-1'],
+      });
+    });
+  });
+
   group('la entrada de inventario sobrevive el ida y vuelta', () {
     test('conserva cantidad, equipado, sintonizado y nota', () {
       final original = Character(

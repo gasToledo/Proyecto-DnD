@@ -138,7 +138,10 @@ class CharacterValidator {
     for (final weaponId in c.weaponMasteryChoices) {
       final weapon = repo.weapon(weaponId);
       if (weapon == null) continue;
-      final proficient = weapon.isProficientWith(sheet.weaponProficiencies);
+      final proficient = weapon.isProficientWith(sheet.weaponProficiencies) ||
+          sheet.attacks.any(
+            (attack) => attack.baseWeaponId == weaponId && attack.proficient,
+          );
       if (!proficient) {
         w.add(ValidationWarning(
           'mastery_not_proficient',
@@ -168,19 +171,18 @@ class CharacterValidator {
       }
     }
 
-    if (c.equippedWeaponIds.isEmpty) {
+    if (sheet.attacks.isEmpty) {
       w.add(ValidationWarning(
           'no_weapon', 'No hay arma equipada.', WarningSeverity.info));
     }
 
-    for (final wid in c.equippedWeaponIds) {
-      final weapon = repo.weapon(wid);
-      if (weapon == null) continue;
-      final proficient = weapon.isProficientWith(sheet.weaponProficiencies);
-      if (!proficient) {
+    final warnedEntries = <String>{};
+    for (final attack in sheet.attacks) {
+      final key = attack.sourceEntryId ?? attack.baseWeaponId;
+      if (!attack.proficient && warnedEntries.add(key)) {
         w.add(ValidationWarning(
           'weapon_not_proficient',
-          'No sos competente con ${weapon.name}: no sumás el bono de competencia al ataque.',
+          'No sos competente con ${attack.name}: no sumás el bono de competencia al ataque.',
         ));
       }
     }

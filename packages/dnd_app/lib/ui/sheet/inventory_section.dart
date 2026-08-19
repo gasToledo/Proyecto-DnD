@@ -587,6 +587,16 @@ extension _SheetInventorySection on _SheetScreenState {
                         '${sheet.itemChoiceSlots.first.count})',
                       ),
                     ),
+                  for (final slot in sheet.targetChoiceSlots)
+                    OutlinedButton.icon(
+                      key: ValueKey('manage-target-${slot.groupId}'),
+                      onPressed: () => _manageTargetChoice(slot.groupId),
+                      icon: const Icon(Icons.link, size: 18),
+                      label: Text(
+                        '${slot.name} '
+                        '(${slot.chosenEntryIds.length}/${slot.count})',
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -890,6 +900,9 @@ extension _SheetInventorySection on _SheetScreenState {
                     const GoldPill('Sintonizado'),
                   if (info.replica)
                     const GoldPill('Réplica', highlighted: false),
+                  for (final slot in sheet.targetChoiceSlots)
+                    if (slot.chosenEntryIds.contains(e.entryId))
+                      GoldPill(slot.name, highlighted: false),
                 ],
               ),
               Text(detail, style: muted),
@@ -1097,6 +1110,141 @@ extension _SheetInventorySection on _SheetScreenState {
       onAdd: (id) => _replace(InventoryOps.add(_c, id)),
     ),
   );
+
+  // ------------------------------------------ Objetivos contextuales de arma
+
+  /// Selector dirigido por los cupos compilados. No conoce Pacto del Filo ni
+  /// ninguna dote: muestra exactamente los ejemplares y armas que el motor
+  /// declaró elegibles para el grupo recibido.
+  Future<void> _manageTargetChoice(String groupId) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, refresh) {
+          final matching = sheet.targetChoiceSlots.where(
+            (candidate) => candidate.groupId == groupId,
+          );
+          if (matching.isEmpty) return const SizedBox.shrink();
+          final slot = matching.single;
+          final chosen = slot.chosenEntryIds.toSet();
+          final canReplace = slot.replaceable || chosen.length < slot.count;
+
+          void apply(Character next) {
+            _replace(next);
+            refresh(() {});
+          }
+
+          final existing = [
+            for (final entryId in slot.eligibleEntryIds)
+              if (_c.inventory.any((entry) => entry.entryId == entryId))
+                _c.inventory.firstWhere((entry) => entry.entryId == entryId),
+          ];
+
+          return AlertDialog(
+            title: Row(
+              children: [
+                Expanded(child: Text(slot.name)),
+                GoldPill('${chosen.length}/${slot.count}'),
+              ],
+            ),
+            content: SizedBox(
+              width: 560,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 560),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Elegí un ejemplar de la mochila o creá uno de los '
+                        'permitidos por el rasgo.',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Eyebrow('En la mochila'),
+                      if (existing.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Text('No hay ejemplares elegibles.'),
+                        )
+                      else
+                        for (final entry in existing)
+                          ListTile(
+                            key: ValueKey('target-$groupId-${entry.entryId}'),
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(
+                              chosen.contains(entry.entryId)
+                                  ? Icons.check_circle
+                                  : Icons.radio_button_unchecked,
+                            ),
+                            title: Text(InventoryOps.resolve(entry, repo).name),
+                            subtitle: entry.origin == 'effect-target:$groupId'
+                                ? const Text('Creada por este rasgo')
+                                : null,
+                            enabled:
+                                chosen.contains(entry.entryId) || canReplace,
+                            onTap: chosen.contains(entry.entryId) || !canReplace
+                                ? null
+                                : () => apply(
+                                    InventoryOps.setEffectTarget(
+                                      _c,
+                                      groupId,
+                                      entry.entryId,
+                                      count: slot.count,
+                                    ),
+                                  ),
+                          ),
+                      if (slot.creatableWeaponIds.isNotEmpty) ...[
+                        const Divider(height: 28),
+                        const Eyebrow('Crear arma'),
+                        for (final weaponId in slot.creatableWeaponIds)
+                          ListTile(
+                            key: ValueKey('target-create-$groupId-$weaponId'),
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.add_circle_outline),
+                            title: Text(
+                              repo.weapon(weaponId)?.name ?? weaponId,
+                            ),
+                            subtitle: const Text('Agregar y equipar'),
+                            enabled: canReplace,
+                            onTap: !canReplace
+                                ? null
+                                : () => apply(
+                                    InventoryOps.createEffectTarget(
+                                      _c,
+                                      groupId,
+                                      weaponId,
+                                      repo,
+                                      count: slot.count,
+                                    ),
+                                  ),
+                          ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              if (chosen.isNotEmpty && slot.replaceable)
+                TextButton(
+                  onPressed: () =>
+                      apply(InventoryOps.clearEffectTargets(_c, groupId)),
+                  child: const Text('Limpiar vínculo'),
+                ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cerrar'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   // ------------------------------------------------- Planos y réplicas
 

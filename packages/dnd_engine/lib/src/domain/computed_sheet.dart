@@ -289,6 +289,41 @@ class ItemChoiceSlot {
   int get pending => (count - chosenItemIds.length).clamp(0, count);
 }
 
+/// Elección resuelta de ejemplares de arma para una regla contextual.
+///
+/// La UI recibe ids concretos y no reimplementa filtros ni consulta dotes.
+class TargetChoiceSlot {
+  final String groupId;
+  final String name;
+  final int count;
+  final bool replaceable;
+  final List<String> eligibleEntryIds;
+  final List<String> creatableWeaponIds;
+  final List<String> chosenEntryIds;
+
+  const TargetChoiceSlot({
+    required this.groupId,
+    required this.name,
+    required this.count,
+    required this.replaceable,
+    this.eligibleEntryIds = const [],
+    this.creatableWeaponIds = const [],
+    this.chosenEntryIds = const [],
+  });
+
+  int get pending => (count - chosenEntryIds.length).clamp(0, count);
+
+  Map<String, dynamic> toJson() => {
+        'groupId': groupId,
+        'name': name,
+        'count': count,
+        'replaceable': replaceable,
+        'eligibleEntryIds': eligibleEntryIds,
+        'creatableWeaponIds': creatableWeaponIds,
+        'chosenEntryIds': chosenEntryIds,
+      };
+}
+
 /// Una elección de idiomas pendiente, con el pozo ya resuelto: lo que el
 /// personaje ya sabe por otra vía no se ofrece.
 class LanguageChoiceSlot {
@@ -416,12 +451,24 @@ enum AttackAction {
 /// Ataque calculado a partir del arma equipada.
 class Attack {
   final String weaponId;
+  final String baseWeaponId;
+  final String? sourceEntryId;
   final String name;
   final int attackBonus;
+  final bool proficient;
+  final Ability abilityUsed;
 
   /// Cadena de daño lista para mostrar, p.ej. "1d8 + 3".
   final String damage;
   final String damageType;
+  final List<String> damageTypeOptions;
+
+  /// Puede usarse como canalizador mientras esta regla de arma esté activa.
+  final bool spellcastingFocus;
+
+  /// Ataques permitidos con esta arma al realizar la acción de Atacar. Puede
+  /// diferir del valor global cuando una regla está limitada a un objetivo.
+  final int attacksPerAction;
 
   /// Maestría aplicada si el arma está entre las elegidas (2024).
   final String? mastery;
@@ -436,21 +483,36 @@ class Attack {
 
   const Attack({
     required this.weaponId,
+    String? baseWeaponId,
+    this.sourceEntryId,
     required this.name,
     required this.attackBonus,
+    this.proficient = false,
+    this.abilityUsed = Ability.strength,
     required this.damage,
     required this.damageType,
+    List<String>? damageTypeOptions,
+    this.spellcastingFocus = false,
+    this.attacksPerAction = 1,
     this.mastery,
     this.offHand = false,
     this.action = AttackAction.action,
-  });
+  })  : baseWeaponId = baseWeaponId ?? weaponId,
+        damageTypeOptions = damageTypeOptions ?? const [];
 
   Map<String, dynamic> toJson() => {
         'weaponId': weaponId,
+        'baseWeaponId': baseWeaponId,
+        if (sourceEntryId != null) 'sourceEntryId': sourceEntryId,
         'name': name,
         'attackBonus': attackBonus,
+        'proficient': proficient,
+        'abilityUsed': abilityUsed.name,
         'damage': damage,
         'damageType': damageType,
+        'damageTypeOptions': damageTypeOptions,
+        'spellcastingFocus': spellcastingFocus,
+        'attacksPerAction': attacksPerAction,
         'mastery': mastery,
         'offHand': offHand,
         'action': action.toJson(),
@@ -627,6 +689,7 @@ class ComputedSheet {
   /// Invocaciones Sobrenaturales…), con su cantidad ya resuelta.
   final List<FeatureChoiceSlot> featureChoiceSlots;
   final List<ItemChoiceSlot> itemChoiceSlots;
+  final List<TargetChoiceSlot> targetChoiceSlots;
 
   /// Competencias que el personaje todavía tiene que elegir por una dote
   /// (Habilidoso, Mente Aguda), con sus opciones ya resueltas.
@@ -701,6 +764,7 @@ class ComputedSheet {
     this.spellListAdditionIds = const {},
     this.featureChoiceSlots = const [],
     this.itemChoiceSlots = const [],
+    this.targetChoiceSlots = const [],
     this.proficiencyChoiceSlots = const [],
     this.expertiseChoiceSlots = const [],
     this.spellChoiceSlots = const [],

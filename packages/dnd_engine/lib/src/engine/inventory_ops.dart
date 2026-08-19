@@ -44,6 +44,19 @@ class ResolvedInventoryEntry {
 }
 
 class InventoryOps {
+  static String _effectTargetOrigin(String groupId) => 'effect-target:$groupId';
+
+  static String _uniqueEntryId(Character c, String itemId) {
+    var suffix = c.inventory.length;
+    var candidate = 'entry-$suffix-$itemId';
+    final used = c.inventory.map((e) => e.entryId).toSet();
+    while (used.contains(candidate)) {
+      suffix++;
+      candidate = 'entry-$suffix-$itemId';
+    }
+    return candidate;
+  }
+
   /// Si la entrada cuenta como equipada.
   ///
   static bool isEquipped(
@@ -160,6 +173,82 @@ class InventoryOps {
     );
   }
 
+  /// Vincula un ejemplar existente a un grupo contextual. Si el cupo está
+  /// lleno reemplaza la última elección; solo borra inventario cuando el
+  /// ejemplar desplazado había sido creado por este mismo grupo.
+  static Character setEffectTarget(
+    Character c,
+    String groupId,
+    String entryId, {
+    int count = 1,
+  }) {
+    if (count < 1) return clearEffectTargets(c, groupId);
+    if (!c.inventory.any((e) => e.entryId == entryId)) return c;
+
+    final inventoryIds = c.inventory.map((e) => e.entryId).toSet();
+    final current = <String>[];
+    for (final id in c.effectTargets[groupId] ?? const <String>[]) {
+      if (inventoryIds.contains(id) && !current.contains(id)) current.add(id);
+    }
+    final alreadyWithinLimit = current.take(count).contains(entryId);
+    final next = alreadyWithinLimit
+        ? current.take(count).toList()
+        : count == 1
+            ? <String>[entryId]
+            : <String>[...current.take(count - 1), entryId];
+    final displaced = current.where((id) => !next.contains(id)).toSet();
+    final origin = _effectTargetOrigin(groupId);
+
+    return c.copyWith(
+      inventory: [
+        for (final entry in c.inventory)
+          if (!(displaced.contains(entry.entryId) && entry.origin == origin))
+            entry,
+      ],
+      effectTargets: {...c.effectTargets, groupId: next},
+    );
+  }
+
+  /// Crea un arma contextual desde el catálogo y la vincula al grupo. La
+  /// procedencia permite reemplazarla o limpiarla sin tocar objetos del PJ.
+  static Character createEffectTarget(
+    Character c,
+    String groupId,
+    String weaponId,
+    ContentRepository repo, {
+    int count = 1,
+    bool equipped = true,
+  }) {
+    if (repo.weapon(weaponId) == null || count < 1) return c;
+    final entryId = _uniqueEntryId(c, weaponId);
+    final withEntry = c.copyWith(inventory: [
+      ...c.inventory,
+      InventoryEntry(
+        entryId: entryId,
+        itemId: weaponId,
+        origin: _effectTargetOrigin(groupId),
+        equipped: equipped,
+      ),
+    ]);
+    return setEffectTarget(withEntry, groupId, entryId, count: count);
+  }
+
+  /// Limpia el vínculo y únicamente los ejemplares generados por ese grupo.
+  /// Las armas que ya pertenecían al personaje se conservan intactas.
+  static Character clearEffectTargets(Character c, String groupId) {
+    final origin = _effectTargetOrigin(groupId);
+    return c.copyWith(
+      inventory: [
+        for (final e in c.inventory)
+          if (e.origin != origin) e
+      ],
+      effectTargets: {
+        for (final entry in c.effectTargets.entries)
+          if (entry.key != groupId) entry.key: entry.value,
+      },
+    );
+  }
+
   /// Saca [quantity] unidades, y la línea entera si no queda ninguna. Al llegar
   /// a cero también desequipa: un objeto que ya no llevás no puede seguir
   /// sumando a la CA.
@@ -188,6 +277,14 @@ class InventoryOps {
     final removed = resolve(c.inventory[index], repo);
     return c.copyWith(
       inventory: without,
+      effectTargets: {
+        for (final target in c.effectTargets.entries)
+          if (target.value.any((id) => id != removed.entry.entryId))
+            target.key: [
+              for (final id in target.value)
+                if (id != removed.entry.entryId) id,
+            ],
+      },
       equippedArmorId:
           c.equippedArmorId == removed.entry.itemId ? null : c.equippedArmorId,
       shieldEquipped:

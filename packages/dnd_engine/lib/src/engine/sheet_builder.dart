@@ -109,6 +109,15 @@ class SheetBuilder {
   final Map<String, FeatureChoiceEffect> featureChoiceSlots = {};
   final Map<String, ItemChoiceEffect> itemChoiceSlots = {};
 
+  /// Elecciones de ejemplares concretos a los que pueden apuntar reglas. La
+  /// resolución contra inventario queda en el compilador.
+  final Map<String, TargetChoiceEffect> targetChoiceSlots = {};
+
+  /// Reglas contextuales de ataque. Se conservan crudas porque decidir si una
+  /// arma concreta coincide requiere inventario y catálogo, que pertenecen al
+  /// compilador y no a este acumulador global.
+  final List<WeaponRuleEffect> weaponRules = [];
+
   int weaponMasterySlots = 0;
   int maxExtraAttack = 0;
 
@@ -282,6 +291,13 @@ class SheetBuilder {
         }
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
+      case WeaponRuleEffect():
+        weaponRules.add(e);
+      case TargetChoiceEffect(:final groupId, :final count):
+        final prev = targetChoiceSlots[groupId];
+        if (prev == null || count > prev.count) {
+          targetChoiceSlots[groupId] = e;
+        }
       case FeatureChoiceEffect(:final groupId, :final count):
         final prev = featureChoiceSlots[groupId];
         if (prev == null || count > prev.count) {

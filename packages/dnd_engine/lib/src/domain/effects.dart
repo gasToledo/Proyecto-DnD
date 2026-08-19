@@ -115,6 +115,37 @@ sealed class Effect {
         ),
       'castWhileWildShaped' => const CastWhileWildShapedEffect(),
       'offHandAbilityDamage' => const OffHandAbilityDamageEffect(),
+      'targetChoice' => TargetChoiceEffect(
+          groupId: json['groupId'] as String,
+          name: json['name'] as String? ?? '',
+          count: json['count'] as int? ?? 1,
+          replaceable: json['replaceable'] as bool? ?? false,
+          existingFilter: json.containsKey('existingFilter')
+              ? WeaponFilter.fromJson(
+                  (json['existingFilter'] as Map?)?.cast<String, dynamic>(),
+                )
+              : null,
+          createFilter: json.containsKey('createFilter')
+              ? WeaponFilter.fromJson(
+                  (json['createFilter'] as Map?)?.cast<String, dynamic>(),
+                )
+              : null,
+        ),
+      'weaponRule' => WeaponRuleEffect(
+          targetGroupId: json['targetGroupId'] as String?,
+          filter: WeaponFilter.fromJson(
+            (json['filter'] as Map?)?.cast<String, dynamic>(),
+          ),
+          grantsProficiency: json['grantsProficiency'] as bool? ?? false,
+          abilityOptions: (json['abilityOptions'] as List? ?? const [])
+              .map((e) => Ability.fromKey(e as String))
+              .toList(),
+          damageTypeOptions: (json['damageTypeOptions'] as List? ?? const [])
+              .whereType<String>()
+              .toList(),
+          spellcastingFocus: json['spellcastingFocus'] as bool? ?? false,
+          extraAttacks: json['extraAttacks'] as int? ?? 0,
+        ),
       'featureChoice' => FeatureChoiceEffect(
           groupId: json['groupId'] as String,
           name: json['name'] as String,
@@ -958,6 +989,129 @@ class OffHandAbilityDamageEffect extends Effect {
   const OffHandAbilityDamageEffect();
   @override
   Map<String, dynamic> toJson() => {'type': 'offHandAbilityDamage'};
+}
+
+/// Filtro serializable para reglas que modifican ataques con armas.
+///
+/// No resuelve inventario ni consulta catálogos: es solo la parte declarativa.
+/// [CharacterCompiler] lo cruza con cada arma equipada. Los campos nulos o las
+/// listas vacías significan "sin restricción", de modo que el mismo mecanismo
+/// sirve tanto para todas las armas mágicas como para una familia concreta.
+class WeaponFilter {
+  final bool? magic;
+  final bool? melee;
+  final List<String> categories;
+  final List<String> properties;
+
+  const WeaponFilter({
+    this.magic,
+    this.melee,
+    this.categories = const [],
+    this.properties = const [],
+  });
+
+  bool get isEmpty =>
+      magic == null &&
+      melee == null &&
+      categories.isEmpty &&
+      properties.isEmpty;
+
+  Map<String, dynamic> toJson() => {
+        if (magic != null) 'magic': magic,
+        if (melee != null) 'melee': melee,
+        if (categories.isNotEmpty) 'categories': categories,
+        if (properties.isNotEmpty) 'properties': properties,
+      };
+
+  factory WeaponFilter.fromJson(Map<String, dynamic>? json) => WeaponFilter(
+        magic: json?['magic'] as bool?,
+        melee: json?['melee'] as bool?,
+        categories: (json?['categories'] as List? ?? const [])
+            .whereType<String>()
+            .toList(),
+        properties: (json?['properties'] as List? ?? const [])
+            .whereType<String>()
+            .toList(),
+      );
+}
+
+/// Elección de ejemplares de arma para que otras reglas puedan apuntarlos.
+///
+/// El efecto no conoce inventario ni clases. Declara dos vías independientes:
+/// [existingFilter] permite vincular un ejemplar que el personaje ya lleva y
+/// [createFilter] permite crear uno desde el catálogo de armas. `null` impide
+/// esa vía; un filtro vacío permite cualquier arma.
+class TargetChoiceEffect extends Effect {
+  final String groupId;
+  final String name;
+  final int count;
+  final bool replaceable;
+  final WeaponFilter? existingFilter;
+  final WeaponFilter? createFilter;
+
+  const TargetChoiceEffect({
+    required this.groupId,
+    required this.name,
+    this.count = 1,
+    this.replaceable = false,
+    this.existingFilter,
+    this.createFilter,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'targetChoice',
+        'groupId': groupId,
+        'name': name,
+        'count': count,
+        if (replaceable) 'replaceable': true,
+        if (existingFilter != null) 'existingFilter': existingFilter!.toJson(),
+        if (createFilter != null) 'createFilter': createFilter!.toJson(),
+      };
+}
+
+/// Modificadores que una fuente aplica a los ataques de armas que coincidan.
+///
+/// Es deliberadamente una regla de **arma**, no de clase: el Herrero de
+/// Batalla puede ofrecer Inteligencia para toda arma mágica, mientras que una
+/// regla con [targetGroupId] puede quedar limitada al ejemplar elegido por un
+/// vínculo. El motor nunca necesita preguntar qué clase o dote la concedió.
+class WeaponRuleEffect extends Effect {
+  /// Grupo de objetivo dinámico. Null aplica la regla solo por [filter].
+  final String? targetGroupId;
+  final WeaponFilter filter;
+  final bool grantsProficiency;
+  final List<Ability> abilityOptions;
+  final List<String> damageTypeOptions;
+  final bool spellcastingFocus;
+
+  /// Ataques adicionales permitidos con el arma. Como Ataque Adicional, no se
+  /// acumulan entre fuentes: al resolver gana el mayor.
+  final int extraAttacks;
+
+  const WeaponRuleEffect({
+    this.targetGroupId,
+    this.filter = const WeaponFilter(),
+    this.grantsProficiency = false,
+    this.abilityOptions = const [],
+    this.damageTypeOptions = const [],
+    this.spellcastingFocus = false,
+    this.extraAttacks = 0,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'weaponRule',
+        if (targetGroupId != null) 'targetGroupId': targetGroupId,
+        if (!filter.isEmpty) 'filter': filter.toJson(),
+        if (grantsProficiency) 'grantsProficiency': true,
+        if (abilityOptions.isNotEmpty)
+          'abilityOptions': abilityOptions.map((a) => a.name).toList(),
+        if (damageTypeOptions.isNotEmpty)
+          'damageTypeOptions': damageTypeOptions,
+        if (spellcastingFocus) 'spellcastingFocus': true,
+        if (extraAttacks != 0) 'extraAttacks': extraAttacks,
+      };
 }
 
 /// Cantidad de armas en las que se puede elegir Maestría (Guerrero 2024: 3).

@@ -109,6 +109,8 @@ ComputedSheet applyWildShape(ComputedSheet base, Creature beast) {
     alwaysPreparedSpellIds: base.alwaysPreparedSpellIds,
     spellListAdditionIds: base.spellListAdditionIds,
     featureChoiceSlots: base.featureChoiceSlots,
+    itemChoiceSlots: base.itemChoiceSlots,
+    targetChoiceSlots: base.targetChoiceSlots,
     proficiencyChoiceSlots: base.proficiencyChoiceSlots,
     expertiseChoiceSlots: base.expertiseChoiceSlots,
     spellChoiceSlots: base.spellChoiceSlots,

@@ -328,7 +328,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 20;
+  static const int currentSchemaVersion = 21;
 
   final String id;
   String name;
@@ -423,6 +423,13 @@ class Character {
   /// por eso no servía para Paladín/Explorador (nivel 2) ni para las
   /// Invocaciones del Brujo (varias, crecientes).
   final Map<String, List<String>> featureChoices;
+
+  /// Vínculos dinámicos entre un grupo declarado por contenido y ejemplares
+  /// concretos del inventario (`InventoryEntry.entryId`).
+  ///
+  /// No guarda ids de dote, clase ni arma base: el compilador revalida cada
+  /// vínculo contra el `TargetChoiceEffect` activo antes de aplicar reglas.
+  final Map<String, List<String>> effectTargets;
 
   /// Conjuros elegidos por un rasgo que los deja **siempre preparados**: id de
   /// grupo → ids de conjuro. El grupo lo declara un `SpellChoiceEffect`.
@@ -544,6 +551,7 @@ class Character {
     this.languages = const [],
     this.languageChoices = const {},
     this.featureChoices = const {},
+    this.effectTargets = const {},
     this.spellChoices = const {},
     this.wildShapeForms = const [],
     this.weaponMasteryChoices = const [],
@@ -601,6 +609,7 @@ class Character {
         'languages': languages,
         'languageChoices': languageChoices,
         'featureChoices': featureChoices,
+        'effectTargets': effectTargets,
         'spellChoices': spellChoices,
         'wildShapeForms': wildShapeForms,
         'weaponMasteryChoices': weaponMasteryChoices,
@@ -1021,6 +1030,12 @@ class Character {
           migrated.putIfAbsent('magicItemChoices', () => []);
           version = 20;
           migrated['schemaVersion'] = version;
+        case 20:
+          // Los vínculos contextuales arrancan vacíos. No se infieren desde el
+          // equipo: dos ejemplares iguales pueden tener reglas distintas.
+          migrated.putIfAbsent('effectTargets', () => <String, dynamic>{});
+          version = 21;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -1070,6 +1085,7 @@ class Character {
           .toList(),
       languageChoices: _choiceMap(j['languageChoices']),
       featureChoices: _choiceMap(j['featureChoices']),
+      effectTargets: _choiceMap(j['effectTargets']),
       spellChoices: _choiceMap(j['spellChoices']),
       wildShapeForms: (j['wildShapeForms'] as List? ?? const [])
           .map((e) => e as String)
@@ -1133,6 +1149,7 @@ class Character {
     List<AsiChoice>? asiChoices,
     List<int>? hpPerLevel,
     Map<String, List<String>>? featureChoices,
+    Map<String, List<String>>? effectTargets,
     Map<String, List<String>>? spellChoices,
     List<String>? wildShapeForms,
     List<String>? chosenProficiencies,
@@ -1185,6 +1202,7 @@ class Character {
       languages: languages ?? this.languages,
       languageChoices: languageChoices ?? this.languageChoices,
       featureChoices: featureChoices ?? this.featureChoices,
+      effectTargets: effectTargets ?? this.effectTargets,
       spellChoices: spellChoices ?? this.spellChoices,
       wildShapeForms: wildShapeForms ?? this.wildShapeForms,
       weaponMasteryChoices: weaponMasteryChoices,

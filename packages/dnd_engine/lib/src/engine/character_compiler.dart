@@ -496,6 +496,7 @@ class CharacterCompiler {
     final size = _size(c, race);
 
     final attacksPerAction = 1 + builder.maxExtraAttack;
+    final targetChoices = _resolveTargetChoices(c, builder);
 
     final attacks = <Attack>[];
     for (final entry in c.inventory.where((e) => e.equipped)) {
@@ -511,7 +512,13 @@ class CharacterCompiler {
           builder,
           magicBonus: resolved.magicBonus,
           weaponId: resolved.item == null ? w.id : entry.entryId,
+          sourceEntryId: entry.entryId,
           name: resolved.name,
+          isMagic: resolved.item?.isMagic == true || w.magicBonus != 0,
+          activeTargetGroups: {
+            for (final target in targetChoices.entryIdsByGroup.entries)
+              if (target.value.contains(entry.entryId)) target.key,
+          },
         ));
       }
     }
@@ -617,6 +624,7 @@ class CharacterCompiler {
       itemChoiceSlots: [
         for (final e in builder.itemChoiceSlots.values) _itemChoiceSlot(e, c),
       ],
+      targetChoiceSlots: targetChoices.slots,
       proficiencyChoiceSlots: proficiencySlots,
       expertiseChoiceSlots: expertiseSlots,
       spellChoiceSlots: spellChoiceSlots,
@@ -1048,19 +1056,106 @@ class CharacterCompiler {
     return ac;
   }
 
-  Attack _attack(Character c, Weapon w, Map<Ability, int> mods, int profBonus,
-      SheetBuilder b,
-      {int magicBonus = 0, String? weaponId, String? name}) {
-    final int abilityMod;
-    if (w.isRanged) {
-      abilityMod = mods[Ability.dexterity]!;
-    } else if (w.isFinesse) {
-      abilityMod = max(mods[Ability.strength]!, mods[Ability.dexterity]!);
-    } else {
-      abilityMod = mods[Ability.strength]!;
+  _TargetChoiceResolution _resolveTargetChoices(
+      Character c, SheetBuilder builder) {
+    final slots = <TargetChoiceSlot>[];
+    final entryIdsByGroup = <String, Set<String>>{};
+
+    for (final effect in builder.targetChoiceSlots.values) {
+      final eligibleEntryIds = <String>[];
+      for (final entry in c.inventory) {
+        final resolved = InventoryOps.resolve(entry, repo);
+        final weapon = resolved.weapon;
+        if (weapon == null) continue;
+
+        final generated = entry.origin == 'effect-target:${effect.groupId}';
+        final filter = generated ? effect.createFilter : effect.existingFilter;
+        if (filter == null) continue;
+        final isMagic =
+            resolved.item?.isMagic == true || weapon.magicBonus != 0;
+        if (_weaponMatches(filter, weapon, isMagic: isMagic)) {
+          eligibleEntryIds.add(entry.entryId);
+        }
+      }
+
+      final eligible = eligibleEntryIds.toSet();
+      final chosen = <String>[];
+      for (final entryId in c.effectTargets[effect.groupId] ?? const []) {
+        if (chosen.length >= effect.count) break;
+        if (eligible.contains(entryId) && !chosen.contains(entryId)) {
+          chosen.add(entryId);
+        }
+      }
+      entryIdsByGroup[effect.groupId] = chosen.toSet();
+
+      final creatableWeaponIds = effect.createFilter == null
+          ? const <String>[]
+          : [
+              for (final weapon in repo.weaponsSorted)
+                if (_weaponMatches(
+                  effect.createFilter!,
+                  weapon,
+                  isMagic: weapon.magicBonus != 0,
+                ))
+                  weapon.id,
+            ];
+
+      slots.add(TargetChoiceSlot(
+        groupId: effect.groupId,
+        name: effect.name,
+        count: effect.count,
+        replaceable: effect.replaceable,
+        eligibleEntryIds: List.unmodifiable(eligibleEntryIds),
+        creatableWeaponIds: List.unmodifiable(creatableWeaponIds),
+        chosenEntryIds: List.unmodifiable(chosen),
+      ));
     }
 
-    final proficient = w.isProficientWith(b.weaponProficiencies);
+    return _TargetChoiceResolution(
+      slots: List.unmodifiable(slots),
+      entryIdsByGroup: entryIdsByGroup,
+    );
+  }
+
+  Attack _attack(Character c, Weapon w, Map<Ability, int> mods, int profBonus,
+      SheetBuilder b,
+      {int magicBonus = 0,
+      String? weaponId,
+      String? sourceEntryId,
+      String? name,
+      bool isMagic = false,
+      Set<String> activeTargetGroups = const {}}) {
+    final normalAbilities = <Ability>[];
+    if (w.isRanged) {
+      normalAbilities.add(Ability.dexterity);
+    } else if (w.isFinesse) {
+      normalAbilities.addAll([Ability.strength, Ability.dexterity]);
+    } else {
+      normalAbilities.add(Ability.strength);
+    }
+
+    final context = _WeaponAttackContext(
+      proficient: w.isProficientWith(b.weaponProficiencies),
+      abilityOptions: normalAbilities,
+      damageTypeOptions: [w.damageType],
+      extraAttacks: b.maxExtraAttack,
+    );
+    for (final rule in b.weaponRules) {
+      final targetGroupId = rule.targetGroupId;
+      if (targetGroupId != null &&
+          !activeTargetGroups.contains(targetGroupId)) {
+        continue;
+      }
+      if (!_weaponMatches(rule.filter, w, isMagic: isMagic)) continue;
+      context.apply(rule);
+    }
+
+    var abilityUsed = context.abilityOptions.first;
+    for (final candidate in context.abilityOptions.skip(1)) {
+      if (mods[candidate]! > mods[abilityUsed]!) abilityUsed = candidate;
+    }
+    final abilityMod = mods[abilityUsed]!;
+    final proficient = context.proficient;
     // El bono mágico suma al ataque y al daño. Vive en el arma y no como
     // efecto porque ningún efecto sabe decir "solo esta arma".
     final attackBonus =
@@ -1096,19 +1191,75 @@ class CharacterCompiler {
 
     return Attack(
       weaponId: weaponId ?? w.id,
+      baseWeaponId: w.id,
+      sourceEntryId: sourceEntryId,
       name: name ?? w.name,
       attackBonus: attackBonus,
+      proficient: proficient,
+      abilityUsed: abilityUsed,
       damage: _damageString(dice, damageMod + w.magicBonus + magicBonus),
       damageType: w.damageType,
+      damageTypeOptions: List.unmodifiable(context.damageTypeOptions),
+      spellcastingFocus: context.spellcastingFocus,
+      attacksPerAction: 1 + context.extraAttacks,
       mastery: hasMastery ? w.mastery : null,
       offHand: offHand,
       action: action,
     );
   }
 
+  bool _weaponMatches(WeaponFilter filter, Weapon weapon,
+      {required bool isMagic}) {
+    if (filter.magic != null && filter.magic != isMagic) return false;
+    if (filter.melee != null && filter.melee != !weapon.isRanged) return false;
+    if (filter.categories.isNotEmpty &&
+        !filter.categories.contains(weapon.category)) return false;
+    if (filter.properties.isNotEmpty &&
+        !filter.properties.every(weapon.properties.contains)) return false;
+    return true;
+  }
+
   String _damageString(String dice, int mod) {
     if (mod == 0) return dice;
     return mod > 0 ? '$dice + $mod' : '$dice - ${mod.abs()}';
+  }
+}
+
+class _TargetChoiceResolution {
+  final List<TargetChoiceSlot> slots;
+  final Map<String, Set<String>> entryIdsByGroup;
+
+  const _TargetChoiceResolution({
+    required this.slots,
+    required this.entryIdsByGroup,
+  });
+}
+
+class _WeaponAttackContext {
+  bool proficient;
+  final List<Ability> abilityOptions;
+  final List<String> damageTypeOptions;
+  bool spellcastingFocus = false;
+  int extraAttacks;
+
+  _WeaponAttackContext({
+    required this.proficient,
+    required Iterable<Ability> abilityOptions,
+    required Iterable<String> damageTypeOptions,
+    this.extraAttacks = 0,
+  })  : abilityOptions = abilityOptions.toSet().toList(),
+        damageTypeOptions = damageTypeOptions.toSet().toList();
+
+  void apply(WeaponRuleEffect rule) {
+    proficient = proficient || rule.grantsProficiency;
+    for (final ability in rule.abilityOptions) {
+      if (!abilityOptions.contains(ability)) abilityOptions.add(ability);
+    }
+    for (final type in rule.damageTypeOptions) {
+      if (!damageTypeOptions.contains(type)) damageTypeOptions.add(type);
+    }
+    spellcastingFocus = spellcastingFocus || rule.spellcastingFocus;
+    extraAttacks = max(extraAttacks, rule.extraAttacks);
   }
 }
 

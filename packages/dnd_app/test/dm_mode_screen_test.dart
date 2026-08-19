@@ -275,5 +275,51 @@ void main() {
       expect(find.text('No hay ningún combate en curso.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets(
+      'un monstruo a 0 PG se marca caído y su turno se salta al avanzar',
+      (tester) async {
+        final server = await pumpDmMode(tester, seed: seedTable);
+        await enterCode(tester, 'CODE-0001');
+        await openCombate(tester);
+        await tester.tap(find.text('Empezar combate'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Sumar a la iniciativa'));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '20');
+        await tester.tap(find.text('Guardar'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Sumar monstruo'));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), 'goblin');
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(ListTile, 'Guerrero goblin'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Sumar'));
+        await tester.pumpAndSettle();
+
+        // El campo trae "1" por defecto: se sube antes de dañar para
+        // liquidarlo de un solo golpe, sin importar sus PG máximos reales.
+        await tester.enterText(find.byType(TextField).last, '999');
+        await tester.tap(find.byTooltip('Dañar'));
+        await tester.pumpAndSettle();
+
+        expect(find.textContaining('caído'), findsOneWidget);
+        final goblin = server.encounters['tumba']!.combatants.firstWhere(
+          (c) => c.kind == CombatantKind.monster,
+        );
+        expect(goblin.currentHp, 0);
+
+        // Con Sagan (iniciativa 20) en pie y el goblin caído, avanzar no
+        // tiene a quién más pasarle el turno: le toca otra ronda a Sagan.
+        await tester.tap(find.text('Siguiente turno'));
+        await tester.pumpAndSettle();
+
+        expect(server.encounters['tumba']!.round, 2);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }

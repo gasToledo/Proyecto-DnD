@@ -239,6 +239,181 @@ void main() {
     });
   });
 
+  group('Combatant.isDown', () {
+    test('un monstruo a 0 PG está caído', () {
+      const c = Combatant(
+        id: 'g',
+        kind: CombatantKind.monster,
+        name: 'Goblin',
+        initiative: 10,
+        currentHp: 0,
+        maxHp: 7,
+      );
+      expect(c.isDown, isTrue);
+    });
+
+    test('un monstruo con PG restantes no está caído', () {
+      const c = Combatant(
+        id: 'g',
+        kind: CombatantKind.monster,
+        name: 'Goblin',
+        initiative: 10,
+        currentHp: 1,
+        maxHp: 7,
+      );
+      expect(c.isDown, isFalse);
+    });
+
+    // Los PG de un jugador nunca se llevan acá (maxHp queda en 0 por
+    // defecto), así que esta condición no puede dispararse por accidente
+    // aunque algo mande currentHp en 0 para un jugador.
+    test('un jugador nunca está "caído" según este chequeo', () {
+      const c = Combatant(
+        id: 'p',
+        kind: CombatantKind.player,
+        name: 'Sagan',
+        initiative: 10,
+        currentHp: 0,
+        maxHp: 0,
+      );
+      expect(c.isDown, isFalse);
+    });
+  });
+
+  group('Encounter — turnos y monstruos caídos', () {
+    // g está a 0 PG desde el arranque: el turno tiene que saltarlo entero,
+    // como si nunca hubiera podido actuar.
+    Encounter tableWithDowned() {
+      var e = const Encounter(id: 'x');
+      e = e.withCombatant(
+        const Combatant(
+          id: 'a',
+          kind: CombatantKind.player,
+          name: 'A',
+          initiative: 20,
+        ),
+      );
+      e = e.withCombatant(
+        const Combatant(
+          id: 'g',
+          kind: CombatantKind.monster,
+          name: 'Goblin',
+          initiative: 15,
+          currentHp: 0,
+          maxHp: 7,
+        ),
+      );
+      e = e.withCombatant(
+        const Combatant(
+          id: 'c',
+          kind: CombatantKind.player,
+          name: 'C',
+          initiative: 10,
+        ),
+      );
+      return e;
+    }
+
+    test('next salta directo al siguiente en pie', () {
+      final e = tableWithDowned().next();
+      expect(e.current!.id, 'c');
+      expect(e.round, 1);
+    });
+
+    test('onDeck también salta al caído', () {
+      expect(tableWithDowned().onDeck!.id, 'c');
+    });
+
+    // Bajar a alguien a 0 PG en medio de su propio turno (justo antes de que
+    // el DM avance) tiene que saltarlo igual: no importa cuándo cayó.
+    test('un combatiente que cae en su propio turno se salta al avanzar', () {
+      var e = const Encounter(id: 'x');
+      e = e.withCombatant(
+        const Combatant(
+          id: 'g',
+          kind: CombatantKind.monster,
+          name: 'Goblin',
+          initiative: 20,
+          currentHp: 7,
+          maxHp: 7,
+        ),
+      );
+      e = e.withCombatant(
+        const Combatant(
+          id: 'a',
+          kind: CombatantKind.player,
+          name: 'A',
+          initiative: 10,
+        ),
+      );
+      e = e.withHp('g', 0); // el DM le pega el golpe final en su propio turno
+
+      expect(e.next().current!.id, 'a');
+    });
+
+    // Con un solo sobreviviente, "avanzar" es una vuelta entera de ronda que
+    // vuelve a caer en la misma persona — no queda nadie más a quién pasarle
+    // la posta.
+    test('con un solo sobreviviente, next le da otra ronda a él mismo', () {
+      var e = const Encounter(id: 'x');
+      e = e.withCombatant(
+        const Combatant(
+          id: 'a',
+          kind: CombatantKind.player,
+          name: 'A',
+          initiative: 20,
+        ),
+      );
+      e = e.withCombatant(
+        const Combatant(
+          id: 'g',
+          kind: CombatantKind.monster,
+          name: 'Goblin',
+          initiative: 10,
+          currentHp: 0,
+          maxHp: 7,
+        ),
+      );
+
+      final after = e.next();
+      expect(after.current!.id, 'a');
+      expect(after.round, 2);
+      expect(e.onDeck, isNull);
+    });
+
+    // Si no queda nadie en pie, no hay a quién pasarle el turno: mejor no
+    // avanzar que fingir un turno que no le toca a nadie.
+    test('si todos están caídos, next no cambia nada', () {
+      var e = const Encounter(id: 'x');
+      e = e.withCombatant(
+        const Combatant(
+          id: 'g1',
+          kind: CombatantKind.monster,
+          name: 'Goblin',
+          initiative: 20,
+          currentHp: 0,
+          maxHp: 7,
+        ),
+      );
+      e = e.withCombatant(
+        const Combatant(
+          id: 'g2',
+          kind: CombatantKind.monster,
+          name: 'Goblin 2',
+          initiative: 10,
+          currentHp: 0,
+          maxHp: 7,
+        ),
+      );
+
+      final after = e.next();
+      expect(after.round, e.round);
+      expect(after.turnIndex, e.turnIndex);
+      // Igual muestra a alguien en vez de un turno vacío: no hay nadie mejor.
+      expect(e.current, isNotNull);
+    });
+  });
+
   group('Encounter.statusFor', () {
     late Encounter e;
 

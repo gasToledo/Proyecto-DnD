@@ -53,6 +53,13 @@ class Combatant {
     this.maxHp = 0,
   });
 
+  /// Un monstruo a 0 PG está inconsciente o muerto: no le toca actuar y su
+  /// turno se salta solo (ver `Encounter.next`). Nunca es cierto para un
+  /// jugador — sus PG no se llevan acá, así que [maxHp] siempre da 0 y la
+  /// condición no puede dispararse por accidente.
+  bool get isDown =>
+      kind == CombatantKind.monster && maxHp > 0 && currentHp <= 0;
+
   Combatant copyWith({int? currentHp}) => Combatant(
         id: id,
         kind: kind,
@@ -146,34 +153,67 @@ class Encounter {
     this.combatants = const [],
   });
 
-  /// El combatiente cuyo turno es ahora, o null si no hay nadie en la mesa.
-  Combatant? get current =>
-      combatants.isEmpty ? null : combatants[turnIndex % combatants.length];
-
-  /// El siguiente en el orden, envolviendo al final de la ronda. Es a quien
-  /// le llega el aviso "preparate, seguís vos".
-  Combatant? get onDeck {
-    if (combatants.length < 2) return null;
-    return combatants[(turnIndex + 1) % combatants.length];
+  /// La primera posición a partir de [start] (**sin** acotar a la lista)
+  /// cuyo combatiente no está [Combatant.isDown], o `null` si todos lo
+  /// están. Se devuelve sin aplicar `% length` a propósito: así el llamador
+  /// puede distinguir "encontrado sin dar la vuelta" (posición < length) de
+  /// "encontrado después de cruzar el final de la lista" (posición >=
+  /// length), que es exactamente lo que separa una ronda de la siguiente.
+  int? _nextStandingPosition(int start) {
+    final n = combatants.length;
+    if (n == 0) return null;
+    for (var offset = 0; offset < n; offset++) {
+      final position = start + offset;
+      if (!combatants[position % n].isDown) return position;
+    }
+    return null;
   }
 
-  /// Avanza un turno. Al pasar el último combatiente, vuelve al primero y
+  /// Índice real del turno actual: [turnIndex] si sigue en pie, o el primer
+  /// combatiente en pie a partir de ahí. Si no queda ninguno en pie, cae de
+  /// vuelta en [turnIndex] tal cual — no hay nadie mejor a quién señalar.
+  int get _currentIndex {
+    final position = _nextStandingPosition(turnIndex);
+    return (position ?? turnIndex) % combatants.length;
+  }
+
+  /// El combatiente cuyo turno es ahora, o null si no hay nadie en la mesa.
+  ///
+  /// Salta cualquier monstruo a 0 PG a partir de [turnIndex]: está
+  /// inconsciente o muerto, no actúa.
+  Combatant? get current =>
+      combatants.isEmpty ? null : combatants[_currentIndex];
+
+  /// El siguiente en pie después de [current], envolviendo al final de la
+  /// ronda. Es a quien le llega el aviso "preparate, seguís vos" — por eso
+  /// también salta caídos: avisarle a alguien que en realidad va después de
+  /// un monstruo inconsciente sería mentirle sobre cuánto falta.
+  Combatant? get onDeck {
+    if (combatants.length < 2) return null;
+    final currentIndex = _currentIndex;
+    final position = _nextStandingPosition(currentIndex + 1);
+    if (position == null) return null;
+    final index = position % combatants.length;
+    return index == currentIndex ? null : combatants[index];
+  }
+
+  /// Avanza al siguiente combatiente en pie, saltando cualquier monstruo a
+  /// 0 PG en el camino. Al cruzar el final de la lista vuelve al principio y
   /// suma una ronda.
+  ///
+  /// Si nadie sigue en pie (todos caídos), no hay a quién pasarle el turno:
+  /// el encuentro queda tal cual, porque avanzar no tendría destino. Le toca
+  /// al DM sacar a los caídos de la mesa o cerrar el combate.
   Encounter next() {
     if (combatants.isEmpty) return this;
-    final nextIndex = turnIndex + 1;
-    if (nextIndex >= combatants.length) {
-      return Encounter(
-        id: id,
-        round: round + 1,
-        turnIndex: 0,
-        combatants: combatants,
-      );
-    }
+    final currentIndex = _currentIndex;
+    final position = _nextStandingPosition(currentIndex + 1);
+    if (position == null) return this;
+    final wrapped = position >= combatants.length;
     return Encounter(
       id: id,
-      round: round,
-      turnIndex: nextIndex,
+      round: wrapped ? round + 1 : round,
+      turnIndex: position % combatants.length,
       combatants: combatants,
     );
   }

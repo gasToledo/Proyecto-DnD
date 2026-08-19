@@ -327,9 +327,23 @@ class _CombatantTileState extends State<_CombatantTile> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  combatant.name,
-                  style: const TextStyle(fontFamily: 'Georgia', fontSize: 16),
+                Row(
+                  children: [
+                    Text(
+                      combatant.name,
+                      style: const TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 16,
+                      ),
+                    ),
+                    if (combatant.isDown) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        '· caído, se salta su turno',
+                        style: TextStyle(fontSize: 12, color: pal.textMuted),
+                      ),
+                    ],
+                  ],
                 ),
                 if (currentHp != null && maxHp != null && maxHp > 0) ...[
                   const SizedBox(height: 4),

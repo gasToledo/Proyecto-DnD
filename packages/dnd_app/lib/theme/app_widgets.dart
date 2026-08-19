@@ -979,6 +979,10 @@ class Medallion extends StatelessWidget {
   final IconData? emblemIcon;
   final Color? emblemColor;
 
+  /// URL base (sin `?w=`) que reemplaza a [PortraitImage.urlFor] cuando el
+  /// retrato no es de la propia cuenta — ver [PortraitImage.urlForMember].
+  final String? portraitUrlBase;
+
   const Medallion({
     super.key,
     this.portraitKey,
@@ -986,6 +990,7 @@ class Medallion extends StatelessWidget {
     this.size = 74,
     this.emblemIcon,
     this.emblemColor,
+    this.portraitUrlBase,
   });
 
   @override
@@ -1019,14 +1024,17 @@ class Medallion extends StatelessWidget {
     // raro. Si aparece, la salida es recortar del lado del servidor, no pedir
     // de más acá.
     final key = portraitKey;
+    final width = PortraitImage.thumbnailWidthFor(
+      size,
+      MediaQuery.devicePixelRatioOf(context),
+    );
+    final base = portraitUrlBase;
     final source = key == null
         ? null
-        : PortraitImage.provider(
-            key,
-            width: PortraitImage.thumbnailWidthFor(
-              size,
-              MediaQuery.devicePixelRatioOf(context),
-            ),
+        : NetworkImage(
+            base != null
+                ? (width == null ? base : '$base?w=$width')
+                : PortraitImage.urlFor(key, width: width),
           );
 
     return Semantics(

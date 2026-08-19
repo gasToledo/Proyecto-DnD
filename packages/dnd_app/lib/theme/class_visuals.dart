@@ -105,12 +105,14 @@ class ClassMedallion extends StatelessWidget {
   final String? portraitKey;
   final String fallback;
   final double size;
+  final String? portraitUrlBase;
   const ClassMedallion({
     super.key,
     required this.klass,
     required this.fallback,
     this.portraitKey,
     this.size = 74,
+    this.portraitUrlBase,
   });
 
   @override
@@ -122,6 +124,7 @@ class ClassMedallion extends StatelessWidget {
       size: size,
       emblemIcon: klass == null ? null : classIcon(klass),
       emblemColor: klass == null ? null : classAccent(klass, gold),
+      portraitUrlBase: portraitUrlBase,
     );
   }
 }

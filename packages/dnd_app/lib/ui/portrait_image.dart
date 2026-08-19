@@ -23,6 +23,27 @@ class PortraitImage extends StatelessWidget {
       ? '/api/portraits/$portraitKey'
       : '/api/portraits/$portraitKey?w=$width';
 
+  /// URL del retrato de un personaje vinculado a una campaña ajena. El DM no
+  /// puede usar [urlFor] con la clave tal cual: esa ruta deriva el dueño de
+  /// la sesión, así que serviría 404 en el retrato de otra cuenta. Esta pega
+  /// contra la ruta que sí resuelve el dueño real a partir del vínculo (ver
+  /// `_memberPortraitHandler` en el servidor), que solo necesita el nombre de
+  /// archivo — el resto de la clave (`characterId/`) lo reconstruye el
+  /// servidor desde el vínculo mismo.
+  static String urlForMember(
+    String campaignId,
+    String memberId,
+    String portraitKey, {
+    int? width,
+  }) {
+    final fileName = portraitKey.split('/').last;
+    final base =
+        '/api/campaigns/${Uri.encodeComponent(campaignId)}'
+        '/members/${Uri.encodeComponent(memberId)}'
+        '/portrait/${Uri.encodeComponent(fileName)}';
+    return width == null ? base : '$base?w=$width';
+  }
+
   /// [ImageProvider] para widgets que no aceptan un [Widget] de imagen
   /// directamente (por ejemplo un medallón con retrato de fondo).
   ///

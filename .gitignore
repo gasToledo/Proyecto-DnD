@@ -55,6 +55,7 @@ docs/*
 !docs/Informacion tecnica del proyecto/
 docs/Informacion tecnica del proyecto/*
 !docs/Informacion tecnica del proyecto/despliegue.md
+!docs/Informacion tecnica del proyecto/vinculo-personaje-campania.md
 !docs/Auditorias/
 docs/Auditorias/*
 !docs/Auditorias/auditoria-contenido-srd-efa-post-0.7.0.md

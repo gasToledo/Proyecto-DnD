@@ -9,6 +9,7 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
 import '../pending_events_gate.dart';
+import '../portrait_image.dart';
 
 /// El otro sombrero de la misma cuenta.
 ///
@@ -517,6 +518,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       itemCount: members.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, i) => _MemberCard(
+        campaignId: widget.campaign.id,
         member: members[i],
         repo: widget.repo,
         onRemove: () => _removeMember(members[i]),
@@ -530,11 +532,13 @@ class _CampaignDetailState extends State<_CampaignDetail> {
 /// Se compila igual que en el panel de personajes: el DM ve lo que el jugador
 /// tiene ahora, porque el vínculo apunta a la ficha real y no a una copia.
 class _MemberCard extends StatelessWidget {
+  final String campaignId;
   final CampaignMember member;
   final ContentRepository repo;
   final VoidCallback onRemove;
 
   const _MemberCard({
+    required this.campaignId,
     required this.member,
     required this.repo,
     required this.onRemove,
@@ -549,6 +553,7 @@ class _MemberCard extends StatelessWidget {
     final race = repo.race(character.raceId);
     final maxHp = sheet.maxHp;
     final currentHp = character.combat.currentHp;
+    final portraitKey = character.portraitPaths.firstOrNull;
 
     return Container(
       decoration: BoxDecoration(
@@ -562,7 +567,14 @@ class _MemberCard extends StatelessWidget {
         children: [
           ClassMedallion(
             klass: klass,
-            portraitKey: character.portraitPaths.firstOrNull,
+            portraitKey: portraitKey,
+            portraitUrlBase: portraitKey == null
+                ? null
+                : PortraitImage.urlForMember(
+                    campaignId,
+                    member.memberId,
+                    portraitKey,
+                  ),
             fallback: character.name.characters.firstOrNull ?? '?',
             size: 48,
           ),

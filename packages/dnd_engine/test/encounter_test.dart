@@ -180,6 +180,48 @@ void main() {
       expect(afterB.current!.id, 'a');
     });
 
+    // Regresión: cargar al jugador primero y a los monstruos después le daba
+    // el primer turno al jugador aunque todos le ganaran la iniciativa,
+    // porque `withCombatant` le conservaba un turno que en realidad nadie
+    // había empezado a jugar.
+    test(
+        'mientras se arma el orden, el turno queda en la iniciativa más '
+        'alta sin importar el orden de carga', () {
+      var e = const Encounter(id: 'x');
+      e = e.withCombatant(
+        const Combatant(
+          id: 'sagan',
+          kind: CombatantKind.player,
+          name: 'Sagan',
+          initiative: 8,
+        ),
+      );
+      e = e.withCombatant(
+        const Combatant(
+          id: 'g1',
+          kind: CombatantKind.monster,
+          name: 'Goblin',
+          initiative: 15,
+          currentHp: 7,
+          maxHp: 7,
+        ),
+      );
+      e = e.withCombatant(
+        const Combatant(
+          id: 'g2',
+          kind: CombatantKind.monster,
+          name: 'Goblin 2',
+          initiative: 12,
+          currentHp: 7,
+          maxHp: 7,
+        ),
+      );
+
+      expect(e.combatants.map((c) => c.id), ['g1', 'g2', 'sagan']);
+      expect(e.current!.id, 'g1');
+      expect(e.round, 1);
+    });
+
     test('withCombatant no pierde el turno en curso al reordenar', () {
       var e = const Encounter(id: 'x');
       e = e.withCombatant(

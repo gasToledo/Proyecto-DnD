@@ -229,8 +229,15 @@ class Encounter {
   /// turno, para no perderlo en el reordenamiento — salvo que ese mismo
   /// combatiente sea el que se está reemplazando, en cuyo caso el turno se
   /// queda donde está.
+  ///
+  /// **Mientras se arma el orden eso no aplica**: si nadie avanzó todavía
+  /// ningún turno (ronda 1, primer puesto), el turno vuelve al primero de la
+  /// iniciativa en vez de quedarse clavado en quien se cargó primero. Sin
+  /// esto, cargar al jugador antes que a los monstruos le daba el primer
+  /// turno aunque todos le ganaran la iniciativa.
   Encounter withCombatant(Combatant combatant) {
-    final currentId = combatants.isEmpty ? null : current?.id;
+    final settingUp = round == 1 && turnIndex == 0;
+    final currentId = settingUp || combatants.isEmpty ? null : current?.id;
     final withIndex = [
       for (final (i, c) in combatants.indexed)
         if (c.id != combatant.id) (index: i, combatant: c),

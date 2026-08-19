@@ -90,6 +90,10 @@ class EncounterView extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       children: [
         _header(context, current),
+        if (_sideWipedBanner(context, current) case final banner?) ...[
+          const SizedBox(height: 16),
+          banner,
+        ],
         if (unadded.isNotEmpty) ...[
           const SizedBox(height: 16),
           _pendingPlayers(context, unadded),
@@ -123,7 +127,6 @@ class EncounterView extends StatelessWidget {
   }
 
   Widget _header(BuildContext context, Encounter current) {
-    final pal = context.palette;
     return Wrap(
       alignment: WrapAlignment.spaceBetween,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -134,8 +137,12 @@ class EncounterView extends StatelessWidget {
           'Ronda ${current.round}',
           style: const TextStyle(fontFamily: 'Georgia', fontSize: 22),
         ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
+        // Wrap y no Row: con tres botones con texto, una ventana angosta los
+        // desbordaba en una sola línea que no podía partirse.
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             OutlinedButton.icon(
               onPressed: () async {
@@ -147,22 +154,97 @@ class EncounterView extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Sumar monstruo'),
             ),
-            const SizedBox(width: 8),
             if (current.combatants.isNotEmpty)
               FilledButton.icon(
                 onPressed: onNextTurn,
                 icon: const Icon(Icons.skip_next),
                 label: const Text('Siguiente turno'),
               ),
-            const SizedBox(width: 8),
-            IconButton(
-              tooltip: 'Cerrar combate',
+            // Icono + texto y sin carmesí: un banderín rojo suelto se leía
+            // como "rendirse". Terminar el combate es el final normal de un
+            // encuentro, no una acción de peligro — el carmesí queda para el
+            // botón de confirmar, que sí descarta el orden de turnos.
+            OutlinedButton.icon(
               onPressed: () => _confirmClose(context),
-              icon: Icon(Icons.flag_outlined, color: pal.crimson),
+              icon: const Icon(Icons.done_all),
+              label: const Text('Terminar combate'),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  /// Aviso de que un bando se quedó sin nadie en pie, con la salida a mano.
+  ///
+  /// Vive acá y no en [Encounter] porque hace falta cruzar dos fuentes: los
+  /// PG de los monstruos, que sí están en el encuentro, y los de los
+  /// jugadores, que viven en su ficha real y llegan por [members]. Partir la
+  /// cuenta en dos lugares sería peor que tenerla entera donde están los dos
+  /// datos.
+  ///
+  /// Es un cartel y no un diálogo a propósito: los PG de los jugadores se
+  /// releen cada 5 s, y un modal que se abre solo podría saltar justo encima
+  /// de lo que el DM está tipeando. Avisa y espera.
+  Widget? _sideWipedBanner(BuildContext context, Encounter current) {
+    final players = [
+      for (final c in current.combatants)
+        if (c.kind == CombatantKind.player) c,
+    ];
+    final monsters = [
+      for (final c in current.combatants)
+        if (c.kind == CombatantKind.monster) c,
+    ];
+
+    bool playerIsDown(Combatant combatant) {
+      final member = members
+          .where((m) => m.memberId == combatant.memberId)
+          .firstOrNull;
+      // Sin la ficha a la vista no se asume nada: mejor no avisar que avisar
+      // de una derrota que no pasó.
+      if (member == null) return false;
+      return member.character.combat.currentHp <= 0;
+    }
+
+    final monstersWiped =
+        monsters.isNotEmpty && monsters.every((c) => c.isDown);
+    final playersWiped = players.isNotEmpty && players.every(playerIsDown);
+    if (!monstersWiped && !playersWiped) return null;
+
+    final message = switch ((monstersWiped, playersWiped)) {
+      (true, true) => 'No queda nadie en pie.',
+      (true, false) => 'No queda ningún enemigo en pie.',
+      _ => 'No queda ningún personaje en pie.',
+    };
+
+    final pal = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: pal.gold),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 8,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.emoji_events_outlined, size: 18, color: pal.gold),
+              const SizedBox(width: 8),
+              Text('$message ¿Damos el encuentro por terminado?'),
+            ],
+          ),
+          FilledButton.icon(
+            onPressed: () => _confirmClose(context),
+            icon: const Icon(Icons.done_all),
+            label: const Text('Terminar combate'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -219,7 +301,7 @@ class EncounterView extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Cerrar combate'),
+        title: const Text('Terminar combate'),
         content: const Text(
           'Se borra el orden de turnos. Queda un registro liviano de lo que '
           'pasó, sin PG ni daños: eso lo lleva cada jugador en su ficha.',
@@ -231,8 +313,8 @@ class EncounterView extends StatelessWidget {
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(ctx).pop(true),
-            icon: const Icon(Icons.flag_outlined),
-            label: const Text('Cerrar combate'),
+            icon: const Icon(Icons.done_all),
+            label: const Text('Terminar combate'),
             style: FilledButton.styleFrom(
               backgroundColor: context.palette.crimson,
             ),

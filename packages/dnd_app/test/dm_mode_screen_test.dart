@@ -266,9 +266,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(server.encounters['tumba']!.round, 2);
 
-      await tester.tap(find.byTooltip('Cerrar combate'));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Cerrar combate'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Terminar combate'));
       await tester.pumpAndSettle();
 
       expect(server.encounters, isNot(contains('tumba')));
@@ -321,5 +321,73 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    // Sin enemigos en pie el encuentro ya está resuelto, pero cerrarlo lo
+    // decide el DM: se ofrece, no se hace solo.
+    testWidgets('sin enemigos en pie ofrece terminar el encuentro', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar monstruo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'goblin');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Guerrero goblin'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('No queda ningún enemigo'), findsNothing);
+
+      await tester.enterText(find.byType(TextField).last, '999');
+      await tester.tap(find.byTooltip('Dañar'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('No queda ningún enemigo en pie'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    // El orden de carga no puede decidir el turno: el jugador entra primero
+    // pero con iniciativa baja, así que arranca el goblin.
+    testWidgets('el primer turno es del de mayor iniciativa, no del que se '
+        'cargó primero', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sumar a la iniciativa'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '8');
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sumar monstruo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'goblin');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Guerrero goblin'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+
+      // La iniciativa del goblin se tira sola, así que no se puede fijar
+      // quién gana: lo que sí tiene que valer siempre es que el turno esté
+      // en la iniciativa más alta de la mesa, y no en quien se cargó primero.
+      final encounter = server.encounters['tumba']!;
+      final highest = encounter.combatants
+          .map((c) => c.initiative)
+          .reduce((a, b) => a > b ? a : b);
+      expect(encounter.current!.initiative, highest);
+      expect(encounter.turnIndex, 0);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

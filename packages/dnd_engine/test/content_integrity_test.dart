@@ -72,7 +72,11 @@ void main() {
       // mágicas SRD y 9 EFA.
       expect(repo.items, hasLength(402));
       expect(repo.spells, hasLength(392));
-      expect(repo.creatures, hasLength(117));
+      // 330 perfiles del capítulo «Monstruos» y del apéndice «Animales» del
+      // SRD 5.2.1, más las 37 que no salen de ahí: 31 invocaciones por fórmula
+      // (espíritus, cañones, corceles) escritas a mano desde los conjuros, y 6
+      // de PHB/EFA. Las genera `tool/generate_bestiary.dart`.
+      expect(repo.creatures, hasLength(367));
     });
 
     test('las procedencias coinciden con el cruce contra el SRD 5.2.1', () {
@@ -94,6 +98,14 @@ void main() {
         ContentSource.srd2024: 26,
         ContentSource.phb2024: 135,
         ContentSource.foa2025: 28,
+      });
+      // Las criaturas se generan desde el PDF del SRD 5.2.1, que es CC-BY
+      // entero: por eso todo lo importado cae en `srd2024` y no hay forma de
+      // que se cuele un perfil de otro libro sin que este número se mueva.
+      expect(porFuente(repo.creatures.values), {
+        ContentSource.srd2024: 338,
+        ContentSource.phb2024: 25,
+        ContentSource.foa2025: 4,
       });
     });
   });
@@ -1217,23 +1229,40 @@ void main() {
         expect(c.creatureSize, isNotNull, reason: '${c.id}: «${c.kind}»');
       }
 
-      // Los únicos sin tipo son los cañones del artífice: «Objeto» no es un
-      // tipo de criatura del SRD. Inventarles uno sería peor que no tenerlo —
-      // son invocaciones y `creaturesSorted` ya las deja afuera del Modo DM.
+      // Los únicos sin tipo son los que no tienen uno solo, y está bien que
+      // queden en null en vez de inventarles uno:
+      //
+      // - los cañones del artífice, que son «Objeto» y eso no es un tipo del
+      //   SRD (además son invocaciones, afuera del Modo DM por
+      //   `creaturesSorted`);
+      // - los enjambres, que son «Enjambre Mediano de bestias Diminutas». Que
+      //   den null los mantiene fuera del pozo de Forma Salvaje, que es lo
+      //   correcto: un enjambre no es una bestia en la que transformarse.
       final sinTipo = [
         for (final c in repo.creatures.values)
           if (c.creatureType == null) c.id,
-      ];
-      expect(sinTipo, ['eldritch-cannon', 'eldritch-cannon-explosive']);
+      ]..sort();
+      expect(sinTipo, [
+        'eldritch-cannon',
+        'eldritch-cannon-explosive',
+        'swarm-of-bats',
+        'swarm-of-crawling-claws',
+        'swarm-of-insects',
+        'swarm-of-piranhas',
+        'swarm-of-rats',
+        'swarm-of-ravens',
+        'swarm-of-venomous-snakes',
+      ]);
     });
 
-    test('una etiqueta al final del perfil no se come el tamaño', () {
-      // El pteranodon es «Bestia Mediana (dinosaurio)»: sacar el tamaño de la
-      // última palabra daba «(dinosaurio)» y la forma salvaje se quedaba con
-      // el tamaño del druida. Es la única entrada así hoy, y por eso el
-      // catálogo no alcanza a proteger la regla por su cuenta.
+    test('una etiqueta en medio del perfil no se come el tamaño', () {
+      // El pteranodon es «Bestia Mediana (dinosaurio), sin alineamiento»:
+      // sacar el tamaño de la última palabra daba «alineamiento» y la forma
+      // salvaje se quedaba con el tamaño del druida. Todo el apéndice de
+      // animales tiene esta forma, así que la regla protege ~84 entradas.
       final p = repo.creature('pteranodon')!;
-      expect(p.kind, endsWith('(dinosaurio)'));
+      expect(p.kind, contains('(dinosaurio)'));
+      expect(p.kind, endsWith('sin alineamiento'));
       expect(p.creatureSize, CreatureSize.medium);
     });
 
@@ -1245,11 +1274,9 @@ void main() {
         repo.creatures.values.where((c) => c.isBeast && c.cr != null);
 
     test('las bestias traen VD y sus números se leen del texto', () {
-      // Las 24 de VD 0 más las 40 de VD 1/8 a 1.
       expect(beastForms().length, greaterThanOrEqualTo(60));
 
       for (final beast in beastForms()) {
-        expect(beast.cr, lessThanOrEqualTo(1), reason: beast.id);
         // Derivar en vez de duplicar solo se sostiene si el texto siempre
         // parsea: acá se cae si alguien escribe una velocidad de otra forma.
         expect(beast.walkSpeed, greaterThan(0), reason: beast.id);
@@ -1258,6 +1285,24 @@ void main() {
       // Y los espíritus quedan afuera aunque sean bestias.
       expect(repo.creature('bestial-spirit-air')!.isBeast, isTrue);
       expect(repo.creature('bestial-spirit-air')!.cr, isNull);
+    });
+
+    test('el bestiario completo no le agranda el pozo al druida', () {
+      // Esta prueba antes decía «ninguna bestia pasa de VD 1», y eso valía
+      // solo mientras el catálogo era el pozo de Forma Salvaje y nada más. Al
+      // importar el bestiario entraron elefantes, cocodrilos gigantes y
+      // dinosaurios: bestias de VD 2 a 5 que existen como enemigos.
+      //
+      // Lo que aquella aserción protegía de verdad era el pozo del druida, y
+      // eso es lo que se comprueba ahora. El tope de VD lo aplica
+      // `character_compiler.dart`, así que las bestias grandes nunca se
+      // ofrecen; acá se fija que el conjunto elegible no se movió.
+      final grandes = beastForms().where((c) => c.cr! > 1);
+      expect(grandes, isNotEmpty, reason: 'el import trajo bestias de VD alto');
+
+      // 64 es el mismo número que había antes del import: el catálogo ya tenía
+      // todas las bestias de VD 1 o menos, porque para eso se había armado.
+      expect(beastForms().where((c) => c.cr! <= 1), hasLength(64));
     });
 
     test('el pozo por nivel de druida sale de VD y vuelo', () {

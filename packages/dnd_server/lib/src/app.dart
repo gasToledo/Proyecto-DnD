@@ -1207,9 +1207,12 @@ Future<Response> _deleteChapterHandler(
 ///
 /// El aviso va al **dueño** de cada personaje vinculado y nunca al DM, que ya
 /// ve la respuesta en el momento — la misma regla de todos los avisos del
-/// proyecto. Lleva `grantsLevel` para que el cliente redacte la línea de subir
-/// de nivel: acá no se sube a nadie, porque el nivel de un personaje solo lo
-/// toca su propio asistente de subida.
+/// proyecto. Lleva `grantsLevel`, `grantsGold` y `grantsItems` para que el
+/// cliente redacte la línea de la recompensa; las tres son **solo texto**. Acá
+/// no se sube a nadie de nivel ni se le mete una moneda en la bolsa: el nivel
+/// lo toca el asistente de subida del jugador y el inventario lo escribe él.
+/// Este handler es el único punto del servidor que le escribe algo a otra
+/// cuenta, y lo que le escribe es un aviso en su bandeja, nunca su ficha.
 Future<Response> _closeChapterHandler(
   Request request,
   CampaignRepository campaigns,
@@ -1247,6 +1250,8 @@ Future<Response> _closeChapterHandler(
       'campaignName': campaign.name,
       'chapterName': chapter.name,
       'grantsLevel': chapter.grantsLevel,
+      'grantsGold': chapter.grantsGold,
+      'grantsItems': chapter.grantsItems,
     });
   }
   return _jsonOk({'status': 'ok'});

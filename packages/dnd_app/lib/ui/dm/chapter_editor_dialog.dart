@@ -1,12 +1,14 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/app_theme.dart';
+import '../../theme/app_widgets.dart';
 
-/// Editor de un capítulo: nombre, descripción y si otorga nivel.
+/// Editor de un capítulo: nombre, descripción y qué reparte al cerrarse.
 ///
 /// Es un diálogo propio y no `showTextPromptDialog` porque ese resuelve un solo
-/// campo y acá hacen falta tres. Devuelve el capítulo con los cambios, o `null`
+/// campo y acá hacen falta varios. Devuelve el capítulo con los cambios, o `null`
 /// si se canceló.
 ///
 /// Sirve para crear y para editar: [current] es el capítulo que se está
@@ -39,12 +41,22 @@ class _ChapterEditorDialogState extends State<_ChapterEditorDialog> {
   late final _summaryController = TextEditingController(
     text: widget.current.summary,
   );
+  late final _goldController = TextEditingController(
+    text: widget.current.grantsGold > 0 ? '${widget.current.grantsGold}' : '',
+  );
+  // Un ítem por línea: es la forma más corta de escribir una lista corta a
+  // mano, sin un botón de "agregar" por cada renglón.
+  late final _itemsController = TextEditingController(
+    text: widget.current.grantsItems.join('\n'),
+  );
   late bool _grantsLevel = widget.current.grantsLevel;
 
   @override
   void dispose() {
     _nameController.dispose();
     _summaryController.dispose();
+    _goldController.dispose();
+    _itemsController.dispose();
     super.dispose();
   }
 
@@ -56,6 +68,11 @@ class _ChapterEditorDialogState extends State<_ChapterEditorDialog> {
         name: name,
         summary: _summaryController.text.trim(),
         grantsLevel: _grantsLevel,
+        grantsGold: int.tryParse(_goldController.text.trim()) ?? 0,
+        grantsItems: [
+          for (final line in _itemsController.text.split('\n'))
+            if (line.trim().isNotEmpty) line.trim(),
+        ],
       ),
     );
   }
@@ -67,50 +84,86 @@ class _ChapterEditorDialogState extends State<_ChapterEditorDialog> {
       title: Text(widget.title),
       content: SizedBox(
         width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _nameController,
-              autofocus: true,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Nombre del capítulo',
-                border: OutlineInputBorder(),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _nameController,
+                autofocus: true,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre del capítulo',
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (_) => _save(),
               ),
-              onSubmitted: (_) => _save(),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _summaryController,
-              minLines: 4,
-              maxLines: 8,
-              keyboardType: TextInputType.multiline,
-              decoration: const InputDecoration(
-                labelText: 'Descripción',
-                hintText: 'Qué pasa en este tramo de la historia…',
-                alignLabelWithHint: true,
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _summaryController,
+                minLines: 4,
+                maxLines: 8,
+                keyboardType: TextInputType.multiline,
+                decoration: const InputDecoration(
+                  labelText: 'Descripción',
+                  hintText: 'Qué pasa en este tramo de la historia…',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            // No es una recompensa que la app reparta: al cerrar el capítulo
-            // solo se les avisa. Subir de nivel lo hace cada jugador desde su
-            // propia ficha, y conviene que el DM lo sepa antes de marcarlo.
-            CheckboxListTile(
-              value: _grantsLevel,
-              onChanged: (value) =>
-                  setState(() => _grantsLevel = value ?? false),
-              contentPadding: EdgeInsets.zero,
-              controlAffinity: ListTileControlAffinity.leading,
-              title: const Text('Al cerrarlo, suben de nivel'),
-              subtitle: Text(
-                'Se les avisa. La subida la hace cada jugador en su ficha.',
-                style: TextStyle(fontSize: 12, color: pal.textMuted),
+              const SizedBox(height: 16),
+              // Lo que sigue es lo que se reparte al cerrar, y nada de esto lo
+              // aplica la app: al cerrar el capítulo solo se les avisa. Ni el
+              // nivel ni la bolsa ni el inventario de un personaje los toca
+              // nadie que no sea su jugador, así que conviene que el DM sepa
+              // que está escribiendo un aviso y no una ficha.
+              const Eyebrow('Al cerrarlo se llevan'),
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                value: _grantsLevel,
+                onChanged: (value) =>
+                    setState(() => _grantsLevel = value ?? false),
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: const Text('Un nivel'),
+                subtitle: Text(
+                  'La subida la hace cada jugador en su ficha.',
+                  style: TextStyle(fontSize: 12, color: pal.textMuted),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              TextField(
+                controller: _goldController,
+                keyboardType: TextInputType.number,
+                // Solo dígitos: así el campo no puede producir oro negativo y
+                // no hace falta ningún mensaje de error explicándolo.
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'Oro para cada personaje',
+                  hintText: '0',
+                  helperText: 'Ya repartido: la app no divide el botín.',
+                  suffixText: 'po',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _itemsController,
+                minLines: 2,
+                maxLines: 6,
+                keyboardType: TextInputType.multiline,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Ítems',
+                  hintText: 'Uno por línea…',
+                  helperText: 'Se los anota cada jugador en su inventario.',
+                  alignLabelWithHint: true,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [

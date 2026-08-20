@@ -71,7 +71,11 @@ void main() {
   });
 
   group('messageForEvent — capítulos', () {
-    UserEvent chapterEvent({bool grantsLevel = false}) => UserEvent(
+    UserEvent chapterEvent({
+      bool grantsLevel = false,
+      Object? grantsGold,
+      Object? grantsItems,
+    }) => UserEvent(
       id: 'e1',
       kind: 'chapter_completed',
       payload: {
@@ -79,6 +83,8 @@ void main() {
         'campaignName': 'La Tumba',
         'chapterName': 'La Cripta',
         'grantsLevel': grantsLevel,
+        'grantsGold': ?grantsGold,
+        'grantsItems': ?grantsItems,
       },
     );
 
@@ -104,6 +110,51 @@ void main() {
 
       expect(message.text, contains('Podés subir de nivel.'));
       expect(message.tone, AppMessageTone.success);
+    });
+
+    test('el botín se dice entero y sube de tono', () {
+      final message = messageForEvent(
+        chapterEvent(
+          grantsGold: 250,
+          grantsItems: ['Espada larga +1', 'Poción de curación'],
+        ),
+      )!;
+
+      expect(
+        message.text,
+        contains('Se lleva 250 po, Espada larga +1 y Poción de curación.'),
+      );
+      expect(message.tone, AppMessageTone.success);
+    });
+
+    // El aviso lo dice; la ficha la escribe el jugador. Si alguna vez esta
+    // redacción sugiere que la app lo aplicó sola, está mintiendo.
+    test('el botín se anuncia sin prometer que ya está aplicado', () {
+      final message = messageForEvent(chapterEvent(grantsGold: 250))!;
+
+      expect(message.text, contains('Se lleva 250 po.'));
+      expect(message.text, isNot(contains('sumó')));
+      expect(message.text, isNot(contains('agregó')));
+    });
+
+    test('sin botín no aparece ninguna línea de recompensa', () {
+      final message = messageForEvent(chapterEvent())!;
+
+      expect(message.text, isNot(contains('Se lleva')));
+    });
+
+    // Un aviso guardado antes de que existiera el botín, o uno de un servidor
+    // más nuevo con otra forma: se lee como que no hubo, y no rompe la bandeja.
+    test('un botín ausente o con otra forma se lee como que no hubo', () {
+      for (final event in [
+        chapterEvent(),
+        chapterEvent(grantsGold: '250', grantsItems: 'Espada'),
+        chapterEvent(grantsGold: 0, grantsItems: const []),
+      ]) {
+        final message = messageForEvent(event)!;
+        expect(message.text, isNot(contains('Se lleva')));
+        expect(message.text, isNot(contains('null')));
+      }
     });
 
     test('un aviso de capítulo sin nombres igual dice algo legible', () {

@@ -318,6 +318,32 @@ class _ChapterCard extends StatelessWidget {
             ),
           ),
           if (open) ...[
+            // El botín de un capítulo cerrado se lee acá y no como una entrada
+            // más: no pasó en ningún momento de la noche, es lo que quedó al
+            // final. Sale del capítulo mismo, así que no hay nada que guardar.
+            if (chapter.state == ChapterState.completed &&
+                chapter.grantsLabel.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 1, right: 6),
+                    child: Icon(
+                      Icons.savings_outlined,
+                      size: 15,
+                      color: pal.gold,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Se repartió ${chapter.grantsLabel}.',
+                      style: TextStyle(fontSize: 13, color: pal.textMuted),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 14),
             if (entries.isEmpty)
               Text(

@@ -161,11 +161,25 @@ avisos.
 `grantsLevel` es **solo un aviso**, y no por timidez: `Character.level` y
 `hpPerLevel` son dos listas que el asistente de subida mantiene en sincronía, y
 subir el nivel sin agregar su entrada de PG dejaría al personaje con los PG de un
-nivel menos. La subida tiene que pasar por ese asistente, que es del jugador. Hoy
-**no existe ninguna ruta por la que el DM escriba la ficha de otra cuenta**, y
-capítulos no abrió la primera — cuando se agreguen oro e ítems como recompensa,
-esa será la fase que la abra, y necesitará sus propios límites y pruebas
-negativas.
+nivel menos. La subida tiene que pasar por ese asistente, que es del jugador.
+
+`grantsGold` y `grantsItems` llegaron después y **siguieron la misma regla en vez
+de romperla**. Se esperaba que el oro y los ítems abrieran la primera ruta por la
+que el DM escribe la ficha de otra cuenta; no la abrieron. Un capítulo declara lo
+que reparte, el aviso lo dice, y el jugador lo anota en su ficha — igual que el
+nivel. Escribirle la bolsa desde acá habría pedido resolver el conflicto con el
+jugador que justo está gastando en la taberna, más un historial para deshacerlo,
+a cambio de ahorrarle tipear un número.
+
+Así que sigue siendo cierto: **no existe ninguna ruta por la que el DM escriba la
+ficha de otra cuenta**. Lo único que le escribe es un aviso en su bandeja, y hay
+una prueba negativa que compara el documento del personaje antes y después de
+cerrar un capítulo con botín («cerrar un capítulo con botín no toca la ficha del
+jugador»). Si alguna vez se decide cruzar esa frontera, se entera ahí.
+
+El botín se limpia al entrar (`Chapter.fromJson`): oro negativo o de otro tipo se
+lee como cero y los nombres en blanco se descartan, en vez de rechazar el
+capítulo entero — no hay nada que un DM pueda arreglar leyendo ese error.
 
 Cerrar dos veces responde 200 y no vuelve a avisar.
 

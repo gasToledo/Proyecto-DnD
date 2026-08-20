@@ -2150,6 +2150,8 @@ void main() {
         String name = 'La Cripta',
         String state = 'planned',
         bool grantsLevel = false,
+        Object? grantsGold,
+        Object? grantsItems,
       }) => {
         'schemaVersion': 1,
         'id': id,
@@ -2157,6 +2159,10 @@ void main() {
         'summary': '',
         'state': state,
         'grantsLevel': grantsLevel,
+        // Se mandan tal cual llegan, sin tipar: varios casos de acá prueban
+        // justamente qué hace el servidor con un botín escrito mal.
+        if (grantsGold != null) 'grantsGold': grantsGold,
+        if (grantsItems != null) 'grantsItems': grantsItems,
       };
 
       Future<Map<String, dynamic>> createChapter(
@@ -2165,12 +2171,20 @@ void main() {
         String id, {
         String name = 'La Cripta',
         bool grantsLevel = false,
+        Object? grantsGold,
+        Object? grantsItems,
       }) => send(
         'POST',
         '/api/campaigns/$campaignId/chapters',
         token: token,
         body: {
-          'chapter': chapterJson(id, name: name, grantsLevel: grantsLevel),
+          'chapter': chapterJson(
+            id,
+            name: name,
+            grantsLevel: grantsLevel,
+            grantsGold: grantsGold,
+            grantsItems: grantsItems,
+          ),
         },
       );
 
@@ -2478,6 +2492,107 @@ void main() {
           (e) => e['kind'] == 'chapter_completed',
         );
         expect(chapterEvent['payload']['grantsLevel'], isFalse);
+      });
+
+      test('el botín del capítulo viaja en el aviso', () async {
+        final tokenA = await login('ch-close-loot-player');
+        final code = await shareCharacter(tokenA, 'sagan');
+
+        final tokenB = await login('ch-close-loot-dm');
+        await createCampaign(tokenB, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: tokenB,
+          body: {'code': code},
+        );
+        await createChapter(
+          tokenB,
+          'tumba',
+          'cripta',
+          grantsGold: 250,
+          grantsItems: ['Espada larga +1', 'Poción de curación'],
+        );
+
+        await send(
+          'POST',
+          '/api/campaigns/tumba/chapters/cripta/close',
+          token: tokenB,
+        );
+
+        final chapterEvent =
+            ((await send('GET', '/api/events', token: tokenA))['body']['events']
+                    as List)
+                .firstWhere((e) => e['kind'] == 'chapter_completed');
+        expect(chapterEvent['payload']['grantsGold'], 250);
+        expect(chapterEvent['payload']['grantsItems'], [
+          'Espada larga +1',
+          'Poción de curación',
+        ]);
+      });
+
+      // LA prueba de esta feature, y por eso es negativa: el DM anuncia el
+      // botín y el aviso llega, pero **la ficha del jugador no se mueve**. El
+      // oro y los ítems los anota él. Si algún día alguien hace que el cierre
+      // escriba la ficha ajena, se entera acá.
+      test(
+        'cerrar un capítulo con botín no toca la ficha del jugador',
+        () async {
+          final tokenA = await login('ch-close-untouched-player');
+          final code = await shareCharacter(tokenA, 'sagan');
+
+          Future<Object?> sagan() async =>
+              ((await send(
+                        'GET',
+                        '/api/characters',
+                        token: tokenA,
+                      ))['body']['characters']
+                      as List)
+                  .firstWhere((c) => c['character']['id'] == 'sagan');
+
+          final before = await sagan();
+
+          final tokenB = await login('ch-close-untouched-dm');
+          await createCampaign(tokenB, 'tumba');
+          await send(
+            'POST',
+            '/api/campaigns/tumba/members',
+            token: tokenB,
+            body: {'code': code},
+          );
+          await createChapter(
+            tokenB,
+            'tumba',
+            'cripta',
+            grantsLevel: true,
+            grantsGold: 250,
+            grantsItems: ['Espada larga +1'],
+          );
+
+          await send(
+            'POST',
+            '/api/campaigns/tumba/chapters/cripta/close',
+            token: tokenB,
+          );
+
+          expect(await sagan(), before);
+        },
+      );
+
+      test('un botín escrito mal se guarda limpio en vez de romper', () async {
+        final token = await login('ch-loot-dirty');
+        await createCampaign(token, 'tumba');
+        final created = await createChapter(
+          token,
+          'tumba',
+          'cripta',
+          grantsGold: -50,
+          grantsItems: ['  Espada larga +1  ', '', 7],
+        );
+
+        expect(created['status'], 200);
+        expect(created['body']['chapter']['grantsGold'], 0);
+        expect(created['body']['chapter']['grantsItems'], ['Espada larga +1']);
       });
 
       // Cerrar dos veces no es un error, pero tampoco vuelve a avisar.

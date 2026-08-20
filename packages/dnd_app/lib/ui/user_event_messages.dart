@@ -1,3 +1,5 @@
+import 'package:dnd_engine/dnd_engine.dart';
+
 import '../api/api_models.dart';
 import '../theme/app_widgets.dart';
 
@@ -46,9 +48,12 @@ UserEventMessage? messageForEvent(UserEvent event) {
   };
 }
 
-/// Cierre de un capítulo. Cuando otorga nivel, el aviso lo dice y sube de tono:
-/// es lo único accionable que puede traer, y la app **no sube a nadie de
-/// nivel** — eso lo hace el jugador desde su propio asistente.
+/// Cierre de un capítulo. Cuando trae nivel o botín, el aviso lo dice y sube
+/// de tono: es lo único accionable que puede traer.
+///
+/// Y traerlo es todo lo que hace. La app **no sube a nadie de nivel ni le
+/// suma nada a la bolsa** — el asistente de subida y el inventario son del
+/// jugador, y esto es la nota que le deja el DM para que los use.
 UserEventMessage _chapterCompleted(
   UserEvent event,
   String character,
@@ -56,10 +61,33 @@ UserEventMessage _chapterCompleted(
 ) {
   final chapter = _quotedOr(event.payload['chapterName'], 'Un capítulo');
   final grantsLevel = event.payload['grantsLevel'] == true;
-  final text = '$character terminó el capítulo $chapter en $campaign.';
-  return grantsLevel
-      ? UserEventMessage('$text Podés subir de nivel.', AppMessageTone.success)
-      : UserEventMessage(text, AppMessageTone.info);
+  // Un aviso viejo no trae ninguno de los dos, y uno de un servidor más nuevo
+  // podría traerlos con otra forma. Se leen con `switch` y no con `as` porque
+  // acá un cast que falle voltea la bandeja entera: lo que no sea lo esperado
+  // se lee como que no hubo botín.
+  final rewards = describeRewards(
+    switch (event.payload['grantsGold']) {
+      final int gold when gold > 0 => gold,
+      _ => 0,
+    },
+    switch (event.payload['grantsItems']) {
+      final List items => [
+        for (final item in items)
+          if (item is String) item,
+      ],
+      _ => const <String>[],
+    },
+  );
+
+  final lines = [
+    '$character terminó el capítulo $chapter en $campaign.',
+    if (rewards.isNotEmpty) 'Se lleva $rewards.',
+    if (grantsLevel) 'Podés subir de nivel.',
+  ];
+  return UserEventMessage(
+    lines.join(' '),
+    lines.length > 1 ? AppMessageTone.success : AppMessageTone.info,
+  );
 }
 
 /// Nombre entre comillas angulares, o un genérico si el aviso vino sin él

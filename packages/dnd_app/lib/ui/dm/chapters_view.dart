@@ -97,20 +97,26 @@ class ChaptersView extends StatelessWidget {
     );
   }
 
+  /// Qué va a pasar al cerrar, dicho antes de que pase.
+  ///
+  /// Insiste en que la app no aplica nada porque es la única acción del Modo
+  /// DM que le escribe algo a otra cuenta, y lo que le escribe es un aviso:
+  /// el nivel, el oro y los ítems los anota cada jugador en su ficha.
+  static String _closeMessage(Chapter chapter) {
+    final base =
+        '«${chapter.name}» pasa a completado y a cada jugador de la mesa le '
+        'llega el aviso';
+    if (chapter.grantsLabel.isEmpty) return '$base.';
+    return '$base, con que se llevan ${chapter.grantsLabel}. Eso lo anota '
+        'cada uno en su ficha: la app no se lo aplica a nadie.';
+  }
+
   Future<void> _confirmClose(BuildContext context, Chapter chapter) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Cerrar capítulo'),
-        content: Text(
-          chapter.grantsLevel
-              ? '«${chapter.name}» pasa a completado y a cada jugador de la '
-                    'mesa le llega el aviso, con que puede subir de nivel. La '
-                    'subida la hace cada uno en su ficha: la app no se la '
-                    'aplica a nadie.'
-              : '«${chapter.name}» pasa a completado y a cada jugador de la '
-                    'mesa le llega el aviso.',
-        ),
+        content: Text(_closeMessage(chapter)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -219,6 +225,31 @@ class _ChapterCard extends StatelessWidget {
                 fontSize: 13,
                 color: isDone ? pal.textMuted : null,
               ),
+            ),
+          ],
+          if (chapter.grantsRewards) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 1, right: 6),
+                  child: Icon(
+                    Icons.savings_outlined,
+                    size: 15,
+                    color: isDone ? pal.textMuted : pal.gold,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    // En pasado si ya se cerró: el aviso ya salió.
+                    isDone
+                        ? 'Se llevaron ${chapter.rewardsLabel}'
+                        : 'Se llevan ${chapter.rewardsLabel}',
+                    style: TextStyle(fontSize: 13, color: pal.textMuted),
+                  ),
+                ),
+              ],
             ),
           ],
           const SizedBox(height: 12),

@@ -368,11 +368,14 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    /// Crea un capítulo desde el diálogo. El primer campo es el nombre.
+    /// Crea un capítulo desde el diálogo. Los campos van en el orden en que se
+    /// leen: nombre, descripción, oro e ítems.
     Future<void> newChapter(
       WidgetTester tester,
       String name, {
       bool grantsLevel = false,
+      String? gold,
+      String? items,
     }) async {
       await tester.tap(find.text('Nuevo capítulo').last);
       await tester.pumpAndSettle();
@@ -380,6 +383,12 @@ void main() {
       if (grantsLevel) {
         await tester.tap(find.byType(CheckboxListTile));
         await tester.pumpAndSettle();
+      }
+      if (gold != null) {
+        await tester.enterText(find.byType(TextField).at(2), gold);
+      }
+      if (items != null) {
+        await tester.enterText(find.byType(TextField).at(3), items);
       }
       await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
       await tester.pumpAndSettle();
@@ -485,6 +494,56 @@ void main() {
       expect(server.chapters['tumba']!.single.grantsLevel, isTrue);
       expect(tester.takeException(), isNull);
     });
+
+    // Mismo caso que el nivel: la app no reparte nada, así que lo único que
+    // tiene que pasar es que el DM lea en la lista lo que va a anunciar.
+    testWidgets('un capítulo con botín lo muestra en la lista', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+
+      await newChapter(
+        tester,
+        'La Cripta',
+        gold: '250',
+        items: 'Espada larga +1\n\nPoción de curación\n',
+      );
+
+      expect(
+        find.text('Se llevan 250 po, Espada larga +1 y Poción de curación'),
+        findsOneWidget,
+      );
+      final chapter = server.chapters['tumba']!.single;
+      expect(chapter.grantsGold, 250);
+      // Las líneas en blanco del campo no son ítems.
+      expect(chapter.grantsItems, ['Espada larga +1', 'Poción de curación']);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Cerrar es la única acción del Modo DM que le escribe a otra cuenta. Lo
+    // que se le escribe es un aviso, y el diálogo lo dice antes de mandarlo.
+    testWidgets(
+      'el diálogo de cierre nombra el botín y aclara quién lo anota',
+      (tester) async {
+        await pumpDmMode(tester, seed: seedTable);
+        await openCapitulos(tester);
+        await newChapter(tester, 'La Cripta', grantsLevel: true, gold: '250');
+        await tester.tap(find.widgetWithText(FilledButton, 'Empezar'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.widgetWithText(FilledButton, 'Cerrar capítulo'));
+        await tester.pumpAndSettle();
+
+        expect(
+          find.textContaining('se llevan un nivel y 250 po'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('la app no se lo aplica a nadie'),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
 
     testWidgets('borrar un capítulo pide confirmación', (tester) async {
       final server = await pumpDmMode(tester, seed: seedTable);
@@ -969,6 +1028,66 @@ void main() {
       await tester.tap(find.text('El camino'));
       await tester.pumpAndSettle();
       expect(find.text('Una'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Lo repartido queda anotado en el cuaderno sin guardar nada: sale del
+    // capítulo, que es donde el DM lo escribió.
+    testWidgets('un capítulo cerrado deja anotado lo que repartió', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedTable(s);
+          s.chapters['tumba'] = [
+            const Chapter(
+              id: 'cripta',
+              name: 'La cripta sellada',
+              state: ChapterState.completed,
+              grantsLevel: true,
+              grantsGold: 250,
+              grantsItems: ['Espada larga +1'],
+            ),
+          ];
+        },
+      );
+      await openCuaderno(tester);
+
+      // Un capítulo cerrado arranca plegado.
+      await tester.tap(find.text('La cripta sellada').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Se repartió un nivel, 250 po y Espada larga +1.'),
+        findsOneWidget,
+      );
+      // Y no se guardó ninguna entrada por eso.
+      expect(server.notes['tumba'] ?? const [], isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un capítulo sin recompensas no anota ninguna línea', (
+      tester,
+    ) async {
+      await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedTable(s);
+          s.chapters['tumba'] = [
+            const Chapter(
+              id: 'cripta',
+              name: 'La cripta sellada',
+              state: ChapterState.completed,
+            ),
+          ];
+        },
+      );
+      await openCuaderno(tester);
+      await tester.tap(find.text('La cripta sellada').last);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Se repartió'), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });

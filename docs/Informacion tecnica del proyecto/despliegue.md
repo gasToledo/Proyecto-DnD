@@ -113,8 +113,8 @@ Ver `openspec/changes/add-ci-cd-pipeline/` para el *why* y las decisiones
   alojados por GitHub, en cada push y cada pull request. No necesita
   configuración en el host.
 - `cd.yml`: reconstruye y levanta el stack (`docker compose up -d --build`)
-  en el **runner autoalojado**, disparado solo por `push` a `main` o
-  `webapp` que toque una ruta relevante. Necesita el runner de esta sección.
+  en el **runner autoalojado**, disparado solo por `push` a `main` que toque
+  una ruta relevante. Necesita el runner de esta sección.
 
 ### Registrar el runner autoalojado
 
@@ -141,21 +141,24 @@ aparte (ver design.md, D1): así el despliegue es `docker compose up -d
 
 ### Protección de rama
 
-Configurar en *Settings → Branches* para `main` y, mientras siga activa,
-`webapp`:
+`main` es el único tronco activo y recibe commits directos: no configurar como
+obligatorios los pull requests. La validación local ocurre antes del push; CI y
+CD validan el commit publicado, y la web desplegada es la única superficie para
+la comprobación visual real.
 
-- Requerir pull request antes de mergear.
-- Requerir que los jobs de `ci.yml` pasen.
+Configurar en *Settings → Branches* para `main`:
+
 - Sin *force-push* ni borrado de la rama.
-- Restringir quién puede pushear directo a quienes deben poder disparar un
-  despliegue: es el único control de acceso sobre `cd.yml` (ver design.md,
-  D5 — sin aprobación adicional por decisión del proyecto).
+- Restringir el push a quienes deban poder disparar un despliegue: es el control
+  de acceso sobre `cd.yml` (ver design.md, D5).
+- No exigir pull request. Los checks de CI se siguen después del push junto con
+  CD; si alguno falla, el cambio no se considera cerrado.
 
 ### Verificar el pipeline
 
-- Un push a `main`/`webapp` que solo toque `docs/**` u otra ruta fuera de la
+- Un push a `main` que solo toque `docs/**` u otra ruta fuera de la
   lista de `cd.yml` no debe disparar ningún job de despliegue.
-- Un push a `main`/`webapp` que toque `packages/dnd_server/**` (por ejemplo)
+- Un push a `main` que toque `packages/dnd_server/**` (por ejemplo)
   debe reconstruir el stack y terminar en éxito una vez que `server` quede
   `healthy`.
 - Un pull request abierto desde un fork no debe disparar ningún workflow en

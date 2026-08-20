@@ -42,11 +42,10 @@ docs.zip
 # archivo — las reglas por ruta que había acá dejaron de valer en cuanto se
 # reorganizó `docs/`, y los manuales volvieron a aparecer sin que nada avisara.
 #
-# La única excepción es `despliegue.md`: es el procedimiento de puesta en
-# marcha y lo referencian README.md, docker-compose.yml,
-# .github/workflows/cd.yml y packages/dnd_server/lib/src/config.dart. Sin él,
-# un clon nuevo no se puede levantar y esas cuatro referencias quedan
-# apuntando a la nada.
+# Las excepciones son los documentos operativos que necesita un clon nuevo:
+# `despliegue.md`, la guía de diseño web y el vínculo seguro entre personajes
+# y campañas. Los manuales y extractos de reglas siguen siendo solo consulta
+# local.
 #
 # `docs/*` y no `docs/`: a un directorio ya excluido no se le puede volver a
 # incluir nada adentro, así que hay que re-incluir la carpeta y después
@@ -55,6 +54,7 @@ docs/*
 !docs/Informacion tecnica del proyecto/
 docs/Informacion tecnica del proyecto/*
 !docs/Informacion tecnica del proyecto/despliegue.md
+!docs/Informacion tecnica del proyecto/guia-diseno-web.md
 !docs/Informacion tecnica del proyecto/vinculo-personaje-campania.md
 !docs/Auditorias/
 docs/Auditorias/*

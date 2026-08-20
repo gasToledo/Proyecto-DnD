@@ -166,6 +166,13 @@ formato antes que nada y un commit sin formatear falla sin llegar a decir nada
 git config core.hooksPath .githooks
 ```
 
+El cliente mantenido es web y `main` es el único tronco activo. Los cambios se
+validan localmente, se commitean y pushean directamente a `main`, y después se
+siguen CI y, cuando el cambio toca rutas desplegables, CD hasta comprobarlos en
+la web desplegada. La dirección visual, los componentes permitidos y el flujo
+completo están en la
+[Guía de Diseño Web](docs/Informacion%20tecnica%20del%20proyecto/guia-diseno-web.md).
+
 ## Reglas y licencia
 
 Esta obra incluye material procedente del documento de referencia del sistema

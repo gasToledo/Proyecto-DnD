@@ -12,6 +12,7 @@ import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
 import '../pending_events_gate.dart';
 import '../portrait_image.dart';
+import 'bestiary_view.dart';
 import 'campaign_editor_dialog.dart';
 import 'chapter_editor_dialog.dart';
 import 'chapters_view.dart';
@@ -38,7 +39,18 @@ class _DmModeScreenState extends State<DmModeScreen> {
 
   late final CampaignsController _campaigns = CampaignsController(widget.api);
   Campaign? _selected;
-  _CampaignSection _section = _CampaignSection.mesa;
+
+  /// Sección abierta, o **null para el Bestiario**.
+  ///
+  /// El Bestiario es la única sección global: el catálogo de criaturas no
+  /// pertenece a ninguna campaña y se tiene que poder mirar sin tener una.
+  /// Representarlo como la ausencia de sección de campaña, en vez de agregarle
+  /// un valor a [_CampaignSection], evita tener que darle un caso imposible al
+  /// encabezado de campaña y a `_primaryAction`, que nunca lo van a ver.
+  ///
+  /// De regalo, las cuatro asignaciones de `_section = mesa` que ya existían
+  /// (elegir campaña, crearla, borrarla) salen del Bestiario solas.
+  _CampaignSection? _section = _CampaignSection.mesa;
   Object? _loadError;
 
   Campaign? get _effectiveSelection =>
@@ -236,6 +248,18 @@ class _DmModeScreenState extends State<DmModeScreen> {
               builder: (context, _) => ListView(
                 padding: EdgeInsets.zero,
                 children: [
+                  // Arriba de todo y fuera de los grupos de campaña: es una
+                  // herramienta de la app, no de una mesa. Puesto pegado al
+                  // divisor de «Campaña actual» se leería como parte de ese
+                  // grupo, que es justo lo que no es.
+                  appNavItem(
+                    context,
+                    icon: Icons.pets_outlined,
+                    label: 'Bestiario',
+                    active: _section == null,
+                    onTap: () => _selectSection(null, inDrawer: inDrawer),
+                  ),
+                  const SizedBox(height: 12),
                   if (active.isNotEmpty) ...[
                     const _CampaignGroupLabel('En curso'),
                     for (final campaign in active)
@@ -357,12 +381,17 @@ class _DmModeScreenState extends State<DmModeScreen> {
     );
   }
 
-  void _selectSection(_CampaignSection section, {required bool inDrawer}) {
+  void _selectSection(_CampaignSection? section, {required bool inDrawer}) {
     setState(() => _section = section);
     if (inDrawer) Navigator.of(context).pop();
   }
 
   Widget _content(BuildContext context) {
+    // El Bestiario se resuelve antes que nada: no necesita campañas, así que
+    // tiene que abrirse también cuando no hay ninguna (donde esto devolvería
+    // el estado de bienvenida) y cuando el servidor no contestó.
+    final section = _section;
+    if (section == null) return BestiaryView(repo: widget.repo);
     if (_loadError != null) {
       return AppErrorView(
         message: 'No se pudieron cargar tus campañas.',
@@ -395,7 +424,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
         return _CampaignDetail(
           key: ValueKey(campaign.id),
           campaign: campaign,
-          section: _section,
+          section: section,
           api: widget.api,
           repo: widget.repo,
           onEdit: () => _editCampaign(campaign),

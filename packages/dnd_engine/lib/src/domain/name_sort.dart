@@ -59,6 +59,23 @@ String _sortKey(String value) {
   return buffer.toString();
 }
 
+/// Pliega un texto para **buscar**: sin mayúsculas y sin tildes.
+///
+/// Es la misma tabla que usa el orden, con una diferencia: acá la Ñ pliega a N
+/// a secas y no al tramo que la ordena detrás. Ordenar y buscar quieren cosas
+/// distintas — al ordenar «añejo» tiene que caer después de «anzuelo», pero al
+/// buscar conviene que tipear «pirana» encuentre «Piraña».
+///
+/// Sin esto, un buscador que compare con `toLowerCase().contains` no encuentra
+/// «Águila» si escribís «aguila», que es justo como se escribe sin acentos.
+String foldForSearch(String value) {
+  final buffer = StringBuffer();
+  for (final char in value.toLowerCase().split('')) {
+    buffer.write((_folded[char] ?? char).replaceAll('￿', ''));
+  }
+  return buffer.toString();
+}
+
 /// Compara dos nombres como los ordenaría un hispanohablante: sin distinguir
 /// mayúsculas y tratando la vocal acentuada como su vocal base.
 ///

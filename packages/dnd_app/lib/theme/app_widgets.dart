@@ -1389,6 +1389,101 @@ class ActionTypeLegend extends StatelessWidget {
   }
 }
 
+/// Una acción de criatura: nombre, daño, alcance y bono de ataque.
+///
+/// Vive acá y no en la ficha porque la pintan dos pantallas: los compañeros
+/// invocados en `combat_section.dart` y los perfiles del Bestiario. Cuando
+/// estaba escrita adentro de la ficha, la segunda copia habría quedado libre de
+/// divergir de la primera.
+///
+/// Recibe primitivos y no un tipo del motor a propósito: los dos llamadores
+/// tienen tipos distintos —la ficha resuelve las fórmulas contra el personaje
+/// y trae `int`, el Bestiario lee el perfil crudo y trae `String`— y un tipo
+/// común para dos campos sería una abstracción con una sola forma real.
+class CreatureActionRow extends StatelessWidget {
+  final String name;
+  final String description;
+
+  /// Ya con signo ("+7"), o null si la acción no es un ataque.
+  final String? attackBonus;
+  final String? damage;
+
+  /// Id de [DamageType]; la fila lo traduce.
+  final String? damageType;
+  final String reach;
+
+  /// Píldora al lado del daño ("Reacción", "Recarga 5-6").
+  final String? tag;
+
+  const CreatureActionRow({
+    super.key,
+    required this.name,
+    this.description = '',
+    this.attackBonus,
+    this.damage,
+    this.damageType,
+    this.reach = '',
+    this.tag,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final damageText = [
+      ?damage,
+      if (damageType != null) DamageType.labelFor(damageType!),
+    ].join(' ');
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                const SizedBox(height: 3),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (damageText.isNotEmpty)
+                      Text(
+                        damageText,
+                        style: TextStyle(color: muted, fontSize: 13),
+                      ),
+                    if (reach.isNotEmpty)
+                      Text(reach, style: TextStyle(color: muted, fontSize: 13)),
+                    if (tag != null) GoldPill(tag!),
+                  ],
+                ),
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    description,
+                    style: TextStyle(color: muted, fontSize: 12.5),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (attackBonus != null)
+            Text(
+              attackBonus!,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 18,
+                color: context.palette.gold,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Distintivo de procedencia para las tarjetas de selección.
 class SourceBadge extends StatelessWidget {
   final ContentSource source;

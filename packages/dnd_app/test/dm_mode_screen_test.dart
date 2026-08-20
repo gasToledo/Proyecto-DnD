@@ -186,6 +186,9 @@ void main() {
       expect(find.text('Mesa'), findsOneWidget);
       expect(find.text('Capítulos'), findsOneWidget);
       expect(find.text('Combate'), findsOneWidget);
+      // El Bestiario va afuera del grupo de campaña: es de la app, no de la
+      // mesa.
+      expect(find.text('Bestiario'), findsOneWidget);
       expect(
         find.byWidgetPredicate((widget) => widget is SegmentedButton),
         findsNothing,
@@ -742,6 +745,137 @@ void main() {
           .reduce((a, b) => a > b ? a : b);
       expect(encounter.current!.initiative, highest);
       expect(encounter.turnIndex, 0);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Bestiario', () {
+    Future<void> openBestiario(WidgetTester tester) async {
+      await tester.tap(find.text('Bestiario'));
+      await tester.pumpAndSettle();
+    }
+
+    /// La lista es alfabética y perezosa, así que una criatura del medio no
+    /// está construida todavía. Se llega filtrando y no scrolleando, igual que
+    /// en las pruebas de creación de personaje.
+    Future<void> buscar(WidgetTester tester, String texto) async {
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar criatura'),
+        texto,
+      );
+      await tester.pumpAndSettle();
+    }
+
+    // Es la decisión de fondo de esta sección: el catálogo de criaturas no es
+    // de ninguna campaña, así que se tiene que poder consultar sin tener una.
+    // Sin campañas, el panel de contenido mostraría el estado de bienvenida.
+    testWidgets('se abre sin tener ninguna campaña', (tester) async {
+      await pumpDmMode(tester);
+      expect(find.text('Prepará tu primera mesa'), findsOneWidget);
+
+      await openBestiario(tester);
+
+      expect(find.text(repo.creaturesSorted.first.name), findsOneWidget);
+      expect(find.text('Prepará tu primera mesa'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('elegir una campaña sale del bestiario', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+      expect(find.text('Sumar personaje'), findsNothing);
+
+      await tester.tap(find.text('La Tumba'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sumar personaje'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('busca por nombre', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+      await buscar(tester, 'goblin');
+
+      expect(find.text(repo.creature('goblin-warrior')!.name), findsOneWidget);
+      expect(find.text(repo.creature('ogre')!.name), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    // El buscador viejo del combate compara con `toLowerCase().contains`, así
+    // que tipear «aguila» no encuentra «Águila». Acá se pliega el acento, que
+    // es como se escribe de verdad cuando uno busca rápido.
+    testWidgets('busca sin acentos', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      await buscar(tester, 'aguila');
+
+      expect(find.text(repo.creature('eagle')!.name), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('muestra el perfil de una criatura', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      final ogre = repo.creature('ogre')!;
+      await buscar(tester, 'ogro');
+      await tester.tap(find.byKey(const ValueKey('bestiary-ogre')));
+      await tester.pumpAndSettle();
+
+      // Los números y la acción salen del catálogo, no de literales: si el
+      // perfil cambia, el test sigue diciendo la verdad.
+      expect(find.text(ogre.ac), findsWidgets);
+      expect(find.text(ogre.actions.first.name), findsOneWidget);
+      expect(find.text('ACCIONES'), findsOneWidget);
+      // El tipo sale dos veces: como subtítulo en la lista y en el perfil.
+      expect(find.text(ogre.kind), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('sin coincidencias lo dice y deja limpiar', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      await buscar(tester, 'no existe ninguna así');
+      expect(
+        find.text('Ninguna criatura coincide con lo que buscaste.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Limpiar filtros'));
+      await tester.pumpAndSettle();
+
+      // Vuelve el catálogo entero: se comprueba con la primera alfabética, que
+      // es la única que se puede afirmar que está construida.
+      expect(
+        find.text('Ninguna criatura coincide con lo que buscaste.'),
+        findsNothing,
+      );
+      expect(find.text(repo.creaturesSorted.first.name), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('en pantalla angosta la lista deja lugar al perfil', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, size: const Size(480, 800), seed: seedTable);
+      await tester.tap(find.byIcon(Icons.menu));
+      await tester.pumpAndSettle();
+      await openBestiario(tester);
+      await buscar(tester, 'ogro');
+
+      // Angosto no hay lugar para las dos columnas: elegir una criatura
+      // reemplaza el listado, y se vuelve con el botón.
+      await tester.tap(find.byKey(const ValueKey('bestiary-ogre')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('bestiary-ogre')), findsNothing);
+      expect(find.text(repo.creature('ogre')!.kind), findsOneWidget);
+
+      await tester.tap(find.text('Volver al listado'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('bestiary-ogre')), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

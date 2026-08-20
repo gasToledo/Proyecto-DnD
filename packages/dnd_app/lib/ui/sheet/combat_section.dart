@@ -1152,67 +1152,15 @@ extension _SheetCombatSection on _SheetScreenState {
     );
   }
 
-  Widget _companionAction(ResolvedCreatureAction a) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    final damage = [
-      if (a.damage != null) a.damage!,
-      if (a.damageType != null) DamageType.labelFor(a.damageType!),
-    ].join(' ');
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  a.name,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 3),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if (damage.isNotEmpty)
-                      Text(
-                        damage,
-                        style: TextStyle(color: muted, fontSize: 13),
-                      ),
-                    if (a.reach.isNotEmpty)
-                      Text(
-                        a.reach,
-                        style: TextStyle(color: muted, fontSize: 13),
-                      ),
-                    if (a.reaction) const GoldPill('Reacción'),
-                  ],
-                ),
-                if (a.description.isNotEmpty) ...[
-                  const SizedBox(height: 3),
-                  Text(
-                    a.description,
-                    style: TextStyle(color: muted, fontSize: 12.5),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (a.isAttack)
-            Text(
-              _signed(a.attackBonus!),
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 18,
-                color: context.palette.gold,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+  Widget _companionAction(ResolvedCreatureAction a) => CreatureActionRow(
+    name: a.name,
+    description: a.description,
+    attackBonus: a.isAttack ? _signed(a.attackBonus!) : null,
+    damage: a.damage,
+    damageType: a.damageType,
+    reach: a.reach,
+    tag: a.kind == CreatureActionKind.action ? null : a.kind.label,
+  );
 
   Widget _savesCard(ComputedSheet s) {
     return sheetCard(

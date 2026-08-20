@@ -11,17 +11,8 @@ const _beastAbilities = {
   Ability.constitution,
 };
 
-/// Tamaño del perfil ("Bestia Mediana") al del personaje ("Mediano"): el
-/// catálogo lo escribe concordando con «Bestia» y la ficha lo muestra en
-/// masculino.
-const _sizes = {
-  'Diminuta': 'Diminuto',
-  'Pequeña': 'Pequeño',
-  'Mediana': 'Mediano',
-  'Grande': 'Grande',
-  'Enorme': 'Enorme',
-  'Gigantesca': 'Gigantesco',
-};
+// El tamaño sale de `Creature.creatureSize`, que ya concuerda el femenino del
+// perfil ("Bestia Mediana") con el masculino que muestra la ficha ("Mediano").
 
 /// Devuelve la ficha del druida transformado en [beast].
 ///
@@ -81,7 +72,7 @@ ComputedSheet applyWildShape(ComputedSheet base, Creature beast) {
     maxHp: base.maxHp,
     hitDie: base.hitDie,
     armorClass: resolved.armorClass,
-    size: _sizes[beast.kind.split(' ').last] ?? base.size,
+    size: beast.creatureSize?.label ?? base.size,
     speed: beast.walkSpeed,
     initiative: mods[Ability.dexterity]!,
     darkvision: beast.darkvision,

@@ -1,5 +1,103 @@
 import 'ability.dart';
 import 'content_source.dart';
+import 'skill.dart';
+
+/// Tipo de criatura del SRD 5.2.1.
+///
+/// Existe además de [Creature.kind] porque el string de perfil mezcla tipo,
+/// tamaño y alineamiento en una sola línea ("Feérico Pequeño (trasgo), caótico
+/// neutral") y no se puede filtrar sin parsearlo. El campo estructurado manda
+/// cuando está; [fromKind] cubre a las entradas viejas que solo tienen `kind`.
+enum CreatureType {
+  aberration('aberration', 'Aberración'),
+  construct('construct', 'Constructo'),
+  beast('beast', 'Bestia'),
+  celestial('celestial', 'Celestial'),
+  ooze('ooze', 'Cieno'),
+  dragon('dragon', 'Dragón'),
+  elemental('elemental', 'Elemental'),
+  fey('fey', 'Feérico'),
+  fiend('fiend', 'Infernal'),
+  giant('giant', 'Gigante'),
+  humanoid('humanoid', 'Humanoide'),
+  monstrosity('monstrosity', 'Monstruosidad'),
+  plant('plant', 'Planta'),
+  undead('undead', 'Muerto viviente');
+
+  const CreatureType(this.id, this.label);
+
+  /// Id usado por el contenido JSON.
+  final String id;
+
+  /// Nombre en español, para la UI.
+  final String label;
+
+  String toJson() => id;
+
+  static CreatureType? fromJson(String? v) {
+    if (v == null) return null;
+    for (final t in CreatureType.values) {
+      if (t.id == v) return t;
+    }
+    return null;
+  }
+
+  /// Deduce el tipo del principio de un [Creature.kind] ("Bestia Mediana" →
+  /// [beast]), o null si no empieza con ninguno conocido.
+  ///
+  /// `undead` va primero porque su etiqueta son dos palabras y comparte la
+  /// primera con nada más, pero el resto se compara por prefijo y un tipo cuya
+  /// etiqueta fuera prefijo de otra se resolvería mal; hoy ninguna lo es.
+  static CreatureType? fromKind(String kind) {
+    for (final t in CreatureType.values) {
+      if (kind.startsWith(t.label)) return t;
+    }
+    // El catálogo viejo traduce `construct` como «Autómata» en algunas
+    // entradas, siguiendo el glosario del SRD en español.
+    if (kind.startsWith('Autómata')) return CreatureType.construct;
+    return null;
+  }
+}
+
+/// Tamaño de una criatura.
+///
+/// [label] es la forma masculina, que es la que usa la ficha del personaje.
+/// [fromKind] reconoce además la femenina porque el perfil concuerda con el
+/// tipo ("Bestia Mediana" pero "Gigante Grande").
+enum CreatureSize {
+  tiny('tiny', 'Diminuto', 'Diminuta'),
+  small('small', 'Pequeño', 'Pequeña'),
+  medium('medium', 'Mediano', 'Mediana'),
+  large('large', 'Grande', 'Grande'),
+  huge('huge', 'Enorme', 'Enorme'),
+  gargantuan('gargantuan', 'Gargantuesco', 'Gargantuesca');
+
+  const CreatureSize(this.id, this.label, this.feminineLabel);
+
+  final String id;
+  final String label;
+  final String feminineLabel;
+
+  String toJson() => id;
+
+  static CreatureSize? fromJson(String? v) {
+    if (v == null) return null;
+    for (final s in CreatureSize.values) {
+      if (s.id == v) return s;
+    }
+    return null;
+  }
+
+  /// Busca el tamaño en cualquier posición de un [Creature.kind]. No se toma la
+  /// última palabra: eso funciona para "Bestia Mediana" pero no para "Gigante
+  /// Grande, caótico malvado", donde el tamaño queda en el medio.
+  static CreatureSize? fromKind(String kind) {
+    for (final s in CreatureSize.values) {
+      if (kind.contains(s.label) || kind.contains(s.feminineLabel)) return s;
+    }
+    return null;
+  }
+}
 
 /// Valores del personaje que las fórmulas de una criatura pueden leer.
 ///
@@ -207,9 +305,40 @@ class CreatureTrait {
       );
 }
 
-/// Acción o reacción de una criatura. Cuando [attackBonus] está presente es un
-/// ataque y la ficha lo pinta con el mismo formato que los del personaje; si no,
-/// es una acción descriptiva (Reparar, Detonar, Protector).
+/// En qué parte del turno se usa una acción de criatura.
+///
+/// Un solo enum en vez de una lista por tipo: el perfil las muestra agrupadas
+/// pero son la misma clase de cosa, y cuatro listas paralelas duplicarían el
+/// parseo y el render. Un enum tampoco admite los estados imposibles que sí
+/// permitirían cuatro booleanos.
+enum CreatureActionKind {
+  action('action', 'Acción'),
+  bonus('bonus', 'Acción adicional'),
+  reaction('reaction', 'Reacción'),
+  legendary('legendary', 'Acción legendaria');
+
+  const CreatureActionKind(this.id, this.label);
+
+  final String id;
+
+  /// Nombre en español, para la UI.
+  final String label;
+
+  String toJson() => id;
+
+  /// Tolerante: ausente o desconocido cae en [action], que es el tipo por
+  /// defecto de cualquier acción del catálogo viejo.
+  static CreatureActionKind fromJson(String? v) {
+    for (final k in CreatureActionKind.values) {
+      if (k.id == v) return k;
+    }
+    return CreatureActionKind.action;
+  }
+}
+
+/// Acción de una criatura. Cuando [attackBonus] está presente es un ataque y la
+/// ficha lo pinta con el mismo formato que los del personaje; si no, es una
+/// acción descriptiva (Reparar, Detonar, Protector).
 class CreatureAction {
   final String name;
   final String description;
@@ -227,8 +356,12 @@ class CreatureAction {
 
   final String reach;
 
-  /// Reacción en vez de acción: cambia solo cómo se rotula en la ficha.
-  final bool reaction;
+  /// En qué parte del turno se usa: cambia solo cómo se rotula en la ficha.
+  ///
+  /// No lleva un costo en acciones legendarias: la regla 2024 lo sacó, y los
+  /// perfiles del SRD 5.2.1 declaran el presupuesto una sola vez en la criatura
+  /// ([Creature.legendaryActionsPerRound]) gastando una por entrada.
+  final CreatureActionKind kind;
 
   const CreatureAction({
     required this.name,
@@ -237,10 +370,13 @@ class CreatureAction {
     this.damage,
     this.damageType,
     this.reach = '',
-    this.reaction = false,
+    this.kind = CreatureActionKind.action,
   });
 
   bool get isAttack => attackBonus != null;
+
+  /// Compatibilidad con quien solo distingue reacción de lo demás.
+  bool get reaction => kind == CreatureActionKind.reaction;
 
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -249,9 +385,11 @@ class CreatureAction {
         'damage': damage,
         'damageType': damageType,
         'reach': reach,
-        'reaction': reaction,
+        if (kind != CreatureActionKind.action) 'kind': kind.toJson(),
       };
 
+  /// El catálogo anterior a [CreatureActionKind] marcaba la reacción con un
+  /// booleano; se sigue leyendo para no tener que reescribir esas entradas.
   factory CreatureAction.fromJson(Map<String, dynamic> j) => CreatureAction(
         name: j['name'] as String,
         description: j['description'] as String? ?? '',
@@ -259,7 +397,11 @@ class CreatureAction {
         damage: j['damage'] as String?,
         damageType: j['damageType'] as String?,
         reach: j['reach'] as String? ?? '',
-        reaction: j['reaction'] as bool? ?? false,
+        kind: j.containsKey('kind')
+            ? CreatureActionKind.fromJson(j['kind'] as String?)
+            : (j['reaction'] as bool? ?? false)
+                ? CreatureActionKind.reaction
+                : CreatureActionKind.action,
       );
 
   ResolvedCreatureAction resolve(CreatureVars vars) => ResolvedCreatureAction(
@@ -270,7 +412,7 @@ class CreatureAction {
         damage: damage == null ? null : resolveCreatureFormula(damage!, vars),
         damageType: damageType,
         reach: reach,
-        reaction: reaction,
+        kind: kind,
       );
 }
 
@@ -281,7 +423,7 @@ class ResolvedCreatureAction {
   final String? damage;
   final String? damageType;
   final String reach;
-  final bool reaction;
+  final CreatureActionKind kind;
 
   const ResolvedCreatureAction({
     required this.name,
@@ -290,10 +432,13 @@ class ResolvedCreatureAction {
     required this.damage,
     required this.damageType,
     required this.reach,
-    required this.reaction,
+    this.kind = CreatureActionKind.action,
   });
 
   bool get isAttack => attackBonus != null;
+
+  /// Compatibilidad con quien solo distingue reacción de lo demás.
+  bool get reaction => kind == CreatureActionKind.reaction;
 }
 
 /// Perfil de una criatura invocable: cañón, defensor, familiar, corcel.
@@ -309,8 +454,22 @@ class Creature {
   final String name;
   final ContentSource source;
 
-  /// Tipo y tamaño juntos, como se leen en un perfil ("Constructo Mediano").
+  /// Tipo, tamaño y alineamiento juntos, como se leen en la primera línea de un
+  /// perfil ("Constructo Mediano", "Feérico Pequeño (trasgo), caótico neutral").
+  ///
+  /// Sigue siendo lo que se muestra: es la línea del libro, con su etiqueta
+  /// descriptiva y su alineamiento, y ninguna combinación de campos la
+  /// reconstruye igual. [type] y [size] existen aparte para poder filtrar.
   final String kind;
+
+  /// Tipo de criatura, o null en las entradas viejas que solo traen [kind] y en
+  /// los perfiles que ofrecen varios a elección ("Celestial, feérico o infernal
+  /// Grande (a tu elección)"). Preferir [creatureType], que cae a [kind].
+  final CreatureType? type;
+
+  /// Tamaño, o null por los mismos dos motivos que [type]. Preferir
+  /// [creatureSize].
+  final CreatureSize? size;
 
   /// Fórmulas de clase de armadura y puntos de golpe.
   final String ac;
@@ -318,8 +477,30 @@ class Creature {
 
   final String speed;
   final Map<Ability, int> abilityScores;
+
+  /// Salvaciones con competencia, ya sumadas. Vacío si el perfil no declara
+  /// ninguna, que es el caso de la mayoría de las bestias.
+  final Map<Ability, int> savingThrows;
+
+  /// Habilidades con competencia, ya sumadas (Percepción +5).
+  final Map<Skill, int> skills;
+
   final String senses;
   final String languages;
+
+  /// Percepción pasiva. Las entradas viejas la llevan adentro de [senses] como
+  /// texto; preferir [passivePerceptionValue], que la lee de ahí si falta.
+  final int? passivePerception;
+
+  /// Cuántas acciones legendarias puede gastar por ronda, o null si no tiene.
+  final int? legendaryActionsPerRound;
+
+  /// Bonificador de iniciativa impreso en el perfil, o null para usar DES.
+  ///
+  /// La regla 2024 deja que un monstruo tenga competencia en iniciativa, así
+  /// que el número del perfil no siempre es el modificador de Destreza. Se
+  /// guarda solo cuando difiere; preferir [initiativeModifier].
+  final int? initiativeBonus;
 
   /// Resistencias, inmunidades y vulnerabilidades en una línea, tal como se
   /// leen en un perfil. Es texto y no un conjunto de ids como en el personaje:
@@ -344,12 +525,19 @@ class Creature {
     required this.name,
     required this.source,
     this.kind = '',
+    this.type,
+    this.size,
     required this.ac,
     required this.hp,
     this.speed = '',
     this.abilityScores = const {},
+    this.savingThrows = const {},
+    this.skills = const {},
     this.senses = '',
     this.languages = '',
+    this.passivePerception,
+    this.legendaryActionsPerRound,
+    this.initiativeBonus,
     this.defenses = '',
     this.cr,
     this.scalesWithSpellLevel = false,
@@ -359,11 +547,29 @@ class Creature {
 
   int abilityModifierFor(Ability a) => abilityModifier(abilityScores[a] ?? 10);
 
+  /// Tipo de la criatura: el campo estructurado si lo trae, y si no el que se
+  /// deduzca de [kind]. Las entradas viejas del catálogo solo tienen `kind`, y
+  /// ninguna necesita reescribirse para que esto funcione.
+  CreatureType? get creatureType => type ?? CreatureType.fromKind(kind);
+
+  /// Tamaño de la criatura, con la misma caída a [kind] que [creatureType].
+  CreatureSize? get creatureSize => size ?? CreatureSize.fromKind(kind);
+
+  /// Percepción pasiva, del campo propio o leída de [senses] ("Percepción
+  /// pasiva 16"), que es donde la escriben las entradas viejas.
+  int? get passivePerceptionValue {
+    if (passivePerception != null) return passivePerception;
+    final m = RegExp(r'Percepción pasiva (\d+)').firstMatch(senses);
+    return m == null ? null : int.tryParse(m.group(1)!);
+  }
+
+  /// Modificador de iniciativa: el impreso en el perfil si lo trae, y si no el
+  /// de Destreza, que es lo que vale para cualquier criatura sin competencia.
+  int get initiativeModifier =>
+      initiativeBonus ?? abilityModifierFor(Ability.dexterity);
+
   /// Es una bestia, y por lo tanto forma legal de Forma Salvaje.
-  ///
-  /// Se lee de [kind] en vez de guardarse aparte porque el tipo ya está escrito
-  /// ahí, y un dato duplicado se puede contradecir con el que ya existe.
-  bool get isBeast => kind.startsWith('Bestia');
+  bool get isBeast => creatureType == CreatureType.beast;
 
   /// Tiene velocidad volando, que la Forma Salvaje prohíbe hasta nivel 8.
   bool get canFly => speed.contains('volar');
@@ -388,6 +594,8 @@ class Creature {
         'name': name,
         'source': source.toJson(),
         'kind': kind,
+        if (type != null) 'type': type!.toJson(),
+        if (size != null) 'size': size!.toJson(),
         'ac': ac,
         'hp': hp,
         'speed': speed,
@@ -395,8 +603,19 @@ class Creature {
           for (final e in abilityScores.entries)
             e.key.abbr.toLowerCase(): e.value,
         },
+        if (savingThrows.isNotEmpty)
+          'savingThrows': {
+            for (final e in savingThrows.entries)
+              e.key.abbr.toLowerCase(): e.value,
+          },
+        if (skills.isNotEmpty)
+          'skills': {for (final e in skills.entries) e.key.id: e.value},
         'senses': senses,
         'languages': languages,
+        if (passivePerception != null) 'passivePerception': passivePerception,
+        if (legendaryActionsPerRound != null)
+          'legendaryActionsPerRound': legendaryActionsPerRound,
+        if (initiativeBonus != null) 'initiativeBonus': initiativeBonus,
         'defenses': defenses,
         if (cr != null) 'cr': cr,
         'scalesWithSpellLevel': scalesWithSpellLevel,
@@ -409,6 +628,8 @@ class Creature {
         name: j['name'] as String,
         source: ContentSource.fromJson(j['source'] as String?),
         kind: j['kind'] as String? ?? '',
+        type: CreatureType.fromJson(j['type'] as String?),
+        size: CreatureSize.fromJson(j['size'] as String?),
         ac: j['ac'] as String,
         hp: j['hp'] as String,
         speed: j['speed'] as String? ?? '',
@@ -416,8 +637,21 @@ class Creature {
           for (final e in (j['abilityScores'] as Map? ?? const {}).entries)
             Ability.fromKey(e.key as String): e.value as int,
         },
+        savingThrows: {
+          for (final e in (j['savingThrows'] as Map? ?? const {}).entries)
+            Ability.fromKey(e.key as String): e.value as int,
+        },
+        // Una habilidad que no esté entre las 18 se ignora en vez de romper la
+        // carga del catálogo entero.
+        skills: {
+          for (final e in (j['skills'] as Map? ?? const {}).entries)
+            if (Skill.fromId(e.key as String) case final s?) s: e.value as int,
+        },
         senses: j['senses'] as String? ?? '',
         languages: j['languages'] as String? ?? '',
+        passivePerception: j['passivePerception'] as int?,
+        legendaryActionsPerRound: j['legendaryActionsPerRound'] as int?,
+        initiativeBonus: j['initiativeBonus'] as int?,
         defenses: j['defenses'] as String? ?? '',
         cr: j['cr'] as num?,
         scalesWithSpellLevel: j['scalesWithSpellLevel'] as bool? ?? false,
@@ -441,9 +675,12 @@ class Creature {
         maxHp: resolveCreatureInt(hp, vars),
         speed: resolveCreatureFormula(speed, vars),
         abilityScores: abilityScores,
+        savingThrows: savingThrows,
+        skills: skills,
         senses: resolveCreatureFormula(senses, vars),
         languages: languages,
         defenses: defenses,
+        legendaryActionsPerRound: legendaryActionsPerRound,
         traits: [for (final t in traits) t.resolve(vars)],
         actions: [for (final a in actions) a.resolve(vars)],
       );
@@ -459,9 +696,12 @@ class ResolvedCreature {
   final int maxHp;
   final String speed;
   final Map<Ability, int> abilityScores;
+  final Map<Ability, int> savingThrows;
+  final Map<Skill, int> skills;
   final String senses;
   final String languages;
   final String defenses;
+  final int? legendaryActionsPerRound;
   final List<CreatureTrait> traits;
   final List<ResolvedCreatureAction> actions;
 
@@ -473,9 +713,12 @@ class ResolvedCreature {
     required this.maxHp,
     required this.speed,
     required this.abilityScores,
+    this.savingThrows = const {},
+    this.skills = const {},
     required this.senses,
     required this.languages,
     required this.defenses,
+    this.legendaryActionsPerRound,
     required this.traits,
     required this.actions,
   });

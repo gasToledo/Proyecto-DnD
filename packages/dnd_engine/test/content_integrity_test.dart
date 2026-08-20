@@ -1209,6 +1209,34 @@ void main() {
       }
     });
 
+    test('el tipo y el tamaño de cada perfil se resuelven', () {
+      // `creatureType` y `creatureSize` caen a parsear `kind` cuando la entrada
+      // no trae los campos estructurados, que hoy es todo el catálogo. Si un
+      // perfil nuevo se escribe con otra forma, se cae acá y no en la ficha.
+      for (final c in repo.creatures.values) {
+        expect(c.creatureSize, isNotNull, reason: '${c.id}: «${c.kind}»');
+      }
+
+      // Los únicos sin tipo son los cañones del artífice: «Objeto» no es un
+      // tipo de criatura del SRD. Inventarles uno sería peor que no tenerlo —
+      // son invocaciones y `creaturesSorted` ya las deja afuera del Modo DM.
+      final sinTipo = [
+        for (final c in repo.creatures.values)
+          if (c.creatureType == null) c.id,
+      ];
+      expect(sinTipo, ['eldritch-cannon', 'eldritch-cannon-explosive']);
+    });
+
+    test('una etiqueta al final del perfil no se come el tamaño', () {
+      // El pteranodon es «Bestia Mediana (dinosaurio)»: sacar el tamaño de la
+      // última palabra daba «(dinosaurio)» y la forma salvaje se quedaba con
+      // el tamaño del druida. Es la única entrada así hoy, y por eso el
+      // catálogo no alcanza a proteger la regla por su cuenta.
+      final p = repo.creature('pteranodon')!;
+      expect(p.kind, endsWith('(dinosaurio)'));
+      expect(p.creatureSize, CreatureSize.medium);
+    });
+
     /// El pozo de Forma Salvaje: bestias **con** valor de desafío. Los
     /// espíritus invocados son de tipo Bestia pero el libro les pone «Desafío:
     /// ninguno», y el rasgo pide un VD máximo — sin VD no califican, que es

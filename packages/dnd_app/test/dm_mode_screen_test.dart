@@ -177,6 +177,25 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'las secciones viven en el lateral y el regreso dice Modo Jugador',
+    (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+
+      expect(find.text('CAMPAÑA ACTUAL'), findsOneWidget);
+      expect(find.text('Mesa'), findsOneWidget);
+      expect(find.text('Capítulos'), findsOneWidget);
+      expect(find.text('Combate'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate((widget) => widget is SegmentedButton),
+        findsNothing,
+      );
+      expect(find.text('Modo Jugador'), findsOneWidget);
+      expect(find.text('Volver a mis personajes'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('al entrar prioriza una campaña en curso', (tester) async {
     await pumpDmMode(
       tester,
@@ -262,6 +281,20 @@ void main() {
     await pumpDmMode(tester, size: const Size(480, 800), seed: seedTable);
 
     expect(find.text('Modo DM'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('en ventana angosta el drawer cambia de sección', (tester) async {
+    await pumpDmMode(tester, size: const Size(480, 800), seed: seedTable);
+
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+    expect(find.text('Modo Jugador'), findsOneWidget);
+
+    await tester.tap(find.text('Capítulos'));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(FilledButton, 'Nuevo capítulo'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -38,6 +38,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
 
   late final CampaignsController _campaigns = CampaignsController(widget.api);
   Campaign? _selected;
+  _CampaignSection _section = _CampaignSection.mesa;
   Object? _loadError;
 
   Campaign? get _effectiveSelection =>
@@ -84,7 +85,10 @@ class _DmModeScreenState extends State<DmModeScreen> {
         state: draft.state,
       );
       if (!mounted) return;
-      setState(() => _selected = created);
+      setState(() {
+        _selected = created;
+        _section = _CampaignSection.mesa;
+      });
     } on ApiException catch (e) {
       if (mounted) {
         showAppMessage(context, e.message, tone: AppMessageTone.error);
@@ -138,7 +142,12 @@ class _DmModeScreenState extends State<DmModeScreen> {
     if (confirmed != true || !mounted) return;
     try {
       await _campaigns.delete(campaign.id);
-      if (mounted) setState(() => _selected = null);
+      if (mounted) {
+        setState(() {
+          _selected = null;
+          _section = _CampaignSection.mesa;
+        });
+      }
     } on ApiException catch (e) {
       if (mounted) {
         showAppMessage(context, e.message, tone: AppMessageTone.error);
@@ -265,6 +274,42 @@ class _DmModeScreenState extends State<DmModeScreen> {
                       ),
                     ),
                   ],
+                  if (_effectiveSelection != null) ...[
+                    const SizedBox(height: 16),
+                    Divider(color: pal.hairline, height: 1),
+                    const SizedBox(height: 14),
+                    const _CampaignGroupLabel('Campaña actual'),
+                    appNavItem(
+                      context,
+                      icon: Icons.groups_outlined,
+                      label: 'Mesa',
+                      active: _section == _CampaignSection.mesa,
+                      onTap: () => _selectSection(
+                        _CampaignSection.mesa,
+                        inDrawer: inDrawer,
+                      ),
+                    ),
+                    appNavItem(
+                      context,
+                      icon: Icons.auto_stories_outlined,
+                      label: 'Capítulos',
+                      active: _section == _CampaignSection.capitulos,
+                      onTap: () => _selectSection(
+                        _CampaignSection.capitulos,
+                        inDrawer: inDrawer,
+                      ),
+                    ),
+                    appNavItem(
+                      context,
+                      icon: Icons.local_fire_department_outlined,
+                      label: 'Combate',
+                      active: _section == _CampaignSection.combate,
+                      onTap: () => _selectSection(
+                        _CampaignSection.combate,
+                        inDrawer: inDrawer,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -279,8 +324,13 @@ class _DmModeScreenState extends State<DmModeScreen> {
           OutlinedButton.icon(
             key: const ValueKey('exit-dm-mode'),
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back, size: 18),
-            label: const Text('Volver a mis personajes'),
+            icon: const Icon(Icons.person_outline, size: 16),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: pal.gold,
+              side: BorderSide(color: pal.gold.withAlpha(110)),
+              textStyle: const TextStyle(fontSize: 12),
+            ),
+            label: const Text('Modo Jugador'),
           ),
         ],
       ),
@@ -298,10 +348,18 @@ class _DmModeScreenState extends State<DmModeScreen> {
       label: campaign.name,
       active: campaign.id == _effectiveSelection?.id,
       onTap: () {
-        setState(() => _selected = campaign);
+        setState(() {
+          _selected = campaign;
+          _section = _CampaignSection.mesa;
+        });
         if (inDrawer) Navigator.of(context).pop();
       },
     );
+  }
+
+  void _selectSection(_CampaignSection section, {required bool inDrawer}) {
+    setState(() => _section = section);
+    if (inDrawer) Navigator.of(context).pop();
   }
 
   Widget _content(BuildContext context) {
@@ -337,6 +395,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
         return _CampaignDetail(
           key: ValueKey(campaign.id),
           campaign: campaign,
+          section: _section,
           api: widget.api,
           repo: widget.repo,
           onEdit: () => _editCampaign(campaign),
@@ -497,6 +556,7 @@ class _OnboardingStep extends StatelessWidget {
 /// Lo que el DM ve de una campaña: quiénes juegan y cómo sumar a alguien.
 class _CampaignDetail extends StatefulWidget {
   final Campaign campaign;
+  final _CampaignSection section;
   final ApiClient api;
   final ContentRepository repo;
   final VoidCallback onEdit;
@@ -505,6 +565,7 @@ class _CampaignDetail extends StatefulWidget {
   const _CampaignDetail({
     super.key,
     required this.campaign,
+    required this.section,
     required this.api,
     required this.repo,
     required this.onEdit,
@@ -523,8 +584,6 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   List<CampaignMember>? _members;
   Object? _error;
   bool _busy = false;
-
-  _CampaignSection _section = _CampaignSection.mesa;
 
   List<Chapter>? _chapters;
   bool _chaptersLoading = true;
@@ -1007,61 +1066,8 @@ class _CampaignDetailState extends State<_CampaignDetail> {
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: AppBusyLabel('Sumando personaje…'),
           ),
-        LayoutBuilder(
-          builder: (context, box) => Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: SegmentedButton<_CampaignSection>(
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(
-                    value: _CampaignSection.mesa,
-                    icon: box.maxWidth >= 600
-                        ? const Icon(Icons.groups_outlined)
-                        : null,
-                    label: _SectionLabel(
-                      text: 'Mesa',
-                      badge: box.maxWidth >= 700 && _members != null
-                          ? '${_members!.length}'
-                          : null,
-                    ),
-                  ),
-                  ButtonSegment(
-                    value: _CampaignSection.capitulos,
-                    icon: box.maxWidth >= 600
-                        ? const Icon(Icons.auto_stories_outlined)
-                        : null,
-                    label: _SectionLabel(
-                      text: 'Capítulos',
-                      badge: box.maxWidth >= 700 && _chapters != null
-                          ? '${_chapters!.length}'
-                          : null,
-                    ),
-                  ),
-                  ButtonSegment(
-                    value: _CampaignSection.combate,
-                    icon: box.maxWidth >= 600
-                        ? const Icon(Icons.local_fire_department_outlined)
-                        : null,
-                    label: _SectionLabel(
-                      text: 'Combate',
-                      badge: box.maxWidth >= 700 && _encounter != null
-                          ? 'En curso'
-                          : null,
-                      highlighted: _encounter != null,
-                    ),
-                  ),
-                ],
-                selected: {_section},
-                onSelectionChanged: (selection) =>
-                    setState(() => _section = selection.first),
-              ),
-            ),
-          ),
-        ),
         Expanded(
-          child: switch (_section) {
+          child: switch (widget.section) {
             _CampaignSection.mesa => _roster(context),
             _CampaignSection.capitulos => ChaptersView(
               chapters: _chapters,
@@ -1098,7 +1104,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       .firstOrNull;
 
   Widget _primaryAction() {
-    return switch (_section) {
+    return switch (widget.section) {
       _CampaignSection.mesa => FilledButton.icon(
         onPressed: _busy ? null : _addMember,
         icon: const Icon(Icons.person_add_alt),
@@ -1211,45 +1217,6 @@ class _CampaignMeta extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final String text;
-  final String? badge;
-  final bool highlighted;
-
-  const _SectionLabel({
-    required this.text,
-    this.badge,
-    this.highlighted = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (badge == null) return Text(text);
-    final pal = context.palette;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(text),
-        const SizedBox(width: 7),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-          decoration: BoxDecoration(
-            color: highlighted ? pal.goldSoft : pal.plaque,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            badge!,
-            style: TextStyle(
-              fontSize: 10,
-              color: highlighted ? pal.gold : pal.textMuted,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

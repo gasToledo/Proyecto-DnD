@@ -30,10 +30,8 @@ class EncounterView extends StatelessWidget {
   final List<CampaignMember> members;
 
   final VoidCallback onRetry;
-  final VoidCallback onStart;
   final void Function(String memberId, String name, int initiative) onAddPlayer;
   final void Function(Creature creature, int count) onAddMonster;
-  final VoidCallback onNextTurn;
 
   /// [delta] es lo que cambia: negativo es daño, positivo es cura. El
   /// clampeo a `0..maxHp` lo hace `Encounter.withHp`, no esta pantalla.
@@ -52,10 +50,8 @@ class EncounterView extends StatelessWidget {
     required this.error,
     required this.members,
     required this.onRetry,
-    required this.onStart,
     required this.onAddPlayer,
     required this.onAddMonster,
-    required this.onNextTurn,
     required this.onAdjustHp,
     required this.onRemoveCombatant,
     required this.onCloseEncounter,
@@ -78,13 +74,7 @@ class EncounterView extends StatelessWidget {
       return AppEmptyState(
         icon: Icons.local_fire_department_outlined,
         message: 'No hay ningún combate en curso.',
-        actions: [
-          FilledButton.icon(
-            onPressed: onStart,
-            icon: const Icon(Icons.local_fire_department_outlined),
-            label: const Text('Empezar combate'),
-          ),
-        ],
+        actions: const [],
       );
     }
 
@@ -161,12 +151,6 @@ class EncounterView extends StatelessWidget {
               icon: const Icon(Icons.add),
               label: const Text('Sumar monstruo'),
             ),
-            if (current.combatants.isNotEmpty)
-              FilledButton.icon(
-                onPressed: onNextTurn,
-                icon: const Icon(Icons.skip_next),
-                label: const Text('Siguiente turno'),
-              ),
             // Icono + texto y sin carmesí: un banderín rojo suelto se leía
             // como "rendirse". Terminar el combate es el final normal de un
             // encuentro, no una acción de peligro — el carmesí queda para el

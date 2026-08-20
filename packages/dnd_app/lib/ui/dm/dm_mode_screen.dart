@@ -12,6 +12,7 @@ import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
 import '../pending_events_gate.dart';
 import '../portrait_image.dart';
+import 'campaign_editor_dialog.dart';
 import 'chapter_editor_dialog.dart';
 import 'chapters_view.dart';
 import 'encounter_view.dart';
@@ -39,6 +40,15 @@ class _DmModeScreenState extends State<DmModeScreen> {
   Campaign? _selected;
   Object? _loadError;
 
+  Campaign? get _effectiveSelection =>
+      _campaigns.campaigns
+          .where((campaign) => campaign.id == _selected?.id)
+          .firstOrNull ??
+      _campaigns.campaigns
+          .where((campaign) => campaign.state == CampaignState.active)
+          .firstOrNull ??
+      _campaigns.campaigns.firstOrNull;
+
   @override
   void initState() {
     super.initState();
@@ -61,14 +71,18 @@ class _DmModeScreenState extends State<DmModeScreen> {
   }
 
   Future<void> _createCampaign() async {
-    final name = await showTextPromptDialog(
+    final draft = await showCampaignEditorDialog(
       context,
+      current: const Campaign(id: 'draft', name: ''),
       title: 'Nueva campaña',
-      label: 'Nombre de la campaña',
     );
-    if (name == null || !mounted) return;
+    if (draft == null || !mounted) return;
     try {
-      final created = await _campaigns.create(name);
+      final created = await _campaigns.create(
+        draft.name,
+        premise: draft.premise,
+        state: draft.state,
+      );
       if (!mounted) return;
       setState(() => _selected = created);
     } on ApiException catch (e) {
@@ -78,10 +92,13 @@ class _DmModeScreenState extends State<DmModeScreen> {
     }
   }
 
-  Future<void> _renameCampaign(Campaign campaign) async {
-    final name = await showRenameDialog(context, campaign.name);
-    if (name == null || !mounted) return;
-    final updated = campaign.copyWith(name: name);
+  Future<void> _editCampaign(Campaign campaign) async {
+    final updated = await showCampaignEditorDialog(
+      context,
+      current: campaign,
+      title: 'Editar campaña',
+    );
+    if (updated == null || !mounted) return;
     try {
       await _campaigns.update(updated);
       if (mounted) setState(() => _selected = updated);
@@ -166,6 +183,15 @@ class _DmModeScreenState extends State<DmModeScreen> {
 
   Widget _sidebar(BuildContext context, {bool inDrawer = false}) {
     final pal = context.palette;
+    final active = _campaigns.campaigns
+        .where((campaign) => campaign.state == CampaignState.active)
+        .toList();
+    final paused = _campaigns.campaigns
+        .where((campaign) => campaign.state == CampaignState.paused)
+        .toList();
+    final finished = _campaigns.campaigns
+        .where((campaign) => campaign.state == CampaignState.finished)
+        .toList();
     return Container(
       width: inDrawer ? null : 236,
       decoration: BoxDecoration(
@@ -201,17 +227,44 @@ class _DmModeScreenState extends State<DmModeScreen> {
               builder: (context, _) => ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  for (final campaign in _campaigns.campaigns)
-                    appNavItem(
-                      context,
-                      icon: Icons.menu_book_outlined,
-                      label: campaign.name,
-                      active: campaign.id == _selected?.id,
-                      onTap: () {
-                        setState(() => _selected = campaign);
-                        if (inDrawer) Navigator.of(context).pop();
-                      },
+                  if (active.isNotEmpty) ...[
+                    const _CampaignGroupLabel('En curso'),
+                    for (final campaign in active)
+                      _campaignNavItem(context, campaign, inDrawer: inDrawer),
+                  ],
+                  if (paused.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    const _CampaignGroupLabel('En pausa'),
+                    for (final campaign in paused)
+                      _campaignNavItem(context, campaign, inDrawer: inDrawer),
+                  ],
+                  if (finished.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Theme(
+                      data: Theme.of(
+                        context,
+                      ).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        key: ValueKey(
+                          'finished-${_effectiveSelection?.state == CampaignState.finished ? _effectiveSelection?.id : 'none'}',
+                        ),
+                        tilePadding: const EdgeInsets.symmetric(horizontal: 8),
+                        childrenPadding: EdgeInsets.zero,
+                        initiallyExpanded: finished.any(
+                          (campaign) => campaign.id == _effectiveSelection?.id,
+                        ),
+                        title: const _CampaignGroupLabel('Terminadas'),
+                        children: [
+                          for (final campaign in finished)
+                            _campaignNavItem(
+                              context,
+                              campaign,
+                              inDrawer: inDrawer,
+                            ),
+                        ],
+                      ),
                     ),
+                  ],
                 ],
               ),
             ),
@@ -231,6 +284,23 @@ class _DmModeScreenState extends State<DmModeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _campaignNavItem(
+    BuildContext context,
+    Campaign campaign, {
+    required bool inDrawer,
+  }) {
+    return appNavItem(
+      context,
+      icon: Icons.menu_book_outlined,
+      label: campaign.name,
+      active: campaign.id == _effectiveSelection?.id,
+      onTap: () {
+        setState(() => _selected = campaign);
+        if (inDrawer) Navigator.of(context).pop();
+      },
     );
   }
 
@@ -257,36 +327,169 @@ class _DmModeScreenState extends State<DmModeScreen> {
           return const Center(child: AppBusyLabel('Cargando campañas…'));
         }
         if (_campaigns.campaigns.isEmpty) {
-          return AppEmptyState(
-            icon: Icons.menu_book_outlined,
-            message: 'Todavía no dirigís ninguna campaña.',
-            actions: [
-              FilledButton.icon(
-                onPressed: _createCampaign,
-                icon: const Icon(Icons.add),
-                label: const Text('Crear campaña'),
-              ),
-            ],
-          );
+          return _DmOnboardingState(onCreate: _createCampaign);
         }
 
         // Al entrar no hay nada elegido: se abre la primera en vez de mostrar
         // un panel vacío que obligue a un clic sin decisión detrás.
-        final campaign =
-            _campaigns.campaigns
-                .where((c) => c.id == _selected?.id)
-                .firstOrNull ??
-            _campaigns.campaigns.first;
+        final campaign = _effectiveSelection!;
 
         return _CampaignDetail(
           key: ValueKey(campaign.id),
           campaign: campaign,
           api: widget.api,
           repo: widget.repo,
-          onRename: () => _renameCampaign(campaign),
+          onEdit: () => _editCampaign(campaign),
           onDelete: () => _deleteCampaign(campaign),
         );
       },
+    );
+  }
+}
+
+class _CampaignGroupLabel extends StatelessWidget {
+  final String text;
+
+  const _CampaignGroupLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(8, 4, 8, 7),
+    child: Text(
+      text.toUpperCase(),
+      style: TextStyle(
+        fontSize: 10,
+        letterSpacing: 1.2,
+        color: context.palette.textMuted,
+      ),
+    ),
+  );
+}
+
+class _DmOnboardingState extends StatelessWidget {
+  final VoidCallback onCreate;
+
+  const _DmOnboardingState({required this.onCreate});
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(28, 26, 28, 28),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              border: Border.all(color: pal.hairline),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.shield_moon_outlined, color: pal.gold, size: 32),
+                const SizedBox(height: 16),
+                const Text(
+                  'Prepará tu primera mesa',
+                  style: TextStyle(fontFamily: 'Georgia', fontSize: 26),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Todavía no dirigís ninguna campaña. Este espacio reúne lo '
+                  'que necesitás antes y durante la partida.',
+                  style: TextStyle(color: pal.textMuted),
+                ),
+                const SizedBox(height: 22),
+                const _OnboardingStep(
+                  number: '1',
+                  title: 'Creá la campaña',
+                  detail: 'Poné nombre a la mesa y resumí su premisa.',
+                ),
+                const _OnboardingStep(
+                  number: '2',
+                  title: 'Sumá los personajes',
+                  detail: 'Cada jugador te comparte su ficha con un código.',
+                ),
+                const _OnboardingStep(
+                  number: '3',
+                  title: 'Dirigí la sesión',
+                  detail:
+                      'Organizá capítulos y llevá la iniciativa del combate.',
+                ),
+                const SizedBox(height: 22),
+                FilledButton.icon(
+                  onPressed: onCreate,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Crear campaña'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OnboardingStep extends StatelessWidget {
+  final String number;
+  final String title;
+  final String detail;
+
+  const _OnboardingStep({
+    required this.number,
+    required this.title,
+    required this.detail,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: pal.goldSoft,
+              border: Border.all(color: pal.hairline),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              number,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontWeight: FontWeight.w700,
+                color: pal.gold,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  detail,
+                  style: TextStyle(fontSize: 12.5, color: pal.textMuted),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -296,7 +499,7 @@ class _CampaignDetail extends StatefulWidget {
   final Campaign campaign;
   final ApiClient api;
   final ContentRepository repo;
-  final VoidCallback onRename;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _CampaignDetail({
@@ -304,7 +507,7 @@ class _CampaignDetail extends StatefulWidget {
     required this.campaign,
     required this.api,
     required this.repo,
-    required this.onRename,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -313,6 +516,8 @@ class _CampaignDetail extends StatefulWidget {
 }
 
 enum _CampaignSection { mesa, capitulos, combate }
+
+enum _CampaignMenuAction { edit, delete }
 
 class _CampaignDetailState extends State<_CampaignDetail> {
   List<CampaignMember>? _members;
@@ -670,83 +875,188 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 16,
-            runSpacing: 12,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+        LayoutBuilder(
+          builder: (context, box) {
+            final titleWidth = box.maxWidth >= 820
+                ? box.maxWidth - 310
+                : box.maxWidth;
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(24, 22, 24, 12),
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: 20,
+                runSpacing: 16,
                 children: [
-                  Text(
-                    widget.campaign.name,
-                    style: const TextStyle(fontFamily: 'Georgia', fontSize: 28),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: titleWidth),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 10,
+                          runSpacing: 8,
+                          children: [
+                            Text(
+                              widget.campaign.name,
+                              style: const TextStyle(
+                                fontFamily: 'Georgia',
+                                fontSize: 28,
+                              ),
+                            ),
+                            GoldPill(
+                              widget.campaign.state.label,
+                              highlighted:
+                                  widget.campaign.state == CampaignState.active,
+                            ),
+                          ],
+                        ),
+                        if (widget.campaign.premise.isNotEmpty) ...[
+                          const SizedBox(height: 7),
+                          Text(
+                            widget.campaign.premise,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.35,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 11),
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 7,
+                          children: [
+                            _CampaignMeta(
+                              icon: Icons.groups_outlined,
+                              text: _summary(),
+                            ),
+                            if (_activeChapter case final chapter?)
+                              _CampaignMeta(
+                                icon: Icons.auto_stories_outlined,
+                                text: chapter.name,
+                                highlighted: true,
+                              ),
+                            if (_encounter case final encounter?)
+                              _CampaignMeta(
+                                icon: Icons.local_fire_department_outlined,
+                                text: 'Combate · ronda ${encounter.round}',
+                                highlighted: true,
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _summary(),
-                    style: TextStyle(fontSize: 13, color: pal.textMuted),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PopupMenuButton<_CampaignMenuAction>(
+                        tooltip: 'Acciones de campaña',
+                        onSelected: (action) {
+                          switch (action) {
+                            case _CampaignMenuAction.edit:
+                              widget.onEdit();
+                            case _CampaignMenuAction.delete:
+                              widget.onDelete();
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: _CampaignMenuAction.edit,
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(Icons.edit_outlined),
+                              title: Text('Editar campaña'),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: _CampaignMenuAction.delete,
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(
+                                Icons.delete_outline,
+                                color: pal.crimson,
+                              ),
+                              title: Text(
+                                'Borrar campaña',
+                                style: TextStyle(color: pal.crimson),
+                              ),
+                            ),
+                          ),
+                        ],
+                        icon: const Icon(Icons.more_horiz),
+                      ),
+                      const SizedBox(width: 8),
+                      _primaryAction(),
+                    ],
                   ),
                 ],
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    tooltip: 'Renombrar campaña',
-                    onPressed: widget.onRename,
-                    icon: const Icon(Icons.edit_outlined),
-                  ),
-                  IconButton(
-                    tooltip: 'Borrar campaña',
-                    onPressed: widget.onDelete,
-                    icon: Icon(Icons.delete_outline, color: pal.crimson),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _addMember,
-                    icon: const Icon(Icons.person_add_alt),
-                    label: const Text('Sumar personaje'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         ),
         if (_busy)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: AppBusyLabel('Sumando personaje…'),
           ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SegmentedButton<_CampaignSection>(
-              segments: const [
-                ButtonSegment(
-                  value: _CampaignSection.mesa,
-                  icon: Icon(Icons.groups_outlined),
-                  label: Text('Mesa'),
-                ),
-                ButtonSegment(
-                  value: _CampaignSection.capitulos,
-                  icon: Icon(Icons.auto_stories_outlined),
-                  label: Text('Capítulos'),
-                ),
-                ButtonSegment(
-                  value: _CampaignSection.combate,
-                  icon: Icon(Icons.local_fire_department_outlined),
-                  label: Text('Combate'),
-                ),
-              ],
-              selected: {_section},
-              onSelectionChanged: (selection) =>
-                  setState(() => _section = selection.first),
+        LayoutBuilder(
+          builder: (context, box) => Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SegmentedButton<_CampaignSection>(
+                showSelectedIcon: false,
+                segments: [
+                  ButtonSegment(
+                    value: _CampaignSection.mesa,
+                    icon: box.maxWidth >= 600
+                        ? const Icon(Icons.groups_outlined)
+                        : null,
+                    label: _SectionLabel(
+                      text: 'Mesa',
+                      badge: box.maxWidth >= 700 && _members != null
+                          ? '${_members!.length}'
+                          : null,
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: _CampaignSection.capitulos,
+                    icon: box.maxWidth >= 600
+                        ? const Icon(Icons.auto_stories_outlined)
+                        : null,
+                    label: _SectionLabel(
+                      text: 'Capítulos',
+                      badge: box.maxWidth >= 700 && _chapters != null
+                          ? '${_chapters!.length}'
+                          : null,
+                    ),
+                  ),
+                  ButtonSegment(
+                    value: _CampaignSection.combate,
+                    icon: box.maxWidth >= 600
+                        ? const Icon(Icons.local_fire_department_outlined)
+                        : null,
+                    label: _SectionLabel(
+                      text: 'Combate',
+                      badge: box.maxWidth >= 700 && _encounter != null
+                          ? 'En curso'
+                          : null,
+                      highlighted: _encounter != null,
+                    ),
+                  ),
+                ],
+                selected: {_section},
+                onSelectionChanged: (selection) =>
+                    setState(() => _section = selection.first),
+              ),
             ),
           ),
         ),
@@ -771,10 +1081,8 @@ class _CampaignDetailState extends State<_CampaignDetail> {
               error: _encounterError,
               members: _members ?? const [],
               onRetry: _loadEncounter,
-              onStart: _startEncounter,
               onAddPlayer: _addPlayerToEncounter,
               onAddMonster: _addMonsters,
-              onNextTurn: _nextTurn,
               onAdjustHp: _adjustCombatantHp,
               onRemoveCombatant: _removeCombatant,
               onCloseEncounter: _closeEncounter,
@@ -783,6 +1091,35 @@ class _CampaignDetailState extends State<_CampaignDetail> {
         ),
       ],
     );
+  }
+
+  Chapter? get _activeChapter => _chapters
+      ?.where((chapter) => chapter.state == ChapterState.active)
+      .firstOrNull;
+
+  Widget _primaryAction() {
+    return switch (_section) {
+      _CampaignSection.mesa => FilledButton.icon(
+        onPressed: _busy ? null : _addMember,
+        icon: const Icon(Icons.person_add_alt),
+        label: const Text('Sumar personaje'),
+      ),
+      _CampaignSection.capitulos => FilledButton.icon(
+        onPressed: _chaptersLoading ? null : _createChapter,
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo capítulo'),
+      ),
+      _CampaignSection.combate when _encounter == null => FilledButton.icon(
+        onPressed: _encounterLoading ? null : _startEncounter,
+        icon: const Icon(Icons.local_fire_department_outlined),
+        label: const Text('Empezar combate'),
+      ),
+      _ => FilledButton.icon(
+        onPressed: _encounter!.combatants.isEmpty ? null : _nextTurn,
+        icon: const Icon(Icons.skip_next),
+        label: const Text('Siguiente turno'),
+      ),
+    };
   }
 
   String _summary() {
@@ -812,26 +1149,107 @@ class _CampaignDetailState extends State<_CampaignDetail> {
         message:
             'Pedile a cada jugador que abra su personaje, toque Compartir y '
             'te pase el código.',
-        actions: [
-          FilledButton.icon(
-            onPressed: _addMember,
-            icon: const Icon(Icons.person_add_alt),
-            label: const Text('Sumar personaje'),
-          ),
-        ],
+        actions: const [],
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-      itemCount: members.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, i) => _MemberCard(
-        campaignId: widget.campaign.id,
-        member: members[i],
-        repo: widget.repo,
-        onRemove: () => _removeMember(members[i]),
+    return LayoutBuilder(
+      builder: (context, box) {
+        final columns = box.maxWidth >= 900 ? 2 : 1;
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            mainAxisExtent: 136,
+          ),
+          itemCount: members.length,
+          itemBuilder: (context, i) => _MemberCard(
+            campaignId: widget.campaign.id,
+            member: members[i],
+            repo: widget.repo,
+            onRemove: () => _removeMember(members[i]),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CampaignMeta extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final bool highlighted;
+
+  const _CampaignMeta({
+    required this.icon,
+    required this.text,
+    this.highlighted = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final color = highlighted
+        ? pal.gold
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 340),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12.5, color: color),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  final String? badge;
+  final bool highlighted;
+
+  const _SectionLabel({
+    required this.text,
+    this.badge,
+    this.highlighted = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (badge == null) return Text(text);
+    final pal = context.palette;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(text),
+        const SizedBox(width: 7),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+          decoration: BoxDecoration(
+            color: highlighted ? pal.goldSoft : pal.plaque,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            badge!,
+            style: TextStyle(
+              fontSize: 10,
+              color: highlighted ? pal.gold : pal.textMuted,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -840,6 +1258,8 @@ class _CampaignDetailState extends State<_CampaignDetail> {
 ///
 /// Se compila igual que en el panel de personajes: el DM ve lo que el jugador
 /// tiene ahora, porque el vínculo apunta a la ficha real y no a una copia.
+enum _MemberMenuAction { remove }
+
 class _MemberCard extends StatelessWidget {
   final String campaignId;
   final CampaignMember member;
@@ -870,7 +1290,7 @@ class _MemberCard extends StatelessWidget {
         border: Border.all(color: pal.hairline),
         borderRadius: BorderRadius.circular(12),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -892,50 +1312,98 @@ class _MemberCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  character.name,
-                  style: const TextStyle(fontFamily: 'Georgia', fontSize: 19),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        character.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 19,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GoldPill('Nivel ${character.level}', highlighted: false),
+                  ],
                 ),
                 const SizedBox(height: 2),
                 Text(
                   [
                     if (race != null) race.name,
                     if (klass != null) klass.name,
-                    'Nivel ${character.level}',
                   ].join(' · '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: pal.textMuted),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 11),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      'PG $currentHp/$maxHp',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: pal.crimson,
+                    Expanded(
+                      child: Semantics(
+                        label: 'Puntos de golpe: $currentHp de $maxHp',
+                        excludeSemantics: true,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.favorite_outline,
+                                  size: 14,
+                                  color: pal.crimson,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'PG $currentHp/$maxHp',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            ThinBar(
+                              ratio: maxHp == 0 ? 0 : currentHp / maxHp,
+                              color: pal.crimson,
+                              track: pal.plaque,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Text(
-                      'CA ${sheet.armorClass}',
-                      style: const TextStyle(fontSize: 13),
-                    ),
+                    const SizedBox(width: 14),
+                    ShieldBadge('${sheet.armorClass}', height: 40),
                   ],
-                ),
-                const SizedBox(height: 6),
-                ThinBar(
-                  ratio: maxHp == 0 ? 0 : currentHp / maxHp,
-                  color: pal.crimson,
-                  track: pal.plaque,
                 ),
               ],
             ),
           ),
-          IconButton(
-            tooltip: 'Echar a ${character.name}',
-            onPressed: onRemove,
-            icon: Icon(Icons.person_remove_outlined, color: pal.crimson),
+          PopupMenuButton<_MemberMenuAction>(
+            tooltip: 'Acciones de ${character.name}',
+            onSelected: (_) => onRemove(),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _MemberMenuAction.remove,
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    Icons.person_remove_outlined,
+                    color: pal.crimson,
+                  ),
+                  title: Text(
+                    'Echar de la mesa',
+                    style: TextStyle(color: pal.crimson),
+                  ),
+                ),
+              ),
+            ],
+            icon: const Icon(Icons.more_vert),
           ),
         ],
       ),

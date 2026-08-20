@@ -54,13 +54,7 @@ class ChaptersView extends StatelessWidget {
         message:
             'Todavía no dividiste esta campaña en capítulos. Sirven para '
             'llevar por dónde va la historia.',
-        actions: [
-          FilledButton.icon(
-            onPressed: onCreate,
-            icon: const Icon(Icons.add),
-            label: const Text('Nuevo capítulo'),
-          ),
-        ],
+        actions: const [],
       );
     }
 
@@ -78,21 +72,13 @@ class ChaptersView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: OutlinedButton.icon(
-            onPressed: onCreate,
-            icon: const Icon(Icons.add),
-            label: const Text('Nuevo capítulo'),
-          ),
-        ),
         for (final group in [
           (state: ChapterState.active, items: active),
           (state: ChapterState.planned, items: planned),
           (state: ChapterState.completed, items: completed),
         ])
           if (group.items.isNotEmpty) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Eyebrow(group.state.label),
             const SizedBox(height: 8),
             for (final chapter in group.items)

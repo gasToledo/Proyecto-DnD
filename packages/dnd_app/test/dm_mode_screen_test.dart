@@ -85,13 +85,119 @@ void main() {
 
     await tester.tap(find.text('Crear campaña'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'La Tumba');
+    await tester.enterText(find.byType(TextField).first, 'La Tumba');
     await tester.tap(find.text('Guardar'));
     await tester.pumpAndSettle();
 
     expect(server.campaigns.values.single.name, 'La Tumba');
     expect(find.text('La Tumba'), findsWidgets);
     expect(find.textContaining('Todavía nadie compartió'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('crear una campaña guarda su premisa y estado', (tester) async {
+    final server = await pumpDmMode(tester);
+
+    await tester.tap(find.text('Crear campaña'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'La Tumba');
+    await tester.enterText(
+      find.byType(TextField).last,
+      'Una maldición despierta bajo la ciudad.',
+    );
+    await tester.tap(find.text('En curso').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('En pausa').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    final campaign = server.campaigns.values.single;
+    expect(campaign.premise, 'Una maldición despierta bajo la ciudad.');
+    expect(campaign.state, CampaignState.paused);
+    expect(find.text(campaign.premise), findsOneWidget);
+    expect(find.text('En pausa'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('editar una campaña actualiza su identidad completa', (
+    tester,
+  ) async {
+    final server = await pumpDmMode(
+      tester,
+      seed: (server) {
+        server.campaigns['tumba'] = const Campaign(
+          id: 'tumba',
+          name: 'La Tumba',
+          premise: 'Una expedición perdida.',
+        );
+      },
+    );
+
+    await tester.tap(find.byTooltip('Acciones de campaña'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Editar campaña'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'La Ciudad Hundida');
+    await tester.enterText(
+      find.byType(TextField).last,
+      'El mar reclama las calles cada noche.',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    final campaign = server.campaigns['tumba']!;
+    expect(campaign.name, 'La Ciudad Hundida');
+    expect(campaign.premise, 'El mar reclama las calles cada noche.');
+    expect(find.text(campaign.name), findsWidgets);
+    expect(find.text(campaign.premise), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('la acción principal acompaña la sección elegida', (
+    tester,
+  ) async {
+    await pumpDmMode(tester, seed: seedTable);
+
+    expect(
+      find.widgetWithText(FilledButton, 'Sumar personaje'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Capítulos'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(FilledButton, 'Nuevo capítulo'), findsOneWidget);
+
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+    expect(
+      find.widgetWithText(FilledButton, 'Empezar combate'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('al entrar prioriza una campaña en curso', (tester) async {
+    await pumpDmMode(
+      tester,
+      seed: (server) {
+        server.campaigns['pausa'] = const Campaign(
+          id: 'pausa',
+          name: 'Abadía',
+          state: CampaignState.paused,
+        );
+        server.campaigns['activa'] = const Campaign(
+          id: 'activa',
+          name: 'Zafiro',
+          premise: 'Esta es la campaña que se está jugando.',
+        );
+      },
+    );
+
+    expect(
+      find.text('Esta es la campaña que se está jugando.'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -126,7 +232,9 @@ void main() {
     final server = await pumpDmMode(tester, seed: seedTable);
     await enterCode(tester, 'CODE-0001');
 
-    await tester.tap(find.byTooltip('Echar a Sagan'));
+    await tester.tap(find.byTooltip('Acciones de Sagan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Echar de la mesa'));
     await tester.pumpAndSettle();
     expect(find.text('Echar personaje'), findsWidgets);
 
@@ -134,7 +242,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(server.campaignMembers, hasLength(1));
 
-    await tester.tap(find.byTooltip('Echar a Sagan'));
+    await tester.tap(find.byTooltip('Acciones de Sagan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Echar de la mesa'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Echar personaje'));
     await tester.pumpAndSettle();
@@ -152,6 +262,33 @@ void main() {
     await pumpDmMode(tester, size: const Size(480, 800), seed: seedTable);
 
     expect(find.text('Modo DM'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('la mesa usa dos columnas cuando hay ancho suficiente', (
+    tester,
+  ) async {
+    await pumpDmMode(
+      tester,
+      seed: (server) {
+        seedTable(server);
+        server.characters['lyra'] = Character(
+          id: 'lyra',
+          name: 'Lyra',
+          raceId: 'human',
+          classId: 'fighter',
+          backgroundId: 'soldier',
+          assignedScores: {for (final a in Ability.values) a: 14},
+        );
+        server.shareCodes['CODE-0002'] = 'lyra';
+      },
+    );
+    await enterCode(tester, 'CODE-0001');
+    await enterCode(tester, 'CODE-0002');
+
+    final saganTop = tester.getTopLeft(find.text('Sagan')).dy;
+    final lyraTop = tester.getTopLeft(find.text('Lyra')).dy;
+    expect(saganTop, lyraTop);
     expect(tester.takeException(), isNull);
   });
 

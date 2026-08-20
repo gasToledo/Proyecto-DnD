@@ -44,9 +44,13 @@ class CampaignsController extends ChangeNotifier {
 
   /// Crea una campaña y devuelve la que **quedó guardada**: si el id derivado
   /// del nombre ya estaba en uso, el servidor asigna otro.
-  Future<Campaign> create(String name) async {
+  Future<Campaign> create(
+    String name, {
+    String premise = '',
+    CampaignState state = CampaignState.active,
+  }) async {
     final stored = await api.createCampaign(
-      Campaign(id: _idFrom(name), name: name),
+      Campaign(id: _idFrom(name), name: name, premise: premise, state: state),
     );
     campaigns.add(stored);
     _sort();

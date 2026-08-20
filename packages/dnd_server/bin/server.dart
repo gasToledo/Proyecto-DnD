@@ -13,6 +13,7 @@ import 'package:dnd_server/src/portraits/disk_portrait_blob_store.dart';
 import 'package:dnd_server/src/repositories/account_repository.dart';
 import 'package:dnd_server/src/repositories/campaign_repository.dart';
 import 'package:dnd_server/src/repositories/chapter_repository.dart';
+import 'package:dnd_server/src/repositories/note_repository.dart';
 import 'package:dnd_server/src/repositories/character_repository.dart';
 import 'package:dnd_server/src/repositories/encounter_repository.dart';
 import 'package:dnd_server/src/repositories/event_repository.dart';
@@ -76,6 +77,7 @@ Future<void> main() async {
       characters: PostgresCharacterRepository(pool),
       campaigns: PostgresCampaignRepository(pool),
       chapters: PostgresChapterRepository(pool),
+      notes: PostgresNoteRepository(pool),
       encounters: PostgresEncounterRepository(pool),
       events: PostgresEventRepository(pool),
       homebrew: PostgresHomebrewRepository(pool),

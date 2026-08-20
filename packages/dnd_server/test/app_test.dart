@@ -16,6 +16,7 @@ import 'fakes/fake_auth_dependencies.dart';
 import 'fakes/fake_portrait_provider.dart';
 import 'fakes/in_memory_campaign_repository.dart';
 import 'fakes/in_memory_chapter_repository.dart';
+import 'fakes/in_memory_note_repository.dart';
 import 'fakes/in_memory_character_repository.dart';
 import 'fakes/in_memory_encounter_repository.dart';
 import 'fakes/in_memory_event_repository.dart';
@@ -31,6 +32,7 @@ void main() {
   late InMemoryCharacterRepository characters;
   late InMemoryCampaignRepository campaigns;
   late InMemoryChapterRepository chapters;
+  late InMemoryNoteRepository notes;
   late InMemoryEncounterRepository encounters;
   late InMemoryEventRepository events;
   late InMemoryHomebrewRepository homebrewRepo;
@@ -48,6 +50,7 @@ void main() {
     characters = InMemoryCharacterRepository();
     campaigns = InMemoryCampaignRepository(characters);
     chapters = InMemoryChapterRepository(campaigns);
+    notes = InMemoryNoteRepository(campaigns, chapters);
     encounters = InMemoryEncounterRepository(campaigns);
     events = InMemoryEventRepository();
     homebrewRepo = InMemoryHomebrewRepository();
@@ -60,6 +63,7 @@ void main() {
       characters: characters,
       campaigns: campaigns,
       chapters: chapters,
+      notes: notes,
       encounters: encounters,
       events: events,
       homebrew: homebrewRepo,
@@ -669,6 +673,7 @@ void main() {
           characters: characters,
           campaigns: campaigns,
           chapters: chapters,
+          notes: notes,
           encounters: encounters,
           events: events,
           homebrew: homebrewRepo,
@@ -743,6 +748,7 @@ void main() {
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
+        notes: notes,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -809,6 +815,7 @@ void main() {
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
+        notes: notes,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -854,6 +861,7 @@ void main() {
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
+        notes: notes,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -1486,6 +1494,7 @@ void main() {
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
+        notes: notes,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -1511,6 +1520,7 @@ void main() {
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
+        notes: notes,
         encounters: encounters,
         events: events,
         homebrew: homebrewRepo,
@@ -2533,6 +2543,277 @@ void main() {
         await createCampaign(token, 'tumba');
 
         expect(await listChapters(token, 'tumba'), isEmpty);
+      });
+    });
+
+    group('cuaderno', () {
+      Map<String, dynamic> noteJson(
+        String id, {
+        String chapterId = 'cripta',
+        String title = 'Los tres sellos',
+        String body = 'El tercero está detrás del tapiz.',
+      }) => {
+        'schemaVersion': 1,
+        'id': id,
+        'chapterId': chapterId,
+        'title': title,
+        'body': body,
+      };
+
+      Future<Map<String, dynamic>> createNote(
+        String token,
+        String campaignId,
+        String id, {
+        String chapterId = 'cripta',
+        String title = 'Los tres sellos',
+      }) => send(
+        'POST',
+        '/api/campaigns/$campaignId/notes',
+        token: token,
+        body: {'note': noteJson(id, chapterId: chapterId, title: title)},
+      );
+
+      Future<Map<String, dynamic>> notebook(
+        String token,
+        String campaignId,
+      ) async {
+        final response = await send(
+          'GET',
+          '/api/campaigns/$campaignId/notebook',
+          token: token,
+        );
+        return response['body'] as Map<String, dynamic>;
+      }
+
+      /// Una campaña con un capítulo donde colgar notas.
+      Future<String> tableWithChapter(String user) async {
+        final token = await login(user);
+        await createCampaign(token, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/chapters',
+          token: token,
+          body: {
+            'chapter': {
+              'schemaVersion': 1,
+              'id': 'cripta',
+              'name': 'La Cripta',
+              'summary': '',
+              'state': 'planned',
+              'grantsLevel': false,
+            },
+          },
+        );
+        return token;
+      }
+
+      test('sin sesión ninguna operación responde 401', () async {
+        for (final request in [
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/campaigns/c1/notebook'),
+          ),
+          Request(
+            'POST',
+            Uri.parse('http://localhost/api/campaigns/c1/notes'),
+            body: jsonEncode({'note': noteJson('n1')}),
+          ),
+          Request(
+            'PUT',
+            Uri.parse('http://localhost/api/campaigns/c1/notes/n1'),
+            body: jsonEncode({'note': noteJson('n1')}),
+          ),
+          Request(
+            'DELETE',
+            Uri.parse('http://localhost/api/campaigns/c1/notes/n1'),
+          ),
+        ]) {
+          expect(
+            (await handler(request)).statusCode,
+            401,
+            reason: '${request.url}',
+          );
+        }
+      });
+
+      test('crear, listar, editar y borrar una nota', () async {
+        final token = await tableWithChapter('nota-crud');
+
+        final created = await createNote(token, 'tumba', 'sellos');
+        expect(created['status'], 200);
+        expect(created['body']['note']['title'], 'Los tres sellos');
+
+        expect((await notebook(token, 'tumba'))['notes'], hasLength(1));
+
+        final edited = await send(
+          'PUT',
+          '/api/campaigns/tumba/notes/sellos',
+          token: token,
+          body: {
+            'note': noteJson('sellos', title: 'Los tres sellos (corregido)'),
+          },
+        );
+        expect(edited['status'], 200);
+        expect(
+          ((await notebook(token, 'tumba'))['notes'] as List).single['title'],
+          'Los tres sellos (corregido)',
+        );
+
+        await send('DELETE', '/api/campaigns/tumba/notes/sellos', token: token);
+        expect((await notebook(token, 'tumba'))['notes'], isEmpty);
+      });
+
+      test('una nota necesita un capítulo que exista', () async {
+        final token = await tableWithChapter('nota-sin-cap');
+        final response = await createNote(
+          token,
+          'tumba',
+          'suelta',
+          chapterId: 'no-existe',
+        );
+        expect(response['status'], 400);
+      });
+
+      test('una nota sin título se rechaza', () async {
+        final token = await tableWithChapter('nota-sin-titulo');
+        final response = await send(
+          'POST',
+          '/api/campaigns/tumba/notes',
+          token: token,
+          body: {'note': noteJson('vacia', title: '   ')},
+        );
+        expect(response['status'], 400);
+      });
+
+      // Lo ajeno y lo inexistente responden igual, como en todo el resto del
+      // espacio de campañas.
+      test('el cuaderno de una campaña ajena no se ve ni se toca', () async {
+        final owner = await tableWithChapter('nota-duena');
+        await createNote(owner, 'tumba', 'sellos');
+        final other = await login('nota-ajena');
+
+        expect((await notebook(other, 'tumba'))['status'], isNull);
+        for (final call in [
+          send('GET', '/api/campaigns/tumba/notebook', token: other),
+          send(
+            'POST',
+            '/api/campaigns/tumba/notes',
+            token: other,
+            body: {'note': noteJson('intrusa')},
+          ),
+          send(
+            'PUT',
+            '/api/campaigns/tumba/notes/sellos',
+            token: other,
+            body: {'note': noteJson('sellos', title: 'Pisada')},
+          ),
+          send('DELETE', '/api/campaigns/tumba/notes/sellos', token: other),
+        ]) {
+          expect((await call)['status'], 404);
+        }
+
+        // Y la nota de la dueña quedó intacta.
+        final mine = (await notebook(owner, 'tumba'))['notes'] as List;
+        expect(mine.single['title'], 'Los tres sellos');
+      });
+
+      test('borrar el capítulo se lleva sus notas', () async {
+        final token = await tableWithChapter('nota-cascada');
+        await createNote(token, 'tumba', 'sellos');
+        expect((await notebook(token, 'tumba'))['notes'], hasLength(1));
+
+        await send(
+          'DELETE',
+          '/api/campaigns/tumba/chapters/cripta',
+          token: token,
+        );
+
+        expect((await notebook(token, 'tumba'))['notes'], isEmpty);
+      });
+
+      test('borrar la campaña se lleva el cuaderno', () async {
+        final token = await tableWithChapter('nota-campana');
+        await createNote(token, 'tumba', 'sellos');
+
+        await send('DELETE', '/api/campaigns/tumba', token: token);
+        await createCampaign(token, 'tumba');
+
+        expect((await notebook(token, 'tumba'))['notes'], isEmpty);
+      });
+
+      // El cuaderno es el primer lector de `encounter_logs`: hasta ahora se
+      // grababan y no los leía nadie.
+      test('el combate cerrado aparece en el cuaderno', () async {
+        final token = await tableWithChapter('nota-combate');
+
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+          body: {
+            'encounter': {
+              'schemaVersion': 1,
+              'id': 'e1',
+              'round': 4,
+              'turnIndex': 0,
+              'combatants': [
+                {
+                  'id': 'm1',
+                  'kind': 'monster',
+                  'name': 'Esqueleto 1',
+                  'initiative': 12,
+                  'creatureId': 'skeleton',
+                  'currentHp': 0,
+                  'maxHp': 13,
+                },
+                {
+                  'id': 'm2',
+                  'kind': 'monster',
+                  'name': 'Esqueleto 2',
+                  'initiative': 11,
+                  'creatureId': 'skeleton',
+                  'currentHp': 5,
+                  'maxHp': 13,
+                },
+              ],
+            },
+          },
+        );
+        await send('DELETE', '/api/campaigns/tumba/encounter', token: token);
+
+        final logs = (await notebook(token, 'tumba'))['encounterLogs'] as List;
+        expect(logs, hasLength(1));
+        expect(logs.single['rounds'], 4);
+        // Las copias se agrupan y el número de la mesa se saca del nombre.
+        final monsters = logs.single['monsters'] as List;
+        expect(monsters.single['name'], 'Esqueleto');
+        expect(monsters.single['count'], 2);
+        expect(monsters.single['defeated'], 1);
+      });
+
+      test('un combate descartado no deja entrada', () async {
+        final token = await tableWithChapter('nota-descarte');
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: token,
+          body: {
+            'encounter': {
+              'schemaVersion': 1,
+              'id': 'e1',
+              'round': 1,
+              'turnIndex': 0,
+              'combatants': <dynamic>[],
+            },
+          },
+        );
+        await send(
+          'DELETE',
+          '/api/campaigns/tumba/encounter?discard=true',
+          token: token,
+        );
+
+        expect((await notebook(token, 'tumba'))['encounterLogs'], isEmpty);
       });
     });
 

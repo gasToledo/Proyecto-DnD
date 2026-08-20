@@ -136,3 +136,17 @@ class UserEvent {
     payload: (json['payload'] as Map? ?? const {}).cast<String, dynamic>(),
   );
 }
+
+/// El Cuaderno de campaña tal como lo devuelve el servidor: las dos mitades
+/// juntas.
+///
+/// [notes] las escribe el DM y se editan; [encounterLogs] las escribe la app al
+/// cerrar un combate y no se tocan. La pantalla las intercala por capítulo.
+class Notebook {
+  final List<Note> notes;
+  final List<EncounterLog> encounterLogs;
+
+  const Notebook({this.notes = const [], this.encounterLogs = const []});
+
+  bool get isEmpty => notes.isEmpty && encounterLogs.isEmpty;
+}

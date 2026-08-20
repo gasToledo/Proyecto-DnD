@@ -186,6 +186,7 @@ void main() {
       expect(find.text('Mesa'), findsOneWidget);
       expect(find.text('Capítulos'), findsOneWidget);
       expect(find.text('Combate'), findsOneWidget);
+      expect(find.text('Cuaderno'), findsOneWidget);
       // El Bestiario va afuera del grupo de campaña: es de la app, no de la
       // mesa.
       expect(find.text('Bestiario'), findsOneWidget);
@@ -745,6 +746,196 @@ void main() {
           .reduce((a, b) => a > b ? a : b);
       expect(encounter.current!.initiative, highest);
       expect(encounter.turnIndex, 0);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Cuaderno', () {
+    /// Una mesa con un capítulo en marcha: el cuaderno cuelga de capítulos, así
+    /// que sin uno no hay dónde escribir.
+    void seedChapter(FakeApiServer server) {
+      seedTable(server);
+      server.chapters['tumba'] = [
+        const Chapter(
+          id: 'cripta',
+          name: 'La cripta sellada',
+          state: ChapterState.active,
+        ),
+      ];
+    }
+
+    Future<void> openCuaderno(WidgetTester tester) async {
+      await tester.tap(find.text('Cuaderno'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sin capítulos manda a crear uno primero', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCuaderno(tester);
+
+      expect(find.textContaining('primero hay que crear uno'), findsOneWidget);
+      // Y no se puede escribir: la nota no tendría dónde ir.
+      final button = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Escribir nota'),
+      );
+      expect(button.onPressed, isNull);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('escribir una nota la guarda en el capítulo', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedChapter);
+      await openCuaderno(tester);
+
+      await tester.tap(find.text('Escribir nota'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Título'),
+        'Los tres sellos',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nota'),
+        'El tercero está detrás del tapiz.',
+      );
+      await tester.tap(find.text('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(server.notes['tumba']!.single.title, 'Los tres sellos');
+      expect(server.notes['tumba']!.single.chapterId, 'cripta');
+      expect(find.text('Los tres sellos'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('borrar una nota pide confirmación', (tester) async {
+      final server = await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedChapter(s);
+          s.notes['tumba'] = [
+            const Note(
+              id: 'n1',
+              chapterId: 'cripta',
+              title: 'Los tres sellos',
+              body: 'Detrás del tapiz.',
+            ),
+          ];
+        },
+      );
+      await openCuaderno(tester);
+
+      await tester.tap(find.byTooltip('Acciones de la nota'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Borrar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Borrar nota'), findsWidgets);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Borrar nota'));
+      await tester.pumpAndSettle();
+
+      expect(server.notes['tumba'], isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    // El cuaderno es el primer lector de los combates archivados: hasta ahora
+    // se grababan y no los mostraba nadie.
+    testWidgets('un combate cerrado aparece como entrada', (tester) async {
+      final server = await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedChapter(s);
+          s.encounterLogs['tumba'] = [
+            const EncounterLog(
+              id: 'log-0',
+              chapterId: 'cripta',
+              rounds: 4,
+              players: ['Sagan', 'Mirna'],
+              monsters: [
+                EncounterLogMonsters(name: 'Esqueleto', count: 2, defeated: 2),
+              ],
+            ),
+          ];
+        },
+      );
+      await openCuaderno(tester);
+
+      expect(find.text('Combate contra Esqueleto'), findsOneWidget);
+      expect(
+        find.textContaining('Sagan, Mirna contra 2 Esqueleto'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Cayeron todos'), findsOneWidget);
+      // Un combate no se edita: no lleva menú, a diferencia de una nota.
+      expect(find.byTooltip('Acciones de la nota'), findsNothing);
+      expect(server.notes['tumba'] ?? const [], isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('busca y abre el capítulo que coincide', (tester) async {
+      await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedChapter(s);
+          s.chapters['tumba']!.add(
+            const Chapter(id: 'camino', name: 'El camino'),
+          );
+          s.notes['tumba'] = [
+            const Note(
+              id: 'n1',
+              chapterId: 'camino',
+              title: 'Deuda con el herrero',
+              body: 'Cobrárselo más adelante.',
+            ),
+          ];
+        },
+      );
+      await openCuaderno(tester);
+
+      // «El camino» arranca plegado: solo se abre el capítulo en marcha.
+      expect(find.text('Deuda con el herrero'), findsNothing);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Buscar en el cuaderno'),
+        'herrero',
+      );
+      await tester.pumpAndSettle();
+
+      // Buscar abre el capítulo que coincide y esconde el que no. Se comprueba
+      // por la tarjeta y no por el nombre: el encabezado de la campaña ya
+      // muestra el capítulo en marcha, así que su texto está igual en pantalla.
+      expect(find.text('Deuda con el herrero'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('notebook-chapter-camino')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('notebook-chapter-cripta')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un capítulo plegado resume lo que tiene', (tester) async {
+      await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedChapter(s);
+          s.chapters['tumba']!.add(
+            const Chapter(id: 'camino', name: 'El camino'),
+          );
+          s.notes['tumba'] = [
+            const Note(id: 'n1', chapterId: 'camino', title: 'Una'),
+            const Note(id: 'n2', chapterId: 'camino', title: 'Otra'),
+          ];
+        },
+      );
+      await openCuaderno(tester);
+
+      expect(find.text('2 notas'), findsOneWidget);
+      expect(find.text('Una'), findsNothing);
+
+      // Y al abrirlo aparecen.
+      await tester.tap(find.text('El camino'));
+      await tester.pumpAndSettle();
+      expect(find.text('Una'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

@@ -375,6 +375,56 @@ class ApiClient {
         '${Uri.encodeComponent(chapterId)}/close',
   );
 
+  /// El Cuaderno de campaña entero: las notas del DM y los combates ya
+  /// cerrados.
+  ///
+  /// Viene en un solo viaje porque la pantalla los intercala dentro de cada
+  /// capítulo: pedirlos por separado la obligaría a esperar dos respuestas para
+  /// poder pintar uno solo.
+  Future<Notebook> loadNotebook(String campaignId) async {
+    final response = await _send(
+      'GET',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}/notebook',
+    );
+    final body = _json(response);
+    return Notebook(
+      notes: [
+        for (final json in body['notes'] as List)
+          Note.fromJson((json as Map).cast<String, dynamic>()),
+      ],
+      encounterLogs: [
+        for (final json in body['encounterLogs'] as List)
+          EncounterLog.fromJson((json as Map).cast<String, dynamic>()),
+      ],
+    );
+  }
+
+  /// Devuelve la nota efectivamente guardada: si el id ya estaba en uso, el
+  /// servidor le asigna otro, igual que con los capítulos.
+  Future<Note> createNote(String campaignId, Note note) async {
+    final response = await _send(
+      'POST',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}/notes',
+      jsonBody: {'note': note.toJson()},
+    );
+    return Note.fromJson(
+      (_json(response)['note'] as Map).cast<String, dynamic>(),
+    );
+  }
+
+  Future<void> updateNote(String campaignId, Note note) => _send(
+    'PUT',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/notes/'
+        '${Uri.encodeComponent(note.id)}',
+    jsonBody: {'note': note.toJson()},
+  );
+
+  Future<void> deleteNote(String campaignId, String noteId) => _send(
+    'DELETE',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}/notes/'
+        '${Uri.encodeComponent(noteId)}',
+  );
+
   // --- Combate ------------------------------------------------------------
 
   /// El combate abierto de una campaña, o `null` si no hay ninguno. Sin

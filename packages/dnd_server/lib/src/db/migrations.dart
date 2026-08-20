@@ -270,4 +270,49 @@ CREATE INDEX chapters_campaign_idx
   ON chapters (dm_user_id, campaign_id, created_at);
 ''',
   ),
+  Migration(
+    id: '0009_notes',
+    sql: '''
+-- Las notas del Cuaderno de campaña: la mitad que el DM escribe a mano. La
+-- otra mitad —los combates cerrados— ya vive en `encounter_logs`, que hasta
+-- ahora se grababa sin que nadie la leyera.
+--
+-- Misma forma que `chapters`, con una clave foránea de más: la nota cuelga de
+-- un capítulo, no de la campaña suelta. Borrar el capítulo se lleva sus notas,
+-- que es lo que corresponde — el cuaderno es una línea de tiempo **por
+-- capítulo** y una nota huérfana no tendría dónde mostrarse.
+--
+-- Ningún jugador lee una nota: es material del DM, como la descripción de un
+-- capítulo. Por eso la tabla no cruza cuentas y filtra por `dm_user_id` como
+-- cualquier tabla de un solo dueño.
+CREATE TABLE notes (
+  dm_user_id UUID NOT NULL,
+  campaign_id TEXT NOT NULL,
+  chapter_id TEXT NOT NULL,
+  id TEXT NOT NULL,
+  document JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (dm_user_id, campaign_id, id),
+  FOREIGN KEY (dm_user_id, campaign_id, chapter_id)
+    REFERENCES chapters (dm_user_id, campaign_id, id) ON DELETE CASCADE
+);
+
+-- Se listan por capítulo y, dentro de él, de la más vieja a la más nueva: el
+-- cuaderno se lee como un diario.
+CREATE INDEX notes_chapter_idx
+  ON notes (dm_user_id, campaign_id, chapter_id, created_at);
+
+-- Un combate cerrado también cuelga de un capítulo, porque el cuaderno es una
+-- línea de tiempo por capítulo. Lo resuelve el servidor al archivar, mirando
+-- cuál estaba en marcha: el cliente del DM no tiene por qué saberlo.
+--
+-- Es nullable y **sin** clave foránea, a diferencia de `notes`, por dos
+-- motivos distintos: los combates archivados antes de esta migración no tienen
+-- capítulo que declarar, y borrar un capítulo no puede borrar el registro de
+-- que ese combate se jugó. Una nota es un borrador y se va con su capítulo; un
+-- combate pasó, y eso no se deshace.
+ALTER TABLE encounter_logs ADD COLUMN chapter_id TEXT;
+''',
+  ),
 ];

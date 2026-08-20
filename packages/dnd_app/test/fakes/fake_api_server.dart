@@ -48,6 +48,13 @@ class FakeApiServer {
   /// Combates terminados, y si se archivaron o se descartaron.
   final List<({String campaignId, bool discarded})> endedEncounters = [];
 
+  /// Las notas del Cuaderno de cada campaña, por id de campaña.
+  final Map<String, List<Note>> notes = {};
+
+  /// Los combates archivados de cada campaña, del más nuevo al más viejo, que
+  /// es como los devuelve el servidor real.
+  final Map<String, List<EncounterLog>> encounterLogs = {};
+
   /// Códigos emitidos y todavía sin canjear, por el id del personaje.
   final Map<String, String> shareCodes = {};
 
@@ -239,6 +246,7 @@ class FakeApiServer {
     if (method == 'PUT' &&
         path.startsWith('/api/campaigns/') &&
         !path.contains('/encounter') &&
+        !path.contains('/notes') &&
         !path.contains('/chapters')) {
       final campaign = Campaign.fromJson(
         (_body(request)['campaign'] as Map).cast<String, dynamic>(),
@@ -254,12 +262,15 @@ class FakeApiServer {
         path.startsWith('/api/campaigns/') &&
         !path.contains('/members') &&
         !path.contains('/encounter') &&
+        !path.contains('/notes') &&
         !path.contains('/chapters')) {
       final id = _segment(path, '/api/campaigns/');
       campaigns.remove(id);
       campaignMembers.removeWhere((_, m) => m.campaignId == id);
       encounters.remove(id);
       chapters.remove(id);
+      notes.remove(id);
+      encounterLogs.remove(id);
       return _json({'status': 'ok'});
     }
 
@@ -353,6 +364,56 @@ class FakeApiServer {
               },
         ],
       });
+    }
+
+    // --- Cuaderno de campaña: las notas del DM y los combates ya cerrados.
+    if (path.contains('/notebook') || path.contains('/notes')) {
+      final campaignId = path.split('/')[3];
+      if (!campaigns.containsKey(campaignId)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      final list = notes.putIfAbsent(campaignId, () => []);
+
+      if (method == 'GET') {
+        return _json({
+          'notes': [for (final n in list) n.toJson()],
+          'encounterLogs': [
+            for (final l in encounterLogs[campaignId] ?? const <EncounterLog>[])
+              l.toJson(),
+          ],
+        });
+      }
+
+      if (method == 'POST' || method == 'PUT') {
+        final note = Note.fromJson(
+          (_body(request)['note'] as Map).cast<String, dynamic>(),
+        );
+        // Las dos reglas que hace cumplir el servidor.
+        if (note.title.trim().isEmpty) {
+          return _json({'error': 'La nota necesita un título.'}, 400);
+        }
+        final hasChapter = (chapters[campaignId] ?? const <Chapter>[]).any(
+          (c) => c.id == note.chapterId,
+        );
+        if (!hasChapter) {
+          return _json({'error': 'El capítulo de la nota no existe.'}, 400);
+        }
+        final at = list.indexWhere((n) => n.id == note.id);
+        if (at < 0) {
+          list.add(note);
+        } else {
+          list[at] = note;
+        }
+        return method == 'POST'
+            ? _json({'note': note.toJson()})
+            : _json({'status': 'ok'});
+      }
+
+      if (method == 'DELETE') {
+        final id = path.split('/')[5];
+        list.removeWhere((n) => n.id == id);
+        return _json({'status': 'ok'});
+      }
     }
 
     // --- Capítulos. Reproduce las dos reglas que el servidor hace cumplir:
@@ -455,14 +516,43 @@ class FakeApiServer {
       if (!campaigns.containsKey(id)) {
         return _json({'error': 'Campaña no encontrada.'}, 404);
       }
-      encounters.remove(id);
-      // El doble no guarda logs, pero sí anota si el combate se archivó o se
-      // descartó: es la única diferencia observable entre los dos caminos, y
-      // sin esto una prueba no podría distinguirlos.
-      endedEncounters.add((
-        campaignId: id,
-        discarded: request.url.queryParameters['discard'] == 'true',
-      ));
+      final closing = encounters.remove(id);
+      final discarded = request.url.queryParameters['discard'] == 'true';
+      endedEncounters.add((campaignId: id, discarded: discarded));
+      // Archivar deja una entrada en el cuaderno; descartar no. Es la
+      // diferencia entre los dos caminos y hay que reproducirla acá para que
+      // una prueba del cuaderno pueda verla.
+      if (!discarded && closing != null) {
+        final monsters = <String, List<Combatant>>{};
+        for (final c in closing.combatants) {
+          if (c.kind != CombatantKind.monster) continue;
+          monsters.putIfAbsent(c.creatureId ?? c.name, () => []).add(c);
+        }
+        encounterLogs
+            .putIfAbsent(id, () => [])
+            .insert(
+              0,
+              EncounterLog(
+                id: 'log-${encounterLogs[id]?.length ?? 0}',
+                rounds: closing.round,
+                players: [
+                  for (final c in closing.combatants)
+                    if (c.kind == CombatantKind.player) c.name,
+                ],
+                monsters: [
+                  for (final group in monsters.values)
+                    EncounterLogMonsters(
+                      name: group.first.name.replaceFirst(
+                        RegExp(r'\s+\d+$'),
+                        '',
+                      ),
+                      count: group.length,
+                      defeated: group.where((c) => c.currentHp <= 0).length,
+                    ),
+                ],
+              ),
+            );
+      }
       return _json({'status': 'ok'});
     }
 

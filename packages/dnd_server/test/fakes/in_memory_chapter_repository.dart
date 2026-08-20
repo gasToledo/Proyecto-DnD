@@ -21,6 +21,11 @@ class InMemoryChapterRepository implements ChapterRepository {
   final Map<String, List<Chapter>> _byCampaign = {};
   int _generatedIdCounter = 0;
 
+  /// Ganchos que corren al borrar un capítulo, para que los fakes que cuelgan
+  /// de él reproduzcan su clave foránea en cascada — hoy, las notas.
+  final List<void Function(String dmUserId, String campaignId, String id)>
+  onChapterDeleted = [];
+
   String _key(String dmUserId, String campaignId) => '$dmUserId|$campaignId';
 
   @override
@@ -79,5 +84,8 @@ class InMemoryChapterRepository implements ChapterRepository {
   @override
   Future<void> delete(String dmUserId, String campaignId, String id) async {
     _byCampaign[_key(dmUserId, campaignId)]?.removeWhere((c) => c.id == id);
+    for (final cascade in onChapterDeleted) {
+      cascade(dmUserId, campaignId, id);
+    }
   }
 }

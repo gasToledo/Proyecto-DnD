@@ -17,6 +17,8 @@ import 'campaign_editor_dialog.dart';
 import 'chapter_editor_dialog.dart';
 import 'chapters_view.dart';
 import 'encounter_view.dart';
+import 'note_editor_dialog.dart';
+import 'notebook_view.dart';
 
 /// El otro sombrero de la misma cuenta.
 ///
@@ -325,6 +327,16 @@ class _DmModeScreenState extends State<DmModeScreen> {
                     ),
                     appNavItem(
                       context,
+                      icon: Icons.menu_book_outlined,
+                      label: 'Cuaderno',
+                      active: _section == _CampaignSection.cuaderno,
+                      onTap: () => _selectSection(
+                        _CampaignSection.cuaderno,
+                        inDrawer: inDrawer,
+                      ),
+                    ),
+                    appNavItem(
+                      context,
                       icon: Icons.local_fire_department_outlined,
                       label: 'Combate',
                       active: _section == _CampaignSection.combate,
@@ -605,7 +617,7 @@ class _CampaignDetail extends StatefulWidget {
   State<_CampaignDetail> createState() => _CampaignDetailState();
 }
 
-enum _CampaignSection { mesa, capitulos, combate }
+enum _CampaignSection { mesa, capitulos, cuaderno, combate }
 
 enum _CampaignMenuAction { edit, delete }
 
@@ -617,6 +629,10 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   List<Chapter>? _chapters;
   bool _chaptersLoading = true;
   Object? _chaptersError;
+
+  Notebook? _notebook;
+  bool _notebookLoading = true;
+  Object? _notebookError;
 
   Encounter? _encounter;
   bool _encounterLoading = true;
@@ -635,6 +651,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     super.initState();
     _loadMembers();
     _loadChapters();
+    _loadNotebook();
     _loadEncounter();
   }
 
@@ -762,6 +779,72 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       }
     }
   }
+
+  Future<void> _loadNotebook() async {
+    setState(() {
+      _notebookLoading = true;
+      _notebookError = null;
+    });
+    try {
+      final notebook = await widget.api.loadNotebook(widget.campaign.id);
+      if (!mounted) return;
+      setState(() {
+        _notebook = notebook;
+        _notebookLoading = false;
+      });
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _notebookError = error;
+          _notebookLoading = false;
+        });
+      }
+    }
+  }
+
+  /// Igual que [_chapterAction], pero recargando el cuaderno.
+  Future<void> _noteAction(Future<void> Function() action) async {
+    try {
+      await action();
+      await _loadNotebook();
+    } on ApiException catch (e) {
+      if (mounted) {
+        showAppMessage(context, e.message, tone: AppMessageTone.error);
+      }
+    }
+  }
+
+  /// La nota nace en el capítulo en marcha, que es donde se está jugando. Si no
+  /// hay ninguno, en el primero: el diálogo deja cambiarlo igual.
+  Future<void> _createNote() async {
+    final chapters = _chapters ?? const <Chapter>[];
+    if (chapters.isEmpty) return;
+    final target =
+        chapters.where((c) => c.state == ChapterState.active).firstOrNull ??
+        chapters.first;
+    final draft = await showNoteEditorDialog(
+      context,
+      current: Note(id: _newId('note'), chapterId: target.id),
+      chapters: chapters,
+      title: 'Escribir nota',
+    );
+    if (draft == null) return;
+    await _noteAction(() => widget.api.createNote(widget.campaign.id, draft));
+  }
+
+  Future<void> _editNote(Note note) async {
+    final updated = await showNoteEditorDialog(
+      context,
+      current: note,
+      chapters: _chapters ?? const <Chapter>[],
+      title: 'Editar nota',
+    );
+    if (updated == null) return;
+    await _noteAction(() => widget.api.updateNote(widget.campaign.id, updated));
+  }
+
+  Future<void> _deleteNote(Note note) =>
+      _noteAction(() => widget.api.deleteNote(widget.campaign.id, note.id));
 
   /// Envuelve una acción sobre capítulos: recarga la lista al terminar y
   /// muestra el mensaje del servidor si algo no se pudo. Los errores que
@@ -950,6 +1033,8 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       if (!mounted) return;
       setState(() => _encounter = null);
       _syncMemberPolling();
+      // Archivar el combate le agrega una entrada al cuaderno; descartarlo no.
+      if (!discard) await _loadNotebook();
     } on ApiException catch (e) {
       if (mounted) {
         showAppMessage(context, e.message, tone: AppMessageTone.error);
@@ -1109,6 +1194,18 @@ class _CampaignDetailState extends State<_CampaignDetail> {
               onClose: _closeChapter,
               onDelete: _deleteChapter,
             ),
+            _CampaignSection.cuaderno => NotebookView(
+              chapters: _chapters ?? const [],
+              notebook: _notebook,
+              loading: _notebookLoading || _chaptersLoading,
+              error: _notebookError ?? _chaptersError,
+              onRetry: () {
+                _loadChapters();
+                _loadNotebook();
+              },
+              onEditNote: _editNote,
+              onDeleteNote: _deleteNote,
+            ),
             _CampaignSection.combate => EncounterView(
               repo: widget.repo,
               encounter: _encounter,
@@ -1143,6 +1240,15 @@ class _CampaignDetailState extends State<_CampaignDetail> {
         onPressed: _chaptersLoading ? null : _createChapter,
         icon: const Icon(Icons.add),
         label: const Text('Nuevo capítulo'),
+      ),
+      // Sin capítulos no hay dónde colgar una nota, y la propia sección lo
+      // explica: el botón se apaga en vez de abrir un diálogo sin destino.
+      _CampaignSection.cuaderno => FilledButton.icon(
+        onPressed: _chaptersLoading || (_chapters ?? const []).isEmpty
+            ? null
+            : _createNote,
+        icon: const Icon(Icons.add),
+        label: const Text('Escribir nota'),
       ),
       _CampaignSection.combate when _encounter == null => FilledButton.icon(
         onPressed: _encounterLoading ? null : _startEncounter,

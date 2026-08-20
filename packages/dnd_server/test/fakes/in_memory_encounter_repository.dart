@@ -26,9 +26,8 @@ class InMemoryEncounterRepository implements EncounterRepository {
 
   final Map<String, Encounter> _byCampaign = {};
 
-  /// Los logs cerrados, expuestos para que las pruebas comprueben que quedan
-  /// grabados. No hay UI que los lea todavía (ver plan de la Fase 2), así que
-  /// la única forma de verificarlos hoy es leer esta lista directamente.
+  /// Los logs cerrados, expuestos para que las pruebas comprueben qué quedó
+  /// grabado sin pasar por [logsFor].
   final List<
     ({String dmUserId, String campaignId, Map<String, dynamic> document})
   >
@@ -53,12 +52,32 @@ class InMemoryEncounterRepository implements EncounterRepository {
   Future<void> close(
     String dmUserId,
     String campaignId,
-    Map<String, dynamic> log,
-  ) async {
+    Map<String, dynamic> log, {
+    String? chapterId,
+  }) async {
     final removed = _byCampaign.remove(_key(dmUserId, campaignId));
     if (removed == null) return;
-    logs.add((dmUserId: dmUserId, campaignId: campaignId, document: log));
+    logs.add((
+      dmUserId: dmUserId,
+      campaignId: campaignId,
+      document: {...log, if (chapterId != null) 'chapterId': chapterId},
+    ));
   }
+
+  /// Del más nuevo al más viejo, como el `ORDER BY ended_at DESC` real. Acá el
+  /// orden de alta invertido alcanza: no hace falta un reloj para reproducirlo.
+  @override
+  Future<List<EncounterLog>> logsFor(
+    String dmUserId,
+    String campaignId,
+  ) async => [
+    for (final entry in logs.reversed)
+      if (entry.dmUserId == dmUserId && entry.campaignId == campaignId)
+        EncounterLog.fromJson({
+          ...entry.document,
+          'id': 'log-${logs.indexOf(entry)}',
+        }),
+  ];
 
   @override
   Future<void> discard(String dmUserId, String campaignId) async {

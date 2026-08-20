@@ -19,6 +19,7 @@ import 'repositories/character_repository.dart';
 import 'repositories/encounter_repository.dart';
 import 'repositories/event_repository.dart';
 import 'repositories/homebrew_repository.dart';
+import 'repositories/note_repository.dart';
 import 'repositories/settings_repository.dart';
 import 'util/safe_path.dart';
 
@@ -92,6 +93,7 @@ Handler buildHandler({
   required CharacterRepository characters,
   required CampaignRepository campaigns,
   required ChapterRepository chapters,
+  required NoteRepository notes,
   required EncounterRepository encounters,
   required EventRepository events,
   required HomebrewRepository homebrew,
@@ -266,6 +268,41 @@ Handler buildHandler({
           ),
     )
     ..get(
+      '/api/campaigns/<id>/notebook',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) =>
+                _listNotebookHandler(request, campaigns, notes, encounters),
+          ),
+    )
+    ..post(
+      '/api/campaigns/<id>/notes',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) =>
+                _createNoteHandler(request, campaigns, chapters, notes),
+          ),
+    )
+    ..put(
+      '/api/campaigns/<id>/notes/<noteId>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) =>
+                _upsertNoteHandler(request, campaigns, chapters, notes),
+          ),
+    )
+    ..delete(
+      '/api/campaigns/<id>/notes/<noteId>',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _deleteNoteHandler(request, campaigns, notes),
+          ),
+    )
+    ..get(
       '/api/campaigns/<id>/encounter',
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
@@ -286,7 +323,8 @@ Handler buildHandler({
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
           .addHandler(
-            (request) => _endEncounterHandler(request, campaigns, encounters),
+            (request) =>
+                _endEncounterHandler(request, campaigns, chapters, encounters),
           ),
     )
     ..get(
@@ -905,6 +943,135 @@ Chapter _chapterFromRequestJson(Map<String, dynamic> json) {
 /// avisos a otras cuentas, y por esta ruta un reguardado idempotente los
 /// volvería a disparar. La segunda: **un solo capítulo en marcha por campaña**,
 /// comprobado contra los que ya están guardados.
+/// Las notas del Cuaderno y los combates ya cerrados de una campaña.
+///
+/// Van juntos en una respuesta y no en dos rutas porque el Cuaderno los
+/// intercala: pedirlos por separado obligaría a la pantalla a esperar dos
+/// viajes para poder pintar un solo capítulo.
+Future<Response> _listNotebookHandler(
+  Request request,
+  CampaignRepository campaigns,
+  NoteRepository notes,
+  EncounterRepository encounters,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final all = await notes.listFor(request.userId, campaignId);
+  final logs = await encounters.logsFor(request.userId, campaignId);
+  return _jsonOk({
+    'notes': [for (final n in all) n.toJson()],
+    'encounterLogs': [for (final l in logs) l.toJson()],
+  });
+}
+
+/// Una nota tiene que colgar de un capítulo **de esta campaña**. La clave
+/// foránea ya lo garantiza, pero se comprueba acá para responder un 400 que se
+/// entienda en vez de dejar que estalle una violación de integridad.
+Future<Note> _validNoteFromBody(
+  Request request,
+  ChapterRepository chapters,
+  String userId,
+  String campaignId,
+) async {
+  final body = await _readJsonBody(request);
+  final requested = body['note'];
+  if (requested is! Map<String, dynamic>) {
+    throw const FormatException('Falta "note".');
+  }
+  final note = Note.fromJson(requested);
+  if (note.title.trim().isEmpty) {
+    throw const FormatException('La nota necesita un título.');
+  }
+  if (await chapters.find(userId, campaignId, note.chapterId) == null) {
+    throw const FormatException('El capítulo de la nota no existe.');
+  }
+  return note;
+}
+
+Future<Response> _createNoteHandler(
+  Request request,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+  NoteRepository notes,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  final note = await _validNoteFromBody(
+    request,
+    chapters,
+    request.userId,
+    campaignId,
+  );
+  requireSafePathSegment(note.id, label: 'id de nota');
+  final stored = await notes.create(request.userId, campaignId, note);
+  return _jsonOk({'note': stored.toJson()});
+}
+
+Future<Response> _upsertNoteHandler(
+  Request request,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+  NoteRepository notes,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final noteId = requireSafePathSegment(
+    request.params['noteId']!,
+    label: 'id de nota',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  // Editar solo lo propio: sin esto el `upsert` crearía la nota ajena dentro
+  // de esta cuenta, igual que ya cuida `_upsertChapterHandler`.
+  if (await notes.find(request.userId, campaignId, noteId) == null) {
+    return _notFound('Nota no encontrada.');
+  }
+  final note = await _validNoteFromBody(
+    request,
+    chapters,
+    request.userId,
+    campaignId,
+  );
+  if (note.id != noteId) {
+    throw const FormatException('El id de la nota no coincide con la ruta.');
+  }
+  await notes.upsert(request.userId, campaignId, note);
+  return _jsonOk({'status': 'ok'});
+}
+
+Future<Response> _deleteNoteHandler(
+  Request request,
+  CampaignRepository campaigns,
+  NoteRepository notes,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final noteId = requireSafePathSegment(
+    request.params['noteId']!,
+    label: 'id de nota',
+  );
+  if (await campaigns.find(request.userId, campaignId) == null) {
+    return _notFound('Campaña no encontrada.');
+  }
+  await notes.delete(request.userId, campaignId, noteId);
+  return _jsonOk({'status': 'ok'});
+}
+
 Future<Chapter> _validChapterFromBody(
   Request request,
   ChapterRepository chapters,
@@ -1153,6 +1320,7 @@ Future<Response> _saveEncounterHandler(
 Future<Response> _endEncounterHandler(
   Request request,
   CampaignRepository campaigns,
+  ChapterRepository chapters,
   EncounterRepository encounters,
 ) async {
   final campaignId = requireSafePathSegment(
@@ -1170,10 +1338,17 @@ Future<Response> _endEncounterHandler(
 
   final encounter = await encounters.find(request.userId, campaignId);
   if (encounter != null) {
+    // El capítulo lo resuelve el servidor y no lo manda el cliente: el DM
+    // cierra un combate, no elige dónde archivarlo.
+    final active = (await chapters.listFor(
+      request.userId,
+      campaignId,
+    )).where((c) => c.state == ChapterState.active).firstOrNull;
     await encounters.close(
       request.userId,
       campaignId,
       _buildEncounterLog(encounter),
+      chapterId: active?.id,
     );
   }
   return _jsonOk({'status': 'ok'});
@@ -1193,19 +1368,20 @@ Map<String, dynamic> _buildEncounterLog(Encounter encounter) {
     if (c.kind != CombatantKind.monster) continue;
     monsterGroups.putIfAbsent(c.creatureId ?? c.name, () => []).add(c);
   }
-  return {
-    'schemaVersion': 1,
-    'rounds': encounter.round,
-    'players': players,
-    'monsters': [
+  return EncounterLog(
+    rounds: encounter.round,
+    players: players,
+    monsters: [
       for (final group in monsterGroups.values)
-        {
-          'name': group.first.name.replaceFirst(RegExp(r'\s+\d+$'), ''),
-          'count': group.length,
-          'defeated': group.where((c) => c.currentHp <= 0).length,
-        },
+        EncounterLogMonsters(
+          // «Guerrero goblin 3» vuelve a ser «Guerrero goblin»: el número lo
+          // puso el tracker para distinguir copias en la mesa.
+          name: group.first.name.replaceFirst(RegExp(r'\s+\d+$'), ''),
+          count: group.length,
+          defeated: group.where((c) => c.currentHp <= 0).length,
+        ),
     ],
-  };
+  ).toJson();
 }
 
 /// El turno de un personaje propio, para que su ficha muestre el aviso.

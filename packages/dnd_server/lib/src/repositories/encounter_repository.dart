@@ -23,11 +23,21 @@ abstract class EncounterRepository {
   /// Cierra el combate: borra la fila de `encounters` y archiva [log] en
   /// `encounter_logs`. Si no había combate abierto, no hace nada — silencioso,
   /// como cualquier borrado del proyecto que no encuentra qué borrar.
+  ///
+  /// [chapterId] es el capítulo en marcha al cerrar, para que el Cuaderno pueda
+  /// mostrar el combate donde corresponde. `null` cuando no había ninguno.
   Future<void> close(
     String dmUserId,
     String campaignId,
-    Map<String, dynamic> log,
-  );
+    Map<String, dynamic> log, {
+    String? chapterId,
+  });
+
+  /// Los combates ya cerrados de una campaña, del más nuevo al más viejo. Es
+  /// lo que el Cuaderno de campaña muestra como entradas automáticas. Vacío si
+  /// la campaña no es de este DM, sin distinguirlo de una campaña sin
+  /// combates.
+  Future<List<EncounterLog>> logsFor(String dmUserId, String campaignId);
 
   /// Descarta el combate **sin archivarlo**: no deja ninguna fila en
   /// `encounter_logs`. Es para el que se abrió por error o se armó mal, que
@@ -96,8 +106,9 @@ class PostgresEncounterRepository implements EncounterRepository {
   Future<void> close(
     String dmUserId,
     String campaignId,
-    Map<String, dynamic> log,
-  ) async {
+    Map<String, dynamic> log, {
+    String? chapterId,
+  }) async {
     await _session.execute(
       Sql.named('''
         WITH removed AS (
@@ -105,15 +116,46 @@ class PostgresEncounterRepository implements EncounterRepository {
           WHERE dm_user_id = @dmUserId AND campaign_id = @campaignId
           RETURNING dm_user_id, campaign_id
         )
-        INSERT INTO encounter_logs (dm_user_id, campaign_id, document)
-        SELECT dm_user_id, campaign_id, @document FROM removed
+        INSERT INTO encounter_logs (dm_user_id, campaign_id, chapter_id,
+                                    document)
+        SELECT dm_user_id, campaign_id, @chapterId, @document FROM removed
       '''),
       parameters: {
         'dmUserId': TypedValue(Type.uuid, dmUserId),
         'campaignId': TypedValue(Type.text, campaignId),
+        'chapterId': TypedValue(Type.text, chapterId),
         'document': TypedValue(Type.jsonb, log),
       },
     );
+  }
+
+  /// El id y la fecha de cierre salen de las columnas, no del documento: la
+  /// base es la fuente de verdad de cuándo se archivó.
+  @override
+  Future<List<EncounterLog>> logsFor(String dmUserId, String campaignId) async {
+    final result = await _session.execute(
+      Sql.named('''
+        SELECT id, chapter_id, document, ended_at FROM encounter_logs
+        WHERE dm_user_id = @dmUserId AND campaign_id = @campaignId
+        ORDER BY ended_at DESC
+      '''),
+      parameters: {
+        'dmUserId': TypedValue(Type.uuid, dmUserId),
+        'campaignId': TypedValue(Type.text, campaignId),
+      },
+    );
+    return [
+      for (final row in result)
+        if (row.toColumnMap() case final columns)
+          EncounterLog.fromJson({
+            ...(columns['document'] as Map).cast<String, dynamic>(),
+            'id': '${columns['id']}',
+            if (columns['chapter_id'] case final String chapterId)
+              'chapterId': chapterId,
+            if (columns['ended_at'] case final DateTime endedAt)
+              'endedAt': endedAt.toIso8601String(),
+          }),
+    ];
   }
 
   @override

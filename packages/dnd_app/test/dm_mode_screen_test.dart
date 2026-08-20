@@ -200,6 +200,39 @@ void main() {
     },
   );
 
+  // Regresión: las campañas salían del panel recién después de tocar algo.
+  //
+  // Los tres grupos se calculaban en el cuerpo de `_sidebar`, fuera del
+  // `ListenableBuilder`, así que el closure capturaba las listas del primer
+  // build —vacías, porque todavía se estaban cargando— y notificar no las
+  // actualizaba. Se veían al cambiar de sección, que es lo que fuerza un
+  // `setState` y vuelve a correr `_sidebar`.
+  testWidgets('al abrir el Modo DM el panel ya lista las campañas', (
+    tester,
+  ) async {
+    await pumpDmMode(
+      tester,
+      seed: (server) {
+        server.campaigns['activa'] = const Campaign(
+          id: 'activa',
+          name: 'Incendiando Phandalin',
+        );
+        server.campaigns['pausa'] = const Campaign(
+          id: 'pausa',
+          name: 'Rescatando al guerrero Bryan',
+          state: CampaignState.paused,
+        );
+      },
+    );
+
+    // Sin tocar nada: los encabezados de grupo y las dos campañas están.
+    expect(find.text('EN CURSO'), findsOneWidget);
+    expect(find.text('EN PAUSA'), findsOneWidget);
+    expect(find.text('Incendiando Phandalin'), findsWidgets);
+    expect(find.text('Rescatando al guerrero Bryan'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('al entrar prioriza una campaña en curso', (tester) async {
     await pumpDmMode(
       tester,

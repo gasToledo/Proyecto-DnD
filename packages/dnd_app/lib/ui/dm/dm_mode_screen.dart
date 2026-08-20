@@ -206,15 +206,6 @@ class _DmModeScreenState extends State<DmModeScreen> {
 
   Widget _sidebar(BuildContext context, {bool inDrawer = false}) {
     final pal = context.palette;
-    final active = _campaigns.campaigns
-        .where((campaign) => campaign.state == CampaignState.active)
-        .toList();
-    final paused = _campaigns.campaigns
-        .where((campaign) => campaign.state == CampaignState.paused)
-        .toList();
-    final finished = _campaigns.campaigns
-        .where((campaign) => campaign.state == CampaignState.finished)
-        .toList();
     return Container(
       width: inDrawer ? null : 236,
       decoration: BoxDecoration(
@@ -247,107 +238,129 @@ class _DmModeScreenState extends State<DmModeScreen> {
           Expanded(
             child: ListenableBuilder(
               listenable: _campaigns,
-              builder: (context, _) => ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  // Arriba de todo y fuera de los grupos de campaña: es una
-                  // herramienta de la app, no de una mesa. Puesto pegado al
-                  // divisor de «Campaña actual» se leería como parte de ese
-                  // grupo, que es justo lo que no es.
-                  appNavItem(
-                    context,
-                    icon: Icons.pets_outlined,
-                    label: 'Bestiario',
-                    active: _section == null,
-                    onTap: () => _selectSection(null, inDrawer: inDrawer),
-                  ),
-                  const SizedBox(height: 12),
-                  if (active.isNotEmpty) ...[
-                    const _CampaignGroupLabel('En curso'),
-                    for (final campaign in active)
-                      _campaignNavItem(context, campaign, inDrawer: inDrawer),
-                  ],
-                  if (paused.isNotEmpty) ...[
+              // Los tres grupos se arman **acá adentro** y no en el cuerpo de
+              // `_sidebar`. Calculados afuera, el closure capturaba las listas
+              // del primer build —vacías, porque las campañas todavía estaban
+              // cargando— y al notificar el controlador se volvía a pintar con
+              // esas mismas listas viejas: el panel se quedaba sin campañas
+              // hasta que algo llamara a `setState` por otro motivo.
+              builder: (context, _) {
+                final active = _campaigns.campaigns
+                    .where((campaign) => campaign.state == CampaignState.active)
+                    .toList();
+                final paused = _campaigns.campaigns
+                    .where((campaign) => campaign.state == CampaignState.paused)
+                    .toList();
+                final finished = _campaigns.campaigns
+                    .where(
+                      (campaign) => campaign.state == CampaignState.finished,
+                    )
+                    .toList();
+                return ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    // Arriba de todo y fuera de los grupos de campaña: es una
+                    // herramienta de la app, no de una mesa. Puesto pegado al
+                    // divisor de «Campaña actual» se leería como parte de ese
+                    // grupo, que es justo lo que no es.
+                    appNavItem(
+                      context,
+                      icon: Icons.pets_outlined,
+                      label: 'Bestiario',
+                      active: _section == null,
+                      onTap: () => _selectSection(null, inDrawer: inDrawer),
+                    ),
                     const SizedBox(height: 12),
-                    const _CampaignGroupLabel('En pausa'),
-                    for (final campaign in paused)
-                      _campaignNavItem(context, campaign, inDrawer: inDrawer),
-                  ],
-                  if (finished.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Theme(
-                      data: Theme.of(
+                    if (active.isNotEmpty) ...[
+                      const _CampaignGroupLabel('En curso'),
+                      for (final campaign in active)
+                        _campaignNavItem(context, campaign, inDrawer: inDrawer),
+                    ],
+                    if (paused.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      const _CampaignGroupLabel('En pausa'),
+                      for (final campaign in paused)
+                        _campaignNavItem(context, campaign, inDrawer: inDrawer),
+                    ],
+                    if (finished.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Theme(
+                        data: Theme.of(
+                          context,
+                        ).copyWith(dividerColor: Colors.transparent),
+                        child: ExpansionTile(
+                          key: ValueKey(
+                            'finished-${_effectiveSelection?.state == CampaignState.finished ? _effectiveSelection?.id : 'none'}',
+                          ),
+                          tilePadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                          ),
+                          childrenPadding: EdgeInsets.zero,
+                          initiallyExpanded: finished.any(
+                            (campaign) =>
+                                campaign.id == _effectiveSelection?.id,
+                          ),
+                          title: const _CampaignGroupLabel('Terminadas'),
+                          children: [
+                            for (final campaign in finished)
+                              _campaignNavItem(
+                                context,
+                                campaign,
+                                inDrawer: inDrawer,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    if (_effectiveSelection != null) ...[
+                      const SizedBox(height: 16),
+                      Divider(color: pal.hairline, height: 1),
+                      const SizedBox(height: 14),
+                      const _CampaignGroupLabel('Campaña actual'),
+                      appNavItem(
                         context,
-                      ).copyWith(dividerColor: Colors.transparent),
-                      child: ExpansionTile(
-                        key: ValueKey(
-                          'finished-${_effectiveSelection?.state == CampaignState.finished ? _effectiveSelection?.id : 'none'}',
+                        icon: Icons.groups_outlined,
+                        label: 'Mesa',
+                        active: _section == _CampaignSection.mesa,
+                        onTap: () => _selectSection(
+                          _CampaignSection.mesa,
+                          inDrawer: inDrawer,
                         ),
-                        tilePadding: const EdgeInsets.symmetric(horizontal: 8),
-                        childrenPadding: EdgeInsets.zero,
-                        initiallyExpanded: finished.any(
-                          (campaign) => campaign.id == _effectiveSelection?.id,
+                      ),
+                      appNavItem(
+                        context,
+                        icon: Icons.auto_stories_outlined,
+                        label: 'Capítulos',
+                        active: _section == _CampaignSection.capitulos,
+                        onTap: () => _selectSection(
+                          _CampaignSection.capitulos,
+                          inDrawer: inDrawer,
                         ),
-                        title: const _CampaignGroupLabel('Terminadas'),
-                        children: [
-                          for (final campaign in finished)
-                            _campaignNavItem(
-                              context,
-                              campaign,
-                              inDrawer: inDrawer,
-                            ),
-                        ],
                       ),
-                    ),
+                      appNavItem(
+                        context,
+                        icon: Icons.menu_book_outlined,
+                        label: 'Cuaderno',
+                        active: _section == _CampaignSection.cuaderno,
+                        onTap: () => _selectSection(
+                          _CampaignSection.cuaderno,
+                          inDrawer: inDrawer,
+                        ),
+                      ),
+                      appNavItem(
+                        context,
+                        icon: Icons.local_fire_department_outlined,
+                        label: 'Combate',
+                        active: _section == _CampaignSection.combate,
+                        onTap: () => _selectSection(
+                          _CampaignSection.combate,
+                          inDrawer: inDrawer,
+                        ),
+                      ),
+                    ],
                   ],
-                  if (_effectiveSelection != null) ...[
-                    const SizedBox(height: 16),
-                    Divider(color: pal.hairline, height: 1),
-                    const SizedBox(height: 14),
-                    const _CampaignGroupLabel('Campaña actual'),
-                    appNavItem(
-                      context,
-                      icon: Icons.groups_outlined,
-                      label: 'Mesa',
-                      active: _section == _CampaignSection.mesa,
-                      onTap: () => _selectSection(
-                        _CampaignSection.mesa,
-                        inDrawer: inDrawer,
-                      ),
-                    ),
-                    appNavItem(
-                      context,
-                      icon: Icons.auto_stories_outlined,
-                      label: 'Capítulos',
-                      active: _section == _CampaignSection.capitulos,
-                      onTap: () => _selectSection(
-                        _CampaignSection.capitulos,
-                        inDrawer: inDrawer,
-                      ),
-                    ),
-                    appNavItem(
-                      context,
-                      icon: Icons.menu_book_outlined,
-                      label: 'Cuaderno',
-                      active: _section == _CampaignSection.cuaderno,
-                      onTap: () => _selectSection(
-                        _CampaignSection.cuaderno,
-                        inDrawer: inDrawer,
-                      ),
-                    ),
-                    appNavItem(
-                      context,
-                      icon: Icons.local_fire_department_outlined,
-                      label: 'Combate',
-                      active: _section == _CampaignSection.combate,
-                      onTap: () => _selectSection(
-                        _CampaignSection.combate,
-                        inDrawer: inDrawer,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 8),

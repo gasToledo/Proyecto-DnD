@@ -146,10 +146,25 @@ las 46 combinaciones en navegador.
 - Armadura Arcana.
 - Atlas del Aventurero.
 
-### 5. Bestiario completo — pendiente opcional
+### 5. Bestiario completo — resuelto
 
-El catálogo continúa en 107 criaturas. Falta completar el bestiario SRD/EFA y
-sus capacidades no representadas.
+El catálogo pasó de 117 a **367 criaturas**: entraron los 250 perfiles del
+capítulo «Monstruos» y del apéndice «Animales» del SRD 5.2.1 que faltaban, y
+con ellos el rango completo de valor de desafío (antes el techo era VD 2, hoy
+llega a 30).
+
+Las capacidades que antes no se representaban ya están modeladas: salvaciones,
+competencias en habilidades, acciones adicionales, acciones legendarias con su
+presupuesto por ronda, bonificador de iniciativa impreso, y tipo y tamaño
+consultables aparte de la línea de perfil.
+
+Lo genera `packages/dnd_engine/tool/generate_bestiary.dart` desde el PDF en
+español; los ids ingleses salen del mapa commiteado en
+`tool/data/bestiario_ids.json`. Correrlo con `--check` avisa si
+`creatures.json` dejó de ser reproducible desde el PDF.
+
+Quedan afuera a propósito los conjuros de monstruo (`spellcasting`), que se
+muestran como texto del rasgo y no como lista estructurada.
 
 ### 6. Sistemas de campaña — pendiente opcional
 

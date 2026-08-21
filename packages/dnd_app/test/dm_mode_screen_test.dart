@@ -657,6 +657,105 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    /// Suma [count] copias de un monstruo desde el diálogo, opcionalmente
+    /// tirándoles los PG.
+    Future<void> addMonsters(
+      WidgetTester tester,
+      String search,
+      String name, {
+      int count = 1,
+      bool rollHp = false,
+    }) async {
+      await tester.tap(find.text('Sumar monstruo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), search);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, name));
+      await tester.pumpAndSettle();
+      for (var i = 1; i < count; i++) {
+        await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+      }
+      await tester.pumpAndSettle();
+      if (rollHp) {
+        await tester.tap(find.text('Tirar los PG de cada uno'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+    }
+
+    // Lo que pidieron los DM: seis minions con la misma vida se notan. Con la
+    // tirada puesta, cada copia entra con la suya.
+    testWidgets('con los PG tirados las copias no salen todas iguales', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await addMonsters(
+        tester,
+        'goblin',
+        'Guerrero goblin',
+        count: 8,
+        rollHp: true,
+      );
+
+      final hps = server.encounters['tumba']!.combatants
+          .map((c) => c.currentHp)
+          .toList();
+      expect(hps, hasLength(8));
+      // Con 8 tiradas de 2d6 salir las ocho iguales tiene una probabilidad
+      // despreciable; si pasa, es que no se está tirando.
+      expect(hps.toSet().length, greaterThan(1));
+
+      // Y los PG de cada uno arrancan llenos: el máximo es el tirado, no el
+      // promedio del libro, así que ninguna barra empieza a media asta.
+      for (final c in server.encounters['tumba']!.combatants) {
+        expect(c.currentHp, c.maxHp, reason: c.name);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    // El promedio del libro sigue siendo el comportamiento por defecto: es lo
+    // que corresponde para un jefe, que tiene que aguantar lo que se planeó.
+    testWidgets('sin tirar, todas las copias usan el promedio del libro', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await addMonsters(tester, 'goblin', 'Guerrero goblin', count: 4);
+
+      final esperado = int.parse(repo.creature('goblin-warrior')!.hp);
+      final hps = server.encounters['tumba']!.combatants.map((c) => c.maxHp);
+      expect(hps, everyElement(esperado));
+      expect(tester.takeException(), isNull);
+    });
+
+    // Sin dados en el perfil no hay nada que tirar, y ofrecerlo sería mentir.
+    testWidgets('un perfil sin dados de golpe no ofrece tirarlos', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sumar monstruo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'defensor');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Defensor de Acero'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tirar los PG de cada uno'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('avanzar turno y cerrar el combate lo borra del servidor', (
       tester,
     ) async {

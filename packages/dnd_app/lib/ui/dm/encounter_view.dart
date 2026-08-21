@@ -31,7 +31,7 @@ class EncounterView extends StatelessWidget {
 
   final VoidCallback onRetry;
   final void Function(String memberId, String name, int initiative) onAddPlayer;
-  final void Function(Creature creature, int count) onAddMonster;
+  final void Function(Creature creature, int count, {bool rollHp}) onAddMonster;
 
   /// [delta] es lo que cambia: negativo es daño, positivo es cura. El
   /// clampeo a `0..maxHp` lo hace `Encounter.withHp`, no esta pantalla.
@@ -145,7 +145,11 @@ class EncounterView extends StatelessWidget {
               onPressed: () async {
                 final picked = await showAddMonsterDialog(context, repo);
                 if (picked != null) {
-                  onAddMonster(picked.creature, picked.count);
+                  onAddMonster(
+                    picked.creature,
+                    picked.count,
+                    rollHp: picked.rollHp,
+                  );
                 }
               },
               icon: const Icon(Icons.add),

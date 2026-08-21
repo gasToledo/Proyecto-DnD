@@ -995,14 +995,24 @@ class _CampaignDetailState extends State<_CampaignDetail> {
 
   /// Tira una iniciativa independiente por copia (nunca la misma para todo el
   /// grupo) y numera los repetidos: "Goblin", "Goblin 2", "Goblin 3".
-  void _addMonsters(Creature creature, int count) {
+  ///
+  /// Con [rollHp], los PG también salen por copia: seis goblins que tiran
+  /// `2d6` entran con seis vidas distintas. Sin él, todas arrancan con el
+  /// promedio del libro, que es lo que corresponde para un jefe.
+  void _addMonsters(Creature creature, int count, {bool rollHp = false}) {
     var encounter = _encounter ?? Encounter(id: _newId('encounter'));
     final already = encounter.combatants
         .where((c) => c.creatureId == creature.id)
         .length;
     final resolved = creature.resolve(const CreatureVars({}));
+    final formula = rollHp
+        ? DiceFormula.tryParse(creature.hitDice ?? '')
+        : null;
+    final dice = Dice();
+
     for (var i = 0; i < count; i++) {
       final n = already + i + 1;
+      final hp = formula?.roll(dice) ?? resolved.maxHp;
       encounter = encounter.withCombatant(
         Combatant(
           id: _newId('c'),
@@ -1010,8 +1020,10 @@ class _CampaignDetailState extends State<_CampaignDetail> {
           name: n == 1 ? creature.name : '${creature.name} $n',
           initiative: rollInitiative(creature),
           creatureId: creature.id,
-          currentHp: resolved.maxHp,
-          maxHp: resolved.maxHp,
+          currentHp: hp,
+          // El máximo es el tirado y no el del libro: si no, un goblin que
+          // sacó 5 se vería «5 / 7» y la barra arrancaría a media asta.
+          maxHp: hp,
         ),
       );
     }

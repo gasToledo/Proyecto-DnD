@@ -5,14 +5,15 @@ import '../../theme/app_theme.dart';
 
 /// Buscador de monstruos del bestiario para sumarlos al combate.
 ///
-/// Devuelve la criatura elegida y cuántas copias sumar, o `null` si se
-/// canceló. Tirar la iniciativa de cada copia es responsabilidad de quien
-/// llama (`rollInitiative`, una por copia): acá solo se elige qué sumar.
-Future<({Creature creature, int count})?> showAddMonsterDialog(
+/// Devuelve la criatura elegida, cuántas copias sumar y si los PG de cada una
+/// se tiran, o `null` si se canceló. Tirar la iniciativa de cada copia es
+/// responsabilidad de quien llama (`rollInitiative`, una por copia): acá solo
+/// se elige qué sumar.
+Future<({Creature creature, int count, bool rollHp})?> showAddMonsterDialog(
   BuildContext context,
   ContentRepository repo,
 ) {
-  return showDialog<({Creature creature, int count})>(
+  return showDialog<({Creature creature, int count, bool rollHp})>(
     context: context,
     builder: (context) => _AddMonsterDialog(repo: repo),
   );
@@ -30,6 +31,13 @@ class _AddMonsterDialogState extends State<_AddMonsterDialog> {
   String _query = '';
   Creature? _selected;
   int _count = 1;
+
+  /// Si los PG de cada copia se tiran en vez de usar el promedio del libro.
+  ///
+  /// Arranca apagado: el promedio es lo que manda el libro y es lo que se
+  /// quiere para un jefe, que tiene que aguantar lo que el DM planeó. Tirar es
+  /// para los minions, donde seis goblins con los mismos PG se notan.
+  bool _rollHp = false;
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +57,14 @@ class _AddMonsterDialogState extends State<_AddMonsterDialog> {
         ),
         if (selected != null)
           FilledButton(
-            onPressed: () =>
-                Navigator.of(context).pop((creature: selected, count: _count)),
+            onPressed: () => Navigator.of(context).pop((
+              creature: selected,
+              count: _count,
+              // Sin fórmula en el catálogo no hay nada que tirar, y el
+              // interruptor ni se ofrece: no puede quedar encendido de una
+              // criatura anterior.
+              rollHp: _rollHp && selected.hitDice != null,
+            )),
             child: const Text('Sumar'),
           ),
       ],
@@ -120,6 +134,7 @@ class _AddMonsterDialogState extends State<_AddMonsterDialog> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
+              tooltip: 'Una copia menos',
               onPressed: _count > 1 ? () => setState(() => _count--) : null,
               icon: const Icon(Icons.remove_circle_outline),
             ),
@@ -132,11 +147,29 @@ class _AddMonsterDialogState extends State<_AddMonsterDialog> {
               ),
             ),
             IconButton(
+              tooltip: 'Una copia más',
               onPressed: () => setState(() => _count++),
               icon: const Icon(Icons.add_circle_outline),
             ),
           ],
         ),
+        // Solo se ofrece si el perfil trae los dados. Los que no los traen son
+        // los compañeros de clase y las invocaciones, cuyos PG salen de una
+        // fórmula y no de una tirada.
+        if (DiceFormula.tryParse(creature.hitDice ?? '') case final formula?)
+          CheckboxListTile(
+            value: _rollHp,
+            onChanged: (v) => setState(() => _rollHp = v ?? false),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('Tirar los PG de cada uno'),
+            subtitle: Text(
+              _rollHp
+                  ? 'Cada copia tira $formula por su cuenta.'
+                  : 'Todas arrancan con ${creature.hp}, el promedio del libro.',
+              style: TextStyle(fontSize: 12, color: pal.textMuted),
+            ),
+          ),
       ],
     );
   }

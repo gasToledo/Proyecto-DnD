@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../api/api_models.dart';
 import '../data/characters_controller.dart';
 import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
@@ -15,6 +16,7 @@ import 'portrait_image.dart';
 import 'portrait_screen.dart';
 import 'spell_edit_screen.dart';
 
+part 'sheet/campaign_section.dart';
 part 'sheet/combat_section.dart';
 part 'sheet/general_section.dart';
 part 'sheet/inventory_section.dart';
@@ -31,6 +33,7 @@ enum _SheetTab {
   personaje('Personaje', Icons.person),
   combate('Combate', Icons.sports_martial_arts),
   inventario('Inventario', Icons.backpack),
+  campana('Campaña', Icons.flag_outlined),
   notas('Notas', Icons.edit_note);
 
   const _SheetTab(this.label, this.icon);
@@ -272,7 +275,40 @@ class _SheetScreenState extends State<SheetScreen> {
     ctrl.touch(_c);
   }
 
-  void _selectTab(_SheetTab tab) => setState(() => _tab = tab);
+  /// Las campañas de este personaje, `null` mientras no se pidieron.
+  ///
+  /// Es lo único de la ficha que viene de la red además del turno, y se pide
+  /// **al entrar a la pestaña por primera vez**, no al montar la pantalla: la
+  /// mayoría de las sesiones nunca la abren, y la ficha ya evita el viaje que
+  /// no necesita.
+  List<PlayerCampaign>? _campaigns;
+  bool _loadingCampaigns = false;
+  Object? _campaignsError;
+
+  Future<void> _loadCampaigns() async {
+    setState(() {
+      _loadingCampaigns = true;
+      _campaignsError = null;
+    });
+    try {
+      final list = await ctrl.api.listPlayerCampaigns(_c.id);
+      if (mounted) setState(() => _campaigns = list);
+    } catch (e) {
+      if (mounted) setState(() => _campaignsError = e);
+    } finally {
+      if (mounted) setState(() => _loadingCampaigns = false);
+    }
+  }
+
+  void _selectTab(_SheetTab tab) {
+    setState(() => _tab = tab);
+    if (tab == _SheetTab.campana &&
+        _campaigns == null &&
+        !_loadingCampaigns &&
+        _campaignsError == null) {
+      _loadCampaigns();
+    }
+  }
 
   void _toggleCard(String title) => setState(() {
     if (!_collapsedCards.remove(title)) _collapsedCards.add(title);
@@ -346,6 +382,7 @@ class _SheetScreenState extends State<SheetScreen> {
     _SheetTab.personaje => _buildPersonaje(),
     _SheetTab.combate => _buildCombat(),
     _SheetTab.inventario => _buildInventory(),
+    _SheetTab.campana => _buildCampana(),
     _SheetTab.notas => _buildNotes(),
   };
 

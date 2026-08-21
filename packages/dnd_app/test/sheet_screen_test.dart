@@ -23,6 +23,9 @@ void main() {
     WidgetTester tester,
     Character character, {
     Size size = const Size(900, 1400),
+    // Solo lo pasa la pestaña Campaña, que es lo único de la ficha que lee del
+    // servidor además del turno. El resto se conforma con un doble vacío.
+    FakeApiServer? server,
   }) async {
     // Alto de sobra a propósito. Con 700 la pestaña Personaje —que desde los
     // idiomas tiene cuatro tarjetas— dispara un fallo dentro de Flutter, en
@@ -33,7 +36,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final controller = CharactersController(
-      ApiClient(client: FakeApiServer().client),
+      ApiClient(client: (server ?? FakeApiServer()).client),
     );
     addTearDown(controller.dispose);
     await tester.pumpWidget(
@@ -1595,6 +1598,193 @@ void main() {
       await tapVisible(tester, find.text('Anotar'));
       expect(find.text('Formas conocidas (1/6)'), findsOneWidget);
       await tester.pump(const Duration(seconds: 5));
+    });
+  });
+  // La vuelta del vínculo: hasta acá el jugador compartía su ficha y no veía
+  // nada a cambio.
+  group('Campaña', () {
+    /// Un servidor con una mesa armada alrededor de Sagan.
+    FakeApiServer tableFor(Character c, {bool withChapter = true}) {
+      final server = FakeApiServer();
+      server.characters[c.id] = c;
+      server.campaigns['tumba'] = const Campaign(
+        id: 'tumba',
+        name: 'La Tumba',
+        premise: 'Una maldición despierta bajo la ciudad.',
+      );
+      server.campaignMembers['m1'] = (campaignId: 'tumba', characterId: c.id);
+      if (withChapter) {
+        server.chapters['tumba'] = [
+          const Chapter(
+            id: 'cripta',
+            name: 'La cripta sellada',
+            summary: 'Detrás del tercer sello duerme algo.',
+            state: ChapterState.completed,
+            grantsLevel: true,
+            grantsGold: 250,
+            grantsItems: ['Espada larga +1'],
+          ),
+        ];
+      }
+      return server;
+    }
+
+    Future<void> openCampana(WidgetTester tester) async {
+      await tester.tap(find.text('Campaña'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('la pestaña va entre Inventario y Notas', (tester) async {
+      await pumpSheet(tester, demoSagan());
+
+      // El panel las pinta en el orden del enum, así que comparar posiciones
+      // verticales prueba el orden real y no solo que existan.
+      double y(String label) => tester.getTopLeft(find.text(label)).dy;
+      expect(y('Inventario'), lessThan(y('Campaña')));
+      expect(y('Campaña'), lessThan(y('Notas')));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('muestra la campaña, sus batallas y lo que se repartió', (
+      tester,
+    ) async {
+      final sagan = demoSagan();
+      final server = tableFor(sagan);
+      server.encounterLogs['tumba'] = [
+        const EncounterLog(
+          id: 'log-1',
+          chapterId: 'cripta',
+          rounds: 4,
+          players: ['Sagan "The Red"', 'Mirna'],
+          monsters: [
+            EncounterLogMonsters(name: 'Esqueleto', count: 2, defeated: 2),
+          ],
+        ),
+      ];
+      await pumpSheet(tester, sagan, server: server);
+      await openCampana(tester);
+
+      expect(find.text('La Tumba'), findsOneWidget);
+      expect(
+        find.text('Una maldición despierta bajo la ciudad.'),
+        findsOneWidget,
+      );
+      expect(find.text('Contra 2 Esqueleto'), findsOneWidget);
+      expect(find.textContaining('Con Mirna'), findsOneWidget);
+      expect(find.textContaining('cayeron todos'), findsOneWidget);
+      expect(find.text('La cripta sellada'), findsOneWidget);
+      expect(
+        find.text('Te llevaste un nivel, 250 po y Espada larga +1'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    // La misma frontera que el servidor ya defiende, comprobada del lado de la
+    // pantalla: si algún día el endpoint dejara de podarlo, esto lo agarra.
+    testWidgets('no muestra la descripción que escribió el DM', (tester) async {
+      final sagan = demoSagan();
+      await pumpSheet(tester, sagan, server: tableFor(sagan));
+      await openCampana(tester);
+
+      expect(find.textContaining('duerme algo'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('sin campañas ofrece compartir el personaje', (tester) async {
+      final sagan = demoSagan();
+      final server = FakeApiServer();
+      server.characters[sagan.id] = sagan;
+      await pumpSheet(tester, sagan, server: server);
+      await openCampana(tester);
+
+      expect(
+        find.textContaining('todavía no está en ninguna campaña'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(OutlinedButton, 'Compartir'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Regresión: `sheetCard` plegaba por título, así que dos campañas apiladas
+    // tenían dos tarjetas «Batallas» que se plegaban juntas.
+    testWidgets('dos campañas se apilan y se pliegan por separado', (
+      tester,
+    ) async {
+      final sagan = demoSagan();
+      final server = tableFor(sagan);
+      server.campaigns['bosque'] = const Campaign(
+        id: 'bosque',
+        name: 'El Bosque Callado',
+      );
+      server.campaignMembers['m2'] = (
+        campaignId: 'bosque',
+        characterId: sagan.id,
+      );
+      server.chapters['bosque'] = [
+        const Chapter(
+          id: 'raiz',
+          name: 'La raíz partida',
+          state: ChapterState.completed,
+        ),
+      ];
+      await pumpSheet(tester, sagan, server: server);
+      await openCampana(tester);
+
+      expect(find.text('Batallas'), findsNWidgets(2));
+      expect(find.text('La cripta sellada'), findsOneWidget);
+      expect(find.text('La raíz partida'), findsOneWidget);
+
+      // Plegar los capítulos de la primera no puede llevarse los de la segunda.
+      await tester.tap(find.text('Capítulos cerrados').first);
+      await tester.pumpAndSettle();
+      expect(find.text('La cripta sellada'), findsNothing);
+      expect(find.text('La raíz partida'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Las batallas de un capítulo que el DM borró —o del que sigue en marcha,
+    // que no se muestra— no pueden desaparecer sin dejar rastro.
+    testWidgets('una batalla sin capítulo a la vista se muestra igual', (
+      tester,
+    ) async {
+      final sagan = demoSagan();
+      final server = tableFor(sagan);
+      server.encounterLogs['tumba'] = [
+        const EncounterLog(
+          id: 'log-1',
+          chapterId: 'un-capitulo-que-ya-no-esta',
+          rounds: 3,
+          players: ['Sagan "The Red"'],
+          monsters: [EncounterLogMonsters(name: 'Bandido', count: 4)],
+        ),
+      ];
+      await pumpSheet(tester, sagan, server: server);
+      await openCampana(tester);
+
+      expect(find.text('SIN CAPÍTULO'), findsOneWidget);
+      expect(find.text('Contra 4 Bandido'), findsOneWidget);
+      expect(find.textContaining('Solo'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un error de red se puede reintentar', (tester) async {
+      final sagan = demoSagan();
+      final server = tableFor(sagan);
+      server.failWith = Exception('sin conexión');
+      await pumpSheet(tester, sagan, server: server);
+      await openCampana(tester);
+
+      expect(
+        find.textContaining('No se pudieron leer tus campañas'),
+        findsOneWidget,
+      );
+
+      server.failWith = null;
+      await tester.tap(find.text('Reintentar'));
+      await tester.pumpAndSettle();
+      expect(find.text('La Tumba'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }

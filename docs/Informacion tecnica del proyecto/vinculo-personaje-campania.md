@@ -127,10 +127,15 @@ Los capítulos (migración `0008_chapters`) viven en su propia tabla, keyeada po
 campaña porque entonces renombrarla reescribiría todos sus capítulos, y ese
 documento crecería sin techo.
 
-**Ningún jugador lee un capítulo.** La descripción la escribe el DM y no viaja a
-ninguna cuenta ajena; de un capítulo el jugador solo se entera por el aviso de
-cierre. Por eso `ChapterRepository` no cruza cuentas: filtra por `dm_user_id`
-como cualquier tabla de un solo dueño.
+**La descripción de un capítulo no la lee ningún jugador**, ni siquiera con el
+capítulo cerrado: la escribe el DM y no viaja a ninguna cuenta ajena.
+
+Lo que sí cambió: el jugador ahora ve el **nombre** y las recompensas de los
+capítulos ya cerrados de su campaña, desde la pestaña Campaña de su ficha (ver
+«La vuelta del vínculo» más abajo). `ChapterRepository` sigue sin cruzar cuentas
+—filtra por `dm_user_id` como cualquier tabla de un solo dueño—; el cruce lo
+hace el handler, que consigue ese `dm_user_id` de una fila de `campaign_members`
+ya autorizada.
 
 ### Dos reglas que no puede garantizar el documento
 
@@ -268,6 +273,58 @@ sus propios PG. La única escritura del DM en toda esta fase son los PG de los
 **monstruos**, que son suyos y efímeros — se pierden al cerrar el combate,
 salvo el resumen que queda en `encounter_logs`.
 
+## La vuelta del vínculo: la campaña vista por el jugador
+
+Hasta acá el vínculo era de una sola vía. El jugador compartía su ficha, el DM
+la miraba, y lo único que volvía eran avisos sueltos en la bandeja. La pestaña
+**Campaña** de la ficha (`packages/dnd_app/lib/ui/sheet/campaign_section.dart`)
+es la vuelta, y la sirve **`GET /api/characters/<id>/campaigns`**.
+
+Cuelga de `/api/characters/<id>/…` y no de `/api/campaigns/<id>/…` como todo el
+resto, por la misma razón que `/shares` y `/turn`: es el jugador quien pregunta,
+y el único nombre que tiene derecho a decir es el de su propio personaje. Una
+ruta que le aceptara un id de campaña sería una forma de tantear cuáles existen.
+
+**La autorización nace de `listSharesForCharacter`**, que ya filtra por
+`owner_user_id = quien pide`. Cada fila que devuelve *es* la prueba de que este
+jugador está vinculado a esa campaña; recién con el `dmUserId` que sale de ahí
+se llaman `campaigns.find`, `campaigns.listMembers`, `chapters.listFor` y
+`encounters.logsFor`. Cero SQL nueva.
+
+Y acá va la advertencia que hay que leer antes de tocar ese handler: **es el
+único lugar del servidor donde a un repositorio se le entrega un `dmUserId` que
+no es de quien hace la petición.** Está bien porque salió de una fila ya
+autorizada, pero invierte el supuesto del contrato de esos repositorios. Si
+alguna vez ese handler deja de arrancar por `listSharesForCharacter`, deja de
+estar bien.
+
+Lo que la respuesta **no** lleva, y no por olvido:
+
+- **La descripción de los capítulos.** `Chapter.summary` es lo que el DM escribe
+  adentro del capítulo, y su propia documentación dice que no la ve ningún
+  jugador ni siquiera con el capítulo cerrado. Se poda en `_playerChapterJson`,
+  y hay una prueba que busca el texto en el cuerpo entero de la respuesta — no
+  en un campo, para que también agarre el día que alguien lo anide en otro lado.
+- **Los capítulos que todavía no se cerraron**, el que está en marcha incluido.
+  De lo que están jugando ahora el jugador se entera en la mesa.
+- **Las notas del cuaderno.** Ese repositorio ni se toca en el handler.
+- **El id de la campaña y el del DM.** La clave de cada bloque es el `memberId`,
+  que ya es el asa que el jugador tiene sobre el vínculo.
+
+Dos decisiones de contenido que se ven raras si no se explican:
+
+1. **Las batallas son las de la mesa entera**, no solo aquellas en las que peleó
+   el personaje. `EncounterLog.players` guarda **nombres**, así que filtrar por
+   nombre haría que renombrar un personaje le borrara el pasado. La pantalla usa
+   el nombre solo para la línea «Con Mirna» / «Solo», que degrada sin romperse.
+2. **Las batallas de un capítulo que no se muestra van a «Sin capítulo».** Son
+   tres casos que dan lo mismo: sin capítulo en marcha, del capítulo activo (que
+   no se muestra pero cuyas peleas ya pasaron), y de un capítulo que el DM borró
+   — un combate no se borra con su capítulo, a diferencia de una nota.
+
+La pestaña es de **solo lectura sin excepciones**. No escribe la ficha ni la
+campaña: lo que el capítulo repartió ya llegó como aviso y lo anota el jugador.
+
 ## Qué probar al tocar esto
 
 Las pruebas negativas de `packages/dnd_server/test/app_test.dart`, grupo
@@ -292,6 +349,18 @@ El subgrupo `capítulos` agrega:
   capítulo;
 - cerrar dos veces no repite el aviso;
 - borrar la campaña se lleva sus capítulos.
+
+El subgrupo `campaña vista por el jugador` agrega:
+
+- el jugador ve su campaña con los capítulos cerrados y las batallas;
+- **la descripción del capítulo no aparece en el cuerpo** — y la misma prueba
+  comprueba primero que el DM sí la ve, para no pasar por tener un capítulo sin
+  descripción;
+- los capítulos `planned` y `active` no se devuelven;
+- las notas del cuaderno no se devuelven;
+- no viaja el id de la campaña ni el del DM;
+- un personaje sin vínculos devuelve la lista vacía, no un error;
+- preguntar por un personaje ajeno responde 404.
 
 El subgrupo `combate`, dentro del mismo archivo, agrega:
 

@@ -366,6 +366,51 @@ class FakeApiServer {
       });
     }
 
+    // La campaña vista desde la ficha del jugador. El doble reproduce las tres
+    // podas del servidor real —solo capítulos cerrados, sin descripción y sin
+    // el id de la campaña— porque son justo el contrato que la pantalla
+    // consume; un doble más permisivo dejaría pasar una pantalla que muestra
+    // lo que no debe.
+    if (method == 'GET' &&
+        path.startsWith('/api/characters/') &&
+        path.endsWith('/campaigns')) {
+      final characterId = path.split('/')[3];
+      final character = characters[characterId];
+      if (character == null) {
+        return _json({'error': 'Personaje no encontrado.'}, 404);
+      }
+      return _json({
+        'campaigns': [
+          for (final entry in campaignMembers.entries)
+            if (entry.value.characterId == characterId)
+              if (campaigns[entry.value.campaignId] case final campaign?)
+                {
+                  'memberId': entry.key,
+                  'campaign': campaign.toJson()..remove('id'),
+                  'party': [
+                    for (final other in campaignMembers.values)
+                      if (other.campaignId == entry.value.campaignId &&
+                          other.characterId != characterId)
+                        characters[other.characterId]?.name ?? '',
+                  ],
+                  'chapters': [
+                    for (final c
+                        in chapters[entry.value.campaignId] ??
+                            const <Chapter>[])
+                      if (c.state == ChapterState.completed)
+                        c.toJson()..remove('summary'),
+                  ],
+                  'battles': [
+                    for (final log
+                        in encounterLogs[entry.value.campaignId] ??
+                            const <EncounterLog>[])
+                      log.toJson(),
+                  ],
+                },
+        ],
+      });
+    }
+
     // --- Cuaderno de campaña: las notas del DM y los combates ya cerrados.
     if (path.contains('/notebook') || path.contains('/notes')) {
       final campaignId = path.split('/')[3];

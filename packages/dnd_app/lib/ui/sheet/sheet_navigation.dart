@@ -277,17 +277,25 @@ extension _SheetNavigation on _SheetScreenState {
     required IconData icon,
     required String title,
     Widget? trailing,
+
+    /// Con qué se recuerda que está plegada, cuando el título no alcanza.
+    ///
+    /// Por defecto es el título, que es único en casi toda la ficha. No lo es
+    /// en Campaña: con dos campañas apiladas hay dos tarjetas «Batallas», y sin
+    /// esto plegar una plegaría las dos.
+    String? collapseKey,
     required Widget child,
   }) {
     final pal = context.palette;
-    final collapsed = _collapsedCards.contains(title);
+    final key = collapseKey ?? title;
+    final collapsed = _collapsedCards.contains(key);
     return Card(
       clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           InkWell(
-            onTap: () => _toggleCard(title),
+            onTap: () => _toggleCard(key),
             child: Container(
               padding: const EdgeInsets.fromLTRB(16, 13, 8, 13),
               decoration: BoxDecoration(

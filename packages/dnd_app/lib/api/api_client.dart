@@ -325,6 +325,24 @@ class ApiClient {
     ];
   }
 
+  /// Las campañas de un personaje propio, con lo que su jugador puede ver:
+  /// capítulos cerrados y batallas.
+  ///
+  /// Cuelga de `/api/characters/<id>/…` y no de `/api/campaigns/…` como el
+  /// resto de las rutas de campaña: es el jugador quien pregunta, y el único
+  /// nombre que tiene derecho a decir es el de su propio personaje.
+  Future<List<PlayerCampaign>> listPlayerCampaigns(String characterId) async {
+    final response = await _send(
+      'GET',
+      '/api/characters/${Uri.encodeComponent(characterId)}/campaigns',
+    );
+    final list = _json(response)['campaigns'] as List;
+    return [
+      for (final json in list)
+        PlayerCampaign.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
   // --- Capítulos ----------------------------------------------------------
 
   Future<List<Chapter>> listChapters(String campaignId) async {

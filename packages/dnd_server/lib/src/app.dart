@@ -165,6 +165,20 @@ Handler buildHandler({
           ),
     )
     ..get(
+      '/api/characters/<id>/campaigns',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _listPlayerCampaignsHandler(
+              request,
+              characters,
+              campaigns,
+              chapters,
+              encounters,
+            ),
+          ),
+    )
+    ..get(
       '/api/campaigns',
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
@@ -886,6 +900,101 @@ Future<Response> _listCharacterSharesHandler(
         {'memberId': share.memberId, 'campaignName': share.campaignName},
     ],
   });
+}
+
+/// Un capítulo tal como puede verlo el jugador: **sin la descripción**.
+///
+/// No es una omisión defensiva de más. `Chapter.summary` es lo que el DM
+/// escribe adentro del capítulo, y su propia documentación dice que no la ve
+/// ningún jugador ni siquiera con el capítulo ya cerrado. Mandarla acá sería
+/// publicar las notas del DM en la ficha de cada jugador de la mesa.
+///
+/// `Chapter.fromJson` la default-ea a vacío, así que del otro lado el campo
+/// llega en blanco sin que nadie tenga que acordarse de limpiarlo.
+Map<String, dynamic> _playerChapterJson(Chapter chapter) =>
+    chapter.toJson()..remove('summary');
+
+/// La campaña vista desde la ficha del jugador: en qué mesa está su personaje,
+/// qué capítulos se cerraron y qué batallas se pelearon.
+///
+/// **Es la única ruta del proyecto por la que un jugador lee una campaña.**
+/// Sigue el molde de las otras dos que nacen de su lado (`/shares` y `/turn`):
+/// cuelga de `/api/characters/<id>/…` y no de `/api/campaigns/<id>/…`, porque
+/// un jugador no tiene por qué nombrar un id de campaña — una ruta que se lo
+/// aceptara sería una forma de tantear cuáles existen.
+///
+/// **De dónde sale la autorización.** `listSharesForCharacter` filtra por
+/// `owner_user_id = quien pide`, así que cada fila que devuelve *es* la prueba
+/// de que este jugador está vinculado a esa campaña. Recién con el `dmUserId`
+/// que sale de ahí se consultan los cuatro repositorios de abajo.
+///
+/// Ojo con eso, que es la única vez en todo el servidor que pasa: a esos
+/// repositorios se les entrega un `dmUserId` **que no es de quien hace la
+/// petición**. Está bien porque salió de una fila ya autorizada, pero invierte
+/// el supuesto de su contrato («la autorización va adentro del `WHERE` con
+/// `dm_user_id`»). Si alguna vez este handler deja de arrancar por
+/// `listSharesForCharacter`, deja de estar bien.
+///
+/// Lo que **no** viaja, y no por olvido: la descripción de los capítulos (ver
+/// [_playerChapterJson]), los capítulos que todavía no se cerraron, las notas
+/// del cuaderno, el id de la campaña y el del DM. La clave de cada bloque es el
+/// `memberId`, que ya es el asa que el jugador tiene sobre el vínculo.
+Future<Response> _listPlayerCampaignsHandler(
+  Request request,
+  CharacterRepository characters,
+  CampaignRepository campaigns,
+  ChapterRepository chapters,
+  EncounterRepository encounters,
+) async {
+  final id = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de personaje',
+  );
+  final character = await characters.find(request.userId, id);
+  if (character == null) return _notFound('Personaje no encontrado.');
+
+  final shares = await campaigns.listSharesForCharacter(
+    ownerUserId: request.userId,
+    characterId: id,
+  );
+
+  // ponytail: cuatro consultas por campaña. Un personaje está en una o dos, así
+  // que no molesta; el día que moleste, es una sola consulta con joins.
+  final payload = <Map<String, dynamic>>[];
+  for (final share in shares) {
+    final campaign = await campaigns.find(share.dmUserId, share.campaignId);
+    // La campaña se borró entre el listado y esto. No es un error: el vínculo
+    // se va en cascada, así que el bloque simplemente no existe.
+    if (campaign == null) continue;
+
+    final members = await campaigns.listMembers(
+      share.dmUserId,
+      share.campaignId,
+    );
+    final all = await chapters.listFor(share.dmUserId, share.campaignId);
+    final battles = await encounters.logsFor(share.dmUserId, share.campaignId);
+
+    payload.add({
+      'memberId': share.memberId,
+      'campaign': campaign.toJson()..remove('id'),
+      // Los demás de la mesa. Se compara la cuenta **y** el id: los ids de
+      // personaje son por cuenta, así que dos jugadores distintos pueden tener
+      // los dos un «sagan» y mirar solo el id echaría al ajeno de la lista.
+      'party': [
+        for (final member in members)
+          if (!(member.ownerUserId == request.userId &&
+              member.character.id == character.id))
+            member.character.name,
+      ],
+      'chapters': [
+        for (final chapter in all)
+          if (chapter.state == ChapterState.completed)
+            _playerChapterJson(chapter),
+      ],
+      'battles': [for (final log in battles) log.toJson()],
+    });
+  }
+  return _jsonOk({'campaigns': payload});
 }
 
 /// Corta un vínculo desde cualquiera de las dos puntas.

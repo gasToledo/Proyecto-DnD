@@ -2932,6 +2932,257 @@ void main() {
       });
     });
 
+    // La vuelta del vínculo: hasta acá el jugador compartía su ficha y no veía
+    // nada a cambio. Es la única ruta del servidor por la que un jugador lee
+    // una campaña, así que —como en todo este grupo— lo que más importa es lo
+    // que NO devuelve.
+    group('campaña vista por el jugador', () {
+      const summary = 'Detrás del tercer sello duerme la madre de los gules.';
+
+      Future<void> createChapter(
+        String token,
+        String id,
+        String name, {
+        String state = 'planned',
+        int grantsGold = 0,
+      }) => send(
+        'POST',
+        '/api/campaigns/tumba/chapters',
+        token: token,
+        body: {
+          'chapter': {
+            'schemaVersion': 1,
+            'id': id,
+            'name': name,
+            'summary': summary,
+            'state': state,
+            'grantsLevel': false,
+            'grantsGold': grantsGold,
+          },
+        },
+      );
+
+      /// Una mesa armada: el jugador comparte a Sagan, el DM lo suma y deja un
+      /// capítulo cerrado. Devuelve los dos tokens.
+      Future<(String player, String dm)> table(String prefix) async {
+        final player = await login('$prefix-player');
+        final code = await shareCharacter(player, 'sagan');
+
+        final dm = await login('$prefix-dm');
+        await createCampaign(dm, 'tumba');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: dm,
+          body: {'code': code},
+        );
+        await createChapter(dm, 'cripta', 'La cripta sellada', grantsGold: 250);
+        await send(
+          'POST',
+          '/api/campaigns/tumba/chapters/cripta/close',
+          token: dm,
+        );
+        return (player, dm);
+      }
+
+      Future<List<dynamic>> campaignsOf(String token, [String id = 'sagan']) =>
+          send(
+            'GET',
+            '/api/characters/$id/campaigns',
+            token: token,
+          ).then((r) => r['body']['campaigns'] as List);
+
+      test('sin sesión responde 401', () async {
+        final response = await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/characters/sagan/campaigns'),
+          ),
+        );
+        expect(response.statusCode, 401);
+      });
+
+      test('el jugador ve su campaña y el capítulo que se cerró', () async {
+        final (player, _) = await table('vista');
+
+        final campaigns = await campaignsOf(player);
+        expect(campaigns, hasLength(1));
+        final block = campaigns.single as Map<String, dynamic>;
+        expect(block['campaign']['name'], 'La Tumba');
+
+        final chapters = block['chapters'] as List;
+        expect(chapters, hasLength(1));
+        expect(chapters.single['name'], 'La cripta sellada');
+        expect(chapters.single['grantsGold'], 250);
+      });
+
+      // LA prueba de esta ruta. `Chapter.summary` es lo que el DM escribe
+      // adentro del capítulo, y su documentación dice que no la ve ningún
+      // jugador ni siquiera con el capítulo cerrado. Se comprueba contra el
+      // cuerpo entero y no contra un campo: si mañana alguien la mete anidada
+      // en otro lado, esto también lo agarra.
+      test('la descripción del capítulo no viaja nunca', () async {
+        final (player, dm) = await table('sin-summary');
+
+        // Primero, que el texto exista de verdad: sin esto la prueba de abajo
+        // pasaría igual con un capítulo sin descripción, que no prueba nada.
+        final delDm = await send(
+          'GET',
+          '/api/campaigns/tumba/chapters',
+          token: dm,
+        );
+        expect(jsonEncode(delDm['body']), contains('gules'));
+
+        final raw = await send(
+          'GET',
+          '/api/characters/sagan/campaigns',
+          token: player,
+        );
+        expect(jsonEncode(raw['body']), isNot(contains('gules')));
+        expect(
+          ((raw['body']['campaigns'] as List).single['chapters'] as List)
+              .single['summary'],
+          anyOf(isNull, ''),
+        );
+      });
+
+      test('los capítulos que todavía no se cerraron no se muestran', () async {
+        final (player, dm) = await table('solo-cerrados');
+        await createChapter(dm, 'camino', 'El camino');
+        await createChapter(dm, 'feria', 'La feria', state: 'active');
+
+        final chapters = (await campaignsOf(player)).single['chapters'] as List;
+        expect(chapters, hasLength(1));
+        expect(chapters.single['name'], 'La cripta sellada');
+      });
+
+      test('las notas del cuaderno no viajan', () async {
+        final (player, dm) = await table('sin-notas');
+        await send(
+          'POST',
+          '/api/campaigns/tumba/notes',
+          token: dm,
+          body: {
+            'note': {
+              'schemaVersion': 1,
+              'id': 'n1',
+              'chapterId': 'cripta',
+              'title': 'Los tres sellos',
+              'body': 'El tercero está detrás del tapiz.',
+            },
+          },
+        );
+
+        final raw = await send(
+          'GET',
+          '/api/characters/sagan/campaigns',
+          token: player,
+        );
+        expect(jsonEncode(raw['body']), isNot(contains('tapiz')));
+        expect(jsonEncode(raw['body']), isNot(contains('sellos')));
+      });
+
+      test('las batallas cerradas viajan con la mesa', () async {
+        final (player, dm) = await table('batallas');
+        await send(
+          'PUT',
+          '/api/campaigns/tumba/encounter',
+          token: dm,
+          body: {
+            'encounter': {
+              'schemaVersion': 1,
+              'id': 'e1',
+              'round': 4,
+              'turnIndex': 0,
+              'combatants': [
+                {
+                  'id': 'm1',
+                  'kind': 'monster',
+                  'name': 'Esqueleto 1',
+                  'initiative': 12,
+                  'creatureId': 'skeleton',
+                  'currentHp': 0,
+                  'maxHp': 13,
+                },
+              ],
+            },
+          },
+        );
+        await send('DELETE', '/api/campaigns/tumba/encounter', token: dm);
+
+        final battles = (await campaignsOf(player)).single['battles'] as List;
+        expect(battles, hasLength(1));
+        expect(battles.single['rounds'], 4);
+        expect(
+          (battles.single['monsters'] as List).single['name'],
+          'Esqueleto',
+        );
+      });
+
+      test('la mesa lista a los demás y no al propio personaje', () async {
+        final (player, dm) = await table('mesa');
+
+        final otro = await login('mesa-otro');
+        await send(
+          'POST',
+          '/api/characters',
+          token: otro,
+          body: {'character': characterJson('mirna', name: 'Mirna')},
+        );
+        final code = await send(
+          'POST',
+          '/api/characters/mirna/share',
+          token: otro,
+        );
+        await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: dm,
+          body: {'code': code['body']['code']},
+        );
+
+        expect((await campaignsOf(player)).single['party'], ['Mirna']);
+      });
+
+      // El id de la campaña y el del DM no viajan: el jugador no tiene ninguna
+      // ruta que los tome, y mandarlos solo serviría para tantear qué existe
+      // del otro lado.
+      test('no viaja el id de la campaña ni el del DM', () async {
+        final (player, _) = await table('sin-ids');
+
+        final block =
+            (await campaignsOf(player)).single as Map<String, dynamic>;
+        expect(block['campaign'].containsKey('id'), isFalse);
+        expect(block.containsKey('dmUserId'), isFalse);
+        expect(block['memberId'], isNotEmpty);
+      });
+
+      test('un personaje sin vínculos devuelve la lista vacía', () async {
+        final token = await login('sin-campanas');
+        await send(
+          'POST',
+          '/api/characters',
+          token: token,
+          body: {'character': characterJson('sagan')},
+        );
+
+        expect(await campaignsOf(token), isEmpty);
+      });
+
+      // Preguntar por un personaje ajeno tiene que ser indistinguible de
+      // preguntar por uno que no existe.
+      test('preguntar por un personaje ajeno responde 404', () async {
+        final (_, dm) = await table('ajeno');
+
+        final response = await send(
+          'GET',
+          '/api/characters/sagan/campaigns',
+          token: dm,
+        );
+        expect(response['status'], 404);
+      });
+    });
+
     group('combate', () {
       Map<String, dynamic> playerCombatant(
         String id, {

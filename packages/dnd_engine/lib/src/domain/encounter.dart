@@ -42,6 +42,18 @@ class Combatant {
   final int currentHp;
   final int maxHp;
 
+  /// Qué le está pasando: «Envenenado», «marcado por el pícaro»,
+  /// «concentrando en Bendición».
+  ///
+  /// **Texto libre y no un enum de las condiciones oficiales**, aunque la
+  /// pantalla las ofrezca como atajo: la mitad de lo que hay que recordar en
+  /// una ronda no es una condición del libro. Un enum cubriría «Envenenado» y
+  /// dejaría afuera las otras dos, que son justo las que se olvidan.
+  ///
+  /// Son del DM y no viajan a la ficha de nadie: el jugador sabe lo que le
+  /// pasa a su personaje porque se lo dijeron en la mesa.
+  final List<String> tags;
+
   const Combatant({
     required this.id,
     required this.kind,
@@ -51,6 +63,7 @@ class Combatant {
     this.creatureId,
     this.currentHp = 0,
     this.maxHp = 0,
+    this.tags = const [],
   });
 
   /// Un monstruo a 0 PG está inconsciente o muerto: no le toca actuar y su
@@ -60,7 +73,7 @@ class Combatant {
   bool get isDown =>
       kind == CombatantKind.monster && maxHp > 0 && currentHp <= 0;
 
-  Combatant copyWith({int? currentHp}) => Combatant(
+  Combatant copyWith({int? currentHp, List<String>? tags}) => Combatant(
         id: id,
         kind: kind,
         name: name,
@@ -69,6 +82,7 @@ class Combatant {
         creatureId: creatureId,
         currentHp: currentHp ?? this.currentHp,
         maxHp: maxHp,
+        tags: tags ?? this.tags,
       );
 
   Map<String, dynamic> toJson() => {
@@ -80,6 +94,7 @@ class Combatant {
         if (creatureId != null) 'creatureId': creatureId,
         if (maxHp != 0) 'currentHp': currentHp,
         if (maxHp != 0) 'maxHp': maxHp,
+        if (tags.isNotEmpty) 'tags': tags,
       };
 
   factory Combatant.fromJson(Map<String, dynamic> j) => Combatant(
@@ -91,6 +106,13 @@ class Combatant {
         creatureId: j['creatureId'] as String?,
         currentHp: j['currentHp'] as int? ?? 0,
         maxHp: j['maxHp'] as int? ?? 0,
+        // Se descarta lo que no sea texto en vez de romper el combate entero:
+        // un tag mal formado no vale perder el orden de iniciativa a mitad de
+        // una ronda.
+        tags: [
+          for (final t in (j['tags'] as List? ?? const []))
+            if (t is String && t.trim().isNotEmpty) t.trim(),
+        ],
       );
 }
 
@@ -292,6 +314,31 @@ class Encounter {
           for (final c in combatants)
             if (c.id == combatantId)
               c.copyWith(currentHp: hp.clamp(0, c.maxHp))
+            else
+              c,
+        ],
+      );
+
+  /// Reemplaza los tags de un combatiente.
+  ///
+  /// Se pasa la lista entera y no «sumar» o «sacar» uno por lo mismo que el
+  /// combate entero viaja completo en cada guardado: no hay operaciones finas
+  /// que puedan desincronizarse entre sí.
+  ///
+  /// Se normalizan acá —sin repetidos, sin vacíos, respetando el orden en que
+  /// se agregaron— para que no haga falta acordarse de hacerlo en la pantalla.
+  Encounter withTags(String combatantId, List<String> tags) => Encounter(
+        id: id,
+        round: round,
+        turnIndex: turnIndex,
+        combatants: [
+          for (final c in combatants)
+            if (c.id == combatantId)
+              c.copyWith(
+                  tags: {
+                for (final t in tags)
+                  if (t.trim().isNotEmpty) t.trim(),
+              }.toList())
             else
               c,
         ],

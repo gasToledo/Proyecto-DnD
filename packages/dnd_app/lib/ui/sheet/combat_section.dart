@@ -1219,7 +1219,7 @@ extension _SheetCombatSection on _SheetScreenState {
     return Wrap(
       spacing: 6,
       runSpacing: 6,
-      children: _conditions.entries.map((e) {
+      children: conditions.entries.map((e) {
         final active = target.contains(e.key);
         return Tooltip(
           message: e.value.description,

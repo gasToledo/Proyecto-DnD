@@ -565,4 +565,114 @@ void main() {
       expect(result, roll - 2);
     });
   });
+
+  group('tags de combatiente', () {
+    Encounter conUno({List<String> tags = const []}) => Encounter(
+          id: 'e1',
+          combatants: [
+            Combatant(
+              id: 'm1',
+              kind: CombatantKind.monster,
+              name: 'Goblin',
+              initiative: 12,
+              currentHp: 7,
+              maxHp: 7,
+              tags: tags,
+            ),
+          ],
+        );
+
+    test('un combatiente nace sin tags', () {
+      expect(conUno().combatants.single.tags, isEmpty);
+    });
+
+    test('sobreviven el round-trip', () {
+      final e = conUno(tags: ['Envenenado', 'marcado por el pícaro']);
+      final r = Encounter.fromJson(e.toJson());
+      expect(r.combatants.single.tags, ['Envenenado', 'marcado por el pícaro']);
+    });
+
+    // Un combate viejo no los trae, y el DM no puede perder la ronda por eso.
+    test('un documento sin tags carga igual', () {
+      final r = Encounter.fromJson({
+        'id': 'e1',
+        'combatants': [
+          {'id': 'm1', 'kind': 'monster', 'name': 'Goblin', 'initiative': 12},
+        ],
+      });
+      expect(r.combatants.single.tags, isEmpty);
+    });
+
+    test('lo que no sea texto se descarta en vez de romper el combate', () {
+      final r = Encounter.fromJson({
+        'id': 'e1',
+        'combatants': [
+          {
+            'id': 'm1',
+            'kind': 'monster',
+            'name': 'Goblin',
+            'initiative': 12,
+            'tags': ['Envenenado', '', '   ', 7, null],
+          },
+        ],
+      });
+      expect(r.combatants.single.tags, ['Envenenado']);
+    });
+
+    test('withTags reemplaza los del combatiente que se nombra', () {
+      final e = conUno(tags: ['Envenenado']);
+      final r = e.withTags('m1', ['Derribado', 'Asustado']);
+      expect(r.combatants.single.tags, ['Derribado', 'Asustado']);
+    });
+
+    test('withTags normaliza: sin repetidos, sin vacíos, en orden', () {
+      final r = conUno().withTags('m1', [
+        'Envenenado',
+        '  Derribado  ',
+        'Envenenado',
+        '',
+        '   ',
+      ]);
+      expect(r.combatants.single.tags, ['Envenenado', 'Derribado']);
+    });
+
+    test('withTags no toca a los demás ni al turno', () {
+      final e = Encounter(
+        id: 'e1',
+        round: 3,
+        turnIndex: 1,
+        combatants: const [
+          Combatant(
+            id: 'a',
+            kind: CombatantKind.monster,
+            name: 'Ogro',
+            initiative: 15,
+            currentHp: 20,
+            maxHp: 20,
+          ),
+          Combatant(
+            id: 'b',
+            kind: CombatantKind.player,
+            name: 'Sagan',
+            initiative: 10,
+          ),
+        ],
+      );
+
+      final r = e.withTags('b', ['Asustado']);
+      expect(r.round, 3);
+      expect(r.turnIndex, 1);
+      expect(r.combatants.first.tags, isEmpty);
+      expect(r.combatants.last.tags, ['Asustado']);
+      // Y los PG siguen donde estaban: los tags no son una edición del estado.
+      expect(r.combatants.first.currentHp, 20);
+    });
+
+    test('un id que no está no cambia nada', () {
+      final e = conUno(tags: ['Envenenado']);
+      expect(e.withTags('fantasma', ['x']).combatants.single.tags, [
+        'Envenenado',
+      ]);
+    });
+  });
 }

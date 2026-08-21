@@ -11,6 +11,7 @@ import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
+import 'conditions.dart';
 import 'dm/share_character_dialog.dart';
 import 'portrait_image.dart';
 import 'portrait_screen.dart';
@@ -40,92 +41,6 @@ enum _SheetTab {
   final String label;
   final IconData icon;
 }
-
-/// Condición: etiqueta + qué le hace al personaje (reglas 2024), para el
-/// gestor de estados en combate.
-class _ConditionInfo {
-  final String label;
-  final String description;
-  const _ConditionInfo(this.label, this.description);
-}
-
-const _conditions = <String, _ConditionInfo>{
-  'blinded': _ConditionInfo(
-    'Cegado',
-    'No podés ver y fallás automáticamente cualquier prueba que requiera vista. '
-        'Los ataques contra vos tienen ventaja, y tus ataques tienen desventaja.',
-  ),
-  'charmed': _ConditionInfo(
-    'Hechizado',
-    'No podés atacar a quien te hechizó ni dirigirle habilidades u efectos '
-        'dañinos. Esa criatura tiene ventaja en pruebas sociales contra vos.',
-  ),
-  'deafened': _ConditionInfo(
-    'Ensordecido',
-    'No podés oír y fallás automáticamente cualquier prueba que requiera oído.',
-  ),
-  'frightened': _ConditionInfo(
-    'Asustado',
-    'Tenés desventaja en pruebas de característica y ataques mientras la '
-        'fuente de tu miedo esté a la vista. No podés acercarte voluntariamente a ella.',
-  ),
-  'grappled': _ConditionInfo(
-    'Agarrado',
-    'Tu velocidad se vuelve 0 y no podés beneficiarte de ningún bonus a la '
-        'velocidad. La condición termina si quien te agarra queda incapacitado.',
-  ),
-  'incapacitated': _ConditionInfo(
-    'Incapacitado',
-    'No podés realizar acciones ni reacciones. (En 2024 tampoco te movés ni hablás.)',
-  ),
-  'invisible': _ConditionInfo(
-    'Invisible',
-    'Sos imposible de ver sin magia o sentidos especiales. A efectos de '
-        'esconderte, se te considera fuertemente oscurecido. Tus ataques tienen '
-        'ventaja; los ataques contra vos tienen desventaja.',
-  ),
-  'paralyzed': _ConditionInfo(
-    'Paralizado',
-    'Estás incapacitado y no podés moverte ni hablar. Fallás automáticamente '
-        'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
-        'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.',
-  ),
-  'petrified': _ConditionInfo(
-    'Petrificado',
-    'Te transformás en sustancia sólida inanimada (junto a tu equipo). '
-        'Incapacitado, no podés moverte ni hablar, sos inconsciente de tu entorno. '
-        'Los ataques contra vos tienen ventaja, fallás salvaciones de Fuerza y '
-        'Destreza, tenés resistencia a todo el daño e inmunidad a veneno y enfermedad.',
-  ),
-  'poisoned': _ConditionInfo(
-    'Envenenado',
-    'Tenés desventaja en tiradas de ataque y en pruebas de característica.',
-  ),
-  'prone': _ConditionInfo(
-    'Derribado',
-    'Solo podés moverte arrastrándote (o levantarte). Tenés desventaja al '
-        'atacar. Los ataques cuerpo a cuerpo contra vos tienen ventaja; los '
-        'ataques a distancia contra vos tienen desventaja.',
-  ),
-  'restrained': _ConditionInfo(
-    'Apresado',
-    'Tu velocidad se vuelve 0. Los ataques contra vos tienen ventaja y tus '
-        'ataques tienen desventaja. Tenés desventaja en salvaciones de Destreza.',
-  ),
-  'stunned': _ConditionInfo(
-    'Aturdido',
-    'Estás incapacitado, no podés moverte y hablás solo entrecortadamente. '
-        'Fallás automáticamente las salvaciones de Fuerza y Destreza. Los '
-        'ataques contra vos tienen ventaja.',
-  ),
-  'unconscious': _ConditionInfo(
-    'Inconsciente',
-    'Estás incapacitado, no podés moverte ni hablar, y no sos consciente de tu '
-        'entorno. Soltás lo que sostenías y caés derribado. Fallás automáticamente '
-        'las salvaciones de Fuerza y Destreza. Los ataques contra vos tienen '
-        'ventaja, y todo impacto cuerpo a cuerpo es crítico si el atacante está a 5 pies.',
-  ),
-};
 
 /// Ficha editable. Combate/Inventario/Notas modifican el personaje y disparan
 /// el autoguardado del [CharactersController]. General lee de la [ComputedSheet].

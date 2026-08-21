@@ -1030,6 +1030,13 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     _saveEncounter(encounter);
   }
 
+  void _setCombatantTags(String combatantId, List<String> tags) {
+    final encounter = _encounter;
+    if (encounter != null) {
+      _saveEncounter(encounter.withTags(combatantId, tags));
+    }
+  }
+
   void _nextTurn() {
     final encounter = _encounter;
     if (encounter != null) _saveEncounter(encounter.next());
@@ -1242,6 +1249,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
               onAddMonster: _addMonsters,
               onAdjustHp: _adjustCombatantHp,
               onRemoveCombatant: _removeCombatant,
+              onSetTags: _setCombatantTags,
               onCloseEncounter: _closeEncounter,
             ),
           },

@@ -5,6 +5,7 @@ import '../../api/api_models.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import 'add_monster_dialog.dart';
+import 'combatant_tags_dialog.dart';
 
 /// Cómo termina un combate: archivado en el registro de la campaña, o
 /// descartado sin dejar rastro.
@@ -38,6 +39,9 @@ class EncounterView extends StatelessWidget {
   final void Function(String combatantId, int delta) onAdjustHp;
   final void Function(String combatantId) onRemoveCombatant;
 
+  /// Reemplaza los efectos anotados de un combatiente.
+  final void Function(String combatantId, List<String> tags) onSetTags;
+
   /// Termina el combate. Con `discard: true` no queda registro — ver
   /// [_confirmClose].
   final void Function({bool discard}) onCloseEncounter;
@@ -54,6 +58,7 @@ class EncounterView extends StatelessWidget {
     required this.onAddMonster,
     required this.onAdjustHp,
     required this.onRemoveCombatant,
+    required this.onSetTags,
     required this.onCloseEncounter,
   });
 
@@ -117,6 +122,7 @@ class EncounterView extends StatelessWidget {
                 repo: repo,
                 onAdjustHp: (delta) => onAdjustHp(combatant.id, delta),
                 onRemove: () => onRemoveCombatant(combatant.id),
+                onSetTags: (tags) => onSetTags(combatant.id, tags),
               ),
             ),
       ],
@@ -346,6 +352,7 @@ class _CombatantTile extends StatefulWidget {
   final ContentRepository repo;
   final void Function(int delta) onAdjustHp;
   final VoidCallback onRemove;
+  final void Function(List<String> tags) onSetTags;
 
   const _CombatantTile({
     required this.combatant,
@@ -354,6 +361,7 @@ class _CombatantTile extends StatefulWidget {
     required this.repo,
     required this.onAdjustHp,
     required this.onRemove,
+    required this.onSetTags,
   });
 
   @override
@@ -457,6 +465,27 @@ class _CombatantTileState extends State<_CombatantTile> {
                     ],
                   ),
                 ],
+                // Los efectos anotados. Se sacan de a uno desde acá: en la
+                // ronda en que se termina un veneno, abrir el diálogo para
+                // destildarlo sería un rodeo.
+                if (combatant.tags.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final tag in combatant.tags)
+                        InputChip(
+                          label: Text(tag),
+                          onDeleted: () => widget.onSetTags([
+                            for (final t in combatant.tags)
+                              if (t != tag) t,
+                          ]),
+                          deleteButtonTooltipMessage: 'Sacar «$tag»',
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -482,6 +511,21 @@ class _CombatantTileState extends State<_CombatantTile> {
               icon: Icon(Icons.add_circle_outline, color: pal.verdant),
             ),
           ],
+          IconButton(
+            tooltip: 'Efectos',
+            onPressed: () async {
+              final tags = await showCombatantTagsDialog(
+                context,
+                name: combatant.name,
+                current: combatant.tags,
+              );
+              if (tags != null) widget.onSetTags(tags);
+            },
+            icon: Icon(
+              combatant.tags.isEmpty ? Icons.label_outline : Icons.label,
+              color: combatant.tags.isEmpty ? null : pal.gold,
+            ),
+          ),
           IconButton(
             tooltip: 'Sacar de la mesa',
             onPressed: widget.onRemove,

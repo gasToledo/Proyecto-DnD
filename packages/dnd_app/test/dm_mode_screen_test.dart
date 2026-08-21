@@ -756,6 +756,90 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    /// Deja un goblin en la mesa, que es el sujeto de las pruebas de efectos.
+    Future<FakeApiServer> withGoblin(WidgetTester tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Empezar combate'));
+      await tester.pumpAndSettle();
+      await addMonsters(tester, 'goblin', 'Guerrero goblin');
+      return server;
+    }
+
+    List<String> tagsOf(FakeApiServer server) =>
+        server.encounters['tumba']!.combatants.single.tags;
+
+    // Lo que se olvida en la mesa no siempre es una condición del libro: hay
+    // que poder escribir cualquier cosa.
+    testWidgets('anotar un efecto a mano lo deja en la fila', (tester) async {
+      final server = await withGoblin(tester);
+
+      await tester.tap(find.byTooltip('Efectos'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Anotar un efecto'),
+        'marcado por el pícaro',
+      );
+      await tester.tap(find.byTooltip('Anotar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(tagsOf(server), ['marcado por el pícaro']);
+      expect(find.text('marcado por el pícaro'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('las condiciones del libro están como atajo', (tester) async {
+      final server = await withGoblin(tester);
+
+      await tester.tap(find.byTooltip('Efectos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilterChip, 'Envenenado'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(tagsOf(server), ['Envenenado']);
+      expect(tester.takeException(), isNull);
+    });
+
+    // En la ronda en que se termina un veneno, abrir el diálogo para
+    // destildarlo sería un rodeo: se saca desde la propia fila.
+    testWidgets('un efecto se saca desde la fila, sin abrir el diálogo', (
+      tester,
+    ) async {
+      final server = await withGoblin(tester);
+
+      await tester.tap(find.byTooltip('Efectos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilterChip, 'Derribado'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+      expect(tagsOf(server), ['Derribado']);
+
+      await tester.tap(find.byTooltip('Sacar «Derribado»'));
+      await tester.pumpAndSettle();
+
+      expect(tagsOf(server), isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('cancelar el diálogo no anota nada', (tester) async {
+      final server = await withGoblin(tester);
+
+      await tester.tap(find.byTooltip('Efectos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilterChip, 'Aturdido'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.pumpAndSettle();
+
+      expect(tagsOf(server), isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('avanzar turno y cerrar el combate lo borra del servidor', (
       tester,
     ) async {

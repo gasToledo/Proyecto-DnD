@@ -132,11 +132,20 @@ en el `ColorScheme` de Material y se leen con `Theme.of(context).colorScheme`.
 | Token | Oscuro | Claro | Qué significa |
 | --- | --- | --- | --- |
 | `gold` | `#C9A24B` | `#8A6A1E` | Acento heráldico: activo, seleccionado, números clave, reglas ornamentales |
-| `crimson` | `#C24A3E` | `#A6392E` | Puntos de golpe, daño y acción destructiva |
+| `crimson` | `#D4665A` | `#A6392E` | Puntos de golpe, daño y acción destructiva |
+| `verdant` | `#6FA85C` | `#3E7A33` | Verde heráldico: la acción principal del turno |
 | `plaque` | `#12100C` | `#EBE0C9` | Fondo de placas: **más hundido** que `surface` |
 | `hairline` | `#3A2F25` | `#D9C9A8` | Bordes finos de 1 px; toda la jerarquía estructural |
 | `goldSoft` | `#2E2617` | `#EEE1BF` | Relleno suave de pills doradas y del ítem de navegación activo |
-| `textMuted` | `#7F7059` | `#9E8E70` | Rótulos, eyebrows, hints, pips vacíos |
+| `textMuted` | `#9C8B6E` | `#6E6047` | Rótulos, eyebrows, hints, pips vacíos |
+
+Los que llevan texto están elegidos para llegar a **4.5:1 contra los dos fondos
+sobre los que se dibujan**, `surface` y `plaque` — el segundo es el exigente,
+porque es el más cercano al color del texto. El carmesí oscuro es más claro que
+el rojo de marca original (`#C24A3E`, 3.6:1) justamente por eso: lleva los PG de
+la tarjeta, que son texto chico. La consecuencia es que sobre ese carmesí el
+blanco ya no contrasta, así que `onError` / `onSecondary` en tema oscuro son el
+mismo casi-negro que va sobre el oro.
 
 ### 3.2 Tokens de Material — `ColorScheme`
 
@@ -405,9 +414,10 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `DenseRows` | Contenedor de filas densas con divisores internos, en vez de tarjetas sueltas | `children` |
 | `SectionRule` | Regla ornamental: línea `hairline` con rombo dorado de 7 px al centro, 18 px de margen vertical | — |
 | `Eyebrow` | Rótulo de sección en mayúsculas espaciadas | `text` |
-| `sheetCard(…)` | Tarjeta con cabecera (ícono dorado 18 px + título Georgia 16 + acción) | `icon`, `title`, `trailing`, `child` |
+| `sheetCard(…)` | Tarjeta plegable con cabecera (ícono dorado 18 px + título Georgia 16 + acción) | `icon`, `title`, `trailing`, `child`, y `collapseKey` cuando el título se repite en la misma pantalla (dos campañas apiladas tienen dos tarjetas «Batallas») |
 | `responsiveColumns(…)` | Columnas lado a lado ≥ 640, apiladas debajo | `List<List<Widget>>` |
 | `appNavItem(…)` | Ítem del panel lateral | `icon`, `label`, `active`, `onTap` |
+| `DisplayPreferences` | Pie del panel lateral: idioma + tema, juntos porque son lo mismo | Envuelve `LanguageSelector` y `ThemeModeSelector` |
 
 ### Datos de personaje
 
@@ -423,6 +433,8 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `UsagePips` | Tira de íconos para usos restantes: llenos en `gold`, gastados en `textMuted` | Recursos de clase, espacios de conjuro |
 | `GoldPill` | Cápsula dorada suave; `highlighted: false` la vuelve neutra | Radio 20 |
 | `SourceBadge` | `GoldPill` con la procedencia del contenido | Solo el SRD 5.2.1 va resaltado |
+| `ActionTypeIcon` / `ActionTypeLegend` | Ícono del tipo de acción (acción, adicional, reacción) y su leyenda | La leyenda va una sola vez por pantalla, no por fila |
+| `CreatureActionRow` | Una acción de criatura: nombre, bonificador con signo en Georgia dorado, daño con su tipo, alcance y descripción | Toma **primitivos** y no un `CreatureAction`: la usan la ficha (compañeros, vía `ResolvedCreatureAction`) y el Bestiario (perfil crudo), que traen tipos distintos |
 
 ### Selección
 
@@ -440,8 +452,9 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `showAppMessage(…)` | `SnackBar` con tono `info` / `success` / `error` | El error dura **6 s**, el resto 3 s. Siempre `Semantics(liveRegion: true)` |
 | `AppBusyLabel` | Spinner de 18 px + texto, como región viva | El texto es obligatorio: un spinner solo no dice qué está pasando |
 | `_SaveStatusIndicator` | Píldora de estado del guardado con `AnimatedSwitcher` de 180 ms | Ícono + texto + color, los tres |
-| Estado vacío | Ícono 40 px `onSurfaceVariant` + mensaje centrado | Patrón, no widget: `_emptyState` |
-| Error de arranque | Ícono 44 px de error + mensaje + `SelectableText` del detalle + botón "Reintentar" | El detalle técnico se puede copiar |
+| `AppEmptyState` | Ícono 40 px `onSurfaceVariant` + mensaje centrado + acciones opcionales | El mensaje es región viva. Distinguir **«no hay nada»** de **«nada coincide con la búsqueda»**: son situaciones distintas y piden acciones distintas |
+| `AppErrorView` | Ícono de error + mensaje + `SelectableText` del detalle + botón "Reintentar" | El detalle técnico se puede copiar. `onRetry` es lo que lo separa de un cartel muerto |
+| `showTextPromptDialog(…)` / `showRenameDialog(…)` | Diálogo de un solo campo de texto | Para más de un campo, diálogo propio (ver `chapter_editor_dialog.dart`) |
 
 **Los diálogos siguen siempre el mismo molde**: `AlertDialog`, `TextButton`
 "Cancelar" a la izquierda, `FilledButton` con el verbo de la acción a la
@@ -518,35 +531,48 @@ Ratios calculados sobre los tokens reales. **Verde** = AA para texto normal
 | Combinación | Ratio | |
 | --- | --- | --- |
 | `onSurface` sobre `surface` | 14.20 | ✅ |
-| `onSurfaceVariant` sobre `surface` | 5.82 | ✅ |
-| `gold` sobre `surface` | 7.26 | ✅ |
 | `gold` sobre `plaque` | 7.92 | ✅ |
+| `gold` sobre `surface` | 7.26 | ✅ |
 | `onPrimary` sobre `gold` | 7.19 | ✅ |
-| `crimson` sobre `surface` | 3.60 | ⚠️ solo texto grande |
-| `textMuted` sobre `surface` | 3.62 | ⚠️ solo texto grande |
+| `verdant` sobre `surface` | 6.17 | ✅ |
+| `onSurfaceVariant` sobre `surface` | 5.82 | ✅ |
+| `textMuted` sobre `plaque` | 5.73 | ✅ |
+| `crimson` sobre `plaque` | 5.29 | ✅ |
+| `textMuted` sobre `surface` | 5.25 | ✅ |
+| `crimson` sobre `surface` | 4.85 | ✅ |
+| `onCrimson` sobre `crimson` | 4.81 | ✅ |
 
 **Tema claro**
 
 | Combinación | Ratio | |
 | --- | --- | --- |
 | `onSurface` sobre `surface` | 14.76 | ✅ |
-| `onSurfaceVariant` sobre `surface` | 5.78 | ✅ |
+| `onCrimson` sobre `crimson` | 6.47 | ✅ |
 | `crimson` sobre `surface` | 6.04 | ✅ |
+| `onSurfaceVariant` sobre `surface` | 5.78 | ✅ |
+| `textMuted` sobre `surface` | 5.72 | ✅ |
+| `crimson` sobre `plaque` | 4.94 | ✅ |
+| `verdant` sobre `surface` | 4.86 | ✅ |
 | `gold` sobre `surface` | 4.71 | ✅ |
+| `textMuted` sobre `plaque` | 4.68 | ✅ |
 | `gold` sobre `plaque` | 3.85 | ⚠️ solo texto grande |
 | `onPrimary` sobre `gold` | 3.42 | ❌ texto de botón relleno |
-| `textMuted` sobre `surface` | 2.99 | ❌ |
-| `textMuted` sobre `plaque` | 2.45 | ❌ |
+
+Los tokens que llevan texto se retocaron para llegar a AA **contra los dos
+fondos** sobre los que se dibujan. Una versión anterior de esta guía documentaba
+`textMuted` y `crimson` como insuficientes; eso dejó de ser cierto y el motivo
+está en los comentarios de `AppPalette`.
 
 ### 11.3 Reglas que se derivan de lo anterior
 
-1. **`textMuted` es solo para rótulos decorativos redundantes.** Nunca para
-   información que exista únicamente ahí. Hoy se usa en eyebrows y rótulos de
-   placa a 8.5–11 px, que es donde más falta hace el contraste y menos hay.
-2. **`crimson` en oscuro no se usa para texto pequeño.** Los PG a 13 px en
-   carmesí sobre la tarjeta están por debajo del umbral.
-3. **`gold` sobre `plaque` en tema claro solo vale a 24 px o más.** Por eso la
+1. **`gold` sobre `plaque` en tema claro solo vale a 24 px o más.** Por eso la
    `StatPlaque` normal pasa y la variante `dense` (16 px) no.
+2. **`onPrimary` sobre `gold` en tema claro es la única combinación de la
+   aplicación por debajo de AA**, y afecta al texto de todo `FilledButton`. Es
+   deuda abierta, no una licencia para sumar más usos.
+3. **Sobre `crimson` en tema oscuro no va blanco.** El carmesí se aclaró para
+   que los PG llegaran a AA, y con eso el blanco dejó de contrastar: `onError` y
+   `onSecondary` son el mismo casi-negro que va sobre el oro.
 4. Los objetivos táctiles siguen los mínimos de Material (48 px); los
    `IconButton` no se achican por debajo de eso.
 
@@ -577,21 +603,19 @@ Prohibiciones duras. Las primeras cuatro rompen pruebas o el build.
 
 Cosas ciertas hoy, documentadas para que no se re-descubran:
 
-1. **Marca vieja en el wizard de creación.** El panel de progreso de
-   `creation_wizard.dart:240` todavía dice "Fichas / D&D 5e" en vez de
-   "Milantus / Asistente de Aventuras", que es lo que muestran el dashboard y
-   la ficha. Es la única aparición del nombre viejo en `lib/`.
-2. **Georgia no se empaqueta.** En sistemas sin la fuente, toda la capa display
+1. **Georgia no se empaqueta.** En sistemas sin la fuente, toda la capa display
    cae al serif genérico y la métrica cambia. Empaquetarla tiene costo de
    licencia y de peso; la alternativa sería una serif libre servida como asset.
-3. **`textMuted` no llega a AA** en ninguno de los dos temas, y es justamente
-   el token de los tamaños más chicos.
-4. **`onPrimary` sobre `gold` claro (3.42)** deja el texto de los
-   `FilledButton` por debajo de AA en tema claro.
-5. **La escala de espaciado no es sistemática.** Conviven 2, 3, 5, 6, 7, 11 y
+2. **`onPrimary` sobre `gold` claro (3.42)** deja el texto de los
+   `FilledButton` por debajo de AA en tema claro. Es la última combinación de
+   la paleta que no llega.
+3. **La escala de espaciado no es sistemática.** Conviven 2, 3, 5, 6, 7, 11 y
    13 con la escala canónica.
-6. **`orientation: portrait-primary`** en `manifest.json` contradice un layout
-   que está claramente pensado para escritorio ancho.
+
+Dos deudas que esta lista traía y **ya están saldadas**, anotadas para que no se
+vuelvan a abrir: la marca vieja "Fichas / D&D 5e" del wizard de creación (hoy no
+queda ninguna aparición de "Fichas" en `lib/`) y el `orientation:
+portrait-primary` del `manifest.json`, que hoy es `any`.
 
 ---
 
@@ -615,11 +639,12 @@ exactamente con los del código Dart.
       "onSurface": "#EFE7DA",
       "onSurfaceVariant": "#A2937E",
       "gold": "#C9A24B",
-      "crimson": "#C24A3E",
+      "crimson": "#D4665A",
+      "verdant": "#6FA85C",
       "plaque": "#12100C",
       "hairline": "#3A2F25",
       "goldSoft": "#2E2617",
-      "textMuted": "#7F7059",
+      "textMuted": "#9C8B6E",
       "onPrimary": "#201A10"
     },
     "light": {
@@ -630,9 +655,10 @@ exactamente con los del código Dart.
       "gold": "#8A6A1E",
       "crimson": "#A6392E",
       "plaque": "#EBE0C9",
+      "verdant": "#3E7A33",
       "hairline": "#D9C9A8",
       "goldSoft": "#EEE1BF",
-      "textMuted": "#9E8E70",
+      "textMuted": "#6E6047",
       "onPrimary": "#201A10"
     },
     "classAccent": {
@@ -682,8 +708,8 @@ producto.
 :root {
   --scaffold: #151210;  --surface: #1E1915;
   --on-surface: #EFE7DA; --on-surface-variant: #A2937E;
-  --gold: #C9A24B; --crimson: #C24A3E; --plaque: #12100C;
-  --hairline: #3A2F25; --gold-soft: #2E2617; --text-muted: #7F7059;
+  --gold: #C9A24B; --crimson: #D4665A; --plaque: #12100C;
+  --hairline: #3A2F25; --gold-soft: #2E2617; --text-muted: #9C8B6E;
   --on-primary: #201A10;
 
   --font-display: Georgia, 'Times New Roman', serif;
@@ -698,7 +724,7 @@ producto.
   --scaffold: #F3ECDD;  --surface: #FBF7EC;
   --on-surface: #2A2118; --on-surface-variant: #6E5F49;
   --gold: #8A6A1E; --crimson: #A6392E; --plaque: #EBE0C9;
-  --hairline: #D9C9A8; --gold-soft: #EEE1BF; --text-muted: #9E8E70;
+  --hairline: #D9C9A8; --gold-soft: #EEE1BF; --text-muted: #6E6047;
 }
 
 .card { background: var(--surface); border: var(--border-hairline);

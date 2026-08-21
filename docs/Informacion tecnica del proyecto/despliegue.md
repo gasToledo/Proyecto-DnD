@@ -1,18 +1,16 @@
 # Despliegue autoalojado
 
-Runbook operativo del stack de contenedores (ver capacidad
-`self-hosted-deployment` en
-`openspec/changes/migrate-to-self-hosted-webapp/specs/self-hosted-deployment/spec.md`
-y `design.md` para las decisiones detrás de cada elección).
+Runbook operativo del stack de contenedores.
 
-> **Nota de esta sesión:** el entorno donde se escribió este documento no
-> tiene Docker instalado, así que el `docker-compose.yml`, los `Dockerfile` y
-> este runbook se armaron y revisaron por lectura (incluido el
-> `docker-compose.yml` oficial de Zitadel v4, para que los nombres de
-> variable y el healthcheck fueran los reales) pero **no se ejecutaron de
-> punta a punta**. La primera vez que se levante el stack de verdad hay que
-> tratarlo como un ensayo: seguir esta guía y anotar cualquier ajuste que
-> haga falta.
+> Este documento se escribió **antes** del primer arranque real, en un entorno
+> sin Docker: se armó por lectura, incluido el `docker-compose.yml` oficial de
+> Zitadel v4 para que los nombres de variable y el healthcheck fueran los
+> reales. Desde entonces el stack se levantó de verdad y se corrigieron sobre
+> la marcha el bucle de `cloudflared` y la imagen de Flutter del despliegue.
+>
+> O sea que ya no es un ensayo, pero tampoco se reescribió paso por paso
+> contra la ejecución real: si algo no coincide, manda lo que hace el stack y
+> conviene corregir acá.
 
 ## Prerrequisitos
 
@@ -106,8 +104,7 @@ y `design.md` para las decisiones detrás de cada elección).
 
 ## Integración y despliegue continuo
 
-Ver `openspec/changes/add-ci-cd-pipeline/` para el *why* y las decisiones
-(`design.md`). Dos workflows en `.github/workflows/`:
+Dos workflows en `.github/workflows/`:
 
 - `ci.yml`: formato, análisis y pruebas de los tres paquetes en runners
   alojados por GitHub, en cada push y cada pull request. No necesita

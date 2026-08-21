@@ -1,11 +1,9 @@
 name: CD
 
-# Único workflow que corre en el runner autoalojado (ver
-# openspec/changes/add-ci-cd-pipeline/design.md, D1/D2/D3). Dispara SOLO por
-# push a main, nunca por pull_request: es lo que permite tener un
-# runner autoalojado en un repositorio público sin exponerlo a código de un
-# fork (ver design.md, Risks/Trade-offs). No agregar aquí ningún trigger de
-# pull_request ni pull_request_target.
+# Único workflow que corre en el runner autoalojado. Dispara SOLO por push a
+# main, nunca por pull_request: es lo que permite tener un runner autoalojado
+# en un repositorio público sin exponerlo a código de un fork. No agregar aquí
+# ningún trigger de pull_request ni pull_request_target.
 on:
   push:
     branches:

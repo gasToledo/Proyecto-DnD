@@ -44,10 +44,10 @@ enteres a mitad de un combate.
 
 ### Llevar la ficha en la mesa
 
-La ficha se divide en Personaje, Combate, Inventario y Notas. Desde Combate
-aplicás daño y curación, sumás puntos de golpe temporales, tirás salvaciones
-de muerte, marcás condiciones y concentración, gastás espacios de conjuro y
-recursos de clase, y tomás descansos cortos o largos.
+La ficha se divide en Personaje, Combate, Inventario, Campaña y Notas. Desde
+Combate aplicás daño y curación, sumás puntos de golpe temporales, tirás
+salvaciones de muerte, marcás condiciones y concentración, gastás espacios de
+conjuro y recursos de clase, y tomás descansos cortos o largos.
 
 Nada de recalcular. Habilidades y salvaciones aparecen con su modificador y su
 marca de competencia, y cada arma con su ataque, su daño y la maestría que le
@@ -102,6 +102,21 @@ se lo dice. Subir de nivel lo sigue haciendo cada jugador desde su ficha: la
 aplicación no se lo aplica a nadie. La descripción que escribís en un capítulo
 es solo tuya, los jugadores no la ven.
 
+Al cerrar un capítulo también podés declarar qué se lleva la mesa: oro por
+personaje y objetos por nombre. Se los anuncia el aviso y cada jugador lo anota
+en su ficha — igual que con el nivel, la aplicación no le escribe la ficha a
+nadie.
+
+El **Cuaderno de campaña** guarda qué pasó en cada capítulo. Conviven dos clases
+de entrada y se distinguen sin ningún cartel: las notas que escribís vos, que se
+editan y se borran, y los combates ya cerrados, que los anota la aplicación y no
+se corrigen.
+
+El **Bestiario** —fuera de las campañas, porque el catálogo no es de ninguna
+mesa— trae las 367 criaturas del SRD 5.2.1, con su perfil completo: salvaciones,
+habilidades, sentidos, rasgos, acciones adicionales, reacciones y legendarias.
+Es solo de consulta, con buscador y filtro por tipo.
+
 Dentro de una campaña, la pestaña **Combate** lleva el orden de iniciativa de
 tu mesa: sumás a tus jugadores con la iniciativa que tiraron y monstruos del
 bestiario, que tiran la suya sola (cada copia la suya, nunca la misma para
@@ -110,6 +125,17 @@ golpe de los monstruos — los de tus jugadores los ve en vivo, pero se los
 siguen anotando ellos en su propia ficha, para que sigan atentos a la mesa.
 El jugador al que le toca recibe un aviso discreto en su ficha un turno antes,
 sin enterarse de nada más: ni el orden, ni contra qué está peleando.
+
+### La campaña, del lado del jugador
+
+La pestaña **Campaña** de la ficha es la vuelta del vínculo. Ahí el jugador ve
+en qué mesa está y quiénes más juegan, las batallas que se pelearon —agrupadas
+por capítulo, con cuántas rondas duraron y cuántos enemigos cayeron— y los
+capítulos ya cerrados con lo que repartió cada uno.
+
+Lo que no ve: el capítulo en marcha, ni la descripción que el DM escribió en
+ninguno. De lo que están jugando ahora se entera en la mesa, que es donde
+corresponde.
 
 ### Respaldos y traspaso
 
@@ -138,10 +164,9 @@ Cada personaje usa una sola clase por ahora. Multiclase es lo próximo grande,
 y la arquitectura dirigida por efectos ya está pensada para soportarla sin
 rehacer la ficha.
 
-El Modo DM sigue creciendo: hoy son campañas, las fichas de los jugadores
-vinculadas, los capítulos y el seguidor de combate. Falta el cuaderno de
-campaña, y que un capítulo pueda repartir oro y objetos además de avisar que
-toca subir de nivel.
+Del Modo DM queda una sola pieza del diseño original sin construir: las
+plantillas de campaña, para arrancar una mesa nueva con los capítulos y la
+premisa de otra ya armada.
 
 Después de eso: la foto de perfil de la cuenta en el panel lateral (hoy se
 guarda pero no se dibuja) y poder marcar varios favoritos en vez de uno.

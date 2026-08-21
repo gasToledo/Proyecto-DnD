@@ -1,11 +1,10 @@
 name: CI
 
-# Corre en cada push y cada pull request, sin filtro de ruta (ver
-# openspec/changes/add-ci-cd-pipeline/design.md, D4): la pregunta que
+# Corre en cada push y cada pull request, sin filtro de ruta: la pregunta que
 # responde es "¿rompí algo?", no "¿esto necesita llegar a producción?".
 # Siempre en runners alojados por GitHub, nunca en el runner autoalojado de
-# despliegue (ver design.md, D2) — este workflow reacciona a pull_request,
-# que puede venir de un fork.
+# despliegue — este workflow reacciona a pull_request, que puede venir de un
+# fork.
 on:
   push:
   pull_request:

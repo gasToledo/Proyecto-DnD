@@ -475,6 +475,17 @@ class Creature {
   final String ac;
   final String hp;
 
+  /// Los dados de golpe del perfil, tal como los imprime el libro:
+  /// `"16d12 + 96"`, `"2d6"`, `"3d6 - 3"`. Null en los perfiles que no los
+  /// declaran — las invocaciones, cuyos PG salen de una fórmula por nivel de
+  /// conjuro y no de una tirada.
+  ///
+  /// Existe **solo para poder tirarlos**: [hp] sigue siendo el promedio que
+  /// manda el libro y es lo que se usa por defecto. Un DM que suma seis
+  /// goblins puede pedir que cada uno tire los suyos, que es lo que hace que
+  /// los minions no salgan todos idénticos.
+  final String? hitDice;
+
   final String speed;
   final Map<Ability, int> abilityScores;
 
@@ -529,6 +540,7 @@ class Creature {
     this.size,
     required this.ac,
     required this.hp,
+    this.hitDice,
     this.speed = '',
     this.abilityScores = const {},
     this.savingThrows = const {},
@@ -598,6 +610,7 @@ class Creature {
         if (size != null) 'size': size!.toJson(),
         'ac': ac,
         'hp': hp,
+        if (hitDice != null) 'hitDice': hitDice,
         'speed': speed,
         'abilityScores': {
           for (final e in abilityScores.entries)
@@ -632,6 +645,7 @@ class Creature {
         size: CreatureSize.fromJson(j['size'] as String?),
         ac: j['ac'] as String,
         hp: j['hp'] as String,
+        hitDice: j['hitDice'] as String?,
         speed: j['speed'] as String? ?? '',
         abilityScores: {
           for (final e in (j['abilityScores'] as Map? ?? const {}).entries)

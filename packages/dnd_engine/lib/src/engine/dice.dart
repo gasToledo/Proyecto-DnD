@@ -63,3 +63,61 @@ int pointBuySpent(Iterable<int> scores) =>
 /// PG promedio/fijo de un dado de golpe al subir de nivel (redondeo hacia
 /// arriba de la media): d6→4, d8→5, d10→6, d12→7.
 int averageHitDie(int sides) => (sides ~/ 2) + 1;
+
+/// Una tirada escrita como la imprime el libro: `"16d12 + 96"`, `"2d6"`,
+/// `"3d6 - 3"`.
+///
+/// Existe para los dados de golpe de las criaturas (`Creature.hitDice`), que es
+/// hoy el único lugar del proyecto donde hace falta tirar una fórmula que viene
+/// como texto. **No es un evaluador de expresiones**: cubre exactamente las tres
+/// formas que imprime el SRD y nada más. Cualquier otra cosa devuelve `null` en
+/// [tryParse], que es lo que corresponde — inventar un resultado para algo que
+/// no se entendió sería peor que no ofrecer la tirada.
+class DiceFormula {
+  final int count;
+  final int sides;
+
+  /// Lo que se suma o se resta al final. 0 cuando la fórmula no lo trae.
+  final int modifier;
+
+  const DiceFormula({
+    required this.count,
+    required this.sides,
+    this.modifier = 0,
+  });
+
+  static final _pattern = RegExp(r'^(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?$');
+
+  /// La fórmula, o `null` si el texto no es una de las formas conocidas.
+  static DiceFormula? tryParse(String source) {
+    final m = _pattern.firstMatch(source.trim());
+    if (m == null) return null;
+    final magnitude = int.tryParse(m[4] ?? '0') ?? 0;
+    return DiceFormula(
+      count: int.parse(m[1]!),
+      sides: int.parse(m[2]!),
+      modifier: m[3] == '-' ? -magnitude : magnitude,
+    );
+  }
+
+  /// El promedio que el libro imprime al lado de la fórmula, **redondeando
+  /// hacia abajo**: «17d12 + 102» da 212.
+  ///
+  /// Es hacia abajo y no hacia arriba, a diferencia de [averageHitDie], que
+  /// resuelve otra cosa (los PG que gana un personaje al subir de nivel).
+  /// Verificado contra las 330 criaturas del catálogo que declaran dados: el
+  /// promedio derivado coincide con el `hp` impreso en las 330.
+  int get average => (count * (sides + 1) / 2 + modifier).floor();
+
+  /// Tira los dados. El resultado nunca baja de 1: una criatura con «1d4 - 1»
+  /// que saque un 1 tendría 0 PG, o sea que entraría al combate ya caída.
+  int roll(Dice dice) {
+    final total =
+        dice.rollMany(count, sides).fold(modifier, (sum, v) => sum + v);
+    return total < 1 ? 1 : total;
+  }
+
+  @override
+  String toString() =>
+      '${count}d$sides${modifier == 0 ? '' : modifier > 0 ? ' + $modifier' : ' - ${-modifier}'}';
+}

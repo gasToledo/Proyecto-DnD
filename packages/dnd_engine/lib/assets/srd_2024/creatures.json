@@ -29,7 +29,8 @@
         "damage": "1d4+2",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "1d6 + 1"
   },
   {
     "id": "spider",
@@ -71,7 +72,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "baboon",
@@ -106,7 +108,8 @@
         "damage": "1d4-1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d6"
   },
   {
     "id": "owl",
@@ -145,7 +148,8 @@
         "damage": "1",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "vulture",
@@ -183,7 +187,8 @@
         "damage": "1d4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d8 + 1"
   },
   {
     "id": "seahorse",
@@ -219,7 +224,8 @@
         "name": "Carrera burbujeante",
         "description": "Mientras está bajo el agua, el caballito de mar se mueve hasta su velocidad nadando sin provocar ataques de oportunidad."
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "goat",
@@ -254,7 +260,8 @@
         "damage": "1",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "1d8"
   },
   {
     "id": "crab",
@@ -292,7 +299,8 @@
         "damage": "1",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "1d4 + 1"
   },
   {
     "id": "jackal",
@@ -325,7 +333,8 @@
         "damage": "1d4-1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d6"
   },
   {
     "id": "deer",
@@ -363,7 +372,8 @@
         "damage": "1d4",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "1d8"
   },
   {
     "id": "weasel",
@@ -397,7 +407,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "raven",
@@ -435,7 +446,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4"
   },
   {
     "id": "giant-fire-beetle",
@@ -471,7 +483,8 @@
         "damage": "1",
         "damageType": "fire"
       }
-    ]
+    ],
+    "hitDice": "1d6 + 1"
   },
   {
     "id": "scorpion",
@@ -500,7 +513,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "cat",
@@ -542,7 +556,8 @@
         "damage": "1",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "1d4"
   },
   {
     "id": "hawk",
@@ -574,7 +589,8 @@
         "damage": "1",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "hyena",
@@ -612,7 +628,8 @@
         "damage": "1d6",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d8 + 1"
   },
   {
     "id": "lizard",
@@ -647,7 +664,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4"
   },
   {
     "id": "bat",
@@ -676,7 +694,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "piranha",
@@ -711,7 +730,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "octopus",
@@ -759,7 +779,8 @@
         "description": "Detonante: una criatura termina su turno a 5 pies o menos del pulpo mientras está bajo el agua. Respuesta: el pulpo suelta tinta que llena un cubo de 5 pies de lado centrado en él y se mueve hasta su velocidad nadando. El cubo está muy oscuro durante 1 minuto o hasta que una corriente fuerte o un efecto similar disperse la tinta.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "1d6"
   },
   {
     "id": "frog",
@@ -802,7 +823,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "rat",
@@ -840,7 +862,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 - 1"
   },
   {
     "id": "badger",
@@ -873,7 +896,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 + 3"
   },
   {
     "id": "camel",
@@ -905,7 +929,8 @@
         "damage": "1d4+2",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "2d10 + 6"
   },
   {
     "id": "giant-crab",
@@ -944,7 +969,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 11 para escapar) por una de las dos pinzas."
       }
-    ]
+    ],
+    "hitDice": "3d8"
   },
   {
     "id": "giant-weasel",
@@ -978,7 +1004,8 @@
         "damage": "1d4+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8"
   },
   {
     "id": "blood-hawk",
@@ -1016,7 +1043,8 @@
         "damage": "1d4+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d6"
   },
   {
     "id": "mastiff",
@@ -1052,7 +1080,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "1d8 + 1"
   },
   {
     "id": "mule",
@@ -1090,7 +1119,8 @@
         "damage": "1d4+2",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "pony",
@@ -1122,7 +1152,8 @@
         "damage": "1d4+2",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "giant-rat",
@@ -1163,7 +1194,8 @@
         "damage": "1d4+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d6"
   },
   {
     "id": "elk",
@@ -1196,7 +1228,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Grande o más pequeña y el alce recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 3 (1d6) de daño contundente adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "2d10"
   },
   {
     "id": "riding-horse",
@@ -1225,7 +1258,8 @@
         "damage": "1d8+3",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "2d10 + 2"
   },
   {
     "id": "draft-horse",
@@ -1254,7 +1288,8 @@
         "damage": "1d4+4",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "2d10 + 4"
   },
   {
     "id": "giant-centipede",
@@ -1283,7 +1318,8 @@
         "damage": "1d4+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d6 + 2"
   },
   {
     "id": "boar",
@@ -1319,7 +1355,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Mediana o más pequeña y el jabalí recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 3 (1d6) de daño perforante adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "2d8 + 4"
   },
   {
     "id": "giant-lizard",
@@ -1357,7 +1394,8 @@
         "damage": "1d8+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "3d10 + 3"
   },
   {
     "id": "wolf",
@@ -1397,7 +1435,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "giant-bat",
@@ -1426,7 +1465,8 @@
         "damage": "1d6+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "4d10"
   },
   {
     "id": "panther",
@@ -1464,7 +1504,8 @@
         "description": "La pantera realiza las acciones de destrabarse o esconderse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "3d8"
   },
   {
     "id": "pteranodon",
@@ -1502,7 +1543,8 @@
         "damage": "1d8+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "3d8"
   },
   {
     "id": "giant-frog",
@@ -1550,7 +1592,8 @@
         "name": "Engullir",
         "description": "La rana engulle a un objetivo Pequeño o de menor tamaño al que esté agarrando. Mientras esté engullido, el objetivo no estará agarrado, sino que tendrá los estados de apresado y cegado, y tendrá cobertura completa contra los ataques y otros efectos fuera de la rana. Mientras esté engullendo al objetivo, la rana no podrá usar su mordisco y, si muere, el objetivo engullido dejará de estar apresado y podrá gastar 5 pies de movimiento para escapar del cadáver, del que saldrá con el estado de derribado. Al final del siguiente turno de la rana, el objetivo engullido recibirá 5 (2d4) de daño de ácido. Si ese daño no lo mata, la rana lo regurgitará y el objetivo saldrá de ella con el estado de derribado."
       }
-    ]
+    ],
+    "hitDice": "4d8"
   },
   {
     "id": "constrictor-snake",
@@ -1587,7 +1630,8 @@
         "name": "Constreñir",
         "description": "Tirada de salvación de Fuerza: CD 12, una criatura Mediana o más pequeña que la serpiente pueda ver a 5 pies o menos. Fallo: 7 (3d4) de daño contundente y el objetivo tendrá el estado de agarrado (CD 12 para escapar)."
       }
-    ]
+    ],
+    "hitDice": "2d10 + 2"
   },
   {
     "id": "giant-poisonous-snake",
@@ -1619,7 +1663,8 @@
         "damage": "1d4+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "giant-tarantula",
@@ -1658,7 +1703,8 @@
         "damage": "1d4+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "giant-badger",
@@ -1691,7 +1737,8 @@
         "damage": "2d4+1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 6"
   },
   {
     "id": "giant-wasp",
@@ -1726,7 +1773,8 @@
         "damage": "1d6+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "5d8"
   },
   {
     "id": "giant-seahorse",
@@ -1766,7 +1814,8 @@
         "description": "Mientras está bajo el agua, el caballito de mar se mueve hasta la mitad de su velocidad nadando sin provocar ataques de oportunidad.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "3d10"
   },
   {
     "id": "warhorse",
@@ -1799,7 +1848,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Grande o más pequeña y el caballo recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 5 (2d4) de daño contundente adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "3d10 + 3"
   },
   {
     "id": "giant-goat",
@@ -1835,7 +1885,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Grande o más pequeña y la cabra recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 5 (2d4) de daño contundente adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "3d10 + 3"
   },
   {
     "id": "crocodile",
@@ -1877,7 +1928,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 12 para escapar). Mientras esté agarrada, tendrá el estado de apresada."
       }
-    ]
+    ],
+    "hitDice": "2d10 + 2"
   },
   {
     "id": "black-bear",
@@ -1913,7 +1965,8 @@
         "damage": "1d6+2",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "3d8 + 6"
   },
   {
     "id": "ape",
@@ -1957,7 +2010,8 @@
         "damage": "2d6+3",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "3d8 + 6"
   },
   {
     "id": "reef-shark",
@@ -1999,7 +2053,8 @@
         "damage": "2d4+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "4d8 + 4"
   },
   {
     "id": "giant-spider",
@@ -2046,7 +2101,8 @@
         "name": "Telaraña (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 13, una criatura que la araña pueda ver a 60 pies o menos. Fallo: el objetivo tendrá el estado de apresado hasta que se destruya la telaraña (CA 10, 5 pg, vulnerabilidad a daño de fuego e inmunidad a daño psíquico y de veneno)."
       }
-    ]
+    ],
+    "hitDice": "4d10 + 4"
   },
   {
     "id": "giant-hyena",
@@ -2083,7 +2139,8 @@
         "description": "Inmediatamente después de hacer daño a una criatura que ya estuviera maltrecha, la hiena se podrá mover hasta la mitad de su velocidad y realizará un ataque de mordisco.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "6d10 + 12"
   },
   {
     "id": "lion",
@@ -2134,7 +2191,8 @@
         "name": "Rugido",
         "description": "Tirada de salvación de Sabiduría: CD 11, una criatura a 15 pies o menos. Fallo: el objetivo tendrá el estado de asustado hasta el principio del siguiente turno del león."
       }
-    ]
+    ],
+    "hitDice": "4d10"
   },
   {
     "id": "dire-wolf",
@@ -2174,7 +2232,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "3d10 + 6"
   },
   {
     "id": "brown-bear",
@@ -2218,7 +2277,8 @@
         "damage": "1d8+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "3d10 + 6"
   },
   {
     "id": "giant-octopus",
@@ -2263,7 +2323,8 @@
         "description": "Detonante: el pulpo recibe daño mientras está bajo el agua. Respuesta: el pulpo suelta tinta que llena un cubo de 10 pies de lado centrado en él y se mueve hasta su velocidad nadando. El cubo está muy oscuro durante 1 minuto o hasta que una corriente fuerte o un efecto similar disperse la tinta.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "7d10 + 7"
   },
   {
     "id": "giant-toad",
@@ -2307,7 +2368,8 @@
         "name": "Engullir",
         "description": "El sapo engulle a un objetivo Mediano o más pequeño al que esté agarrando. Mientras esté engullido, el objetivo no estará agarrado, sino que tendrá los estados de apresado y cegado, y tendrá cobertura completa contra los ataques y otros efectos fuera del sapo. Además, el objetivo recibirá 10 (3d6) de daño de ácido al final de cada turno del sapo. El sapo solo puede engullir a un objetivo a la vez y no podrá usar su mordisco mientras tenga a un objetivo engullido. Si el sapo muere, una criatura engullida dejará de estar apresada por él y podrá gastar 5 pies de movimiento para escapar del cadáver, del que saldrá con el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "6d10 + 6"
   },
   {
     "id": "tiger",
@@ -2346,7 +2408,8 @@
         "description": "El tigre realiza las acciones de destrabarse o esconderse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "4d10 + 8"
   },
   {
     "id": "imp",
@@ -2395,7 +2458,8 @@
         "name": "Invisibilidad",
         "description": "El diablillo lanza invisibilidad sobre sí mismo sin necesidad de componentes y utiliza el  Carisma como aptitud mágica."
       }
-    ]
+    ],
+    "hitDice": "6d4 + 6"
   },
   {
     "id": "sprite",
@@ -2443,7 +2507,8 @@
         "name": "Visión del corazón",
         "description": "Tirada de salvación de Carisma: CD 10, una criatura que el duende pueda ver a 5 pies o menos (los celestiales, infernales y muertos vivientes fallan automáticamente la tirada). Fallo: el duende descubre las emociones y el alineamiento del objetivo."
       }
-    ]
+    ],
+    "hitDice": "4d4"
   },
   {
     "id": "sphinx-of-wonder",
@@ -2489,7 +2554,8 @@
         "description": "Detonante: la esfinge u otra criatura a 30 pies o menos hace una prueba de  característica o una tirada de salvación. Respuesta: la esfinge suma 2 a la tirada.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "7d4 + 7"
   },
   {
     "id": "skeleton",
@@ -2526,7 +2592,8 @@
         "damage": "1d6+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 4"
   },
   {
     "id": "pseudodragon",
@@ -2573,7 +2640,8 @@
         "name": "Aguijón",
         "description": "Tirada de salvación de Constitución: CD 12, una criatura que el pseudodragón pueda ver a 5 pies o menos. Fallo: 5 (2d4) de daño de veneno y el objetivo tendrá el estado de envenenado durante 1 hora. Fallo por 5 o más: mientras esté envenenado, el objetivo también tendrá el estado de inconsciente, que terminará antes si recibe daño o una criatura a 5 pies o menos de él utiliza una acción para despertarlo."
       }
-    ]
+    ],
+    "hitDice": "3d4 + 3"
   },
   {
     "id": "quasit",
@@ -2628,7 +2696,8 @@
         "name": "Invisibilidad",
         "description": "El quasit lanza invisibilidad sobre sí mismo sin necesidad de componentes y utiliza el  Carisma como aptitud mágica."
       }
-    ]
+    ],
+    "hitDice": "10d4"
   },
   {
     "id": "poisonous-snake",
@@ -2657,7 +2726,8 @@
         "damage": "1d4+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d4"
   },
   {
     "id": "otherworldly-steed",
@@ -4182,7 +4252,8 @@
         "description": "El goblin realiza las acciones de destrabarse o esconderse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "3d6"
   },
   {
     "id": "kobold-warrior",
@@ -4221,7 +4292,8 @@
         "damage": "1d4+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "3d6 - 3"
   },
   {
     "id": "zombie",
@@ -4260,7 +4332,8 @@
         "damage": "1d8+1",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 6"
   },
   {
     "id": "bandit",
@@ -4296,7 +4369,8 @@
         "damage": "1d8+1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "cultist",
@@ -4332,7 +4406,8 @@
         "damage": "1d4+1",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "2d8"
   },
   {
     "id": "ogre",
@@ -4368,7 +4443,8 @@
         "damage": "2d6+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "8d10 + 24"
   },
   {
     "id": "hobgoblin-warrior",
@@ -4411,7 +4487,8 @@
         "damage": "1d8+1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "bugbear-warrior",
@@ -4458,7 +4535,8 @@
         "damage": "3d4+2",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "6d8 + 6"
   },
   {
     "id": "ghoul",
@@ -4500,7 +4578,8 @@
         "damage": "1d6+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "5d8"
   },
   {
     "id": "stirge",
@@ -4529,7 +4608,8 @@
         "damage": "1d6+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d4"
   },
   {
     "id": "aboleth",
@@ -4611,7 +4691,8 @@
         "description": "El aboleth realiza un ataque con un tentáculo.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "20d10 + 40"
   },
   {
     "id": "invisible-stalker",
@@ -4664,7 +4745,8 @@
         "name": "Vórtice",
         "description": "Tirada de salvación de Constitución: CD 14, una criatura Grande o más pequeña en el espacio del acechador. Fallo: 7 (1d8 + 3) de daño de trueno y el objetivo tendrá el estado de agarrado (CD 13 para escapar). Hasta que el agarre termine, el objetivo no podrá lanzar conjuros con un componente verbal y recibirá 7 (2d6) de daño de trueno al principio de cada turno del acechador."
       }
-    ]
+    ],
+    "hitDice": "13d10 + 26"
   },
   {
     "id": "bugbear-stalker",
@@ -4723,7 +4805,8 @@
         "description": "Tirada de salvación de Destreza: CD 13, una criatura Mediana o más pequeña que el osgo pueda ver a 10 pies o menos. Fallo: el objetivo tendrá el estado de agarrado (CD 13 para escapar).",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "10d8 + 20"
   },
   {
     "id": "giant-elk",
@@ -4762,7 +4845,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Enorme o más pequeña y el alce recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 5 (2d4) de daño contundente adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "5d12 + 10"
   },
   {
     "id": "animated-rug-of-smothering",
@@ -4794,7 +4878,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Mediana o más pequeña, la alfombra puede imponerle el estado de agarrada (CD 13 para escapar) en vez de causarle daño. Hasta que el agarre termine, el objetivo tendrá los estados de apresado y cegado, se asfixiará y recibirá 10 (2d6 + 3) de daño contundente al principio de cada uno de sus turnos. La alfombra solo puede ahogar a una criatura a la vez. Mientras esté agarrando al objetivo, la alfombra no podrá realizar esta acción y reducirá a la mitad el daño que reciba (redondeado hacia abajo), y el objetivo recibirá la misma cantidad de daño."
       }
-    ]
+    ],
+    "hitDice": "5d10"
   },
   {
     "id": "allosaurus",
@@ -4834,7 +4919,8 @@
         "damage": "2d10+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "6d10 + 18"
   },
   {
     "id": "ankheg",
@@ -4874,7 +4960,8 @@
         "name": "Chorro de ácido (recarga 6)",
         "description": "Tirada de salvación de Destreza: CD 12, todas las criaturas en una línea de 30 pies de largo y 5 pies de ancho. Fallo: 14 (4d6) de daño de ácido. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "6d10 + 12"
   },
   {
     "id": "ankylosaurus",
@@ -4911,7 +4998,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Enorme o más pequeña, tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "8d12 + 16"
   },
   {
     "id": "wraith",
@@ -4956,7 +5044,8 @@
         "name": "Crear espectro",
         "description": "La aparición hace objetivo a un cadáver de humanoide que esté a 10 pies o menos de ella y haya muerto hace 1 minuto como máximo. El espíritu del objetivo se alza como un espectro en el espacio de su cadáver o en el espacio sin ocupar más cercano. El espectro estará bajo el control de la aparición. Esta última no puede tener más de siete espectros bajo su control a la vez."
       }
-    ]
+    ],
+    "hitDice": "9d8 + 27"
   },
   {
     "id": "phase-spider",
@@ -5012,7 +5101,8 @@
         "description": "La araña se teletransporta del Plano Material al Plano Etéreo o viceversa.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "7d10 + 7"
   },
   {
     "id": "awakened-shrub",
@@ -5042,7 +5132,8 @@
         "damage": "1",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "3d6"
   },
   {
     "id": "archelon",
@@ -5084,7 +5175,8 @@
         "damage": "3d6+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "12d12 + 12"
   },
   {
     "id": "archmage",
@@ -5148,7 +5240,8 @@
         "description": "El archimago lanza contrahechizo o escudo en respuesta al desencadenante de esos conjuros, usando la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "31d8 + 31"
   },
   {
     "id": "animated-armor",
@@ -5183,7 +5276,8 @@
         "damage": "1d6+2",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "6d8 + 6"
   },
   {
     "id": "harpy",
@@ -5216,7 +5310,8 @@
         "name": "Canción tentadora",
         "description": "La arpía canta una melodía mágica, que dura hasta que la arpía deja de concentrarse en ella. Tirada de salvación de Sabiduría: CD 11, todos los humanoides y gigantes en una emanación de 300 pies que se origina en la arpía cuando empieza la canción. Fallo: el objetivo tendrá el estado de hechizado hasta que termine la canción y repetirá la tirada de salvación al final de cada uno de sus turnos. Mientras esté hechizado, tendrá el estado de incapacitado e ignorará la canción tentadora de otras arpías. Si el objetivo se encuentra a más de 5 pies de la arpía, deberá moverse durante su turno hacia ella por el camino más corto para intentar situarse a 5 pies o menos de ella. No evitará provocar ataques de oportunidad; sin embargo, antes de moverse a un terreno que le causaría daño (como lava o un pozo) y cada vez que sufra daño de una fuente distinta a la arpía, repetirá la tirada de salvación. Éxito: el objetivo será inmune a la canción tentadora de esta arpía durante 24 horas."
       }
-    ]
+    ],
+    "hitDice": "7d8 + 7"
   },
   {
     "id": "assassin",
@@ -5278,7 +5373,8 @@
         "description": "El asesino realiza las acciones de correr, destrabarse o esconderse. Azer",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "15d8 + 30"
   },
   {
     "id": "balor",
@@ -5351,7 +5447,8 @@
         "description": "El balor se teletransporta a sí mismo o a un demonio voluntario que esté a 10 pies o menos de él hasta 60 pies a un espacio sin ocupar que el balor pueda ver. Bandidos",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "23d12 + 138"
   },
   {
     "id": "basilisk",
@@ -5385,7 +5482,8 @@
         "description": "Tirada de salvación de Constitución: CD 12, todas las criaturas en un cono de 30 pies. Si el basilisco ve su reflejo en alguna parte del cono, deberá hacer esta tirada. Primer fallo: el objetivo tendrá el estado de apresado. Si al final de su siguiente turno sigue apresado, repetirá la tirada de salvación y se librará del efecto si la supera. Segundo fallo: el objetivo tendrá el estado de petrificado en vez del de apresado.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 16"
   },
   {
     "id": "scout",
@@ -5431,7 +5529,8 @@
         "damage": "1d8+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "3d8 + 3"
   },
   {
     "id": "behir",
@@ -5482,7 +5581,8 @@
         "description": "Tirada de salvación de Destreza: CD 18, una criatura Grande o más pequeña agarrada por el behir (el behir solo puede tener una criatura engullida a la vez). Fallo: el behir engulle al objetivo, que ya no está agarrado. La criatura engullida tendrá los estados de apresada y cegada, tendrá cobertura completa contra los ataques y otros efectos fuera del behir y recibirá 21 (6d6) de daño de ácido al principio de cada turno del behir. Si el behir sufre 30 de daño o más en un solo turno por parte de la criatura engullida, deberá superar una tirada de salvación de Constitución con CD 14 al final de ese turno o regurgitará a la criatura engullida, que caerá en un espacio a 10 pies o menos del behir y tendrá el estado de derribada. Si el behir muere, la criatura engullida dejará de estar apresada y podrá gastar 15 pies de movimiento para escapar del cadáver, del que saldrá derribada.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "16d12 + 64"
   },
   {
     "id": "berserker",
@@ -5517,7 +5617,8 @@
         "damage": "1d12+3",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "9d8 + 27"
   },
   {
     "id": "gibbering-mouther",
@@ -5562,7 +5663,8 @@
         "name": "Baba cegadora (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 10, todas las criaturas en una esfera de 10 pies de radio centrada en un punto a 30 pies o menos. Fallo: 7 (2d6) de daño radiante y el objetivo tendrá el estado de cegado hasta el final del siguiente turno del bocón."
       }
-    ]
+    ],
+    "hitDice": "7d8 + 21"
   },
   {
     "id": "shambling-mound",
@@ -5610,7 +5712,8 @@
         "name": "Absorber",
         "description": "Tirada de salvación de Fuerza: CD 15, una criatura Mediana o más pequeña a 5 pies o menos. Fallo: el objetivo será arrastrado al espacio de la broza movediza y tendrá el estado de agarrado (CD 14 para escapar). Hasta que el agarre termine, el objetivo tendrá los estados de apresado y cegado y recibirá 10 (3d6) de daño de relámpago al principio de cada uno de sus turnos. Cuando la broza movediza se mueva, el objetivo agarrado se moverá con ella sin costarle movimiento adicional. La broza movediza solo puede tener a una criatura agarrada con esta acción al mismo tiempo."
       }
-    ]
+    ],
+    "hitDice": "13d10 + 39"
   },
   {
     "id": "giant-vulture",
@@ -5649,7 +5752,8 @@
         "damage": "2d6+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "3d10 + 9"
   },
   {
     "id": "bulette",
@@ -5694,7 +5798,8 @@
         "description": "El bulette gasta 10 pies de movimiento para saltar hasta 30 pies.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "9d10 + 45"
   },
   {
     "id": "giant-owl",
@@ -5741,7 +5846,8 @@
         "name": "Lanzamiento de conjuros",
         "description": "El búho lanza uno de los siguientes conjuros, que no requiere componentes y utiliza la Sabiduría como aptitud mágica: A voluntad: detectar el bien y el mal, detectar magia 1/día: clarividencia"
       }
-    ]
+    ],
+    "hitDice": "3d10 + 3"
   },
   {
     "id": "knight",
@@ -5791,7 +5897,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta al caballero mientras sostiene un arma. Respuesta: el caballero suma 2 a su CA contra ese ataque, lo que puede hacer que falle. Centauro",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 16"
   },
   {
     "id": "warhorse-skeleton",
@@ -5822,7 +5929,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Grande o más pequeña y el esqueleto recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "3d10 + 6"
   },
   {
     "id": "bandit-captain",
@@ -5876,7 +5984,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta al bandido mientras sostiene un arma. Respuesta: el bandido suma 2 a su CA contra ese ataque, lo que puede hacer que falle.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 16"
   },
   {
     "id": "guard-captain",
@@ -5922,7 +6031,8 @@
         "damageType": "piercing",
         "description": "Guerreros"
       }
-    ]
+    ],
+    "hitDice": "10d8 + 30"
   },
   {
     "id": "hobgoblin-captain",
@@ -5969,7 +6079,8 @@
         "damage": "1d8+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "9d8 + 18"
   },
   {
     "id": "pirate-captain",
@@ -6030,7 +6141,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta al pirata mientras sostiene un arma. Respuesta: el pirata suma 3 a su CA contra ese ataque, lo que puede hacer que falle. Si falla, el pirata realiza un ataque con su estoque contra la criatura a la que reacciona si está dentro del alcance.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "13d8 + 26"
   },
   {
     "id": "azer-sentinel",
@@ -6073,7 +6185,8 @@
         "damage": "1d10+3",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "6d8 + 12"
   },
   {
     "id": "chuul",
@@ -6125,7 +6238,8 @@
         "name": "Tentáculos paralizadores",
         "description": "Tirada de salvación de Constitución: CD 13, una criatura agarrada por el chuul. Fallo: el objetivo tendrá el estado de envenenado y repetirá la tirada de salvación al final de cada uno de sus turnos. Si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente. Mientras esté envenenado, tendrá el estado de paralizado."
       }
-    ]
+    ],
+    "hitDice": "9d10 + 27"
   },
   {
     "id": "gray-ooze",
@@ -6169,7 +6283,8 @@
         "damageType": "acid",
         "description": "La armadura no mágica que lleve el objetivo recibirá un penalizador de -1 a la CA que ofrece. La armadura se destruirá si el penalizador reduce su CA hasta 10. El penalizador se puede eliminar lanzando el conjuro reparar sobre la armadura."
       }
-    ]
+    ],
+    "hitDice": "3d8 + 9"
   },
   {
     "id": "cockatrice",
@@ -6200,7 +6315,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura, sufre el siguiente efecto. Tirada de salvación de Constitución: CD 11. Primer fallo: el objetivo tendrá el estado de apresado. Si al final de su siguiente turno sigue apresado, repetirá la tirada de salvación y se librará del efecto si la supera. Segundo fallo: el objetivo tendrá el estado de petrificado en vez del de apresado durante 24 horas."
       }
-    ]
+    ],
+    "hitDice": "5d6 + 5"
   },
   {
     "id": "giant-crocodile",
@@ -6251,7 +6367,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 15 para escapar). Mientras esté agarrada, tendrá el estado de apresada y no podrá ser objetivo de la cola del cocodrilo."
       }
-    ]
+    ],
+    "hitDice": "9d12 + 27"
   },
   {
     "id": "couatl",
@@ -6304,7 +6421,8 @@
         "description": "El couatl lanza bendición, restablecimiento menor o santuario, que no requieren componentes y utilizan la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 24"
   },
   {
     "id": "blue-dragon-wyrmling",
@@ -6351,7 +6469,8 @@
         "name": "Aliento de relámpago (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 12, todas las criaturas en una línea de 30 pies de largo y 5 pies de ancho. Fallo: 21 (6d6) de daño de relámpago. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "10d8 + 20"
   },
   {
     "id": "white-dragon-wyrmling",
@@ -6404,7 +6523,8 @@
         "name": "Aliento gélido (recarga 5–6)",
         "description": "Tirada de salvación de Constitución: CD 12, todas las criaturas en un cono de 15 pies. Fallo: 22 (5d8) de daño de frío. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "5d8 + 10"
   },
   {
     "id": "bronze-dragon-wyrmling",
@@ -6461,7 +6581,8 @@
         "name": "Aliento repulsor",
         "description": "Tirada de salvación de Fuerza: CD 12, todas las criaturas en un cono de 30 pies. Fallo: el objetivo es empujado hasta 30 pies respecto al dragón en línea recta y tiene el estado de derribado."
       }
-    ]
+    ],
+    "hitDice": "6d8 + 12"
   },
   {
     "id": "copper-dragon-wyrmling",
@@ -6508,7 +6629,8 @@
         "name": "Aliento ralentizador",
         "description": "Tirada de salvación de Constitución: CD 11, todas las criaturas en un cono de 15 pies. Fallo: el objetivo no podrá llevar a cabo reacciones, su velocidad se reducirá a la mitad y podrá realizar una acción o una acción adicional en su turno, pero no ambas. Este efecto durará hasta el final de su siguiente turno."
       }
-    ]
+    ],
+    "hitDice": "4d8 + 4"
   },
   {
     "id": "gold-dragon-wyrmling",
@@ -6565,7 +6687,8 @@
         "name": "Aliento debilitador",
         "description": "Tirada de salvación de Fuerza: CD 13, todas las criaturas que no estén afectadas ya por este aliento en un cono de 15 pies. Fallo: el objetivo tendrá desventaja en las pruebas con d20 basadas en la Fuerza y restará 2 (1d4) a sus tiradas de daño. Repetirá la tirada de salvación al final de cada uno de sus turnos y, si tiene éxito, se librará del efecto. Tras minuto, tendrá éxito automáticamente."
       }
-    ]
+    ],
+    "hitDice": "8d8 + 24"
   },
   {
     "id": "brass-dragon-wyrmling",
@@ -6616,7 +6739,8 @@
         "name": "CD 11, todas las criaturas en un cono de 15 pies",
         "description": "Fallo: el objetivo tendrá el estado de incapacitado hasta el final de su siguiente turno, momento en el que repetirá la tirada de salvación. Segundo fallo: el objetivo tendrá el estado de inconsciente durante 1 minuto. Este efecto acabará si el objetivo sufre daño o si una criatura que se encuentre a 5 pies o menos de él lleva a cabo una acción para despertarlo."
       }
-    ]
+    ],
+    "hitDice": "4d8 + 4"
   },
   {
     "id": "silver-dragon-wyrmling",
@@ -6667,7 +6791,8 @@
         "name": "Aliento paralizante",
         "description": "Tirada de salvación de Constitución: CD 13, todas las criaturas en un cono de 15 pies. Primer fallo: el objetivo tendrá el estado de incapacitado hasta el final de su siguiente turno, momento en el que repetirá la tirada de salvación. Segundo fallo: el objetivo tendrá el estado de paralizado y repetirá la tirada de salvación al final de cada uno de sus turnos. Si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente."
       }
-    ]
+    ],
+    "hitDice": "6d8 + 18"
   },
   {
     "id": "black-dragon-wyrmling",
@@ -6720,7 +6845,8 @@
         "name": "Aliento ácido (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 11, todas las criaturas en una línea de 15 pies de largo y 5 pies de ancho. Fallo: 22 (5d8) de daño de ácido. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "6d8 + 6"
   },
   {
     "id": "red-dragon-wyrmling",
@@ -6767,7 +6893,8 @@
         "name": "Aliento de fuego (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 13, todas las criaturas en un cono de 15 pies. Fallo: 24 (7d6) de daño de fuego. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "10d8 + 30"
   },
   {
     "id": "green-dragon-wyrmling",
@@ -6820,7 +6947,8 @@
         "name": "Aliento venenoso (recarga 5–6)",
         "description": "Tirada de salvación de Constitución: CD 11, todas las criaturas en un cono de 15 pies. Fallo: 21 (6d6) de daño de veneno. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "7d8 + 7"
   },
   {
     "id": "gelatinous-cube",
@@ -6868,7 +6996,8 @@
         "name": "Cubo de cieno)",
         "description": "Tirada de salvación de Destreza: CD 12, todas las criaturas en cuyo espacio entre el cubo por primera vez durante este movimiento. Fallo: 10 (3d6) de daño de ácido y el objetivo será absorbido. Un objetivo absorbido sufrirá asfixia, no podrá lanzar conjuros con un componente verbal, tendrá el estado de apresado y sufrirá 10 (3d6) de daño de ácido al principio de cada turno del cubo. Cuando el cubo se mueva, el objetivo absorbido se moverá con él. Un objetivo absorbido puede intentar escapar utilizando una acción para realizar una prueba de Fuerza (Atletismo) con CD 12. Si la supera, escapará y entrará en el espacio sin ocupar más cercano. Éxito: la mitad del daño y el objetivo se moverá a un espacio sin ocupar a 5 pies del cubo. Si no hay espacios sin ocupar, fallará la tirada de salvación."
       }
-    ]
+    ],
+    "hitDice": "6d10 + 30"
   },
   {
     "id": "deva",
@@ -6929,7 +7058,8 @@
         "description": "El deva lanza curar heridas, levantar maldición o restablecimiento menor usando la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "27d8 + 108"
   },
   {
     "id": "horned-devil",
@@ -6992,7 +7122,8 @@
         "name": "Cola infernal",
         "description": "Tirada de salvación de Destreza: CD 17, una criatura que el diablo pueda ver a 10 pies o menos. Fallo: 10 (1d8 + 6) de daño necrótico y el objetivo recibirá una herida infernal si no tiene una ya. Mientras esté herido, perderá 10 (3d6) puntos de golpe al principio de cada uno de sus turnos. La herida se cerrará tras 1 minuto, después de que el objetivo recupere puntos de golpe por un conjuro o después de que el objetivo o una criatura a 5 pies o menos de él lleve a cabo una acción para cerrar la herida, lo que logrará si supera una prueba de Sabiduría (Medicina) con CD 17."
       }
-    ]
+    ],
+    "hitDice": "19d10 + 95"
   },
   {
     "id": "bearded-devil",
@@ -7045,7 +7176,8 @@
         "damageType": "slashing",
         "description": "Si el objetivo es una criatura y no tiene ya una herida infernal, sufre el siguiente efecto. Tirada de salvación de Constitución: CD 12. Fallo: el objetivo recibe una herida infernal. Mientras esté herido, perderá 5 (1d10) puntos de golpe al principio de cada uno de sus turnos. La herida se cerrará tras 1 minuto, después de que el objetivo recupere puntos de golpe por un conjuro o después de que el objetivo o una criatura a 5 pies o menos de él lleve a cabo una acción para cerrar la herida, lo que logrará si supera una prueba de Sabiduría (Medicina) con CD 12."
       }
-    ]
+    ],
+    "hitDice": "9d8 + 18"
   },
   {
     "id": "pit-fiend",
@@ -7121,7 +7253,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura, deberá hacer la siguiente tirada de salvación. Tirada de salvación de Constitución: CD 21. Fallo: el objetivo tendrá el estado de envenenado. Mientras esté envenenado, no podrá recuperar puntos de golpe y sufrirá 21 (6d6) de daño de veneno al principio de cada uno de sus turnos. Repetirá la tirada de salvación al final de cada uno de sus turnos y, si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente. Lanzamiento de conjuros de fuego infernal (recarga 4–6). El diablo de la sima lanza bola de fuego (versión de nivel 5) dos veces, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21). Puede sustituir una bola de fuego por inmovilizar monstruo (versión de nivel 7) o muro de fuego."
       }
-    ]
+    ],
+    "hitDice": "27d10 + 189"
   },
   {
     "id": "chain-devil",
@@ -7180,7 +7313,8 @@
         "description": "Detonante: una criatura que el diablo pueda ver comienza su turno a 30 pies o menos del diablo y puede ver a este. Respuesta; tirada de salvación de Sabiduría: CD 15, la criatura detonante. Fallo: el objetivo tendrá el estado de asustado hasta el final de su turno. Éxito: el objetivo será inmune a la mirada inquietante de este diablo durante 24 horas.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "10d8 + 40"
   },
   {
     "id": "ice-devil",
@@ -7248,7 +7382,8 @@
         "name": "Muro gélido (recarga 6)",
         "description": "El diablo lanza muro de hielo (versión de nivel 8), que no requiere componentes y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 17)."
       }
-    ]
+    ],
+    "hitDice": "24d10 + 96"
   },
   {
     "id": "barbed-devil",
@@ -7323,7 +7458,8 @@
         "damageType": "fire",
         "description": "Si el objetivo es un objeto inflamable que no lleve o vista nadie, empieza a arder."
       }
-    ]
+    ],
+    "hitDice": "13d8 + 52"
   },
   {
     "id": "bone-devil",
@@ -7385,7 +7521,8 @@
         "damage": "2d8+4",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "17d10 + 68"
   },
   {
     "id": "djinni",
@@ -7453,7 +7590,8 @@
         "name": "Lanzamiento de conjuros",
         "description": "El djinn lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: detectar el bien y el mal, detectar magia 2/día cada uno: crear comida y agua (puede crear vino en lugar de agua), don de lenguas, viajar con el viento 1/día cada uno: creación, desplazamiento entre planos, forma gaseosa, imagen mayor, invisibilidad"
       }
-    ]
+    ],
+    "hitDice": "19d10 + 114"
   },
   {
     "id": "doppelganger",
@@ -7504,7 +7642,8 @@
         "description": "El doppelganger adopta la forma de un humanoide Mediano o Pequeño, o recupera su verdadera forma. Su perfil, salvo por el tamaño, es el mismo en todas las formas. Cualquier equipo que vista o lleve no se transformará. Dragones azules",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 16"
   },
   {
     "id": "adult-blue-dragon",
@@ -7571,7 +7710,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzarse invisibilidad a sí mismo y puede volar hasta la mitad de su velocidad volando. El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "17d12 + 102"
   },
   {
     "id": "ancient-blue-dragon",
@@ -7638,7 +7778,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzarse invisibilidad a sí mismo y puede volar hasta la mitad de su velocidad volando. El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno. Dragones blancos",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "26d20 + 208"
   },
   {
     "id": "young-blue-dragon",
@@ -7685,7 +7826,8 @@
         "name": "Aliento de relámpago (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 16, todas las criaturas en una línea de 60 pies de largo y 5 pies de ancho. Fallo: 55 (10d10) de daño de relámpago. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "16d10 + 64"
   },
   {
     "id": "adult-white-dragon",
@@ -7754,7 +7896,8 @@
         "description": "El dragón lanza terror, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 14). El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "16d12 + 96"
   },
   {
     "id": "ancient-white-dragon",
@@ -7823,7 +7966,8 @@
         "description": "El dragón lanza terror, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 18). El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno. Dragones de bronce",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "18d20 + 144"
   },
   {
     "id": "young-white-dragon",
@@ -7877,7 +8021,8 @@
         "name": "Aliento gélido (recarga 5–6)",
         "description": "Tirada de salvación de Constitución: CD 15, todas las criaturas en un cono de 30 pies. Fallo: 40 (9d8) de daño de frío. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "13d10 + 52"
   },
   {
     "id": "adult-bronze-dragon",
@@ -7955,7 +8100,8 @@
         "description": "Tirada de salvación de Constitución: CD 17, todas las criaturas en una esfera de 20 pies de radio centrada en un punto que el dragón pueda ver a 90 pies o menos. Fallo: 10 (3d6) de daño de trueno y el objetivo tendrá el estado de ensordecido hasta el final de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "17d12 + 102"
   },
   {
     "id": "ancient-bronze-dragon",
@@ -8037,7 +8183,8 @@
         "description": "Tirada de salvación de Constitución: CD 22, todas las criaturas en una esfera de 20 pies de radio centrada en un punto que el dragón pueda ver a 120 pies o menos. Fallo: 13 (3d8) de daño de trueno y el objetivo tendrá el estado de ensordecido hasta el final de su siguiente turno. Dragones de cobre",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "24d20 + 192"
   },
   {
     "id": "young-bronze-dragon",
@@ -8095,7 +8242,8 @@
         "name": "Aliento repulsor",
         "description": "Tirada de salvación de Fuerza: CD 15, todas las criaturas en un cono de 30 pies. Fallo: el objetivo es empujado hasta 40 pies respecto al dragón en línea recta y tiene el estado de derribado."
       }
-    ]
+    ],
+    "hitDice": "15d10 + 60"
   },
   {
     "id": "adult-copper-dragon",
@@ -8167,7 +8315,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar clavo mental (versión de nivel 4). El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "16d12 + 80"
   },
   {
     "id": "ancient-copper-dragon",
@@ -8239,7 +8388,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar clavo mental (versión de nivel 5). El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno. Dragones de oro",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "21d20 + 147"
   },
   {
     "id": "young-copper-dragon",
@@ -8291,7 +8441,8 @@
         "name": "Aliento ralentizador",
         "description": "Tirada de salvación de Constitución: CD 14, todas las criaturas en un cono de 30 pies. Fallo: el objetivo no podrá llevar a cabo reacciones, su velocidad se reducirá a la mitad y podrá realizar una acción o una acción adicional en su turno, pero no ambas. Este efecto durará hasta el final de su siguiente turno."
       }
-    ]
+    ],
+    "hitDice": "14d10 + 42"
   },
   {
     "id": "adult-gold-dragon",
@@ -8370,7 +8521,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar saeta guía (versión de nivel 2).",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "18d12 + 126"
   },
   {
     "id": "ancient-gold-dragon",
@@ -8449,7 +8601,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar saeta guía (versión de nivel 4). Dragones de oropel",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "28d20 + 252"
   },
   {
     "id": "young-gold-dragon",
@@ -8508,7 +8661,8 @@
         "name": "Aliento debilitador",
         "description": "Tirada de salvación de Fuerza: CD 17, todas las criaturas que no estén afectadas ya por este aliento en un cono de 30 pies. Fallo: el objetivo tendrá desventaja en las pruebas con d20 basadas en la Fuerza y restará 3 (1d6) a sus tiradas de daño. Repetirá la tirada de salvación al final de cada uno de sus turnos y, si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente."
       }
-    ]
+    ],
+    "hitDice": "17d10 + 85"
   },
   {
     "id": "adult-brass-dragon",
@@ -8585,7 +8739,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar rayo abrasador.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "15d12 + 75"
   },
   {
     "id": "ancient-brass-dragon",
@@ -8662,7 +8817,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar rayo abrasador (versión de nivel 3). Dragones de plata",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "19d20 + 133"
   },
   {
     "id": "young-brass-dragon",
@@ -8718,7 +8874,8 @@
         "name": "CD 14, todas las criaturas en un cono de 30 pies",
         "description": "Fallo: el objetivo tendrá el estado de incapacitado hasta el final de su siguiente turno, momento en el que repetirá la tirada de salvación. Segundo fallo: el objetivo tendrá el estado de inconsciente durante 1 minuto. Este efecto acabará si el objetivo sufre daño o si una criatura que se encuentre a 5 pies o menos de él lleva a cabo una acción para despertarlo."
       }
-    ]
+    ],
+    "hitDice": "13d10 + 39"
   },
   {
     "id": "adult-silver-dragon",
@@ -8790,7 +8947,8 @@
         "description": "Tirada de salvación de Destreza: CD 19, todas las criaturas en una línea de 60 pies de largo y 10 pies de ancho. Fallo: 14 (4d6) de daño de frío y el objetivo es empujado hasta 30 pies respecto al dragón en línea recta. Éxito: solo la mitad del daño. Fallo o éxito: el dragón no puede volver a realizar esta  acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "16d12 + 112"
   },
   {
     "id": "ancient-silver-dragon",
@@ -8862,7 +9020,8 @@
         "description": "Tirada de salvación de Destreza: CD 23, todas las criaturas en una línea de 60 pies de largo y 10 pies de ancho. Fallo: 14 (4d6) de daño de frío y el objetivo es empujado hasta 30 pies respecto al dragón en línea recta. Éxito: solo la mitad del daño. Fallo o éxito: el dragón no puede volver a realizar esta  acción hasta el principio de su siguiente turno. Dragones negros",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "24d20 + 216"
   },
   {
     "id": "young-silver-dragon",
@@ -8914,7 +9073,8 @@
         "name": "Aliento paralizante",
         "description": "Tirada de salvación de Constitución: CD 17, todas las criaturas en un cono de 30 pies. Primer fallo: el objetivo tendrá el estado de incapacitado hasta el final de su siguiente turno, momento en el que repetirá la tirada de salvación. Segundo fallo: el objetivo tendrá el estado de paralizado y repetirá la tirada de salvación al final de cada uno de sus turnos. Si tiene éxito, se librará del efecto. Tras 1 minuto, tendrá éxito automáticamente."
       }
-    ]
+    ],
+    "hitDice": "16d10 + 80"
   },
   {
     "id": "adult-black-dragon",
@@ -8987,7 +9147,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar terror. El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "17d12 + 85"
   },
   {
     "id": "ancient-black-dragon",
@@ -9060,7 +9221,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar terror. El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno. Dragones rojos",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "21d20 + 147"
   },
   {
     "id": "young-black-dragon",
@@ -9113,7 +9275,8 @@
         "name": "Aliento ácido (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 14, todas las criaturas en una línea de 30 pies de largo y 5 pies de ancho. Fallo: 49 (14d6) de daño de ácido. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "15d10 + 45"
   },
   {
     "id": "adult-red-dragon",
@@ -9180,7 +9343,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar rayo abrasador. El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "19d12 + 133"
   },
   {
     "id": "ancient-red-dragon",
@@ -9247,7 +9411,8 @@
         "description": "El dragón utiliza su lanzamiento de conjuros para lanzar rayo abrasador (versión de nivel 3). El dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno. Dragones verdes",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "26d20 + 234"
   },
   {
     "id": "young-red-dragon",
@@ -9294,7 +9459,8 @@
         "name": "Aliento de fuego (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 17, todas las criaturas en un cono de 30 pies. Fallo: 56 (16d6) de daño de fuego. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "17d10 + 85"
   },
   {
     "id": "dragon-turtle",
@@ -9352,7 +9518,8 @@
         "name": "Aliento de vapor (recarga 5–6)",
         "description": "Tirada de salvación de Constitución: CD 19, todas las criaturas en un cono de 60 pies. Fallo: 56 (16d6) de daño de fuego. Éxito: la mitad del daño. Fallo o éxito: estar bajo el agua no otorga  resistencia a este daño de fuego."
       }
-    ]
+    ],
+    "hitDice": "23d20 + 115"
   },
   {
     "id": "adult-green-dragon",
@@ -9427,7 +9594,8 @@
         "description": "Tirada de salvación de Constitución: CD 17, todas las criaturas en una esfera de 20 pies de radio centrada en un punto que el dragón pueda ver a 90 pies o menos. Fallo: 7 (2d6) de daño de veneno y el objetivo tendrá un penalizador de -2 a la CA hasta el final de su siguiente turno. Fallo o éxito: el dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "18d12 + 90"
   },
   {
     "id": "ancient-green-dragon",
@@ -9502,7 +9670,8 @@
         "description": "Tirada de salvación de Constitución: CD 21, todas las criaturas en una esfera de 30 pies de radio centrada en un punto que el dragón pueda ver a 90 pies o menos. Fallo: 17 (5d6) de daño de veneno y el objetivo tendrá un penalizador de -2 a la CA hasta el final de su siguiente turno. Fallo o éxito: el dragón no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "23d20 + 161"
   },
   {
     "id": "young-green-dragon",
@@ -9556,7 +9725,8 @@
         "name": "Aliento venenoso (recarga 5–6)",
         "description": "Tirada de salvación de Constitución: CD 14, todas las criaturas en un cono de 30 pies. Fallo: 42 (12d6) de daño de veneno. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "16d10 + 48"
   },
   {
     "id": "drider",
@@ -9619,7 +9789,8 @@
         "description": "La draña lanza fuego feérico, oscuridad o telaraña, que no requieren componentes materiales y utilizan la Sabiduría como aptitud mágica (CD de salvación de conjuros 14).",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "13d10 + 52"
   },
   {
     "id": "dretch",
@@ -9653,7 +9824,8 @@
         "name": "Nube fétida (1/día)",
         "description": "Tirada de salvación de Constitución: CD 11, todas las criaturas en una emanación de 10 pies que se origina en el dretch. Fallo: el objetivo tendrá el estado de envenenado hasta el final de su siguiente turno. Mientras esté envenenada, la criatura podrá realizar una acción o una acción adicional en su turno, pero no ambas, y no podrá llevar a cabo reacciones."
       }
-    ]
+    ],
+    "hitDice": "4d6 + 4"
   },
   {
     "id": "druid",
@@ -9702,7 +9874,8 @@
         "name": "Lanzamiento de conjuros",
         "description": "El druida lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 13): A voluntad: hablar con los animales, saber druídico 2/día cada uno: enmarañar, ola atronadora 1/día cada uno: mensajero animal, rayo de luna, zancada prodigiosa"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 8"
   },
   {
     "id": "dryad",
@@ -9765,7 +9938,8 @@
         "description": "Si se encuentra a 5 pies o menos de un árbol Grande o de mayor tamaño, la dríade se teletransporta a un espacio sin ocupar a 5 pies o menos de un segundo árbol Grande o de mayor tamaño que esté a 60 pies o menos del otro.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "5d8"
   },
   {
     "id": "elephant",
@@ -9804,7 +9978,8 @@
         "description": "Tirada de salvación de Destreza: CD 16, una criatura a 5 pies o menos que tenga el estado de derribada. Fallo: 17 (2d10 + 6) de daño contundente. Éxito: la mitad del daño.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "8d12 + 24"
   },
   {
     "id": "water-elemental",
@@ -9853,7 +10028,8 @@
         "name": "Anegar (recarga 4–6)",
         "description": "Tirada de salvación de Fuerza: CD 15, todas las criaturas en el espacio del elemental. Fallo: 22 (4d8 + 4) de daño contundente. Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 14 para escapar). Hasta que el agarre termine, el objetivo tendrá el estado de apresado, sufrirá asfixia salvo que pueda respirar en el agua y recibirá 9 (2d8) de daño contundente al principio de cada turno del elemental. El elemental puede agarrar a una criatura Grande o hasta a dos criaturas Medianas o más pequeñas al mismo tiempo con la acción de anegar. Como acción, una criatura a 5 pies o menos del elemental puede sacar a una criatura de él si supera una prueba de Fuerza (Atletismo) con CD 14. Éxito: solo la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "12d10 + 48"
   },
   {
     "id": "air-elemental",
@@ -9897,7 +10073,8 @@
         "name": "Torbellino (recarga 4–6)",
         "description": "Tirada de salvación de Fuerza: CD 13, una criatura Mediana o más pequeña en el espacio del elemental. Fallo: 24 (4d10 +2) de daño de trueno y el objetivo es empujado hasta 20 pies respecto al elemental en línea recta y tiene el estado de derribado. Éxito: solo la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "12d10 + 24"
   },
   {
     "id": "fire-elemental",
@@ -9950,7 +10127,8 @@
         "damageType": "fire",
         "description": "Si el objetivo es una criatura o un objeto inflamable, empezará a arder."
       }
-    ]
+    ],
+    "hitDice": "11d10 + 33"
   },
   {
     "id": "earth-elemental",
@@ -10002,7 +10180,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "14d10 + 70"
   },
   {
     "id": "vampire-spawn",
@@ -10080,7 +10259,8 @@
         "description": "El vampiro realiza las acciones de correr o destrabarse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "12d8 + 36"
   },
   {
     "id": "swarm-of-ravens",
@@ -10123,7 +10303,8 @@
         "name": "Cacofonía (recarga 6)",
         "description": "Tirada de salvación de Sabiduría: CD 10, una criatura en el espacio del enjambre. Fallo: el objetivo tendrá el estado de ensordecido hasta el principio del siguiente turno del enjambre. Mientras esté ensordecido, el objetivo también tendrá desventaja en las pruebas de característica y las tiradas de ataque."
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "swarm-of-crawling-claws",
@@ -10159,7 +10340,8 @@
         "damage": "4d8+2",
         "damageType": "necrotic"
       }
-    ]
+    ],
+    "hitDice": "11d8"
   },
   {
     "id": "swarm-of-insects",
@@ -10199,7 +10381,8 @@
         "damage": "2d4+1",
         "damageType": "poison"
       }
-    ]
+    ],
+    "hitDice": "3d8 + 6"
   },
   {
     "id": "swarm-of-bats",
@@ -10235,7 +10418,8 @@
         "damage": "2d4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d10"
   },
   {
     "id": "swarm-of-piranhas",
@@ -10275,7 +10459,8 @@
         "damage": "2d4+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "8d8 - 8"
   },
   {
     "id": "swarm-of-rats",
@@ -10314,7 +10499,8 @@
         "damage": "2d4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "4d8 - 4"
   },
   {
     "id": "swarm-of-venomous-snakes",
@@ -10350,7 +10536,8 @@
         "damage": "1d8+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "8d8"
   },
   {
     "id": "treant",
@@ -10402,7 +10589,8 @@
         "name": "Animar árboles (1/día)",
         "description": "El ent anima mágicamente hasta dos árboles que pueda ver a 60 pies o menos de él. Cada árbol usa el perfil del ent, salvo que sus puntuaciones de Inteligencia y Carisma son de 1, no puede hablar y no tiene esta acción. El árbol juega su turno justo después del ent en el mismo orden de iniciativa y obedece al ent. Un árbol permanece animado durante 1 día o hasta que muera, hasta que muera el ent o hasta que esté a 120 pies o más de distancia de él. Luego, el árbol echa raíces si es posible."
       }
-    ]
+    ],
+    "hitDice": "12d12 + 60"
   },
   {
     "id": "erinyes",
@@ -10466,7 +10654,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta a la erinia mientras sostiene un arma. Respuesta: la erinia suma 4 a su CA contra ese ataque, lo que puede hacer que falle. Esfinges",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "21d8 + 84"
   },
   {
     "id": "giant-scorpion",
@@ -10507,7 +10696,8 @@
         "damageType": "bludgeoning",
         "description": "Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 13 para escapar) por una de las dos pinzas."
       }
-    ]
+    ],
+    "hitDice": "7d10 + 14"
   },
   {
     "id": "sphinx-of-lore",
@@ -10573,7 +10763,8 @@
         "description": "Tirada de salvación de Constitución: CD 16, una criatura que la esfinge pueda ver a 120 pies o menos. Fallo: el objetivo suma 1 nivel de cansancio. Mientras el objetivo tenga al menos 1 nivel de cansancio, parecerá 3d10 años más viejo. Fallo o éxito: la esfinge no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "20d10 + 60"
   },
   {
     "id": "sphinx-of-valor",
@@ -10656,7 +10847,8 @@
         "description": "Tirada de salvación de Constitución: CD 16, una criatura que la esfinge pueda ver a 120 pies o menos. Fallo: el objetivo suma 1 nivel de cansancio. Mientras el objetivo tenga al menos 1 nivel de cansancio, parecerá 3d10 años más viejo. Fallo o éxito: la esfinge no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "19d10 + 95"
   },
   {
     "id": "animated-flying-sword",
@@ -10690,7 +10882,8 @@
         "damage": "1d8+2",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "4d6"
   },
   {
     "id": "specter",
@@ -10731,7 +10924,8 @@
         "damageType": "necrotic",
         "description": "Si el objetivo es una criatura, sus puntos de golpe máximos se reducen en una cantidad igual al daño sufrido."
       }
-    ]
+    ],
+    "hitDice": "5d8"
   },
   {
     "id": "spy",
@@ -10781,7 +10975,8 @@
         "description": "El espía realiza las acciones de correr, destrabarse o esconderse. Esqueletos",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "6d8"
   },
   {
     "id": "ettercap",
@@ -10845,7 +11040,8 @@
         "description": "El ettercap atrae hasta 25 pies en línea recta  hacia él a una criatura a 30 pies o menos de él que esté apresada por su hebra de telaraña.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 8"
   },
   {
     "id": "ettin",
@@ -10890,7 +11086,8 @@
         "damage": "2d8+5",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "10d10 + 30"
   },
   {
     "id": "merfolk-skirmisher",
@@ -10926,7 +11123,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura, su velocidad se reducirá en 10 pies hasta el final de su siguiente turno. Acierto o fallo: la lanza regresa mágicamente a la mano del sirénido inmediatamente después de un ataque a distancia."
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "troll-limb",
@@ -10965,7 +11163,8 @@
         "damage": "2d4+4",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "4d6"
   },
   {
     "id": "ghost",
@@ -11021,7 +11220,8 @@
         "name": "Rostro horripilante",
         "description": "Tirada de salvación de Sabiduría: CD 13, todas las criaturas en un cono de 60 pies que el fantasma pueda ver y no sean muertos vivientes.  Fallo: 10 (2d6 + 3) de daño psíquico y el objetivo tendrá el estado de asustado hasta el principio del siguiente turno del fantasma. Éxito: el objetivo será inmune al rostro horripilante de este fantasma durante 24 horas."
       }
-    ]
+    ],
+    "hitDice": "10d8"
   },
   {
     "id": "cultist-fanatic",
@@ -11067,7 +11267,8 @@
         "description": "El sectario lanza el conjuro arma espiritual usando la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 8"
   },
   {
     "id": "will-o-wisp",
@@ -11121,7 +11322,8 @@
         "description": "Tirada de salvación de Constitución: CD 10, una criatura viva que el fuego fatuo pueda ver a 5 pies o menos y tenga 0 puntos de golpe. Fallo: el objetivo muere y el fuego fatuo recupera 10 (3d6) puntos de golpe.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "11d4"
   },
   {
     "id": "ochre-jelly",
@@ -11166,7 +11368,8 @@
         "description": "Detonante: mientras sea Grande o Mediana y tenga 10 o más puntos de golpe, la gelatina pasa a estar maltrecha o recibe daño cortante o de relámpago. Respuesta: la gelatina se divide en dos nuevas gelatinas ocres. Cada nueva gelatina tiene un tamaño inferior al de la gelatina original y actúa en su orden de iniciativa. Los puntos de golpe de la gelatina original se dividen a partes iguales entre las nuevas gelatinas (redondeados hacia abajo).",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "7d10 + 14"
   },
   {
     "id": "ghast",
@@ -11213,7 +11416,8 @@
         "damage": "1d8+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "8d8"
   },
   {
     "id": "frost-giant",
@@ -11269,7 +11473,8 @@
         "description": "El gigante o una criatura de su elección que pueda verlo u oírlo obtiene 16 (2d10 + 5) puntos de golpe temporales y ventaja en las tiradas de ataque hasta el principio del siguiente turno del gigante.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "13d12 + 65"
   },
   {
     "id": "fire-giant",
@@ -11320,7 +11525,8 @@
         "damage": "3d10+7",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "13d12 + 78"
   },
   {
     "id": "hill-giant",
@@ -11365,7 +11571,8 @@
         "damage": "2d10+5",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "10d12 + 40"
   },
   {
     "id": "cloud-giant",
@@ -11423,7 +11630,8 @@
         "description": "El gigante lanza el conjuro paso brumoso usando la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "16d12 + 96"
   },
   {
     "id": "storm-giant",
@@ -11491,7 +11699,8 @@
         "name": "Tormenta de relámpagos (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 18, todas las criaturas en un cilindro de 10 pies de radio y 40 pies de alto que se origina en un punto que el gigante pueda ver a 500 pies o menos. Fallo: 55 (10d10) de daño de relámpago. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "20d12 + 100"
   },
   {
     "id": "stone-giant",
@@ -11548,7 +11757,8 @@
         "description": "Detonante: una tirada de ataque a distancia acierta al gigante y le hace daño contundente, cortante o perforante. Respuesta: el gigante reduce en 11 (1d10 + 6) el daño que recibe del ataque. Si lo reduce a 0, el gigante puede redirigir una parte de la fuerza del ataque. Tirada de salvación de Destreza: CD 17, una criatura que el gigante pueda ver a 60 pies o menos. Fallo: 11 (1d10 + 6) de daño de fuerza.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "11d12 + 55"
   },
   {
     "id": "glabrezu",
@@ -11612,7 +11822,8 @@
         "name": "Lanzamiento de conjuros",
         "description": "El glabrezu lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, disipar magia, oscuridad 1/día cada uno: confusión, palabra de poder: aturdir, volar"
       }
-    ]
+    ],
+    "hitDice": "18d10 + 90"
   },
   {
     "id": "gladiator",
@@ -11665,7 +11876,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta al gladiador mientras sostiene un arma. Respuesta: el gladiador suma 3 a su CA contra ese ataque, lo que puede hacer que falle. Gnoll",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "15d8 + 45"
   },
   {
     "id": "gorgon",
@@ -11708,7 +11920,8 @@
         "description": "Tirada de salvación de Destreza: CD 16, una criatura a 5 pies o menos que tenga el estado de derribada. Fallo: 16 (2d10 + 5) de daño contundente. Éxito: la mitad del daño.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "12d10 + 48"
   },
   {
     "id": "grick",
@@ -11752,7 +11965,8 @@
         "damageType": "slashing",
         "description": "Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 12 para escapar) por los cuatro tentáculos."
       }
-    ]
+    ],
+    "hitDice": "12d8"
   },
   {
     "id": "griffon",
@@ -11789,7 +12003,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Mediana o más pequeña, tendrá el estado de agarrada (CD 14 para escapar) por ambas garras delanteras del grifo."
       }
-    ]
+    ],
+    "hitDice": "7d10 + 21"
   },
   {
     "id": "grimlock",
@@ -11823,7 +12038,8 @@
         "damage": "1d6+3",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "guard",
@@ -11855,7 +12071,8 @@
         "damage": "1d6+1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "shield-guardian",
@@ -11908,7 +12125,8 @@
         "description": "Detonante: una tirada de ataque acierta al portador del amuleto del guardián mientras está a 5 pies o menos de él. Respuesta: hasta el principio del siguiente turno del guardián, el portador obtiene un bonificador de +5 a la CA, incluido contra el ataque al que reacciona, lo que puede hacer que falle. Guardias",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "15d10 + 60"
   },
   {
     "id": "warrior-infantry",
@@ -11943,7 +12161,8 @@
         "damage": "1d6+1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d8"
   },
   {
     "id": "gnoll-warrior",
@@ -11984,7 +12203,8 @@
         "description": "Inmediatamente después de hacer daño a una criatura que ya esté maltrecha, el gnoll se moverá hasta la mitad de su velocidad y realizará un ataque de desgarro. Goblins",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "6d8"
   },
   {
     "id": "sahuagin-warrior",
@@ -12040,7 +12260,8 @@
         "description": "El sahuagin nada hasta la mitad de su velocidad nadando en línea recta hacia un enemigo que pueda ver.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "4d8 + 4"
   },
   {
     "id": "warrior-veteran",
@@ -12090,7 +12311,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta al guerrero mientras sostiene un arma. Respuesta: el guerrero suma 2 a su CA contra ese ataque, lo que puede hacer que falle.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "10d8 + 20"
   },
   {
     "id": "wyvern",
@@ -12133,7 +12355,8 @@
         "damage": "2d8+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "15d10 + 45"
   },
   {
     "id": "purple-worm",
@@ -12190,7 +12413,8 @@
         "description": "Tirada de salvación de Fuerza: CD 19, una criatura Grande o más pequeña agarrada por el gusano (puede tener hasta tres criaturas engullidas a la vez). Fallo: el objetivo será engullido por el gusano y se pondrá fin al estado de agarrado. Una criatura engullida tendrá los estados de apresada y cegada, tendrá cobertura completa contra los ataques y otros efectos fuera del gusano y recibirá 17 (5d6) de daño de ácido al principio de cada turno del gusano. Si el gusano sufre 30 o más de daño en un solo turno por parte de una criatura que esté dentro de él, deberá superar una tirada de salvación de Constitución con CD 21 al final de ese turno o regurgitará a todas las criaturas engullidas, que caerán en espacios a 5 pies o menos del gusano y tendrán el estado de derribadas. Si el gusano muere, cualquier criatura engullida dejará de tener el estado de apresada y podrá gastar 20 pies de movimiento para escapar del cadáver, del que saldrá con el estado de derribada.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "15d20 + 90"
   },
   {
     "id": "gargoyle",
@@ -12235,7 +12459,8 @@
         "damageType": "slashing",
         "description": "Garra reptante"
       }
-    ]
+    ],
+    "hitDice": "9d8 + 27"
   },
   {
     "id": "clay-golem",
@@ -12293,7 +12518,8 @@
         "description": "El gólem realiza las acciones de correr y destrabarse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "13d10 + 52"
   },
   {
     "id": "flesh-golem",
@@ -12349,7 +12575,8 @@
         "damage": "2d8+4",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "15d8 + 60"
   },
   {
     "id": "iron-golem",
@@ -12409,7 +12636,8 @@
         "name": "Aliento venenoso (recarga 6)",
         "description": "Tirada de salvación de Constitución: CD 18, todas las criaturas en un cono de 60 pies. Fallo: 55 (10d10) de daño de veneno. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "24d10 + 120"
   },
   {
     "id": "stone-golem",
@@ -12466,7 +12694,8 @@
         "description": "El gólem lanza el conjuro ralentizar, que no requiere componentes y utiliza la Constitución como aptitud mágica (CD de salvación de conjuros 17).",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "21d10 + 105"
   },
   {
     "id": "hezrou",
@@ -12525,7 +12754,8 @@
         "description": "El hezrou gasta 10 pies de movimiento para saltar hasta 30 pies.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "15d10 + 75"
   },
   {
     "id": "hydra",
@@ -12577,7 +12807,8 @@
         "damage": "1d10+5",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "16d12 + 80"
   },
   {
     "id": "hippogriff",
@@ -12620,7 +12851,8 @@
         "damageType": "slashing",
         "description": "Hobgoblins"
       }
-    ]
+    ],
+    "hitDice": "4d10 + 4"
   },
   {
     "id": "hippopotamus",
@@ -12665,7 +12897,8 @@
         "damage": "2d10+5",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "11d10 + 22"
   },
   {
     "id": "wereboar",
@@ -12723,7 +12956,8 @@
         "description": "El hombre jabalí adopta la forma de un híbrido de jabalí-humanoide Mediano o de un jabalí Pequeño, o recupera su verdadera forma humanoide. Su perfil, salvo por el tamaño, es el mismo en todas las formas. Cualquier equipo que vista o lleve no se transformará.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "15d8 + 30"
   },
   {
     "id": "werewolf",
@@ -12780,7 +13014,8 @@
         "description": "El hombre lobo adopta la forma de un híbrido de lobo-humanoide Grande o de un lobo Mediano, o recupera su verdadera forma humanoide. Su perfil, salvo por el tamaño, es el mismo en todas las formas. Cualquier equipo que vista o lleve no se transformará.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "11d8 + 22"
   },
   {
     "id": "werebear",
@@ -12831,7 +13066,8 @@
         "description": "El hombre oso adopta la forma de un híbrido de oso-humanoide Grande o de un oso Grande, o recupera su verdadera forma humanoide. Su perfil, salvo por el tamaño, es el mismo en todas las formas. Cualquier equipo que vista o lleve no se transformará.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "18d8 + 54"
   },
   {
     "id": "wererat",
@@ -12888,7 +13124,8 @@
         "description": "El hombre rata adopta la forma de un híbrido de rata-humanoide Mediano o de una rata Pequeña, o recupera su verdadera forma humanoide. Su perfil, salvo por el tamaño, es el mismo en todas las formas. Cualquier equipo que vista o lleve no se transformará.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "11d8 + 11"
   },
   {
     "id": "weretiger",
@@ -12943,7 +13180,8 @@
         "description": "El hombre tigre se mueve hasta su velocidad sin provocar ataques de oportunidad. Al final de este movimiento, puede usar la acción de esconderse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "16d8 + 48"
   },
   {
     "id": "homunculus",
@@ -12983,7 +13221,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "1d4 + 2"
   },
   {
     "id": "shrieker-fungus",
@@ -13011,7 +13250,8 @@
         "description": "Detonante: una criatura o una fuente de luz brillante se acerca a 30 pies o menos del chillón. Respuesta: el chillón emite un grito audible a 300 pies de él durante 1 minuto o hasta que muera.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "3d8"
   },
   {
     "id": "violet-fungus",
@@ -13045,7 +13285,8 @@
         "damage": "1d8",
         "damageType": "necrotic"
       }
-    ]
+    ],
+    "hitDice": "4d8"
   },
   {
     "id": "worg",
@@ -13077,7 +13318,8 @@
         "damage": "1d8+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "4d10 + 4"
   },
   {
     "id": "efreeti",
@@ -13140,7 +13382,8 @@
         "name": "Lanzamiento de conjuros",
         "description": "El ifrit lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, elementalismo 1/día cada uno: desplazamiento entre planos, don de lenguas, forma gaseosa, imagen mayor, invisibilidad, muro de fuego (versión de nivel 7)"
       }
-    ]
+    ],
+    "hitDice": "17d10 + 119"
   },
   {
     "id": "giant-boar",
@@ -13179,7 +13422,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Grande o más pequeña y el jabalí recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 7 (2d6) de daño perforante adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "5d10 + 15"
   },
   {
     "id": "goblin-boss",
@@ -13232,7 +13476,8 @@
         "description": "Detonante: una criatura que el goblin pueda ver hace una tirada de ataque contra él. Respuesta: el goblin elige a un aliado Pequeño o Mediano a 5 pies o menos de él. El goblin y ese aliado intercambian su posición y el aliado se convierte en el objetivo del ataque.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "6d6"
   },
   {
     "id": "tough-boss",
@@ -13284,7 +13529,8 @@
         "damage": "2d10+2",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "11d8 + 33"
   },
   {
     "id": "kraken",
@@ -13368,7 +13614,8 @@
         "description": "Fallo o éxito: el kraken no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "26d20 + 208"
   },
   {
     "id": "roper",
@@ -13421,7 +13668,8 @@
         "name": "Atraer",
         "description": "El lacero arrastra a todas las criaturas que tenga agarradas hasta 30 pies en línea recta hacia él."
       }
-    ]
+    ],
+    "hitDice": "11d10 + 33"
   },
   {
     "id": "lamia",
@@ -13472,7 +13720,8 @@
         "description": "La lamia gasta 10 pies de movimiento para saltar hasta 30 pies.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "13d10 + 26"
   },
   {
     "id": "lich",
@@ -13557,7 +13806,8 @@
         "description": "El liche se teletransporta hasta 60 pies a un espacio sin ocupar que pueda ver y todas las criaturas a 10 pies o menos del espacio que abandonó reciben 11 (2d10) de daño necrótico.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "42d8 + 126"
   },
   {
     "id": "winter-wolf",
@@ -13602,7 +13852,8 @@
         "name": "Aliento gélido (recarga 5–6)",
         "description": "Tirada de salvación de Constitución: CD 12, todas las criaturas en un cono de 15 pies. Fallo: 18 (4d8) de daño de frío. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "10d10 + 20"
   },
   {
     "id": "lemure",
@@ -13638,7 +13889,8 @@
         "damage": "1d4",
         "damageType": "poison"
       }
-    ]
+    ],
+    "hitDice": "2d8"
   },
   {
     "id": "magmin",
@@ -13680,7 +13932,8 @@
         "description": "El magmin se prende fuego o extingue sus llamas. Mientras esté ardiendo, emitirá luz brillante en un radio de 10 pies y luz tenue 10 pies más allá. Magos",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "3d6 + 3"
   },
   {
     "id": "mage",
@@ -13736,7 +13989,8 @@
         "description": "El mago lanza contrahechizo o escudo en respuesta al desencadenante de esos conjuros, usando la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "18d8"
   },
   {
     "id": "mammoth",
@@ -13780,7 +14034,8 @@
         "description": "Tirada de salvación de Destreza: CD 18, una criatura a 5 pies o menos que tenga el estado de derribada. Fallo: 29 (4d10 + 7) de daño contundente. Éxito: la mitad del daño.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "11d12 + 55"
   },
   {
     "id": "cloaker",
@@ -13837,7 +14092,8 @@
         "description": "Tirada de salvación de Sabiduría: CD 13, todas las criaturas en una emanación de 60 pies que se origina en el manto. Fallo: el objetivo tendrá el estado de asustado hasta el final del siguiente turno del manto. Éxito: el objetivo será inmune al gemido de este manto durante las siguientes 24 horas.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "14d10 + 14"
   },
   {
     "id": "darkmantle",
@@ -13874,7 +14130,8 @@
         "name": "Aura de oscuridad (1/día)",
         "description": "Una oscuridad mágica llena una emanación de 15 pies que se origina en el mantoscuro. Este efecto dura mientras el mantoscuro mantenga la concentración en él, hasta 10 minutos. La visión en la oscuridad no puede penetrar en esta zona y ninguna luz puede alumbrarla."
       }
-    ]
+    ],
+    "hitDice": "5d6 + 5"
   },
   {
     "id": "manticore",
@@ -13914,7 +14171,8 @@
         "damage": "1d8+3",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "8d10 + 24"
   },
   {
     "id": "marilith",
@@ -13986,7 +14244,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta a la marilith mientras sostiene un arma. Respuesta: la marilith suma 5 a su CA contra ese ataque, lo que puede hacer que falle.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "21d10 + 105"
   },
   {
     "id": "medusa",
@@ -14047,7 +14306,8 @@
         "description": "Tirada de salvación de Constitución: CD 13, todas las criaturas en un cono de 30 pies. Si la medusa ve su reflejo en alguna parte del cono, deberá hacer esta tirada. Primer fallo: el objetivo tendrá el estado de apresado. Si al final de su siguiente turno sigue apresado, repetirá la tirada de salvación y se librará del efecto si la supera. Segundo fallo: el objetivo tendrá el estado de petrificado en vez del de apresado. Mephits",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "17d8 + 51"
   },
   {
     "id": "ice-mephit",
@@ -14095,7 +14355,8 @@
         "name": "Nube de oscurecimiento (1/día)",
         "description": "El mephit lanza nube de oscurecimiento, que no requiere componentes y utiliza el Carisma como aptitud mágica."
       }
-    ]
+    ],
+    "hitDice": "6d6"
   },
   {
     "id": "magma-mephit",
@@ -14138,7 +14399,8 @@
         "name": "Aliento de fuego (recarga 6)",
         "description": "Tirada de salvación de Destreza: CD 11, todas las criaturas en un cono de 15 pies. Fallo: 7 (2d6) de daño de fuego. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "4d6 + 4"
   },
   {
     "id": "dust-mephit",
@@ -14186,7 +14448,8 @@
         "name": "Dormir (1/día)",
         "description": "El mephit lanza el conjuro dormir, que no requiere componentes y utiliza el Carisma como  aptitud mágica (CD de salvación de conjuros 10)."
       }
-    ]
+    ],
+    "hitDice": "5d6"
   },
   {
     "id": "steam-mephit",
@@ -14233,7 +14496,8 @@
         "name": "Aliento de vapor (recarga 6)",
         "description": "Tirada de salvación de Constitución: CD 10, todas las criaturas en un cono de 15 pies. Fallo: 5 (2d4) de daño de fuego y la velocidad del objetivo se reducirá en 10 pies hasta el final del  siguiente turno del mephit. Éxito: solo la mitad del daño. Fallo o éxito: estar bajo el agua no otorga resistencia a este daño de fuego."
       }
-    ]
+    ],
+    "hitDice": "5d6"
   },
   {
     "id": "merrow",
@@ -14287,7 +14551,8 @@
         "damage": "1d4+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "6d10 + 12"
   },
   {
     "id": "mimic",
@@ -14340,7 +14605,8 @@
         "description": "El mimeto cambia de forma para parecer un objeto Mediano o Pequeño, pero conservando su perfil, o recupera su auténtica forma de amasijo. Cualquier equipo que vista o lleve no se transformará.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "9d8 + 18"
   },
   {
     "id": "minotaur-of-baphomet",
@@ -14381,7 +14647,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Grande o más pequeña y el minotauro recorre al menos 10 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 10 (3d6) de daño perforante adicional y tendrá el estado de derribada. Momias"
       }
-    ]
+    ],
+    "hitDice": "10d10 + 30"
   },
   {
     "id": "minotaur-skeleton",
@@ -14419,7 +14686,8 @@
         "damage": "2d10+4",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "6d10 + 12"
   },
   {
     "id": "mummy",
@@ -14461,7 +14729,8 @@
         "name": "Mirada espantosa",
         "description": "Tirada de salvación de Sabiduría: CD 11, una criatura que la momia pueda ver a 60 pies o menos. Fallo: el objetivo tendrá el estado de asustado hasta el final del siguiente turno de la momia. Éxito: el objetivo será inmune a la mirada espantosa de esta momia durante 24 horas."
       }
-    ]
+    ],
+    "hitDice": "9d8 + 18"
   },
   {
     "id": "rust-monster",
@@ -14513,7 +14782,8 @@
         "description": "Detonante: una tirada de ataque acierta al monstruo corrosivo. Respuesta: el monstruo corrosivo utiliza sus antenas.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "6d8 + 6"
   },
   {
     "id": "spirit-naga",
@@ -14570,7 +14840,8 @@
         "name": "Lanzamiento de conjuros",
         "description": "La naga lanza uno de los  siguientes conjuros, que no requiere componentes  somáticos o materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14): A voluntad: detectar magia, ilusión menor, mano de mago, respirar bajo el agua 2/día cada uno: detectar pensamientos, inmovilizar persona (versión de nivel 3), puerta dimensional,  relámpago (versión de nivel 4)"
       }
-    ]
+    ],
+    "hitDice": "18d10 + 36"
   },
   {
     "id": "guardian-naga",
@@ -14630,7 +14901,8 @@
         "name": "Saliva venenosa",
         "description": "Tirada de salvación de Constitución: CD 16, una criatura que la naga pueda ver a 60 pies o menos. Fallo: 31 (7d8) de daño de veneno y el objetivo tendrá el estado de cegado hasta el principio del siguiente turno de la naga. Éxito: solo la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "16d10 + 48"
   },
   {
     "id": "nalfeshnee",
@@ -14695,7 +14967,8 @@
         "description": "Detonante: otra criatura que el nalfeshnee pueda ver termina su movimiento a 120 pies o menos de él. Respuesta: el nalfeshnee utiliza su teletransporte, pero el espacio de destino debe estar a 10 pies o menos de la criatura detonante.",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "16d10 + 96"
   },
   {
     "id": "noble",
@@ -14734,7 +15007,8 @@
         "description": "Detonante: una tirada de ataque cuerpo a cuerpo acierta al noble mientras sostiene un arma. Respuesta: el noble suma 2 a su CA contra ese ataque, lo que puede hacer que falle. Objetos animados",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "2d8"
   },
   {
     "id": "ogre-zombie",
@@ -14774,7 +15048,8 @@
         "damageType": "bludgeoning",
         "description": "Animales"
       }
-    ]
+    ],
+    "hitDice": "9d10 + 36"
   },
   {
     "id": "oni",
@@ -14845,7 +15120,8 @@
         "description": "El oni lanza invisibilidad sobre sí mismo, que no requiere componentes y utiliza la misma aptitud mágica que para su lanzamiento de conjuros. Osgos",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "14d10 + 42"
   },
   {
     "id": "killer-whale",
@@ -14884,7 +15160,8 @@
         "damage": "5d6+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "12d12 + 12"
   },
   {
     "id": "owlbear",
@@ -14920,7 +15197,8 @@
         "damage": "2d8+5",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "7d10 + 21"
   },
   {
     "id": "polar-bear",
@@ -14958,7 +15236,8 @@
         "damage": "1d8+5",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "5d10 + 15"
   },
   {
     "id": "otyugh",
@@ -15006,7 +15285,8 @@
         "name": "Golpe con tentáculo",
         "description": "Tirada de salvación de Constitución: CD 14, todas las criaturas agarradas por el otyugh. Fallo: 16 (3d8 + 3) de daño contundente y el objetivo tendrá el estado de aturdido hasta el principio del siguiente turno del otyugh. Éxito: solo la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "11d10 + 44"
   },
   {
     "id": "pegasus",
@@ -15045,7 +15325,8 @@
         "damageType": "bludgeoning",
         "description": "Pendencieros"
       }
-    ]
+    ],
+    "hitDice": "7d10 + 21"
   },
   {
     "id": "tough",
@@ -15087,7 +15368,8 @@
         "damage": "1d10+1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "5d8 + 10"
   },
   {
     "id": "death-dog",
@@ -15126,7 +15408,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura, sufre el siguiente efecto. Tirada de salvación de Constitución: CD 12. Primer fallo: el objetivo tendrá el estado de envenenado. Mientras el objetivo esté envenenado, sus puntos de golpe máximos no volverán a la normalidad cuando termine un descanso largo. Repetirá la tirada de salvación cada vez que pasen 24 horas y, si tiene éxito, se librará del efecto. Fallos posteriores: los puntos de golpe máximos del objetivo envenenado se reducirán en 5 (1d10)."
       }
-    ]
+    ],
+    "hitDice": "6d8 + 12"
   },
   {
     "id": "blink-dog",
@@ -15164,7 +15447,8 @@
         "description": "El perro se teletransporta hasta 40 pies a un espacio sin ocupar que pueda ver.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "4d8 + 4"
   },
   {
     "id": "nightmare",
@@ -15208,7 +15492,8 @@
         "name": "Trote etéreo",
         "description": "La pesadilla y hasta tres criaturas voluntarias situadas a 5 pies o menos de ella se teletransportan del Plano Etéreo al Plano Material, o viceversa."
       }
-    ]
+    ],
+    "hitDice": "8d10 + 24"
   },
   {
     "id": "axe-beak",
@@ -15238,7 +15523,8 @@
         "damageType": "slashing",
         "description": "Piratas"
       }
-    ]
+    ],
+    "hitDice": "3d10 + 3"
   },
   {
     "id": "pirate",
@@ -15280,7 +15566,8 @@
         "name": "Garbo cautivador",
         "description": "Tirada de salvación de Sabiduría: CD 12, una criatura que el pirata pueda ver a 30 pies o menos. Fallo: el objetivo tendrá el estado de hechizado hasta el principio del siguiente turno del pirata."
       }
-    ]
+    ],
+    "hitDice": "6d8 + 6"
   },
   {
     "id": "planetar",
@@ -15351,7 +15638,8 @@
         "description": "El planetar lanza curar heridas, invisibilidad, levantar maldición o restablecimiento menor usando la misma aptitud mágica que para su lanzamiento de conjuros. Plantas despertadas",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "21d10 + 147"
   },
   {
     "id": "commoner",
@@ -15386,7 +15674,8 @@
         "damage": "1d4",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "1d8"
   },
   {
     "id": "plesiosaurus",
@@ -15425,7 +15714,8 @@
         "damage": "2d6+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "8d10 + 24"
   },
   {
     "id": "black-pudding",
@@ -15475,7 +15765,8 @@
         "description": "Detonante: mientras sea Grande o Mediano y tenga 10 o más puntos de golpe, el pudin pasa a estar maltrecho o recibe daño cortante o de relámpago. Respuesta: el pudin se divide en dos nuevos púdines negros. Cada nuevo pudin tiene un tamaño inferior al del pudin original y actúa en su orden de iniciativa. Los puntos de golpe del pudin original se dividen a partes iguales entre los nuevos púdines (redondeados hacia abajo).",
         "kind": "reaction"
       }
-    ]
+    ],
+    "hitDice": "8d10 + 24"
   },
   {
     "id": "chimera",
@@ -15530,7 +15821,8 @@
         "name": "Aliento de fuego (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 15, todas las criaturas en un cono de 15 pies. Fallo: 31 (7d8) de daño de fuego. Éxito: la mitad del daño."
       }
-    ]
+    ],
+    "hitDice": "12d10 + 48"
   },
   {
     "id": "rakshasa",
@@ -15589,7 +15881,8 @@
         "name": "Orden siniestra (recarga 5–6)",
         "description": "Tirada de salvación de Sabiduría: CD 18, todos los enemigos en una emanación de 30 pies que se origina en el rakshasa. Fallo: 28 (8d6) de daño psíquico y el objetivo tendrá los estados de asustado e incapacitado hasta el principio del siguiente turno del rakshasa."
       }
-    ]
+    ],
+    "hitDice": "26d8 + 104"
   },
   {
     "id": "remorhaz",
@@ -15632,7 +15925,8 @@
         "description": "Tirada de salvación de Fuerza: CD 19, una criatura Grande o más pequeña agarrada por el remorhaz (puede tener hasta dos criaturas engullidas a la vez). Fallo: el objetivo será engullido por el remorhaz y se pondrá fin al estado de agarrado. Una criatura engullida tendrá los estados de apresada y cegada, tendrá cobertura completa contra los ataques y otros efectos fuera del remorhaz y recibirá 10 (3d6) de daño de ácido más 10 (3d6) de daño de fuego al principio de cada turno del remorhaz. Si el remorhaz sufre 30 o más de daño en un solo turno por parte de una criatura que esté dentro de él, deberá superar una tirada de salvación de Constitución con CD 15 al final de ese turno o regurgitará a todas las criaturas engullidas, que caerán en espacios a 5 pies o menos del remorhaz y tendrán el estado de derribadas. Si el remorhaz muere, cualquier criatura engullida dejará de tener el estado de apresada y podrá gastar 15 pies de movimiento para escapar del cadáver, del que saldrá con el estado de derribada.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "17d12 + 85"
   },
   {
     "id": "rhinoceros",
@@ -15662,7 +15956,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Grande o más pequeña y el rinoceronte recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 9 (2d8) de daño perforante adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "6d10 + 12"
   },
   {
     "id": "roc",
@@ -15716,7 +16011,8 @@
         "description": "Si el roc tiene a una criatura agarrada, vuela hasta la mitad de su velocidad volando sin provocar ataques de oportunidad y suelta a la criatura.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "16d20 + 80"
   },
   {
     "id": "hell-hound",
@@ -15763,7 +16059,8 @@
         "name": "Aliento de fuego (recarga 5–6)",
         "description": "Tirada de salvación de Destreza: CD 12, todas las criaturas en un cono de 15 pies. Fallo: 17 (5d6) de daño de fuego. Éxito: la mitad del daño. Sacerdotes"
       }
-    ]
+    ],
+    "hitDice": "9d8 + 18"
   },
   {
     "id": "priest",
@@ -15817,7 +16114,8 @@
         "description": "El sacerdote lanza bendición, disipar magia, palabra de curación o restablecimiento menor usando la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "7d8 + 7"
   },
   {
     "id": "priest-acolyte",
@@ -15866,7 +16164,8 @@
         "description": "El sacerdote lanza bendición, palabra de curación o santuario usando la misma aptitud mágica que para su lanzamiento de conjuros.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "2d8 + 2"
   },
   {
     "id": "green-hag",
@@ -15923,7 +16222,8 @@
         "name": "Lanzamiento de conjuros",
         "description": "La saga lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 12, +4 a acertar con ataques de conjuro): A voluntad: disfrazarse (24 horas de duración), ilusión menor, invisibilidad (solo lanzador y la saga no deja huellas mientras es invisible), luces danzantes, rayo nauseabundo (versión de nivel 3)"
       }
-    ]
+    ],
+    "hitDice": "11d8 + 33"
   },
   {
     "id": "night-hag",
@@ -15987,7 +16287,8 @@
         "description": "La saga se convierte en un humanoide Pequeño o Mediano, o recupera su auténtica forma. Su perfil, salvo por el tamaño, es el mismo en todas las formas. Cualquier equipo que vista o lleve no se transformará.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "15d8 + 45"
   },
   {
     "id": "sea-hag",
@@ -16038,7 +16339,8 @@
         "name": "Mirada mortal (recarga 5–6)",
         "description": "Tirada de salvación de Sabiduría: CD 11, una criatura asustada que la saga pueda ver a 30 pies o menos. Fallo: si el objetivo tiene 20 puntos de golpe o menos, estos se reducen a 0. De lo contrario, el objetivo recibe 13 (3d8) de daño psíquico. Sahuagin"
       }
-    ]
+    ],
+    "hitDice": "7d8 + 21"
   },
   {
     "id": "salamander",
@@ -16083,7 +16385,8 @@
         "name": "Constreñir",
         "description": "Tirada de salvación de Fuerza: CD 15, una criatura Grande o más pequeña que la salamandra pueda ver a 10 pies o menos. Fallo: 11 (2d6 + 4) de daño contundente más 7 (2d6) de daño de fuego. El objetivo tendrá el estado de agarrado (CD 14 para escapar) y el de apresado hasta que el agarre termine."
       }
-    ]
+    ],
+    "hitDice": "12d10 + 24"
   },
   {
     "id": "goblin-minion",
@@ -16120,7 +16423,8 @@
         "description": "El goblin realiza las acciones de destrabarse o esconderse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "2d6"
   },
   {
     "id": "half-dragon",
@@ -16179,7 +16483,8 @@
         "description": "El semidragón gasta 10 pies de movimiento para saltar hasta 30 pies. Sirénido",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "14d8 + 42"
   },
   {
     "id": "giant-constrictor-snake",
@@ -16219,7 +16524,8 @@
         "name": "Constreñir",
         "description": "Tirada de salvación de Fuerza: CD 14, una criatura Grande o más pequeña que la serpiente pueda ver a 10 pies o menos. Fallo: 13 (2d8 + 4) de daño contundente y el objetivo tendrá el estado de agarrado (CD 14 para escapar)."
       }
-    ]
+    ],
+    "hitDice": "8d12 + 8"
   },
   {
     "id": "flying-snake",
@@ -16254,7 +16560,8 @@
         "damage": "1",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "2d4"
   },
   {
     "id": "mummy-lord",
@@ -16345,7 +16652,8 @@
         "description": "La momia lanza orden imperiosa (versión de nivel 2) usando la misma aptitud mágica que para su lanzamiento de conjuros. La momia no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "25d8 + 75"
   },
   {
     "id": "vampire-familiar",
@@ -16401,7 +16709,8 @@
         "description": "El siervo realiza las acciones de correr o destrabarse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "10d8 + 20"
   },
   {
     "id": "giant-ape",
@@ -16449,7 +16758,8 @@
         "description": "El simio gasta 10 pies de movimiento para saltar hasta 30 pies.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "16d12 + 64"
   },
   {
     "id": "solar",
@@ -16530,7 +16840,8 @@
         "description": "El solar se teletransporta hasta 60 pies a un espacio sin ocupar que pueda ver. Tirada de salvación de Destreza: CD 25, todas las criaturas en una emanación de 10 pies que se origina en el espacio de destino del solar. Fallo: 11 (2d10) de daño radiante. Éxito: la mitad del daño.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "22d10 + 176"
   },
   {
     "id": "centaur-trooper",
@@ -16584,7 +16895,8 @@
         "description": "Fallo: 7 (1d6 + 4) de daño contundente y el objetivo tiene el estado de derribado.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "6d10 + 12"
   },
   {
     "id": "shadow",
@@ -16632,7 +16944,8 @@
         "description": "Con luz tenue o en la oscuridad, la sombra realiza la acción de esconderse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "5d8 + 5"
   },
   {
     "id": "satyr",
@@ -16677,7 +16990,8 @@
         "name": "Burla",
         "description": "Tirada de salvación de Sabiduría: CD 12, una criatura que el sátiro pueda ver a 90 pies o menos. Fallo: 5 (1d6 + 2) de daño psíquico. Sectarios"
       }
-    ]
+    ],
+    "hitDice": "7d8"
   },
   {
     "id": "succubus",
@@ -16737,7 +17051,8 @@
         "description": "El súcubo adopta la forma de un humanoide Mediano o Pequeño, o recupera su verdadera forma. Su perfil es el mismo en todas las formas, excepto porque su velocidad volando solo está disponible en su forma verdadera. Cualquier equipo que vista o lleve no se transformará.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "13d8 + 13"
   },
   {
     "id": "tarrasque",
@@ -16834,7 +17149,8 @@
         "description": "La tarasca se mueve hasta su velocidad. Al final de este movimiento, crea una onda sísmica instantánea en una emanación de 60 pies que se origina en ella. Las criaturas situadas en esa zona perderán la concentración y, si son Medianas o más pequeñas, tendrán el estado de derribadas. La tarasca no puede volver a realizar esta acción hasta el principio de su siguiente turno.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "34d20 + 340"
   },
   {
     "id": "hunter-shark",
@@ -16872,7 +17188,8 @@
         "damage": "3d6+4",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "6d10 + 12"
   },
   {
     "id": "giant-shark",
@@ -16915,7 +17232,8 @@
         "damage": "3d10+6",
         "damageType": "piercing"
       }
-    ]
+    ],
+    "hitDice": "8d12 + 40"
   },
   {
     "id": "saber-toothed-tiger",
@@ -16967,7 +17285,8 @@
         "description": "El tigre realiza las acciones de destrabarse o esconderse.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "7d10 + 14"
   },
   {
     "id": "tyrannosaurus-rex",
@@ -17017,7 +17336,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Grande o más pequeña, tendrá el estado de agarrada (CD 17 para escapar). Mientras esté agarrada, tendrá el estado de apresada y no podrá ser objetivo de la cola del tiranosaurio."
       }
-    ]
+    ],
+    "hitDice": "13d12 + 52"
   },
   {
     "id": "triceratops",
@@ -17051,7 +17371,8 @@
         "damageType": "piercing",
         "description": "Si el objetivo es una criatura Enorme o más pequeña y el triceratops recorre al menos 20 pies en línea recta hacia ella justo antes de acertarle, esta recibirá 9 (2d8) de daño perforante adicional y tendrá el estado de derribada."
       }
-    ]
+    ],
+    "hitDice": "12d12 + 36"
   },
   {
     "id": "troll",
@@ -17102,7 +17423,8 @@
         "description": "El troll se mueve hasta la mitad de su velocidad en línea recta hacia un enemigo que pueda ver.",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "9d10 + 45"
   },
   {
     "id": "wight",
@@ -17162,7 +17484,8 @@
         "name": "CD 13, una criatura a 5 pies o menos",
         "description": "Fallo: 6 (1d8 + 2) de daño necrótico y los puntos de golpe máximos del objetivo se reducirán en una cantidad igual al daño sufrido. Un humanoide que muera por este ataque se alzará 24 horas después como un zombi bajo el control del tumulario, a menos que se le devuelva a la vida o su cuerpo sea destruido. El tumulario no puede tener más de doce zombis bajo su control a la vez."
       }
-    ]
+    ],
+    "hitDice": "11d8 + 33"
   },
   {
     "id": "unicorn",
@@ -17234,7 +17557,8 @@
         "description": "El unicornio se hace objetivo a sí mismo o hace objetivo a una criatura que pueda ver a 60 pies o menos de él. El objetivo obtiene 10 (3d6) puntos de golpe temporales y su CA aumenta en 2 hasta el final del siguiente turno del unicornio. El unicornio no puede volver a realizar esta acción hasta el principio de su siguiente turno. Vampiros",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "13d10 + 26"
   },
   {
     "id": "vampire",
@@ -17335,7 +17659,8 @@
         "description": "El vampiro se mueve hasta la mitad de su velocidad y realiza un ataque con su golpe sepulcral.",
         "kind": "legendary"
       }
-    ]
+    ],
+    "hitDice": "23d8 + 92"
   },
   {
     "id": "vrock",
@@ -17392,7 +17717,8 @@
         "name": "Esporas (recarga 6)",
         "description": "Tirada de salvación de Constitución: CD 15, todas las criaturas en una emanación de 20 pies que se origina en el vrock. Fallo: el objetivo tendrá el estado de envenenado y repetirá la tirada de salvación al final de cada uno de sus turnos. Si tiene éxito, se librará del efecto. Mientras el objetivo esté envenenado, sufrirá 5 (1d10) de daño de veneno al principio de cada uno de sus turnos. Si se vacía un frasco de agua bendita sobre el objetivo, el efecto cesará."
       }
-    ]
+    ],
+    "hitDice": "16d10 + 64"
   },
   {
     "id": "xorn",
@@ -17452,7 +17778,8 @@
         "description": "El xorn se mueve hasta su velocidad o hasta su velocidad excavando en línea recta hacia un enemigo que pueda sentir. Zombis",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "8d8 + 48"
   },
   {
     "id": "giant-eagle",
@@ -17489,7 +17816,8 @@
         "damage": "1d4+3",
         "damageType": "slashing"
       }
-    ]
+    ],
+    "hitDice": "4d10 + 4"
   },
   {
     "id": "awakened-tree",
@@ -17519,7 +17847,8 @@
         "damage": "3d6+4",
         "damageType": "bludgeoning"
       }
-    ]
+    ],
+    "hitDice": "7d12 + 14"
   },
   {
     "id": "incubus",
@@ -17575,6 +17904,7 @@
         "description": "Tirada de salvación de Sabiduría: CD 15, una criatura que el íncubo pueda ver a 60 pies o menos. Fallo: si el objetivo tiene 20 puntos de golpe o menos, tendrá el estado de inconsciente durante 1 hora, hasta que reciba daño o hasta que una criatura a 5 pies o menos lleve a cabo una acción para despertarlo. De lo contrario, el objetivo recibe 18 (4d8) de daño psíquico. Kobold",
         "kind": "bonus"
       }
-    ]
+    ],
+    "hitDice": "12d8 + 12"
   }
 ]

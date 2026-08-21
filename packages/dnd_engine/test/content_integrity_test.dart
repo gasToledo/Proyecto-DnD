@@ -79,6 +79,52 @@ void main() {
       expect(repo.creatures, hasLength(367));
     });
 
+    // --- Dados de golpe ---
+    //
+    // Existen para que el DM pueda tirarlos al sumar varias copias de un
+    // monstruo. Salen del mismo paréntesis del PDF que el promedio, así que la
+    // prueba que importa no es cuántos hay sino que cada criatura se haya
+    // quedado con **los suyos**.
+
+    test('los perfiles del SRD declaran sus dados de golpe', () {
+      final conDados = repo.creatures.values.where((c) => c.hitDice != null);
+      expect(conDados, hasLength(330));
+    });
+
+    test('los únicos sin dados son los que no salen del PDF', () {
+      final sinDados = repo.creatures.values.where((c) => c.hitDice == null);
+      expect(sinDados, hasLength(37));
+      // 31 invocaciones cuyos PG son una fórmula por nivel de conjuro, y 6
+      // compañeros de clase que escalan con el nivel del personaje. Ninguno de
+      // los dos tira dados de golpe, así que no tenerlos es lo correcto.
+      expect(
+        sinDados.where((c) => c.scalesWithSpellLevel),
+        hasLength(31),
+      );
+      expect(
+        sinDados.where((c) => !c.scalesWithSpellLevel).map((c) => c.name),
+        containsAll(['Defensor de Acero', 'Bestia de la Tierra']),
+      );
+    });
+
+    // LA prueba de esta importación: el promedio derivado de los dados tiene
+    // que dar exactamente el `hp` que imprime el libro. Un regex que le hubiera
+    // robado los dados a la criatura de al lado seguiría pareciendo una
+    // fórmula válida, pero el promedio dejaría de coincidir.
+    test('los dados de cada criatura promedian sus propios PG', () {
+      for (final creature in repo.creatures.values) {
+        if (creature.hitDice case final dice?) {
+          final formula = DiceFormula.tryParse(dice);
+          expect(formula, isNotNull, reason: '${creature.name}: «$dice»');
+          expect(
+            formula!.average,
+            int.parse(creature.hp),
+            reason: '${creature.name}: $dice debería promediar ${creature.hp}',
+          );
+        }
+      }
+    });
+
     test('las procedencias coinciden con el cruce contra el SRD 5.2.1', () {
       expect(porFuente(repo.lineages.values), {
         ContentSource.srd2024: 24,

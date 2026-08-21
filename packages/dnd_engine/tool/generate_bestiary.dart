@@ -488,8 +488,22 @@ Map<String, dynamic> parseBlock(RawBlock block) {
 
   final ac = RegExp(r'^CA: (\d+)').firstMatch(text);
   if (ac != null) json['ac'] = ac[1]!;
-  final hp = RegExp(r'^PG: (\d+)', multiLine: true).firstMatch(text);
-  if (hp != null) json['hp'] = hp[1]!;
+  // «PG: 200 (16d12 + 96)». El promedio y los dados van a campos distintos: el
+  // primero es lo que el libro manda usar, los segundos existen para que el DM
+  // pueda tirarlos cuando suma varias copias.
+  //
+  // El paréntesis es opcional porque cinco perfiles no lo traen: son
+  // invocaciones, que declaran los PG por nivel de conjuro y no por dados. El
+  // signo llega como guion ASCII gracias a la normalización de `normalize`,
+  // así que acá no hace falta contemplar el U+2212 del PDF.
+  final hp = RegExp(
+    r'^PG: (\d+)(?: \((\d+d\d+(?: [+-] \d+)?)\))?',
+    multiLine: true,
+  ).firstMatch(text);
+  if (hp != null) {
+    json['hp'] = hp[1]!;
+    if (hp[2] case final dice?) json['hitDice'] = dice;
+  }
   // Algunos perfiles del apéndice cierran la velocidad con punto; el catálogo
   // la guarda sin él.
   final speed = field('Velocidad');
@@ -853,7 +867,15 @@ void compareWithCatalog(List<RawBlock> blocks, String root) {
       .cast<Map<String, dynamic>>();
   final byName = {for (final c in existing) c['name'] as String: c};
 
-  const compared = ['ac', 'hp', 'speed', 'cr', 'senses', 'languages'];
+  const compared = [
+    'ac',
+    'hp',
+    'hitDice',
+    'speed',
+    'cr',
+    'senses',
+    'languages',
+  ];
   var matched = 0;
   final problems = <String>[];
 

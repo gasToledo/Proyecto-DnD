@@ -70,4 +70,68 @@ void main() {
       expect(pointBuySpent([8, 8, 8, 8, 8, 8]), 0);
     });
   });
+
+  group('DiceFormula', () {
+    test('lee las tres formas que imprime el libro', () {
+      expect(
+          DiceFormula.tryParse('16d12 + 96'),
+          isA<DiceFormula>()
+              .having((f) => f.count, 'dados', 16)
+              .having((f) => f.sides, 'caras', 12)
+              .having((f) => f.modifier, 'modificador', 96));
+
+      expect(DiceFormula.tryParse('2d6')!.modifier, 0);
+      expect(DiceFormula.tryParse('3d6 - 3')!.modifier, -3);
+    });
+
+    // No es un evaluador de expresiones y no debe pretender serlo: para algo
+    // que no entiende, no ofrecer la tirada es mejor que inventar un número.
+    test('lo que no es una de esas formas no parsea', () {
+      for (final texto in [
+        '',
+        '200',
+        'd20',
+        '2d',
+        '16d12 + 96 + 4',
+        '2d6 * 3',
+        'la mitad de los pg de su invocador',
+      ]) {
+        expect(DiceFormula.tryParse(texto), isNull, reason: texto);
+      }
+    });
+
+    // El promedio del libro redondea hacia abajo, al revés que `averageHitDie`,
+    // que resuelve otra cosa (los PG que gana un personaje al subir de nivel).
+    test('el promedio es el que imprime el libro', () {
+      expect(DiceFormula.tryParse('17d12 + 102')!.average, 212);
+      expect(DiceFormula.tryParse('16d12 + 96')!.average, 200);
+      expect(DiceFormula.tryParse('3d6 - 3')!.average, 7);
+      expect(DiceFormula.tryParse('1d4 - 1')!.average, 1);
+      expect(DiceFormula.tryParse('2d6')!.average, 7);
+    });
+
+    test('la tirada queda entre el mínimo y el máximo posibles', () {
+      final formula = DiceFormula.tryParse('4d8 + 4')!;
+      final dice = Dice(Random(7));
+      for (var i = 0; i < 200; i++) {
+        expect(formula.roll(dice), inInclusiveRange(8, 36));
+      }
+    });
+
+    // «1d4 - 1» puede dar 0, y una criatura con 0 PG entraría al combate ya
+    // caída: el tracker la saltearía sin que nadie entienda por qué.
+    test('nunca devuelve menos de 1', () {
+      final formula = DiceFormula.tryParse('1d4 - 1')!;
+      final dice = Dice(Random(3));
+      for (var i = 0; i < 200; i++) {
+        expect(formula.roll(dice), greaterThanOrEqualTo(1));
+      }
+    });
+
+    test('vuelve a escribirse como vino', () {
+      for (final texto in ['16d12 + 96', '2d6', '3d6 - 3']) {
+        expect(DiceFormula.tryParse(texto).toString(), texto);
+      }
+    });
+  });
 }

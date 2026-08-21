@@ -26,9 +26,12 @@ Thumbs.db
 # Logs
 *.log
 
-# Material interno de desarrollo/agentes (no forma parte del producto)
-CLAUDE.md
-**/CLAUDE.md
+# Configuración local de agentes (no forma parte del producto)
+#
+# `CLAUDE.md` NO va acá: es documentación de arquitectura del repositorio —la
+# guía de diseño lo cita como la referencia de comandos y estructura— así que
+# se versiona como cualquier otro doc. Lo que sigue ignorado es la
+# configuración por máquina, que sí es personal.
 .claude/
 .codex/
 openspec/

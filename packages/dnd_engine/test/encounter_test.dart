@@ -82,10 +82,17 @@ void main() {
     });
   });
 
+  /// Un encuentro ya arrancado. Casi todo lo que sigue describe combate en
+  /// curso: armar la mesa es la otra etapa y tiene su propio grupo.
+  const enCurso = Encounter(id: 'x', stage: EncounterStage.running);
+
   group('Encounter — orden y turnos', () {
-    test('un encuentro nuevo nace en la ronda 1 sin combatientes', () {
+    // Un encuentro recién creado nace **armándose**, no jugándose: el DM
+    // todavía tiene que cargar la mesa y tirar iniciativa.
+    test('un encuentro nuevo nace preparándose y sin combatientes', () {
       const e = Encounter(id: 'x');
 
+      expect(e.stage, EncounterStage.preparing);
       expect(e.round, 1);
       expect(e.turnIndex, 0);
       expect(e.combatants, isEmpty);
@@ -94,7 +101,7 @@ void main() {
     });
 
     test('withCombatant ordena por iniciativa descendente', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
             id: 'a', kind: CombatantKind.player, name: 'A', initiative: 10),
@@ -115,7 +122,7 @@ void main() {
     // sí: cada uno tiene su propia tirada, pero un empate no es motivo para
     // que el tercero salte delante del primero.
     test('un empate de iniciativa conserva el orden en que se sumaron', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
             id: 'g1',
@@ -142,7 +149,7 @@ void main() {
     });
 
     test('current y onDeck reflejan el orden e envuelven al final', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
             id: 'a', kind: CombatantKind.player, name: 'A', initiative: 20),
@@ -161,7 +168,7 @@ void main() {
     });
 
     test('next avanza turno y suma ronda al volver al primero', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
             id: 'a', kind: CombatantKind.player, name: 'A', initiative: 20),
@@ -181,12 +188,13 @@ void main() {
     });
 
     // Regresión: cargar al jugador primero y a los monstruos después le daba
-    // el primer turno al jugador aunque todos le ganaran la iniciativa,
-    // porque `withCombatant` le conservaba un turno que en realidad nadie
-    // había empezado a jugar.
+    // el primer turno al jugador aunque todos le ganaran la iniciativa.
+    // Antes se sostenía con una heurística —«ronda 1 y puesto 0 quiere decir
+    // que todavía se está armando»—; hoy lo resuelve la etapa, que lo sabe en
+    // vez de adivinarlo.
     test(
-        'mientras se arma el orden, el turno queda en la iniciativa más '
-        'alta sin importar el orden de carga', () {
+        'al arrancar, el turno queda en la iniciativa más alta sin importar '
+        'el orden de carga', () {
       var e = const Encounter(id: 'x');
       e = e.withCombatant(
         const Combatant(
@@ -217,13 +225,19 @@ void main() {
         ),
       );
 
+      // Mientras se arma van los jugadores primero y no hay turno de nadie.
+      expect(e.combatants.map((c) => c.id), ['sagan', 'g1', 'g2']);
+      expect(e.current, isNull);
+
+      e = e.start({'sagan': 8, 'g1': 15, 'g2': 12});
+
       expect(e.combatants.map((c) => c.id), ['g1', 'g2', 'sagan']);
       expect(e.current!.id, 'g1');
       expect(e.round, 1);
     });
 
     test('withCombatant no pierde el turno en curso al reordenar', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
             id: 'a', kind: CombatantKind.player, name: 'A', initiative: 20),
@@ -245,7 +259,7 @@ void main() {
     });
 
     test('withoutCombatant saca a alguien sin perder el turno de otro', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
             id: 'a', kind: CombatantKind.player, name: 'A', initiative: 20),
@@ -263,7 +277,7 @@ void main() {
     });
 
     test('withHp clampea los PG entre 0 y el máximo', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
           id: 'g',
@@ -326,7 +340,7 @@ void main() {
     // g está a 0 PG desde el arranque: el turno tiene que saltarlo entero,
     // como si nunca hubiera podido actuar.
     Encounter tableWithDowned() {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
           id: 'a',
@@ -369,7 +383,7 @@ void main() {
     // Bajar a alguien a 0 PG en medio de su propio turno (justo antes de que
     // el DM avance) tiene que saltarlo igual: no importa cuándo cayó.
     test('un combatiente que cae en su propio turno se salta al avanzar', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
           id: 'g',
@@ -397,7 +411,7 @@ void main() {
     // vuelve a caer en la misma persona — no queda nadie más a quién pasarle
     // la posta.
     test('con un solo sobreviviente, next le da otra ronda a él mismo', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
           id: 'a',
@@ -426,7 +440,7 @@ void main() {
     // Si no queda nadie en pie, no hay a quién pasarle el turno: mejor no
     // avanzar que fingir un turno que no le toca a nadie.
     test('si todos están caídos, next no cambia nada', () {
-      var e = const Encounter(id: 'x');
+      var e = enCurso;
       e = e.withCombatant(
         const Combatant(
           id: 'g1',
@@ -460,7 +474,7 @@ void main() {
     late Encounter e;
 
     setUp(() {
-      e = const Encounter(id: 'x');
+      e = enCurso;
       e = e.withCombatant(
         const Combatant(
           id: 'a',
@@ -673,6 +687,142 @@ void main() {
       expect(e.withTags('fantasma', ['x']).combatants.single.tags, [
         'Envenenado',
       ]);
+    });
+  });
+
+  group('Encounter — etapas', () {
+    const sagan = Combatant(
+      id: 'sagan',
+      kind: CombatantKind.player,
+      name: 'Sagan',
+      initiative: 0,
+      memberId: 'm1',
+    );
+    const goblin = Combatant(
+      id: 'g1',
+      kind: CombatantKind.monster,
+      name: 'Goblin',
+      initiative: 0,
+      currentHp: 7,
+      maxHp: 7,
+    );
+
+    Encounter armando() => const Encounter(
+          id: 'x',
+        ).withCombatant(sagan).withCombatant(goblin);
+
+    // LA razón de que la etapa exista: hasta que se separó, sumar al primer
+    // jugador le encendía «Es tu turno» en su ficha mientras el DM seguía
+    // cargando monstruos.
+    test('mientras se arma, el jugador no ve ningún turno', () {
+      expect(armando().statusFor('m1'), TurnStatus.none);
+    });
+
+    test('mientras se arma no hay turno ni siguiente', () {
+      final e = armando();
+      expect(e.current, isNull);
+      expect(e.onDeck, isNull);
+    });
+
+    test('mientras se arma, avanzar turno no hace nada', () {
+      final e = armando();
+      final r = e.next();
+      expect(r.round, 1);
+      expect(r.turnIndex, 0);
+      expect(r.stage, EncounterStage.preparing);
+    });
+
+    // Ordenar por iniciativa antes de tirarla dejaría a todos empatados en
+    // cero y la lista saltaría sola al arrancar.
+    test('mientras se arma van los jugadores primero, en orden de carga', () {
+      final e = const Encounter(id: 'x')
+          .withCombatant(goblin)
+          .withCombatant(sagan)
+          .withCombatant(
+            const Combatant(
+              id: 'g2',
+              kind: CombatantKind.monster,
+              name: 'Goblin 2',
+              initiative: 0,
+              currentHp: 7,
+              maxHp: 7,
+            ),
+          );
+      expect(e.combatants.map((c) => c.id), ['sagan', 'g1', 'g2']);
+    });
+
+    test('start fija la iniciativa, ordena y pasa a en curso', () {
+      final e = armando().start({'sagan': 18, 'g1': 12});
+
+      expect(e.stage, EncounterStage.running);
+      expect(e.combatants.map((c) => c.id), ['sagan', 'g1']);
+      expect(e.combatants.first.initiative, 18);
+      expect(e.round, 1);
+      expect(e.turnIndex, 0);
+      expect(e.current!.id, 'sagan');
+      expect(e.statusFor('m1'), TurnStatus.active);
+    });
+
+    test('start conserva PG y efectos ya anotados', () {
+      final e = armando()
+          .withTags('g1', ['Envenenado'])
+          .withHp('g1', 3)
+          .start({'sagan': 10, 'g1': 20});
+
+      final g = e.combatants.firstWhere((c) => c.id == 'g1');
+      expect(g.currentHp, 3);
+      expect(g.maxHp, 7);
+      expect(g.tags, ['Envenenado']);
+    });
+
+    test('a quien no se le pasa iniciativa le queda la que tenía', () {
+      final e = armando().start({'sagan': 18});
+      expect(e.combatants.firstWhere((c) => c.id == 'g1').initiative, 0);
+    });
+
+    test('la etapa sobrevive el round-trip', () {
+      final e = armando();
+      expect(Encounter.fromJson(e.toJson()).stage, EncounterStage.preparing);
+      expect(
+        Encounter.fromJson(e.start({}).toJson()).stage,
+        EncounterStage.running,
+      );
+    });
+
+    // Los combates guardados antes de que la etapa existiera estaban jugándose:
+    // leerlos como «preparando» les borraría el turno a mitad de una sesión.
+    test('un documento sin etapa se lee como en curso', () {
+      final r = Encounter.fromJson({
+        'id': 'x',
+        'round': 3,
+        'turnIndex': 1,
+        'combatants': [
+          {
+            'id': 'sagan',
+            'kind': 'player',
+            'name': 'Sagan',
+            'initiative': 12,
+            'memberId': 'm1',
+          },
+          {'id': 'g1', 'kind': 'monster', 'name': 'Goblin', 'initiative': 8},
+        ],
+      });
+
+      expect(r.stage, EncounterStage.running);
+      expect(r.current!.id, 'g1');
+      expect(r.statusFor('m1'), TurnStatus.next);
+    });
+
+    // La etapa la lleva el documento entero, así que ninguna operación puede
+    // devolver el combate a «preparando» sin querer.
+    test('ninguna operación pierde la etapa', () {
+      final e = armando().start({'sagan': 18, 'g1': 12});
+
+      expect(e.next().stage, EncounterStage.running);
+      expect(e.withHp('g1', 2).stage, EncounterStage.running);
+      expect(e.withTags('g1', ['Cegado']).stage, EncounterStage.running);
+      expect(e.withoutCombatant('g1').stage, EncounterStage.running);
+      expect(e.withCombatant(goblin).stage, EncounterStage.running);
     });
   });
 }

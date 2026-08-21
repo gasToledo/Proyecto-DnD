@@ -19,6 +19,7 @@ import 'chapters_view.dart';
 import 'encounter_view.dart';
 import 'note_editor_dialog.dart';
 import 'notebook_view.dart';
+import 'roll_initiative_dialog.dart';
 
 /// El otro sombrero de la misma cuenta.
 ///
@@ -1018,7 +1019,10 @@ class _CampaignDetailState extends State<_CampaignDetail> {
           id: _newId('c'),
           kind: CombatantKind.monster,
           name: n == 1 ? creature.name : '${creature.name} $n',
-          initiative: rollInitiative(creature),
+          // Si el combate ya arrancó, el que entra tarde tira en el acto.
+          // Si todavía se está armando, la tirada es de todos juntos al
+          // empezar, así que acá entra sin iniciativa.
+          initiative: encounter.isPreparing ? 0 : rollInitiative(creature),
           creatureId: creature.id,
           currentHp: hp,
           // El máximo es el tirado y no el del libro: si no, un goblin que
@@ -1028,6 +1032,32 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       );
     }
     _saveEncounter(encounter);
+  }
+
+  /// Tira la iniciativa de toda la mesa y arranca la ronda 1.
+  ///
+  /// A los monstruos se les propone el número ya tirado —`rollInitiative`, una
+  /// tirada por copia, con el modificador del perfil— y el DM lo puede
+  /// corregir. A los jugadores se les deja en blanco: ese número lo cantan
+  /// ellos desde la mesa, que es donde tiraron el dado de verdad.
+  Future<void> _rollInitiative() async {
+    final encounter = _encounter;
+    if (encounter == null) return;
+
+    final suggested = <String, int>{
+      for (final c in encounter.combatants)
+        if (c.creatureId case final id?)
+          if (widget.repo.creature(id) case final creature?)
+            c.id: rollInitiative(creature),
+    };
+
+    final values = await showRollInitiativeDialog(
+      context,
+      combatants: encounter.combatants,
+      suggested: suggested,
+    );
+    if (values == null || !mounted) return;
+    _saveEncounter(encounter.start(values));
   }
 
   void _setCombatantTags(String combatantId, List<String> tags) {
@@ -1286,8 +1316,16 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       _CampaignSection.combate when _encounter == null => FilledButton.icon(
         onPressed: _encounterLoading ? null : _startEncounter,
         icon: const Icon(Icons.local_fire_department_outlined),
-        label: const Text('Empezar combate'),
+        label: const Text('Armar combate'),
       ),
+      // Mientras se arma la mesa, la acción principal es tirar iniciativa: es
+      // lo que la pone a jugar. Recién ahí aparece «Siguiente turno».
+      _CampaignSection.combate when _encounter!.isPreparing =>
+        FilledButton.icon(
+          onPressed: _encounter!.combatants.isEmpty ? null : _rollInitiative,
+          icon: const Icon(Icons.casino_outlined),
+          label: const Text('Tirar iniciativa'),
+        ),
       _ => FilledButton.icon(
         onPressed: _encounter!.combatants.isEmpty ? null : _nextTurn,
         icon: const Icon(Icons.skip_next),

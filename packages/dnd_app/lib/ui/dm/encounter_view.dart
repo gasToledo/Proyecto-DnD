@@ -98,7 +98,7 @@ class EncounterView extends StatelessWidget {
         ],
         if (unadded.isNotEmpty) ...[
           const SizedBox(height: 16),
-          _pendingPlayers(context, unadded),
+          _pendingPlayers(context, unadded, preparing: current.isPreparing),
         ],
         const SizedBox(height: 16),
         if (current.combatants.isEmpty)
@@ -123,6 +123,7 @@ class EncounterView extends StatelessWidget {
                 onAdjustHp: (delta) => onAdjustHp(combatant.id, delta),
                 onRemove: () => onRemoveCombatant(combatant.id),
                 onSetTags: (tags) => onSetTags(combatant.id, tags),
+                preparing: current.isPreparing,
               ),
             ),
       ],
@@ -136,9 +137,28 @@ class EncounterView extends StatelessWidget {
       spacing: 16,
       runSpacing: 12,
       children: [
-        Text(
-          'Ronda ${current.round}',
-          style: const TextStyle(fontFamily: 'Georgia', fontSize: 22),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              current.isPreparing
+                  ? 'Armando la mesa'
+                  : 'Ronda ${current.round}',
+              style: const TextStyle(fontFamily: 'Georgia', fontSize: 22),
+            ),
+            if (current.isPreparing) ...[
+              const SizedBox(height: 2),
+              Text(
+                'Todavía nadie tiró iniciativa, y a los jugadores no les '
+                'aparece nada en su ficha.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.palette.textMuted,
+                ),
+              ),
+            ],
+          ],
         ),
         // Wrap y no Row: con tres botones con texto, una ventana angosta los
         // desbordaba en una sola línea que no podía partirse.
@@ -188,6 +208,10 @@ class EncounterView extends StatelessWidget {
   /// releen cada 5 s, y un modal que se abre solo podría saltar justo encima
   /// de lo que el DM está tipeando. Avisa y espera.
   Widget? _sideWipedBanner(BuildContext context, Encounter current) {
+    // Todavía no peleó nadie. Sin esto, armar una mesa con los jugadores
+    // todavía a 0 PG de la sesión anterior anunciaría una derrota que no pasó.
+    if (current.isPreparing) return null;
+
     final players = [
       for (final c in current.combatants)
         if (c.kind == CombatantKind.player) c,
@@ -249,7 +273,16 @@ class EncounterView extends StatelessWidget {
     );
   }
 
-  Widget _pendingPlayers(BuildContext context, List<CampaignMember> unadded) {
+  /// Los jugadores de la mesa que todavía no entraron al orden.
+  ///
+  /// Mientras se arma entran de un toque, sin iniciativa: la tirada es de
+  /// todos juntos al empezar. Si el combate ya arrancó, el que se suma tarde
+  /// sí tiene que decir qué sacó.
+  Widget _pendingPlayers(
+    BuildContext context,
+    List<CampaignMember> unadded, {
+    required bool preparing,
+  }) {
     final pal = context.palette;
     return Container(
       padding: const EdgeInsets.all(12),
@@ -261,7 +294,7 @@ class EncounterView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Todavía no tiraron iniciativa',
+            preparing ? 'Todavía no están en la mesa' : 'Se sumaron tarde',
             style: TextStyle(fontSize: 12, color: pal.textMuted),
           ),
           const SizedBox(height: 8),
@@ -272,8 +305,12 @@ class EncounterView extends StatelessWidget {
                 children: [
                   Expanded(child: Text(member.character.name)),
                   TextButton(
-                    onPressed: () => _promptInitiative(context, member),
-                    child: const Text('Sumar a la iniciativa'),
+                    onPressed: () => preparing
+                        ? onAddPlayer(member.memberId, member.character.name, 0)
+                        : _promptInitiative(context, member),
+                    child: Text(
+                      preparing ? 'Sumar a la mesa' : 'Sumar a la iniciativa',
+                    ),
                   ),
                 ],
               ),
@@ -354,6 +391,9 @@ class _CombatantTile extends StatefulWidget {
   final VoidCallback onRemove;
   final void Function(List<String> tags) onSetTags;
 
+  /// Mientras se arma la mesa no hay iniciativa que mostrar.
+  final bool preparing;
+
   const _CombatantTile({
     required this.combatant,
     required this.active,
@@ -362,6 +402,7 @@ class _CombatantTile extends StatefulWidget {
     required this.onAdjustHp,
     required this.onRemove,
     required this.onSetTags,
+    required this.preparing,
   });
 
   @override
@@ -414,7 +455,9 @@ class _CombatantTileState extends State<_CombatantTile> {
           SizedBox(
             width: 32,
             child: Text(
-              '${combatant.initiative}',
+              // Mientras se arma nadie tiró: un cero se leería como una tirada
+              // malísima en vez de como «todavía no».
+              widget.preparing ? '—' : '${combatant.initiative}',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,

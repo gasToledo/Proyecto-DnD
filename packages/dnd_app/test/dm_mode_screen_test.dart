@@ -170,10 +170,7 @@ void main() {
 
     await tester.tap(find.text('Combate'));
     await tester.pumpAndSettle();
-    expect(
-      find.widgetWithText(FilledButton, 'Empezar combate'),
-      findsOneWidget,
-    );
+    expect(find.widgetWithText(FilledButton, 'Armar combate'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -572,52 +569,85 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    /// Pasa de armar la mesa a jugarla, aceptando la iniciativa propuesta.
+    ///
+    /// A los monstruos el diálogo se las trae ya tiradas; a los jugadores hay
+    /// que escribírselas, así que quien necesite un número puntual lo pasa en
+    /// [initiatives] por nombre de combatiente.
+    Future<void> tirarIniciativa(
+      WidgetTester tester, {
+      Map<String, int> initiatives = const {},
+    }) async {
+      await tester.tap(find.text('Tirar iniciativa'));
+      await tester.pumpAndSettle();
+      for (final entry in initiatives.entries) {
+        // Cada fila del diálogo es un Row con el nombre y su campo. Se busca
+        // **adentro del diálogo**: el mismo nombre está también en la fila del
+        // combatiente que quedó atrás, y sin acotar se engancha esa.
+        final nombre = find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.text(entry.key),
+        );
+        await tester.enterText(
+          find.descendant(
+            of: find.ancestor(of: nombre, matching: find.byType(Row)).first,
+            matching: find.byType(TextField),
+          ),
+          '${entry.value}',
+        );
+      }
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Empezar'));
+      await tester.pumpAndSettle();
+    }
+
     testWidgets('sin combate abierto ofrece empezarlo', (tester) async {
       await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
 
       expect(find.text('No hay ningún combate en curso.'), findsOneWidget);
-      expect(find.text('Empezar combate'), findsOneWidget);
+      expect(find.text('Armar combate'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets(
-      'empezar combate ofrece sumar a la iniciativa al jugador de la mesa',
-      (tester) async {
-        final server = await pumpDmMode(tester, seed: seedTable);
-        await enterCode(tester, 'CODE-0001');
-        await openCombate(tester);
-
-        await tester.tap(find.text('Empezar combate'));
-        await tester.pumpAndSettle();
-
-        expect(find.text('Todavía no tiraron iniciativa'), findsOneWidget);
-        expect(find.text('Sumar a la iniciativa'), findsOneWidget);
-        expect(server.encounters, contains('tumba'));
-        expect(tester.takeException(), isNull);
-      },
-    );
-
-    testWidgets('sumar un jugador a la iniciativa lo deja en el orden', (
+    testWidgets('armar el combate ofrece sumar a la mesa a los jugadores', (
       tester,
     ) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await enterCode(tester, 'CODE-0001');
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sumar a la iniciativa'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), '15');
-      await tester.tap(find.text('Guardar'));
+      expect(find.text('Armando la mesa'), findsOneWidget);
+      expect(find.text('Todavía no están en la mesa'), findsOneWidget);
+      expect(find.text('Sumar a la mesa'), findsOneWidget);
+      expect(server.encounters, contains('tumba'));
+      expect(server.encounters['tumba']!.isPreparing, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Mientras se arma, sumar un jugador es un solo toque: nadie tiró todavía.
+    testWidgets('mientras se arma, el jugador entra sin iniciativa', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Todavía no tiraron iniciativa'), findsNothing);
+      await tester.tap(find.text('Sumar a la mesa'));
+      await tester.pumpAndSettle();
+
       final combatants = server.encounters['tumba']!.combatants;
       expect(combatants, hasLength(1));
       expect(combatants.single.name, 'Sagan');
-      expect(combatants.single.initiative, 15);
+      expect(combatants.single.initiative, 0);
+      // Y el cero no se pinta: se leería como una tirada malísima en vez de
+      // como «todavía no tiró».
+      expect(find.text('—'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -629,7 +659,7 @@ void main() {
     ) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Sumar monstruo'));
@@ -691,7 +721,7 @@ void main() {
     ) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
       await addMonsters(
@@ -725,7 +755,7 @@ void main() {
     ) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
       await addMonsters(tester, 'goblin', 'Guerrero goblin', count: 4);
@@ -742,7 +772,7 @@ void main() {
     ) async {
       await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Sumar monstruo'));
@@ -760,7 +790,7 @@ void main() {
     Future<FakeApiServer> withGoblin(WidgetTester tester) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
       await addMonsters(tester, 'goblin', 'Guerrero goblin');
       return server;
@@ -840,12 +870,106 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // Mientras se arma la mesa, la acción principal es tirar iniciativa; recién
+    // después aparece «Siguiente turno».
+    testWidgets('la acción principal sigue la etapa del combate', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      expect(find.text('Armar combate'), findsOneWidget);
+
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tirar iniciativa'), findsOneWidget);
+      expect(find.text('Siguiente turno'), findsNothing);
+
+      await addMonsters(tester, 'goblin', 'Guerrero goblin');
+      await tirarIniciativa(tester);
+
+      expect(find.text('Siguiente turno'), findsOneWidget);
+      expect(find.text('Tirar iniciativa'), findsNothing);
+      expect(find.text('Ronda 1'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Sin nadie en la mesa no hay iniciativa que tirar.
+    testWidgets('con la mesa vacía no se puede tirar iniciativa', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+
+      final boton = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Tirar iniciativa'),
+      );
+      expect(boton.onPressed, isNull);
+      expect(tester.takeException(), isNull);
+    });
+
+    // A los monstruos el diálogo les propone el número ya tirado; a los
+    // jugadores les queda en blanco, porque ese número lo cantan ellos.
+    testWidgets('el diálogo propone la tirada de los monstruos', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar a la mesa'));
+      await tester.pumpAndSettle();
+      await addMonsters(tester, 'goblin', 'Guerrero goblin');
+
+      await tester.tap(find.text('Tirar iniciativa'));
+      await tester.pumpAndSettle();
+
+      String valorDe(String nombre) {
+        final campo = find.descendant(
+          of: find
+              .ancestor(
+                of: find.descendant(
+                  of: find.byType(AlertDialog),
+                  matching: find.text(nombre),
+                ),
+                matching: find.byType(Row),
+              )
+              .first,
+          matching: find.byType(TextField),
+        );
+        return tester.widget<TextField>(campo).controller!.text;
+      }
+
+      expect(valorDe('Sagan'), isEmpty);
+      expect(int.tryParse(valorDe('Guerrero goblin')), isNotNull);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('cancelar la tirada deja el combate armándose', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      await addMonsters(tester, 'goblin', 'Guerrero goblin');
+
+      await tester.tap(find.text('Tirar iniciativa'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.pumpAndSettle();
+
+      expect(server.encounters['tumba']!.isPreparing, isTrue);
+      expect(find.text('Armando la mesa'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('avanzar turno y cerrar el combate lo borra del servidor', (
       tester,
     ) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sumar monstruo'));
       await tester.pumpAndSettle();
@@ -855,6 +979,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sumar'));
       await tester.pumpAndSettle();
+      await tirarIniciativa(tester);
 
       await tester.tap(find.text('Siguiente turno'));
       await tester.pumpAndSettle();
@@ -876,7 +1001,7 @@ void main() {
     testWidgets('descartar el combate lo cierra sin guardarlo', (tester) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
@@ -897,7 +1022,7 @@ void main() {
     testWidgets('cancelar el diálogo no termina el combate', (tester) async {
       final server = await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
@@ -916,13 +1041,10 @@ void main() {
         final server = await pumpDmMode(tester, seed: seedTable);
         await enterCode(tester, 'CODE-0001');
         await openCombate(tester);
-        await tester.tap(find.text('Empezar combate'));
+        await tester.tap(find.text('Armar combate'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Sumar a la iniciativa'));
-        await tester.pumpAndSettle();
-        await tester.enterText(find.byType(TextField), '20');
-        await tester.tap(find.text('Guardar'));
+        await tester.tap(find.text('Sumar a la mesa'));
         await tester.pumpAndSettle();
 
         await tester.tap(find.text('Sumar monstruo'));
@@ -933,6 +1055,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Sumar'));
         await tester.pumpAndSettle();
+        await tirarIniciativa(tester, initiatives: {'Sagan': 20});
 
         // El campo trae "1" por defecto: se sube antes de dañar para
         // liquidarlo de un solo golpe, sin importar sus PG máximos reales.
@@ -963,7 +1086,7 @@ void main() {
     ) async {
       await pumpDmMode(tester, seed: seedTable);
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sumar monstruo'));
       await tester.pumpAndSettle();
@@ -973,6 +1096,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sumar'));
       await tester.pumpAndSettle();
+      await tirarIniciativa(tester);
 
       expect(find.textContaining('No queda ningún enemigo'), findsNothing);
 
@@ -994,13 +1118,12 @@ void main() {
       final server = await pumpDmMode(tester, seed: seedTable);
       await enterCode(tester, 'CODE-0001');
       await openCombate(tester);
-      await tester.tap(find.text('Empezar combate'));
+      await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sumar a la iniciativa'));
-      await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), '8');
-      await tester.tap(find.text('Guardar'));
+      // El jugador entra primero a propósito: es el orden que antes le daba
+      // el primer turno aunque perdiera la iniciativa.
+      await tester.tap(find.text('Sumar a la mesa'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Sumar monstruo'));
@@ -1011,6 +1134,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Sumar'));
       await tester.pumpAndSettle();
+      await tirarIniciativa(tester, initiatives: {'Sagan': 8});
 
       // La iniciativa del goblin se tira sola, así que no se puede fijar
       // quién gana: lo que sí tiene que valer siempre es que el turno esté

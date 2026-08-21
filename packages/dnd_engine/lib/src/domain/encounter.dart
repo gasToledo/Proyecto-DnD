@@ -73,11 +73,12 @@ class Combatant {
   bool get isDown =>
       kind == CombatantKind.monster && maxHp > 0 && currentHp <= 0;
 
-  Combatant copyWith({int? currentHp, List<String>? tags}) => Combatant(
+  Combatant copyWith({int? currentHp, List<String>? tags, int? initiative}) =>
+      Combatant(
         id: id,
         kind: kind,
         name: name,
-        initiative: initiative,
+        initiative: initiative ?? this.initiative,
         memberId: memberId,
         creatureId: creatureId,
         currentHp: currentHp ?? this.currentHp,
@@ -147,6 +148,40 @@ enum TurnStatus {
   }
 }
 
+/// En qué momento está un encuentro.
+///
+/// Existe porque armar la mesa y jugarla son dos cosas distintas, y hasta que
+/// se separaron el jugador lo notaba: apenas el DM lo sumaba al orden, su
+/// ficha le decía «Es tu turno» mientras el DM seguía cargando goblins.
+enum EncounterStage {
+  /// Se está armando: entran jugadores y monstruos, todavía sin iniciativa.
+  /// No hay ronda, no hay turno, y **el jugador no ve nada**.
+  preparing('Preparando'),
+
+  /// Ya se tiró iniciativa y la mesa está jugando.
+  running('En curso');
+
+  const EncounterStage(this.label);
+
+  /// Nombre en español, para la UI.
+  final String label;
+
+  String toJson() => name;
+
+  /// **Un documento sin etapa se lee como [running]**, no como [preparing].
+  ///
+  /// Es al revés que el valor por defecto del constructor, y a propósito: los
+  /// combates que ya estaban guardados cuando esto no existía estaban en
+  /// curso —tenían iniciativa tirada y una ronda corriendo—, así que leerlos
+  /// como «preparando» les borraría el turno a mitad de una sesión.
+  static EncounterStage fromJson(String? v) {
+    for (final s in EncounterStage.values) {
+      if (s.name == v) return s;
+    }
+    return EncounterStage.running;
+  }
+}
+
 /// El estado compartido de una mesa en combate.
 ///
 /// Se llama `Encounter` y no `Combat` porque [CombatState]/`CombatOps` ya
@@ -168,12 +203,20 @@ class Encounter {
   final int turnIndex;
   final List<Combatant> combatants;
 
+  /// Armándose o jugándose. Ver [EncounterStage] — el valor por defecto de acá
+  /// es [EncounterStage.preparing] y el de `fromJson` es
+  /// [EncounterStage.running], y esa asimetría es deliberada.
+  final EncounterStage stage;
+
   const Encounter({
     required this.id,
     this.round = 1,
     this.turnIndex = 0,
     this.combatants = const [],
+    this.stage = EncounterStage.preparing,
   });
+
+  bool get isPreparing => stage == EncounterStage.preparing;
 
   /// La primera posición a partir de [start] (**sin** acotar a la lista)
   /// cuyo combatiente no está [Combatant.isDown], o `null` si todos lo
@@ -204,14 +247,14 @@ class Encounter {
   /// Salta cualquier monstruo a 0 PG a partir de [turnIndex]: está
   /// inconsciente o muerto, no actúa.
   Combatant? get current =>
-      combatants.isEmpty ? null : combatants[_currentIndex];
+      combatants.isEmpty || isPreparing ? null : combatants[_currentIndex];
 
   /// El siguiente en pie después de [current], envolviendo al final de la
   /// ronda. Es a quien le llega el aviso "preparate, seguís vos" — por eso
   /// también salta caídos: avisarle a alguien que en realidad va después de
   /// un monstruo inconsciente sería mentirle sobre cuánto falta.
   Combatant? get onDeck {
-    if (combatants.length < 2) return null;
+    if (combatants.length < 2 || isPreparing) return null;
     final currentIndex = _currentIndex;
     final position = _nextStandingPosition(currentIndex + 1);
     if (position == null) return null;
@@ -227,7 +270,8 @@ class Encounter {
   /// el encuentro queda tal cual, porque avanzar no tendría destino. Le toca
   /// al DM sacar a los caídos de la mesa o cerrar el combate.
   Encounter next() {
-    if (combatants.isEmpty) return this;
+    // Mientras se arma no hay turno que avanzar.
+    if (combatants.isEmpty || isPreparing) return this;
     final currentIndex = _currentIndex;
     final position = _nextStandingPosition(currentIndex + 1);
     if (position == null) return this;
@@ -237,6 +281,7 @@ class Encounter {
       round: wrapped ? round + 1 : round,
       turnIndex: position % combatants.length,
       combatants: combatants,
+      stage: stage,
     );
   }
 
@@ -252,19 +297,24 @@ class Encounter {
   /// combatiente sea el que se está reemplazando, en cuyo caso el turno se
   /// queda donde está.
   ///
-  /// **Mientras se arma el orden eso no aplica**: si nadie avanzó todavía
-  /// ningún turno (ronda 1, primer puesto), el turno vuelve al primero de la
-  /// iniciativa en vez de quedarse clavado en quien se cargó primero. Sin
-  /// esto, cargar al jugador antes que a los monstruos le daba el primer
-  /// turno aunque todos le ganaran la iniciativa.
+  /// **Mientras se arma la mesa el orden es otro**: todavía nadie tiró
+  /// iniciativa, así que ordenar por ella dejaría a todos empatados en cero y
+  /// la lista saltaría sola en cuanto se tirara. En [EncounterStage.preparing]
+  /// van los jugadores primero y los monstruos después, cada bando en el orden
+  /// en que se cargó — así el «Goblin 2» aparece pegado al «Goblin».
   Encounter withCombatant(Combatant combatant) {
-    final settingUp = round == 1 && turnIndex == 0;
-    final currentId = settingUp || combatants.isEmpty ? null : current?.id;
+    final currentId = isPreparing || combatants.isEmpty ? null : current?.id;
     final withIndex = [
       for (final (i, c) in combatants.indexed)
         if (c.id != combatant.id) (index: i, combatant: c),
       (index: combatants.length, combatant: combatant),
     ]..sort((a, b) {
+        if (isPreparing) {
+          final bySide = a.combatant.kind.index.compareTo(
+            b.combatant.kind.index,
+          );
+          return bySide != 0 ? bySide : a.index.compareTo(b.index);
+        }
         final byInitiative =
             b.combatant.initiative.compareTo(a.combatant.initiative);
         return byInitiative != 0 ? byInitiative : a.index.compareTo(b.index);
@@ -277,6 +327,36 @@ class Encounter {
       round: round,
       turnIndex: newIndex < 0 ? 0 : newIndex,
       combatants: next,
+      stage: stage,
+    );
+  }
+
+  /// Arranca el combate con la iniciativa ya tirada: `{id del combatiente:
+  /// valor}`.
+  ///
+  /// Es la transición de armar a jugar, y hace las tres cosas juntas a
+  /// propósito — fijar los números, ordenar y pasar de etapa— porque un
+  /// combate a medio arrancar no es un estado que valga la pena representar.
+  ///
+  /// A quien no aparezca en [initiatives] le queda la que ya tenía. El orden
+  /// resultante es el de siempre: iniciativa descendente, y en un empate gana
+  /// quien ya estaba en la mesa.
+  Encounter start(Map<String, int> initiatives) {
+    final withIndex = [
+      for (final (i, c) in combatants.indexed)
+        (index: i, combatant: c.copyWith(initiative: initiatives[c.id])),
+    ]..sort((a, b) {
+        final byInitiative =
+            b.combatant.initiative.compareTo(a.combatant.initiative);
+        return byInitiative != 0 ? byInitiative : a.index.compareTo(b.index);
+      });
+
+    return Encounter(
+      id: id,
+      round: 1,
+      turnIndex: 0,
+      combatants: [for (final e in withIndex) e.combatant],
+      stage: EncounterStage.running,
     );
   }
 
@@ -290,7 +370,13 @@ class Encounter {
         if (c.id != combatantId) c,
     ];
     if (next.isEmpty) {
-      return Encounter(id: id, round: round, turnIndex: 0, combatants: next);
+      return Encounter(
+        id: id,
+        round: round,
+        turnIndex: 0,
+        combatants: next,
+        stage: stage,
+      );
     }
     final newIndex = currentId == null || currentId == combatantId
         ? turnIndex % next.length
@@ -300,6 +386,7 @@ class Encounter {
       round: round,
       turnIndex: newIndex < 0 ? 0 : newIndex,
       combatants: next,
+      stage: stage,
     );
   }
 
@@ -317,6 +404,7 @@ class Encounter {
             else
               c,
         ],
+        stage: stage,
       );
 
   /// Reemplaza los tags de un combatiente.
@@ -342,13 +430,20 @@ class Encounter {
             else
               c,
         ],
+        stage: stage,
       );
 
   /// El turno de un jugador puntual, identificado por su [memberId] en esta
   /// campaña. Es la proyección que el servidor le sirve al jugador — nunca
   /// el encuentro entero.
+  ///
+  /// **Mientras el DM arma la mesa el jugador no ve nada.** Antes de que la
+  /// etapa existiera, apenas lo sumaba al orden su ficha ya le decía «Es tu
+  /// turno» —era el primero de una lista de uno— mientras el DM seguía
+  /// cargando goblins. Enterarse de que hay combate antes de que empiece es
+  /// justo lo que el aviso de turno no debe filtrar.
   TurnStatus statusFor(String memberId) {
-    if (combatants.isEmpty) return TurnStatus.none;
+    if (combatants.isEmpty || isPreparing) return TurnStatus.none;
     if (current?.memberId == memberId) return TurnStatus.active;
     if (onDeck?.memberId == memberId) return TurnStatus.next;
     final known = combatants.any((c) => c.memberId == memberId);
@@ -361,6 +456,7 @@ class Encounter {
         'round': round,
         'turnIndex': turnIndex,
         'combatants': [for (final c in combatants) c.toJson()],
+        'stage': stage.toJson(),
       };
 
   factory Encounter.fromJson(Map<String, dynamic> source) {
@@ -373,6 +469,7 @@ class Encounter {
         for (final c in (j['combatants'] as List? ?? const []))
           Combatant.fromJson((c as Map).cast<String, dynamic>()),
       ],
+      stage: EncounterStage.fromJson(j['stage'] as String?),
     );
   }
 

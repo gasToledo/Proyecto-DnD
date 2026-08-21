@@ -14,8 +14,12 @@ void main() {
     repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
   });
 
-  ComputedSheet druid(int level, {List<String> forms = const []}) =>
-      CharacterCompiler(repo).compile(
+  ComputedSheet druid(
+    int level, {
+    List<String> forms = const [],
+    ContentRepository? using,
+  }) =>
+      CharacterCompiler(using ?? repo).compile(
         Character(
           id: 'probe',
           name: 'Prueba',
@@ -69,6 +73,41 @@ void main() {
       // El oso negro es VD 1/2: no estaba a nivel 2 y aparece a nivel 4.
       expect(dos.options.map((b) => b.id), isNot(contains('black-bear')));
       expect(cuatro.options.map((b) => b.id), contains('black-bear'));
+    });
+
+    test('una bestia homebrew entra al pozo solo si se declara disponible',
+        () async {
+      // Repositorio propio: el compartido lo usan los demás tests y una
+      // criatura de más le cambiaría los conteos por la espalda.
+      final conHomebrew = await ContentRepository.loadFromDirectory(
+        'lib/assets/srd_2024',
+      );
+      Creature bestia(String id, {required bool available}) => Creature(
+            id: id,
+            name: id,
+            source: ContentSource.homebrew,
+            type: CreatureType.beast,
+            ac: '12',
+            hp: '10',
+            speed: '30 pies',
+            cr: 0.25,
+            availableToCharacters: available,
+          );
+      conHomebrew.creatures['sapo-gigante-hb'] = bestia(
+        'sapo-gigante-hb',
+        available: true,
+      );
+      conHomebrew.creatures['monstruo-del-dm'] = bestia(
+        'monstruo-del-dm',
+        available: false,
+      );
+
+      final ids =
+          druid(2, using: conHomebrew).wildShape!.options.map((b) => b.id);
+      expect(ids, contains('sapo-gigante-hb'));
+      // El monstruo del DM cumple todo lo demás —bestia, VD 1/4, sin vuelo— y
+      // queda afuera solo por el interruptor: es lo único que lo separa.
+      expect(ids, isNot(contains('monstruo-del-dm')));
     });
 
     test('un druida de nivel 1 todavía no tiene el rasgo', () {

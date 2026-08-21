@@ -99,9 +99,11 @@ cálculo que no está ahí, el cálculo va al engine con su test, no al widget.
 migrarlos. El contrato es siempre el mismo — no mutar la entrada, y **rechazar
 una versión futura** en vez de guardarla de vuelta perdiendo campos.
 
-`Creature` (y el resto del catálogo) **no lo lleva, y está bien**: es contenido
-que viaja con el build, no un documento de nadie. No le agregues maquinaria de
-migración.
+`Creature` (y el resto del catálogo) **no lo lleva, y está bien**: es contenido,
+no un documento de nadie. Que una criatura pueda ser homebrew y vivir en la
+base no lo cambia — el homebrew guarda contenido tal cual, igual que un arma o
+un conjuro propios, y ninguno de esos lleva versión. No le agregues maquinaria
+de migración.
 
 ### La autorización vive adentro del `WHERE`
 

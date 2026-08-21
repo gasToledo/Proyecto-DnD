@@ -32,6 +32,17 @@ enum CreatureType {
   /// Nombre en español, para la UI.
   final String label;
 
+  /// La etiqueta es femenina, y el tamaño que la acompaña tiene que concordar:
+  /// «Bestia Mediana» pero «Gigante Grande». Solo hace falta para componer la
+  /// línea de perfil de una criatura homebrew — las del catálogo la traen
+  /// escrita del libro.
+  bool get feminine => const {
+        CreatureType.aberration,
+        CreatureType.beast,
+        CreatureType.monstrosity,
+        CreatureType.plant,
+      }.contains(this);
+
   String toJson() => id;
 
   static CreatureType? fromJson(String? v) {
@@ -528,6 +539,15 @@ class Creature {
   /// `spellLevel` (Corcel Sobrenatural, Sirviente Homúnculo).
   final bool scalesWithSpellLevel;
 
+  /// La criatura puede aparecer en la construcción de un personaje: hoy el
+  /// único consumidor es el pozo de Forma Salvaje.
+  ///
+  /// Verdadero por defecto porque es lo que valía para las 367 del catálogo
+  /// antes de que existiera el campo. El formulario homebrew lo arranca
+  /// **apagado**: un DM que se inventa un monstruo lo quiere en la mesa, no
+  /// entre las formas que puede tomar el druida de otro.
+  final bool availableToCharacters;
+
   final List<CreatureTrait> traits;
   final List<CreatureAction> actions;
 
@@ -553,6 +573,7 @@ class Creature {
     this.defenses = '',
     this.cr,
     this.scalesWithSpellLevel = false,
+    this.availableToCharacters = true,
     this.traits = const [],
     this.actions = const [],
   });
@@ -632,6 +653,9 @@ class Creature {
         'defenses': defenses,
         if (cr != null) 'cr': cr,
         'scalesWithSpellLevel': scalesWithSpellLevel,
+        // Solo cuando es falso: así el catálogo generado no cambia ni una línea
+        // por un campo que ninguna de sus entradas apaga.
+        if (!availableToCharacters) 'availableToCharacters': false,
         'traits': [for (final t in traits) t.toJson()],
         'actions': [for (final a in actions) a.toJson()],
       };
@@ -669,6 +693,7 @@ class Creature {
         defenses: j['defenses'] as String? ?? '',
         cr: j['cr'] as num?,
         scalesWithSpellLevel: j['scalesWithSpellLevel'] as bool? ?? false,
+        availableToCharacters: j['availableToCharacters'] as bool? ?? true,
         traits: [
           for (final t in (j['traits'] as List? ?? const []))
             CreatureTrait.fromJson((t as Map).cast<String, dynamic>()),

@@ -20,7 +20,7 @@ void main() {
   });
 
   testWidgets(
-    'las siete categorías y el formulario de armas siguen accesibles',
+    'las ocho categorías y el formulario de armas siguen accesibles',
     (tester) async {
       tester.view.physicalSize = const Size(1000, 700);
       tester.view.devicePixelRatio = 1;
@@ -44,14 +44,21 @@ void main() {
         'Razas': 'Agregar raza',
         'Trasfondos': 'Agregar trasfondo',
         'Conjuros': 'Agregar conjuro',
+        'Criaturas': 'Agregar criatura',
       };
+      // Con ocho pestañas la barra ya no entra entera: hay que traer cada una
+      // a la vista antes de tocarla, incluso para volver a la primera.
       for (final entry in categories.entries) {
+        await tester.ensureVisible(find.text(entry.key));
+        await tester.pumpAndSettle();
         await tester.tap(find.text(entry.key));
         await tester.pumpAndSettle();
         expect(find.text(entry.value), findsOneWidget);
         expect(tester.takeException(), isNull);
       }
 
+      await tester.ensureVisible(find.text('Armas'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Armas'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Agregar arma'));
@@ -353,5 +360,139 @@ void main() {
 
     expect(store.weapons.containsKey('hb-hoz'), isTrue);
     expect(find.text('Hoz de guerra'), findsOneWidget);
+  });
+
+  /// Abre un formulario de criatura y devuelve lo que se guardó.
+  Future<Creature?> runCreatureForm(
+    WidgetTester tester, {
+    Creature? initial,
+    Future<void> Function(WidgetTester tester)? edit,
+  }) async {
+    tester.view.physicalSize = const Size(1000, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    Creature? saved;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: FilledButton(
+              onPressed: () async => saved = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CreatureForm(initial: initial),
+                ),
+              ),
+              child: const Text('Abrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+    if (edit != null) await edit(tester);
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+    return saved;
+  }
+
+  // El interruptor apagado es la frontera de la fase: un monstruo inventado
+  // para la mesa no tiene por qué aparecer entre las formas que puede tomar el
+  // druida de la partida.
+  testWidgets('una criatura nueva no queda disponible para personajes', (
+    tester,
+  ) async {
+    final saved = await runCreatureForm(
+      tester,
+      edit: (tester) async {
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Nombre').first,
+          'Espanto del pantano',
+        );
+      },
+    );
+
+    expect(saved?.availableToCharacters, isFalse);
+    expect(saved?.source, ContentSource.homebrew);
+    expect(tester.takeException(), isNull);
+  });
+
+  // El tipo manda el género de la línea de perfil: «Bestia Mediana» pero
+  // «Gigante Mediano». Compuesta mal se lee como un error de tipeo del catálogo.
+  testWidgets('la línea de perfil concuerda con el tipo elegido', (
+    tester,
+  ) async {
+    final saved = await runCreatureForm(
+      tester,
+      edit: (tester) async {
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Nombre').first,
+          'Bruto',
+        );
+        await tester.tap(find.text('Monstruosidad').last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Gigante').last);
+        await tester.pumpAndSettle();
+      },
+    );
+
+    expect(saved?.kind, 'Gigante Mediano');
+    expect(saved?.type, CreatureType.giant);
+  });
+
+  // El formulario no edita salvaciones ni habilidades (ver el `ponytail:` de
+  // `creature_form.dart`): tocar el nombre de una criatura importada no puede
+  // vaciárselas por la espalda.
+  testWidgets('editar conserva lo que el formulario no muestra', (
+    tester,
+  ) async {
+    const original = Creature(
+      id: 'hb-quimera',
+      name: 'Quimera del páramo',
+      source: ContentSource.homebrew,
+      type: CreatureType.monstrosity,
+      size: CreatureSize.large,
+      ac: '14',
+      hp: '45',
+      hitDice: '6d10 + 12',
+      speed: '40 pies',
+      cr: 0.25,
+      savingThrows: {Ability.constitution: 5},
+      skills: {Skill.perception: 4},
+    );
+
+    final saved = await runCreatureForm(tester, initial: original);
+
+    expect(saved?.id, 'hb-quimera');
+    expect(saved?.savingThrows, original.savingThrows);
+    expect(saved?.skills, original.skills);
+    expect(saved?.hitDice, '6d10 + 12');
+    expect(saved?.cr, 0.25);
+  });
+
+  testWidgets('unos dados de golpe ilegibles frenan el guardado', (
+    tester,
+  ) async {
+    final saved = await runCreatureForm(
+      tester,
+      edit: (tester) async {
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Nombre').first,
+          'Cosa',
+        );
+        await tester.enterText(
+          find.widgetWithText(
+            TextFormField,
+            'Dados de golpe (opcional, p.ej. 2d6 + 2)',
+          ),
+          'un montón',
+        );
+      },
+    );
+
+    expect(saved, isNull);
+    expect(find.textContaining('Formato inválido'), findsOneWidget);
   });
 }

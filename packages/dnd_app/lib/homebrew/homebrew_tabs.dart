@@ -303,6 +303,43 @@ extension _HomebrewTabs on _HomebrewScreenState {
     _saved(s.name);
   }
 
+  // ------------------------------------------------------------ Criaturas
+  Widget _creaturesTab() => _list(
+    addLabel: 'Agregar criatura',
+    onAdd: () => _editCreature(),
+    items: sortedByName(store.creatures.values, (e) => e.name)
+        .map(
+          (c) => _tile(
+            c.name,
+            [
+              c.kind,
+              'CA ${c.ac}',
+              '${c.hp} PG',
+              if (c.cr != null) 'VD ${_formatCr(c.cr)}',
+              if (c.availableToCharacters) 'disponible para personajes',
+            ].join(' · '),
+            onEdit: () => _editCreature(c),
+            onDelete: () => _delete(
+              'la criatura',
+              c.name,
+              () => store.deleteCreature(c.id),
+              () => repo.creatures.remove(c.id),
+            ),
+          ),
+        )
+        .toList(),
+  );
+
+  Future<void> _editCreature([Creature? initial]) async {
+    final c = await Navigator.of(context).push<Creature>(
+      MaterialPageRoute(builder: (_) => CreatureForm(initial: initial)),
+    );
+    if (c == null) return _discarded();
+    if (!await _persist(() => store.saveCreature(c))) return;
+    repo.creatures[c.id] = c;
+    _saved(c.name);
+  }
+
   /// Borra una entrada homebrew, preguntando primero.
   ///
   /// Preguntar no es ceremonia: el botón de borrar está a un toque en cada

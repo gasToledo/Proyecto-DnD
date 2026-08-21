@@ -33,6 +33,7 @@ const _homebrewCategories = {
   'races',
   'backgrounds',
   'spells',
+  'creatures',
 };
 
 /// Ejecuta la importación ya decodificada para [userId]. Se recibe como

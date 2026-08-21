@@ -16,6 +16,7 @@ class HomebrewStore {
   final Map<String, Race> races = {};
   final Map<String, Background> backgrounds = {};
   final Map<String, Spell> spells = {};
+  final Map<String, Creature> creatures = {};
 
   HomebrewStore(this.api);
 
@@ -70,6 +71,13 @@ class HomebrewStore {
           (j) => MapEntry(j['id'] as String, Spell.fromJson(j)),
         ),
       );
+    creatures
+      ..clear()
+      ..addEntries(
+        (content['creatures'] ?? const []).map(
+          (j) => MapEntry(j['id'] as String, Creature.fromJson(j)),
+        ),
+      );
   }
 
   /// Todo el contenido homebrew serializado a listas JSON por tipo, para
@@ -82,6 +90,7 @@ class HomebrewStore {
     'races': races.values.map((e) => e.toJson()).toList(),
     'backgrounds': backgrounds.values.map((e) => e.toJson()).toList(),
     'spells': spells.values.map((e) => e.toJson()).toList(),
+    'creatures': creatures.values.map((e) => e.toJson()).toList(),
   };
 
   /// Cuántas entradas de [content] tienen un id que **ya existe** en el store
@@ -97,6 +106,7 @@ class HomebrewStore {
       'races': races.keys.toSet(),
       'backgrounds': backgrounds.keys.toSet(),
       'spells': spells.keys.toSet(),
+      'creatures': creatures.keys.toSet(),
     };
     var n = 0;
     for (final entry in content.entries) {
@@ -196,6 +206,7 @@ class HomebrewStore {
     races: Map.of(races),
     backgrounds: Map.of(backgrounds),
     spells: Map.of(spells),
+    creatures: Map.of(creatures),
   );
 
   Future<void> saveWeapon(Weapon w) async {
@@ -233,6 +244,11 @@ class HomebrewStore {
     spells[s.id] = s;
   }
 
+  Future<void> saveCreature(Creature c) async {
+    await api.upsertHomebrew('creatures', c.toJson());
+    creatures[c.id] = c;
+  }
+
   Future<void> deleteWeapon(String id) async {
     await api.deleteHomebrew('weapons', id);
     weapons.remove(id);
@@ -266,6 +282,11 @@ class HomebrewStore {
   Future<void> deleteSpell(String id) async {
     await api.deleteHomebrew('spells', id);
     spells.remove(id);
+  }
+
+  Future<void> deleteCreature(String id) async {
+    await api.deleteHomebrew('creatures', id);
+    creatures.remove(id);
   }
 }
 

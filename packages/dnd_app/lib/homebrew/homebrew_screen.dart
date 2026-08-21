@@ -12,6 +12,7 @@ import 'effect_editor.dart';
 
 part 'forms/armor_form.dart';
 part 'forms/background_form.dart';
+part 'forms/creature_form.dart';
 part 'forms/feat_form.dart';
 part 'forms/form_widgets.dart';
 part 'forms/item_form.dart';
@@ -231,7 +232,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 7,
+      length: 8,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Contenido homebrew'),
@@ -257,6 +258,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
               Tab(text: 'Razas'),
               Tab(text: 'Trasfondos'),
               Tab(text: 'Conjuros'),
+              Tab(text: 'Criaturas'),
             ],
           ),
         ),
@@ -269,6 +271,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
             _racesTab(),
             _backgroundsTab(),
             _spellsTab(),
+            _creaturesTab(),
           ],
         ),
       ),

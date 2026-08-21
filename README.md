@@ -72,9 +72,15 @@ llegan al navegador.
 
 ### Contenido propio
 
-Desde la sección Homebrew creás armas, armaduras, dotes, especies, trasfondos
-y conjuros propios, que quedan en tu cuenta y aparecen mezclados con el
-contenido oficial en el asistente, en la subida de nivel y en la ficha.
+Desde la sección Homebrew creás armas, armaduras, dotes, especies, trasfondos,
+conjuros y criaturas propias, que quedan en tu cuenta y aparecen mezcladas con
+el contenido oficial en el asistente, en la subida de nivel y en la ficha.
+
+Las criaturas van además al bestiario del Modo DM, listas para sumarse a un
+combate. Cada una decide con un interruptor si puede aparecer también en la
+construcción de un personaje —hoy, entre las formas de Forma Salvaje—; nace
+apagado, porque un monstruo inventado para la mesa no es una forma que el
+druida de la partida deba poder tomar.
 
 ### Modo DM
 

@@ -708,7 +708,8 @@ class CharacterCompiler {
     // ninguno», con lo que no pueden cumplir un máximo.
     final options = [
       for (final beast in repo.creatures.values)
-        if (beast.isBeast &&
+        if (beast.availableToCharacters &&
+            beast.isBeast &&
             beast.cr != null &&
             beast.cr! <= e.maxCr &&
             (e.allowFly || !beast.canFly))

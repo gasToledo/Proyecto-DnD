@@ -167,4 +167,35 @@ void main() {
       expect(message.text, isNot(contains('null')));
     });
   });
+
+  group('Inspiración Heroica concedida por el DM', () {
+    test('nombra al personaje, la campaña y dice que la marque él', () {
+      final message = messageForEvent(
+        const UserEvent(
+          id: 'e9',
+          kind: 'heroic_inspiration_granted',
+          payload: {'characterName': 'Sagan', 'campaignName': 'La Tumba'},
+        ),
+      )!;
+
+      expect(message.text, contains('Sagan'));
+      expect(message.text, contains('La Tumba'));
+      // Lo importante del mensaje: el DM no se la marcó en la ficha.
+      expect(message.text, contains('Marcala'));
+      expect(message.tone, AppMessageTone.success);
+    });
+
+    test('sin nombres igual dice algo legible', () {
+      final message = messageForEvent(
+        const UserEvent(
+          id: 'e10',
+          kind: 'heroic_inspiration_granted',
+          payload: {},
+        ),
+      );
+
+      expect(message, isNotNull);
+      expect(message!.text, isNot(contains('null')));
+    });
+  });
 }

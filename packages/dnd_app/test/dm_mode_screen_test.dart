@@ -309,6 +309,47 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // El DM no escribe la ficha de otra cuenta: conceder es dejar un aviso.
+  testWidgets('conceder Inspiración Heroica avisa y no toca la ficha', (
+    tester,
+  ) async {
+    final server = await pumpDmMode(tester, seed: seedTable);
+    await enterCode(tester, 'CODE-0001');
+
+    final antes = server.characters['sagan']!.toJson();
+
+    await tester.tap(find.byTooltip('Acciones de Sagan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Conceder Inspiración Heroica'));
+    await tester.pumpAndSettle();
+
+    expect(server.heroicInspirationGrants, hasLength(1));
+    // Sigue en la mesa: el ítem nuevo no puede terminar echando a nadie.
+    expect(server.campaignMembers, hasLength(1));
+    // Y la ficha quedó intacta.
+    expect(server.characters['sagan']!.toJson(), antes);
+    expect(find.textContaining('La marca en su ficha'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(seconds: 5));
+  });
+
+  // Regresión del bug más fácil de cometer: el menú tenía
+  // `onSelected: (_) => onRemove()`, que ignora cuál ítem se eligió.
+  testWidgets('elegir conceder no echa al personaje de la mesa', (
+    tester,
+  ) async {
+    final server = await pumpDmMode(tester, seed: seedTable);
+    await enterCode(tester, 'CODE-0001');
+
+    await tester.tap(find.byTooltip('Acciones de Sagan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Conceder Inspiración Heroica'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Echar personaje'), findsNothing);
+    expect(server.campaignMembers, hasLength(1));
+    await tester.pump(const Duration(seconds: 5));
+  });
   testWidgets('el panel entra en una ventana angosta sin desbordar', (
     tester,
   ) async {

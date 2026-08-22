@@ -2465,6 +2465,106 @@ void main() {
         expect(forDm, isEmpty);
       });
 
+      group('Conceder Inspiración Heroica', () {
+        /// Vincula un personaje a una campaña y devuelve los dos tokens más el
+        /// `memberId`, que es lo que identifica el vínculo.
+        Future<(String, String, String)> mesa(String slug) async {
+          final tokenA = await login('$slug-player');
+          final code = await shareCharacter(tokenA, 'sagan');
+          final tokenB = await login('$slug-dm');
+          await createCampaign(tokenB, 'tumba');
+          final redeemed = await send(
+            'POST',
+            '/api/campaigns/tumba/members',
+            token: tokenB,
+            body: {'code': code},
+          );
+          return (
+            tokenA,
+            tokenB,
+            redeemed['body']['member']['memberId'] as String,
+          );
+        }
+
+        test('le llega el aviso al dueño del personaje', () async {
+          final (tokenA, tokenB, memberId) = await mesa('hi-ok');
+
+          final res = await send(
+            'POST',
+            '/api/campaigns/tumba/members/$memberId/heroic-inspiration',
+            token: tokenB,
+          );
+          expect(res['status'], 200);
+
+          final forPlayer =
+              (await send(
+                    'GET',
+                    '/api/events',
+                    token: tokenA,
+                  ))['body']['events']
+                  as List;
+          final aviso = forPlayer.firstWhere(
+            (e) => e['kind'] == 'heroic_inspiration_granted',
+          );
+          expect(aviso['payload']['characterName'], 'Sagan');
+          expect(aviso['payload']['campaignName'], 'La Tumba');
+
+          // Al DM que la concedió no le llega nada: ya vio la respuesta.
+          final forDm =
+              (await send(
+                    'GET',
+                    '/api/events',
+                    token: tokenB,
+                  ))['body']['events']
+                  as List;
+          expect(
+            forDm.where((e) => e['kind'] == 'heroic_inspiration_granted'),
+            isEmpty,
+          );
+        });
+
+        test('no le toca la ficha al jugador', () async {
+          // La prueba que fija la frontera del Modo DM. Compara el **documento
+          // guardado** y no la ficha compilada: una compilada podría coincidir
+          // aunque el documento hubiera cambiado.
+          final (tokenA, tokenB, memberId) = await mesa('hi-frontera');
+
+          final antes = await send('GET', '/api/characters', token: tokenA);
+          await send(
+            'POST',
+            '/api/campaigns/tumba/members/$memberId/heroic-inspiration',
+            token: tokenB,
+          );
+          final despues = await send('GET', '/api/characters', token: tokenA);
+
+          expect(despues['body'], antes['body']);
+        });
+
+        test('un DM ajeno a la campaña recibe 404', () async {
+          final (_, _, memberId) = await mesa('hi-ajeno');
+          final intruso = await login('hi-intruso');
+
+          final res = await send(
+            'POST',
+            '/api/campaigns/tumba/members/$memberId/heroic-inspiration',
+            token: intruso,
+          );
+          // Lo ajeno y lo inexistente responden igual: distinguirlos convertiría
+          // la API en una forma de averiguar qué hay en otras cuentas.
+          expect(res['status'], 404);
+        });
+
+        test('un vínculo que no existe recibe 404', () async {
+          final (_, tokenB, _) = await mesa('hi-inexistente');
+
+          final res = await send(
+            'POST',
+            '/api/campaigns/tumba/members/no-existe/heroic-inspiration',
+            token: tokenB,
+          );
+          expect(res['status'], 404);
+        });
+      });
       test('un capítulo sin nivel avisa sin la marca de nivel', () async {
         final tokenA = await login('ch-close-nolevel-player');
         final code = await shareCharacter(tokenA, 'sagan');

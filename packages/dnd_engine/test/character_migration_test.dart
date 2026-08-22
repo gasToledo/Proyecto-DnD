@@ -952,4 +952,57 @@ void main() {
       ),
     );
   });
+
+  group('Cansancio e Inspiración Heroica no piden migración', () {
+    /// Los dos se resuelven al leer, sin paso en `migrateJson`. La versión del
+    /// esquema **no sube**: `false` es el valor correcto para un documento
+    /// viejo —nadie tenía Inspiración Heroica antes— y subirla tendría un costo
+    /// asimétrico, porque una pestaña vieja abierta se negaría a abrir el
+    /// personaje entero por un bool.
+    Map<String, dynamic> alDia({Map<String, dynamic>? combat}) => {
+          'schemaVersion': Character.currentSchemaVersion,
+          'id': 'viejo',
+          'name': 'Viejo',
+          'raceId': 'human',
+          'classId': 'fighter',
+          'backgroundId': 'soldier',
+          'level': 1,
+          if (combat != null) 'combat': combat,
+        };
+
+    test('un documento sin la clave se lee como que no la tiene', () {
+      final c = Character.fromJson(alDia(combat: {'currentHp': 10}));
+      expect(c.combat.heroicInspiration, isFalse);
+    });
+
+    test('la clave viaja en el ida y vuelta', () {
+      final c = Character.fromJson(
+        alDia(combat: {'currentHp': 10, 'heroicInspiration': true}),
+      );
+      expect(c.combat.heroicInspiration, isTrue);
+      expect(
+        Character.fromJson(c.toJson()).combat.heroicInspiration,
+        isTrue,
+      );
+    });
+
+    test('un cansancio imposible se normaliza al leer', () {
+      // Un documento importado o tocado a mano puede traer cualquier cosa, y
+      // la ficha no tiene forma de mostrar un nivel 9 ni uno negativo.
+      expect(
+        Character.fromJson(alDia(combat: {'exhaustion': 9})).combat.exhaustion,
+        maxExhaustionLevel,
+      );
+      expect(
+        Character.fromJson(alDia(combat: {'exhaustion': -3})).combat.exhaustion,
+        0,
+      );
+    });
+
+    test('la versión del esquema no se movió', () {
+      // Si este número cambia por sumar un bool al estado de combate, algo se
+      // entendió al revés: lo que falta se defaultea al leer.
+      expect(Character.currentSchemaVersion, 21);
+    });
+  });
 }

@@ -393,6 +393,17 @@ class ApiClient {
         '${Uri.encodeComponent(chapterId)}/close',
   );
 
+  /// Le avisa al jugador que le concediste Inspiración Heroica.
+  ///
+  /// **La marca él en su ficha**: el DM no escribe la ficha de otra cuenta.
+  /// Esto solo le deja la nota en la bandeja.
+  Future<void> grantHeroicInspiration(String campaignId, String memberId) =>
+      _send(
+        'POST',
+        '/api/campaigns/${Uri.encodeComponent(campaignId)}/members/'
+            '${Uri.encodeComponent(memberId)}/heroic-inspiration',
+      );
+
   /// El Cuaderno de campaña entero: las notas del DM y los combates ya
   /// cerrados.
   ///

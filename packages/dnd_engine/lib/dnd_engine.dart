@@ -32,4 +32,5 @@ export 'src/engine/initiative.dart';
 export 'src/engine/combat_ops.dart';
 export 'src/engine/inventory_ops.dart';
 export 'src/engine/wild_shape.dart';
+export 'src/engine/exhaustion.dart';
 export 'src/engine/sheet_diff.dart';

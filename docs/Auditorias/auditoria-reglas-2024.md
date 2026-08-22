@@ -407,14 +407,52 @@ Ordenados por costo, del más barato al más caro:
    Un borrador guardado **no se confía**: se acepta solo si las seis están en
    rango y el total entra en los 27; si algo no cierra vuelve al mínimo, en vez
    de restaurar un reparto que la UI no habría podido producir.
-6. **Agotamiento e Inspiración Heroica**: ambos existen como dato pero no
-   afectan ningún cálculo. En 2024 el agotamiento da −2 por nivel a las pruebas
-   de d20 y −5 pies de velocidad. La Inspiración Heroica no está modelada en
-   absoluto, lo que deja incompleto al **Humano**: su rasgo Ingenioso la concede
-   en cada descanso largo y hoy es solo texto. Hay un choque de diseño que
-   resolver: `CombatState` no alimenta `ComputedSheet` por decisión explícita,
-   así que conviene aplicarlo como una capa de modificadores situacionales sobre
-   la ficha ya calculada, que además sirve para el resto de las condiciones.
+6. ~~**Agotamiento e Inspiración Heroica**~~ — **resuelto**, y de paso quedó
+   claro que el nombre estaba mal: el SRD 5.2.1 en español lo llama
+   **Cansancio**, no Agotamiento. El id sigue siendo `exhaustion`, que es la
+   clave estable que viaja en los personajes guardados.
+
+   El choque de diseño se resolvió como se preveía —una capa sobre la ficha ya
+   calculada, `applyExhaustion` en `engine/exhaustion.dart`, encadenada después
+   de `applyWildShape`—, pero el punto fino no era ese sino **dónde entra el
+   −2 por nivel**. Descontarlo de `abilityModifiers` habría sido más corto y
+   habría bajado también el daño, la CD de conjuros, los PG máximos, la CA y la
+   capacidad de carga, que no son tiradas. Se agregó `ComputedSheet.d20Modifier`
+   —que solo leen los getters de tirada— y el getter `abilityCheck`, que faltaba:
+   la ficha leía `abilityModifiers` directo para la prueba de característica.
+   `savingThrow` y `skillModifier` se apoyan en él, así que la Percepción pasiva
+   cae sola. La contraprueba de que nada más se movió está en
+   `exhaustion_test.dart` y es la mitad del valor del archivo.
+
+   Prerequisito que salió al paso: **`ComputedSheet`, `Attack` y `Spellcasting`
+   no tenían `copyWith`**, y `applyWildShape` los reconstruía campo por campo.
+   Se le habían perdido dos por el camino —`skillBonuses` y `carriedWeight`—,
+   así que un druida transformado quedaba sin su bono de Orden Primordial y con
+   la mochila en cero. Reescribirlo sobre `copyWith` lo arregló de arrastre.
+   Hay un test con `dart:mirrors` que compara los campos de la clase contra los
+   parámetros de `copyWith`: es lo único que puede atrapar el campo que todavía
+   no existe.
+
+   La **Inspiración Heroica no es un recurso de clase**, aunque como
+   `ResourceEffect` se habría renderizado sola: la concede el DM a quien quiera,
+   así que un elfo tiene que poder tenerla. El estado vive en
+   `CombatState.heroicInspiration` (un `bool`, porque nunca hay más de una) y el
+   rasgo Ingenioso del Humano solo declara *quién la gana solo*, con
+   `HeroicInspirationOnLongRestEffect`. Sin migración: `false` es el valor
+   correcto para un documento viejo y subir `currentSchemaVersion` por un bool
+   haría que una pestaña vieja se niegue a abrir el personaje entero.
+
+   El DM la concede desde el Modo DM **como aviso y no como escritura**
+   (`POST /api/campaigns/<id>/members/<memberId>/heroic-inspiration`), con la
+   prueba negativa que compara el documento del personaje antes y después.
+
+   Nivel 6 se topea y se avisa, pero la app **no mata al personaje ni le toca
+   los PG**: esa decisión es de la mesa.
+
+   Quedan afuera a propósito, porque su disparador no es el descanso largo del
+   propio personaje: la dote **Músico** (reparte Inspiración a los aliados) y
+   **Guerrero Heroico** del Campeón (la gana al empezar su turno). También queda
+   el Cansancio de los combatientes del Modo DM.
 7. **Precio y peso del equipo**: no existen como campo en `Weapon` ni en
    `Armor`, así que no hay dónde guardarlos. Sumarlos implica campo nuevo,
    los valores de las 38 armas y 13 armaduras, y decidir si la ficha lleva

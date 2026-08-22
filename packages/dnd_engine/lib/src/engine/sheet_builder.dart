@@ -124,6 +124,11 @@ class SheetBuilder {
   /// El ataque de mano secundaria conserva el modificador de característica al
   /// daño (estilo Combate con Dos Armas).
   bool offHandAbilityDamage = false;
+
+  /// El personaje gana Inspiración Heroica al terminar un descanso largo
+  /// (rasgo Ingenioso del Humano). La ficha lo expone y `CombatOps.longRest`
+  /// lo recibe como parámetro: el motor de descansos no conoce la ficha.
+  bool heroicInspirationOnLongRest = false;
   int bonusMaxHpFlat = 0;
   int bonusMaxHpPerLevel = 0;
   int acBonus = 0;
@@ -289,6 +294,8 @@ class SheetBuilder {
             sourceName: sourceName,
           );
         }
+      case HeroicInspirationOnLongRestEffect():
+        heroicInspirationOnLongRest = true;
       case OffHandAbilityDamageEffect():
         offHandAbilityDamage = true;
       case WeaponRuleEffect():

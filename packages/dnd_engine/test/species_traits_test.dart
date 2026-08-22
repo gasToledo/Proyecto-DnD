@@ -83,6 +83,43 @@ void main() {
     test('Diestro se corresponde con la elección de habilidad', () {
       expect(repo.race('human')!.skillChoiceCount, 1);
     });
+
+    test('Ingenioso deja de ser solo texto y llega a la ficha', () {
+      // El texto sigue estando —el jugador tiene que poder leer el rasgo— y
+      // además hay un efecto al lado que el motor sabe aplicar.
+      expect(traitOf('human', 'Ingenioso'), contains('descanso largo'));
+      expect(
+        repo
+            .race('human')!
+            .effects
+            .whereType<HeroicInspirationOnLongRestEffect>(),
+        isNotEmpty,
+      );
+    });
+
+    test('la ficha del humano la gana al descansar y la del elfo no', () {
+      ComputedSheet fichaDe(String raceId) =>
+          CharacterCompiler(repo).compile(Character(
+            id: 'ingenioso-$raceId',
+            name: 'Prueba',
+            raceId: raceId,
+            classId: 'fighter',
+            backgroundId: 'soldier',
+            level: 1,
+            assignedScores: const {
+              Ability.strength: 15,
+              Ability.dexterity: 12,
+              Ability.constitution: 14,
+              Ability.intelligence: 10,
+              Ability.wisdom: 12,
+              Ability.charisma: 8,
+            },
+            hpPerLevel: const [10],
+          ));
+
+      expect(fichaDe('human').heroicInspirationOnLongRest, isTrue);
+      expect(fichaDe('elf').heroicInspirationOnLongRest, isFalse);
+    });
   });
 
   group('Aasimar (PHB 2024, fuera del SRD)', () {

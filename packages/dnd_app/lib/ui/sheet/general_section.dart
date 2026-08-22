@@ -1232,6 +1232,17 @@ extension _SheetGeneralSection on _SheetScreenState {
           StatTile(
             icon: Icons.keyboard_double_arrow_right,
             label: 'Velocidad',
+            // Al pie y no en `labelTrailing`, que es para un dato corto tipo
+            // «85%»: con este texto la placa desborda en un teléfono.
+            footer: _c.combat.exhaustion > 0
+                ? Text(
+                    'Cansancio −${5 * _c.combat.exhaustion} pies',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.palette.crimson,
+                    ),
+                  )
+                : null,
             value: '${s.speed}',
             suffix: ' pies',
           ),
@@ -1268,7 +1279,11 @@ extension _SheetGeneralSection on _SheetScreenState {
       child: AbilityPlaque(
         abbr: ability.abbr,
         score: s.abilityScores[ability]!,
-        modifier: s.abilityModifiers[ability]!,
+        // La prueba de característica y no el modificador crudo: bajo
+        // Cansancio no son lo mismo, y lo que se toca en la mesa cuando el DM
+        // dice "tirá Fuerza" es esto. El daño sale de Ataques y la CD de
+        // Conjuros, que siguen leyendo el modificador.
+        modifier: s.abilityCheck(ability),
         saveProficient: s.savingThrowProficiencies.contains(ability),
       ),
     );
@@ -1391,7 +1406,19 @@ extension _SheetGeneralSection on _SheetScreenState {
                 child: line('incluye ${_signed(b.amount)} de ${b.source}', ''),
               ),
           ],
-          if (skills.isEmpty) line('Pruebas de característica', _signed(mod)),
+          // Se muestra siempre y no solo cuando la característica no tiene
+          // habilidades: bajo Cansancio la prueba deja de coincidir con el
+          // modificador, y el número que hay que tirar es este.
+          line('Pruebas de característica', _signed(s.abilityCheck(ability))),
+          if (_c.combat.exhaustion > 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 14),
+              child: line(
+                'incluye −${2 * _c.combat.exhaustion} '
+                    'por cansancio nivel ${_c.combat.exhaustion}',
+                '',
+              ),
+            ),
           if (sc != null && sc.ability == ability) ...[
             line('Ataque con conjuros', _signed(sc.attackBonus)),
             line('CD de salvación', '${sc.saveDc}'),
@@ -1400,7 +1427,8 @@ extension _SheetGeneralSection on _SheetScreenState {
           Text(
             'Competencia +${s.proficiencyBonus} a nivel ${s.level}, ya incluida '
             'arriba. Solo se listan las habilidades en las que sos competente: '
-            'el resto tira con el modificador pelado (${_signed(mod)}).',
+            'el resto tira con la prueba de característica '
+            '(${_signed(s.abilityCheck(ability))}).',
             style: TextStyle(fontSize: 11, color: muted),
           ),
         ],

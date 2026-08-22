@@ -770,6 +770,31 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     }
   }
 
+  /// Le concede Inspiración Heroica a un personaje de la mesa.
+  ///
+  /// Sin diálogo de confirmación: no rompe nada y se puede volver a conceder.
+  /// Lo que sí hace el cartel es decir en voz alta que **esto es un aviso**,
+  /// no una escritura en la ficha ajena — si no, el DM la marca y después se
+  /// sorprende de que el jugador no la tenga.
+  Future<void> _grantInspiration(CampaignMember member) async {
+    try {
+      await widget.api.grantHeroicInspiration(
+        widget.campaign.id,
+        member.memberId,
+      );
+      if (!mounted) return;
+      showAppMessage(
+        context,
+        'Le avisamos a ${member.character.name}. La marca en su ficha.',
+        tone: AppMessageTone.success,
+      );
+    } on ApiException catch (e) {
+      if (mounted) {
+        showAppMessage(context, e.message, tone: AppMessageTone.error);
+      }
+    }
+  }
+
   // --- Capítulos ----------------------------------------------------------
 
   Future<void> _loadChapters() async {
@@ -1382,6 +1407,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
             member: members[i],
             repo: widget.repo,
             onRemove: () => _removeMember(members[i]),
+            onGrantInspiration: () => _grantInspiration(members[i]),
           ),
         );
       },
@@ -1431,19 +1457,21 @@ class _CampaignMeta extends StatelessWidget {
 ///
 /// Se compila igual que en el panel de personajes: el DM ve lo que el jugador
 /// tiene ahora, porque el vínculo apunta a la ficha real y no a una copia.
-enum _MemberMenuAction { remove }
+enum _MemberMenuAction { grantHeroicInspiration, remove }
 
 class _MemberCard extends StatelessWidget {
   final String campaignId;
   final CampaignMember member;
   final ContentRepository repo;
   final VoidCallback onRemove;
+  final VoidCallback onGrantInspiration;
 
   const _MemberCard({
     required this.campaignId,
     required this.member,
     required this.repo,
     required this.onRemove,
+    required this.onGrantInspiration,
   });
 
   @override
@@ -1559,8 +1587,26 @@ class _MemberCard extends StatelessWidget {
           ),
           PopupMenuButton<_MemberMenuAction>(
             tooltip: 'Acciones de ${character.name}',
-            onSelected: (_) => onRemove(),
+            // `switch` sobre el valor y no `(_) => onRemove()`: con un solo
+            // ítem daba igual, pero con dos, elegir "conceder" echaría al
+            // jugador de la mesa.
+            onSelected: (action) {
+              switch (action) {
+                case _MemberMenuAction.grantHeroicInspiration:
+                  onGrantInspiration();
+                case _MemberMenuAction.remove:
+                  onRemove();
+              }
+            },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: _MemberMenuAction.grantHeroicInspiration,
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.auto_awesome, color: pal.gold),
+                  title: const Text('Conceder Inspiración Heroica'),
+                ),
+              ),
               PopupMenuItem(
                 value: _MemberMenuAction.remove,
                 child: ListTile(

@@ -24,6 +24,9 @@
         "description": "Obtenés Inspiración Heroica cada vez que terminás un descanso largo."
       },
       {
+        "type": "heroicInspirationOnLongRest"
+      },
+      {
         "type": "passiveTrait",
         "name": "Versátil",
         "description": "Obtienes una dote de Origen a tu elección."

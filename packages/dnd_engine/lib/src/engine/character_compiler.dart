@@ -571,6 +571,7 @@ class CharacterCompiler {
       abilityBonuses: List.unmodifiable(builder.abilityBonusSources),
       savingThrowProficiencies: builder.saveProficiencies,
       savingThrowBonus: builder.savingThrowBonus,
+      heroicInspirationOnLongRest: builder.heroicInspirationOnLongRest,
       skillProficiencies: builder.skillProficiencies,
       expertiseSkills: builder.expertiseSkills,
       skillBonuses: builder.resolveSkillBonuses(mods),

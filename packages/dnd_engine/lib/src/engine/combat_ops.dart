@@ -99,12 +99,16 @@ class CombatOps {
     List<CharacterResource> resources,
     int hitDiceMax, {
     int Function(CompanionInstance)? companionMaxHp,
+    bool grantsHeroicInspiration = false,
   }) {
     c.currentHp = maxHp;
     c.tempHp = 0;
     c.deathSuccesses = 0;
     c.deathFailures = 0;
     if (c.exhaustion > 0) c.exhaustion -= 1;
+    // Se gana, no se acumula: nunca hay más de una, así que quien ya la tenía
+    // la desperdicia. Por eso es una asignación y no un contador.
+    if (grantsHeroicInspiration) c.heroicInspiration = true;
     c.hitDiceUsed = max(0, c.hitDiceUsed - max(1, hitDiceMax ~/ 2));
     for (final r in resources) {
       c.resourceUsage[r.id] = 0;

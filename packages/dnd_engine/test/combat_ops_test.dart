@@ -86,6 +86,31 @@ void main() {
       expect(c.exhaustion, 1);
       expect(c.hitDiceUsed, 2); // recupera la mitad de 4
     });
+
+    test('el descanso largo concede Inspiración Heroica si un rasgo la da', () {
+      final c = CombatState(currentHp: 3);
+      CombatOps.longRest(c, 20, resources, 4, grantsHeroicInspiration: true);
+      expect(c.heroicInspiration, isTrue);
+    });
+
+    test('sin el rasgo, el descanso largo no la regala', () {
+      final c = CombatState(currentHp: 3);
+      CombatOps.longRest(c, 20, resources, 4);
+      expect(c.heroicInspiration, isFalse);
+    });
+
+    test('tenerla ya y volver a ganarla no acumula nada', () {
+      // Nunca hay más de una: quien la tenía la desperdicia, no junta dos.
+      final c = CombatState(currentHp: 3, heroicInspiration: true);
+      CombatOps.longRest(c, 20, resources, 4, grantsHeroicInspiration: true);
+      expect(c.heroicInspiration, isTrue);
+    });
+
+    test('el descanso largo no le saca la Inspiración a quien la tenía', () {
+      final c = CombatState(currentHp: 3, heroicInspiration: true);
+      CombatOps.longRest(c, 20, resources, 4);
+      expect(c.heroicInspiration, isTrue);
+    });
   });
 
   test('gastar dado de golpe cura (tirada + mod CON) de forma determinista',

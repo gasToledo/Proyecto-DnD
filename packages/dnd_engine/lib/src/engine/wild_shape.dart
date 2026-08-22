@@ -56,30 +56,23 @@ ComputedSheet applyWildShape(ComputedSheet base, Creature beast) {
           : base.abilityModifiers[a]!,
   };
 
-  return ComputedSheet(
-    level: base.level,
-    proficiencyBonus: base.proficiencyBonus,
+  // Se construye con `copyWith` y no campo por campo: enumerar los cuarenta y
+  // pico campos a mano es como esta función perdió `skillBonuses` y
+  // `carriedWeight` durante meses —el druida transformado se quedaba sin su
+  // bono de Orden Primordial y con la mochila en cero—, y el compilador no
+  // avisa porque son parámetros opcionales. Acá se nombra solo lo que la
+  // bestia efectivamente reemplaza.
+  return base.copyWith(
     abilityScores: scores,
     abilityModifiers: mods,
-    abilityBonuses: base.abilityBonuses,
-    savingThrowProficiencies: base.savingThrowProficiencies,
-    savingThrowBonus: base.savingThrowBonus,
-    skillProficiencies: base.skillProficiencies,
-    expertiseSkills: base.expertiseSkills,
-    armorProficiencies: base.armorProficiencies,
-    weaponProficiencies: base.weaponProficiencies,
-    toolProficiencies: base.toolProficiencies,
-    maxHp: base.maxHp,
-    hitDie: base.hitDie,
     armorClass: resolved.armorClass,
     size: beast.creatureSize?.label ?? base.size,
     speed: beast.walkSpeed,
     initiative: mods[Ability.dexterity]!,
+    // Se pasa siempre, incluso null: una bestia sin visión en la oscuridad
+    // tiene que **borrar** la del druida, no heredarla. Para eso está el
+    // centinela de `copyWith`.
     darkvision: beast.darkvision,
-    resistances: base.resistances,
-    immunities: base.immunities,
-    weaponMasterySlots: base.weaponMasterySlots,
-    attacksPerAction: base.attacksPerAction,
     attacks: [
       for (final a in resolved.actions)
         if (a.isAttack)
@@ -93,21 +86,5 @@ ComputedSheet applyWildShape(ComputedSheet base, Creature beast) {
             damageType: a.damageType ?? '',
           ),
     ],
-    passives: base.passives,
-    resources: base.resources,
-    companions: base.companions,
-    innateSpells: base.innateSpells,
-    alwaysPreparedSpellIds: base.alwaysPreparedSpellIds,
-    spellListAdditionIds: base.spellListAdditionIds,
-    featureChoiceSlots: base.featureChoiceSlots,
-    itemChoiceSlots: base.itemChoiceSlots,
-    targetChoiceSlots: base.targetChoiceSlots,
-    proficiencyChoiceSlots: base.proficiencyChoiceSlots,
-    expertiseChoiceSlots: base.expertiseChoiceSlots,
-    spellChoiceSlots: base.spellChoiceSlots,
-    wildShape: base.wildShape,
-    languages: base.languages,
-    languageChoiceSlots: base.languageChoiceSlots,
-    spellcasting: base.spellcasting,
   );
 }

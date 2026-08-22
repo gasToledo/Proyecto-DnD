@@ -138,6 +138,16 @@ class CompanionInstance {
       );
 }
 
+/// Nivel máximo de Cansancio (`exhaustion`).
+///
+/// A 6 el personaje muere por regla. Acá solo se topea: ni el motor ni la app
+/// le tocan los PG a nadie por llegar a 6 — matar un personaje es una decisión
+/// de la mesa, no de un contador que se puede subir sin querer.
+///
+/// Vive en el dominio y no en `exhaustion.dart` porque lo necesita
+/// `CombatState.fromJson` para normalizar, y el dominio no importa al motor.
+const int maxExhaustionLevel = 6;
+
 /// Estado mutable durante la partida. No influye en la ficha derivada
 /// (`ComputedSheet`); se persiste aparte y se guarda con debounce.
 class CombatState {
@@ -147,6 +157,18 @@ class CombatState {
   int deathFailures;
   int hitDiceUsed;
   int exhaustion;
+
+  /// Si el personaje tiene Inspiración Heroica ahora mismo.
+  ///
+  /// Es un `bool` y no un contador porque **nunca hay más de una**: obtenerla
+  /// teniéndola ya la desperdicia, y eso es exactamente lo que hace un
+  /// `= true`.
+  ///
+  /// Vive en el estado de combate y no como recurso de una especie a propósito.
+  /// La concede el DM a quien quiera, así que un elfo tiene que poder tenerla;
+  /// el rasgo Ingenioso del Humano solo declara *quién la gana solo* al
+  /// descansar (ver `HeroicInspirationOnLongRestEffect`).
+  bool heroicInspiration;
   final Set<String> conditions;
 
   /// Usos consumidos por recurso (id de recurso → cantidad usada).
@@ -174,6 +196,7 @@ class CombatState {
     this.deathFailures = 0,
     this.hitDiceUsed = 0,
     this.exhaustion = 0,
+    this.heroicInspiration = false,
     Set<String>? conditions,
     Map<String, int>? resourceUsage,
     Map<int, int>? spellSlotsUsed,
@@ -192,6 +215,7 @@ class CombatState {
         'deathFailures': deathFailures,
         'hitDiceUsed': hitDiceUsed,
         'exhaustion': exhaustion,
+        'heroicInspiration': heroicInspiration,
         'conditions': conditions.toList(),
         'resourceUsage': resourceUsage,
         'spellSlotsUsed': {
@@ -208,7 +232,17 @@ class CombatState {
         deathSuccesses: j['deathSuccesses'] as int? ?? 0,
         deathFailures: j['deathFailures'] as int? ?? 0,
         hitDiceUsed: j['hitDiceUsed'] as int? ?? 0,
-        exhaustion: j['exhaustion'] as int? ?? 0,
+        // Se normaliza al leer: un documento importado o tocado a mano puede
+        // traer 9 o un negativo, y la ficha no tiene forma de mostrar eso.
+        exhaustion: (j['exhaustion'] as int? ?? 0).clamp(0, maxExhaustionLevel),
+        // Sin migración a propósito: `false` es el valor correcto para un
+        // documento viejo —nadie tenía Inspiración Heroica antes—, así que un
+        // paso de `migrateJson` solo agregaría ruido. Subir la versión del
+        // esquema por un bool tendría además un costo asimétrico: una pestaña
+        // vieja abierta se negaría a abrir el personaje entero. El precio que
+        // se paga a cambio es que un cliente viejo que regrabe la ficha pierde
+        // este flag en silencio.
+        heroicInspiration: j['heroicInspiration'] as bool? ?? false,
         conditions: (j['conditions'] as List? ?? const [])
             .map((e) => e as String)
             .toSet(),

@@ -84,7 +84,14 @@ class _SheetScreenState extends State<SheetScreen> {
     // producir un _c nuevo. Es barato —copiar campos y resolver un perfil sin
     // fórmulas— y así ninguna tarjeta tiene que acordarse de que sos un oso.
     final beast = wildShapeForm;
-    return beast == null ? _sheetCache! : applyWildShape(_sheetCache!, beast);
+    final base = beast == null
+        ? _sheetCache!
+        : applyWildShape(_sheetCache!, beast);
+    // El Cansancio va **último**: la Forma Salvaje reemplaza velocidad,
+    // iniciativa y ataques enteros, así que restarlo antes sería restar sobre
+    // números que la bestia después pisa. En nivel 0 devuelve la misma ficha
+    // por identidad, así que el personaje descansado no paga nada.
+    return applyExhaustion(base, _c.combat.exhaustion);
   }
 
   /// La bestia en la que está transformado, o null. Null también si el

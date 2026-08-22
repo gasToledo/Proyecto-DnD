@@ -7,7 +7,15 @@ extension _SheetCombatSection on _SheetScreenState {
     final s = sheet;
     final hasSpells = s.spellcasting != null || s.innateSpells.isNotEmpty;
     return responsiveColumns([
-      [_hpCard(s), _defenseCard(s), _restResourcesCard(s)],
+      [
+        _hpCard(s),
+        _defenseCard(s),
+        _restResourcesCard(s),
+        // Cansancio e Inspiración van con los descansos y no con las
+        // condiciones: el botón de descanso largo, que está acá al lado, es
+        // justo lo que mueve a los dos.
+        _stateCard(s),
+      ],
       [
         if (s.attacks.isNotEmpty) _attacksCard(s),
         if (s.wildShape != null) _wildShapeCard(s),
@@ -134,17 +142,6 @@ extension _SheetCombatSection on _SheetScreenState {
   }
 
   Widget _deathSaves(CombatState combat) {
-    Widget pips(int filled, Color color) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(
-        3,
-        (i) => Icon(
-          i < filled ? Icons.circle : Icons.circle_outlined,
-          color: color,
-          size: 20,
-        ),
-      ),
-    );
     Widget group(Widget marks, Widget button) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [marks, const SizedBox(width: 8), button],
@@ -157,7 +154,7 @@ extension _SheetCombatSection on _SheetScreenState {
       runSpacing: 8,
       children: [
         group(
-          pips(combat.deathSuccesses, context.palette.gold),
+          _statePips(combat.deathSuccesses, 3, context.palette.gold),
           OutlinedButton(
             onPressed: () => _mutateCombat(() {
               final r = CombatOps.recordDeathSave(_c.combat, success: true);
@@ -167,7 +164,7 @@ extension _SheetCombatSection on _SheetScreenState {
           ),
         ),
         group(
-          pips(combat.deathFailures, context.palette.crimson),
+          _statePips(combat.deathFailures, 3, context.palette.crimson),
           OutlinedButton(
             onPressed: () => _mutateCombat(() {
               final r = CombatOps.recordDeathSave(_c.combat, success: false);
@@ -251,6 +248,12 @@ extension _SheetCombatSection on _SheetScreenState {
   }
 
   void _longRest(ComputedSheet s) {
+    // Se leen antes para poder contar en el aviso lo que efectivamente cambió:
+    // `longRest` muta el estado in situ, así que después ya no hay con qué
+    // comparar.
+    final cansancioPrevio = _c.combat.exhaustion;
+    final teniaInspiracion = _c.combat.heroicInspiration;
+
     _mutateCombat(
       () => CombatOps.longRest(
         _c.combat,
@@ -262,9 +265,18 @@ extension _SheetCombatSection on _SheetScreenState {
             // Sin perfil no hay máximo que calcular: se lo deja como está en
             // vez de inventarle uno.
             instance.currentHp,
+        grantsHeroicInspiration: s.heroicInspirationOnLongRest,
       ),
     );
-    _snack('Descanso largo: PG al máximo y recursos recargados.');
+
+    final partes = <String>['PG al máximo y recursos recargados'];
+    if (cansancioPrevio > 0) {
+      partes.add('cansancio a nivel ${_c.combat.exhaustion}');
+    }
+    if (!teniaInspiracion && _c.combat.heroicInspiration) {
+      partes.add('ganaste Inspiración Heroica');
+    }
+    _snack('Descanso largo: ${partes.join('; ')}.');
   }
 
   /// PG máximos de un compañero invocado, o null si su forma ya no está en el
@@ -1197,6 +1209,167 @@ extension _SheetCombatSection on _SheetScreenState {
             style: TextStyle(fontFamily: 'Georgia', fontSize: 16, color: color),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Tira de círculos llenos/vacíos para un contador chico.
+  ///
+  /// Sale de `_deathSaves` y la comparte el Cansancio. `UsagePips` no sirve
+  /// para ninguno de los dos: pinta los llenos en oro —que se lee como "algo
+  /// bueno que todavía te queda"— y su etiqueta accesible habla de "usos
+  /// disponibles", que acá sería mentira. Un nivel de cansancio no es un uso
+  /// disponible.
+  Widget _statePips(int filled, int total, Color color, {String? semantics}) {
+    final marks = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        total,
+        (i) => Icon(
+          i < filled ? Icons.circle : Icons.circle_outlined,
+          color: color,
+          size: 20,
+        ),
+      ),
+    );
+    return semantics == null
+        ? marks
+        : Semantics(label: semantics, excludeSemantics: true, child: marks);
+  }
+
+  /// Cansancio e Inspiración Heroica, en una sola tarjeta.
+  ///
+  /// Van juntos y no en dos tarjetas porque son los dos contadores chicos que
+  /// modifican **cómo tirás**, y una tarjeta plegable por cada casillero sería
+  /// más cromo que información. Comparten fila con los descansos porque el
+  /// botón de descanso largo es justo lo que mueve a los dos: baja un nivel de
+  /// cansancio y, si tenés el rasgo, devuelve la inspiración.
+  Widget _stateCard(ComputedSheet s) {
+    final pal = context.palette;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final n = _c.combat.exhaustion;
+    final tiene = _c.combat.heroicInspiration;
+
+    return sheetCard(
+      icon: Icons.monitor_heart_outlined,
+      title: 'Estado',
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Eyebrow('Cansancio'),
+            const SizedBox(height: 6),
+            // Wrap y no Row: los seis círculos más los dos botones no entran en
+            // el ancho de un teléfono, igual que en las salvaciones de muerte.
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _statePips(
+                  n,
+                  maxExhaustionLevel,
+                  pal.crimson,
+                  semantics: 'Cansancio: nivel $n de $maxExhaustionLevel',
+                ),
+                // El "−" es lo bueno acá y el "+" lo malo, al revés que en un
+                // recurso: por eso los tooltips dicen la dirección en vez de
+                // "Usar" y "Restaurar".
+                SpendRecoverButtons(
+                  spendTooltip: 'Bajar un nivel de cansancio',
+                  recoverTooltip: 'Subir un nivel de cansancio',
+                  onSpend: n <= 0
+                      ? null
+                      : () => _mutateCombat(() => _c.combat.exhaustion = n - 1),
+                  onRecover: n >= maxExhaustionLevel
+                      ? null
+                      : () {
+                          _mutateCombat(() => _c.combat.exhaustion = n + 1);
+                          if (n + 1 >= maxExhaustionLevel) {
+                            showAppMessage(
+                              context,
+                              'Cansancio nivel $maxExhaustionLevel: tu '
+                              'personaje muere.',
+                              tone: AppMessageTone.error,
+                            );
+                          }
+                        },
+                ),
+              ],
+            ),
+            if (n >= 1)
+              Text(
+                'Los números de la ficha ya vienen con −${2 * n} en pruebas, '
+                'salvaciones, ataques e iniciativa, y la velocidad con '
+                '−${5 * n} pies. No lo restes otra vez. También le entra a las '
+                'salvaciones de muerte, que no llevan número.',
+                style: TextStyle(fontSize: 12, color: muted),
+              ),
+            if (n >= maxExhaustionLevel)
+              // Color más ícono más texto: el color nunca es el único que
+              // carga el significado.
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.warning_amber, color: pal.crimson, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Nivel $maxExhaustionLevel: tu personaje muere. La '
+                        'ficha no lo aplica ni te toca los PG — esa decisión '
+                        'es de la mesa.',
+                        style: TextStyle(fontSize: 12, color: pal.crimson),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SectionRule(),
+            const Eyebrow('Inspiración Heroica'),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                // Acá el oro de `UsagePips` significa lo correcto —algo bueno
+                // que tenés— y con `max: 1` queda una sola estrella, que es la
+                // forma exacta de la regla.
+                UsagePips(
+                  max: 1,
+                  filled: tiene ? 1 : 0,
+                  filledIcon: Icons.star,
+                  emptyIcon: Icons.star_border,
+                ),
+                // El Wrap ya separa: no hace falta un SizedBox entre medio.
+                if (s.heroicInspirationOnLongRest)
+                  const GoldPill('La ganás al descansar'),
+                SpendRecoverButtons(
+                  spendTooltip: 'Gastar la Inspiración Heroica',
+                  recoverTooltip: 'Marcar que la tenés',
+                  onSpend: !tiene
+                      ? null
+                      : () => _mutateCombat(
+                          () => _c.combat.heroicInspiration = false,
+                        ),
+                  onRecover: tiene
+                      ? null
+                      : () => _mutateCombat(
+                          () => _c.combat.heroicInspiration = true,
+                        ),
+                ),
+              ],
+            ),
+            Text(
+              'Se gasta para repetir cualquier dado inmediatamente después de '
+              'tirarlo, y hay que usar el resultado nuevo. Nunca más de una.',
+              style: TextStyle(fontSize: 12, color: muted),
+            ),
+          ],
+        ),
       ),
     );
   }

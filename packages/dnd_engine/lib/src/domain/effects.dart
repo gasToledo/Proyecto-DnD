@@ -115,6 +115,8 @@ sealed class Effect {
         ),
       'castWhileWildShaped' => const CastWhileWildShapedEffect(),
       'offHandAbilityDamage' => const OffHandAbilityDamageEffect(),
+      'heroicInspirationOnLongRest' =>
+        const HeroicInspirationOnLongRestEffect(),
       'targetChoice' => TargetChoiceEffect(
           groupId: json['groupId'] as String,
           name: json['name'] as String? ?? '',
@@ -989,6 +991,25 @@ class OffHandAbilityDamageEffect extends Effect {
   const OffHandAbilityDamageEffect();
   @override
   Map<String, dynamic> toJson() => {'type': 'offHandAbilityDamage'};
+}
+
+/// El personaje obtiene Inspiración Heroica al terminar un descanso largo
+/// (rasgo Ingenioso del Humano).
+///
+/// **No es un [ResourceEffect] a propósito.** Como recurso se renderizaría
+/// solo y el descanso ya lo recargaría, pero un recurso declarado por el
+/// Humano dejaría al elfo sin poder tenerla nunca — y la Inspiración Heroica
+/// se la concede el DM a quien quiera. Por eso el estado vive en
+/// `CombatState.heroicInspiration` y esto solo declara *quién la gana solo*.
+///
+/// ponytail: el Guerrero Heroico del Campeón la gana al empezar su turno y la
+/// dote Músico se la reparte a los aliados tras un descanso. Ninguno de los dos
+/// entra por acá, porque su disparador no es el descanso largo del propio
+/// personaje; siguen siendo texto de rasgo hasta que ese disparador exista.
+class HeroicInspirationOnLongRestEffect extends Effect {
+  const HeroicInspirationOnLongRestEffect();
+  @override
+  Map<String, dynamic> toJson() => {'type': 'heroicInspirationOnLongRest'};
 }
 
 /// Filtro serializable para reglas que modifican ataques con armas.

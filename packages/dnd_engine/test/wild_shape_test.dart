@@ -281,4 +281,54 @@ void main() {
       expect(combat.resourceUsage[CombatOps.wildShapeResourceId], 0);
     });
   });
+
+  group('Lo que la transformación no puede perder', () {
+    /// Regresión de un bug real: `applyWildShape` reconstruía la ficha campo
+    /// por campo y se olvidaba de dos, que son opcionales en el constructor y
+    /// por eso caían a su valor por defecto sin que el compilador dijera nada.
+    /// Ahora se construye con `copyWith` y nombra solo lo que la bestia
+    /// reemplaza.
+    ComputedSheet naturalista(int level) => CharacterCompiler(repo).compile(
+          Character(
+            id: 'naturalista',
+            name: 'Prueba',
+            raceId: 'human',
+            classId: 'druid',
+            backgroundId: 'sage',
+            level: level,
+            wildShapeForms: const ['wolf'],
+            assignedScores: const {
+              Ability.strength: 8,
+              Ability.dexterity: 12,
+              Ability.constitution: 14,
+              Ability.intelligence: 13,
+              Ability.wisdom: 16,
+              Ability.charisma: 10,
+            },
+            hpPerLevel: const [5, 5, 5, 5],
+            // Naturalista suma el modificador de Sabiduría a las pruebas de
+            // Arcanos y Naturaleza: es lo que llena `skillBonuses`.
+            featureChoices: const {
+              'primal-order': ['primal-order-magician'],
+            },
+            coins: const {'gp': 300},
+          ),
+        );
+
+    test('el bono de Orden Primordial sigue en la ficha de la bestia', () {
+      final base = naturalista(4);
+      expect(base.skillBonuses, isNotEmpty);
+
+      final shaped = applyWildShape(base, base.wildShape!.chosen.single);
+      expect(shaped.skillBonuses, base.skillBonuses);
+    });
+
+    test('la mochila sigue pesando lo que pesaba', () {
+      final base = naturalista(4);
+      expect(base.carriedWeight, greaterThan(0));
+
+      final shaped = applyWildShape(base, base.wildShape!.chosen.single);
+      expect(shaped.carriedWeight, base.carriedWeight);
+    });
+  });
 }

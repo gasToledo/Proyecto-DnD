@@ -41,8 +41,15 @@ UserEventMessage? messageForEvent(UserEvent event) {
       '$character ya no está disponible en $campaign.',
       AppMessageTone.info,
     ),
+    // El DM no le marcó nada en la ficha: el mensaje tiene que decirlo, o el
+    // jugador espera encontrar la estrella ya prendida.
+    'heroic_inspiration_granted' => UserEventMessage(
+      'El DM te concedió Inspiración Heroica en $campaign. '
+      'Marcala en la ficha de $character.',
+      AppMessageTone.success,
+    ),
     // Los datos propios de este aviso se leen acá adentro y no arriba: los
-    // otros cuatro `kind` no los traen.
+    // otros cinco `kind` no los traen.
     'chapter_completed' => _chapterCompleted(event, character, campaign),
     _ => null,
   };

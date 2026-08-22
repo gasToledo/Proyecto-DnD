@@ -36,6 +36,12 @@ class FakeApiServer {
   /// dueños: eso ya lo prueba `dnd_server` contra su propia batería. Acá
   /// interesa el contrato que ve el cliente.
   final Map<String, Campaign> campaigns = {};
+
+  /// Inspiraciones Heroicas concedidas por el DM. Solo el aviso: el doble no
+  /// toca la ficha, igual que el servidor.
+  final List<({String campaignId, String memberId})> heroicInspirationGrants =
+      [];
+
   final Map<String, ({String campaignId, String characterId})> campaignMembers =
       {};
 
@@ -181,6 +187,27 @@ class FakeApiServer {
     if (method == 'POST' && path == '/api/portraits/generate') {
       return _json({'images': <String>[]});
     }
+    // Con las mismas podas que el servidor: un vínculo que no existe responde
+    // 404. Un doble más permisivo dejaría pasar una pantalla que concede sobre
+    // un vínculo fantasma.
+    if (method == 'POST' &&
+        path.startsWith('/api/campaigns/') &&
+        path.endsWith('/heroic-inspiration')) {
+      final parts = path.split('/');
+      final campaignId = parts[3];
+      final memberId = parts[5];
+      if (!campaigns.containsKey(campaignId)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      if (!campaignMembers.containsKey(memberId)) {
+        return _json({'error': 'Personaje no encontrado.'}, 404);
+      }
+      // Se anota **qué se avisó**, no un cambio en la ficha: el servidor real
+      // tampoco la toca, y el test lo afirma mirando esta lista.
+      heroicInspirationGrants.add((campaignId: campaignId, memberId: memberId));
+      return _json({'status': 'ok'});
+    }
+
     if (method == 'POST' &&
         path.startsWith('/api/characters/') &&
         path.endsWith('/portraits')) {

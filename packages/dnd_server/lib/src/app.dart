@@ -282,6 +282,15 @@ Handler buildHandler({
                 _closeChapterHandler(request, campaigns, chapters, events),
           ),
     )
+    ..post(
+      '/api/campaigns/<id>/members/<memberId>/heroic-inspiration',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) =>
+                _grantHeroicInspirationHandler(request, campaigns, events),
+          ),
+    )
     ..get(
       '/api/campaigns/<id>/notebook',
       Pipeline()
@@ -1306,6 +1315,51 @@ Future<Response> _deleteChapterHandler(
     return _notFound('Campaña no encontrada.');
   }
   await chapters.delete(request.userId, campaignId, chapterId);
+  return _jsonOk({'status': 'ok'});
+}
+
+/// Le avisa al dueño de un personaje que el DM le concedió Inspiración
+/// Heroica.
+///
+/// **No le marca nada en la ficha, y eso es el punto.** Igual que cerrar un
+/// capítulo con recompensa, esto es un aviso: la Inspiración la marca el
+/// jugador en su propia ficha, con el mismo botón que usa cuando se la gana
+/// por un rasgo. Este handler no lee ni escribe el documento del personaje, y
+/// hay una prueba que lo compara antes y después para que siga siendo así.
+///
+/// Es `POST` a una ruta de acción y no un `PUT` de documento por el mismo
+/// motivo que `/close`: un `PUT` de edición repetiría el aviso en cada
+/// guardado, y un aviso repetido es ruido en la bandeja de otra persona.
+Future<Response> _grantHeroicInspirationHandler(
+  Request request,
+  CampaignRepository campaigns,
+  EventRepository events,
+) async {
+  final campaignId = requireSafePathSegment(
+    request.params['id']!,
+    label: 'id de campaña',
+  );
+  final memberId = requireSafePathSegment(
+    request.params['memberId']!,
+    label: 'id de vínculo',
+  );
+
+  final campaign = await campaigns.find(request.userId, campaignId);
+  if (campaign == null) return _notFound('Campaña no encontrada.');
+
+  // La autorización va en la consulta: `findMember` solo resuelve el vínculo
+  // si la campaña es de quien pide. Lo ajeno y lo inexistente responden igual.
+  final member = await campaigns.findMember(
+    dmUserId: request.userId,
+    campaignId: campaignId,
+    memberId: memberId,
+  );
+  if (member == null) return _notFound('Personaje no encontrado.');
+
+  await events.append(member.ownerUserId, 'heroic_inspiration_granted', {
+    'characterName': member.character.name,
+    'campaignName': campaign.name,
+  });
   return _jsonOk({'status': 'ok'});
 }
 

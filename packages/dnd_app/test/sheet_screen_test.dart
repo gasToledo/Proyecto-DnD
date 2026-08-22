@@ -2,6 +2,7 @@ import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/data/characters_controller.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
+import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes/fake_api_server.dart';
+
+/// Si el `IconButton` con ese tooltip está deshabilitado.
+///
+/// Por predicado y no con `find.byTooltip`: eso encuentra el `Tooltip` que el
+/// propio IconButton arma por dentro, y lo que hay que mirar es el `onPressed`
+/// del botón.
+bool _botonDeshabilitado(WidgetTester tester, String tooltip) {
+  final boton = tester.widget<IconButton>(
+    find.byWidgetPredicate((w) => w is IconButton && w.tooltip == tooltip),
+  );
+  return boton.onPressed == null;
+}
 
 void main() {
   late ContentRepository repo;
@@ -1785,6 +1798,171 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('La Tumba'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Cansancio e Inspiración Heroica', () {
+    Character guerrero({int exhaustion = 0, bool inspiracion = false}) =>
+        Character(
+          id: 'cansado',
+          name: 'Bruno',
+          raceId: 'human',
+          classId: 'fighter',
+          backgroundId: 'soldier',
+          level: 3,
+          assignedScores: const {
+            Ability.strength: 16,
+            Ability.dexterity: 12,
+            Ability.constitution: 14,
+            Ability.intelligence: 10,
+            Ability.wisdom: 12,
+            Ability.charisma: 8,
+          },
+          hpPerLevel: const [10, 6, 6],
+          combat: CombatState(
+            currentHp: 22,
+            exhaustion: exhaustion,
+            heroicInspiration: inspiracion,
+          ),
+        );
+
+    testWidgets('sin cansancio la ficha no habla del tema', (tester) async {
+      await pumpSheet(tester, guerrero(), size: const Size(900, 2400));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Estado'), findsOneWidget);
+      expect(find.textContaining('No lo restes otra vez'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el cansancio baja la plaqueta y marca la velocidad', (
+      tester,
+    ) async {
+      // FUE 16 son +3; con cansancio 2 la prueba es +3 − 4 = −1. La plaqueta
+      // muestra la prueba, no el modificador: es el número que se tira.
+      await pumpSheet(
+        tester,
+        guerrero(exhaustion: 2),
+        size: const Size(900, 2400),
+      );
+
+      expect(find.text('-1'), findsWidgets);
+      expect(find.text('Cansancio −10 pies'), findsOneWidget);
+      // La velocidad ya viene bajada: 30 − 5 × 2. Por predicado y no por texto:
+      // StatTile compone la cifra con su sufijo y `find.text` no la ve entera.
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is StatTile && w.label == 'Velocidad' && w.value == '20',
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el aviso dice que los números ya vienen restados', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        guerrero(exhaustion: 2),
+        size: const Size(900, 2400),
+      );
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('ya vienen con −4'), findsOneWidget);
+      expect(find.textContaining('No lo restes otra vez'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('en nivel 6 avisa la muerte y no deja subir más', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        guerrero(exhaustion: maxExhaustionLevel),
+        size: const Size(900, 2400),
+      );
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('tu personaje muere'), findsOneWidget);
+      // Avisa, pero no le toca los PG: esa decisión es de la mesa.
+      expect(find.textContaining('esa decisión es de la mesa'), findsOneWidget);
+
+      // Por predicado: `byTooltip` encuentra el `Tooltip` que arma el
+      // IconButton, no el botón, y lo que hay que mirar es su `onPressed`.
+      expect(
+        _botonDeshabilitado(tester, 'Subir un nivel de cansancio'),
+        isTrue,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('subir y bajar el cansancio se guarda en el personaje', (
+      tester,
+    ) async {
+      final character = guerrero();
+      await pumpSheet(tester, character, size: const Size(900, 2400));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Subir un nivel de cansancio'));
+      await tester.pumpAndSettle();
+      expect(character.combat.exhaustion, 1);
+
+      await tester.tap(find.byTooltip('Bajar un nivel de cansancio'));
+      await tester.pumpAndSettle();
+      expect(character.combat.exhaustion, 0);
+
+      // En 0 no se puede bajar más.
+      expect(
+        _botonDeshabilitado(tester, 'Bajar un nivel de cansancio'),
+        isTrue,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('la Inspiración Heroica se marca y se gasta', (tester) async {
+      final character = guerrero();
+      await pumpSheet(tester, character, size: const Size(900, 2400));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Marcar que la tenés'));
+      await tester.pumpAndSettle();
+      expect(character.combat.heroicInspiration, isTrue);
+
+      await tester.tap(find.byTooltip('Gastar la Inspiración Heroica'));
+      await tester.pumpAndSettle();
+      expect(character.combat.heroicInspiration, isFalse);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un humano la gana al terminar un descanso largo', (
+      tester,
+    ) async {
+      // El rasgo Ingenioso dejó de ser solo texto.
+      final character = guerrero(exhaustion: 2);
+      await pumpSheet(tester, character, size: const Size(900, 2400));
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('La ganás al descansar'), findsOneWidget);
+
+      await tester.tap(find.text('Descanso largo'));
+      await tester.pumpAndSettle();
+
+      expect(character.combat.heroicInspiration, isTrue);
+      expect(character.combat.exhaustion, 1);
+      // El aviso cuenta lo que efectivamente cambió.
+      expect(find.textContaining('cansancio a nivel 1'), findsOneWidget);
+      expect(
+        find.textContaining('ganaste Inspiración Heroica'),
+        findsOneWidget,
+      );
+      await tester.pump(const Duration(seconds: 5));
     });
   });
 }

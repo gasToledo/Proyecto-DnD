@@ -500,6 +500,48 @@ class Attack {
   })  : baseWeaponId = baseWeaponId ?? weaponId,
         damageTypeOptions = damageTypeOptions ?? const [];
 
+  /// Copia con los campos indicados reemplazados.
+  ///
+  /// Existe para que las capas que se aplican **sobre** la ficha ya calculada
+  /// —la Forma Salvaje, el Cansancio— no tengan que reconstruir los quince
+  /// campos a mano. Reconstruir a mano es como se perdieron campos antes.
+  Attack copyWith({
+    String? weaponId,
+    String? baseWeaponId,
+    Object? sourceEntryId = _unset,
+    String? name,
+    int? attackBonus,
+    bool? proficient,
+    Ability? abilityUsed,
+    String? damage,
+    String? damageType,
+    List<String>? damageTypeOptions,
+    bool? spellcastingFocus,
+    int? attacksPerAction,
+    Object? mastery = _unset,
+    bool? offHand,
+    AttackAction? action,
+  }) =>
+      Attack(
+        weaponId: weaponId ?? this.weaponId,
+        baseWeaponId: baseWeaponId ?? this.baseWeaponId,
+        sourceEntryId: identical(sourceEntryId, _unset)
+            ? this.sourceEntryId
+            : sourceEntryId as String?,
+        name: name ?? this.name,
+        attackBonus: attackBonus ?? this.attackBonus,
+        proficient: proficient ?? this.proficient,
+        abilityUsed: abilityUsed ?? this.abilityUsed,
+        damage: damage ?? this.damage,
+        damageType: damageType ?? this.damageType,
+        damageTypeOptions: damageTypeOptions ?? this.damageTypeOptions,
+        spellcastingFocus: spellcastingFocus ?? this.spellcastingFocus,
+        attacksPerAction: attacksPerAction ?? this.attacksPerAction,
+        mastery: identical(mastery, _unset) ? this.mastery : mastery as String?,
+        offHand: offHand ?? this.offHand,
+        action: action ?? this.action,
+      );
+
   Map<String, dynamic> toJson() => {
         'weaponId': weaponId,
         'baseWeaponId': baseWeaponId,
@@ -554,6 +596,30 @@ class Spellcasting {
     required this.slotsByLevel,
   });
 
+  /// Copia con los campos indicados reemplazados. Ver [Attack.copyWith].
+  Spellcasting copyWith({
+    Ability? ability,
+    CasterProgression? progression,
+    SpellPreparation? preparation,
+    String? spellList,
+    int? saveDc,
+    int? attackBonus,
+    int? cantripsKnown,
+    int? preparedCount,
+    Map<int, int>? slotsByLevel,
+  }) =>
+      Spellcasting(
+        ability: ability ?? this.ability,
+        progression: progression ?? this.progression,
+        preparation: preparation ?? this.preparation,
+        spellList: spellList ?? this.spellList,
+        saveDc: saveDc ?? this.saveDc,
+        attackBonus: attackBonus ?? this.attackBonus,
+        cantripsKnown: cantripsKnown ?? this.cantripsKnown,
+        preparedCount: preparedCount ?? this.preparedCount,
+        slotsByLevel: slotsByLevel ?? this.slotsByLevel,
+      );
+
   Map<String, dynamic> toJson() => {
         'ability': ability.name,
         'progression': progression.toJson(),
@@ -599,6 +665,15 @@ class SkillBonus {
   const SkillBonus({required this.amount, required this.source});
 }
 
+/// Centinela para distinguir "no se pasó el argumento" de "se pasó null" en
+/// los `copyWith` de este archivo.
+///
+/// Hace falta de verdad, no es ceremonia: la Forma Salvaje tiene que poder
+/// **borrar** la visión en la oscuridad del druida cuando la bestia no la
+/// tiene, y sin centinela un `null` explícito sería indistinguible de no haber
+/// pasado nada. Mismo recurso que usa `Character.copyWith` para desequipar.
+const Object _unset = Object();
+
 /// Resultado **derivado y de solo lectura** de compilar un personaje.
 /// La UI de la ficha lee de aquí; nunca recalcula a mano.
 class ComputedSheet {
@@ -612,6 +687,30 @@ class ComputedSheet {
   /// puntaje asignado en la creación no está acá, se deduce con
   /// [baseAbilityScore].
   final List<AbilityBonus> abilityBonuses;
+
+  /// Modificador situacional que se suma a **toda prueba con d20** —prueba de
+  /// característica, salvación, habilidad y tirada de ataque— y a nada más.
+  ///
+  /// Vive acá y **no descontado de [abilityModifiers]** porque ese mapa además
+  /// alimenta el daño, la CD de conjuros, los PG máximos, la CA y la capacidad
+  /// de carga, y nada de eso es una tirada. Hoy el único que lo mueve es el
+  /// Cansancio (−2 por nivel, ver `applyExhaustion`); es un entero con signo y
+  /// no una "penalización" positiva para que sumar sea siempre sumar.
+  ///
+  /// **Contrato, y es la trampa del doble conteo:** ningún consumidor suma
+  /// esto a mano. O llama a un getter de tirada ([abilityCheck],
+  /// [savingThrow], [skillModifier], [passivePerception]), que ya lo incluyen,
+  /// o lee un entero plano ([initiative], [Attack.attackBonus],
+  /// [Spellcasting.attackBonus]) que la capa **ya dejó ajustado**.
+  final int d20Modifier;
+
+  /// Si un rasgo le da Inspiración Heroica al terminar un descanso largo
+  /// (Ingenioso, del Humano).
+  ///
+  /// Es solo la declaración de *quién la gana solo*: el estado —si la tiene
+  /// ahora mismo— vive en `CombatState.heroicInspiration`, porque cualquier
+  /// personaje puede tenerla si el DM se la concede.
+  final bool heroicInspirationOnLongRest;
 
   final Set<Ability> savingThrowProficiencies;
   final int savingThrowBonus;
@@ -735,6 +834,8 @@ class ComputedSheet {
     required this.abilityScores,
     required this.abilityModifiers,
     this.abilityBonuses = const [],
+    this.d20Modifier = 0,
+    this.heroicInspirationOnLongRest = false,
     required this.savingThrowProficiencies,
     this.savingThrowBonus = 0,
     required this.skillProficiencies,
@@ -774,6 +875,120 @@ class ComputedSheet {
     this.spellcasting,
   });
 
+  /// Copia con los campos indicados reemplazados.
+  ///
+  /// Es la herramienta de las capas que se aplican **sobre** la ficha ya
+  /// calculada: `applyWildShape` y `applyExhaustion`. Antes cada una
+  /// reconstruía el objeto campo por campo, y así fue como la Forma Salvaje
+  /// perdió `skillBonuses` y `carriedWeight` sin que nadie se enterara — un
+  /// druida transformado se quedaba sin su bono de Orden Primordial y con la
+  /// mochila en cero.
+  ///
+  /// Hay un test que compara los campos de la clase contra los parámetros de
+  /// este método: un campo nuevo sin su parámetro acá se perdería en silencio.
+  ComputedSheet copyWith({
+    int? level,
+    int? proficiencyBonus,
+    Map<Ability, int>? abilityScores,
+    Map<Ability, int>? abilityModifiers,
+    List<AbilityBonus>? abilityBonuses,
+    int? d20Modifier,
+    bool? heroicInspirationOnLongRest,
+    Set<Ability>? savingThrowProficiencies,
+    int? savingThrowBonus,
+    Set<String>? skillProficiencies,
+    Set<String>? expertiseSkills,
+    Map<String, List<SkillBonus>>? skillBonuses,
+    Set<String>? armorProficiencies,
+    Set<String>? weaponProficiencies,
+    Set<String>? toolProficiencies,
+    int? maxHp,
+    int? hitDie,
+    int? armorClass,
+    double? carriedWeight,
+    String? size,
+    int? speed,
+    int? initiative,
+    Object? darkvision = _unset,
+    Set<String>? resistances,
+    Set<String>? immunities,
+    int? weaponMasterySlots,
+    int? attacksPerAction,
+    List<Attack>? attacks,
+    List<PassiveTrait>? passives,
+    List<CharacterResource>? resources,
+    List<CompanionOption>? companions,
+    List<InnateSpell>? innateSpells,
+    Set<String>? alwaysPreparedSpellIds,
+    Set<String>? spellListAdditionIds,
+    List<FeatureChoiceSlot>? featureChoiceSlots,
+    List<ItemChoiceSlot>? itemChoiceSlots,
+    List<TargetChoiceSlot>? targetChoiceSlots,
+    List<ProficiencyChoiceSlot>? proficiencyChoiceSlots,
+    List<ProficiencyChoiceSlot>? expertiseChoiceSlots,
+    List<SpellChoiceSlot>? spellChoiceSlots,
+    Object? wildShape = _unset,
+    Set<String>? languages,
+    List<LanguageChoiceSlot>? languageChoiceSlots,
+    Object? spellcasting = _unset,
+  }) =>
+      ComputedSheet(
+        level: level ?? this.level,
+        proficiencyBonus: proficiencyBonus ?? this.proficiencyBonus,
+        abilityScores: abilityScores ?? this.abilityScores,
+        abilityModifiers: abilityModifiers ?? this.abilityModifiers,
+        abilityBonuses: abilityBonuses ?? this.abilityBonuses,
+        d20Modifier: d20Modifier ?? this.d20Modifier,
+        heroicInspirationOnLongRest:
+            heroicInspirationOnLongRest ?? this.heroicInspirationOnLongRest,
+        savingThrowProficiencies:
+            savingThrowProficiencies ?? this.savingThrowProficiencies,
+        savingThrowBonus: savingThrowBonus ?? this.savingThrowBonus,
+        skillProficiencies: skillProficiencies ?? this.skillProficiencies,
+        expertiseSkills: expertiseSkills ?? this.expertiseSkills,
+        skillBonuses: skillBonuses ?? this.skillBonuses,
+        armorProficiencies: armorProficiencies ?? this.armorProficiencies,
+        weaponProficiencies: weaponProficiencies ?? this.weaponProficiencies,
+        toolProficiencies: toolProficiencies ?? this.toolProficiencies,
+        maxHp: maxHp ?? this.maxHp,
+        hitDie: hitDie ?? this.hitDie,
+        armorClass: armorClass ?? this.armorClass,
+        carriedWeight: carriedWeight ?? this.carriedWeight,
+        size: size ?? this.size,
+        speed: speed ?? this.speed,
+        initiative: initiative ?? this.initiative,
+        darkvision: identical(darkvision, _unset)
+            ? this.darkvision
+            : darkvision as int?,
+        resistances: resistances ?? this.resistances,
+        immunities: immunities ?? this.immunities,
+        weaponMasterySlots: weaponMasterySlots ?? this.weaponMasterySlots,
+        attacksPerAction: attacksPerAction ?? this.attacksPerAction,
+        attacks: attacks ?? this.attacks,
+        passives: passives ?? this.passives,
+        resources: resources ?? this.resources,
+        companions: companions ?? this.companions,
+        innateSpells: innateSpells ?? this.innateSpells,
+        alwaysPreparedSpellIds:
+            alwaysPreparedSpellIds ?? this.alwaysPreparedSpellIds,
+        spellListAdditionIds: spellListAdditionIds ?? this.spellListAdditionIds,
+        featureChoiceSlots: featureChoiceSlots ?? this.featureChoiceSlots,
+        itemChoiceSlots: itemChoiceSlots ?? this.itemChoiceSlots,
+        targetChoiceSlots: targetChoiceSlots ?? this.targetChoiceSlots,
+        proficiencyChoiceSlots:
+            proficiencyChoiceSlots ?? this.proficiencyChoiceSlots,
+        expertiseChoiceSlots: expertiseChoiceSlots ?? this.expertiseChoiceSlots,
+        spellChoiceSlots: spellChoiceSlots ?? this.spellChoiceSlots,
+        wildShape: identical(wildShape, _unset)
+            ? this.wildShape
+            : wildShape as WildShapeSlot?,
+        languages: languages ?? this.languages,
+        languageChoiceSlots: languageChoiceSlots ?? this.languageChoiceSlots,
+        spellcasting: identical(spellcasting, _unset)
+            ? this.spellcasting
+            : spellcasting as Spellcasting?,
+      );
+
   /// Cuánto peso podés llevar: Fuerza × 15 libras (capítulo 1, "Carrying
   /// Capacity"). Getter y no campo guardado: es una multiplicación sobre una
   /// puntuación que ya está acá.
@@ -797,9 +1012,16 @@ class ComputedSheet {
       abilityScores[a]! -
       bonusesFor(a).fold<int>(0, (sum, b) => sum + b.amount);
 
+  /// Prueba de característica: el modificador **más** lo situacional.
+  ///
+  /// Único lugar donde vive esta suma, por el mismo motivo que
+  /// [skillModifier]: la ficha leía `abilityModifiers` directo y una capa que
+  /// baje las tiradas no tenía dónde entrar sin ensuciar el daño y la CD.
+  int abilityCheck(Ability a) => abilityModifiers[a]! + d20Modifier;
+
   /// Tirada de salvación total para [a] (mod + competencia si aplica).
   int savingThrow(Ability a) =>
-      abilityModifiers[a]! +
+      abilityCheck(a) +
       (savingThrowProficiencies.contains(a) ? proficiencyBonus : 0) +
       savingThrowBonus;
 
@@ -812,7 +1034,7 @@ class ComputedSheet {
   int skillModifier(String skillId) {
     final ability = Skill.fromId(skillId)?.ability;
     if (ability == null) return 0;
-    return abilityModifiers[ability]! +
+    return abilityCheck(ability) +
         (expertiseSkills.contains(skillId)
             ? proficiencyBonus * 2
             : skillProficiencies.contains(skillId)

@@ -23,6 +23,24 @@ void main() {
       expect(r.mastery, 'sap');
     });
 
+    test('HeroicInspirationOnLongRestEffect sobrevive el ida y vuelta', () {
+      // Un efecto sin campos igual tiene que estar registrado en el `switch`
+      // de `Effect.fromJson`: si falta, el catálogo lo pierde en silencio al
+      // recargarse y el rasgo del Humano vuelve a ser solo texto.
+      const race = Race(
+        id: 'hb-ingenioso',
+        name: 'Ingenioso custom',
+        source: ContentSource.homebrew,
+        creatureType: 'Humanoide',
+        description: 'Descansa y encara.',
+        speed: 30,
+        effects: [HeroicInspirationOnLongRestEffect()],
+      );
+      final r = Race.fromJson(race.toJson());
+      expect(r.effects.whereType<HeroicInspirationOnLongRestEffect>(),
+          hasLength(1));
+    });
+
     test('Race conserva efectos tipados', () {
       const race = Race(
         id: 'hb-drakonido',

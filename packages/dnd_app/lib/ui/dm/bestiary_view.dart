@@ -203,7 +203,9 @@ class _BestiaryViewState extends State<BestiaryView> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      trailing: c.cr == null ? null : Text('VD ${_cr(c.cr!)}'),
+                      trailing: c.cr == null
+                          ? null
+                          : Text('VD ${challengeRatingLabel(c.cr!)}'),
                       onTap: () => setState(() => _selected = c),
                     );
                   },
@@ -243,165 +245,8 @@ class _BestiaryViewState extends State<BestiaryView> {
         Text(c.kind, style: TextStyle(fontSize: 13, color: pal.textMuted)),
         const SizedBox(height: 16),
 
-        // Los números que se comparan entre sí van en `StatTile`, que los pinta
-        // en sans con cifras tabulares. Georgia queda para el nombre.
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            for (final tile in [
-              (label: 'CA', value: c.ac, icon: Icons.shield_outlined),
-              (label: 'PG', value: c.hp, icon: Icons.favorite_outline),
-              if (c.cr != null)
-                (
-                  label: 'VD',
-                  value: _cr(c.cr!),
-                  icon: Icons.local_fire_department_outlined,
-                ),
-              if (c.passivePerceptionValue case final p?)
-                (
-                  label: 'Perc. pasiva',
-                  value: '$p',
-                  icon: Icons.visibility_outlined,
-                ),
-            ])
-              SizedBox(
-                width: 120,
-                child: StatTile(
-                  icon: tile.icon,
-                  label: tile.label,
-                  value: tile.value,
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final a in Ability.values)
-              AbilityPlaque(
-                abbr: a.abbr,
-                score: c.abilityScores[a] ?? 10,
-                modifier: c.abilityModifierFor(a),
-                saveProficient: c.savingThrows.containsKey(a),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        DenseRows(
-          children: [
-            if (c.speed.isNotEmpty) _row('Velocidad', c.speed),
-            if (c.savingThrows.isNotEmpty)
-              _row(
-                'Salvaciones',
-                [
-                  for (final e in c.savingThrows.entries)
-                    '${e.key.abbr} ${_signed(e.value)}',
-                ].join(', '),
-              ),
-            if (c.skills.isNotEmpty)
-              _row(
-                'Habilidades',
-                [
-                  for (final e in c.skills.entries)
-                    '${e.key.label} ${_signed(e.value)}',
-                ].join(', '),
-              ),
-            if (c.senses.isNotEmpty) _row('Sentidos', c.senses),
-            if (c.languages.isNotEmpty) _row('Idiomas', c.languages),
-            if (c.defenses.isNotEmpty) _row('Defensas', c.defenses),
-          ],
-        ),
-
-        for (final trait in c.traits) ...[
-          if (trait == c.traits.first) ...[
-            const SizedBox(height: 16),
-            const Eyebrow('Atributos'),
-          ],
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: '${trait.name}. ',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  TextSpan(text: trait.description),
-                ],
-              ),
-              style: TextStyle(fontSize: 13, color: pal.textMuted),
-            ),
-          ),
-        ],
-
-        // Agrupadas por tipo y en el orden del libro: un perfil es un formato
-        // que el DM reconoce de un vistazo, y cambiarlo cuesta más de lo que
-        // rinde.
-        for (final kind in CreatureActionKind.values)
-          if (c.actions.where((a) => a.kind == kind).toList() case final group
-              when group.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Eyebrow(_sectionLabel(kind, c)),
-            for (final a in group)
-              CreatureActionRow(
-                name: a.name,
-                description: a.description,
-                attackBonus: a.attackBonus == null ? null : '+${a.attackBonus}',
-                damage: a.damage,
-                damageType: a.damageType,
-                reach: a.reach,
-              ),
-          ],
+        ...creatureProfileBody(context, c),
       ],
     );
   }
-
-  /// El encabezado de las legendarias lleva el presupuesto por ronda, que es la
-  /// forma en que lo imprime el libro y el dato que el DM necesita ahí mismo.
-  String _sectionLabel(CreatureActionKind kind, Creature c) {
-    if (kind != CreatureActionKind.legendary) {
-      return switch (kind) {
-        CreatureActionKind.action => 'Acciones',
-        CreatureActionKind.bonus => 'Acciones adicionales',
-        CreatureActionKind.reaction => 'Reacciones',
-        _ => 'Acciones',
-      };
-    }
-    final uses = c.legendaryActionsPerRound;
-    return uses == null
-        ? 'Acciones legendarias'
-        : 'Acciones legendarias · $uses por ronda';
-  }
-
-  Widget _row(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-    child: Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.w500),
-          ),
-          TextSpan(text: value),
-        ],
-      ),
-      style: const TextStyle(fontSize: 13),
-    ),
-  );
-}
-
-String _signed(int v) => v >= 0 ? '+$v' : '$v';
-
-/// El valor de desafío se guarda como número para poder compararlo, pero se
-/// lee como la fracción que imprime el libro.
-String _cr(num cr) {
-  if (cr == 0.125) return '1/8';
-  if (cr == 0.25) return '1/4';
-  if (cr == 0.5) return '1/2';
-  return cr == cr.roundToDouble() ? '${cr.round()}' : '$cr';
 }

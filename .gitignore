@@ -36,6 +36,11 @@ Thumbs.db
 .codex/
 openspec/
 
+# Maquetas de trabajo del lienzo de diseño (artboards `.dc.html` y su lienzo
+# publicado). Son el borrador desde el que se decide una pantalla, no el
+# producto: lo que sobrevive a la decisión es el código y la guía de diseño.
+.design/
+
 # Manuales locales (copyright, no versionar)
 d&d-data/
 docs.zip

@@ -273,6 +273,35 @@ sus propios PG. La única escritura del DM en toda esta fase son los PG de los
 **monstruos**, que son suyos y efímeros — se pierden al cerrar el combate,
 salvo el resumen que queda en `encounter_logs`.
 
+La pantalla lo dice con todas las letras: en la planilla, donde la fila de un
+monstruo lleva los −/+ de daño y cura, la de un jugador dice **«en su ficha»**.
+No es una fila deshabilitada ni un control que no responde; es el motivo,
+escrito en el lugar donde alguien iría a buscar el control.
+
+### La columna del turno
+
+`EncounterView` (`packages/dnd_app/lib/ui/dm/encounter_view.dart`) es una
+planilla con una columna a la derecha de dos solapas:
+
+- **Del turno** — el perfil del monstruo que está jugando, con la iniciativa,
+  los PG y la CA arriba y debajo el mismo perfil que imprime el Bestiario. No
+  es una copia: las dos pantallas llaman a `creatureProfileBody`
+  (`theme/app_widgets.dart`), justamente para que una corrección de datos no
+  quede arreglada en una sola. Los PG de esa tira salen del **encuentro** y no
+  del catálogo, porque bajan a golpes y el máximo del libro dejaría de ser
+  cierto en el primer ataque.
+- **Efectos** — todas las anotaciones de la mesa en una sola lista, con de
+  quién es cada una.
+
+Cuando el turno es de un jugador **no hay perfil que mostrar**, y la solapa lo
+dice en vez de caer a la ficha ajena: es la misma frontera de arriba, aplicada
+al lugar donde más tentaba cruzarla.
+
+El número del daño es uno solo para toda la mesa —el «golpe rápido» de la barra
+de arriba— y no un campito por fila: un ataque hace el mismo daño al goblin que
+le pega que al que tiene al lado, y antes había que tipearlo tantas veces como
+enemigos hubiera.
+
 ## La vuelta del vínculo: la campaña vista por el jugador
 
 Hasta acá el vínculo era de una sola vía. El jugador compartía su ficha, el DM

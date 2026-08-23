@@ -1484,6 +1484,191 @@ class CreatureActionRow extends StatelessWidget {
   }
 }
 
+/// El valor de desafío se guarda como número para poder compararlo, pero se
+/// imprime como lo escribe el libro: los fraccionarios con barra y el resto
+/// como entero.
+String challengeRatingLabel(num cr) {
+  if (cr == 0.125) return '1/8';
+  if (cr == 0.25) return '1/4';
+  if (cr == 0.5) return '1/2';
+  return cr == cr.roundToDouble() ? '${cr.round()}' : '$cr';
+}
+
+String _signed(int v) => v >= 0 ? '+$v' : '$v';
+
+/// El encabezado de las legendarias lleva el presupuesto por ronda, que es la
+/// forma en que lo imprime el libro y el dato que el DM necesita ahí mismo.
+String _actionSectionLabel(CreatureActionKind kind, Creature c) {
+  if (kind != CreatureActionKind.legendary) {
+    return switch (kind) {
+      CreatureActionKind.action => 'Acciones',
+      CreatureActionKind.bonus => 'Acciones adicionales',
+      CreatureActionKind.reaction => 'Reacciones',
+      _ => 'Acciones',
+    };
+  }
+  final uses = c.legendaryActionsPerRound;
+  return uses == null
+      ? 'Acciones legendarias'
+      : 'Acciones legendarias · $uses por ronda';
+}
+
+Widget _profileRow(String label, String value) => Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+  child: Text.rich(
+    TextSpan(
+      children: [
+        TextSpan(
+          text: '$label: ',
+          style: const TextStyle(fontWeight: FontWeight.w500),
+        ),
+        TextSpan(text: value),
+      ],
+    ),
+    style: const TextStyle(fontSize: 13),
+  ),
+);
+
+/// El perfil de una criatura del bloque de cifras para abajo: características,
+/// datos de línea, atributos y acciones agrupadas por tipo.
+///
+/// Vive acá y no en el Bestiario porque lo leen **dos** pantallas: el
+/// Bestiario, donde se consulta un monstruo, y Combate, donde el DM lee al que
+/// tiene el turno sin salir de la mesa. Un segundo perfil escrito aparte se
+/// habría desincronizado con el primero a la primera corrección de datos, que
+/// en este catálogo pasa seguido.
+///
+/// Devuelve la lista de widgets y no un `Column` porque los dos llamadores lo
+/// meten en un `ListView` propio, con su propio encabezado arriba: el nombre y
+/// el tipo no van acá justamente porque cada pantalla los presenta distinto.
+///
+/// [dense] es la variante de columna angosta, y **saca CA y PG del bloque de
+/// cifras**: en Combate esos dos los lleva el encuentro —los PG del monstruo
+/// bajan a golpes— y repetir los del catálogo mostraría un máximo que ya no es
+/// cierto.
+List<Widget> creatureProfileBody(
+  BuildContext context,
+  Creature c, {
+  bool dense = false,
+}) {
+  final pal = context.palette;
+  return [
+    // Los números que se comparan entre sí van en `StatTile`, que los pinta en
+    // sans con cifras tabulares. Georgia queda para el nombre.
+    Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        for (final tile in [
+          if (!dense) (label: 'CA', value: c.ac, icon: Icons.shield_outlined),
+          if (!dense) (label: 'PG', value: c.hp, icon: Icons.favorite_outline),
+          if (c.cr != null)
+            (
+              label: 'VD',
+              value: challengeRatingLabel(c.cr!),
+              icon: Icons.local_fire_department_outlined,
+            ),
+          if (c.passivePerceptionValue case final p?)
+            (
+              label: 'Perc. pasiva',
+              value: '$p',
+              icon: Icons.visibility_outlined,
+            ),
+        ])
+          SizedBox(
+            width: dense ? 118 : 120,
+            child: StatTile(
+              icon: tile.icon,
+              label: tile.label,
+              value: tile.value,
+            ),
+          ),
+      ],
+    ),
+    const SizedBox(height: 16),
+
+    Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final a in Ability.values)
+          AbilityPlaque(
+            abbr: a.abbr,
+            score: c.abilityScores[a] ?? 10,
+            modifier: c.abilityModifierFor(a),
+            saveProficient: c.savingThrows.containsKey(a),
+          ),
+      ],
+    ),
+    const SizedBox(height: 16),
+
+    DenseRows(
+      children: [
+        if (c.speed.isNotEmpty) _profileRow('Velocidad', c.speed),
+        if (c.savingThrows.isNotEmpty)
+          _profileRow(
+            'Salvaciones',
+            [
+              for (final e in c.savingThrows.entries)
+                '${e.key.abbr} ${_signed(e.value)}',
+            ].join(', '),
+          ),
+        if (c.skills.isNotEmpty)
+          _profileRow(
+            'Habilidades',
+            [
+              for (final e in c.skills.entries)
+                '${e.key.label} ${_signed(e.value)}',
+            ].join(', '),
+          ),
+        if (c.senses.isNotEmpty) _profileRow('Sentidos', c.senses),
+        if (c.languages.isNotEmpty) _profileRow('Idiomas', c.languages),
+        if (c.defenses.isNotEmpty) _profileRow('Defensas', c.defenses),
+      ],
+    ),
+
+    for (final trait in c.traits) ...[
+      if (trait == c.traits.first) ...[
+        const SizedBox(height: 16),
+        const Eyebrow('Atributos'),
+      ],
+      Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '${trait.name}. ',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              TextSpan(text: trait.description),
+            ],
+          ),
+          style: TextStyle(fontSize: 13, color: pal.textMuted),
+        ),
+      ),
+    ],
+
+    // Agrupadas por tipo y en el orden del libro: un perfil es un formato que
+    // el DM reconoce de un vistazo, y cambiarlo cuesta más de lo que rinde.
+    for (final kind in CreatureActionKind.values)
+      if (c.actions.where((a) => a.kind == kind).toList() case final group
+          when group.isNotEmpty) ...[
+        const SizedBox(height: 16),
+        Eyebrow(_actionSectionLabel(kind, c)),
+        for (final a in group)
+          CreatureActionRow(
+            name: a.name,
+            description: a.description,
+            attackBonus: a.attackBonus == null ? null : '+${a.attackBonus}',
+            damage: a.damage,
+            damageType: a.damageType,
+            reach: a.reach,
+          ),
+      ],
+  ];
+}
+
 /// Distintivo de procedencia para las tarjetas de selección.
 class SourceBadge extends StatelessWidget {
   final ContentSource source;

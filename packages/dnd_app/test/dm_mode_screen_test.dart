@@ -930,7 +930,10 @@ void main() {
 
       expect(find.text('Siguiente turno'), findsOneWidget);
       expect(find.text('Tirar iniciativa'), findsNothing);
-      expect(find.text('Ronda 1'), findsOneWidget);
+      // La barra de la planilla separa el rótulo del número, como toda placa
+      // de la app: la ronda se lee como cifra, no como frase.
+      expect(find.text('RONDA'), findsOneWidget);
+      expect(find.text('Turno 1 de 1'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -1104,7 +1107,7 @@ void main() {
         await tester.tap(find.byTooltip('Dañar'));
         await tester.pumpAndSettle();
 
-        expect(find.textContaining('caído'), findsOneWidget);
+        expect(find.textContaining('Caído'), findsOneWidget);
         final goblin = server.encounters['tumba']!.combatants.firstWhere(
           (c) => c.kind == CombatantKind.monster,
         );
@@ -1147,6 +1150,122 @@ void main() {
 
       expect(
         find.textContaining('No queda ningún enemigo en pie'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    // La planilla tiene dos disposiciones —con columnas y partida en dos
+    // líneas— y la columna derecha dos lugares. Ninguna combinación puede
+    // desbordar: en la mesa se juega en la ventana que haya.
+    // Los tres anchos son los tres cruces posibles de las dos decisiones:
+    // 700 parte las filas y baja la columna; 1200 mantiene las columnas pero
+    // todavía baja la columna derecha; 1336 la sube al costado y por eso vuelve
+    // a partir las filas, que es la combinación menos obvia de todas.
+    for (final width in const [700.0, 1200.0, 1336.0]) {
+      testWidgets('la planilla entra en una ventana de $width', (tester) async {
+        await pumpDmMode(tester, size: Size(width, 900), seed: seedTable);
+        if (width < 900) {
+          await tester.tap(find.byIcon(Icons.menu));
+          await tester.pumpAndSettle();
+        }
+        await tester.tap(find.text('Combate'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Armar combate'));
+        await tester.pumpAndSettle();
+        await addMonsters(tester, 'goblin', 'Guerrero goblin', count: 3);
+        await tirarIniciativa(tester);
+
+        // Esté al costado o abajo, la columna del turno tiene que seguir ahí.
+        expect(find.byKey(const ValueKey('combate-panel')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    // Lo que pidió el DM en la mesa: poder leer al monstruo que está jugando
+    // sin salir de Combate a buscarlo al Bestiario.
+    testWidgets('la columna del turno trae el perfil del monstruo', (
+      tester,
+    ) async {
+      await withGoblin(tester);
+      await tirarIniciativa(tester);
+
+      final panel = find.byKey(const ValueKey('combate-panel'));
+      Finder inPanel(Finder f) => find.descendant(of: panel, matching: f);
+
+      // El nombre y el tipo salen del catálogo…
+      expect(inPanel(find.text('Guerrero goblin')), findsOneWidget);
+      expect(inPanel(find.textContaining('Feérico Pequeño')), findsOneWidget);
+      // …y las acciones también, todas, con el bonificador ya firmado: el
+      // goblin pega con cimitarra y con arco, y las dos a +4.
+      expect(inPanel(find.text('Cimitarra')), findsOneWidget);
+      expect(inPanel(find.text('Arco corto')), findsOneWidget);
+      expect(inPanel(find.text('+4')), findsNWidgets(2));
+      // Los PG, en cambio, son los del encuentro y no los del libro: son los
+      // que bajan a golpes.
+      expect(inPanel(find.text('10/10')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // La frontera del Modo DM también rige acá: la columna no puede convertirse
+    // en una forma de leer la ficha de otra cuenta.
+    testWidgets('cuando le toca a un jugador la columna no muestra su ficha', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar a la mesa'));
+      await tester.pumpAndSettle();
+      await addMonsters(tester, 'goblin', 'Guerrero goblin');
+      // Una iniciativa que ningún d20 alcanza: el turno es de Sagan seguro.
+      await tirarIniciativa(tester, initiatives: {'Sagan': 40});
+
+      final panel = find.byKey(const ValueKey('combate-panel'));
+      expect(
+        find.descendant(
+          of: panel,
+          matching: find.textContaining('su ficha la lleva quien lo juega'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: panel, matching: find.text('Guerrero goblin')),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    // Los efectos anotados están repartidos en filas que además se mueven de
+    // lugar: juntarlos es lo que evita que se pase el veneno de turno.
+    testWidgets('la solapa de efectos junta lo anotado de toda la mesa', (
+      tester,
+    ) async {
+      await withGoblin(tester);
+      await tirarIniciativa(tester);
+
+      await tester.tap(find.byTooltip('Efectos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilterChip, 'Envenenado'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const ValueKey('combate-solapa-efectos')));
+      await tester.pumpAndSettle();
+
+      final panel = find.byKey(const ValueKey('combate-panel'));
+      // El efecto queda listado con de quién es, que es el dato que la fila
+      // no da cuando hay diez combatientes.
+      expect(
+        find.descendant(of: panel, matching: find.text('Envenenado')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: panel, matching: find.text('Guerrero goblin')),
         findsOneWidget,
       );
       expect(tester.takeException(), isNull);

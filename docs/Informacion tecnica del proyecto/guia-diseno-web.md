@@ -435,6 +435,7 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `SourceBadge` | `GoldPill` con la procedencia del contenido | Solo el SRD 5.2.1 va resaltado |
 | `ActionTypeIcon` / `ActionTypeLegend` | Ícono del tipo de acción (acción, adicional, reacción) y su leyenda | La leyenda va una sola vez por pantalla, no por fila |
 | `CreatureActionRow` | Una acción de criatura: nombre, bonificador con signo en Georgia dorado, daño con su tipo, alcance y descripción | Toma **primitivos** y no un `CreatureAction`: la usan la ficha (compañeros, vía `ResolvedCreatureAction`) y el Bestiario (perfil crudo), que traen tipos distintos |
+| `creatureProfileBody(…)` | El perfil de una criatura del bloque de cifras para abajo: `StatTile` de CA/PG/VD/percepción, las seis `AbilityPlaque`, `DenseRows` de velocidad/sentidos/idiomas, atributos y acciones agrupadas por tipo | Devuelve `List<Widget>`, no un `Column`: cada llamador lo mete en su propio `ListView` con su encabezado (el nombre y el tipo **no** van adentro). Lo leen el Bestiario y la columna «Del turno» de Combate. `dense: true` es la variante de columna angosta y **saca CA y PG**, que en Combate los lleva el encuentro y no el catálogo |
 
 ### Selección
 

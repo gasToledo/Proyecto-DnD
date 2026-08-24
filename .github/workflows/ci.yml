@@ -24,6 +24,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dart-lang/setup-dart@v1
+      # `pubspec.lock` está versionado, así que la clave cambia exactamente
+      # cuando cambian las dependencias resueltas. El `restore-keys` deja
+      # partir del cache anterior y bajar solo lo que se movió.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-dnd_engine-${{ hashFiles('packages/dnd_engine/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-dnd_engine-
       - run: dart pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: dart analyze
@@ -40,6 +48,12 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Sin esto cada corrida vuelve a bajar el SDK entero de Flutter.
+          # `cache: true` guarda el SDK y el pub-cache; las claves por defecto
+          # ya incluyen canal, versión, arquitectura y el hash de los
+          # `pubspec`, así que una subida de cota de SDK invalida la entrada
+          # sola y no hay clave que mantener a mano.
+          cache: true
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
@@ -55,6 +69,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dart-lang/setup-dart@v1
+      - uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-dnd_server-${{ hashFiles('packages/dnd_server/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-dnd_server-
       - run: dart pub get
       - run: dart format --output=none --set-exit-if-changed lib bin test
       - run: dart analyze

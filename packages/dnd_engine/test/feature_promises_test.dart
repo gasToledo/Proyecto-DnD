@@ -185,7 +185,10 @@ void main() {
         for (final e in f.effects.whereType<ResourceEffect>())
           (where: 'dote ${f.id} ${e.id}', e: e),
     ];
-    expect(recursos, hasLength(45));
+    // 46 desde que Lanzamiento de la Marca dejó de ser texto: es el único
+    // recurso del catálogo que representa un espacio de conjuro y no un pozo
+    // de usos, porque el motor no sabe modelar un espacio fuera de la tabla.
+    expect(recursos, hasLength(46));
 
     var porCaracteristica = 0;
     var porNivel = 0;
@@ -483,6 +486,32 @@ void main() {
           s.innateSpells.firstWhere((x) => x.spellId == 'magic-missile');
       expect(innato.ability, Ability.constitution);
       expect(innato.use, InnateSpellUse.oncePerShortRest);
+    });
+
+    test('Lanzamiento de la Marca es un recurso de descanso corto', () {
+      // El texto lo llama "espacio de conjuro adicional", pero **no** entra en
+      // `slotsByLevel` y la diferencia es deliberada. Ese mapa no sabe
+      // representar ni la restricción ("solo para conjuros de tu marca") ni la
+      // recarga corta, así que meterlo ahí le daría al jugador un espacio libre
+      // para cualquier conjuro: más de lo que concede la regla, y en silencio.
+      // Como recurso queda lo que importa en la mesa —si te queda o no— con la
+      // recarga correcta, y el nivel del espacio lo dice su descripción.
+      final e = repo
+          .feat('potent-dragonmark')!
+          .effects
+          .whereType<ResourceEffect>()
+          .single;
+      expect(e.max, 1);
+      expect(e.recharge, RechargeOn.shortRest);
+      expect(e.description, contains('máximo de nivel 5'));
+
+      final s = compiler.compile(conDote('potent-dragonmark', level: 8));
+      final recurso = s.resources.firstWhere((r) => r.id == e.id);
+      expect(recurso.max, 1);
+
+      // Y no aparece como espacio: el guerrero de la prueba no lanza, así que
+      // si se hubiera colado en la tabla habría espacios donde no hay magia.
+      expect(s.spellcasting, isNull);
     });
 
     test('Marca Dracónica Potente sube la característica de su marca', () {

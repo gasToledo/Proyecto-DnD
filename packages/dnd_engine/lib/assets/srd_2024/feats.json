@@ -3388,9 +3388,12 @@
         "description": "Tenés siempre preparados los conjuros de tu lista de Conjuros de la Marca, si la tenés."
       },
       {
-        "type": "passiveTrait",
+        "type": "resource",
+        "id": "potent_dragonmark_slot",
         "name": "Lanzamiento de la Marca",
-        "description": "Tenés un espacio de conjuro adicional para los conjuros que te da tu dote de marca. Su nivel es la mitad de tu nivel redondeando hacia arriba, hasta un máximo de nivel 5, y se recupera con un descanso corto o largo. Solo sirve para conjuros preparados por tu dote de marca o por Preparación de la Marca."
+        "max": 1,
+        "recharge": "short",
+        "description": "Un espacio de conjuro adicional para los conjuros que te da tu dote de marca. Su nivel es la mitad de tu nivel redondeando hacia arriba, hasta un máximo de nivel 5. Solo sirve para conjuros preparados por tu dote de marca o por Preparación de la Marca."
       }
     ],
     "prerequisite": {

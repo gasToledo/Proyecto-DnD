@@ -97,6 +97,44 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('Lanzamiento de la Marca se ve y vuelve con el descanso corto', (
+    tester,
+  ) async {
+    // Es el primer recurso del catálogo que declara una **dote** y no una
+    // clase, así que lo que se comprueba acá no es el rasgo sino que la ficha
+    // no filtre los recursos por su origen.
+    final marcado = Character(
+      id: 'marcado',
+      name: 'Sivis',
+      raceId: 'human',
+      classId: 'wizard',
+      backgroundId: 'sage',
+      level: 8,
+      assignedScores: {for (final a in Ability.values) a: 14},
+      hpPerLevel: List.filled(8, 4),
+      featIds: const ['mark-of-scribing', 'potent-dragonmark'],
+      combat: CombatState(
+        currentHp: 40,
+        // Sin `const`: `CombatState` se queda con este mapa y el descanso lo
+        // muta, así que un literal constante revienta.
+        resourceUsage: {'potent_dragonmark_slot': 1},
+      ),
+    );
+    await pumpSheet(tester, marcado, size: const Size(900, 6000));
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lanzamiento de la Marca'), findsWidgets);
+
+    await tester.tap(find.text('Descanso corto'));
+    await tester.pumpAndSettle();
+
+    // Recarga corta: el descanso corto lo devuelve entero, que es la mitad de
+    // la regla que un `passiveTrait` no podía hacer cumplir.
+    expect(marcado.combat.resourceUsage['potent_dragonmark_slot'], 0);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('las pestañas marciales conservan sus flujos principales', (
     tester,
   ) async {

@@ -966,11 +966,30 @@ toda dote cuya prosa diga «una característica a tu elección» tiene que
 declararla, y la que la declara no puede además repetirla como rasgo de texto.
 Las doce marcas entraron por el primero.
 
+**Lanzamiento de la Marca, cerrado a medias el 2026-08-24 — y la mitad que
+falta es una decisión, no un olvido.** El rasgo dice «tenés un espacio de
+conjuro adicional», y la tentación era sumarlo a `Spellcasting.slotsByLevel`.
+**Habría estado mal.** Ese mapa no sabe representar ni la restricción («solo
+para conjuros de tu marca») ni la recarga corta, así que el jugador habría
+terminado con un espacio libre para *cualquier* conjuro y recuperable solo con
+descanso largo: más poder del que concede la regla, y en silencio, que es peor
+que no modelarlo.
+
+Se cargó como `ResourceEffect` con recarga corta. Es lo que importa en la
+mesa —si te queda o no— con la recarga correcta, y el nivel del espacio lo
+sigue diciendo su descripción. Fue **el primer recurso del catálogo declarado
+por una dote** y no por una clase, así que la prueba de la aplicación no
+comprueba el rasgo sino que la ficha no filtre los recursos por su origen.
+
+Modelarlo entero pide un pozo de espacios aparte del de la clase, con nivel
+calculado y lista de conjuros elegibles. Es una sola dote en todo el catálogo:
+no justifica la maquinaria.
+
 ### Abierto
 
 | Qué | Dónde se comprueba | Estado |
 |---|---|---|
-| **«Lanzamiento de la Marca»** de Marca Dracónica Potente: espacio de conjuro adicional de nivel ⌈nivel/2⌉ hasta 5, recuperado en descanso corto | `feats.json`, dote `potent-dragonmark` | Sin mecanismo. Es un espacio **fuera** de la tabla de la clase, que hoy no se puede expresar |
+| **El nivel y la restricción** de «Lanzamiento de la Marca» | `feats.json`, dote `potent-dragonmark` | El uso ya se cuenta como recurso (ver abajo). Lo que sigue en prosa es *de qué nivel* es el espacio y *para qué conjuros* sirve, y las dos cosas piden un pozo de espacios aparte del de la clase |
 | **«Intuición Mejorada»** de las 12 marcas mayores: «podés tirar 1d6 en vez de 1d4» sobre el rasgo homónimo de la marca base | `feats.json`, dotes `greater-mark-of-*` | Es una **mejora de algo que tampoco está modelado**: la «Intuición» de la marca base es un d4 que el jugador decide sumar a una prueba, y el motor no modela bonificadores opcionales en tiempo de tirada. Son dos pasos, no uno |
 
 ### Sospechas sin verificar

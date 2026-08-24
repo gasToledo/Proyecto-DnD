@@ -3063,11 +3063,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3093,11 +3089,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3123,11 +3115,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3153,11 +3141,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3183,11 +3167,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3213,11 +3193,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3243,11 +3219,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3273,11 +3245,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3303,11 +3271,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3333,11 +3297,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3363,11 +3323,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",
@@ -3393,11 +3349,7 @@
     "category": "general",
     "repeatable": false,
     "effects": [
-      {
-        "type": "passiveTrait",
-        "name": "Aumento de Característica",
-        "description": "Aumentás en 1 una característica a tu elección, hasta un máximo de 20."
-      },
+      {"type":"abilityScoreChoice","amount":1,"max":20},
       {
         "type": "passiveTrait",
         "name": "Intuición Mejorada",

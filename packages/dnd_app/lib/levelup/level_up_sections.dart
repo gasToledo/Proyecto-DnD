@@ -833,12 +833,13 @@ extension _LevelUpSections on _LevelUpScreenState {
           _buildImprove()
         else ...[
           _buildFeatPicker(),
-          // Un don épico concede la dote y además "+1 a una característica a
-          // tu elección". Aparece recién con la dote elegida, porque hasta
-          // entonces no hay ningún +1 del que hablar.
-          if (_boonAbilityChoice case final boon?) ...[
+          // Hay dotes que además de sus rasgos conceden "+1 a una
+          // característica a tu elección": los dones épicos y las marcas
+          // mayores. Aparece recién con la dote elegida, porque hasta entonces
+          // no hay ningún +1 del que hablar.
+          if (_featAbilityChoice case final aumento?) ...[
             const SizedBox(height: 22),
-            Eyebrow('El don sube una característica (+${boon.amount})'),
+            Eyebrow('La dote sube una característica (+${aumento.amount})'),
             const SizedBox(height: 10),
             Builder(
               builder: (context) {
@@ -849,15 +850,19 @@ extension _LevelUpSections on _LevelUpScreenState {
                 );
               },
             ),
-            const SizedBox(height: 10),
-            Text(
-              'Este don llega hasta ${boon.max}, no hasta 20 como una mejora '
-              'normal.',
-              style: TextStyle(
-                fontSize: 12.5,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            // El techo solo se aclara cuando no es el de siempre: decir "hasta
+            // 20" en una marca mayor sería ruido, porque es el techo normal.
+            if (aumento.max != 20) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Esta dote llega hasta ${aumento.max}, no hasta 20 como una '
+                'mejora normal.',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
+            ],
           ],
         ],
       ],
@@ -902,7 +907,7 @@ extension _LevelUpSections on _LevelUpScreenState {
   }
 
   /// La grilla de las seis características, con el antes → después de cada una.
-  /// La comparten la mejora normal y el +1 del don épico: es la misma decisión
+  /// La comparten la mejora normal y el +1 de una dote: es la misma decisión
   /// —a cuál va el aumento— y mostrarla distinta según de dónde viene el punto
   /// sería una diferencia sin motivo.
   Widget _buildAbilityGrid(ComputedSheet before, ComputedSheet after) {
@@ -942,9 +947,9 @@ extension _LevelUpSections on _LevelUpScreenState {
 
   void _selectAbility(Ability ability) {
     _updateState(() {
-      // El don épico concede un solo punto, así que siempre es selección
+      // La dote concede un solo punto, así que siempre es selección
       // simple, sin importar en qué modo quedó el segmentado de la mejora.
-      if (_boonAbilityChoice != null || _impMode == _ImproveMode.plusTwo) {
+      if (_featAbilityChoice != null || _impMode == _ImproveMode.plusTwo) {
         _abilityA = ability;
         _abilityB = null;
         return;

@@ -545,6 +545,55 @@ void main() {
       );
     });
 
+    test('toda dote que promete elegir característica la declara', () {
+      // El mismo lint que el resto del archivo, aplicado a dotes: si la prosa
+      // dice "una característica a tu elección", tiene que haber un efecto que
+      // lo conceda. Sin esto el jugador lee el +1 y la ficha no se lo da, que
+      // fue exactamente lo que pasó con las doce marcas mayores.
+      final incumplen = [
+        for (final f in repo.feats.values)
+          if (f.effects.whereType<PassiveTraitEffect>().any(
+                    (e) =>
+                        e.description.contains('característica a tu elección'),
+                  ) &&
+              f.effects.whereType<AbilityScoreChoiceEffect>().isEmpty)
+            f.id,
+      ];
+      expect(incumplen, isEmpty,
+          reason: 'prometen elegir característica y no la declaran');
+
+      // Y al revés: quien lo declara no debe repetirlo en prosa, que es la
+      // convención del catálogo (`resilient-strength` no describe su +1).
+      // Los dones épicos quedan exentos porque su texto es un bloque único que
+      // describe todo el don, y el techo escrito ahí es lo que compara el test
+      // de abajo.
+      final duplican = [
+        for (final f in repo.feats.values)
+          if (f.category != 'epic-boon' &&
+              f.effects.whereType<AbilityScoreChoiceEffect>().isNotEmpty &&
+              f.effects
+                  .whereType<PassiveTraitEffect>()
+                  .any((e) => e.name == 'Aumento de Característica'))
+            f.id,
+      ];
+      expect(duplican, isEmpty,
+          reason: 'declaran el +1 y además lo repiten como rasgo de texto');
+    });
+
+    test('las doce marcas mayores conceden su +1 con el techo normal', () {
+      final mayores = repo.feats.values
+          .where((f) => f.id.startsWith('greater-mark-of-'))
+          .toList();
+      expect(mayores, hasLength(12));
+      for (final m in mayores) {
+        final e = m.effects.whereType<AbilityScoreChoiceEffect>().single;
+        expect(e.amount, 1, reason: m.id);
+        // 20 y no 30: el techo alto es privilegio del don épico, y si esto se
+        // copiara mal el validador dejaría pasar un personaje ilegal.
+        expect(e.max, 20, reason: m.id);
+      }
+    });
+
     test('los trece dones épicos declaran el +1 que promete su texto', () {
       final dones =
           repo.feats.values.where((f) => f.category == 'epic-boon').toList();

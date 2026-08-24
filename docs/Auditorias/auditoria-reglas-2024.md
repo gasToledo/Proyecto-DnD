@@ -941,12 +941,37 @@ vez de tenerlo escrito, así que un personaje legal con 21 de Fuerza ya no
 dispara `ability_over_20`. El techo es del personaje y no del punto: ver el
 `ponytail:` en `validation.dart`.
 
+**Las marcas mayores, cerrado a medias el 2026-08-24 — y la otra mitad no es
+deuda.** Este apartado las listaba como «doce dotes de texto puro», y esa
+descripción escondía que los 36 rasgos son de **tres tipos muy distintos**, uno
+por marca:
+
+1. **Aumento de Característica** (12/12) — «aumentás en 1 una característica a
+   tu elección, hasta un máximo de 20». Se resolvió: es exactamente el
+   `AbilityScoreChoiceEffect` que acababan de estrenar los dones épicos, con
+   techo 20 en vez de 30. El `passiveTrait` se borró en vez de convivir con el
+   efecto, que es la convención del catálogo — `resilient-strength` tampoco
+   describe su +1 en prosa.
+2. **Intuición Mejorada** (12/12) — sube un dado de la marca base. Sigue
+   abierto, y está en la tabla de abajo con el motivo.
+3. **El tercer rasgo** (12/12) — es distinto en cada marca: reacciones,
+   conjuros lanzados a un nivel superior, efectos que alcanzan a un aliado a 30
+   pies. **No es deuda: es la categoría que este proyecto ya decidió dejar como
+   texto**, la misma que agrupa los rasgos condicionales, las auras y los
+   compañeros. Anotarlos como pendientes sería prometer un trabajo que nadie
+   quiere hacer.
+
+Queda un lint nuevo en `feature_promises_test.dart` que cierra la clase entera:
+toda dote cuya prosa diga «una característica a tu elección» tiene que
+declararla, y la que la declara no puede además repetirla como rasgo de texto.
+Las doce marcas entraron por el primero.
+
 ### Abierto
 
 | Qué | Dónde se comprueba | Estado |
 |---|---|---|
 | **«Lanzamiento de la Marca»** de Marca Dracónica Potente: espacio de conjuro adicional de nivel ⌈nivel/2⌉ hasta 5, recuperado en descanso corto | `feats.json`, dote `potent-dragonmark` | Sin mecanismo. Es un espacio **fuera** de la tabla de la clase, que hoy no se puede expresar |
-| **Los 12 `greater-mark-of-*`**: tres `passiveTrait` cada uno, cero efectos estructurados | `feats.json` | El segundo escalón de las marcas quedó sin cargar cuando se cargó el primero. Es exactamente la advertencia de método que ya dejó escrita la primera pasada: cargar la parte grande de un rasgo no garantiza haber mirado el resto |
+| **«Intuición Mejorada»** de las 12 marcas mayores: «podés tirar 1d6 en vez de 1d4» sobre el rasgo homónimo de la marca base | `feats.json`, dotes `greater-mark-of-*` | Es una **mejora de algo que tampoco está modelado**: la «Intuición» de la marca base es un d4 que el jugador decide sumar a una prueba, y el motor no modela bonificadores opcionales en tiempo de tirada. Son dos pasos, no uno |
 
 ### Sospechas sin verificar
 

@@ -690,7 +690,7 @@ void main() {
 
     // La dote sola no alcanza: falta decir adónde va el punto.
     expect(
-      find.text('Elegí a qué característica va el +1 del don épico.'),
+      find.text('Elegí a qué característica va el +1 de la dote.'),
       findsOneWidget,
     );
 

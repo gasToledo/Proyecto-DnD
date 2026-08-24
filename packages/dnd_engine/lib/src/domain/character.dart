@@ -56,7 +56,12 @@ class AsiChoice {
   /// Aumentos de característica (p.ej. {STR:2} o {STR:1, CON:1}).
   final Map<Ability, int> abilityIncreases;
 
-  /// Dote elegida en su lugar (excluyente con [abilityIncreases]).
+  /// Dote elegida en su lugar de [abilityIncreases].
+  ///
+  /// Son excluyentes salvo en un caso: los **dones épicos** conceden la dote y
+  /// además "+1 a una característica a tu elección", y solo se pueden tomar en
+  /// un nivel de Mejora, así que ese aumento viaja acá junto con la dote en vez
+  /// de inventar un mapa nuevo. Lo declara `AbilityScoreChoiceEffect`.
   final String? featId;
 
   const AsiChoice({

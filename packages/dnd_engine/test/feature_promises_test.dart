@@ -544,5 +544,73 @@ void main() {
         hasLength(1),
       );
     });
+
+    test('los trece dones épicos declaran el +1 que promete su texto', () {
+      final dones =
+          repo.feats.values.where((f) => f.category == 'epic-boon').toList();
+      expect(dones, hasLength(13));
+      for (final d in dones) {
+        final e = d.effects.whereType<AbilityScoreChoiceEffect>().single;
+        expect(e.amount, 1, reason: d.id);
+        // El texto y el efecto tienen que decir el mismo techo: si alguien
+        // corrige uno solo, este test lo agarra.
+        expect(e.max, 30, reason: d.id);
+        expect(
+          d.effects
+              .whereType<PassiveTraitEffect>()
+              .any((p) => p.description.contains('máximo de ${e.max}')),
+          isTrue,
+          reason: '${d.id}: el texto no nombra el techo que declara el efecto',
+        );
+      }
+    });
+
+    test('el +1 del don épico llega a la ficha y puede pasar de 20', () {
+      // El aumento viaja en el `AsiChoice` del nivel donde se tomó la dote, que
+      // es el único caso en que un AsiChoice lleva dote y aumento a la vez.
+      Character conDon({Map<Ability, int> aumento = const {}}) => Character(
+            id: 'epico',
+            name: 'Prueba',
+            raceId: 'human',
+            classId: 'fighter',
+            backgroundId: 'soldier',
+            level: 19,
+            assignedScores: {
+              for (final a in Ability.values) a: a == Ability.strength ? 20 : 12
+            },
+            hpPerLevel: List.filled(19, 6),
+            featIds: const ['boon-of-skill'],
+            asiChoices: [
+              AsiChoice(
+                level: 19,
+                featId: 'boon-of-skill',
+                abilityIncreases: aumento,
+              ),
+            ],
+          );
+
+      final sinElegir = compiler.compile(conDon());
+      expect(sinElegir.abilityScores[Ability.strength], 20);
+
+      final elegido = compiler.compile(conDon(aumento: {Ability.strength: 1}));
+      expect(elegido.abilityScores[Ability.strength], 21);
+
+      // 21 es legal con el don y no dispara el aviso; sin el don, sí.
+      final validador = CharacterValidator(repo);
+      expect(
+        validador
+            .validate(conDon(aumento: {Ability.strength: 1}))
+            .map((w) => w.code),
+        isNot(contains('ability_over_20')),
+      );
+      final sinDon = conDon(aumento: {Ability.strength: 1})
+          .copyWith(featIds: const [], asiChoices: [
+        const AsiChoice(level: 19, abilityIncreases: {Ability.strength: 1}),
+      ]);
+      expect(
+        validador.validate(sinDon).map((w) => w.code),
+        contains('ability_over_20'),
+      );
+    });
   });
 }

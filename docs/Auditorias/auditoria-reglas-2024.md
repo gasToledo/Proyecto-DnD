@@ -917,11 +917,34 @@ Lo que sigue se comprobó contra el código y los tests, no contra este archivo.
   característica en tiempo de tirada, y el motor no la modela. No es deuda
   olvidada; es una decisión, y hay un test que la fija.
 
+**Los dones épicos, cerrado el 2026-08-24.** Este apartado los daba como «un
+efecto de una línea en `boon-of-skill`» y estaba mal por triplicado, que es
+justamente el tipo de error que la sección viene a evitar:
+
+- no era una dote sino **las trece**, todas con el mismo texto y ninguna con el
+  efecto;
+- el +1 es **a elección**, y `AbilityScoreBonusEffect` lleva la característica
+  fija, así que no había con qué escribirlo;
+- y ni siquiera se podían tomar: el selector de dotes de la subida de nivel
+  filtraba `category == 'general'`, así que los trece eran inalcanzables desde
+  la aplicación.
+
+Se resolvió sin multiplicar el catálogo por seis. `AbilityScoreChoiceEffect` es
+un marcador que no aplica nada: la característica elegida viaja en el
+`AsiChoice` del nivel donde se tomó la dote, porque un don épico solo se puede
+tomar en un nivel de Mejora y ese registro ya existía. Es la única excepción a
+que `featId` y `abilityIncreases` sean excluyentes, y está documentada en el
+modelo.
+
+El efecto declara su propio techo (`max: 30`) y el validador lo lee de ahí en
+vez de tenerlo escrito, así que un personaje legal con 21 de Fuerza ya no
+dispara `ability_over_20`. El techo es del personaje y no del punto: ver el
+`ponytail:` en `validation.dart`.
+
 ### Abierto
 
 | Qué | Dónde se comprueba | Estado |
 |---|---|---|
-| **Don épico de la Habilidad**: el texto promete «Aumenta una característica en 1, hasta un máximo de 30» y la dote no declara ningún `abilityScoreBonus` | `feats.json`, dote `boon-of-skill` | Defecto confirmado. Las 18 competencias y el cupo de Pericia sí están. Es un efecto de una línea, y `abilityScoreBonus` ya lo usan otras 93 dotes |
 | **«Lanzamiento de la Marca»** de Marca Dracónica Potente: espacio de conjuro adicional de nivel ⌈nivel/2⌉ hasta 5, recuperado en descanso corto | `feats.json`, dote `potent-dragonmark` | Sin mecanismo. Es un espacio **fuera** de la tabla de la clase, que hoy no se puede expresar |
 | **Los 12 `greater-mark-of-*`**: tres `passiveTrait` cada uno, cero efectos estructurados | `feats.json` | El segundo escalón de las marcas quedó sin cargar cuando se cargó el primero. Es exactamente la advertencia de método que ya dejó escrita la primera pasada: cargar la parte grande de un rasgo no garantiza haber mirado el resto |
 

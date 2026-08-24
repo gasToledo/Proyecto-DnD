@@ -36,6 +36,10 @@ sealed class Effect {
           ability: Ability.fromKey(json['ability'] as String),
           amount: json['amount'] as int,
         ),
+      'abilityScoreChoice' => AbilityScoreChoiceEffect(
+          amount: json['amount'] as int? ?? 1,
+          max: json['max'] as int? ?? 30,
+        ),
       'setAbilityScore' => SetAbilityScoreEffect(
           ability: Ability.fromKey(json['ability'] as String),
           score: json['score'] as int,
@@ -320,6 +324,32 @@ class AbilityScoreBonusEffect extends Effect {
   @override
   Map<String, dynamic> toJson() =>
       {'type': 'abilityScoreBonus', 'ability': ability.name, 'amount': amount};
+}
+
+/// La dote concede "+[amount] a una característica a tu elección, hasta un
+/// máximo de [max]". Lo declaran los trece dones épicos.
+///
+/// Es un **marcador**, igual que [FeatureChoiceEffect]: no aplica nada. La
+/// característica elegida no vive en un mapa propio sino en el
+/// `AsiChoice.abilityIncreases` del nivel donde se tomó la dote, porque un don
+/// épico solo se puede tomar en un nivel de Mejora de Característica y ese
+/// registro ya existe. Es la razón por la que un `AsiChoice` puede traer dote
+/// **y** aumentos a la vez, que es la única excepción a que sean excluyentes.
+///
+/// [max] existe porque el techo normal de una característica es 20 y estos lo
+/// suben a 30; quien valida lee este número en vez de tenerlo escrito.
+class AbilityScoreChoiceEffect extends Effect {
+  final int amount;
+  final int max;
+
+  const AbilityScoreChoiceEffect({this.amount = 1, this.max = 30});
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'abilityScoreChoice',
+        'amount': amount,
+        'max': max,
+      };
 }
 
 /// Fija un mínimo de puntuación mientras la fuente está activa.

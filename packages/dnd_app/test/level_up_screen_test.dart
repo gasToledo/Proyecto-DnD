@@ -632,6 +632,105 @@ void main() {
     },
   );
 
+  // --- Dones épicos ---------------------------------------------------------
+
+  testWidgets('un don épico pide además a qué característica va su +1', (
+    tester,
+  ) async {
+    // Los trece dones épicos conceden la dote y "+1 a una característica a tu
+    // elección, hasta un máximo de 30". El aumento no tiene mapa propio: viaja
+    // en el mismo AsiChoice que la dote, porque un don solo se puede tomar en
+    // un nivel de Mejora.
+    // El don agrega la grilla de características debajo del selector de dotes,
+    // así que la página se hace larga: sin esto no entra nada.
+    tester.view.physicalSize = const Size(1200, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    Character? saved;
+    await pumpLevelUp(
+      tester,
+      Character(
+        id: 't-epic',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        subclassId: 'champion',
+        level: 18,
+        assignedScores: {
+          Ability.strength: 20,
+          Ability.dexterity: 14,
+          Ability.constitution: 14,
+          Ability.intelligence: 10,
+          Ability.wisdom: 12,
+          Ability.charisma: 8,
+        },
+        hpPerLevel: List.filled(18, 6),
+        featureChoices: const {
+          'fighting-style': ['fs-defense'],
+        },
+      ),
+      onDone: (c) => saved = c,
+    );
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mejora tu personaje'), findsOneWidget);
+
+    await tester.tap(find.text('Tomar dote'));
+    await tester.pumpAndSettle();
+    await searchFeat(tester, 'Don de la Habilidad');
+    final don = find.widgetWithText(InkWell, 'Don de la Habilidad');
+    await tester.ensureVisible(don);
+    await tester.tap(don);
+    await tester.pumpAndSettle();
+
+    // La dote sola no alcanza: falta decir adónde va el punto.
+    expect(
+      find.text('Elegí a qué característica va el +1 del don épico.'),
+      findsOneWidget,
+    );
+
+    final fuerza = find.widgetWithText(InkWell, 'Fuerza');
+    await tester.ensureVisible(fuerza);
+    await tester.tap(fuerza);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Elegí a qué característica'), findsNothing);
+
+    // El don también concede las 18 competencias y un cupo de Pericia, así que
+    // el paso aparece y hay que resolverlo antes de poder confirmar.
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    final atletismo = find.widgetWithText(FilterChip, 'Atletismo');
+    await tester.ensureVisible(atletismo);
+    await tester.tap(atletismo);
+    await tester.pumpAndSettle();
+
+    // Con cota: un paso que bloquea tiene que fallar el test y no colgarlo,
+    // que es lo que pasa con un `while` pelado.
+    for (var i = 0; find.text('Confirmar nivel 19').evaluate().isEmpty; i++) {
+      expect(i, lessThan(10), reason: 'el asistente dejó de avanzar');
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 19'));
+    await tester.pumpAndSettle();
+
+    // Un AsiChoice con dote *y* aumento, que es la excepción que habilita esto.
+    final asi = saved!.asiChoices.last;
+    expect(asi.featId, 'boon-of-skill');
+    expect(asi.abilityIncreases, {Ability.strength: 1});
+    // Y el 20 pasa a 21, que con el don es legal.
+    expect(
+      CharacterCompiler(repo).compile(saved!).abilityScores[Ability.strength],
+      21,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   // --- Competencias ---------------------------------------------------------
 
   Character barbarian({int level = 2}) => Character(

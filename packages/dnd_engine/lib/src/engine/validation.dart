@@ -117,11 +117,28 @@ class CharacterValidator {
     // Se compila para chequear valores derivados (maestrías, competencia).
     final sheet = CharacterCompiler(repo).compile(c);
 
+    // El techo normal es 20, pero un don épico lo sube a 30 y lo dice en su
+    // propio efecto, así que el número sale del contenido y no de acá.
+    //
+    // ponytail: el techo es del personaje y no del punto. La regla fina es que
+    // solo el +1 del don puede pasar de 20; con esto, un ASI común también
+    // podría llegar a 21 sin que nadie avise. Distinguirlo pide rastrear de
+    // dónde vino cada punto, que hoy no se guarda: si alguna vez importa, el
+    // lugar es `SheetBuilder.addAbilityBonus`, que ya recibe un `source`.
+    final ceiling = [
+      20,
+      for (final id in c.featIds)
+        for (final e
+            in repo.feat(id)?.effects.whereType<AbilityScoreChoiceEffect>() ??
+                const <AbilityScoreChoiceEffect>[])
+          e.max,
+    ].reduce((a, b) => a > b ? a : b);
+
     for (final a in Ability.values) {
-      if (sheet.abilityScores[a]! > 20) {
+      if (sheet.abilityScores[a]! > ceiling) {
         w.add(ValidationWarning(
           'ability_over_20',
-          '${a.abbr} supera 20 (${sheet.abilityScores[a]}).',
+          '${a.abbr} supera $ceiling (${sheet.abilityScores[a]}).',
         ));
       }
     }

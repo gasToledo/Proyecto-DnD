@@ -2306,6 +2306,7 @@
         "type": "bonusMaxHpFlat",
         "amount": 40
       },
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Mejora de Característica",
@@ -2347,6 +2348,7 @@
       {"type":"skillProficiency","skill":"stealth"},
       {"type":"skillProficiency","skill":"survival"},
       {"type":"proficiencyChoice","groupId":"boon-of-skill:expertise","name":"Don de la Habilidad: Pericia","count":1,"expertise":true},
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Don de la Habilidad",
@@ -2364,6 +2366,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Precisión sin Igual",
@@ -2381,6 +2384,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Don de la Recuperación",
@@ -2398,6 +2402,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Resistencias a Energías",
@@ -2419,6 +2424,7 @@
         "type": "speedBonus",
         "feet": 30
       },
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Don de la Velocidad",
@@ -2436,6 +2442,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Visión Verdadera",
@@ -2453,6 +2460,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Ataque Imparable",
@@ -2470,6 +2478,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Mejorar el Destino",
@@ -2487,6 +2496,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Espíritu de la Noche",
@@ -2504,6 +2514,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Lanzamiento Gratuito",
@@ -2522,6 +2533,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Pasos Desplazadores",
@@ -3441,6 +3453,7 @@
     "category": "epic-boon",
     "repeatable": false,
     "effects": [
+      {"type":"abilityScoreChoice","amount":1,"max":30},
       {
         "type": "passiveTrait",
         "name": "Aumento de Característica",

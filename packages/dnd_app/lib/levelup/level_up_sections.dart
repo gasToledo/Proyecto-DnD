@@ -831,8 +831,35 @@ extension _LevelUpSections on _LevelUpScreenState {
         const SizedBox(height: 12),
         if (_asiKind == _AsiKind.improve)
           _buildImprove()
-        else
+        else ...[
           _buildFeatPicker(),
+          // Un don épico concede la dote y además "+1 a una característica a
+          // tu elección". Aparece recién con la dote elegida, porque hasta
+          // entonces no hay ningún +1 del que hablar.
+          if (_boonAbilityChoice case final boon?) ...[
+            const SizedBox(height: 22),
+            Eyebrow('El don sube una característica (+${boon.amount})'),
+            const SizedBox(height: 10),
+            Builder(
+              builder: (context) {
+                final compiler = CharacterCompiler(widget.repo);
+                return _buildAbilityGrid(
+                  compiler.compile(widget.character),
+                  compiler.compile(_buildUpdated()),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Este don llega hasta ${boon.max}, no hasta 20 como una mejora '
+              'normal.',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
       ],
     );
   }
@@ -859,38 +886,7 @@ extension _LevelUpSections on _LevelUpScreenState {
           }),
         ),
         const SizedBox(height: 14),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 760
-                ? 3
-                : constraints.maxWidth >= 430
-                ? 2
-                : 1;
-            final width = (constraints.maxWidth - (columns - 1) * 10) / columns;
-            return Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final ability in Ability.values)
-                  SizedBox(
-                    width: width,
-                    child: _LevelUpCard(
-                      icon: Icons.add_circle_outline,
-                      title: ability.label,
-                      body:
-                          '${before.abilityScores[ability] ?? 0} → '
-                          '${after.abilityScores[ability] ?? before.abilityScores[ability] ?? 0}',
-                      tag: _abilityIncreases[ability] == null
-                          ? 'SIN CAMBIOS'
-                          : '+${_abilityIncreases[ability]}',
-                      selected: _abilityIncreases.containsKey(ability),
-                      onTap: () => _selectAbility(ability),
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
+        _buildAbilityGrid(before, after),
         const SizedBox(height: 14),
         Text(
           _impMode == _ImproveMode.plusTwo
@@ -905,9 +901,50 @@ extension _LevelUpSections on _LevelUpScreenState {
     );
   }
 
+  /// La grilla de las seis características, con el antes → después de cada una.
+  /// La comparten la mejora normal y el +1 del don épico: es la misma decisión
+  /// —a cuál va el aumento— y mostrarla distinta según de dónde viene el punto
+  /// sería una diferencia sin motivo.
+  Widget _buildAbilityGrid(ComputedSheet before, ComputedSheet after) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 760
+            ? 3
+            : constraints.maxWidth >= 430
+            ? 2
+            : 1;
+        final width = (constraints.maxWidth - (columns - 1) * 10) / columns;
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final ability in Ability.values)
+              SizedBox(
+                width: width,
+                child: _LevelUpCard(
+                  icon: Icons.add_circle_outline,
+                  title: ability.label,
+                  body:
+                      '${before.abilityScores[ability] ?? 0} → '
+                      '${after.abilityScores[ability] ?? before.abilityScores[ability] ?? 0}',
+                  tag: _abilityIncreases[ability] == null
+                      ? 'SIN CAMBIOS'
+                      : '+${_abilityIncreases[ability]}',
+                  selected: _abilityIncreases.containsKey(ability),
+                  onTap: () => _selectAbility(ability),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   void _selectAbility(Ability ability) {
     _updateState(() {
-      if (_impMode == _ImproveMode.plusTwo) {
+      // El don épico concede un solo punto, así que siempre es selección
+      // simple, sin importar en qué modo quedó el segmentado de la mejora.
+      if (_boonAbilityChoice != null || _impMode == _ImproveMode.plusTwo) {
         _abilityA = ability;
         _abilityB = null;
         return;
@@ -940,7 +977,12 @@ extension _LevelUpSections on _LevelUpScreenState {
     // solapamiento porque acá solo se ofrecen dotes generales, pero un
     // trasfondo homebrew puede conceder cualquiera.
     final allFeats = widget.repo.featsSorted
-        .where((f) => f.category == 'general')
+        // Generales y dones épicos, que es lo que dice el rasgo de nivel 19:
+        // "obtenés una dote de don épico u otra dote para la que cumplas las
+        // condiciones". No hace falta gatear el nivel acá porque los trece
+        // dones declaran `minLevel: 19` y el filtro de prerrequisitos de más
+        // abajo los esconde solo.
+        .where((f) => f.category == 'general' || f.category == 'epic-boon')
         // "Mejora de Característica" ya es la opción hermana de este
         // selector y necesita registrar sus puntuaciones, no un featId.
         .where((f) => f.id != 'ability-score-improvement')

@@ -101,23 +101,36 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   bool get _canConfirm {
     if (_hpMethod == _HpMethod.roll && _rolledHp == null) return false;
     if (_needsSubclass && _subclassId == null) return false;
-    if (_isAsi) {
-      if (_asiKind == _AsiKind.improve) {
-        if (_abilityA == null) return false;
-        if (_impMode == _ImproveMode.plusOneTwo && _abilityB == null) {
-          return false;
-        }
-      } else {
-        if (_featId == null) return false;
-      }
-    }
+    // La misma regla que bloquea el paso, en un solo lugar: tenía una copia
+    // que se olvidaba del +1 del don épico.
+    if (!_asiComplete) return false;
     if (_pendingChoices > 0) return false;
     if (_pendingSpellChoices > 0) return false;
     return true;
   }
 
+  /// El don épico elegido en este nivel, si concede "+1 a una característica a
+  /// tu elección". Lo declaran los trece y ninguna otra dote, pero se pregunta
+  /// por el efecto y no por la categoría: una dote homebrew que lo declare
+  /// funciona igual.
+  AbilityScoreChoiceEffect? get _boonAbilityChoice {
+    if (!_isAsi || _asiKind != _AsiKind.feat || _featId == null) return null;
+    return widget.repo
+        .feat(_featId!)
+        ?.effects
+        .whereType<AbilityScoreChoiceEffect>()
+        .firstOrNull;
+  }
+
   Map<Ability, int> get _abilityIncreases {
-    if (!_isAsi || _asiKind != _AsiKind.improve) return const {};
+    if (!_isAsi) return const {};
+    // Tomar una dote normal no sube ninguna característica; un don épico sí, y
+    // su aumento viaja en el mismo `AsiChoice` que la dote.
+    if (_asiKind == _AsiKind.feat) {
+      final boon = _boonAbilityChoice;
+      if (boon == null || _abilityA == null) return const {};
+      return {_abilityA!: boon.amount};
+    }
     if (_impMode == _ImproveMode.plusTwo) {
       return {?_abilityA: 2};
     }
@@ -434,7 +447,12 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
   bool get _asiComplete {
     if (!_isAsi) return true;
-    if (_asiKind == _AsiKind.feat) return _featId != null;
+    if (_asiKind == _AsiKind.feat) {
+      if (_featId == null) return false;
+      // Un don épico no está completo con la dote sola: falta decir a qué
+      // característica va su +1.
+      return _boonAbilityChoice == null || _abilityA != null;
+    }
     if (_abilityA == null) return false;
     return _impMode == _ImproveMode.plusTwo || _abilityB != null;
   }
@@ -486,6 +504,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       'Completá la mejora de características.',
     _LevelUpStepKind.abilityScore when _featId == null =>
       'Elegí una dote para continuar.',
+    _LevelUpStepKind.abilityScore
+        when _boonAbilityChoice != null && _abilityA == null =>
+      'Elegí a qué característica va el +1 del don épico.',
     _LevelUpStepKind.featureChoices when _pendingChoices > 0 =>
       _pendingChoices == 1
           ? 'Te falta una elección para continuar.'
@@ -526,7 +547,16 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       } else if (withFeat && _featId != null) {
         // La dote solo se agrega si ya se eligió: `_buildUpdated` corre en cada
         // build (previsualización de conjuros), incluso antes de elegir dote.
-        asiChoices.add(AsiChoice(level: _newLevel, featId: _featId));
+        // `abilityIncreases` va vacío para una dote normal y trae el +1 del
+        // don épico cuando corresponde: es el único caso en que un `AsiChoice`
+        // lleva dote y aumento a la vez.
+        asiChoices.add(
+          AsiChoice(
+            level: _newLevel,
+            featId: _featId,
+            abilityIncreases: _abilityIncreases,
+          ),
+        );
         featIds.add(_featId!);
       }
     }

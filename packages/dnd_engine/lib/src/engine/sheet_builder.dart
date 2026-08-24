@@ -229,6 +229,11 @@ class SheetBuilder {
         // Marcador: la característica la eligió el personaje y solo el
         // compilador la conoce.
         abilityBonusesFromFeatChoice.add((effect: e, source: sourceName));
+      case AbilityScoreChoiceEffect():
+        // Marcador sin nada que aplicar: el aumento ya viajó por el
+        // `AsiChoice` del nivel donde se tomó la dote, y el compilador lo sumó
+        // antes de llegar acá. Aplicarlo también sería contarlo dos veces.
+        break;
       case SavingThrowProficiencyEffect(:final ability):
         saveProficiencies.add(ability);
       case ArmorProficiencyEffect(:final category):

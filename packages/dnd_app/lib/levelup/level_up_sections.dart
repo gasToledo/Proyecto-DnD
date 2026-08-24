@@ -46,19 +46,23 @@ extension _LevelUpSections on _LevelUpScreenState {
         _buildFeatureChoicesSection(),
       ],
     ),
-    _LevelUpStepKind.expertise => Column(
+    _LevelUpStepKind.proficiencies => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _LevelUpIntro(
+        _LevelUpIntro(
           eyebrow: 'Elegís vos',
-          title: 'Pericia',
-          body:
-              'Duplicás tu bonificador por competencia en las habilidades que '
-              'elijas. Solo se ofrecen las habilidades en las que ya sos '
-              'competente.',
+          title: _pendingAreAllExpertise ? 'Pericia' : 'Competencias',
+          body: _pendingAreAllExpertise
+              ? 'Duplicás tu bonificador por competencia en las habilidades '
+                    'que elijas. Solo se ofrecen las habilidades en las que ya '
+                    'sos competente.'
+              : 'Lo que ya tenés por otra vía queda bloqueado, para no gastar '
+                    'el cupo en algo que ya sabés hacer. En los cupos de '
+                    'Pericia es al revés: solo se ofrecen las habilidades en '
+                    'las que ya sos competente.',
         ),
         const SizedBox(height: 22),
-        _buildExpertiseSection(),
+        _buildProficiencySection(),
       ],
     ),
     _LevelUpStepKind.features => _buildFeaturesStep(),
@@ -382,20 +386,28 @@ extension _LevelUpSections on _LevelUpScreenState {
     );
   }
 
-  Widget _buildExpertiseSection() {
+  Widget _buildProficiencySection() {
+    final data = _proficiencyData;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final slot in _expertiseSlots) ...[
+        for (final slot in data.slots) ...[
           Eyebrow(
             '${slot.name} '
-            '(${_expertiseFor(slot.groupId).length}/${slot.count})',
+            '(${_proficiencyFor(slot.groupId).length}/${slot.count})',
           ),
           const SizedBox(height: 6),
-          _ExpertiseGroup(
+          _ProficiencyChoiceGroup(
             slot: slot,
-            chosen: _expertiseFor(slot.groupId),
-            onChanged: (ids) => _setExpertise(slot.groupId, ids),
+            chosen: _proficiencyFor(slot.groupId),
+            // Lo elegido en otro cupo también bloquea: dos cupos abiertos a la
+            // vez no pueden repartirse la misma competencia.
+            locked: {
+              ...data.fixed,
+              for (final e in _effectiveProficiencyChoices.entries)
+                if (e.key != slot.groupId) ...e.value,
+            },
+            onChanged: (ids) => _setProficiency(slot.groupId, ids),
           ),
           const SizedBox(height: 22),
         ],

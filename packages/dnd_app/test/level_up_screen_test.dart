@@ -632,6 +632,94 @@ void main() {
     },
   );
 
+  // --- Competencias ---------------------------------------------------------
+
+  Character barbarian({int level = 2}) => Character(
+    id: 't-barbarian',
+    name: 'Prueba',
+    raceId: 'human',
+    classId: 'barbarian',
+    backgroundId: 'soldier',
+    // El Bárbaro elige subclase justo a nivel 3: fijarla acá deja el paso de
+    // competencias como el único que el test tiene que atravesar, igual que
+    // `fighterL3` hace con el Estilo de Combate.
+    subclassId: 'berserker',
+    level: level,
+    assignedScores: {
+      Ability.strength: 16,
+      Ability.dexterity: 14,
+      Ability.constitution: 15,
+      Ability.intelligence: 8,
+      Ability.wisdom: 12,
+      Ability.charisma: 10,
+    },
+    hpPerLevel: List.filled(level, 8),
+    chosenSkills: const ['athletics', 'survival'],
+  );
+
+  testWidgets('subir un Bárbaro a nivel 3 pide Conocimiento Primigenio', (
+    tester,
+  ) async {
+    // El rasgo concede "competencia en otra habilidad de la lista del Bárbaro".
+    // Hasta que el paso cubrió las competencias y no solo la Pericia, el
+    // asistente se lo saltaba y había que ir a buscarlo al aviso de la ficha.
+    Character? saved;
+    await pumpLevelUp(tester, barbarian(), onDone: (c) => saved = c);
+
+    expect(find.text('Competencias'), findsWidgets);
+
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Te falta una competencia para continuar.'),
+      findsOneWidget,
+    );
+
+    // El pozo son las seis de la lista del Bárbaro, no las dieciocho...
+    expect(find.widgetWithText(FilterChip, 'Naturaleza'), findsOneWidget);
+    expect(find.widgetWithText(FilterChip, 'Arcanos'), findsNothing);
+    // ...y las dos que ya tiene quedan bloqueadas, para no gastar el cupo en
+    // algo que ya sabe hacer.
+    expect(
+      tester
+          .widget<FilterChip>(find.widgetWithText(FilterChip, 'Atletismo'))
+          .onSelected,
+      isNull,
+    );
+
+    await tester.tap(find.widgetWithText(FilterChip, 'Naturaleza'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Te falta'), findsNothing);
+
+    while (find.text('Confirmar nivel 3').evaluate().isEmpty) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('Confirmar nivel 3'));
+    await tester.pumpAndSettle();
+
+    expect(saved?.proficiencyChoices['class:barbarian:primal-knowledge'], [
+      'nature',
+    ]);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('una competencia vieja sin resolver no bloquea la subida', (
+    tester,
+  ) async {
+    // El Humano/Soldado tiene dos cupos de nivel 1 —Habilidoso y la herramienta
+    // del trasfondo— que este fixture nunca resolvió. Esa deuda la reclama el
+    // aviso de la ficha, que deja seguir; el asistente solo pregunta por lo que
+    // concede el nivel al que se está subiendo. Si esto se rompe, el `while` de
+    // los tests de acá arriba gira para siempre en vez de fallar.
+    await pumpLevelUp(tester, barbarian(level: 3));
+
+    expect(find.text('Competencias'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   // --- Pericia -------------------------------------------------------------
 
   Character bard({

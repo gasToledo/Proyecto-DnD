@@ -852,53 +852,50 @@ class _SpellChoiceGroup extends StatelessWidget {
   }
 }
 
-class _ExpertiseGroup extends StatelessWidget {
+/// Un cupo de competencia o de Pericia. Los dos usan el mismo widget porque el
+/// motor los entrega con la misma forma; lo único que cambia es qué bloquea qué.
+///
+/// [locked] son las competencias que el personaje ya tiene por otra vía. En un
+/// cupo normal hay que bloquearlas —elegirlas gastaría el cupo en algo que ya
+/// se tiene—, pero en uno de **Pericia es al revés**: tener la competencia es
+/// justamente el requisito, así que ahí no se pasa nada. La misma inversión
+/// está explicada en el diálogo de la ficha (`ui/sheet/general_section.dart`).
+class _ProficiencyChoiceGroup extends StatelessWidget {
   final ProficiencyChoiceSlot slot;
   final List<String> chosen;
+  final Set<String> locked;
   final ValueChanged<List<String>> onChanged;
 
-  const _ExpertiseGroup({
+  const _ProficiencyChoiceGroup({
     required this.slot,
     required this.chosen,
     required this.onChanged,
+    this.locked = const {},
   });
 
   @override
   Widget build(BuildContext context) {
-    if (slot.skills.isEmpty) {
+    if (slot.options.isEmpty) {
       return Text(
-        'No tenés competencias sobre las que aplicar Pericia.',
+        slot.expertise
+            ? 'No tenés competencias sobre las que aplicar Pericia.'
+            : 'No quedan competencias disponibles para este rasgo.',
         style: Theme.of(context).textTheme.bodySmall,
       );
     }
 
-    final full = chosen.length >= slot.count;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final id in slot.skills)
-          Builder(
-            builder: (context) {
-              final selected = chosen.contains(id);
-              return FilterChip(
-                label: Text(Skill.labelFor(id)),
-                selected: selected,
-                onSelected: !selected && full
-                    ? null
-                    : (value) {
-                        final next = List<String>.of(chosen);
-                        if (value) {
-                          next.add(id);
-                        } else {
-                          next.remove(id);
-                        }
-                        onChanged(next);
-                      },
-              );
-            },
-          ),
-      ],
+    final selected = {...chosen};
+    return CappedChipSelect(
+      options: {
+        for (final id in slot.options)
+          id: slot.skills.contains(id)
+              ? Skill.labelFor(id)
+              : toolProficiencyLabel(id),
+      },
+      selected: selected,
+      max: slot.count,
+      disabled: slot.expertise ? const {} : locked,
+      onChanged: () => onChanged(selected.toList()),
     );
   }
 }

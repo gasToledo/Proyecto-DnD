@@ -24,10 +24,10 @@ enum _LevelUpStepKind {
   // subclase recién elegida, y los prerrequisitos de una opción pueden depender
   // de la característica que sube el ASI de este mismo nivel.
   featureChoices,
-  // Después de las elecciones abiertas: las opciones son las habilidades en las
-  // que ya sos competente, y una dote recién elegida (Habilidoso) puede sumar
-  // competencias.
-  expertise,
+  // Después de las elecciones abiertas: las opciones de Pericia son las
+  // habilidades en las que ya sos competente, y una dote recién elegida
+  // (Habilidoso) puede sumar competencias. Cubre los dos tipos de cupo.
+  proficiencies,
   features,
   // Antes de `spells` a propósito: el editor de conjuros oculta y poda lo que
   // ya está siempre preparado, y lo elegido acá entra en esa lista. Al revés,
@@ -153,18 +153,18 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     setState(() => _newFeatureChoices = next);
   }
 
-  /// Pericias re-resueltas en este nivel (null = sin cambios). Van en
-  /// `Character.proficiencyChoices`, el mismo mapa que las competencias por
-  /// dote, con su propio groupId.
+  /// Competencias y Pericias resueltas en este nivel (null = sin cambios).
+  /// Van todas en `Character.proficiencyChoices`, el mismo mapa que las
+  /// competencias por dote, cada una con su propio groupId.
   Map<String, List<String>>? _newProficiencyChoices;
 
   Map<String, List<String>> get _effectiveProficiencyChoices =>
       _newProficiencyChoices ?? widget.character.proficiencyChoices;
 
-  List<String> _expertiseFor(String groupId) =>
+  List<String> _proficiencyFor(String groupId) =>
       _effectiveProficiencyChoices[groupId] ?? const [];
 
-  void _setExpertise(String groupId, List<String> ids) {
+  void _setProficiency(String groupId, List<String> ids) {
     final next = {
       for (final e in _effectiveProficiencyChoices.entries)
         e.key: List<String>.of(e.value),
@@ -205,8 +205,8 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   String? _spellChoiceSig;
 
   /// Cupos de elección de conjuros al nivel nuevo. Se memoiza igual que
-  /// [_expertiseSlots]. La firma incluye lo ya elegido porque un conjuro tomado
-  /// en un cupo sale del pozo del siguiente.
+  /// [_proficiencyData]. La firma incluye lo ya elegido porque un conjuro
+  /// tomado en un cupo sale del pozo del siguiente.
   List<SpellChoiceSlot> get _spellChoiceSlots {
     final sig = [
       _newLevel,
@@ -239,15 +239,41 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   bool get _hasSpellChoices =>
       _pendingSpellChoices > 0 || _spellChoiceSlots.any((s) => s.replaceable);
 
-  List<ProficiencyChoiceSlot>? _expertiseCache;
-  String? _expertiseSig;
+  /// Cupos de competencia que el personaje **ya tenía antes** de esta subida.
+  ///
+  /// Se calcula una sola vez sobre el personaje sin tocar, y sirve para no
+  /// arrastrar deuda vieja hasta acá: un cupo de nivel 1 que quedó sin resolver
+  /// lo reclama el aviso de la ficha, que es informativo y deja seguir. Meterlo
+  /// en el asistente lo convertiría en un bloqueo, y en este proyecto una
+  /// advertencia nunca bloquea (ver `WarningSeverity` en el motor).
+  ///
+  /// La Pericia queda fuera de este filtro a propósito: ya se comportaba así
+  /// antes de que el paso cubriera las competencias, y cambiarlo de paso sería
+  /// una segunda modificación escondida en esta.
+  late final Set<String> _oldProficiencyGroups = CharacterCompiler(widget.repo)
+      .compile(widget.character)
+      .proficiencyChoiceSlots
+      .map((s) => s.groupId)
+      .toSet();
 
-  /// Cupos de Pericia al nivel nuevo. Se memoiza por el mismo motivo que
+  ({List<ProficiencyChoiceSlot> slots, Set<String> fixed})? _proficiencyCache;
+  String? _proficiencySig;
+
+  /// Cupos de competencia y de Pericia al nivel nuevo, más las competencias que
+  /// el personaje ya tiene por otra vía. Se memoiza por el mismo motivo que
   /// [_choiceSlots]: `_steps` corre en cada build y compilar la ficha no es
-  /// gratis. La firma incluye las Pericias ya elegidas porque una habilidad
-  /// tomada sale de las opciones del otro cupo, y la dote porque Habilidoso
-  /// puede sumar la competencia que habilita una Pericia nueva.
-  List<ProficiencyChoiceSlot> get _expertiseSlots {
+  /// gratis. La firma incluye lo ya elegido porque una habilidad tomada sale de
+  /// las opciones del otro cupo, y la dote porque Habilidoso puede sumar la
+  /// competencia que habilita una Pericia nueva.
+  ///
+  /// Van juntos los dos tipos de cupo, y no solo la Pericia como hasta ahora,
+  /// porque hay rasgos que conceden competencia lisa **por encima de nivel 1**:
+  /// Conocimiento Primigenio del Bárbaro, Estudiante de la Guerra del Maestro
+  /// de Batalla y las Herramientas del Oficio de las cinco subclases del
+  /// Artífice, todos a nivel 3. Antes ninguno se preguntaba acá y el jugador
+  /// tenía que ir a buscarlos al aviso de la ficha.
+  ({List<ProficiencyChoiceSlot> slots, Set<String> fixed})
+  get _proficiencyData {
     final sig = [
       _newLevel,
       _subclassId,
@@ -259,23 +285,46 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       for (final e in _effectiveProficiencyChoices.entries)
         '${e.key}=${e.value.join(",")}',
     ].join('|');
-    if (sig != _expertiseSig) {
-      _expertiseCache = CharacterCompiler(
-        widget.repo,
-      ).compile(_buildUpdated()).expertiseChoiceSlots;
-      _expertiseSig = sig;
+    if (sig != _proficiencySig) {
+      final sheet = CharacterCompiler(widget.repo).compile(_buildUpdated());
+      // Lo que ya se tiene bloquea un cupo normal. Se descuenta lo elegido en
+      // estos mismos cupos: si no, la opción recién marcada se bloquearía sola
+      // y no se podría desmarcar.
+      final fixed = {...sheet.skillProficiencies, ...sheet.toolProficiencies};
+      for (final ids in _effectiveProficiencyChoices.values) {
+        fixed.removeAll(ids);
+      }
+      _proficiencyCache = (
+        slots: [
+          for (final s in sheet.proficiencyChoiceSlots)
+            if (!_oldProficiencyGroups.contains(s.groupId)) s,
+          ...sheet.expertiseChoiceSlots,
+        ],
+        fixed: fixed,
+      );
+      _proficiencySig = sig;
     }
-    return _expertiseCache!;
+    return _proficiencyCache!;
   }
 
-  int get _pendingExpertise => _expertiseSlots.fold(
+  List<ProficiencyChoiceSlot> get _proficiencySlots => _proficiencyData.slots;
+
+  int get _pendingProficiency => _proficiencySlots.fold(
     0,
-    (n, s) => n + (s.count - _expertiseFor(s.groupId).length).clamp(0, s.count),
+    (n, s) =>
+        n + (s.count - _proficiencyFor(s.groupId).length).clamp(0, s.count),
   );
 
-  /// El paso aparece solo si falta elegir: una Pericia ya elegida no se
-  /// re-pregunta en cada subida (no es re-elegible por regla).
-  bool get _hasExpertise => _pendingExpertise > 0;
+  /// El paso aparece solo si falta elegir: un cupo ya resuelto no se re-pregunta
+  /// en cada subida (ni la competencia ni la Pericia son re-elegibles por
+  /// regla).
+  bool get _hasProficiencyChoices => _pendingProficiency > 0;
+
+  /// Si todo lo que falta elegir es Pericia. Decide el rótulo y el texto del
+  /// paso: un cupo ya resuelto no debería cambiarle el nombre.
+  bool get _pendingAreAllExpertise => _proficiencySlots
+      .where((s) => _proficiencyFor(s.groupId).length < s.count)
+      .every((s) => s.expertise);
 
   List<FeatureChoiceSlot>? _slotCache;
   String? _slotSig;
@@ -342,8 +391,15 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           'Elecciones',
           Icons.style,
         ),
-      if (_hasExpertise)
-        const _LevelUpStep(_LevelUpStepKind.expertise, 'Pericia', Icons.star),
+      if (_hasProficiencyChoices)
+        _LevelUpStep(
+          _LevelUpStepKind.proficiencies,
+          // El rótulo sigue a lo que falta, no a lo que hay: si lo único
+          // pendiente es Pericia, decir "Competencias" mandaría a buscar otra
+          // cosa. Mismo criterio que el título del diálogo de la ficha.
+          _pendingAreAllExpertise ? 'Pericia' : 'Competencias',
+          Icons.star,
+        ),
       if (_gainedFeatures().isNotEmpty)
         const _LevelUpStep(
           _LevelUpStepKind.features,
@@ -389,7 +445,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     _LevelUpStepKind.subclass => !_needsSubclass || _subclassId != null,
     _LevelUpStepKind.abilityScore => _asiComplete,
     _LevelUpStepKind.featureChoices => _pendingChoices == 0,
-    _LevelUpStepKind.expertise => _pendingExpertise == 0,
+    _LevelUpStepKind.proficiencies => _pendingProficiency == 0,
     _LevelUpStepKind.spellChoices => _pendingSpellChoices == 0,
     _ => true,
   };
@@ -434,10 +490,15 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _pendingChoices == 1
           ? 'Te falta una elección para continuar.'
           : 'Te faltan $_pendingChoices elecciones para continuar.',
-    _LevelUpStepKind.expertise when _pendingExpertise > 0 =>
-      _pendingExpertise == 1
-          ? 'Elegí una habilidad para tu Pericia.'
-          : 'Elegí $_pendingExpertise habilidades para tu Pericia.',
+    _LevelUpStepKind.proficiencies when _pendingProficiency > 0 => switch ((
+      _pendingProficiency,
+      _pendingAreAllExpertise,
+    )) {
+      (1, true) => 'Elegí una habilidad para tu Pericia.',
+      (final n, true) => 'Elegí $n habilidades para tu Pericia.',
+      (1, false) => 'Te falta una competencia para continuar.',
+      (final n, false) => 'Te faltan $n competencias para continuar.',
+    },
     _LevelUpStepKind.spellChoices when _pendingSpellChoices > 0 =>
       _pendingSpellChoices == 1
           ? 'Te falta elegir un conjuro para continuar.'

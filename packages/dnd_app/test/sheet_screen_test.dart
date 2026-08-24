@@ -761,6 +761,58 @@ void main() {
       matching: find.widgetWithText(TextButton, 'Resolver'),
     );
 
+    testWidgets('la habilidad de Conocimiento Primigenio', (tester) async {
+      // Un Bárbaro de nivel 3 guardado **antes** de que el rasgo declarara su
+      // elección: nunca eligió, y el asistente de subida de nivel no se la va a
+      // volver a ofrecer. La ficha es su único camino, igual que para los otros
+      // nueve cupos de competencia lisa que el catálogo concede a nivel 3.
+      final controller = await pumpSheet(
+        tester,
+        Character(
+          id: 'legacy-barbarian',
+          name: 'Furiosa',
+          raceId: 'human',
+          classId: 'barbarian',
+          backgroundId: 'soldier',
+          level: 3,
+          assignedScores: {for (final ability in Ability.values) ability: 12},
+          hpPerLevel: const [12, 7, 7],
+          languages: const ['goblin', 'orc'],
+        ),
+      );
+
+      final resolve = resolverDe('Conocimiento Primigenio: elegiste 0 de 1.');
+      await tester.ensureVisible(resolve);
+      await tester.tap(resolve);
+      await tester.pumpAndSettle();
+
+      // El pozo son las seis de la lista del Bárbaro, no las dieciocho.
+      expect(find.widgetWithText(FilterChip, 'Naturaleza'), findsOneWidget);
+      expect(find.widgetWithText(FilterChip, 'Arcanos'), findsNothing);
+
+      await tester.tap(find.widgetWithText(FilterChip, 'Naturaleza'));
+      await tester.pumpAndSettle();
+      // El diálogo resuelve todos los cupos de una y «Guardar» exige tenerlos
+      // completos, así que la herramienta del Soldado va en el mismo viaje.
+      await tester.tap(find.widgetWithText(FilterChip, 'Juego de dados'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Conocimiento Primigenio: elegiste 0 de 1.'),
+        findsNothing,
+      );
+      expect(
+        controller
+            .characters
+            .single
+            .proficiencyChoices['class:barbarian:primal-knowledge'],
+        contains('nature'),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('la herramienta del trasfondo', (tester) async {
       final character = legacySoldier();
       final controller = await pumpSheet(tester, character);

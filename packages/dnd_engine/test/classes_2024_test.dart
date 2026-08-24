@@ -161,19 +161,88 @@ void main() {
     expect(maxAt(11), 3);
   });
 
-  test('Bárbaro: Conocimiento Primigenio da competencia y pruebas de Fuerza',
-      () {
-    expect(levelOf('barbarian', 'Conocimiento Primigenio'), 3);
-    final d = repo
-        .characterClass('barbarian')!
-        .features
-        .firstWhere((f) => f.name == 'Conocimiento Primigenio')
-        .effects
-        .whereType<PassiveTraitEffect>()
-        .single
-        .description;
-    expect(d, contains('competencia'));
-    expect(d, contains('Fuerza'));
+  group('Bárbaro: Conocimiento Primigenio', () {
+    /// Un Bárbaro de `level`, con las dos habilidades de nivel 1 ya elegidas
+    /// para que el cupo del rasgo sea el único pendiente.
+    Character barbaro(int level, {List<String> primal = const []}) => Character(
+          id: 'furioso',
+          name: 'Prueba',
+          raceId: 'human',
+          classId: 'barbarian',
+          backgroundId: 'soldier',
+          level: level,
+          assignedScores: {for (final a in Ability.values) a: 14},
+          hpPerLevel: List.filled(level, 7),
+          chosenSkills: const ['athletics', 'survival'],
+          proficiencyChoices: {
+            if (primal.isNotEmpty) 'class:barbarian:primal-knowledge': primal,
+          },
+        );
+
+    test('el rasgo declara la elección y no solo la promete', () {
+      expect(levelOf('barbarian', 'Conocimiento Primigenio'), 3);
+      final e = repo
+          .characterClass('barbarian')!
+          .features
+          .firstWhere((f) => f.name == 'Conocimiento Primigenio')
+          .effects
+          .whereType<ProficiencyChoiceEffect>()
+          .single;
+      expect(e.count, 1);
+      expect(e.expertise, isFalse);
+      // Derivado del catálogo: la regla dice "de la lista del Bárbaro", así que
+      // el pozo tiene que ser el mismo que el de nivel 1 y no una copia que se
+      // desincronice cuando se corrija la lista.
+      expect(e.skills, repo.characterClass('barbarian')!.skillChoiceFrom);
+    });
+
+    test('el cupo aparece a nivel 3 y no antes', () {
+      final compiler = CharacterCompiler(repo);
+      groupIds(int level) => compiler
+          .compile(barbaro(level))
+          .proficiencyChoiceSlots
+          .map((s) => s.groupId);
+
+      expect(groupIds(2), isNot(contains('class:barbarian:primal-knowledge')));
+      expect(groupIds(3), contains('class:barbarian:primal-knowledge'));
+    });
+
+    test('lo elegido llega a las competencias de la ficha', () {
+      final compiler = CharacterCompiler(repo);
+      final sinElegir = compiler.compile(barbaro(3));
+      expect(sinElegir.skillProficiencies, isNot(contains('nature')));
+      final slot = sinElegir.proficiencyChoiceSlots
+          .firstWhere((s) => s.groupId == 'class:barbarian:primal-knowledge');
+      expect(slot.pending, 1);
+      // El pozo son las seis de la clase, no las dieciocho.
+      expect(slot.options, repo.characterClass('barbarian')!.skillChoiceFrom);
+
+      final elegido = compiler.compile(barbaro(3, primal: ['nature']));
+      expect(elegido.skillProficiencies, contains('nature'));
+      expect(
+        elegido.proficiencyChoiceSlots
+            .firstWhere((s) => s.groupId == 'class:barbarian:primal-knowledge')
+            .pending,
+        0,
+      );
+    });
+
+    test('la sustitución por Fuerza durante la Furia sigue siendo texto', () {
+      // Es una sustitución de característica en tiempo de tirada: el motor no
+      // la modela y no vale la pena un mecanismo para un solo rasgo. Lo que sí
+      // importa es que el texto ya no prometa la competencia, que ahora la
+      // concede el efecto de al lado.
+      final d = repo
+          .characterClass('barbarian')!
+          .features
+          .firstWhere((f) => f.name == 'Conocimiento Primigenio')
+          .effects
+          .whereType<PassiveTraitEffect>()
+          .single
+          .description;
+      expect(d, contains('Fuerza'));
+      expect(d, isNot(contains('competencia')));
+    });
   });
 
   /// Descripción del rasgo pasivo `trait` dentro del rasgo de clase `feature`.

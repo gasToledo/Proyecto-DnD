@@ -505,9 +505,23 @@
         "description": "Ganás competencia en otra habilidad de la lista del Bárbaro y podés canalizar tu poder primigenio durante la Furia.",
         "effects": [
           {
+            "type": "proficiencyChoice",
+            "groupId": "class:barbarian:primal-knowledge",
+            "name": "Conocimiento Primigenio",
+            "count": 1,
+            "skills": [
+              "animal-handling",
+              "athletics",
+              "intimidation",
+              "nature",
+              "perception",
+              "survival"
+            ]
+          },
+          {
             "type": "passiveTrait",
             "name": "Conocimiento Primigenio",
-            "description": "Ganás competencia en otra habilidad a elegir de la lista del Bárbaro de nivel 1. Además, mientras estés enfurecido podés hacer como prueba de Fuerza cualquier prueba de Acrobacias, Intimidación, Percepción, Sigilo o Supervivencia."
+            "description": "Mientras estés enfurecido podés hacer como prueba de Fuerza cualquier prueba de Acrobacias, Intimidación, Percepción, Sigilo o Supervivencia."
           }
         ]
       },

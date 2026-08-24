@@ -184,7 +184,9 @@ Estados: `pendiente`, `en revisión`, `corregido` y `verificado`.
 - Elfo, Gnomo y Tiefling eligen Inteligencia, Sabiduría o Carisma como aptitud
   mágica de sus conjuros de especie o linaje.
 
-### Pendientes derivados
+### Pendientes derivados (HISTÓRICO)
+
+> Cerrados. Ver [Estado verificado — 2026-08-24](#estado-verificado--2026-08-24).
 
 - ~~Elección Pequeño/Mediano para Humano, Tiefling y Aasimar.~~ **Resuelto**.
   `Race.sizeOptions` declara los tamaños entre los que se elige y vacío
@@ -320,7 +322,14 @@ pegados al asistente de subida de nivel, que siempre asume nivel+1. No los pide
 una actualización de contenido —los niveles de mejora y de subclase son estables
 por clase—, así que sólo aparecen en fichas ya inconsistentes.
 
-## Pendientes abiertos al cierre de esta tanda
+## Pendientes abiertos al cierre de esta tanda — 2026-08-07 (HISTÓRICO, ya cerrado)
+
+> **Esta sección no es una lista de trabajo pendiente.** Se conserva como
+> registro de las decisiones, porque explica *por qué* se resolvió cada punto
+> como se resolvió. Todo lo que abajo dice «falta», «bloqueado» o «no existe»
+> se construyó después: ver
+> [Estado verificado — 2026-08-24](#estado-verificado--2026-08-24) al final del
+> documento. Ante la duda, la autoridad es el código, no este archivo.
 
 Ordenados por costo, del más barato al más caro:
 
@@ -874,3 +883,65 @@ Un bloque pasa a `verificado` cuando sus datos tienen prueba de contenido, las
 elecciones necesarias sobreviven serialización y migración, el motor produce la
 ficha esperada y la aplicación expone el resultado sin depender de una clase
 lanzadora.
+
+## Estado verificado — 2026-08-24
+
+**Esta es la única sección vigente del documento.** Todo lo de arriba es
+historial.
+
+Nace de un error real que conviene no repetir: alguien preguntó qué quedaba
+pendiente, se leyó «Pendientes abiertos al cierre de esta tanda» como si fuera
+un backlog vivo, y salió una lista de diez pendientes de los cuales **ninguno**
+lo era. La sección estaba cerrada desde el 2026-08-11 y lo decía… quinientas
+líneas más abajo.
+
+De ahí la regla de redacción de acá en adelante: **un pendiente se escribe con
+la ruta que lo desmiente**. «Falta X» sin `archivo:línea` es prosa que envejece
+sin avisar; con la ruta, verificarlo es un grep y no una lectura de 800 líneas.
+
+Lo que sigue se comprobó contra el código y los tests, no contra este archivo.
+
+### Cerrado en esta pasada
+
+- **Conocimiento Primigenio** (Bárbaro, nivel 3) era el último rasgo de la lista
+  histórica que seguía siendo solo texto. Ahora declara su elección de habilidad
+  con `proficiencyChoice` sobre las seis de `skillChoiceFrom`
+  (`classes.json`, rasgo de nivel 3 del bárbaro), con pruebas en
+  `test/classes_2024_test.dart`. No hizo falta mecanismo ni migración: el efecto
+  ya lo usaban ocho rasgos de clase y `proficiencyChoices` existe como mapa
+  desde el esquema 9.
+
+  La segunda mitad del rasgo —hacer como prueba de Fuerza cualquier prueba de
+  Acrobacias, Intimidación, Percepción, Sigilo o Supervivencia mientras estás
+  enfurecido— **queda como texto a propósito**: es una sustitución de
+  característica en tiempo de tirada, y el motor no la modela. No es deuda
+  olvidada; es una decisión, y hay un test que la fija.
+
+### Abierto
+
+| Qué | Dónde se comprueba | Estado |
+|---|---|---|
+| **Don épico de la Habilidad**: el texto promete «Aumenta una característica en 1, hasta un máximo de 30» y la dote no declara ningún `abilityScoreBonus` | `feats.json`, dote `boon-of-skill` | Defecto confirmado. Las 18 competencias y el cupo de Pericia sí están. Es un efecto de una línea, y `abilityScoreBonus` ya lo usan otras 93 dotes |
+| **«Lanzamiento de la Marca»** de Marca Dracónica Potente: espacio de conjuro adicional de nivel ⌈nivel/2⌉ hasta 5, recuperado en descanso corto | `feats.json`, dote `potent-dragonmark` | Sin mecanismo. Es un espacio **fuera** de la tabla de la clase, que hoy no se puede expresar |
+| **Los 12 `greater-mark-of-*`**: tres `passiveTrait` cada uno, cero efectos estructurados | `feats.json` | El segundo escalón de las marcas quedó sin cargar cuando se cargó el primero. Es exactamente la advertencia de método que ya dejó escrita la primera pasada: cargar la parte grande de un rasgo no garantiza haber mirado el resto |
+
+### Sospechas sin verificar
+
+No entran como defectos hasta comprobarlas contra la fuente, que es la
+disciplina que este apartado viene a instalar:
+
+- **Nomenclatura fuera de las dotes**: «Sentir el Peligro» y «Aprendiz de Mucho»
+  (`classes.json`), «Truco Potente» (`subclasses.json`). La tanda de dotes
+  encontró 33 nombres inventados; nadie hizo la misma pasada sobre rasgos de
+  clase y subclase. Pide el PHB 2024 en español al lado, término por término.
+
+### Cómo verificar sin creerle a este archivo
+
+```bash
+cd packages/dnd_engine && dart analyze && dart test
+```
+
+`test/feature_promises_test.dart` es el guardián que importa: cruza la prosa de
+cada rasgo contra los efectos que declara, y su trinquete de «rasgos que solo
+son texto» (hoy 300) falla si alguien **suma** uno. Es el único mecanismo del
+repositorio que detecta esta clase de defecto sin que nadie lo busque a mano.

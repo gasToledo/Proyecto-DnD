@@ -176,9 +176,11 @@ void main() {
 
   const emptyHint = 'Elegí una especie para ver su detalle.';
 
-  testWidgets('con ancho de sobra la especie se muestra en dos columnas', (
+  testWidgets('la especie se parte en dos columnas o se apila según el ancho', (
     tester,
   ) async {
+    // Las dos caras del mismo punto de quiebre, en un test: son la misma regla
+    // mirada de los dos lados, y montar el asistente cuesta más que medir.
     await pumpAt(tester, const Size(1500, 1400));
 
     // Sin selección, el panel derecho existe igual y dice qué falta hacer.
@@ -198,9 +200,28 @@ void main() {
       lessThan(detail.left),
       reason: 'la lista tiene que quedar a la izquierda del detalle',
     );
+
+    // --- Y en una ventana angosta vuelve al apilado.
+    await pumpAt(tester, const Size(700, 1400));
+
+    // Apilado: sin selección no hay panel derecho que llenar, así que tampoco
+    // hay marca de agua.
+    expect(find.text(emptyHint), findsNothing);
+
+    await tapOption(tester, 'Humano');
+    await pickSize(tester);
+
+    final card = tester.getRect(find.text('Humano').first);
+    final stacked = tester.getRect(find.text('TAMAÑO  '));
+    expect(
+      card.bottom,
+      lessThan(stacked.top),
+      reason: 'el detalle tiene que quedar debajo de la grilla',
+    );
+    expect(tester.takeException(), isNull);
   });
 
-  testWidgets('la lista de especies sigue al alto de la ventana', (
+  testWidgets('la lista de especies sigue al alto de la ventana sin colapsar', (
     tester,
   ) async {
     Future<double> listHeight(double windowHeight) async {
@@ -214,6 +235,10 @@ void main() {
       return tester.getSize(list).height;
     }
 
+    // En una ventana muy baja la lista tiene un piso: por debajo no se ve
+    // ninguna opción entera.
+    expect(await listHeight(500), greaterThanOrEqualTo(320.0));
+
     final short = await listHeight(900);
     final tall = await listHeight(1500);
 
@@ -223,15 +248,6 @@ void main() {
     expect(tall, greaterThan(900));
     // Y no puede desbordar la ventana que la contiene.
     expect(tall, lessThan(1500));
-  });
-
-  testWidgets('en una ventana muy baja la lista no colapsa', (tester) async {
-    await pumpAt(tester, const Size(1500, 500));
-    final list = find.ancestor(
-      of: find.text(primeraEspecie),
-      matching: find.byType(ListView),
-    );
-    expect(tester.getSize(list).height, greaterThanOrEqualTo(320.0));
   });
 
   testWidgets('la línea de sabor del trasfondo vive en el detalle', (
@@ -271,25 +287,5 @@ void main() {
       lessThan(tester.getRect(find.text(tagline)).left),
       reason: 'el sabor tiene que quedar en el panel derecho',
     );
-  });
-
-  testWidgets('en una ventana angosta vuelve al apilado', (tester) async {
-    await pumpAt(tester, const Size(700, 1400));
-
-    // Apilado: sin selección no hay panel derecho que llenar, así que tampoco
-    // hay marca de agua.
-    expect(find.text(emptyHint), findsNothing);
-
-    await tapOption(tester, 'Humano');
-    await pickSize(tester);
-
-    final card = tester.getRect(find.text('Humano').first);
-    final detail = tester.getRect(find.text('TAMAÑO  '));
-    expect(
-      card.bottom,
-      lessThan(detail.top),
-      reason: 'el detalle tiene que quedar debajo de la grilla',
-    );
-    expect(tester.takeException(), isNull);
   });
 }

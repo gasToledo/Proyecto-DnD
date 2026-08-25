@@ -56,26 +56,23 @@ void main() {
     await next();
   }
 
-  testWidgets('muestra una tarjeta por característica y el pool pendiente', (
+  testWidgets('la grilla arranca con el pool entero y asignar mueve todo', (
     tester,
   ) async {
+    // Un recorrido y no dos: llegar al paso cuesta tres pantallas del
+    // asistente, y la segunda mitad solo tiene sentido después de la primera.
     await gotoScores(tester);
 
+    // --- Una tarjeta por característica y el pool sin tocar.
     expect(find.text('Valores sin asignar'), findsOneWidget);
-    // Las 6 características, cada una con su selector.
     for (final a in Ability.values) {
       expect(find.text(a.abbr), findsOneWidget, reason: 'falta ${a.abbr}');
     }
     expect(find.byType(DropdownButtonFormField<int>), findsNWidgets(6));
     // Array estándar: 6 valores del pool sin asignar todavía.
     expect(find.text('sin asignar'), findsNWidgets(6));
-    expect(tester.takeException(), isNull);
-  });
 
-  testWidgets('asignar un valor actualiza total y modificador', (tester) async {
-    await gotoScores(tester);
-
-    // Asigna el 15 a la primera característica (FUE).
+    // --- Asignar el 15 a la primera característica (FUE).
     await tester.tap(find.byType(DropdownButtonFormField<int>).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('15').last);

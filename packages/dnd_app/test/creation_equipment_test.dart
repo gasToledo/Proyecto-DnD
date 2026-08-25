@@ -120,11 +120,15 @@ void main() {
     await pickStartingOption('starting-equipment-trasfondo', 'Opción B');
   }
 
-  testWidgets('lanzador: muestra trucos y conjuros con sus contadores', (
+  testWidgets('Mago: recibe su equipo, lo equipa y elige la mano', (
     tester,
   ) async {
+    // Un solo recorrido para las tres cosas que se ven en esta pantalla con un
+    // lanzador. Llegar hasta acá cuesta cinco pasos del asistente —12 s por
+    // test—, y las tres miran el mismo estado.
     await gotoEquipo(tester, 'Mago');
 
+    // --- Lo que trajo: equipo, conjuros y sus contadores.
     expect(find.text('EQUIPO INICIAL'), findsOneWidget);
     expect(find.text('EQUIPO PUESTO'), findsOneWidget);
     expect(find.text('Daga'), findsWidgets);
@@ -132,25 +136,25 @@ void main() {
     expect(find.text('CONJUROS'), findsOneWidget);
     expect(find.text('Trucos'), findsOneWidget);
     expect(find.text('Tu clase no lanza conjuros'), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
 
-  testWidgets('no lanzador: muestra el cartel en vez de la lista', (
-    tester,
-  ) async {
-    await gotoEquipo(tester, 'Guerrero');
+    // --- Solo se puede equipar lo recibido: la espada larga no está.
+    expect(
+      find.ancestor(of: find.text('Daga'), matching: find.byType(FilterChip)),
+      findsOneWidget,
+    );
+    expect(
+      find.ancestor(of: find.text('Bastón'), matching: find.byType(FilterChip)),
+      findsOneWidget,
+    );
+    expect(
+      find.ancestor(
+        of: find.text('Espada larga'),
+        matching: find.byType(FilterChip),
+      ),
+      findsNothing,
+    );
 
-    expect(find.text('CONJUROS'), findsOneWidget);
-    expect(find.text('Tu clase no lanza conjuros'), findsOneWidget);
-    expect(find.text('Trucos'), findsNothing);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('se pueden equipar dos armas y elegir la mano secundaria', (
-    tester,
-  ) async {
-    await gotoEquipo(tester, 'Mago');
-
+    // --- Equipar las dos abre la elección de mano.
     Future<void> tapWeapon(String name) async {
       final chip = find.ancestor(
         of: find.text(name),
@@ -191,24 +195,16 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('solo permite equipar armas recibidas', (tester) async {
-    await gotoEquipo(tester, 'Mago');
+  testWidgets('no lanzador: muestra el cartel en vez de la lista', (
+    tester,
+  ) async {
+    // Este va aparte porque el camino es otro: el Guerrero exige estilo de
+    // combate y tres maestrías antes de llegar.
+    await gotoEquipo(tester, 'Guerrero');
 
-    expect(
-      find.ancestor(of: find.text('Daga'), matching: find.byType(FilterChip)),
-      findsOneWidget,
-    );
-    expect(
-      find.ancestor(of: find.text('Bastón'), matching: find.byType(FilterChip)),
-      findsOneWidget,
-    );
-    expect(
-      find.ancestor(
-        of: find.text('Espada larga'),
-        matching: find.byType(FilterChip),
-      ),
-      findsNothing,
-    );
+    expect(find.text('CONJUROS'), findsOneWidget);
+    expect(find.text('Tu clase no lanza conjuros'), findsOneWidget);
+    expect(find.text('Trucos'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

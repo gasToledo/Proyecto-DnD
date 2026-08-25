@@ -25,6 +25,12 @@ class _WeaponFormState extends State<WeaponForm> {
   late final _costCp = TextEditingController(
     text: '${widget.initial?.costCp ?? 0}',
   );
+  late final _rangeNormal = TextEditingController(
+    text: '${widget.initial?.rangeNormal ?? 0}',
+  );
+  late final _rangeLong = TextEditingController(
+    text: '${widget.initial?.rangeLong ?? 0}',
+  );
   late final _magicBonus = TextEditingController(
     text: '${widget.initial?.magicBonus ?? 0}',
   );
@@ -100,6 +106,8 @@ class _WeaponFormState extends State<WeaponForm> {
         mastery: _mastery.text.trim().isEmpty ? null : _mastery.text.trim(),
         weight: double.parse(_weight.text.trim()),
         costCp: int.parse(_costCp.text.trim()),
+        rangeNormal: int.parse(_rangeNormal.text.trim()),
+        rangeLong: int.parse(_rangeLong.text.trim()),
         magicBonus: int.parse(_magicBonus.text.trim()),
       ),
     );

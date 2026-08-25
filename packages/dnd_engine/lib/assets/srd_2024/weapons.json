@@ -27,7 +27,9 @@
     ],
     "mastery": "nick",
     "weight": 1.0,
-    "costCp": 200
+    "costCp": 200,
+    "rangeNormal": 20,
+    "rangeLong": 60
   },
   {
     "id": "greatclub",
@@ -56,7 +58,9 @@
     ],
     "mastery": "vex",
     "weight": 2.0,
-    "costCp": 500
+    "costCp": 500,
+    "rangeNormal": 20,
+    "rangeLong": 60
   },
   {
     "id": "javelin",
@@ -70,7 +74,9 @@
     ],
     "mastery": "slow",
     "weight": 2.0,
-    "costCp": 50
+    "costCp": 50,
+    "rangeNormal": 30,
+    "rangeLong": 120
   },
   {
     "id": "light-hammer",
@@ -85,7 +91,9 @@
     ],
     "mastery": "nick",
     "weight": 2.0,
-    "costCp": 200
+    "costCp": 200,
+    "rangeNormal": 20,
+    "rangeLong": 60
   },
   {
     "id": "mace",
@@ -142,7 +150,9 @@
     "versatileDice": "1d8",
     "mastery": "sap",
     "weight": 3.0,
-    "costCp": 100
+    "costCp": 100,
+    "rangeNormal": 20,
+    "rangeLong": 60
   },
   {
     "id": "dart",
@@ -158,7 +168,9 @@
     ],
     "mastery": "vex",
     "weight": 0.25,
-    "costCp": 5
+    "costCp": 5,
+    "rangeNormal": 20,
+    "rangeLong": 60
   },
   {
     "id": "light-crossbow",
@@ -175,7 +187,9 @@
     ],
     "mastery": "slow",
     "weight": 5.0,
-    "costCp": 2500
+    "costCp": 2500,
+    "rangeNormal": 80,
+    "rangeLong": 320
   },
   {
     "id": "shortbow",
@@ -191,7 +205,9 @@
     ],
     "mastery": "vex",
     "weight": 2.0,
-    "costCp": 2500
+    "costCp": 2500,
+    "rangeNormal": 80,
+    "rangeLong": 320
   },
   {
     "id": "sling",
@@ -206,7 +222,9 @@
     ],
     "mastery": "slow",
     "weight": 0.0,
-    "costCp": 10
+    "costCp": 10,
+    "rangeNormal": 30,
+    "rangeLong": 120
   },
   {
     "id": "battleaxe",
@@ -430,7 +448,9 @@
     "versatileDice": "1d10",
     "mastery": "topple",
     "weight": 4.0,
-    "costCp": 500
+    "costCp": 500,
+    "rangeNormal": 20,
+    "rangeLong": 60
   },
   {
     "id": "war-pick",
@@ -492,7 +512,9 @@
     ],
     "mastery": "vex",
     "weight": 3.0,
-    "costCp": 7500
+    "costCp": 7500,
+    "rangeNormal": 30,
+    "rangeLong": 120
   },
   {
     "id": "heavy-crossbow",
@@ -510,7 +532,9 @@
     ],
     "mastery": "push",
     "weight": 18.0,
-    "costCp": 5000
+    "costCp": 5000,
+    "rangeNormal": 100,
+    "rangeLong": 400
   },
   {
     "id": "longbow",
@@ -527,7 +551,9 @@
     ],
     "mastery": "slow",
     "weight": 2.0,
-    "costCp": 5000
+    "costCp": 5000,
+    "rangeNormal": 150,
+    "rangeLong": 600
   },
   {
     "id": "blowgun",
@@ -543,7 +569,9 @@
     ],
     "mastery": "vex",
     "weight": 1.0,
-    "costCp": 1000
+    "costCp": 1000,
+    "rangeNormal": 25,
+    "rangeLong": 100
   },
   {
     "id": "musket",
@@ -560,7 +588,9 @@
     ],
     "mastery": "slow",
     "weight": 10.0,
-    "costCp": 50000
+    "costCp": 50000,
+    "rangeNormal": 40,
+    "rangeLong": 120
   },
   {
     "id": "pistol",
@@ -576,6 +606,8 @@
     ],
     "mastery": "vex",
     "weight": 3.0,
-    "costCp": 25000
+    "costCp": 25000,
+    "rangeNormal": 30,
+    "rangeLong": 90
   }
 ]

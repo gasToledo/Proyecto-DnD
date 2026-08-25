@@ -986,6 +986,42 @@ void main() {
     }
   });
 
+  test('el alcance está exactamente en las armas que lo tienen', () {
+    // La columna "Alcance" del cap. 6 solo existe para las armas que se
+    // disparan o se arrojan; en las demás el alcance sale de `reach` y es el
+    // mismo para todas. Cargar un alcance en un arma melé, u olvidarlo en una
+    // a distancia, es el defecto que este test ataja.
+    const conAlcance = {
+      'dagger': (20, 60),
+      'handaxe': (20, 60),
+      'javelin': (30, 120),
+      'light-hammer': (20, 60),
+      'spear': (20, 60),
+      'dart': (20, 60),
+      'light-crossbow': (80, 320),
+      'shortbow': (80, 320),
+      'sling': (30, 120),
+      'trident': (20, 60),
+      'hand-crossbow': (30, 120),
+      'heavy-crossbow': (100, 400),
+      'longbow': (150, 600),
+      'blowgun': (25, 100),
+      'musket': (40, 120),
+      'pistol': (30, 90),
+    };
+    for (final w in repo.weapons.values) {
+      final aDistancia =
+          w.properties.contains('ranged') || w.properties.contains('thrown');
+      expect(conAlcance.containsKey(w.id), aDistancia,
+          reason: '${w.id}: alcance y propiedades no coinciden');
+      final esperado = conAlcance[w.id];
+      expect((w.rangeNormal, w.rangeLong), esperado ?? (0, 0), reason: w.id);
+      expect(w.rangeLabel,
+          esperado == null ? isNull : '${esperado.$1}/${esperado.$2} pies',
+          reason: w.id);
+    }
+  });
+
   test('las 38 armas de la tabla del PHB están cargadas', () {
     // Faltaban las tres últimas de Armas Marciales a Distancia. La Cerbatana
     // hace 1 de daño fijo, no un dado: `damageDice` es una cadena de display y

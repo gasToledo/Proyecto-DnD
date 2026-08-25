@@ -468,6 +468,14 @@ extension _SheetCombatSection on _SheetScreenState {
                       '${a.damage} ${DamageType.labelFor(a.damageType)}',
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
+                    // El alcance sale del catálogo y no del ataque: un
+                    // ataque de Forma Salvaje o de un compañero no tiene arma
+                    // del catálogo detrás y entonces no muestra ninguno.
+                    if (repo.weapon(a.baseWeaponId)?.rangeLabel case final r?)
+                      Text(
+                        'Alcance $r',
+                        style: TextStyle(color: muted, fontSize: 13),
+                      ),
                     if (a.mastery != null) _masteryPill(a.mastery!),
                     // Mano y acción salen calculadas del motor: derivarlas acá
                     // sería reimplementar la regla de dos armas en la ficha.

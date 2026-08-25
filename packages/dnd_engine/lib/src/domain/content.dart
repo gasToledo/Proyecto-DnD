@@ -684,6 +684,16 @@ class Weapon {
   /// la suma del inventario acumula error de redondeo.
   final int costCp;
 
+  /// Alcance normal y largo en pies, la columna "Alcance" del capítulo 6. 0 en
+  /// las armas cuerpo a cuerpo, que no traen esa columna: el alcance de un
+  /// ataque melé sale de la propiedad `reach` y es el mismo para todas.
+  ///
+  /// Dos enteros y no la cadena "20/60" del manual porque más allá del normal
+  /// la tirada tiene desventaja: es un número con el que hay que comparar, no
+  /// solo un texto que mostrar.
+  final int rangeNormal;
+  final int rangeLong;
+
   /// Bonificador mágico del arma (+1, +2, +3), que suma al ataque y al daño.
   ///
   /// Vive en el arma y no como efecto porque un efecto no tiene forma de decir
@@ -704,10 +714,16 @@ class Weapon {
     this.twoHandedUnlessMounted = false,
     this.weight = 0,
     this.costCp = 0,
+    this.rangeNormal = 0,
+    this.rangeLong = 0,
     this.magicBonus = 0,
   });
 
   bool get isRanged => properties.contains('ranged');
+
+  /// "20/60 pies" para mostrar, o null si el arma no declara alcance.
+  String? get rangeLabel =>
+      rangeNormal == 0 ? null : '$rangeNormal/$rangeLong pies';
   bool get isFinesse => properties.contains('finesse');
 
   /// Propiedad Ligera: requisito del ataque de mano secundaria (2024).
@@ -750,6 +766,8 @@ class Weapon {
         if (twoHandedUnlessMounted) 'twoHandedUnlessMounted': true,
         'weight': weight,
         'costCp': costCp,
+        if (rangeNormal != 0) 'rangeNormal': rangeNormal,
+        if (rangeLong != 0) 'rangeLong': rangeLong,
         if (magicBonus != 0) 'magicBonus': magicBonus,
       };
 
@@ -768,6 +786,8 @@ class Weapon {
         twoHandedUnlessMounted: j['twoHandedUnlessMounted'] as bool? ?? false,
         weight: (j['weight'] as num? ?? 0).toDouble(),
         costCp: j['costCp'] as int? ?? 0,
+        rangeNormal: j['rangeNormal'] as int? ?? 0,
+        rangeLong: j['rangeLong'] as int? ?? 0,
         magicBonus: j['magicBonus'] as int? ?? 0,
       );
 }

@@ -22,7 +22,11 @@ void main() {
 }
 
 class DndApp extends StatefulWidget {
-  const DndApp({super.key});
+  /// Cliente alternativo. Solo lo pasa el arranque de desarrollo
+  /// (`test/main_dev.dart`): la aplicación real habla con el mismo origen que
+  /// la sirvió, así que le alcanza con el cliente por defecto.
+  final ApiClient? api;
+  const DndApp({super.key, this.api});
 
   @override
   State<DndApp> createState() => _DndAppState();
@@ -49,7 +53,7 @@ class _DndAppState extends State<DndApp> {
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: mode,
-        home: _Bootstrap(theme: _theme),
+        home: _Bootstrap(theme: _theme, api: widget.api),
       ),
     );
   }
@@ -76,13 +80,14 @@ class _AppData {
 /// cuenta autenticada antes del dashboard (ver capacidad `web-client`).
 class _Bootstrap extends StatefulWidget {
   final AppThemeController theme;
-  const _Bootstrap({required this.theme});
+  final ApiClient? api;
+  const _Bootstrap({required this.theme, this.api});
   @override
   State<_Bootstrap> createState() => _BootstrapState();
 }
 
 class _BootstrapState extends State<_Bootstrap> {
-  final _api = ApiClient();
+  late final _api = widget.api ?? ApiClient();
   late Future<_AppData> _future;
 
   @override

@@ -77,3 +77,13 @@ brief-app-dnd5e.md
 .env
 cloudflared/config.yml
 cloudflared/creds.json
+
+# Arranque de desarrollo con el doble en memoria
+# (`flutter run -t test/main_dev.dart -d chrome`). Es el andamio de una
+# máquina, no del producto: vive en `test/` porque enchufa `FakeApiServer`, y
+# `flutter test` no lo levanta porque no termina en `_test.dart`.
+#
+# Ojo: el enganche que este archivo necesita —el `ApiClient?` opcional de
+# `lib/main.dart`— no se puede ignorar acá, porque `main.dart` ya está
+# trackeado y esta lista solo alcanza a lo que git todavía no sigue.
+packages/dnd_app/test/main_dev.dart

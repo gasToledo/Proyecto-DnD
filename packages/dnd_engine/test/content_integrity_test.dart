@@ -966,6 +966,46 @@ void main() {
     }
   });
 
+  test('todo objeto que habla de cargas las declara', () {
+    // El catálogo mágico lo genera `generate_magic_items.py` desde el PDF y las
+    // cargas las completa después `tool/apply_magic_item_charges.dart`. Si
+    // alguien regenera y se olvida del segundo paso, o si una revisión del PDF
+    // suma un objeto con cargas, esto se rompe acá y no en la mesa.
+    // La palabra aparece por otra cosa: los tres primeros hablan de peso y
+    // Repeating Shot, de la propiedad "Recarga" de las armas.
+    const cargaEsOtraCosa = {
+      'bolsa-de-contencion',
+      'botas-de-zancadas-y-brincos',
+      'morral-practico',
+      'repeating-shot',
+    };
+    final sinDeclarar = <String>[];
+    var conCargas = 0;
+    for (final item in repo.items.values) {
+      if (item.maxCharges != null) conCargas++;
+      final texto = item.description.toLowerCase();
+      if (!texto.contains('carga') || cargaEsOtraCosa.contains(item.id)) {
+        continue;
+      }
+      if (item.maxCharges == null) sinDeclarar.add(item.id);
+    }
+    expect(sinDeclarar, isEmpty,
+        reason: 'corré tool/apply_magic_item_charges.dart');
+    expect(conCargas, 53);
+  });
+
+  test('la recarga declarada es una fórmula que se puede tirar', () {
+    for (final item in repo.items.values) {
+      final amount = item.rechargeAmount;
+      if (amount == null) continue;
+      expect(item.maxCharges, isNotNull,
+          reason: '${item.id}: recarga sin máximo');
+      if (amount == todasLasCargas) continue;
+      expect(DiceFormula.tryParse(amount), isNotNull,
+          reason: '${item.id}: "$amount" no es una fórmula');
+    }
+  });
+
   test('cada arma tiene categoría y maestría válidas', () {
     for (final w in repo.weapons.values) {
       expect(validWeaponCategories, contains(w.category),

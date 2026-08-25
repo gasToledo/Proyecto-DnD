@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:test/test.dart';
 
@@ -373,6 +375,123 @@ void main() {
       c = InventoryOps.remove(c, 'arrows', repo);
 
       expect(c.inventory.single.quantity, 3);
+    });
+  });
+
+  group('cargas de objetos mágicos', () {
+    // Semilla fija: la recarga tira dados y un test que tira de verdad falla
+    // una vez cada tanto, que es la peor clase de test.
+    Dice dadosCargados() => Dice(Random(7));
+
+    InventoryEntry entrada(String itemId, {int? charges}) =>
+        InventoryEntry(entryId: 'e-$itemId', itemId: itemId, charges: charges);
+
+    test('sin anotar nada, el objeto está lleno', () {
+      final baston = repo.item('baston-de-curacion')!;
+      final c = _guerrera(inventory: [entrada('baston-de-curacion')]);
+
+      expect(baston.maxCharges, 10);
+      expect(InventoryOps.chargesLeft(c.inventory.single, repo), 10);
+    });
+
+    test('un objeto sin cargas no tiene contador', () {
+      final c = _guerrera(inventory: [entrada('rope-hempen')]);
+
+      expect(InventoryOps.chargesLeft(c.inventory.single, repo), isNull);
+    });
+
+    test('el descanso largo recarga sin pasarse del máximo', () {
+      final baston = repo.item('baston-de-curacion')!;
+      final c = _guerrera(
+        inventory: [entrada('baston-de-curacion', charges: 9)],
+      );
+
+      final (recargado, tocados) = InventoryOps.rechargeAtDawn(
+        c,
+        repo,
+        dice: dadosCargados(),
+      );
+
+      // 1d6 + 4 recupera 5 como mínimo y al bastón le falta 1: queda en 10.
+      expect(baston.rechargeAmount, '1d6 + 4');
+      expect(recargado.inventory.single.charges, baston.maxCharges);
+      expect(tocados, 1);
+    });
+
+    test('lo que ya está lleno no cuenta como recargado', () {
+      final c = _guerrera(inventory: [entrada('baston-de-curacion')]);
+
+      final (recargado, tocados) = InventoryOps.rechargeAtDawn(
+        c,
+        repo,
+        dice: dadosCargados(),
+      );
+
+      expect(tocados, 0);
+      expect(recargado.inventory.single.charges, isNull);
+    });
+
+    test('"todas" vuelve al máximo de una', () {
+      final anteojos = repo.item('anteojos-de-encantamiento')!;
+      final c = _guerrera(
+        inventory: [entrada('anteojos-de-encantamiento', charges: 0)],
+      );
+
+      final (recargado, _) = InventoryOps.rechargeAtDawn(
+        c,
+        repo,
+        dice: dadosCargados(),
+      );
+
+      expect(anteojos.rechargeAmount, todasLasCargas);
+      expect(recargado.inventory.single.charges, anteojos.maxCharges);
+    });
+
+    test('el que no se recarga solo se queda como está', () {
+      // El Talismán del bien puro se deshace con la última carga: recuperarlas
+      // al despertar sería regalarle al jugador un objeto legendario por noche.
+      final c = _guerrera(
+        inventory: [entrada('talisman-del-bien-puro', charges: 2)],
+      );
+
+      final (recargado, tocados) = InventoryOps.rechargeAtDawn(
+        c,
+        repo,
+        dice: dadosCargados(),
+      );
+
+      expect(repo.item('talisman-del-bien-puro')!.rechargeAmount, isNull);
+      expect(recargado.inventory.single.charges, 2);
+      expect(tocados, 0);
+    });
+
+    test('el máximo variable lo lleva la mesa y el motor no lo toca', () {
+      // "El arma tiene 1d8 + 1 cargas": el número sale cuando el objeto
+      // aparece, así que el catálogo no puede traerlo.
+      final ladrona = repo.item('ladrona-de-nueve-vidas')!;
+      final c = _guerrera(
+        inventory: [entrada('ladrona-de-nueve-vidas', charges: 3)],
+      );
+
+      final (recargado, tocados) = InventoryOps.rechargeAtDawn(
+        c,
+        repo,
+        dice: dadosCargados(),
+      );
+
+      expect(ladrona.maxCharges, 0);
+      expect(recargado.inventory.single.charges, 3);
+      expect(tocados, 0);
+    });
+
+    test('las cargas sobreviven al round-trip por JSON', () {
+      final c = _guerrera(
+        inventory: [entrada('varita-de-bolas-de-fuego', charges: 4)],
+      );
+
+      final vuelta = Character.fromJson(c.toJson());
+
+      expect(vuelta.inventory.single.charges, 4);
     });
   });
 

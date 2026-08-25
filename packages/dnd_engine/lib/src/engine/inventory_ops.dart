@@ -1,4 +1,5 @@
 import '../data/content_repository.dart';
+import 'dice.dart';
 import '../domain/character.dart';
 import '../domain/content.dart';
 
@@ -9,6 +10,12 @@ import '../domain/content.dart';
 /// la ficha, el compilador y la validación: en cuanto una de las tres se
 /// desincronice, el jugador ve una casilla tildada que no le está sumando la CA.
 const shieldItemId = 'shield';
+
+/// Valor de `Item.rechargeAmount` para los objetos que recuperan todas sus
+/// cargas de una vez en vez de tirar una fórmula (los Anteojos de
+/// encantamiento). Es palabra y no un booleano aparte porque el campo ya es
+/// texto y así el JSON del catálogo se lee como el manual.
+const todasLasCargas = 'todas';
 
 int artificerReplicasAtLevel(int level) => switch (level) {
       < 2 => 0,
@@ -327,6 +334,65 @@ class InventoryOps {
     }
     final coins = c.coins.values.fold(0, (a, b) => a + b);
     return total + coins / coinsPerPound;
+  }
+
+  /// Cargas que le quedan a [e]: las anotadas, o el máximo del catálogo si
+  /// nunca se tocaron. null cuando el objeto no funciona con cargas.
+  ///
+  /// La lee la ficha y la recarga, y las dos tienen que resolver "sin anotar"
+  /// igual o el primer gasto haría saltar el contador de 0 a 9.
+  static int? chargesLeft(InventoryEntry e, ContentRepository repo) {
+    final max = repo.item(e.itemId)?.maxCharges;
+    if (max == null) return null;
+    return e.charges ?? max;
+  }
+
+  /// Recupera las cargas de todo lo que se recarga al amanecer, tirando la
+  /// fórmula de cada objeto. Devuelve la ficha nueva y cuántos objetos tocó.
+  ///
+  /// Nunca pasa del máximo y nunca baja: una tirada de 1d6 + 4 sobre un bastón
+  /// al que solo le falta una carga le devuelve esa y nada más.
+  ///
+  /// ponytail: se dispara con el descanso largo y no con el amanecer, que es lo
+  /// que dice la regla. Coinciden casi siempre —el descanso dura 8 horas— pero
+  /// no cuando la mesa descansa de día. Modelar la hora del día es lo que hace
+  /// falta para separarlos, y hoy el proyecto no tiene reloj.
+  static (Character, int) rechargeAtDawn(
+    Character c,
+    ContentRepository repo, {
+    Dice? dice,
+  }) {
+    final roller = dice ?? Dice();
+    var tocados = 0;
+    final inventory = <InventoryEntry>[];
+    for (final e in c.inventory) {
+      final item = repo.item(e.itemId);
+      final max = item?.maxCharges;
+      final amount = item?.rechargeAmount;
+      final actual = e.charges ?? max;
+      // Sin máximo no hay cargas; sin fórmula el objeto no se recarga solo; con
+      // máximo 0 la mesa lleva la cuenta y el motor no tiene qué techo aplicar.
+      if (max == null ||
+          max == 0 ||
+          amount == null ||
+          actual == null ||
+          actual >= max) {
+        inventory.add(e);
+        continue;
+      }
+      final recuperadas = amount == todasLasCargas
+          ? max
+          : DiceFormula.tryParse(amount)?.roll(roller);
+      // Una fórmula que no se entiende no inventa un resultado: el objeto queda
+      // como estaba y el jugador lo sube a mano.
+      if (recuperadas == null) {
+        inventory.add(e);
+        continue;
+      }
+      inventory.add(e.copyWith(charges: (actual + recuperadas).clamp(0, max)));
+      tocados++;
+    }
+    return (c.copyWith(inventory: inventory), tocados);
   }
 
   /// Crea una réplica solo para un Artífice que conoce el plano y respeta el

@@ -214,7 +214,9 @@
     "description": "Anillo, legendario (requiere sintonización)\nanillos de comandar elementales\nTodos los están\nvinculados a uno de los cuatro Planos Elementales;\nanillo de comandar elementales\ntu GM elige a cuál de ellos o lo determina al azar.\nPor ejemplo, un\nanillo de comandar elementales\n(aire) está vinculado al Plano Elemental del Aire.\nCada tiene las dos\nCompulsión elemental.\nsiguientes propiedades:\nMientras lo lleves puesto,\npuedes emplear una acción de magia para intentar\ndoblegar a un elemental que puedas ver a 18 m\no menos de ti. El elemental hace una tirada de\nsalvación de Sabiduría con CD 18. Si la falla, ten-\ndrá el estado de hechizado hasta el principio de\ntu siguiente turno y tú decidirás qué hace con su\nPerdición elemental.\nmovimiento y acción en su siguiente turno.\nMientras lo lleves puesto,\ntendrás ventaja en las tiradas de ataque contra\nelementales y ellos tendrán desventaja en las tira-\nConcentración elemental.\ndas de ataque contra ti.\nMientras lleves puesto\nel anillo, te beneficias de las propiedades adiciona-\nles correspondientes al Plano Elemental vinculado\nAgua.\nal anillo:\nAire.\nSabes hablar aurano, tienes resistencia al\ndaño de relámpago y una velocidad volando igual\nFuego.\na tu velocidad y puedes levitar.\nSabes hablar ígneo y tienes inmunidad\nTierra.\nal daño de fuego.\nSabes hablar terrano y tienes resistencia\nal daño de ácido. El terreno compuesto por escom-\nbros, rocas o tierra no cuenta como terreno difícil\npara ti. Además, puedes moverte a través de tierra\nsólida o roca como si estas superficies fueran\nterreno difícil sin alterar la materia que atravie-\nsas. Si acabas tu turno en tierra sólida o roca, irás\na parar al espacio sin ocupar más cercano en el\nLanzamiento de conjuros.\nque estuviste por última vez.\nEl anillo tiene 5 cargas\ny recupera 1d4 + 1 cargas empleadas cada día, al\namanecer. Mientras lleves puesto el anillo, puedes\nlanzar un conjuro desde él. Elige el conjuro de la\nlista de conjuros disponibles según el Plano Elemen-\ntal vinculado al anillo, como se muestra en la tabla\na continuación. En ella se indica cuántas cargas\ndebes gastar para lanzar el conjuro, que tiene una\nPlano Conjuros (cargas)\nCD de salvación de 18.\nAgua Caminar sobre el agua (2 ca rgas), crear o\ndestruir ag ua (1 carga), mu ro de hielo ( 3 car-\ngas), tormenta de hielo (2 cargas), tsunami\n(5 cargas)\nAire Caída de pluma (0 cargas), mur o de viento\n(1 carga), ráfa ga de vient o (2 cargas), relám-\npago en cadena (3 cargas)\nFuego Bola de fuego (2 cargas), manos ardientes\n(1 carga), muro de fuego (3 cargas), tormenta\nde fuego (4 cargas)\nTierra Moldear la piedra (2 cargas), muro de piedra\n(3 cargas) , piel pétre a (3 cargas), terremoto\n(5 cargas)",
     "rarity": "legendary",
     "requiresAttunement": true,
-    "sourcePage": 230
+    "sourcePage": 230,
+    "maxCharges": 5,
+    "rechargeAmount": "1d4 + 1"
   },
   {
     "id": "anillo-de-escudo-mental",
@@ -238,7 +240,9 @@
     "description": "Anillo, muy raro (requiere sintonización)\nluces danzantes luz\nPuedes lanzar o desde este\nanillo.\nEl anillo tiene 6 cargas y recupera 1d6 cargas\nempleadas cada día, al amanecer. Puedes gastar\nEsferas de rayos.\nlas cargas para usar las propiedades a continuación.\nComo acción de magia, puedes\ngastar 2 cargas para crear hasta cuatro esferas de\nrayos con un diámetro de 90 cm.\nCada esfera aparece en un espacio sin ocupar que\npuedas ver a 36 m o menos de ti. Las esferas per-\nmanecerán mientras mantengas la concentración,\nhasta 1 minuto. Cada una emite luz tenue en un\nradio de 9 m.\nComo acción adicional, puedes mover cada esfera\nhasta 9 m, pero no más allá de 36 m respecto a ti.\nLa primera vez que la esfera se acerque a 1,5 m\no menos de una criatura distinta de ti que no esté\ntras cobertura completa, la esfera descargará un\nrelámpago sobre ella y desaparecerá. Esa criatura\nhará una tirada de salvación de Destreza con CD 15.\nSi la falla, recibirá daño de relámpago según la can-\ntidad de esferas que hayas creado, como se muestra\nen la tabla a continuación. Si la supera, recibirá la\nCantidad Daño de Cantidad Daño de\nmitad de daño.\nde esferas relámpago de esferas relámpago\n1 4d12 3 2d6\n2 5d4 4 2d4\nEstrellas fugaces.\nComo acción de magia, pue-\ndes gastar entre 1 y 3 cargas. Por cada carga que\nemplees, lanzarás una mota de luz brillante desde\nel anillo hacia un punto que puedas ver a 18 m\no menos de ti. A todas las criaturas situadas en\nun cubo de 4,5 m de lado que parta de ese punto\nles caerá una lluvia de chispas y harán una tirada\nde salvación de Destreza con CD 15; sufrirán 5d4\nde daño radiante si la fallan o la mitad del daño si\nFuego feérico.\nla superan.\nfuego feérico\nPuedes gastar 1 carga para lanzar",
     "rarity": "very-rare",
     "requiresAttunement": true,
-    "sourcePage": 231
+    "sourcePage": 231,
+    "maxCharges": 6,
+    "rechargeAmount": "1d6"
   },
   {
     "id": "anillo-de-evasion",
@@ -250,7 +254,9 @@
     "description": "Anillo, raro (requiere sintonización)\nEste anillo tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer. Cuando falles una\ntirada de salvación de Destreza mientras lo llevas\npuesto, puedes usar una reacción para gastar 1 car-\nga y superar esa tirada.",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 231
+    "sourcePage": 231,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "anillo-de-influencia-animal",
@@ -262,7 +268,9 @@
     "description": "Anillo, raro\nEste anillo tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer. Mientras lo lleves\npuesto, puedes gastar 1 carga para lanzar uno de los\nEncantar animal\nsiguientes conjuros (CD de salvación 13) desde él:\nHablar con los animales\n•\nTerror\n•",
     "rarity": "rare",
     "requiresAttunement": false,
-    "sourcePage": 232
+    "sourcePage": 232,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "anillo-de-invisibilidad",
@@ -310,7 +318,8 @@
     "description": "Anillo, legendario\ndeseo\nMientras lleves puesto este anillo, puedes gastar 1\nde sus 3 cargas para lanzar desde él. El anillo\nse volverá no mágico cuando utilices la última\ncarga.",
     "rarity": "legendary",
     "requiresAttunement": false,
-    "sourcePage": 232
+    "sourcePage": 232,
+    "maxCharges": 3
   },
   {
     "id": "anillo-de-natacion",
@@ -428,7 +437,9 @@
     "description": "Anillo, raro (requiere sintonización)\nEste anillo tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer. Mientras lo lleves\npuesto, puedes emplear una acción de magia para\ngastar entre 1 y 3 cargas y hacer un ataque de con-\njuro a distancia contra una criatura que puedas ver\na 18 m o menos de ti. El anillo producirá una cabeza\nde carnero espectral y hará su tirada de ataque con\nun bonificador de +7. Si acierta, por cada carga em-\npleada, el objetivo sufrirá 2d10 de daño de fuerza\ny será empujado 1,5 m respecto a ti.\nDe forma alternativa, puedes gastar entre 1 y 3 de\nlas cargas del anillo como acción de magia para tra-\ntar de romper un objeto no mágico que puedas ver\na 18 m o menos de ti que no lleve ni vista alguien. El\nanillo realizará una prueba de Fuerza con un bonifi-",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 233
+    "sourcePage": 233,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "anteojos-de-encantamiento",
@@ -440,7 +451,9 @@
     "description": "Objeto maravilloso, infrecuente (requiere\nsintonización)\nEstas lentes de cristal cubren los ojos y tienen\nhechizar persona\n3 cargas. Mientras las lleves puestas, puedes gastar\n1 o más cargas para lanzar (CD de\nsalvación 13). Si empleas 1 carga, podrás lanzar la\nversión de nivel 1 del conjuro. Aumentarás el nivel\ndel conjuro en 1 por cada carga adicional que em-\nplees. Las lentes recuperan todas las cargas emplea-",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "sourcePage": 233
+    "sourcePage": 233,
+    "maxCharges": 3,
+    "rechargeAmount": "todas"
   },
   {
     "id": "anteojos-de-la-noche",
@@ -801,7 +814,9 @@
     "description": "Bastón, raro (requiere sintonización por parte de\nun bardo, clérigo o druida)\nEste bastón tiene 10 cargas. Mientras lo empuñes,\npuedes lanzar un conjuro de la tabla a continuación\ndesde él empleando tu modificador por aptitud má-\ngica. En ella se indica cuántas cargas debes gastar\nConjuro Coste en cargas\npara lanzar el conjuro.\nCurar heridas 1 carga por nivel del\nconjuro (máximo 4 para\nun conjuro de nivel 4)\nCurar heridas en masa 5\nRestablecimiento menor 2\nRecuperar cargas.\nEl bastón recupera 1d6 +\n4 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 1,\nel bastón se desvanece tras un destello y se pierde",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 239
+    "sourcePage": 239,
+    "maxCharges": 10,
+    "rechargeAmount": "1d6 + 4"
   },
   {
     "id": "baston-de-enjambre-de-insectos",
@@ -813,7 +828,9 @@
     "description": "Bastón, raro (requiere sintonización por parte de\nun bardo, brujo, clérigo, druida, hechicero o mago)\nNube de insectos.\nEste bastón tiene 10 cargas.\nMientras empuñes el bastón,\npuedes emplear una acción de magia y gastar 1 car-\nga para hacer que un enjambre de insectos inofen-\nsivos llene una emanación de 9 m que se origina en\nti. Los insectos permanecerán durante 10 minutos\ny convertirán el área en una zona muy oscura\nráfaga de viento\npara todas las criaturas menos para ti. Un viento\nfuerte (por ejemplo, el que crea )\nConjuros.\ndispersará el enjambre y pondrá fin al efecto.\nMientras empuñes el bastón, puedes\nlanzar un conjuro de la tabla a continuación desde\nél empleando tu CD de salvación de conjuros y tu\nmodificador de ataque de conjuros. En ella se indica\nConjuro Coste en cargas\ncuántas cargas debes gastar para lanzar el conjuro.\nInsecto gigante 4\nPlaga de insectos 5\nRecuperar cargas.\nEl bastón recupera 1d6 +\n4 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 1, un\nenjambre de insectos engulle el bastón, lo destruye",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 239
+    "sourcePage": 239,
+    "maxCharges": 10,
+    "rechargeAmount": "1d6 + 4"
   },
   {
     "id": "baston-de-escarcha",
@@ -825,7 +842,9 @@
     "description": "Bastón, muy raro (requiere sintonización por parte de\nun brujo, druida, hechicero o mago)\nMientras empuñes este bastón, tendrás resistencia\nConjuros.\nal daño de frío.\nEl bastón tiene 10 cargas. Mientras\nlo empuñes, puedes lanzar un conjuro de la tabla\na continuación desde él empleando tu CD de salva-\nción de conjuros. En ella se indica cuántas cargas\nCoste en Coste en\ndebes gastar para lanzar el conjuro.\nConjuro cargas Conjuro cargas\nCono de frío 5 Nube de 1\noscurecimiento\nMuro de hielo 4 Tormenta de 4\nhielo\nRecuperar cargas.\nEl bastón recupera 1d6 +\n4 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 1,",
     "rarity": "very-rare",
     "requiresAttunement": true,
-    "sourcePage": 240
+    "sourcePage": 240,
+    "maxCharges": 10,
+    "rechargeAmount": "1d6 + 4"
   },
   {
     "id": "baston-de-fuego",
@@ -837,7 +856,9 @@
     "description": "Bastón, muy raro (requiere sintonización por parte de\nun brujo, druida, hechicero o mago)\nMientras empuñes este bastón, tendrás resistencia\nConjuros.\nal daño de fuego.\nEl bastón tiene 10 cargas. Mientras\nlo empuñes, puedes lanzar un conjuro de la tabla\na continuación desde él empleando tu CD de salva-\nción de conjuros. En ella se indica cuántas cargas\nCoste en Coste en\ndebes gastar para lanzar el conjuro.\nConjuro cargas Conjuro cargas\nBola de fuego 3 Muro de fuego 4\nManos ardientes 1\nRecuperar cargas.\nEl bastón recupera 1d6 +\n4 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 1,",
     "rarity": "very-rare",
     "requiresAttunement": true,
-    "sourcePage": 240
+    "sourcePage": 240,
+    "maxCharges": 10,
+    "rechargeAmount": "1d6 + 4"
   },
   {
     "id": "baston-de-impacto",
@@ -849,7 +870,9 @@
     "description": "Bastón, muy raro (requiere sintonización)\nEste bastón se puede usar a modo de bastón mágico\nque otorga un bonificador de +3 a las tiradas de\nataque y de daño realizadas con él.\nEl bastón tiene 10 cargas. Cuando aciertes con\nun ataque cuerpo a cuerpo con él, podrás gastar\nhasta 3 cargas. Por cada carga empleada, el objetivo\nRecuperar cargas.\nrecibirá 1d6 de daño de fuerza adicional.\nEl bastón recupera 1d6 +\n4 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 1,",
     "rarity": "very-rare",
     "requiresAttunement": true,
-    "sourcePage": 240
+    "sourcePage": 240,
+    "maxCharges": 10,
+    "rechargeAmount": "1d6 + 4"
   },
   {
     "id": "baston-de-la-piton",
@@ -873,7 +896,9 @@
     "description": "Bastón, raro (requiere sintonización)\nEste bastón tiene 6 cargas y se puede usar a modo\nde bastón mágico que otorga un bonificador de +2\na las tiradas de ataque y de daño realizadas con él.\nMientras lo empuñes, obtendrás un bonificador de\nConjuros.\n+2 a las tiradas de ataque de conjuro.\nMientras empuñes el bastón, puedes\nlanzar un conjuro de la tabla a continuación desde\nél empleando tu CD de salvación de conjuros. En ella\nse indica cuántas cargas debes gastar para lanzar\nConjuro Coste en cargas\nel conjuro.\nDespertar 5\nEncantar animal 1\nHablar con las plantas 3\nHablar con los animales 1\nLocalizar animales o plantas 2\nMuro de espinas 6\nPasar sin rastro 2\nPiel robliza 2\nForma de árbol.\nPuedes utilizar una acción de\nmagia para plantar un extremo del bastón en la tie-\nrra en un espacio sin ocupar y gastar 1 carga para\ntransformarlo en un árbol sano. El árbol mide 18 m\nde alto, el diámetro de su tronco es de 1,5 m y las\nramas de su copa cubren un radio de 6 m. El árbol\nparece normal, pero emite una débil aura de magia\ndetectar magia\nde transmutación que se puede percibir con el\nconjuro . Si tocas el árbol y empleas\nuna acción de magia, devuelves el bastón a su forma\nnormal. Cualquier criatura que se encuentre en\nRecuperar cargas.\nel árbol caerá cuando recupere su forma de bastón.\nEl bastón recupera 1d6 cargas\nempleadas cada día, al amanecer. Si gastas la última\ncarga, tira 1d20. Si el resultado es 1, el bastón pier-\nde sus propiedades y se convierte en un bastón no",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 240
+    "sourcePage": 240,
+    "maxCharges": 6,
+    "rechargeAmount": "1d6"
   },
   {
     "id": "baston-de-los-magos",
@@ -885,7 +910,9 @@
     "description": "Bastón, legendario (requiere sintonización por parte\nde un brujo, hechicero o mago)\nEste bastón tiene 50 cargas y se puede usar a modo\nde bastón mágico que otorga un bonificador de +2\na las tiradas de ataque y de daño realizadas con él.\nMientras lo empuñes, obtendrás un bonificador de\nAbsorción de conjuros.\n+2 a las tiradas de ataque de conjuro.\nMientras empuñes el\nbastón, tendrás ventaja en las tiradas de salvación\ncontra conjuros. Además, puedes emplear una reac-\nción cuando otra criatura lance un conjuro que solo\nte haga objetivo a ti. Si lo haces, el bastón absorberá\nla magia del conjuro, cancelará su efecto y obtendrá\nuna cantidad de cargas igual al nivel del conjuro\nabsorbido. No obstante, si esto hace que la cantidad\ntotal de cargas del bastón supere las 50, el bastón\nexplotará como si hubieses activado su golpe venga-\nConjuros.\ndor (consulta más adelante).\nMientras empuñes el bastón, puedes\nlanzar un conjuro de la tabla a continuación desde\nél empleando tu CD de salvación de conjuros. En ella\nse indica cuántas cargas debes gastar para lanzar\nConjuro Coste en cargas\nel conjuro.\nAbrir 2\nAgrandar/reducir 0\nBola de fuego (versión de nivel 7) 7\nCerradura arcana 0\nConjurar elemental 7\nDesplazamient o entre planos 7\nDetectar magia 0\nDisipar magia 3\nEsfera de llamas 2\nInvisibilidad 2\nConjuro Coste en cargas\nLuz 0\nMano de ma go 0\nMuro de fuego 4\nPasamuros 5\nProtección contra el bien y el mal 0\nRelámpago (versión de nivel 7) 7\nTelaraña 2\nTelequinesis 5\nTormenta de hielo 4\nGolpe vengador.\nPuedes emplear una acción de\nmagia para romper el bastón de un rodillazo o con-\ntra una superficie sólida. El bastón se destruye y li-\nbera su magia en una explosión que llena una ema-\nnación de 9 m que se origina en él. Tienes un 50 %\nde probabilidad de viajar en ese instante a un plano\nde existencia aleatorio y evitar la explosión. Si no lo-\ngras evitar el efecto, sufrirás una cantidad de daño\nde fuerza igual a 16 veces la cantidad de cargas del\nbastón. Todas las demás criaturas situadas en la\nzona harán una tirada de salvación de Destreza con\nCD 17. Si la fallan, sufrirán un daño de fuerza igual\na 6 veces la cantidad de cargas del bastón. Si la su-\nRecuperar cargas.\nperan, sufrirán la mitad de ese daño.\nEl bastón recupera 4d6 +\n2 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 20, el",
     "rarity": "legendary",
     "requiresAttunement": true,
-    "sourcePage": 241
+    "sourcePage": 241,
+    "maxCharges": 50,
+    "rechargeAmount": "4d6 + 2"
   },
   {
     "id": "baston-de-marchitamiento",
@@ -897,7 +924,9 @@
     "description": "bastón recupera 1d12 + 1 cargas.\nBastón, raro (requiere sintonización)\nEste bastón tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer.\nEl bastón se puede usar a modo de bastón mágico.\nSi aciertas con él, causa daño como un bastón\nnormal y puedes gastar 1 carga para infligir 2d10\nde daño necrótico adicional al objetivo y obligarlo\na hacer una tirada de salvación de Constitución con\nCD 15. Si la falla, tendrá desventaja durante 1 hora\nen cualquier prueba de característica o tirada de",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 241
+    "sourcePage": 241,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "baston-de-poder",
@@ -909,7 +938,9 @@
     "description": "Bastón, muy raro (requiere sintonización por parte de\nun brujo, hechicero o mago)\nEste bastón tiene 20 cargas y se puede usar a modo\nde bastón mágico que otorga un bonificador de +2\na las tiradas de ataque y de daño realizadas con él.\nMientras lo empuñes, obtendrás un bonificador de\n+2 a la clase de armadura, las tiradas de salvación\nConjuros.\ny las tiradas de ataque de conjuro.\nMientras empuñes el bastón, puedes\nse indica cuántas cargas debes gastar para lanzar\nConjuro Coste en cargas\nel conjuro.\nBola de fuego (versión de nivel 5) 5\nCono de frío 5\nGlobo de invulnerabilidad 6\nInmovilizar monstruo 5\nLevitar 2\nMuro de fu erza 5\nProyectil mágico 1\nRayo debilitador 1\nRelámpago (versión de nivel 5) 5\nGolpe vengador.\nPuedes emplear una acción de\nmagia para romper el bastón de un rodillazo o con-\ntra una superficie sólida. El bastón se destruye y li-\nbera su magia en una explosión que llena una ema-\nnación de 9 m que se origina en él. Tienes un 50 %\nde probabilidad de viajar en ese instante a un plano\nde existencia aleatorio y evitar la explosión. Si no lo-\ngras evitar el efecto, sufrirás una cantidad de daño\nde fuerza igual a 16 veces la cantidad de cargas del\nbastón. Todas las demás criaturas situadas en la\nzona harán una tirada de salvación de Destreza con\nCD 17. Si la fallan, sufrirán un daño de fuerza igual\na 4 veces la cantidad de cargas del bastón. Si la su-\nRecuperar cargas.\nperan, sufrirán la mitad de ese daño.\nEl bastón recupera 2d8 +\n4 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 1, el\nbastón conserva su bonificador de +2 a las tiradas\nde ataque y de daño, pero pierde sus otras propie-\ndades. Si el resultado es 20, el bastón recupera 1d8",
     "rarity": "very-rare",
     "requiresAttunement": true,
-    "sourcePage": 241
+    "sourcePage": 241,
+    "maxCharges": 20,
+    "rechargeAmount": "2d8 + 4"
   },
   {
     "id": "baston-de-truenos-y-relampagos",
@@ -933,7 +964,9 @@
     "description": "Bastón, raro (requiere sintonización por parte de\nun bardo, brujo, clérigo, druida, hechicero o mago)\nEste bastón tiene 10 cargas. Mientras lo empuñes,\nLanzar conjuro.\npuedes usar cualquiera de sus propiedades:\nentender idiomas hechizar persona\nPuedes gastar 1 carga del bastón\norden imperiosa\npara lanzar ,\nu desde él usando tu CD de salva-\nReflejar encantamiento.\nción de conjuros.\nSi superas una tirada de\nsalvación contra un conjuro de encantamiento\nque solo te haga objetivo a ti, podrás utilizar una\nreacción y gastar 1 carga del bastón para volver\nel conjuro en contra de su lanzador como si tú\nResistir encantamiento.\nlo hubieras lanzado.\nSi fallas una tirada de\nsalvación contra un conjuro de encantamiento que\nsolo te haga objetivo a ti, podrás superar la tirada\nfallida en su lugar. No podrás volver a usar esta\nRecuperar cargas.\npropiedad hasta el siguiente amanecer.\nEl bastón recupera 1d8 +\n2 cargas empleadas cada día, al amanecer. Si gastas\nla última carga, tira 1d20. Si el resultado es 1,",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 242
+    "sourcePage": 242,
+    "maxCharges": 10,
+    "rechargeAmount": "1d8 + 2"
   },
   {
     "id": "bola-de-cristal",
@@ -1041,7 +1074,9 @@
     "description": "Objeto maravilloso, infrecuente (requiere\nsintonización)\nEstas botas tienen 4 cargas y recuperan 1d4 cargas\nempleadas cada día, al amanecer. Mientras las lleves\npuestas, puedes emplear una acción de magia para\ngastar 1 carga, lo que te proporciona una velocidad\nvolando de 9 m durante 1 hora. Si estás volando\ncuando concluya la duración, descenderás a una",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "sourcePage": 245
+    "sourcePage": 245,
+    "maxCharges": 4,
+    "rechargeAmount": "1d4"
   },
   {
     "id": "botas-de-las-tierras-invernales",
@@ -1245,7 +1280,9 @@
     "description": "Objeto maravilloso, legendario (requiere\nsintonización)\nEsta capa tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer. Mientras la lleves\npuesta, puedes emplear una acción de magia para\nponerte la capucha y gastar 1 carga para otorgarte\nel estado de invisible durante 1 hora. El efecto\ntermina antes de tiempo si te quitas la capucha",
     "rarity": "legendary",
     "requiresAttunement": true,
-    "sourcePage": 247
+    "sourcePage": 247,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "capa-de-la-mantarraya",
@@ -1443,7 +1480,9 @@
     "description": "Objeto maravilloso, raro (requiere sintonización)\nEste cubo mide aproximadamente 2,5 cm de lado.\nCada cara tiene un signo específico. Puedes pulsar\nuna de las caras del cubo y gastar el número corres-\npondiente de cargas para lanzar el conjuro asociado\na ella (CD de salvación 17), como se muestra en\nla tabla “Caras del cubo de fuerza”.\nEl cubo comienza con 10 cargas y recupera\nCaras 1d6 cargas del cubo empleadas de fuerza cada día, al amanecer.\nConjuro Coste en cargas\nArmadura de mago 1\nEscudo 1\nPequeña choza 3\nEsfera elástica 4\nSanctasanctórum privado 4\nMuro de fuerza 5",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 250
+    "sourcePage": 250,
+    "maxCharges": 10,
+    "rechargeAmount": "1d6"
   },
   {
     "id": "cuenco-para-controlar-elementales-de-agua",
@@ -1621,7 +1660,8 @@
     "description": "Objeto maravilloso, legendario (requiere\nsintonización)\nEste medallón con forma de escarabajo proporciona\nDefensa.\ntres beneficios mientras lo lleves contigo.\nRecibes un bonificador de +1 a la clase\nPreservación.\nde armadura.\nEl escarabajo tiene 12 cargas.\nSi fallas una tirada de salvación contra un conjuro\nde nigromancia o un efecto dañino de un muerto\nviviente, podrás utilizar una reacción y emplear\n1 carga para superar la tirada de salvación. El esca-\nrabajo se convertirá en polvo y se destruirá cuando\nResistencia a conjuros.\nse haya empleado la última carga.\nTienes ventaja en las tira-",
     "rarity": "legendary",
     "requiresAttunement": true,
-    "sourcePage": 252
+    "sourcePage": 252,
+    "maxCharges": 12
   },
   {
     "id": "escoba-voladora",
@@ -1867,7 +1907,8 @@
     "description": "Objeto maravilloso, rareza variable\nestatuilla de poder maravilloso\nUna es una pequeña\nescultura que cabe en un bolsillo. Si empleas una\nacción de magia para lanzar la estatuilla a un punto\ndel suelo situado a 18 m o menos de ti, se conver-\ntirá en una criatura viva, según se especifica en\nla descripción de la estatuilla más adelante. Si el\nlugar donde tendría que aparecer la criatura está\nocupado por otras criaturas u objetos, o si no hay\nsuficiente espacio para la criatura, la estatuilla no\nse convertirá en una criatura.\nLa criatura es amistosa contigo y tus aliados.\nEntiende tus idiomas, obedece tus órdenes verbales\ny juega su turno inmediatamente después de ti en\ntu orden de iniciativa. Si no le das ninguna orden,\nla criatura se defiende a sí misma, pero no realiza\nninguna otra acción.\nLa criatura existirá durante el tiempo específico\nde cada estatuilla. Cuando acabe ese tiempo, la cria-\ntura volverá a su forma de estatuilla. La recuperará\nantes si sus puntos de golpe se reducen a 0 o si usas\nuna acción de magia mientras tocas a la criatura\npara convertirla en una estatuilla. Cuando la cria-\ntura recupere su forma de estatuilla, su propiedad\nno puede volver a usarse hasta que pase un tiempo\ndeterminado, según se especifica en la descripción\nBúho de serpentina (raro).\nde la estatuilla.\nbúho\nEsta estatuilla de ser-\ngigante\npentina de un búho puede convertirse en un\ndurante 8 horas, como máximo. El búho\npuede comunicarse telepáticamente contigo a cual-\nquier distancia siempre que estéis en el mismo\nplano de existencia. Una vez que se utilice, no podrá\nCabras de marfil (raras).\nvolver a usarse hasta que hayan pasado 2 días.\nLas estatuillas de mar-\nfil con forma de cabra siempre se crean de tres en\ntres. Cada cabra posee un aspecto único y funciona\nde forma distinta a las demás. Sus propiedades son\nCabra de trabajo.\nlas siguientes:\ncabra gigante\nEsta estatuilla se convierte en\nuna hasta 3 horas. Una vez que se\nutilice, no podrá volver a usarse hasta que hayan\nCabra de viaje.\npasado 30 días.\ncaballo\nEsta estatuilla se convierte en una\nde monta\ncabra Grande con el mismo perfil que un\n. Tiene 24 cargas y cada hora o porción\nga. Mientras posea cargas, puedes usarla tantas\nveces como quieras. Cuando se quede sin cargas,\nse convertirá de nuevo en estatuilla y no podrá\nvolver a usarse hasta que hayan pasado 7 días,\nCabra del terror.\nmomento en el que recuperará todas sus cargas.\ncabra gigante\nEsta estatuilla se convierte en\nuna hasta 3 horas. La cabra no\npuede atacar, pero puedes quitarle los cuernos sin\nlanza +1\npeligro alguno y emplearlos como armas. Un cuer-\nespada larga +2\nno se convierte en una y el otro se con-\nvierte en una . Quitarle un cuerno\nrequiere una acción de magia, y las armas desa-\nparecen y los cuernos regresan a su sitio cuando\nla cabra recupera su forma de estatuilla. Mientras\nmontes sobre la cabra, cualquier criatura hostil\nque comience su turno dentro de una emanación\nde 9 m que se origina en la cabra deberá superar\nuna tirada de salvación de Sabiduría con CD 15 o\ntendrá el estado de asustada durante 1 minuto,\nhasta que dejes de montar sobre la cabra o hasta\nque vuelva a su forma de estatuilla. Una criatura\nasustada repetirá la tirada de salvación al final\nde cada uno de sus turnos y, si tiene éxito, se\nlibrará del efecto. Cuando la supere, una criatura\nserá inmune a este efecto durante las próximas\n24 h oras. Una vez que se utilice la estatuilla, no\npodrá volver a usarse hasta que hayan pasado\nCorcel de obsidiana (muy raro).\n15 días.\npesadilla\nEste caballo\nde obsidiana puede convertirse en una\ndurante 24 horas, como máximo. La pesadilla solo\nluchará para defenderse. Una vez que se utilice,\nno podrá volver a usarse hasta que hayan pasado\n5 días.\nCada vez que la utilices, la estatuilla tiene un 10 %\nde probabilidad de ignorar tus órdenes, incluida\nla de recuperar la forma de estatuilla. Si montas\nen la pesadilla mientras hace caso omiso a tus ór-\ndenes, la pesadilla y tú os transportaréis de inme-\ndiato a un lugar aleatorio del plano de Hades, donde\nCuervo de plata (infrecuente).\nrecuperará su forma de estatuilla.\ncuervo\nEsta estatuilla de\nplata de un cuervo puede convertirse en un\ndurante 12 horas, como máximo. Una vez que se\nutilice, no podrá volver a usarse hasta que hayan\nmensajero animal\npasado 2 días. Mientras esté en forma de cuervo,\nla estatuilla te permite lanzar\nElefante de mármol (raro).\nsobre ella.\nEsta estatuilla de\nelefante\nmármol se parece a un elefante barritando. Puede\nconvertirse en un durante 24 horas, como\nmáximo. Una vez que se utilice, no podrá volver\nGrifo de bronce (raro).\na usarse hasta que hayan pasado 7 días.\nSe trata de la estatuilla de\ngrifo\nbronce de un grifo rampante. Puede convertirse en\nse utilice, no podrá volver a usarse hasta que hayan\nLeones dorados (raros).\npasado 5 días.\nEstas estatuillas de oro\nde leones siempre se crean en parejas. Puedes uti-\nleón\nlizar una estatuilla o las dos al mismo tiempo. Cada\nuna puede convertirse en un durante 1 hora,\ncomo máximo. Una vez que se utilice cada estatuilla,\nno podrá volver a usarse hasta que hayan pasado\nMosca de ébano (rara).\n7 días.\nEsta estatua de ébano\nmosca gigante\nestá tallada con la forma de un tábano. Puede con-\nvertirse en una (consulta el perfil\ncorrespondiente) hasta 12 horas y emplearse como\nmontura. Una vez que se utilice, no podrá volver\nMosca gigante\na usarse hasta que hayan pasado 2 días.\nBestia Grande, sin alineamiento\nCA: 11 Iniciativa: +1 (11)\nPG: 19 (3d10 + 3)\nVelocidad: 9 m, volar 18 m\nMOD. SALV. MOD. SALV. MOD. SALV.\nF 14 +2 +2 D 13 +1 +1 C 13 +1 +1\nue es on\nI 2 −4 −4 s 10 +0 +0 C 3 −4 −4\nnt ab ar\nSentidos: visión en la oscuridad 18 m, Percepción\npasiva 10\nIdiomas: ninguno\nVD: 0 (0 PX; BC +2)\nPerro de ónice (raro).\nmastín\nEsta estatuilla de ónice de\nun perro puede convertirse en un durante\n6 horas, como máximo. El mastín tiene una Inteli-\ngencia de 8, puede hablar común y tiene visión ciega\nhasta 18 m. Una vez que se utilice, no podrá volver",
     "rarity": "common",
     "requiresAttunement": false,
-    "sourcePage": 255
+    "sourcePage": 255,
+    "maxCharges": 24
   },
   {
     "id": "ficha-de-pluma",
@@ -1892,7 +1933,8 @@
     "rarity": "legendary",
     "requiresAttunement": false,
     "baseItemKind": "weapon",
-    "sourcePage": 257
+    "sourcePage": 257,
+    "maxCharges": 0
   },
   {
     "id": "filtro-de-amor",
@@ -1916,7 +1958,9 @@
     "description": "Objeto maravilloso, infrecuente\nEsta flauta tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer. Puedes utilizar\nuna acción de magia para tocarla y gastar 1 carga\npara crear una melodía inquietante a la vez que\nfascinante. Todas las criaturas de tu elección a 9 m o\nmenos de ti deberán superar una tirada de salva-\nción de Sabiduría con CD 15 o tendrán el estado\nde asustadas durante 1 minuto. Las criaturas que\nfallen la tirada de salvación la repetirán al final de\ncada uno de sus turnos y, si la superan, se librarán\ndel efecto. Las criaturas que superen la tirada serán",
     "rarity": "uncommon",
     "requiresAttunement": false,
-    "sourcePage": 257
+    "sourcePage": 257,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "flauta-de-las-cloacas",
@@ -1928,7 +1972,9 @@
     "description": "Objeto maravilloso, infrecuente (requiere\nsintonización)\nMientras lleves la flauta contigo, las ratas normales\ny las gigantes se mostrarán indiferentes hacia ti\ny no te atacarán a menos que las dañes o las amena-\nces.\nLa flauta tiene 3 cargas y recupera 1d3 cargas em-\npleadas cada día, al amanecer. Si empleas una acción\nde magia para tocarla, podrás utilizar una acción\nenjambre de ratas\nun con cada carga empleada,\nsiempre que haya suficientes ratas a 750 m o menos\nde ti para que las convoques de esta manera ( según\ndecida tu GM). Si no hay ratas suficientes para\nformar un enjambre, la carga se desperdiciará.\nLos enjambres convocados irán hacia la música por\nel camino más corto disponible, pero, por lo demás,\nenjambre de ratas\nno estarán bajo tu control.\nCuando un que no esté bajo el\ncontrol de otra criatura se acerque a 9 m o menos de\nti mientras estés tocando la flauta, el enjambre hará\nuna tirada de salvación de Sabiduría con CD 15.\nSi la supera, el enjambre se comportará de forma\nnormal y no caerá bajo el influjo de la música de la\nflauta durante las siguientes 24 horas. Si la falla,\nel enjambre caerá bajo el influjo de la música de la\nflauta y se volverá amistoso hacia tus aliados y tú\nmientras sigas tocando la flauta cada asalto como\nacción de magia. Un enjambre amistoso obedece tus\nórdenes. Si no le das ninguna orden a un enjambre\namistoso, se defenderá, pero no realizará ninguna\notra acción. Si un enjambre amistoso comienza su\nturno a más de 9 m de ti, se acabará tu control sobre\nel enjambre, este se comportará de forma normal y\nno podrá caer bajo el influjo de la música de la flauta",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "sourcePage": 257
+    "sourcePage": 257,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "fortaleza-instantanea",
@@ -1977,7 +2023,8 @@
     "description": "Objeto maravilloso, infrecuente\nEste prisma tiene 50 cargas. Mientras lo sujetas,\npuedes usar una acción de magia y pronunciar una\nde las tres palabras de activación para causar uno\nPrimera palabra de activación.\nde los siguientes efectos:\nLa gema emite luz\nbrillante en un radio de 9 m y luz tenue 9 m más\nallá. Este efecto no gasta una carga. Dura hasta\nque utilices una acción adicional para repetir\nla palabra de activación o hasta que emplees otra\nSegunda palabra de activación.\nfunción de la gema.\nGastas 1 carga\npara que la gema dispare un rayo brillante de luz\ncontra una criatura que puedas ver a 18 m o me-\nnos de ti. La criatura deberá superar una tirada\nde salvación de Constitución con CD 15 o tendrá\nel estado de cegada durante 1 minuto. La criatura\nrepetirá la tirada de salvación al final de cada uno\nTercera palabra de activación.\nde sus turnos y, si tiene éxito, se librará del efecto.\nGastas 5 cargas\npara que la gema refulja con una luz intensa en\nun cono de 9 m. Todas las criaturas situadas\nen el cono harán una tirada de salvación como si\nles hubiera afectado el rayo creado por la segunda\npalabra de activación.\nCuando todas las cargas de la gema se gasten, se\nconvertirá en una joya no mágica con un valor de\n50 po.",
     "rarity": "uncommon",
     "requiresAttunement": false,
-    "sourcePage": 259
+    "sourcePage": 259,
+    "maxCharges": 50
   },
   {
     "id": "gema-de-vision",
@@ -1989,7 +2036,9 @@
     "description": "Objeto maravilloso, raro (requiere sintonización)\nEsta joya tiene 3 cargas. Como acción de magia,\npuedes gastar 1 carga. Durante los siguientes\n10 minutos, tendrás visión verdadera hasta 36 m si\nmiras a través de la gema.\nLa gema recupera 1d3 cargas empleadas cada día,",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 259
+    "sourcePage": 259,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "gema-elemental",
@@ -2156,7 +2205,8 @@
     "rarity": "very-rare",
     "requiresAttunement": true,
     "baseItemKind": "weapon",
-    "sourcePage": 261
+    "sourcePage": 261,
+    "maxCharges": 0
   },
   {
     "id": "lengua-de-fuego",
@@ -2280,7 +2330,9 @@
     "rarity": "legendary",
     "requiresAttunement": true,
     "baseItemKind": "weapon",
-    "sourcePage": 262
+    "sourcePage": 262,
+    "maxCharges": 5,
+    "rechargeAmount": "1d4 + 1"
   },
   {
     "id": "matadragones",
@@ -2332,7 +2384,9 @@
     "rarity": "rare",
     "requiresAttunement": true,
     "baseItemKind": "weapon",
-    "sourcePage": 262
+    "sourcePage": 262,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "maza-disruptiva",
@@ -2357,7 +2411,9 @@
     "description": "Objeto maravilloso, infrecuente (requiere\nsintonización)\ndetectar pensa-\nEl medallón tiene 5 cargas. Mientras lo lleves,\nmientos\npuedes gastar 1 carga para lanzar\n(CD de salvación 13) desde él. El medallón\nrecupera 1d4 cargas empleadas cada día, al amane-",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "sourcePage": 263
+    "sourcePage": 263,
+    "maxCharges": 5,
+    "rechargeAmount": "1d4"
   },
   {
     "id": "morral-practico",
@@ -2436,7 +2492,9 @@
     "description": "Objeto maravilloso, artefacto (requiere sintonización)\nUn orbe es un globo de cristal grabado de unos\n25 cm de diámetro. Cuando se usa, se expande hasta\nalcanzar los 50 cm de diámetro y una bruma se\narremolina en su interior.\nMientras tengas sintonización con el orbe, puedes\nemplear una acción de magia para mirar en sus\nprofundidades. Después, tendrás que hacer una\ntirada de salvación de Carisma con CD 15. Si la su-\nperas, controlarás el orbe mientras permanezcas\nen sintonía con él. Si la fallas, el orbe te impondrá\nel estado de hechizado mientras permanezcas en\nsintonía con él.\nMientras estés hechizado por el orbe, no podrás\nsugestión\nacabar voluntariamente la sintonización y el orbe\nte lanzará a voluntad (CD de salvación 18)\npara incitarte a que cumplas sus malvados deseos.\nLa esencia del dragón confinada en el orbe podría\nquerer muchas cosas: la aniquilación de una socie-\ndad u organización determinadas, que la liberes del\norbe, propagar el sufrimiento por el mundo, exten-\nConjuros.\nder el culto a Tiamat o lo que decida tu GM.\nEl orbe tiene 7 cargas y recupera 1d4\n+3 cargas empleadas cada día, al amanecer. Si con-\ntrolas el orbe, puedes lanzar un conjuro de la tabla\na continuación desde él. En ella se indica cuántas\nConjuro Coste en cargas\ncargas debes gastar para lanzar el conjuro.\nCurar heridas (versión de nivel 9) 4\nDetectar magia 0\nEscudriñar (CD de salvación 18) 3\nGuarda contra la muerte 2\nLuz del dí a 1\nLlamar a los dragones.\nMientras controles\nel orbe, podrás utilizar una acción de magia para\nque el orbe emita una llamada telepática que se\nextienda en todas direcciones en un radio de 60 km.\nLos dragones cromáticos que haya dentro del\nalcance se verán obligados a acudir hasta el orbe lo\nantes posible por el camino más directo. Las deida-\ndes dragón, como Tiamat, no se ven afectadas por\nesta llamada. Los dragones cromáticos atraídos por\nel orbe podrían ser hostiles hacia ti por haber for-\nzado sus acciones en contra de su voluntad. Una vez\nutilizada esta propiedad, no puede volver a usarse\nDestruir un orbe. Orbe Dragontino\ndurante 1 hora.\narma +3\nUn tiene una\ndesintegrar\nCA de 20 y se destruye si recibe daño de un\no un conjuro . Ninguna otra cosa puede",
     "rarity": "artifact",
     "requiresAttunement": true,
-    "sourcePage": 263
+    "sourcePage": 263,
+    "maxCharges": 7,
+    "rechargeAmount": "1d4 + 3"
   },
   {
     "id": "pegamento-soberano",
@@ -2808,7 +2866,9 @@
     "description": "Objeto maravilloso, legendario\nEste cubo mide 7,5 cm de lado e irradia una energía\nmágica palpable. Cada una de las seis caras del cubo\nestá conectada con un plano de existencia diferente,\nentre ellos el Plano Material. El resto de planos los\ndetermina tu GM.\nEl cubo tiene 3 cargas y recupera 1d3 cargas\nmagia, puedes gastar 1 de las cargas del cubo para\nlanzar uno de los siguientes conjuros usando el\nDesplazamiento entre planos.\ncubo.\ndesplazamiento\nAl pulsar dos\nentre planos\nveces una cara del cubo, lanzas\ny transportas a los objetivos al plano de\nPortal. portal\nexistencia conectado con esa cara.\nAl pulsar una cara del cubo, lanzas\nabriendo un acceso al plano de existencia conectado",
     "rarity": "legendary",
     "requiresAttunement": false,
-    "sourcePage": 268
+    "sourcePage": 268,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "pozo-de-los-muchos-mundos",
@@ -2892,7 +2952,8 @@
     "description": "Objeto maravilloso, legendario (requiere sintonización\npor parte de un clérigo o paladín)\nEste talismán es un poderoso símbolo del bien.\nUn infernal o muerto viviente que toque el talismán\nsufre 8d6 de daño radiante y sufrirá el daño de nue-\nvo cada vez que sostenga o lleve puesto el talismán\nRepresalia pura.\nal terminar su turno.\nEl talismán tiene 7 cargas. Mien-\ntras lo lleves puesto o lo sostengas, puedes emplear\nuna acción de magia para gastar 1 carga y hacer\nobjetivo a una criatura que puedas ver en el suelo\na 36 m o menos de ti. Una grieta ardiente se abrirá\nbajo el objetivo, que hará una tirada de salvación\nde Destreza con CD 20. Si el objetivo es un infernal\no un muerto viviente, tendrá desventaja en la tirada.\nSi la falla, caerá en la grieta y será destruido, sin\ndejar restos. Si la supera, no caerá en la grieta, pero\nsufrirá 4d6 de daño psíquico debido a la terrible\nexperiencia. En cualquier caso, la grieta se cerrará\ny no quedará huella de su existencia. Cuando gastes\nla última carga, el talismán se diseminará en unas\nSímbolo sagrado.\nmotas de luz dorada y se destruirá.\nPuedes emplear el talismán\ncomo símbolo sagrado. Obtendrás un bonificador\nde +2 a las tiradas de ataque de conjuro mientras",
     "rarity": "legendary",
     "requiresAttunement": true,
-    "sourcePage": 270
+    "sourcePage": 270,
+    "maxCharges": 7
   },
   {
     "id": "talisman-del-mal-definitivo",
@@ -2904,7 +2965,8 @@
     "description": "Objeto maravilloso, legendario (requiere\nsintonización)\nEste objeto simboliza el mal impenitente. Una cria-\ntura que no sea infernal o muerto viviente que\ntoque el talismán sufre 8d6 de daño necrótico y su-\nfrirá el daño de nuevo cada vez que sostenga o lleve\nFinal definitivo.\npuesto el talismán al terminar su turno.\nEl talismán tiene 6 cargas. Mien-\ntras lo lleves puesto o lo sostengas, puedes emplear\nuna acción de magia para gastar 1 carga y hacer\nobjetivo a una criatura que puedas ver en el suelo\na 36 m o menos de ti. Una grieta ardiente se abrirá\nbajo el objetivo, que hará una tirada de salvación\nde Destreza con CD 20. Si el objetivo es un celestial,\ntendrá desventaja en la tirada. Si la falla, caerá en la\ngrieta y será destruido, sin dejar restos. Si la supera,\nno caerá en la grieta, pero sufrirá 4d6 de daño psí-\nquico debido a la terrible experiencia. En cualquier\ncaso, la grieta se cerrará y no quedará huella de su\nexistencia. Cuando gastes la última carga, el talis-\nSímbolo sagrado.\nmán se disolverá en un limo apestoso y se destruirá.\nPuedes emplear el talismán\ncomo símbolo sagrado. Obtendrás un bonificador\nde +2 a las tiradas de ataque de conjuro mientras\nlo lleves puesto o lo sostengas.",
     "rarity": "legendary",
     "requiresAttunement": true,
-    "sourcePage": 270
+    "sourcePage": 270,
+    "maxCharges": 6
   },
   {
     "id": "tomo-de-entendimiento",
@@ -2953,7 +3015,9 @@
     "rarity": "uncommon",
     "requiresAttunement": true,
     "baseItemKind": "weapon",
-    "sourcePage": 271
+    "sourcePage": 271,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "tunica-de-colores-hipnoticos",
@@ -2965,7 +3029,9 @@
     "description": "Objeto maravilloso, muy raro (requiere sintonización)\nEsta túnica tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer. Mientras la lleves\npuesta, podrás utilizar una acción de magia y gastar\n1 carga para hacer que la prenda muestre un patrón\ncambiante de tonos y formas deslumbrantes hasta\nel final de tu siguiente turno. Durante este tiempo,\nla túnica emite luz brillante en un radio de 9 m y luz\ntenue 9 m más allá, y las criaturas que puedan verte\ntendrán desventaja en las tiradas de ataque contra\nti. Cualquier criatura que esté bajo la luz brillante\ny pueda verte cuando el poder de la túnica esté\nSabiduría con CD 15 o tendrá el estado de aturdida",
     "rarity": "very-rare",
     "requiresAttunement": true,
-    "sourcePage": 271
+    "sourcePage": 271,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "tunica-del-archimago",
@@ -3025,7 +3091,9 @@
     "description": "Varita, rara (requiere sintonización)\nConjuros.\nEsta varita tiene 7 cargas.\nMientras sostengas la varita, puedes\nlanzar desde ella un conjuro (CD de salvación 17)\nde la tabla a continuación. En ella se indica cuántas\nConjuro Coste en cargas\ncargas debes gastar para lanzar el conjuro.\nInmovilizar monstruo 5\nInmovilizar persona 2\nRecuperar cargas.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 273
+    "sourcePage": 273,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-bolas-de-fuego",
@@ -3037,7 +3105,9 @@
     "description": "Varita, rara (requiere sintonización por parte de\nun lanzador de conjuros)\nbola de\nEsta varita tiene 7 cargas. Mientras la sostengas,\nfuego\npuedes gastar hasta 3 cargas para lanzar\n(CD de salvación 15) desde ella. Si empleas\n1 carga, podrás lanzar la versión de nivel 3 del con-\njuro. Puedes aumentar el nivel del conjuro en 1 por\nRecuperar cargas.\ncada carga adicional que emplees.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 273
+    "sourcePage": 273,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-deteccion-magica",
@@ -3049,7 +3119,9 @@
     "description": "Varita, infrecuente\ndetectar magia\nEsta varita tiene 3 cargas. Mientras la sostengas,\npuedes gastar 1 carga para lanzar\ndesde ella. La varita recupera 1d3 cargas empleadas",
     "rarity": "uncommon",
     "requiresAttunement": false,
-    "sourcePage": 273
+    "sourcePage": 273,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "varita-de-detectar-enemigos",
@@ -3061,7 +3133,9 @@
     "description": "Varita, rara (requiere sintonización)\nEsta varita tiene 7 cargas. Mientras la sostengas,\npuedes emplear una acción de magia para gastar\n1 carga. Durante 1 minuto, conocerás la dirección\nen la que se encuentra la criatura hostil más cerca-\nna a ti que esté a 18 m o menos, pero no la distancia\nexacta. La varita puede percibir la presencia de\ncriaturas hostiles que sean etéreas o invisibles\no estén disfrazadas o escondidas, así como las que\nse detecten a simple vista. El efecto acaba si dejas\nde sostener la varita.\nRecuperar cargas.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 273
+    "sourcePage": 273,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-las-maravillas",
@@ -3073,7 +3147,9 @@
     "description": "Varita, rara (requiere sintonización)\nEsta varita tiene 7 cargas. Mientras la sostengas,\npuedes emplear una acción de magia para gastar\n1 carga y elegir un punto a 36 m o menos de ti.\nEse espacio se convertirá en el punto de origen de\nun conjuro u otro efecto mágico que se determina\ntirando en la tabla “Efectos de la varita de las mara-\nvillas”. Los conjuros lanzados desde la varita tienen\nuna CD de salvación de 15. Si el alcance máximo ha-\nbitual de un conjuro es menor de 36 m, pasará a ser\nde 36 m cuando se lanza desde la varita. Si un efecto\ntiene varios objetivos posibles, tu GM determina\nRecuperar cargas.\nal azar cuáles de ellos se ven afectados.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado\nEfectos es 1, la varita de la se varita convierte de las en polvo maravillas y se destruye.\n1d100 Efecto\n01–20 Lanzas un conjuro que se origina en el punto\nelegido. Tira 1d10 para determinar el conjuro:\nsi el resultado es 1–2 , bola de fuego ; si es 3–4 ,\nfuego feérico ; si es 5–6 , nube apestosa ; si es\n7–8 , oscuridad ; si es 9–10 , ralentizar .\n21–25 No sucede nada en el punto de origen elegido.\nEn vez de eso, creerás que ha sucedido algo\nasombroso y tendrás el estado de aturdido\nhasta el principio de tu siguiente turno.\n26–30 Lanzas ráfaga de viento . La línea que crea\nel conjuro se extiende desde ti hacia el punto\nde origen elegido.\n31–35 No sucede nada en el punto de origen elegido.\nEn vez de eso, recibes 1d6 de daño psíquico.\n36–40 Una lluvia intensa cae durante 1 minuto en un\ncilindro de 36 m de alto y 18 m de radio cen-\ntrado en el punto de origen elegido. Durante\nese tiempo, el área de efecto se considera lige-\nramente oscura.\n41–45 Una nube de 600 mariposas de gran tamaño\nllena un cilindro de 18 m de alto y 9 m de\nradio centrado en el punto de origen elegido.\nLas mariposas permanecen 10 minutos. Du-\nrante ese tiempo, el área de efecto se consi-\ndera muy oscura.\n46–50 Lanzas relámpago . La línea que crea el conjuro\nse extiende desde ti hacia el punto de origen\nelegido.\n1d100 Efecto\n51–55 La criatura más cercana al punto de origen\naumenta de tamaño como si hubieras lanzado\nagrandar/reducir sobre ella. Si el objetivo no\neres tú y no puede verse afectado por el con-\njuro, tú te conviertes en el objetivo.\n56–60 Una criatura creada mediante magia aparece\nen un espacio sin ocupar lo más cercano posi-\nble al punto de origen elegido. La criatura no\nse encuentra bajo tu control, actúa con nor-\nmalidad y desaparece tras 1 hora o cuando sus\npuntos de golpe se reduzcan a 0. Tira 1d4 para\ndeterminar qué criatura aparece. Si el resul-\ntado es 1 , un elefante ; si es 2–3 , una rata , y si\nes 4 , un rinoceronte .\n61–64 Crece hierba en el suelo en un círculo de 18 m\nde radio cuyo centro estará lo más cerca po-\nsible del punto de origen elegido. Si ya había\nhierba allí, crecerá hasta diez veces su tamaño\nnormal y tendrá ese tamaño durante 1 minuto.\n65–68 Un objeto a elección de tu GM desaparece\nen el Plano Etéreo. El objeto no puede medir\nmás de 3 m en ninguna dimensión, debe en-\ncontrarse a 36 m o menos del punto de origen\nelegido y nadie puede vestirlo o llevarlo. Si no\nhay objetos así dentro del alcance, no suce-\nderá nada.\n69–72 No sucede nada en el punto de origen elegido.\nEn vez de eso, encoges como si hubieras lan-\nzado agrandar/reducir sobre ti y permaneces así\ndurante 1 minuto.\n73–77 Crecen hojas en la criatura más cercana al\npunto de origen elegido. Salvo que se arran-\nquen, las hojas se volverán marrones y caerán\ntras 24 horas.\n78–82 No sucede nada en el punto de origen elegido.\nEn vez de eso, una explosión de luz resplande -\nciente y colorida se extiende desde ti en una\nemanación de 9 m. Todas las criaturas situa-\ndas en la zona deberán superar una tirada de\nsalvación de Constitución con CD 15 o ten-\ndrán el estado de cegadas durante 1 minuto.\nLas criaturas repetirán la tirada de salvación\nal final de cada uno de sus turnos y, si tienen\néxito, se librarán del efecto.\n83–87 No sucede nada en el punto de origen elegido.\nEn vez de eso, lanzas invisibilidad sobre ti.\n1d100 Efecto\n88–92 No sucede nada en el punto de origen elegido.\nEn vez de eso, una ráfaga de 1d4 × 10 gemas,\ncada una con un valor de 1 po, sale disparada\nde la punta de la varita en una línea de 9 m\nde largo y 1,5 m de ancho hacia el punto de\norigen elegido. Cada gema hace 1 de daño\ncontundente y el total de daño de las gemas se\ndivide a partes iguales entre todas las criaturas\nsituadas en la línea.\n93–97 Lanzas polimorfar haciendo objetivo a la cria-\ntura más cercana al punto de origen elegido.\nTira 1d4 para determinar la nueva forma del\nobjetivo. Si el resultado es 1 , se convertirá en\nuna avispa gigante ; si es 2 , en un oso negro ;\nsi es 3–4 , en una rana .\n98–00 La criatura más cercana al punto de origen\nelegido hace una tirada de salvación de Cons-\ntitución con CD 15. Si la falla, tendrá el es-\ntado de apresada y empezará a convertirse\nen piedra. Mientras esté apresada de esta\nforma, la criatura repite la salvación al final\nde su siguiente turno. Si la supera, el efecto\nacaba. Si la falla, la criatura tendrá el estado de\npetrificada en lugar del de apresada. La petri -\nficación dura hasta que se libere a la criatura\nmediante un conjuro restablecimiento mayor\nu otro efecto mágico similar.",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 274
+    "sourcePage": 274,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-paralisis",
@@ -3085,7 +3161,9 @@
     "description": "Varita, rara (requiere sintonización por parte de un\nlanzador de conjuros)\nEsta varita tiene 7 cargas. Mientras la sostengas,\npuedes emplear una acción de magia y gastar 1 car-\nga para conjurar un delgado rayo azul que serpen-\nteará desde la punta de la varita hacia una criatura\nque puedas ver a 18 m o menos de ti. El objetivo\ndeberá superar una tirada de salvación de Constitu-\nción con CD 15 o tendrá el estado de paralizado du-\nrante 1 minuto. Al final de cada uno de sus turnos,\nel objetivo repetirá la tirada de salvación y, si tiene\nRecuperar cargas.\néxito, se librará del efecto.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 275
+    "sourcePage": 275,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-polimorfar",
@@ -3097,7 +3175,9 @@
     "description": "Varita, muy rara (requiere sintonización por parte de\nun lanzador de conjuros)\npolimorfar\nEsta varita tiene 7 cargas. Mientras la sostengas,\npuedes gastar 1 carga para lanzar (CD de\nsalvación 15) desde ella.\nRecuperar cargas.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "very-rare",
     "requiresAttunement": true,
-    "sourcePage": 275
+    "sourcePage": 275,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-proyectiles-magicos",
@@ -3109,7 +3189,9 @@
     "description": "Varita, infrecuente\nproyectil mágico\nEsta varita tiene 7 cargas. Mientras la sostengas, pue-\ndes gastar hasta 3 cargas para lanzar\ndesde ella. Si empleas 1 carga, podrás lanzar la versión\nde nivel 1 del conjuro. Puedes aumentar el nivel del\nRecuperar cargas.\nconjuro en 1 por cada carga adicional que emplees.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "uncommon",
     "requiresAttunement": false,
-    "sourcePage": 275
+    "sourcePage": 275,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-relampagos",
@@ -3121,7 +3203,9 @@
     "description": "Varita, rara (requiere sintonización por parte de\nun lanzador de conjuros)\nrelámpago\nEsta varita tiene 7 cargas. Mientras la sostengas,\npuedes gastar hasta 3 cargas para lanzar\n(CD de salvación 15) desde ella. Si empleas 1 c arga,\npodrás lanzar la versión de nivel 3 del conjuro.\nPuedes aumentar el nivel del conjuro en 1 por cada\nRecuperar cargas.\ncarga adicional que emplees.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 275
+    "sourcePage": 275,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-de-secretos",
@@ -3133,7 +3217,9 @@
     "description": "Varita, infrecuente\nEsta varita tiene 3 cargas y recupera 1d3 cargas\nempleadas cada día, al amanecer. Mientras la sos-\ntengas, puedes emplear una acción de magia para\ngastar 1 carga y, si hay alguna trampa o puerta se-\ncreta situada a 18 m o menos de ti, la varita vibrará",
     "rarity": "uncommon",
     "requiresAttunement": false,
-    "sourcePage": 275
+    "sourcePage": 275,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   },
   {
     "id": "varita-de-telarana",
@@ -3145,7 +3231,9 @@
     "description": "Varita, infrecuente (requiere sintonización por parte\nde un lanzador de conjuros)\ntelaraña\nEsta varita tiene 7 cargas. Mientras la sostengas,\npuedes gastar 1 carga para lanzar (CD de\nRecuperar cargas.\nsalvación 13) desde ella.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "sourcePage": 275
+    "sourcePage": 275,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "varita-del-mago-de-guerra-1",
@@ -3196,7 +3284,9 @@
     "description": "Varita, rara (requiere sintonización)\nConjuros.\nEsta varita tiene 7 cargas.\nMientras sostengas la varita, puedes\nlanzar desde ella un conjuro (CD de salvación 15)\nde la tabla a continuación. En ella se indica cuántas\nConjuro Coste en cargas\ncargas debes gastar para lanzar el conjuro.\nOrden imperiosa (solo “huye” o 1\n“póstrate”)\nTerror (cono de 18 m) 3\nRecuperar cargas.\nLa varita recupera 1d6 +\n1 cargas empleadas cada día, al amanecer. Si gastas\nla última carga de la varita, tira 1d20. Si el resultado",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 276
+    "sourcePage": 276,
+    "maxCharges": 7,
+    "rechargeAmount": "1d6 + 1"
   },
   {
     "id": "vela-de-invocacion",
@@ -3269,6 +3359,8 @@
     "description": "Objeto maravilloso, raro (requiere sintonización)\nteletransporte\nEste yelmo tiene 3 cargas. Mientras lo lleves, puedes\ngastar 1 carga para lanzar desde él.\nEl yelmo recupera 1d3 cargas empleadas cada día,\nal amanecer.",
     "rarity": "rare",
     "requiresAttunement": true,
-    "sourcePage": 277
+    "sourcePage": 277,
+    "maxCharges": 3,
+    "rechargeAmount": "1d3"
   }
 ]

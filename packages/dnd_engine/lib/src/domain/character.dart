@@ -298,6 +298,11 @@ class InventoryEntry {
 
   final bool attuned;
 
+  /// Cargas que le quedan a este ejemplar, o null si nunca se tocaron —lo que
+  /// significa "lleno", no "cero"—. Es del ejemplar y no del catálogo porque
+  /// dos varitas iguales se gastan por separado.
+  final int? charges;
+
   /// Texto libre del jugador. Es lo que convierte una entrada en la carta que
   /// le dio el alcalde o en el libro que sacó de la biblioteca.
   final String note;
@@ -310,6 +315,7 @@ class InventoryEntry {
     this.quantity = 1,
     this.equipped = false,
     this.attuned = false,
+    this.charges,
     this.note = '',
   });
 
@@ -320,6 +326,7 @@ class InventoryEntry {
     int? quantity,
     bool? equipped,
     bool? attuned,
+    int? charges,
     String? note,
   }) =>
       InventoryEntry(
@@ -332,6 +339,7 @@ class InventoryEntry {
         quantity: quantity ?? this.quantity,
         equipped: equipped ?? this.equipped,
         attuned: attuned ?? this.attuned,
+        charges: charges ?? this.charges,
         note: note ?? this.note,
       );
 
@@ -343,6 +351,7 @@ class InventoryEntry {
         if (quantity != 1) 'quantity': quantity,
         if (equipped) 'equipped': true,
         if (attuned) 'attuned': true,
+        if (charges != null) 'charges': charges,
         if (note.isNotEmpty) 'note': note,
       };
 
@@ -356,6 +365,8 @@ class InventoryEntry {
         quantity: (j['quantity'] as int? ?? 1).clamp(1, 1 << 30),
         equipped: j['equipped'] as bool? ?? false,
         attuned: j['attuned'] as bool? ?? false,
+        // Un negativo importado no se propaga: sin cargas es 0, no −2.
+        charges: (j['charges'] as int?)?.clamp(0, 1 << 30),
         note: j['note'] as String? ?? '',
       );
 }

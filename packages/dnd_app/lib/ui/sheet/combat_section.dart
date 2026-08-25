@@ -269,12 +269,28 @@ extension _SheetCombatSection on _SheetScreenState {
       ),
     );
 
+    // Los objetos mágicos se recargan al amanecer, no con el descanso: van
+    // aparte porque viven en la mochila y no en el estado de combate, y por eso
+    // se escriben con `_replace` y no con `_mutateCombat`.
+    final (conCargas, objetosRecargados) = InventoryOps.rechargeAtDawn(
+      _c,
+      repo,
+    );
+    if (objetosRecargados > 0) _replace(conCargas);
+
     final partes = <String>['PG al máximo y recursos recargados'];
     if (cansancioPrevio > 0) {
       partes.add('cansancio a nivel ${_c.combat.exhaustion}');
     }
     if (!teniaInspiracion && _c.combat.heroicInspiration) {
       partes.add('ganaste Inspiración Heroica');
+    }
+    if (objetosRecargados > 0) {
+      partes.add(
+        objetosRecargados == 1
+            ? '1 objeto mágico recuperó cargas'
+            : '$objetosRecargados objetos mágicos recuperaron cargas',
+      );
     }
     _snack('Descanso largo: ${partes.join('; ')}.');
   }

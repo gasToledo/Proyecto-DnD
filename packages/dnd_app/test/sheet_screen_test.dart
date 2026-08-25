@@ -307,6 +307,72 @@ void main() {
       expect(find.text('2 / 150 lb'), findsOneWidget);
     });
 
+    testWidgets('gastar una carga se anota en el ejemplar', (tester) async {
+      final varita = repo.item('varita-de-bolas-de-fuego')!;
+      final controller = await pumpSheet(
+        tester,
+        mochilera().copyWith(
+          inventory: const [
+            InventoryEntry(entryId: 'v1', itemId: 'varita-de-bolas-de-fuego'),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      // Sin nada anotado el contador muestra el máximo del catálogo: la ficha
+      // resuelve "sin anotar" como lleno, igual que el motor.
+      expect(
+        find.text('Cargas ${varita.maxCharges}/${varita.maxCharges}'),
+        findsOneWidget,
+      );
+
+      final gastar = find.byTooltip('Gastar una carga de ${varita.name}');
+      await tester.ensureVisible(gastar);
+      await tester.tap(gastar);
+      await tester.pumpAndSettle();
+
+      expect(
+        saved(controller).inventory.single.charges,
+        varita.maxCharges! - 1,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el descanso largo recupera las cargas y lo dice', (
+      tester,
+    ) async {
+      final varita = repo.item('varita-de-bolas-de-fuego')!;
+      final controller = await pumpSheet(
+        tester,
+        mochilera().copyWith(
+          inventory: const [
+            InventoryEntry(
+              entryId: 'v1',
+              itemId: 'varita-de-bolas-de-fuego',
+              charges: 0,
+            ),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Combate'));
+      await tester.pumpAndSettle();
+      final descanso = find.text('Descanso largo');
+      await tester.ensureVisible(descanso);
+      await tester.tap(descanso);
+      await tester.pumpAndSettle();
+
+      // Recupera 1d6 + 1 de sus 7: se fija que subió sin pasarse, no un número
+      // que depende del dado.
+      final quedan = saved(controller).inventory.single.charges!;
+      expect(quedan, greaterThan(0));
+      expect(quedan, lessThanOrEqualTo(varita.maxCharges!));
+      expect(
+        find.textContaining('1 objeto mágico recuperó cargas'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets(
       'un arma a distancia dice su alcance y una cuerpo a cuerpo no',
       (tester) async {

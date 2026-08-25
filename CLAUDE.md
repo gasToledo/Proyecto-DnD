@@ -154,6 +154,12 @@ Los catálogos grandes se generan con herramientas commiteadas en
 `generate_bestiary.dart`. Ojo que el PDF del SRD en español está **en metros** y
 el catálogo en pies.
 
+Dos de esas herramientas **parchean** en vez de generar, y hay que correrlas
+después: `generate_items.dart` le pone peso y precio a `weapons.json` y
+`armor.json`, y `apply_magic_item_charges.dart` le pone las cargas a los dos
+catálogos mágicos. Si alguien regenera y se olvida del segundo paso,
+`content_integrity_test` lo dice.
+
 ## Frontend
 
 La guía completa es

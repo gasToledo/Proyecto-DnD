@@ -78,8 +78,10 @@ arma, armadura, escudo u objeto base.
 - Las réplicas tienen identidad y procedencia propias, resuelven su base,
   pueden equiparse y sintonizarse, y no exceden el máximo simultáneo.
 - Reemplazar un plano elimina únicamente sus réplicas. Transmutar está
-  automatizado. Cargar y Drenar permanecen descritos: automatizarlos exigiría
-  estado genérico de cargas de objeto y espacios temporales que hoy no existe.
+  automatizado. Cargar y Drenar permanecen descritos: de las dos cosas que
+  faltaban, **el estado de cargas ya existe** (`Item.maxCharges` /
+  `rechargeAmount` en el catálogo y `InventoryEntry.charges` por ejemplar), y
+  lo que sigue sin existir son los espacios de conjuro temporales.
 
 ### 3. Equipo inicial — completo
 

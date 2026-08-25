@@ -981,6 +981,18 @@ class Item {
   /// 'legendary' | 'artifact'.
   final String? rarity;
 
+  /// Cargas del objeto lleno, o null si no funciona con cargas (todo el
+  /// catálogo mundano y la mayoría del mágico). **0 significa que el máximo lo
+  /// fija la mesa**: la Ladrona de nueve vidas trae "1d8 + 1 cargas", que se
+  /// tiran cuando el objeto aparece y no salen del catálogo.
+  final int? maxCharges;
+
+  /// Cuánto recupera al amanecer: una fórmula ("1d6 + 4"), la palabra "todas",
+  /// o null si no recupera nada por sí solo —el Talismán del bien puro se
+  /// deshace con la última carga, y la Estatuilla vuelve a cargarse recién a
+  /// los 7 días, que no es un amanecer cualquiera—.
+  final String? rechargeAmount;
+
   final bool requiresAttunement;
 
   /// Bonificador estable aplicado al arma, armadura o escudo base.
@@ -1007,6 +1019,8 @@ class Item {
     this.bundleSize = 1,
     this.description = '',
     this.rarity,
+    this.maxCharges,
+    this.rechargeAmount,
     this.requiresAttunement = false,
     this.magicBonus = 0,
     this.baseItemKind,
@@ -1026,6 +1040,8 @@ class Item {
         if (bundleSize != 1) 'bundleSize': bundleSize,
         if (description.isNotEmpty) 'description': description,
         if (rarity != null) 'rarity': rarity,
+        if (maxCharges != null) 'maxCharges': maxCharges,
+        if (rechargeAmount != null) 'rechargeAmount': rechargeAmount,
         if (requiresAttunement) 'requiresAttunement': true,
         if (magicBonus != 0) 'magicBonus': magicBonus,
         if (baseItemKind != null) 'baseItemKind': baseItemKind,
@@ -1045,6 +1061,8 @@ class Item {
         bundleSize: (j['bundleSize'] as int? ?? 1).clamp(1, 1 << 30),
         description: j['description'] as String? ?? '',
         rarity: j['rarity'] as String?,
+        maxCharges: j['maxCharges'] as int?,
+        rechargeAmount: j['rechargeAmount'] as String?,
         requiresAttunement: j['requiresAttunement'] as bool? ?? false,
         magicBonus: j['magicBonus'] as int? ?? 0,
         baseItemKind: j['baseItemKind'] as String?,

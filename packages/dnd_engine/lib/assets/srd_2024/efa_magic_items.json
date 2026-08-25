@@ -19,7 +19,9 @@
     "magicBonus": 1,
     "baseItemKind": "weapon",
     "description": "El arma concede +1 a sus tiradas de ataque y daño. Puede emitir luz brillante a 30 pies y tenue otros 30. Tiene 4 cargas: como reacción tras recibir un impacto, puedes gastar 1 para forzar una salvación de Constitución CD 15; si falla, el atacante queda cegado hasta el final de su siguiente turno. Recupera 1d4 cargas al amanecer.",
-    "costCp": 400000
+    "costCp": 400000,
+    "maxCharges": 4,
+    "rechargeAmount": "1d4"
   },
   {
     "id": "helm-of-awareness",
@@ -48,7 +50,9 @@
     "rarity": "uncommon",
     "requiresAttunement": true,
     "description": "Tiene 4 cargas. Cuando fallas una salvación de Constitución para mantener concentración, puedes usar tu reacción y gastar 1 carga para tener éxito en su lugar. Recupera 1d4 cargas al amanecer.",
-    "costCp": 40000
+    "costCp": 40000,
+    "maxCharges": 4,
+    "rechargeAmount": "1d4"
   },
   {
     "id": "repeating-shot",
@@ -85,7 +89,9 @@
       "shield"
     ],
     "description": "Concede +1 a la CA mientras lo empuñas. Tiene 4 cargas: cuando una criatura Grande o menor a 5 pies te impacta con un ataque cuerpo a cuerpo, puedes gastar 1 carga como reacción para empujarla hasta 15 pies. Recupera 1d4 cargas al amanecer.",
-    "costCp": 40000
+    "costCp": 40000,
+    "maxCharges": 4,
+    "rechargeAmount": "1d4"
   },
   {
     "id": "returning-weapon",

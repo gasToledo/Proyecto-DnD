@@ -864,6 +864,43 @@ extension _SheetInventorySection on _SheetScreenState {
     );
   }
 
+  /// Cargas del ejemplar, con los mismos botones que gastan un recurso de
+  /// clase. Va debajo del nombre y no en una columna propia porque la traen 53
+  /// objetos de 392: una columna vacía en todas las demás filas.
+  ///
+  /// Con máximo 0 el objeto se tiró al aparecer ("1d8 + 1 cargas") y el
+  /// contador no muestra techo ni lo impone: quien sabe cuántas tiene es la
+  /// mesa.
+  Widget _chargesRow(InventoryEntry e, _ItemInfo info) {
+    final max = info.maxCharges!;
+    final left = e.charges ?? max;
+    void set(int value) =>
+        _updateEntry(e.entryId, (entry) => entry.copyWith(charges: value));
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            max == 0 ? '$left cargas' : 'Cargas $left/$max',
+            key: ValueKey('charges-${e.entryId}'),
+            style: TextStyle(
+              fontSize: 12,
+              color: context.palette.gold,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          SpendRecoverButtons(
+            spendTooltip: 'Gastar una carga de ${info.name}',
+            recoverTooltip: 'Recuperar una carga de ${info.name}',
+            onSpend: left <= 0 ? null : () => set(left - 1),
+            onRecover: max != 0 && left >= max ? null : () => set(left + 1),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _itemName(InventoryEntry e, _ItemInfo info) {
     final muted = TextStyle(
       fontSize: 12,
@@ -907,6 +944,7 @@ extension _SheetInventorySection on _SheetScreenState {
                 ],
               ),
               Text(detail, style: muted),
+              if (info.maxCharges != null) _chargesRow(e, info),
               if (e.note.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
@@ -1511,6 +1549,7 @@ extension _SheetInventorySection on _SheetScreenState {
         attunable: false,
         magic: false,
         replica: replica,
+        maxCharges: null,
         rangeHint: null,
         twoHandedHint: null,
       );
@@ -1534,6 +1573,7 @@ extension _SheetInventorySection on _SheetScreenState {
       attunable: item?.requiresAttunement ?? false,
       magic: (item?.isMagic ?? false) || replica,
       replica: replica,
+      maxCharges: item?.maxCharges,
       rangeHint: weapon?.rangeLabel,
       twoHandedHint: weapon == null || !weapon.requiresTwoHands()
           ? null
@@ -1560,6 +1600,7 @@ class _ItemInfo {
 
   /// Alcance del arma, ya formateado por el motor. null en todo lo que no
   /// se dispara ni se arroja, que es casi toda la mochila.
+  final int? maxCharges;
   final String? rangeHint;
   final String? twoHandedHint;
 
@@ -1574,6 +1615,7 @@ class _ItemInfo {
     required this.attunable,
     required this.magic,
     required this.replica,
+    required this.maxCharges,
     required this.rangeHint,
     required this.twoHandedHint,
   });

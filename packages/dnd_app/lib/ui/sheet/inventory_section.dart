@@ -874,6 +874,7 @@ extension _SheetInventorySection on _SheetScreenState {
     final detail = <String>[
       info.kindLabel,
       if (info.bundleSize > 1) 'paquete de ${info.bundleSize}',
+      if (info.rangeHint != null) 'alcance ${info.rangeHint}',
       if (info.twoHandedHint != null) info.twoHandedHint!,
     ].join(' · ');
     return Row(
@@ -1510,6 +1511,7 @@ extension _SheetInventorySection on _SheetScreenState {
         attunable: false,
         magic: false,
         replica: replica,
+        rangeHint: null,
         twoHandedHint: null,
       );
     }
@@ -1532,6 +1534,7 @@ extension _SheetInventorySection on _SheetScreenState {
       attunable: item?.requiresAttunement ?? false,
       magic: (item?.isMagic ?? false) || replica,
       replica: replica,
+      rangeHint: weapon?.rangeLabel,
       twoHandedHint: weapon == null || !weapon.requiresTwoHands()
           ? null
           // La lanza de caballería es el único caso: montado deja de exigirlas.
@@ -1554,6 +1557,10 @@ class _ItemInfo {
   final bool attunable;
   final bool magic;
   final bool replica;
+
+  /// Alcance del arma, ya formateado por el motor. null en todo lo que no
+  /// se dispara ni se arroja, que es casi toda la mochila.
+  final String? rangeHint;
   final String? twoHandedHint;
 
   const _ItemInfo({
@@ -1567,6 +1574,7 @@ class _ItemInfo {
     required this.attunable,
     required this.magic,
     required this.replica,
+    required this.rangeHint,
     required this.twoHandedHint,
   });
 }

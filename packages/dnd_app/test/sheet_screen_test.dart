@@ -307,6 +307,35 @@ void main() {
       expect(find.text('2 / 150 lb'), findsOneWidget);
     });
 
+    testWidgets(
+      'un arma a distancia dice su alcance y una cuerpo a cuerpo no',
+      (tester) async {
+        await pumpSheet(
+          tester,
+          mochilera().copyWith(
+            inventory: const [
+              InventoryEntry(itemId: 'longbow'),
+              InventoryEntry(itemId: 'mace'),
+            ],
+          ),
+        );
+        await tester.tap(find.text('Inventario'));
+        await tester.pumpAndSettle();
+
+        // El texto se deriva del catálogo y no se transcribe: si el alcance del
+        // arco cambia, cambia el esperado con él.
+        final arco = repo.weapon('longbow')!;
+        expect(
+          find.textContaining('alcance ${arco.rangeLabel}'),
+          findsOneWidget,
+        );
+        // Una sola fila lo dice: la maza no tiene columna de alcance en el
+        // capítulo 6 y la ficha no debe inventarle una.
+        expect(find.textContaining('alcance'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('la nota queda escrita en la línea del objeto', (tester) async {
       final controller = await pumpSheet(
         tester,

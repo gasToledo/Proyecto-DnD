@@ -1513,21 +1513,70 @@ String _actionSectionLabel(CreatureActionKind kind, Creature c) {
       : 'Acciones legendarias · $uses por ronda';
 }
 
-Widget _profileRow(String label, String value) => Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-  child: Text.rich(
-    TextSpan(
-      children: [
-        TextSpan(
-          text: '$label: ',
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        TextSpan(text: value),
-      ],
-    ),
-    style: const TextStyle(fontSize: 13),
+/// Ancho a partir del cual el perfil se dispone en bandas horizontales.
+///
+/// Por debajo se apila todo: es la columna «Del turno» de Combate, que mide
+/// 300 px fijos, y el Bestiario en un teléfono. El corte lo decide el ancho
+/// medido y no el llamador, porque **las dos** pantallas pueden ser angostas y
+/// antes sólo una lo declaraba.
+const double _profileWideWidth = 520;
+
+/// Medida de lectura de la prosa del perfil.
+///
+/// El panel del Bestiario mide unos 855 px, y sin tope la descripción de un
+/// rasgo ocupaba la línea entera: más del doble de lo que se lee cómodo.
+const double _profileProseWidth = 620;
+
+/// Acota la prosa a [_profileProseWidth] sin centrarla.
+Widget _prose(Widget child) => Align(
+  alignment: Alignment.centerLeft,
+  child: ConstrainedBox(
+    constraints: const BoxConstraints(maxWidth: _profileProseWidth),
+    child: child,
   ),
 );
+
+/// Rótulo en versalita de las bandas del perfil.
+Widget _profileLabel(BuildContext context, String text, {TextAlign? align}) =>
+    Text(
+      text.toUpperCase(),
+      textAlign: align,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: 10,
+        letterSpacing: 1.1,
+        fontWeight: FontWeight.w500,
+        color: context.palette.textMuted,
+      ),
+    );
+
+/// Los sentidos sin la percepción pasiva, que arriba ya tiene su propia cifra.
+///
+/// El catálogo la escribe adentro de [Creature.senses] («…; Percepción pasiva
+/// 12») y además la expone aparte, así que sin esto el perfil la dice dos
+/// veces.
+String _sensesWithoutPassive(Creature c) {
+  if (c.passivePerceptionValue == null) return c.senses;
+  return c.senses
+      .replaceAll(RegExp(r'[;,]?\s*Percepción pasiva \d+'), '')
+      .trim()
+      .replaceAll(RegExp(r'[;,]$'), '')
+      .trim();
+}
+
+/// Las defensas partidas en fragmentos, uno por chip.
+///
+/// ponytail: parte por «;» y muestra cada pedazo tal cual. **No** distingue una
+/// resistencia de una inmunidad, que es lo que haría falta para pintarlas
+/// distinto: eso pediría interpretar un texto libre que 367 criaturas escriben
+/// de maneras distintas, y un parser que falla ensucia el perfil justo donde se
+/// lo quería limpiar. Si algún día el catálogo separa resistencias, inmunidades
+/// y condiciones en campos propios, acá se colorean sin tocar nada más.
+List<String> _defenseFragments(String defenses) => [
+  for (final part in defenses.split(';'))
+    if (part.trim().isNotEmpty) part.trim(),
+];
 
 /// El perfil de una criatura del bloque de cifras para abajo: características,
 /// datos de línea, atributos y acciones agrupadas por tipo.
@@ -1551,122 +1600,560 @@ List<Widget> creatureProfileBody(
   Creature c, {
   bool dense = false,
 }) {
-  final pal = context.palette;
+  // Un solo `LayoutBuilder` y no uno por banda: todas las piezas se apilan o se
+  // acuestan juntas, y medir una vez evita que queden en desacuerdo.
   return [
-    // Los números que se comparan entre sí van en `StatTile`, que los pinta en
-    // sans con cifras tabulares. Georgia queda para el nombre.
-    Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        for (final tile in [
-          if (!dense) (label: 'CA', value: c.ac, icon: Icons.shield_outlined),
-          if (!dense) (label: 'PG', value: c.hp, icon: Icons.favorite_outline),
-          if (c.cr != null)
-            (
-              label: 'VD',
-              value: challengeRatingLabel(c.cr!),
-              icon: Icons.local_fire_department_outlined,
-            ),
-          if (c.passivePerceptionValue case final p?)
-            (
-              label: 'Perc. pasiva',
-              value: '$p',
-              icon: Icons.visibility_outlined,
-            ),
-        ])
-          SizedBox(
-            width: dense ? 118 : 120,
-            child: StatTile(
-              icon: tile.icon,
-              label: tile.label,
-              value: tile.value,
-            ),
-          ),
-      ],
+    LayoutBuilder(
+      builder: (context, box) {
+        final wide = box.maxWidth >= _profileWideWidth;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _profileNumbers(context, c, dense: dense, wide: wide),
+            const SizedBox(height: 18),
+            _profileAbilities(context, c, wide: wide),
+            const SizedBox(height: 18),
+            _profileLines(context, c, wide: wide),
+            ..._profileTraits(context, c),
+            ..._profileActions(context, c, wide: wide),
+          ],
+        );
+      },
     ),
-    const SizedBox(height: 16),
+  ];
+}
 
-    Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final a in Ability.values)
-          AbilityPlaque(
-            abbr: a.abbr,
-            score: c.abilityScores[a] ?? 10,
-            modifier: c.abilityModifierFor(a),
-            saveProficient: c.savingThrows.containsKey(a),
-          ),
-      ],
-    ),
-    const SizedBox(height: 16),
+/// La banda de cifras: una sola placa partida en tramos, no una caja por dato.
+///
+/// Seis cajas sueltas pesaban lo mismo cada una, y no lo valen: la CA y los PG
+/// se miran en cada ronda, la percepción pasiva casi nunca. Acá la jerarquía la
+/// dan el color —los PG en carmesí, el desafío en oro— y el orden.
+Widget _profileNumbers(
+  BuildContext context,
+  Creature c, {
+  required bool dense,
+  required bool wide,
+}) {
+  final pal = context.palette;
+  final cells = <({String label, String value, String? suffix, Color? color})>[
+    // En Combate la CA y los PG los lleva el encuentro, no el catálogo: el
+    // máximo del libro deja de ser cierto en el primer golpe.
+    if (!dense) (label: 'CA', value: c.ac, suffix: null, color: null),
+    if (!dense)
+      (
+        label: 'Puntos de golpe',
+        value: c.hp,
+        suffix: wide ? c.hitDice : null,
+        color: pal.crimson,
+      ),
+    // Tampoco la iniciativa: ahí ya está la tirada de esta mesa, que es la
+    // que manda sobre el modificador impreso.
+    if (!dense)
+      (
+        label: 'Iniciativa',
+        value: _signed(c.initiativeModifier),
+        suffix: null,
+        color: null,
+      ),
+    if (c.cr != null)
+      (
+        label: 'Valor de desafío',
+        value: challengeRatingLabel(c.cr!),
+        suffix: null,
+        color: pal.gold,
+      ),
+    if (c.passivePerceptionValue case final p?)
+      (label: 'Perc. pasiva', value: '$p', suffix: null, color: null),
+  ];
+  if (cells.isEmpty) return const SizedBox.shrink();
 
-    DenseRows(
-      children: [
-        if (c.speed.isNotEmpty) _profileRow('Velocidad', c.speed),
-        if (c.savingThrows.isNotEmpty)
-          _profileRow(
-            'Salvaciones',
-            [
-              for (final e in c.savingThrows.entries)
-                '${e.key.abbr} ${_signed(e.value)}',
-            ].join(', '),
-          ),
-        if (c.skills.isNotEmpty)
-          _profileRow(
-            'Habilidades',
-            [
-              for (final e in c.skills.entries)
-                '${e.key.label} ${_signed(e.value)}',
-            ].join(', '),
-          ),
-        if (c.senses.isNotEmpty) _profileRow('Sentidos', c.senses),
-        if (c.languages.isNotEmpty) _profileRow('Idiomas', c.languages),
-        if (c.defenses.isNotEmpty) _profileRow('Defensas', c.defenses),
-      ],
-    ),
-
-    for (final trait in c.traits) ...[
-      if (trait == c.traits.first) ...[
-        const SizedBox(height: 16),
-        const Eyebrow('Atributos'),
-      ],
-      Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: '${trait.name}. ',
-                style: const TextStyle(fontWeight: FontWeight.w500),
+  Widget content(
+    ({String label, String value, String? suffix, Color? color}) e,
+  ) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _profileLabel(context, e.label),
+      const SizedBox(height: 6),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              e.value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                height: 1,
+                color: e.color,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
-              TextSpan(text: trait.description),
-            ],
+            ),
           ),
-          style: TextStyle(fontSize: 13, color: pal.textMuted),
-        ),
+          if (e.suffix != null) ...[
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                e.suffix!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: pal.textMuted),
+              ),
+            ),
+          ],
+        ],
       ),
     ],
+  );
 
-    // Agrupadas por tipo y en el orden del libro: un perfil es un formato que
-    // el DM reconoce de un vistazo, y cambiarlo cuesta más de lo que rinde.
-    for (final kind in CreatureActionKind.values)
-      if (c.actions.where((a) => a.kind == kind).toList() case final group
-          when group.isNotEmpty) ...[
-        const SizedBox(height: 16),
-        Eyebrow(_actionSectionLabel(kind, c)),
-        for (final a in group)
-          CreatureActionRow(
-            name: a.name,
-            description: a.description,
-            attackBonus: a.attackBonus == null ? null : '+${a.attackBonus}',
-            damage: a.damage,
-            damageType: a.damageType,
-            reach: a.reach,
+  if (!wide) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (final e in cells)
+          SizedBox(
+            width: 118,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(13, 11, 13, 12),
+              decoration: BoxDecoration(
+                color: pal.plaque,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: pal.hairline),
+              ),
+              child: content(e),
+            ),
           ),
       ],
+    );
+  }
+
+  return Container(
+    decoration: BoxDecoration(
+      color: pal.plaque,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: pal.hairline),
+    ),
+    // `IntrinsicHeight` y no `stretch` a secas: la banda vive adentro de una
+    // lista que crece, y estirar al alto disponible pide alto infinito y rompe
+    // la pasada de layout. Igualar al tramo más alto es lo que se quería, y es
+    // lo que hace falta para que las divisiones lleguen de arriba abajo.
+    child: IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < cells.length; i++)
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(14, 11, 14, 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                    left: i == 0
+                        ? BorderSide.none
+                        : BorderSide(color: pal.hairline),
+                  ),
+                ),
+                child: content(cells[i]),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Las seis características en una placa dividida, con la salvación adentro.
+///
+/// No reusa [AbilityPlaque] a propósito, y no es lo mismo con otra pinta: la de
+/// la ficha marca **si** hay competencia, porque el número lo calcula el motor
+/// y se lee en Salvaciones. Una criatura trae el modificador ya impreso, así
+/// que acá se muestra el valor —«SALV +8»— y eso borra la fila «Salvaciones:
+/// STR +8, INT +5…», que repetía lo mismo dos veces más abajo.
+Widget _profileAbilities(
+  BuildContext context,
+  Creature c, {
+  required bool wide,
+}) {
+  final pal = context.palette;
+
+  Widget cell(Ability a, {required bool left, required bool top}) {
+    final save = c.savingThrows[a];
+    return Container(
+      padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
+      decoration: BoxDecoration(
+        border: Border(
+          left: left ? BorderSide(color: pal.hairline) : BorderSide.none,
+          top: top ? BorderSide(color: pal.hairline) : BorderSide.none,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            a.abbr,
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 1,
+              color: pal.textMuted,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _signed(c.abilityModifierFor(a)),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              height: 1,
+              fontFeatures: [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'Punt. ${c.abilityScores[a] ?? 10}',
+            style: TextStyle(
+              fontSize: 10.5,
+              color: pal.textMuted,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          // Reserva el alto de la marca aunque no haya salvación: sin esto las
+          // seis celdas quedan a distinta altura y eso es ruido, no dato.
+          SizedBox(
+            height: 16,
+            child: save == null
+                ? null
+                : FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.shield, size: 9, color: pal.gold),
+                        const SizedBox(width: 3),
+                        Text(
+                          'SALV ${_signed(save)}',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            letterSpacing: 0.4,
+                            color: pal.gold,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget band(List<Widget> children) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: pal.plaque,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: pal.hairline),
+    ),
+    child: Column(children: children),
+  );
+
+  // Mismo motivo que en la banda de cifras: adentro de una lista, `stretch`
+  // solo pediría alto infinito.
+  Widget fila(List<Widget> celdas) => IntrinsicHeight(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: celdas,
+    ),
+  );
+
+  final abilities = Ability.values;
+  if (wide) {
+    return band([
+      fila([
+        for (var i = 0; i < abilities.length; i++)
+          Expanded(child: cell(abilities[i], left: i > 0, top: false)),
+      ]),
+    ]);
+  }
+  // Tres y tres: a 300 px, seis columnas dejan 44 px por característica y ahí
+  // «SALV +8» ya no entra sin achicarse hasta lo ilegible.
+  return band([
+    for (var f = 0; f < 2; f++)
+      fila([
+        for (var col = 0; col < 3; col++)
+          Expanded(
+            child: cell(abilities[f * 3 + col], left: col > 0, top: f > 0),
+          ),
+      ]),
+  ]);
+}
+
+/// Los datos de línea como lista de definición, no como «Etiqueta: valor».
+///
+/// Con el rótulo en su propia columna el ojo baja por el canal en vez de
+/// buscar los dos puntos en cada renglón, y las defensas dejan de ser dos
+/// puntos adentro de otros dos puntos.
+Widget _profileLines(BuildContext context, Creature c, {required bool wide}) {
+  final pal = context.palette;
+  final sentidos = _sensesWithoutPassive(c);
+  final defensas = _defenseFragments(c.defenses);
+
+  final rows = <({String label, Widget value})>[
+    if (c.speed.isNotEmpty)
+      (label: 'Velocidad', value: _profileText(context, c.speed)),
+    if (c.skills.isNotEmpty)
+      (
+        label: 'Habilidades',
+        value: _profileText(
+          context,
+          [
+            for (final e in c.skills.entries)
+              '${e.key.label} ${_signed(e.value)}',
+          ].join(', '),
+        ),
+      ),
+    if (sentidos.isNotEmpty)
+      (label: 'Sentidos', value: _profileText(context, sentidos)),
+    if (c.languages.isNotEmpty)
+      (label: 'Idiomas', value: _profileText(context, c.languages)),
+    if (defensas.isNotEmpty)
+      (
+        label: 'Defensas',
+        value: Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [for (final d in defensas) GoldPill(d, highlighted: false)],
+        ),
+      ),
   ];
+  if (rows.isEmpty) return const SizedBox.shrink();
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      for (var i = 0; i < rows.length; i++)
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            border: Border(
+              top: i == 0 ? BorderSide.none : BorderSide(color: pal.hairline),
+            ),
+          ),
+          child: wide
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 104,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: _profileLabel(
+                          context,
+                          rows[i].label,
+                          align: TextAlign.right,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(child: _prose(rows[i].value)),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _profileLabel(context, rows[i].label),
+                    const SizedBox(height: 4),
+                    rows[i].value,
+                  ],
+                ),
+        ),
+    ],
+  );
+}
+
+Widget _profileText(BuildContext context, String value) =>
+    Text(value, style: const TextStyle(fontSize: 13.5, height: 1.4));
+
+List<Widget> _profileTraits(BuildContext context, Creature c) {
+  if (c.traits.isEmpty) return const [];
+  final pal = context.palette;
+  return [
+    const SizedBox(height: 22),
+    // «Rasgos» y no «Atributos»: en esta aplicación los atributos son las seis
+    // características, que están tres bandas más arriba.
+    const Eyebrow('Rasgos'),
+    for (final trait in c.traits)
+      Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: _prose(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                trait.name,
+                style: TextStyle(fontWeight: FontWeight.w500, color: pal.gold),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                trait.description,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  height: 1.4,
+                  color: pal.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+  ];
+}
+
+/// Agrupadas por tipo y en el orden del libro: un perfil es un formato que el
+/// DM reconoce de un vistazo, y cambiarlo cuesta más de lo que rinde.
+List<Widget> _profileActions(
+  BuildContext context,
+  Creature c, {
+  required bool wide,
+}) {
+  final out = <Widget>[];
+  for (final kind in CreatureActionKind.values) {
+    final group = c.actions.where((a) => a.kind == kind).toList();
+    if (group.isEmpty) continue;
+    out.add(const SizedBox(height: 22));
+    out.add(Eyebrow(_actionSectionLabel(kind, c)));
+    for (var i = 0; i < group.length; i++) {
+      out.add(_profileAction(context, group[i], wide: wide, first: i == 0));
+    }
+  }
+  return out;
+}
+
+/// Una acción, con lo que se tira sacado de la prosa.
+///
+/// El daño era texto gris de 13 px y el único número destacado era el de
+/// acertar, que es la mitad de la tirada. Acá acierto, daño y alcance van cada
+/// uno en su placa rotulada, en cifras tabulares y del mismo tamaño.
+Widget _profileAction(
+  BuildContext context,
+  CreatureAction a, {
+  required bool wide,
+  required bool first,
+}) {
+  final pal = context.palette;
+  final damageText = [
+    ?a.damage,
+    if (a.damageType != null) DamageType.labelFor(a.damageType!),
+  ].join(' ');
+
+  Widget plaque(String label, String value, {Color? color, double width = 0}) =>
+      SizedBox(
+        width: width == 0 ? null : width,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+          decoration: BoxDecoration(
+            color: pal.plaque,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: pal.hairline),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _profileLabel(context, label, align: TextAlign.center),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                  color: color,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  final name = Text(
+    a.name,
+    style: const TextStyle(fontWeight: FontWeight.w500),
+  );
+  final description = a.description.isEmpty
+      ? null
+      : Padding(
+          padding: const EdgeInsets.only(top: 3),
+          child: Text(
+            a.description,
+            style: TextStyle(fontSize: 13.5, height: 1.4, color: pal.textMuted),
+          ),
+        );
+
+  // Sin bonificador de ataque no hay nada que poner en las placas: son las
+  // acciones que se resuelven por texto (ataque múltiple, un aliento con su
+  // salvación), y ahí la prosa es el contenido.
+  final hasNumbers = a.attackBonus != null;
+
+  Widget body = Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [name, ?description],
+  );
+
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 11),
+    decoration: BoxDecoration(
+      border: Border(
+        top: first ? BorderSide.none : BorderSide(color: pal.hairline),
+      ),
+    ),
+    child: !hasNumbers
+        ? _prose(body)
+        : wide
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _prose(body)),
+              const SizedBox(width: 16),
+              plaque(
+                'Acierto',
+                '+${a.attackBonus}',
+                color: pal.gold,
+                width: 74,
+              ),
+              if (damageText.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                plaque('Daño', damageText, width: 150),
+              ],
+              if (a.reach.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                plaque('Alcance', a.reach, width: 86),
+              ],
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              body,
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  plaque('Acierto', '+${a.attackBonus}', color: pal.gold),
+                  if (damageText.isNotEmpty) plaque('Daño', damageText),
+                  if (a.reach.isNotEmpty) plaque('Alcance', a.reach),
+                ],
+              ),
+            ],
+          ),
+  );
 }
 
 /// Distintivo de procedencia para las tarjetas de selección.

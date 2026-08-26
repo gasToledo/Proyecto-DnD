@@ -1644,6 +1644,37 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // El perfil dejó de repetir dos datos y de meter dos puntos adentro de
+    // otros dos puntos. Los tres cambios son fáciles de deshacer sin querer al
+    // tocar `creatureProfileBody`, así que van fijados acá.
+    testWidgets('el perfil no dice dos veces lo mismo', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      // El Diablo óseo trae las tres cosas a la vez: percepción pasiva metida
+      // en los sentidos, salvaciones propias y defensas con punto y coma.
+      final diablo = repo.creature('bone-devil')!;
+      await buscar(tester, diablo.name);
+      await tester.tap(find.byKey(const ValueKey('bestiary-bone-devil')));
+      await tester.pumpAndSettle();
+
+      // La percepción pasiva tiene su propia cifra arriba, así que se va del
+      // renglón de sentidos en vez de leerse dos veces.
+      expect(find.text('${diablo.passivePerceptionValue}'), findsWidgets);
+      expect(find.textContaining('Percepción pasiva'), findsNothing);
+
+      // La salvación vive adentro de su característica, y por eso ya no hay un
+      // renglón «Salvaciones» que repita los mismos números.
+      final salvFuerza = diablo.savingThrows[Ability.strength]!;
+      expect(find.text('SALV +$salvFuerza'), findsOneWidget);
+      expect(find.text('SALVACIONES'), findsNothing);
+
+      // Cada fragmento de defensas es su propio chip.
+      expect(find.text('Inmunidades: fuego, veneno'), findsOneWidget);
+
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('sin coincidencias lo dice y deja limpiar', (tester) async {
       await pumpDmMode(tester, seed: seedTable);
       await openBestiario(tester);

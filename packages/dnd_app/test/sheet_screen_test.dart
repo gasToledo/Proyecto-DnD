@@ -2021,7 +2021,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Estado'), findsOneWidget);
-      expect(find.textContaining('No lo restes otra vez'), findsNothing);
+      // La fila del Cansancio está siempre; lo que no está es la penalización,
+      // porque sin cansancio no hay ninguna que cantar.
+      expect(find.text('Cansancio'), findsOneWidget);
+      expect(find.textContaining('a las tiradas'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
@@ -2049,7 +2052,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('el aviso dice que los números ya vienen restados', (
+    testWidgets('la fila canta la penalización y la regla espera en el info', (
       tester,
     ) async {
       await pumpSheet(
@@ -2060,8 +2063,16 @@ void main() {
       await tester.tap(find.text('Combate'));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('ya vienen con −4'), findsOneWidget);
-      expect(find.textContaining('No lo restes otra vez'), findsOneWidget);
+      // Lo que hace falta en la mesa se lee sin abrir nada.
+      expect(find.text('−4 a las tiradas · −10 pies'), findsOneWidget);
+      // La letra chica no ocupa lugar hasta que se la pide.
+      expect(find.textContaining('no la restes de nuevo'), findsNothing);
+
+      await tester.tap(find.text('Cansancio'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('no la restes de nuevo'), findsOneWidget);
+      expect(find.textContaining('salvaciones de muerte'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -2138,7 +2149,12 @@ void main() {
       await tester.tap(find.text('Combate'));
       await tester.pumpAndSettle();
 
-      expect(find.text('La ganás al descansar'), findsOneWidget);
+      // Sin tenerla, el mosaico dice de dónde va a salir.
+      expect(find.text('GASTADA'), findsOneWidget);
+      expect(
+        find.text('La recuperás al terminar un descanso largo'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Descanso largo'));
       await tester.pumpAndSettle();

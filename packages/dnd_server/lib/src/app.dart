@@ -11,6 +11,7 @@ import 'auth/oidc_service.dart';
 import 'auth/session_cookie.dart';
 import 'auth/session_store.dart';
 import 'import/backup_bundle.dart';
+import 'import/homebrew_content.dart';
 import 'import/import_service.dart';
 import 'portraits/portrait_blob_store.dart';
 import 'repositories/campaign_repository.dart';
@@ -20,21 +21,9 @@ import 'repositories/encounter_repository.dart';
 import 'repositories/event_repository.dart';
 import 'repositories/homebrew_repository.dart';
 import 'repositories/note_repository.dart';
+import 'repositories/repository_transaction_runner.dart';
 import 'repositories/settings_repository.dart';
 import 'util/safe_path.dart';
-
-/// Categorías de homebrew válidas: la misma partición que
-/// `ContentRepository.fromJsonPacks` y que ya usa `HomebrewRepository`.
-const _homebrewCategories = {
-  'weapons',
-  'armor',
-  'items',
-  'feats',
-  'races',
-  'backgrounds',
-  'spells',
-  'creatures',
-};
 
 /// Ejecuta la importación ya decodificada para [userId]. Se recibe como
 /// función (no como `Pool` concreto) por la misma razón que [AuthDependencies]:
@@ -43,6 +32,12 @@ typedef ImportBackupFn =
     Future<ImportResult> Function({
       required String userId,
       required BackupBundle bundle,
+    });
+
+typedef ImportHomebrewFn =
+    Future<int> Function({
+      required String userId,
+      required Map<String, List<Map<String, dynamic>>> content,
     });
 
 /// Dependencias de autenticación que el router necesita, ya resueltas contra
@@ -91,12 +86,14 @@ Handler buildHandler({
   required PortraitBlobStore portraits,
   required PortraitGenerationService generation,
   required ImportBackupFn importBackup,
+  required ImportHomebrewFn importHomebrew,
   required CharacterRepository characters,
   required CampaignRepository campaigns,
   required ChapterRepository chapters,
   required NoteRepository notes,
   required EncounterRepository encounters,
   required EventRepository events,
+  required RepositoryTransactionRunner transactions,
   required HomebrewRepository homebrew,
   required SettingsRepository settings,
 
@@ -144,8 +141,7 @@ Handler buildHandler({
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
           .addHandler(
-            (request) =>
-                _deleteCharacterHandler(request, characters, campaigns, events),
+            (request) => _deleteCharacterHandler(request, transactions),
           ),
     )
     ..post(
@@ -216,8 +212,7 @@ Handler buildHandler({
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
           .addHandler(
-            (request) =>
-                _redeemShareCodeHandler(request, campaigns, characters, events),
+            (request) => _redeemShareCodeHandler(request, transactions),
           ),
     )
     ..get(
@@ -233,12 +228,7 @@ Handler buildHandler({
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
           .addHandler(
-            (request) => _deleteCampaignLinkHandler(
-              request,
-              campaigns,
-              characters,
-              events,
-            ),
+            (request) => _deleteCampaignLinkHandler(request, transactions),
           ),
     )
     ..get(
@@ -277,10 +267,7 @@ Handler buildHandler({
       '/api/campaigns/<id>/chapters/<chapterId>/close',
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _closeChapterHandler(request, campaigns, chapters, events),
-          ),
+          .addHandler((request) => _closeChapterHandler(request, transactions)),
     )
     ..post(
       '/api/campaigns/<id>/members/<memberId>/heroic-inspiration',
@@ -377,6 +364,14 @@ Handler buildHandler({
           .addMiddleware(requireSession(auth.resolveUserId))
           .addHandler((request) => _listHomebrewHandler(request, homebrew)),
     )
+    ..post(
+      '/api/homebrew/import',
+      Pipeline()
+          .addMiddleware(requireSession(auth.resolveUserId))
+          .addHandler(
+            (request) => _importHomebrewHandler(request, importHomebrew),
+          ),
+    )
     ..put(
       '/api/homebrew/<category>/<id>',
       Pipeline()
@@ -418,7 +413,8 @@ Handler buildHandler({
       Pipeline()
           .addMiddleware(requireSession(auth.resolveUserId))
           .addHandler(
-            (request) => _generatePortraitHandler(request, generation),
+            (request) =>
+                _generatePortraitHandler(request, generation, portraits),
           ),
     )
     ..post(
@@ -556,12 +552,61 @@ Character _characterFromRequestJson(Map<String, dynamic> json) {
   }
 }
 
-Future<Map<String, dynamic>> _readJsonBody(Request request) async {
-  final decoded = jsonDecode(await request.readAsString());
+const _defaultJsonBodyBytes = 1024 * 1024;
+const _homebrewJsonBodyBytes = 32 * 1024 * 1024;
+
+class PayloadTooLargeException implements Exception {
+  final String message;
+  const PayloadTooLargeException(this.message);
+}
+
+int _base64JsonLimit(int decodedBytes) => ((decodedBytes + 2) ~/ 3) * 4 + 1024;
+
+Future<List<int>> _readBody(Request request, int maxBytes) async {
+  final declared = int.tryParse(request.headers['content-length'] ?? '');
+  if (declared != null && declared > maxBytes) {
+    throw const PayloadTooLargeException(
+      'El cuerpo de la petición es demasiado grande.',
+    );
+  }
+  final bytes = BytesBuilder(copy: false);
+  var length = 0;
+  await for (final chunk in request.read()) {
+    length += chunk.length;
+    if (length > maxBytes) {
+      throw const PayloadTooLargeException(
+        'El cuerpo de la petición es demasiado grande.',
+      );
+    }
+    bytes.add(chunk);
+  }
+  return bytes.takeBytes();
+}
+
+Future<Map<String, dynamic>> _readJsonBody(
+  Request request, {
+  int maxBytes = _defaultJsonBodyBytes,
+}) async {
+  final decoded = jsonDecode(utf8.decode(await _readBody(request, maxBytes)));
   if (decoded is! Map<String, dynamic>) {
     throw const FormatException('Se esperaba un objeto JSON.');
   }
   return decoded;
+}
+
+Uint8List _decodeBase64(
+  String value, {
+  required int maxBytes,
+  required String label,
+}) {
+  if (value.length > _base64JsonLimit(maxBytes)) {
+    throw PayloadTooLargeException('$label supera el tamaño máximo admitido.');
+  }
+  final bytes = base64Decode(value);
+  if (bytes.length > maxBytes) {
+    throw PayloadTooLargeException('$label supera el tamaño máximo admitido.');
+  }
+  return bytes;
 }
 
 Future<Response> _listCharactersHandler(
@@ -631,31 +676,32 @@ Future<Response> _upsertCharacterHandler(
 /// esto, el personaje desaparecería del panel del DM sin ninguna explicación.
 Future<Response> _deleteCharacterHandler(
   Request request,
-  CharacterRepository characters,
-  CampaignRepository campaigns,
-  EventRepository events,
+  RepositoryTransactionRunner transactions,
 ) async {
   final id = requireSafePathSegment(
     request.params['id']!,
     label: 'id de personaje',
   );
-  final character = await characters.find(request.userId, id);
-  final shares = character == null
-      ? const <CharacterShare>[]
-      : await campaigns.listSharesForCharacter(
-          ownerUserId: request.userId,
-          characterId: id,
-        );
+  return transactions.run((repositories) async {
+    final character = await repositories.characters.find(request.userId, id);
+    final shares = character == null
+        ? const <CharacterShare>[]
+        : await repositories.campaigns.listSharesForCharacter(
+            ownerUserId: request.userId,
+            characterId: id,
+          );
 
-  await characters.delete(request.userId, id);
+    await repositories.characters.delete(request.userId, id);
 
-  for (final share in shares) {
-    await events.append(share.dmUserId, 'character_deleted_by_owner', {
-      'characterName': character!.name,
-      'campaignName': share.campaignName,
-    });
-  }
-  return _jsonOk({'status': 'ok'});
+    for (final share in shares) {
+      await repositories.events.append(
+        share.dmUserId,
+        'character_deleted_by_owner',
+        {'characterName': character!.name, 'campaignName': share.campaignName},
+      );
+    }
+    return _jsonOk({'status': 'ok'});
+  });
 }
 
 // --- Campañas y vínculo con personajes ajenos ---
@@ -778,9 +824,7 @@ Future<Response> _listCampaignMembersHandler(
 /// distinguirlos solo ayudaría a quien esté probando códigos.
 Future<Response> _redeemShareCodeHandler(
   Request request,
-  CampaignRepository campaigns,
-  CharacterRepository characters,
-  EventRepository events,
+  RepositoryTransactionRunner transactions,
 ) async {
   final campaignId = requireSafePathSegment(
     request.params['id']!,
@@ -792,27 +836,35 @@ Future<Response> _redeemShareCodeHandler(
     throw const FormatException('Falta "code".');
   }
 
-  final campaign = await campaigns.find(request.userId, campaignId);
-  if (campaign == null) return _notFound('Campaña no encontrada.');
+  return transactions.run((repositories) async {
+    final campaign = await repositories.campaigns.find(
+      request.userId,
+      campaignId,
+    );
+    if (campaign == null) return _notFound('Campaña no encontrada.');
 
-  final link = await campaigns.redeemShareCode(
-    dmUserId: request.userId,
-    campaignId: campaignId,
-    code: code,
-  );
-  if (link == null) return _notFound('Código inválido o vencido.');
+    final link = await repositories.campaigns.redeemShareCode(
+      dmUserId: request.userId,
+      campaignId: campaignId,
+      code: code,
+    );
+    if (link == null) return _notFound('Código inválido o vencido.');
 
-  final character = await characters.find(link.ownerUserId, link.characterId);
-  await events.append(link.ownerUserId, 'character_linked', {
-    'characterName': character?.name ?? '',
-    'campaignName': campaign.name,
-  });
+    final character = await repositories.characters.find(
+      link.ownerUserId,
+      link.characterId,
+    );
+    await repositories.events.append(link.ownerUserId, 'character_linked', {
+      'characterName': character?.name ?? '',
+      'campaignName': campaign.name,
+    });
 
-  return _jsonOk({
-    'member': {
-      'memberId': link.memberId,
-      if (character != null) 'character': character.toJson(),
-    },
+    return _jsonOk({
+      'member': {
+        'memberId': link.memberId,
+        if (character != null) 'character': character.toJson(),
+      },
+    });
   });
 }
 
@@ -1013,30 +1065,38 @@ Future<Response> _listPlayerCampaignsHandler(
 /// hizo y recibe la respuesta en el momento.
 Future<Response> _deleteCampaignLinkHandler(
   Request request,
-  CampaignRepository campaigns,
-  CharacterRepository characters,
-  EventRepository events,
+  RepositoryTransactionRunner transactions,
 ) async {
   final memberId = request.params['memberId']!;
   if (!isUuid(memberId)) return _notFound('Vínculo no encontrado.');
+  return transactions.run((repositories) async {
+    final link = await repositories.campaigns.deleteMember(
+      request.userId,
+      memberId,
+    );
+    if (link == null) return _notFound('Vínculo no encontrado.');
 
-  final link = await campaigns.deleteMember(request.userId, memberId);
-  if (link == null) return _notFound('Vínculo no encontrado.');
+    final character = await repositories.characters.find(
+      link.ownerUserId,
+      link.characterId,
+    );
+    final campaign = await repositories.campaigns.find(
+      link.dmUserId,
+      link.campaignId,
+    );
+    final payload = {
+      'characterName': character?.name ?? '',
+      'campaignName': campaign?.name ?? '',
+    };
 
-  final character = await characters.find(link.ownerUserId, link.characterId);
-  final campaign = await campaigns.find(link.dmUserId, link.campaignId);
-  final payload = {
-    'characterName': character?.name ?? '',
-    'campaignName': campaign?.name ?? '',
-  };
-
-  final dmActed = request.userId == link.dmUserId;
-  await events.append(
-    dmActed ? link.ownerUserId : link.dmUserId,
-    dmActed ? 'character_unlinked_by_dm' : 'character_unlinked_by_owner',
-    payload,
-  );
-  return _jsonOk({'status': 'ok'});
+    final dmActed = request.userId == link.dmUserId;
+    await repositories.events.append(
+      dmActed ? link.ownerUserId : link.dmUserId,
+      dmActed ? 'character_unlinked_by_dm' : 'character_unlinked_by_owner',
+      payload,
+    );
+    return _jsonOk({'status': 'ok'});
+  });
 }
 
 // --- Capítulos ---
@@ -1379,9 +1439,7 @@ Future<Response> _grantHeroicInspirationHandler(
 /// cuenta, y lo que le escribe es un aviso en su bandeja, nunca su ficha.
 Future<Response> _closeChapterHandler(
   Request request,
-  CampaignRepository campaigns,
-  ChapterRepository chapters,
-  EventRepository events,
+  RepositoryTransactionRunner transactions,
 ) async {
   final campaignId = requireSafePathSegment(
     request.params['id']!,
@@ -1391,34 +1449,46 @@ Future<Response> _closeChapterHandler(
     request.params['chapterId']!,
     label: 'id de capítulo',
   );
-  final campaign = await campaigns.find(request.userId, campaignId);
-  if (campaign == null) return _notFound('Campaña no encontrada.');
+  return transactions.run((repositories) async {
+    final campaign = await repositories.campaigns.find(
+      request.userId,
+      campaignId,
+    );
+    if (campaign == null) return _notFound('Campaña no encontrada.');
 
-  final chapter = await chapters.find(request.userId, campaignId, chapterId);
-  if (chapter == null) return _notFound('Capítulo no encontrado.');
-  if (chapter.state == ChapterState.completed) {
-    // Cerrar dos veces no es un error, pero tampoco vuelve a avisar.
+    final chapter = await repositories.chapters.find(
+      request.userId,
+      campaignId,
+      chapterId,
+    );
+    if (chapter == null) return _notFound('Capítulo no encontrado.');
+    if (chapter.state == ChapterState.completed) {
+      return _jsonOk({'status': 'ok'});
+    }
+
+    await repositories.chapters.upsert(
+      request.userId,
+      campaignId,
+      chapter.copyWith(state: ChapterState.completed),
+    );
+
+    final members = await repositories.campaigns.listMembers(
+      request.userId,
+      campaignId,
+    );
+    for (final member in members) {
+      await repositories.events
+          .append(member.ownerUserId, 'chapter_completed', {
+            'characterName': member.character.name,
+            'campaignName': campaign.name,
+            'chapterName': chapter.name,
+            'grantsLevel': chapter.grantsLevel,
+            'grantsGold': chapter.grantsGold,
+            'grantsItems': chapter.grantsItems,
+          });
+    }
     return _jsonOk({'status': 'ok'});
-  }
-
-  await chapters.upsert(
-    request.userId,
-    campaignId,
-    chapter.copyWith(state: ChapterState.completed),
-  );
-
-  final members = await campaigns.listMembers(request.userId, campaignId);
-  for (final member in members) {
-    await events.append(member.ownerUserId, 'chapter_completed', {
-      'characterName': member.character.name,
-      'campaignName': campaign.name,
-      'chapterName': chapter.name,
-      'grantsLevel': chapter.grantsLevel,
-      'grantsGold': chapter.grantsGold,
-      'grantsItems': chapter.grantsItems,
-    });
-  }
-  return _jsonOk({'status': 'ok'});
+  });
 }
 
 // --- Combate ---
@@ -1614,6 +1684,23 @@ Future<Response> _listHomebrewHandler(
   return _jsonOk({'content': content});
 }
 
+Future<Response> _importHomebrewHandler(
+  Request request,
+  ImportHomebrewFn importHomebrew,
+) async {
+  final body = await _readJsonBody(request, maxBytes: _homebrewJsonBodyBytes);
+  final rawContent = body['content'];
+  if (rawContent is! Map) {
+    throw const FormatException('Falta "content".');
+  }
+  final content = parseHomebrewContent(rawContent.cast<String, dynamic>());
+  final importedCount = await importHomebrew(
+    userId: request.userId,
+    content: content,
+  );
+  return _jsonOk({'importedCount': importedCount});
+}
+
 /// Guarda una entidad homebrew de [category]. El documento entero (con su
 /// propio `id`) viaja en el cuerpo, igual que produce `Weapon.toJson()` y
 /// afines: a este endpoint no le importa su forma interna, solo que el `id`
@@ -1624,7 +1711,7 @@ Future<Response> _upsertHomebrewHandler(
   HomebrewRepository homebrew,
 ) async {
   final category = request.params['category']!;
-  if (!_homebrewCategories.contains(category)) {
+  if (!homebrewCategories.contains(category)) {
     throw const FormatException('Categoría de homebrew no reconocida.');
   }
   final id = requireSafePathSegment(
@@ -1635,7 +1722,8 @@ Future<Response> _upsertHomebrewHandler(
   if (document['id'] != id) {
     throw const FormatException('El id del documento no coincide con la ruta.');
   }
-  await homebrew.upsert(request.userId, category, id, document);
+  final validated = validateHomebrewDocument(category, document);
+  await homebrew.upsert(request.userId, category, id, validated);
   return _jsonOk({'status': 'ok'});
 }
 
@@ -1644,7 +1732,7 @@ Future<Response> _deleteHomebrewHandler(
   HomebrewRepository homebrew,
 ) async {
   final category = request.params['category']!;
-  if (!_homebrewCategories.contains(category)) {
+  if (!homebrewCategories.contains(category)) {
     throw const FormatException('Categoría de homebrew no reconocida.');
   }
   final id = requireSafePathSegment(
@@ -1739,8 +1827,12 @@ Response _portraitProvidersHandler(PortraitGenerationService generation) =>
 Future<Response> _generatePortraitHandler(
   Request request,
   PortraitGenerationService generation,
+  PortraitBlobStore portraits,
 ) async {
-  final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+  final body = await _readJsonBody(
+    request,
+    maxBytes: _base64JsonLimit(portraits.maxBytes),
+  );
   final providerId = body['providerId'];
   final prompt = body['prompt'];
   if (providerId is! String || providerId.isEmpty) {
@@ -1751,7 +1843,11 @@ Future<Response> _generatePortraitHandler(
   }
   final referenceBase64 = body['referenceBase64'];
   final reference = referenceBase64 is String && referenceBase64.isNotEmpty
-      ? Uint8List.fromList(base64Decode(referenceBase64))
+      ? _decodeBase64(
+          referenceBase64,
+          maxBytes: portraits.maxBytes,
+          label: 'La imagen de referencia',
+        )
       : null;
   final count = body['count'];
 
@@ -1787,12 +1883,19 @@ Future<Response> _createPortraitHandler(
   PortraitBlobStore portraits,
 ) async {
   final characterId = request.params['characterId']!;
-  final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+  final body = await _readJsonBody(
+    request,
+    maxBytes: _base64JsonLimit(portraits.maxBytes),
+  );
   final bytesBase64 = body['bytes'];
   if (bytesBase64 is! String || bytesBase64.isEmpty) {
     throw const FormatException('Falta "bytes".');
   }
-  final bytes = Uint8List.fromList(base64Decode(bytesBase64));
+  final bytes = _decodeBase64(
+    bytesBase64,
+    maxBytes: portraits.maxBytes,
+    label: 'La imagen',
+  );
   final key = await portraits.save(
     userId: request.userId,
     characterId: characterId,
@@ -1812,12 +1915,21 @@ Future<Response> _importHandler(
   Request request,
   ImportBackupFn importBackup,
 ) async {
-  final body = jsonDecode(await request.readAsString()) as Map<String, dynamic>;
+  final body = await _readJsonBody(
+    request,
+    maxBytes: _base64JsonLimit(BackupBundleCodec.maxArchiveBytes),
+  );
   final zipBase64 = body['bytes'];
   if (zipBase64 is! String || zipBase64.isEmpty) {
     throw const FormatException('Falta "bytes".');
   }
-  final bundle = BackupBundleCodec.decode(base64Decode(zipBase64));
+  final bundle = BackupBundleCodec.decode(
+    _decodeBase64(
+      zipBase64,
+      maxBytes: BackupBundleCodec.maxArchiveBytes,
+      label: 'El respaldo',
+    ),
+  );
   final result = await importBackup(userId: request.userId, bundle: bundle);
   return Response.ok(
     jsonEncode({
@@ -1845,6 +1957,12 @@ Middleware get errorHandlingMiddleware => (Handler innerHandler) {
       return Response(
         400,
         body: jsonEncode({'error': e.toString()}),
+        headers: {'content-type': 'application/json'},
+      );
+    } on PayloadTooLargeException catch (e) {
+      return Response(
+        413,
+        body: jsonEncode({'error': e.message}),
         headers: {'content-type': 'application/json'},
       );
     } catch (e, stackTrace) {

@@ -71,6 +71,37 @@ void main() {
     },
   );
 
+  testWidgets('muestra y permite borrar homebrew histórico inválido', (
+    tester,
+  ) async {
+    final server = FakeApiServer();
+    server.homebrew['weapons'] = {
+      'broken': {'id': 'broken', 'name': 'Rota', 'source': 'homebrew'},
+    };
+    final store = HomebrewStore(ApiClient(client: server.client));
+    await store.load();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: store),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('1 entrada(s) homebrew inválida(s)'),
+      findsOneWidget,
+    );
+    await tester.tap(find.textContaining('1 entrada(s) homebrew inválida(s)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Borrar entrada inválida'));
+    await tester.pumpAndSettle();
+
+    expect(store.loadIssues, isEmpty);
+    expect(server.homebrew['weapons'], isEmpty);
+  });
+
   /// Deja abierto el formulario de arma nueva.
   Future<void> openWeaponForm(WidgetTester tester) async {
     tester.view.physicalSize = const Size(1000, 1100);

@@ -1,5 +1,5 @@
 name: dnd_app
-description: "App de fichas de personaje D&D 5e (offline-first, multiplataforma)."
+description: "Cliente Flutter Web de fichas D&D 5e conectado al servidor Milantus."
 publish_to: 'none'
 version: 0.8.0+1
 

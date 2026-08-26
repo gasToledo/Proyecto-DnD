@@ -68,6 +68,39 @@ void main() {
       );
     });
 
+    test('decodifica y valida criaturas homebrew en un respaldo completo', () {
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 2,
+          'scope': 'full',
+          'characters': <Object>[],
+          'homebrewFile': 'homebrew/content.json',
+        },
+        characterFiles: const {},
+        extraBinaryEntries: {
+          'homebrew/content.json': utf8.encode(
+            jsonEncode({
+              'creatures': [
+                {
+                  'id': 'hb-wolf',
+                  'name': 'Lobo de humo',
+                  'source': 'homebrew',
+                  'ac': '13',
+                  'hp': '11',
+                },
+              ],
+            }),
+          ),
+        },
+      );
+
+      final bundle = BackupBundleCodec.decode(zip);
+
+      expect(bundle.homebrew!['creatures'], hasLength(1));
+      expect(bundle.homebrew!['weapons'], isEmpty);
+    });
+
     test('incluye los retratos declarados y limpia portraitPaths', () {
       final portraitBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
       final zip = _buildZip(

@@ -13,6 +13,8 @@ class PortraitBlob {
 /// se puede cambiar el medio de almacenamiento (disco, almacén de objetos)
 /// sin modificar la API ni el cliente (ver capacidad `portrait-storage`).
 abstract class PortraitBlobStore {
+  int get maxBytes;
+
   /// Guarda [bytes] como un retrato nuevo de [characterId] dentro del
   /// espacio de [userId] y devuelve la clave opaca (`<characterId>/<archivo>`)
   /// que se guarda en `Character.portraitPaths`.

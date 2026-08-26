@@ -30,15 +30,29 @@ void main() {
           'feats': [
             {'id': 'hb-feat', 'name': 'Dote casera', 'source': 'homebrew'},
           ],
+          'creatures': [
+            {
+              'id': 'hb-wolf',
+              'name': 'Lobo de humo',
+              'source': 'homebrew',
+              'ac': '13',
+              'hp': '11',
+            },
+          ],
         },
       });
       final parsed = TransferService.parseHomebrewImport(text);
       expect(parsed['weapons'], hasLength(1));
       expect(parsed['feats'], hasLength(1));
+      expect(parsed['creatures'], hasLength(1));
       // Los tipos ausentes vienen como listas vacías, no null.
       expect(parsed['spells'], isEmpty);
       // Round-trip a modelo del engine.
       expect(Weapon.fromJson(parsed['weapons']!.first).name, 'Espada rúnica');
+      expect(
+        Creature.fromJson(parsed['creatures']!.first).name,
+        'Lobo de humo',
+      );
     });
 
     test('rechaza un archivo que no es homebrew', () {

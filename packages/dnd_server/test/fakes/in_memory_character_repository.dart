@@ -13,6 +13,33 @@ class InMemoryCharacterRepository implements CharacterRepository {
   final Map<String, Map<String, DateTime>> _createdAt = {};
   int _clock = 0;
 
+  Object snapshot() => (
+    byUser: {
+      for (final entry in _byUser.entries) entry.key: Map.of(entry.value),
+    },
+    createdAt: {
+      for (final entry in _createdAt.entries) entry.key: Map.of(entry.value),
+    },
+    clock: _clock,
+  );
+
+  void restore(Object raw) {
+    final snapshot =
+        raw
+            as ({
+              Map<String, Map<String, Character>> byUser,
+              Map<String, Map<String, DateTime>> createdAt,
+              int clock,
+            });
+    _byUser
+      ..clear()
+      ..addAll(snapshot.byUser);
+    _createdAt
+      ..clear()
+      ..addAll(snapshot.createdAt);
+    _clock = snapshot.clock;
+  }
+
   DateTime _stamp(String userId, String id) => _createdAt
       .putIfAbsent(userId, () => {})
       .putIfAbsent(id, () => DateTime.fromMillisecondsSinceEpoch(_clock++));

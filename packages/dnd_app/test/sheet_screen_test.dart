@@ -93,7 +93,11 @@ void main() {
     String action,
   ) async {
     await openItemMenu(tester, itemId);
-    await tester.tap(find.text(action));
+    final menuItem = find.ancestor(
+      of: find.text(action).last,
+      matching: find.byWidgetPredicate((widget) => widget is PopupMenuItem),
+    );
+    await tester.tap(menuItem);
     await tester.pumpAndSettle();
   }
 

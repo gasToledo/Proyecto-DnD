@@ -229,6 +229,37 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     }
   }
 
+  Future<void> _deleteInvalid(HomebrewLoadIssue issue) async {
+    final deleted = await _persist(() => store.deleteInvalid(issue));
+    if (deleted && mounted) setState(() {});
+  }
+
+  Widget _loadIssues() => Material(
+    color: Theme.of(context).colorScheme.errorContainer,
+    child: ExpansionTile(
+      leading: const Icon(Icons.warning_amber_rounded),
+      title: Text(
+        '${store.loadIssues.length} entrada(s) homebrew inválida(s) se omitieron',
+      ),
+      subtitle: const Text(
+        'Podés revisarlas y borrarlas sin impedir el inicio.',
+      ),
+      children: [
+        for (final issue in store.loadIssues)
+          ListTile(
+            dense: true,
+            title: Text('${issue.category} · ${issue.id}'),
+            subtitle: Text(issue.message),
+            trailing: IconButton(
+              tooltip: 'Borrar entrada inválida',
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => _deleteInvalid(issue),
+            ),
+          ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -262,16 +293,23 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
             ],
           ),
         ),
-        body: TabBarView(
+        body: Column(
           children: [
-            _weaponsTab(),
-            _armorTab(),
-            _itemsTab(),
-            _featsTab(),
-            _racesTab(),
-            _backgroundsTab(),
-            _spellsTab(),
-            _creaturesTab(),
+            if (store.loadIssues.isNotEmpty) _loadIssues(),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _weaponsTab(),
+                  _armorTab(),
+                  _itemsTab(),
+                  _featsTab(),
+                  _racesTab(),
+                  _backgroundsTab(),
+                  _spellsTab(),
+                  _creaturesTab(),
+                ],
+              ),
+            ),
           ],
         ),
       ),

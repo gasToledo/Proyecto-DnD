@@ -18,6 +18,7 @@ import 'package:dnd_server/src/repositories/character_repository.dart';
 import 'package:dnd_server/src/repositories/encounter_repository.dart';
 import 'package:dnd_server/src/repositories/event_repository.dart';
 import 'package:dnd_server/src/repositories/homebrew_repository.dart';
+import 'package:dnd_server/src/repositories/repository_transaction_runner.dart';
 import 'package:dnd_server/src/repositories/settings_repository.dart';
 import 'package:dnd_server/src/web/cache_headers.dart';
 import 'package:postgres/postgres.dart';
@@ -70,6 +71,8 @@ Future<void> main() async {
             userId: userId,
             bundle: bundle,
           ),
+      importHomebrew: ({required userId, required content}) => import_service
+          .importHomebrew(pool: pool, userId: userId, content: content),
       // `Pool` implementa `Session`: alcanza una única instancia de cada
       // repositorio para toda la vida del proceso, sin volver a abrir una
       // sesión por request (cada método de repositorio ya adquiere su propia
@@ -80,6 +83,7 @@ Future<void> main() async {
       notes: PostgresNoteRepository(pool),
       encounters: PostgresEncounterRepository(pool),
       events: PostgresEventRepository(pool),
+      transactions: PostgresRepositoryTransactionRunner(pool),
       homebrew: PostgresHomebrewRepository(pool),
       settings: PostgresSettingsRepository(pool),
       webStaticHandler: webStaticHandler,

@@ -19,6 +19,8 @@ class CharactersController extends ChangeNotifier {
   final ApiClient api;
   final List<Character> characters = [];
   final Map<String, Timer> _debouncers = {};
+  final Set<String> _pendingCreates = {};
+  final Map<String, String> _reassignedIds = {};
 
   /// Fecha de alta por id, tal como la informa el servidor. Vive acá y no en
   /// [Character] porque no es parte de la ficha: el documento lo escribe este
@@ -28,6 +30,10 @@ class CharactersController extends ChangeNotifier {
   static const _debounce = Duration(milliseconds: 400);
   ApiException? _lastSaveError;
   bool _disposed = false;
+  static final _unknownCreatedAt = DateTime.fromMillisecondsSinceEpoch(
+    0,
+    isUtc: true,
+  );
 
   CharactersController(this.api);
 
@@ -69,7 +75,7 @@ class CharactersController extends ChangeNotifier {
   /// Cuándo entró [id] a la cuenta. Para un personaje recién creado que
   /// todavía no volvió del servidor se usa la hora local: alcanza para que
   /// aparezca como el más nuevo hasta la próxima carga, que trae la de verdad.
-  DateTime createdAtOf(String id) => _createdAt[id] ?? DateTime.now();
+  DateTime createdAtOf(String id) => _createdAt[id] ?? _unknownCreatedAt;
 
   /// Fecha de alta local para un personaje recién creado, siempre posterior a
   /// la del resto. Con el reloj a secas, dos personajes creados en el mismo
@@ -90,7 +96,8 @@ class CharactersController extends ChangeNotifier {
   void add(Character c) {
     characters.add(c);
     _createdAt[c.id] = _nextLocalCreatedAt();
-    _scheduleSave(c, isNew: true);
+    _pendingCreates.add(c.id);
+    _scheduleSave(c);
     notifyListeners();
   }
 
@@ -107,6 +114,7 @@ class CharactersController extends ChangeNotifier {
       characters[i] = c;
     } else {
       characters.add(c);
+      _createdAt[c.id] = _nextLocalCreatedAt();
     }
     _scheduleSave(c);
     notifyListeners();
@@ -114,17 +122,25 @@ class CharactersController extends ChangeNotifier {
 
   Future<void> remove(Character c) async {
     _debouncers.remove(c.id)?.cancel();
-    await (_saveQueues[c.id] ?? Future<void>.value());
-    await api.deleteCharacter(c.id);
-    characters.removeWhere((x) => x.id == c.id);
+    final id = _effectiveId(c.id);
+    await (_saveQueues[id] ?? Future<void>.value());
+    await api.deleteCharacter(id);
+    characters.removeWhere((x) => x.id == id);
+    _createdAt.remove(id);
+    _pendingCreates
+      ..remove(c.id)
+      ..remove(id);
     notifyListeners();
   }
 
-  void _scheduleSave(Character c, {bool isNew = false}) {
-    _debouncers[c.id]?.cancel();
-    _debouncers[c.id] = Timer(_debounce, () {
-      _debouncers.remove(c.id);
-      _enqueueSave(c, isNew: isNew);
+  String _effectiveId(String id) => _reassignedIds[id] ?? id;
+
+  void _scheduleSave(Character c) {
+    final id = _effectiveId(c.id);
+    _debouncers[id]?.cancel();
+    _debouncers[id] = Timer(_debounce, () {
+      _debouncers.remove(id);
+      _enqueueSave(c);
       notifyListeners();
     });
   }
@@ -134,19 +150,24 @@ class CharactersController extends ChangeNotifier {
   /// `upsert` sobre el id ya asignado. Si el servidor reasignó el id, el
   /// personaje en memoria se actualiza para que los guardados posteriores
   /// apunten al id correcto.
-  Future<void> _enqueueSave(Character c, {bool isNew = false}) {
-    final previous = _saveQueues[c.id] ?? Future<void>.value();
+  Future<void> _enqueueSave(Character c) {
+    final queueId = _effectiveId(c.id);
+    final previous = _saveQueues[queueId] ?? Future<void>.value();
     late final Future<void> queued;
     queued = previous
         .then((_) async {
+          final effectiveId = _effectiveId(queueId);
+          final latest = characters
+              .where((character) => character.id == effectiveId)
+              .firstOrNull;
+          if (latest == null) return;
+          final isNew = _pendingCreates.contains(queueId);
           if (isNew) {
-            final stored = await api.createCharacter(c);
-            if (stored.id != c.id) {
-              final i = characters.indexWhere((x) => identical(x, c));
-              if (i >= 0) characters[i] = stored;
-            }
+            final stored = await api.createCharacter(latest);
+            _pendingCreates.remove(queueId);
+            if (stored.id != queueId) _acceptReassignedId(queueId, stored);
           } else {
-            await api.upsertCharacter(c);
+            await api.upsertCharacter(latest);
           }
           _lastSaveError = null;
         })
@@ -156,25 +177,47 @@ class CharactersController extends ChangeNotifier {
               : ApiException(null, error.toString());
         })
         .whenComplete(() {
-          if (identical(_saveQueues[c.id], queued)) {
-            _saveQueues.remove(c.id);
+          final effectiveId = _effectiveId(queueId);
+          if (identical(_saveQueues[effectiveId], queued)) {
+            _saveQueues.remove(effectiveId);
           }
           if (!_disposed) notifyListeners();
         });
-    _saveQueues[c.id] = queued;
+    _saveQueues[queueId] = queued;
     return queued;
+  }
+
+  void _acceptReassignedId(String oldId, Character stored) {
+    _reassignedIds[oldId] = stored.id;
+    final index = characters.indexWhere((character) => character.id == oldId);
+    if (index >= 0) characters[index] = stored;
+    final createdAt = _createdAt.remove(oldId);
+    if (createdAt != null) _createdAt[stored.id] = createdAt;
+
+    final queue = _saveQueues.remove(oldId);
+    if (queue != null) _saveQueues[stored.id] = queue;
+    final pendingTimer = _debouncers.remove(oldId);
+    if (pendingTimer != null) {
+      pendingTimer.cancel();
+      _scheduleSave(stored);
+    }
   }
 
   /// Fuerza el guardado inmediato de lo pendiente.
   Future<void> flush() async {
+    final pendingIds = _debouncers.keys.toList();
     for (final t in _debouncers.values) {
       t.cancel();
     }
     _debouncers.clear();
-    for (final c in characters) {
-      _enqueueSave(c);
+    for (final id in pendingIds) {
+      final effectiveId = _effectiveId(id);
+      final character = characters
+          .where((candidate) => candidate.id == effectiveId)
+          .firstOrNull;
+      if (character != null) _enqueueSave(character);
     }
-    await Future.wait(_saveQueues.values.toList());
+    await Future.wait(_saveQueues.values.toSet());
   }
 
   @override

@@ -22,19 +22,49 @@ import 'fakes/in_memory_encounter_repository.dart';
 import 'fakes/in_memory_event_repository.dart';
 import 'fakes/in_memory_homebrew_repository.dart';
 import 'fakes/in_memory_portrait_blob_store.dart';
+import 'fakes/in_memory_repository_transaction_runner.dart';
 import 'fakes/in_memory_settings_repository.dart';
+
+Map<String, dynamic> _homebrewWeapon(
+  String id, [
+  String name = 'Espada casera',
+]) => {
+  'id': id,
+  'name': name,
+  'source': 'homebrew',
+  'category': 'martial',
+  'damageDice': '1d8',
+  'damageType': 'cortante',
+};
+
+Map<String, dynamic> _homebrewItem(String id, String name) => {
+  'id': id,
+  'name': name,
+  'source': 'homebrew',
+  'category': 'gear',
+};
+
+Map<String, dynamic> _homebrewCreature(String id) => {
+  'id': id,
+  'name': 'Bestia casera',
+  'source': 'homebrew',
+  'ac': '12',
+  'hp': '9',
+};
 
 void main() {
   late FakeAuthDependencies fakeAuth;
   late InMemoryPortraitBlobStore portraits;
   late PortraitGenerationService generation;
   late ImportBackupFn importBackup;
+  late ImportHomebrewFn importHomebrew;
   late InMemoryCharacterRepository characters;
   late InMemoryCampaignRepository campaigns;
   late InMemoryChapterRepository chapters;
   late InMemoryNoteRepository notes;
   late InMemoryEncounterRepository encounters;
   late InMemoryEventRepository events;
+  late InMemoryRepositoryTransactionRunner transactions;
   late InMemoryHomebrewRepository homebrewRepo;
   late InMemorySettingsRepository settingsRepo;
   late Handler handler;
@@ -53,19 +83,42 @@ void main() {
     notes = InMemoryNoteRepository(campaigns, chapters);
     encounters = InMemoryEncounterRepository(campaigns);
     events = InMemoryEventRepository();
+    transactions = InMemoryRepositoryTransactionRunner(
+      characters: characters,
+      campaigns: campaigns,
+      chapters: chapters,
+      events: events,
+    );
     homebrewRepo = InMemoryHomebrewRepository();
+    importHomebrew = ({required userId, required content}) async {
+      var count = 0;
+      for (final category in content.entries) {
+        for (final document in category.value) {
+          await homebrewRepo.upsert(
+            userId,
+            category.key,
+            document['id'] as String,
+            document,
+          );
+          count++;
+        }
+      }
+      return count;
+    };
     settingsRepo = InMemorySettingsRepository();
     handler = buildHandler(
       auth: fakeAuth.dependencies,
       portraits: portraits,
       generation: generation,
       importBackup: importBackup,
+      importHomebrew: importHomebrew,
       characters: characters,
       campaigns: campaigns,
       chapters: chapters,
       notes: notes,
       encounters: encounters,
       events: events,
+      transactions: transactions,
       homebrew: homebrewRepo,
       settings: settingsRepo,
     );
@@ -670,12 +723,14 @@ void main() {
           portraits: portraits,
           generation: generation,
           importBackup: importBackup,
+          importHomebrew: importHomebrew,
           characters: characters,
           campaigns: campaigns,
           chapters: chapters,
           notes: notes,
           encounters: encounters,
           events: events,
+          transactions: transactions,
           homebrew: homebrewRepo,
           settings: settingsRepo,
         );
@@ -745,12 +800,14 @@ void main() {
         portraits: portraits,
         generation: generation,
         importBackup: importBackup,
+        importHomebrew: importHomebrew,
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
         notes: notes,
         encounters: encounters,
         events: events,
+        transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
       );
@@ -812,12 +869,14 @@ void main() {
             portraitsImported: 0,
           );
         },
+        importHomebrew: importHomebrew,
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
         notes: notes,
         encounters: encounters,
         events: events,
+        transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
       );
@@ -835,6 +894,27 @@ void main() {
 
       expect(response.statusCode, 400);
       expect(called, isFalse);
+    });
+
+    test('un cuerpo JSON que no es objeto responde 400', () async {
+      fakeAuth.nextVerifiedSubject = 'subject-import-shape';
+      final token = _extractToken(
+        (await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/auth/callback?code=1&state=xyz'),
+          ),
+        )).headers['set-cookie']!,
+      );
+      final response = await handler(
+        Request(
+          'POST',
+          Uri.parse('http://localhost/api/import'),
+          headers: {'cookie': 'dnd_session=$token'},
+          body: '[]',
+        ),
+      );
+      expect(response.statusCode, 400);
     });
 
     test('un respaldo válido se importa y devuelve el resumen', () async {
@@ -858,12 +938,14 @@ void main() {
             portraitsImported: 0,
           );
         },
+        importHomebrew: importHomebrew,
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
         notes: notes,
         encounters: encounters,
         events: events,
+        transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
       );
@@ -1255,7 +1337,7 @@ void main() {
           'PUT',
           Uri.parse('http://localhost/api/homebrew/weapons/w1'),
           headers: {'cookie': 'dnd_session=$token'},
-          body: jsonEncode({'id': 'w1', 'name': 'Espada casera'}),
+          body: jsonEncode(_homebrewWeapon('w1')),
         ),
       );
       expect(saved.statusCode, 200);
@@ -1269,9 +1351,7 @@ void main() {
           ),
         )).readAsString(),
       );
-      expect(listed['content']['weapons'], [
-        {'id': 'w1', 'name': 'Espada casera'},
-      ]);
+      expect(listed['content']['weapons'], [_homebrewWeapon('w1')]);
     });
 
     test('los objetos son una categoría válida y se pueden borrar', () async {
@@ -1283,7 +1363,7 @@ void main() {
           'PUT',
           Uri.parse('http://localhost/api/homebrew/items/hb-capa'),
           headers: cookie,
-          body: jsonEncode({'id': 'hb-capa', 'name': 'Capa de protección'}),
+          body: jsonEncode(_homebrewItem('hb-capa', 'Capa de protección')),
         ),
       );
       expect(saved.statusCode, 200);
@@ -1299,7 +1379,7 @@ void main() {
       )['content']['items'];
 
       expect(await listItems(), [
-        {'id': 'hb-capa', 'name': 'Capa de protección'},
+        _homebrewItem('hb-capa', 'Capa de protección'),
       ]);
 
       final deleted = await handler(
@@ -1320,7 +1400,7 @@ void main() {
           'PUT',
           Uri.parse('http://localhost/api/homebrew/no-existe/w1'),
           headers: {'cookie': 'dnd_session=$token'},
-          body: jsonEncode({'id': 'w1'}),
+          body: jsonEncode(_homebrewWeapon('w1')),
         ),
       );
       expect(response.statusCode, 400);
@@ -1349,7 +1429,7 @@ void main() {
           'PUT',
           Uri.parse('http://localhost/api/homebrew/weapons/w1'),
           headers: {'cookie': 'dnd_session=$token'},
-          body: jsonEncode({'id': 'w1'}),
+          body: jsonEncode(_homebrewWeapon('w1')),
         ),
       );
       await handler(
@@ -1379,7 +1459,7 @@ void main() {
           'PUT',
           Uri.parse('http://localhost/api/homebrew/weapons/w1'),
           headers: {'cookie': 'dnd_session=$tokenA'},
-          body: jsonEncode({'id': 'w1'}),
+          body: jsonEncode(_homebrewWeapon('w1')),
         ),
       );
 
@@ -1394,6 +1474,70 @@ void main() {
         )).readAsString(),
       );
       expect(listedB['content'], isEmpty);
+    });
+
+    test('importa un pack completo incluyendo criaturas', () async {
+      final token = await login('subject-hb-batch');
+      final response = await handler(
+        Request(
+          'POST',
+          Uri.parse('http://localhost/api/homebrew/import'),
+          headers: {'cookie': 'dnd_session=$token'},
+          body: jsonEncode({
+            'content': {
+              'weapons': [_homebrewWeapon('batch-weapon')],
+              'creatures': [_homebrewCreature('batch-creature')],
+            },
+          }),
+        ),
+      );
+
+      expect(response.statusCode, 200);
+      expect(jsonDecode(await response.readAsString())['importedCount'], 2);
+      final stored = await homebrewRepo.listForUser(
+        fakeAuth.accountsBySubject['subject-hb-batch']!,
+      );
+      expect(stored['creatures']?.single['id'], 'batch-creature');
+    });
+
+    test('rechaza todo el pack si una entrada es inválida', () async {
+      final token = await login('subject-hb-invalid');
+      final response = await handler(
+        Request(
+          'POST',
+          Uri.parse('http://localhost/api/homebrew/import'),
+          headers: {'cookie': 'dnd_session=$token'},
+          body: jsonEncode({
+            'content': {
+              'weapons': [
+                _homebrewWeapon('valid-before-error'),
+                {'id': 'broken', 'source': 'homebrew'},
+              ],
+            },
+          }),
+        ),
+      );
+
+      expect(response.statusCode, 400);
+      expect(
+        await homebrewRepo.listForUser(
+          fakeAuth.accountsBySubject['subject-hb-invalid']!,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('rechaza un origen que no sea homebrew', () async {
+      final token = await login('subject-hb-source');
+      final response = await handler(
+        Request(
+          'PUT',
+          Uri.parse('http://localhost/api/homebrew/weapons/w1'),
+          headers: {'cookie': 'dnd_session=$token'},
+          body: jsonEncode(_homebrewWeapon('w1')..['source'] = 'srd_2024'),
+        ),
+      );
+      expect(response.statusCode, 400);
     });
   });
 
@@ -1434,6 +1578,19 @@ void main() {
         )).readAsString(),
       );
       expect(response['settings'], isNull);
+    });
+
+    test('rechaza un cuerpo ordinario mayor a 1 MiB', () async {
+      final token = await login('subject-settings-large');
+      final response = await handler(
+        Request(
+          'PUT',
+          Uri.parse('http://localhost/api/settings'),
+          headers: {'cookie': 'dnd_session=$token'},
+          body: ''.padRight(1024 * 1024 + 1, 'x'),
+        ),
+      );
+      expect(response.statusCode, 413);
     });
 
     test('guarda y relee los ajustes de la cuenta', () async {
@@ -1491,12 +1648,14 @@ void main() {
         portraits: portraits,
         generation: generation,
         importBackup: importBackup,
+        importHomebrew: importHomebrew,
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
         notes: notes,
         encounters: encounters,
         events: events,
+        transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
         webStaticHandler: (request) =>
@@ -1517,12 +1676,14 @@ void main() {
         portraits: portraits,
         generation: generation,
         importBackup: importBackup,
+        importHomebrew: importHomebrew,
         characters: characters,
         campaigns: campaigns,
         chapters: chapters,
         notes: notes,
         encounters: encounters,
         events: events,
+        transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
         webStaticHandler: (request) =>
@@ -1606,6 +1767,132 @@ void main() {
       token: token,
       body: {'campaign': campaignJson(id)},
     );
+
+    Future<({String owner, String dm, String memberId})> linkCharacter(
+      String suffix,
+    ) async {
+      final owner = await login('transaction-owner-$suffix');
+      final code = await shareCharacter(owner, 'sagan');
+      final dm = await login('transaction-dm-$suffix');
+      await createCampaign(dm, 'tumba');
+      final redeemed = await send(
+        'POST',
+        '/api/campaigns/tumba/members',
+        token: dm,
+        body: {'code': code},
+      );
+      return (
+        owner: owner,
+        dm: dm,
+        memberId: redeemed['body']['member']['memberId'] as String,
+      );
+    }
+
+    test(
+      'revertir evento conserva el código para reintentar el canje',
+      () async {
+        final owner = await login('transaction-owner-redeem');
+        final code = await shareCharacter(owner, 'sagan');
+        final dm = await login('transaction-dm-redeem');
+        await createCampaign(dm, 'tumba');
+        final before = transactions.runCount;
+        events.failAppendWith = StateError('events unavailable');
+
+        final failed = await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: dm,
+          body: {'code': code},
+        );
+        expect(failed['status'], 500);
+        expect(transactions.runCount, before + 1);
+
+        events.failAppendWith = null;
+        final retried = await send(
+          'POST',
+          '/api/campaigns/tumba/members',
+          token: dm,
+          body: {'code': code},
+        );
+        expect(retried['status'], 200);
+      },
+    );
+
+    test('revertir evento conserva el personaje al borrarlo', () async {
+      final linked = await linkCharacter('delete-character');
+      final before = transactions.runCount;
+      events.failAppendWith = StateError('events unavailable');
+
+      final failed = await send(
+        'DELETE',
+        '/api/characters/sagan',
+        token: linked.owner,
+      );
+      expect(failed['status'], 500);
+      expect(transactions.runCount, before + 1);
+
+      final listed = await send('GET', '/api/characters', token: linked.owner);
+      expect(listed['body']['characters'], hasLength(1));
+    });
+
+    test('revertir evento conserva el vínculo al borrarlo', () async {
+      final linked = await linkCharacter('delete-link');
+      final before = transactions.runCount;
+      events.failAppendWith = StateError('events unavailable');
+
+      final failed = await send(
+        'DELETE',
+        '/api/campaign-links/${linked.memberId}',
+        token: linked.dm,
+      );
+      expect(failed['status'], 500);
+      expect(transactions.runCount, before + 1);
+
+      events.failAppendWith = null;
+      final retried = await send(
+        'DELETE',
+        '/api/campaign-links/${linked.memberId}',
+        token: linked.dm,
+      );
+      expect(retried['status'], 200);
+    });
+
+    test('revertir evento deja el capítulo abierto para reintentar', () async {
+      final linked = await linkCharacter('close-chapter');
+      await send(
+        'POST',
+        '/api/campaigns/tumba/chapters',
+        token: linked.dm,
+        body: {
+          'chapter': {
+            'schemaVersion': 1,
+            'id': 'cripta',
+            'name': 'La Cripta',
+            'summary': '',
+            'state': 'planned',
+            'grantsLevel': false,
+          },
+        },
+      );
+      final before = transactions.runCount;
+      events.failAppendWith = StateError('events unavailable');
+
+      final failed = await send(
+        'POST',
+        '/api/campaigns/tumba/chapters/cripta/close',
+        token: linked.dm,
+      );
+      expect(failed['status'], 500);
+      expect(transactions.runCount, before + 1);
+
+      events.failAppendWith = null;
+      final retried = await send(
+        'POST',
+        '/api/campaigns/tumba/chapters/cripta/close',
+        token: linked.dm,
+      );
+      expect(retried['status'], 200);
+    });
 
     test('sin sesión ninguna operación responde', () async {
       for (final request in [

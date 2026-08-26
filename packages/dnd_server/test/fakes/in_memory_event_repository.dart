@@ -5,6 +5,32 @@ class InMemoryEventRepository implements EventRepository {
   final Map<String, List<UserEvent>> _byUser = {};
   final Set<String> _seen = {};
   int _counter = 0;
+  Object? failAppendWith;
+
+  Object snapshot() => (
+    byUser: {
+      for (final entry in _byUser.entries) entry.key: List.of(entry.value),
+    },
+    seen: Set.of(_seen),
+    counter: _counter,
+  );
+
+  void restore(Object raw) {
+    final snapshot =
+        raw
+            as ({
+              Map<String, List<UserEvent>> byUser,
+              Set<String> seen,
+              int counter,
+            });
+    _byUser
+      ..clear()
+      ..addAll(snapshot.byUser);
+    _seen
+      ..clear()
+      ..addAll(snapshot.seen);
+    _counter = snapshot.counter;
+  }
 
   /// Los ids son UUID en la base y los handlers validan su forma.
   String _nextId() =>
@@ -16,6 +42,7 @@ class InMemoryEventRepository implements EventRepository {
     String kind,
     Map<String, dynamic> payload,
   ) async {
+    if (failAppendWith case final failure?) throw failure;
     _byUser
         .putIfAbsent(userId, () => [])
         .add(

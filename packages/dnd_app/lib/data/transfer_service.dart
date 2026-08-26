@@ -96,6 +96,7 @@ class TransferService {
           'races',
           'backgrounds',
           'spells',
+          'creatures',
         ])
           key: ((content[key] as List?) ?? const [])
               .map((e) => (e as Map).cast<String, dynamic>())

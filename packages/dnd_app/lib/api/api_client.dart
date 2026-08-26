@@ -149,6 +149,17 @@ class ApiClient {
     );
   }
 
+  Future<int> importHomebrew(
+    Map<String, List<Map<String, dynamic>>> content,
+  ) async {
+    final response = await _send(
+      'POST',
+      '/api/homebrew/import',
+      jsonBody: {'content': content},
+    );
+    return _json(response)['importedCount'] as int;
+  }
+
   Future<void> deleteHomebrew(String category, String id) =>
       _send('DELETE', '/api/homebrew/$category/${Uri.encodeComponent(id)}');
 

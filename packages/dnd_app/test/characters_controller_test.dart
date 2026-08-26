@@ -43,6 +43,62 @@ void main() {
     expect(server.characters.containsKey('sagan'), isTrue);
   });
 
+  test(
+    'add seguido de touch conserva create y no sobrescribe una colisión',
+    () async {
+      final original = demoSagan();
+      final server = FakeApiServer()..characters['sagan'] = original;
+      final ctrl = CharactersController(ApiClient(client: server.client));
+      final incoming = original.copyWith(name: 'Otro Sagan');
+
+      ctrl.add(incoming);
+      ctrl.touch(incoming);
+      await ctrl.flush();
+
+      expect(server.createCharacterCalls, 1);
+      expect(server.upsertCharacterCalls, 0);
+      expect(server.characters['sagan']!.name, original.name);
+      expect(ctrl.characters.single.id, startsWith('generated-'));
+    },
+  );
+
+  test('add seguido de replace conserva create', () async {
+    final server = FakeApiServer();
+    final ctrl = CharactersController(ApiClient(client: server.client));
+    final character = demoSagan();
+
+    ctrl.add(character);
+    ctrl.replace(character.copyWith(name: 'Editado antes de guardar'));
+    await ctrl.flush();
+
+    expect(server.createCharacterCalls, 1);
+    expect(server.upsertCharacterCalls, 0);
+    expect(server.characters['sagan']!.name, 'Editado antes de guardar');
+  });
+
+  test('flush no reescribe personajes sin cambios pendientes', () async {
+    final server = FakeApiServer()..characters['sagan'] = demoSagan();
+    final ctrl = CharactersController(ApiClient(client: server.client));
+    await ctrl.load();
+
+    await ctrl.flush();
+
+    expect(server.createCharacterCalls, 0);
+    expect(server.upsertCharacterCalls, 0);
+  });
+
+  test('replace asigna una fecha estable a un personaje desconocido', () {
+    final ctrl = CharactersController(ApiClient());
+    ctrl.replace(demoSagan());
+
+    final first = ctrl.createdAtOf('sagan');
+    final second = ctrl.createdAtOf('sagan');
+
+    expect(second, first);
+    expect(first, isNot(DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)));
+    ctrl.dispose();
+  });
+
   test('load repuebla la lista desde el servidor', () async {
     final server = FakeApiServer()..characters['sagan'] = demoSagan();
     final ctrl = CharactersController(ApiClient(client: server.client));

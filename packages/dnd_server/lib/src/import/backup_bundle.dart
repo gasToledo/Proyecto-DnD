@@ -6,11 +6,11 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:path/path.dart' as p;
 
 import '../util/safe_path.dart';
+import 'homebrew_content.dart';
 
-/// Puerto del lado de lectura de `BackupBundleCodec` (aplicación de
-/// escritorio): el escritorio sigue exportando, el servidor solo importa (ver
-/// capacidad `account-data-import`). No se porta `encode()` porque el
-/// servidor nunca produce un ZIP de respaldo.
+/// Puerto del lado de lectura de `BackupBundleCodec`: el cliente Web exporta y
+/// el servidor importa (ver capacidad `account-data-import`). No se porta
+/// `encode()` porque el servidor nunca produce un ZIP de respaldo.
 enum BackupScope { character, full }
 
 /// Nombres de credencial que nunca pueden viajar en un respaldo. Incluye las de
@@ -194,7 +194,7 @@ class BackupBundleCodec {
           homebrewPath != 'homebrew/content.json') {
         throw const FormatException('Ruta de homebrew inválida.');
       }
-      homebrew = _parseHomebrew(_readJsonMap(files, homebrewPath));
+      homebrew = parseHomebrewContent(_readJsonMap(files, homebrewPath));
     }
 
     Map<String, dynamic>? preferences;
@@ -249,23 +249,6 @@ class BackupBundleCodec {
     requireSafePathSegment(character.id, label: 'id de personaje');
     return character;
   }
-
-  static Map<String, List<Map<String, dynamic>>> _parseHomebrew(
-    Map<String, dynamic> content,
-  ) => {
-    for (final key in const [
-      'weapons',
-      'armor',
-      'items',
-      'feats',
-      'races',
-      'backgrounds',
-      'spells',
-    ])
-      key: ((content[key] as List?) ?? const [])
-          .map((e) => (e as Map).cast<String, dynamic>())
-          .toList(),
-  };
 
   static bool _isSafeArchivePath(String name) {
     if (name.isEmpty ||

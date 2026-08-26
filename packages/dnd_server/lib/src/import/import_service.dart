@@ -18,6 +18,29 @@ class ImportResult {
   });
 }
 
+Future<int> importHomebrew({
+  required Pool pool,
+  required String userId,
+  required Map<String, List<Map<String, dynamic>>> content,
+}) async {
+  var imported = 0;
+  await pool.runTx((session) async {
+    final repository = PostgresHomebrewRepository(session);
+    for (final category in content.entries) {
+      for (final document in category.value) {
+        await repository.upsert(
+          userId,
+          category.key,
+          document['id'] as String,
+          document,
+        );
+        imported++;
+      }
+    }
+  });
+  return imported;
+}
+
 /// Resultado de resolver ids y guardar los retratos de un [BackupBundle]: la
 /// parte de la importación que no toca la base de datos, y por eso se puede
 /// probar sin una conexión real.
@@ -124,10 +147,12 @@ Future<ImportResult> importBackup({
       final homebrewRepo = PostgresHomebrewRepository(session);
       for (final category in homebrew.entries) {
         for (final document in category.value) {
-          final id = document['id'];
-          if (id is String) {
-            await homebrewRepo.upsert(userId, category.key, id, document);
-          }
+          await homebrewRepo.upsert(
+            userId,
+            category.key,
+            document['id'] as String,
+            document,
+          );
         }
       }
     }

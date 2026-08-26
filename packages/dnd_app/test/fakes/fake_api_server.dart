@@ -29,6 +29,8 @@ class FakeApiServer {
   final Map<String, Uint8List> portraits = {};
   List<Map<String, dynamic>> providers = [];
   int _generatedIdCounter = 0;
+  int createCharacterCalls = 0;
+  int upsertCharacterCalls = 0;
 
   /// Campañas que dirige la cuenta, y los vínculos con personajes.
   ///
@@ -130,6 +132,7 @@ class FakeApiServer {
       });
     }
     if (method == 'POST' && path == '/api/characters') {
+      createCharacterCalls++;
       var character = _characterFrom(_body(request)['character']);
       if (characters.containsKey(character.id)) {
         final newId = 'generated-${_generatedIdCounter++}';
@@ -140,6 +143,7 @@ class FakeApiServer {
       return _json({'character': character.toJson()});
     }
     if (method == 'PUT' && path.startsWith('/api/characters/')) {
+      upsertCharacterCalls++;
       final id = _segment(path, '/api/characters/');
       final character = _characterFrom(_body(request)['character']);
       characters[id] = character;
@@ -159,6 +163,23 @@ class FakeApiServer {
             entry.key: entry.value.values.toList(),
         },
       });
+    }
+    if (method == 'POST' && path == '/api/homebrew/import') {
+      final content = (_body(request)['content'] as Map)
+          .cast<String, dynamic>();
+      final staged = <String, Map<String, Map<String, dynamic>>>{};
+      var count = 0;
+      for (final entry in content.entries) {
+        staged[entry.key] = {
+          for (final raw in entry.value as List)
+            (raw as Map)['id'] as String: raw.cast<String, dynamic>(),
+        };
+        count += staged[entry.key]!.length;
+      }
+      for (final entry in staged.entries) {
+        (homebrew[entry.key] ??= {}).addAll(entry.value);
+      }
+      return _json({'importedCount': count});
     }
     if (method == 'PUT' && path.startsWith('/api/homebrew/')) {
       final rest = path.substring('/api/homebrew/'.length).split('/');

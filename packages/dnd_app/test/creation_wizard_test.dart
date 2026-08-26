@@ -266,7 +266,10 @@ void main() {
 
     // El Guerrero es la clase por defecto y no deja avanzar sin estilo de
     // combate ni las 3 maestrías.
-    await tester.tap(find.text('Defensa'));
+    final defense = find.widgetWithText(ChoiceChip, 'Defensa');
+    await tester.ensureVisible(defense);
+    await tester.pumpAndSettle();
+    await tester.tap(defense);
     await tester.pumpAndSettle();
     for (final w in ['Garrote', 'Daga', 'Clava']) {
       await checkWeapon(tester, w);

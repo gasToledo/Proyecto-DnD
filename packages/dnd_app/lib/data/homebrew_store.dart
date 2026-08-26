@@ -2,6 +2,18 @@ import 'package:dnd_engine/dnd_engine.dart';
 
 import '../api/api_client.dart';
 
+class HomebrewLoadIssue {
+  final String category;
+  final String id;
+  final String message;
+
+  const HomebrewLoadIssue({
+    required this.category,
+    required this.id,
+    required this.message,
+  });
+}
+
 /// Contenido homebrew de la cuenta autenticada, respaldado por la API del
 /// servidor (ver `design.md`, decisión D6: reemplaza al almacén de archivos
 /// de escritorio, no lo porta). Mismo esquema en memoria que la versión de
@@ -17,67 +29,51 @@ class HomebrewStore {
   final Map<String, Background> backgrounds = {};
   final Map<String, Spell> spells = {};
   final Map<String, Creature> creatures = {};
+  final List<HomebrewLoadIssue> loadIssues = [];
 
   HomebrewStore(this.api);
 
   Future<void> load() async {
     final content = await api.listHomebrew();
-    weapons
-      ..clear()
-      ..addEntries(
-        (content['weapons'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Weapon.fromJson(j)),
-        ),
-      );
-    armor
-      ..clear()
-      ..addEntries(
-        (content['armor'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Armor.fromJson(j)),
-        ),
-      );
-    items
-      ..clear()
-      ..addEntries(
-        (content['items'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Item.fromJson(j)),
-        ),
-      );
-    feats
-      ..clear()
-      ..addEntries(
-        (content['feats'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Feat.fromJson(j)),
-        ),
-      );
-    races
-      ..clear()
-      ..addEntries(
-        (content['races'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Race.fromJson(j)),
-        ),
-      );
-    backgrounds
-      ..clear()
-      ..addEntries(
-        (content['backgrounds'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Background.fromJson(j)),
-        ),
-      );
-    spells
-      ..clear()
-      ..addEntries(
-        (content['spells'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Spell.fromJson(j)),
-        ),
-      );
-    creatures
-      ..clear()
-      ..addEntries(
-        (content['creatures'] ?? const []).map(
-          (j) => MapEntry(j['id'] as String, Creature.fromJson(j)),
-        ),
-      );
+    loadIssues.clear();
+    _loadCategory(content, 'weapons', weapons, Weapon.fromJson);
+    _loadCategory(content, 'armor', armor, Armor.fromJson);
+    _loadCategory(content, 'items', items, Item.fromJson);
+    _loadCategory(content, 'feats', feats, Feat.fromJson);
+    _loadCategory(content, 'races', races, Race.fromJson);
+    _loadCategory(content, 'backgrounds', backgrounds, Background.fromJson);
+    _loadCategory(content, 'spells', spells, Spell.fromJson);
+    _loadCategory(content, 'creatures', creatures, Creature.fromJson);
+  }
+
+  void _loadCategory<T>(
+    Map<String, List<Map<String, dynamic>>> content,
+    String category,
+    Map<String, T> target,
+    T Function(Map<String, dynamic>) parse,
+  ) {
+    target.clear();
+    for (final document in content[category] ?? const []) {
+      final rawId = document['id'];
+      final issueId = rawId is String && rawId.isNotEmpty ? rawId : '(sin id)';
+      try {
+        if (rawId is! String || rawId.isEmpty) {
+          throw const FormatException('El id está ausente o vacío.');
+        }
+        if (document['source'] != 'homebrew') {
+          throw const FormatException('El origen debe ser homebrew.');
+        }
+        target[rawId] = parse(document);
+      } catch (error) {
+        loadIssues.add(
+          HomebrewLoadIssue(
+            category: category,
+            id: issueId,
+            message: error.toString(),
+          ),
+        );
+      }
+    }
   }
 
   /// Todo el contenido homebrew serializado a listas JSON por tipo, para
@@ -120,25 +116,22 @@ class HomebrewStore {
   }
 
   /// Importa contenido homebrew (mismo formato que [exportContent])
-  /// fusionándolo por id: una entrada con id existente se sobrescribe. Cada
-  /// entrada se guarda con su propia llamada a la API (no hay un endpoint de
-  /// importación atómica de homebrew: es un paquete aparte del respaldo
-  /// principal, de menor cuenta que el flujo de `/api/import`). Devuelve la
-  /// cantidad total de entradas importadas.
+  /// fusionándolo por id: una entrada con id existente se sobrescribe. El
+  /// servidor valida el pack completo y lo guarda en una sola transacción.
+  /// Devuelve la cantidad total de entradas importadas.
   Future<int> importContent(
     Map<String, List<Map<String, dynamic>>> content, {
     required ContentRepository repository,
   }) async {
     _validateInventoryIds(content, repository);
-    var count = 0;
-    for (final entry in content.entries) {
-      for (final json in entry.value) {
-        await api.upsertHomebrew(entry.key, json);
-        count++;
-      }
-    }
+    final count = await api.importHomebrew(content);
     await load();
     return count;
+  }
+
+  Future<void> deleteInvalid(HomebrewLoadIssue issue) async {
+    await api.deleteHomebrew(issue.category, issue.id);
+    loadIssues.remove(issue);
   }
 
   /// Evita que un id de inventario cambie de significado según qué catálogo

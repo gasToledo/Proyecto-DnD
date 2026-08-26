@@ -83,4 +83,21 @@ void main() {
     );
     expect(server.homebrew, isEmpty);
   });
+
+  test('load omite entradas inválidas y permite borrarlas', () async {
+    final server = FakeApiServer();
+    server.homebrew['weapons'] = {
+      'broken': {'id': 'broken', 'name': 'Sin reglas', 'source': 'homebrew'},
+    };
+    final store = HomebrewStore(ApiClient(client: server.client));
+
+    await store.load();
+
+    expect(store.weapons, isEmpty);
+    expect(store.loadIssues, hasLength(1));
+    expect(store.loadIssues.single.id, 'broken');
+    await store.deleteInvalid(store.loadIssues.single);
+    expect(store.loadIssues, isEmpty);
+    expect(server.homebrew['weapons'], isEmpty);
+  });
 }

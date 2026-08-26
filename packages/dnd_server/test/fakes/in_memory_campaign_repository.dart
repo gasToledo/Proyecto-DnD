@@ -32,6 +32,34 @@ class InMemoryCampaignRepository implements CampaignRepository {
   final List<CampaignLink> _links = [];
   int _memberCounter = 0;
 
+  Object snapshot() => (
+    byDm: {for (final entry in _byDm.entries) entry.key: Map.of(entry.value)},
+    codes: Map.of(_codes),
+    links: List.of(_links),
+    memberCounter: _memberCounter,
+  );
+
+  void restore(Object raw) {
+    final snapshot =
+        raw
+            as ({
+              Map<String, Map<String, Campaign>> byDm,
+              Map<String, _StoredShareCode> codes,
+              List<CampaignLink> links,
+              int memberCounter,
+            });
+    _byDm
+      ..clear()
+      ..addAll(snapshot.byDm);
+    _codes
+      ..clear()
+      ..addAll(snapshot.codes);
+    _links
+      ..clear()
+      ..addAll(snapshot.links);
+    _memberCounter = snapshot.memberCounter;
+  }
+
   /// Lo que cuelga de una campaña y tiene que irse con ella.
   ///
   /// Reproduce las claves foráneas `ON DELETE CASCADE` que apuntan a

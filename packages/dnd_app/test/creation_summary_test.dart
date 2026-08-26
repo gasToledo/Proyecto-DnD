@@ -38,7 +38,18 @@ void main() {
     }
 
     Future<void> tapText(String t) async {
-      await tester.tap(find.text(t).first);
+      final target = find.text(t).first;
+      await tester.ensureVisible(target);
+      await tester.pumpAndSettle();
+      await tester.tap(target);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> tapChoiceChip(String label) async {
+      final target = find.widgetWithText(ChoiceChip, label);
+      await tester.ensureVisible(target);
+      await tester.pumpAndSettle();
+      await tester.tap(target);
       await tester.pumpAndSettle();
     }
 
@@ -50,7 +61,7 @@ void main() {
       find.text('Esta especie requiere elegir un linaje.'),
       findsOneWidget,
     );
-    await tapText('Alto Elfo');
+    await tapChoiceChip('Alto Elfo');
     await tester.tap(find.byType(DropdownButton<Ability>));
     await tester.pumpAndSettle();
     await tapText('INT');

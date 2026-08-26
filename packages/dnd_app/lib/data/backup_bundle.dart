@@ -16,7 +16,7 @@ const portableCredentialKeys = {
 };
 
 /// Segmento seguro para usar como nombre de archivo o directorio dentro del
-/// ZIP: la misma validación que ya usaba la app de escritorio, ahora sin
+/// ZIP: la misma validación que ya usaba el cliente, ahora sin
 /// depender de `app_paths.dart` (que era filesystem-only).
 String requireSafePathSegment(String value, {String label = 'identificador'}) {
   if (value.isEmpty ||

@@ -21,6 +21,26 @@ class InMemoryChapterRepository implements ChapterRepository {
   final Map<String, List<Chapter>> _byCampaign = {};
   int _generatedIdCounter = 0;
 
+  Object snapshot() => (
+    byCampaign: {
+      for (final entry in _byCampaign.entries) entry.key: List.of(entry.value),
+    },
+    generatedIdCounter: _generatedIdCounter,
+  );
+
+  void restore(Object raw) {
+    final snapshot =
+        raw
+            as ({
+              Map<String, List<Chapter>> byCampaign,
+              int generatedIdCounter,
+            });
+    _byCampaign
+      ..clear()
+      ..addAll(snapshot.byCampaign);
+    _generatedIdCounter = snapshot.generatedIdCounter;
+  }
+
   /// Ganchos que corren al borrar un capítulo, para que los fakes que cuelgan
   /// de él reproduzcan su clave foránea en cascada — hoy, las notas.
   final List<void Function(String dmUserId, String campaignId, String id)>

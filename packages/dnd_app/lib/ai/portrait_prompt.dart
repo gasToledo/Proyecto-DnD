@@ -1,6 +1,6 @@
 import 'package:dnd_engine/dnd_engine.dart';
 
-/// Estilos predeterminados para la generación de retratos (brief §3.B.3 / §9).
+/// Estilos predeterminados para la generación de retratos.
 const portraitStyles = <String>[
   'Arte digital de fantasía',
   'Óleo clásico',
@@ -13,7 +13,7 @@ const portraitStyles = <String>[
 
 /// Construye el prompt de retrato auto-completando datos ya conocidos de la
 /// ficha (raza, clase, armadura, arma) y sumando texto libre y estilo. Puro y
-/// testeable (brief §3.B.2).
+/// testeable.
 String buildPortraitPrompt({
   required Character character,
   required ContentRepository repo,

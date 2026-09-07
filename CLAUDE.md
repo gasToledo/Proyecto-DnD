@@ -71,8 +71,11 @@ packages/dnd_app      Flutter web. Depende del engine.
 packages/dnd_server   shelf + Postgres. Depende del engine.
 ```
 
-La dirección es estricta: **el engine no conoce a nadie**. Si algo necesita
-`BuildContext` o `dart:io`, no va ahí.
+La dirección es estricta: **el engine no depende del cliente ni del servidor**.
+Los modelos y las reglas no usan Flutter ni `dart:io`. La única excepción de
+entrada/salida es `lib/src/data/content_pack_loader_io.dart`: carga catálogos
+desde un directorio y se importa condicionalmente. En web, el cliente carga
+los assets con `loadOfficialContent` y usa el mismo `ContentRepository`.
 
 ## Lo que hay que entender antes de tocar nada
 

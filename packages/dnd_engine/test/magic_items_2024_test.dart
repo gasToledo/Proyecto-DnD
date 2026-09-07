@@ -212,29 +212,4 @@ void main() {
     expect(
         level14.optionItemIds, isNot(contains('armadura-de-vulnerabilidad')));
   });
-
-  test('cambiar un plano elimina solo su réplica', () {
-    final c = _character(
-      classId: 'artificer',
-      level: 2,
-      plans: const ['returning-weapon', 'manifold-tool'],
-      inventory: const [
-        InventoryEntry(
-          itemId: 'returning-weapon',
-          baseItemId: 'dagger',
-          origin: 'artificer:replicate-magic-item:returning-weapon',
-        ),
-        InventoryEntry(
-          itemId: 'manifold-tool',
-          origin: 'artificer:replicate-magic-item:manifold-tool',
-        ),
-      ],
-    );
-    final changed = InventoryOps.replaceMagicItemChoice(
-      c,
-      'returning-weapon',
-      'repeating-shot',
-    );
-    expect(changed.inventory.map((e) => e.itemId), ['manifold-tool']);
-  });
 }

@@ -149,8 +149,8 @@ Exportás un personaje suelto, o un ZIP completo con todas las fichas, los
 retratos, el homebrew y las preferencias. No incluye ninguna credencial.
 
 Al importar, un id que ya exista en la cuenta se reasigna a uno libre en vez
-de pisar lo que había, así que importar el mismo respaldo dos veces no
-duplica ni pierde nada.
+de pisar lo que había. Importar el mismo respaldo dos veces crea copias con
+ids distintos; no sobrescribe los personajes existentes.
 
 ### Tu cuenta
 

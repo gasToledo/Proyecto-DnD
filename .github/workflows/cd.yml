@@ -63,7 +63,7 @@ jobs:
         # self-hosted-deployment), así que no se puede pedir /health por HTTP
         # desde afuera del contenedor. En vez de reimplementar ese chequeo,
         # se lee el resultado del healthcheck que docker-compose.yml ya
-        # define sobre ese mismo endpoint (ver design.md, D7).
+        # define sobre ese mismo endpoint.
         run: |
           for i in $(seq 1 30); do
             cid="$(docker compose ps -q server)"

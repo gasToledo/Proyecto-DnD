@@ -28,11 +28,8 @@ String requireSafePathSegment(String value, {String label = 'identificador'}) {
   return value;
 }
 
-/// Arma el ZIP de respaldo, en memoria. El cliente web solo **produce** este
-/// formato para exportar/descargar (ver `design.md`, decisión D10): la
-/// lectura de un ZIP subido la hace el servidor en `POST /api/import`, que
-/// tiene su propia copia de este códec del lado de la confianza — este
-/// cliente nunca decodifica un ZIP ajeno, así que no necesita esa mitad.
+/// Produce el ZIP de respaldo en memoria. La lectura y validación de ZIP
+/// ajenos corresponde al servidor, en `POST /api/import`.
 class BackupBundleCodec {
   static const type = 'dnd_bundle';
   static const formatVersion = 2;

@@ -873,7 +873,7 @@ extension _SheetInventorySection on _SheetScreenState {
   /// mesa.
   Widget _chargesRow(InventoryEntry e, _ItemInfo info) {
     final max = info.maxCharges!;
-    final left = e.charges ?? max;
+    final left = InventoryOps.chargesLeft(e, repo)!;
     void set(int value) =>
         _updateEntry(e.entryId, (entry) => entry.copyWith(charges: value));
     return Padding(

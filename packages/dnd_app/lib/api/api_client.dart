@@ -7,12 +7,9 @@ import 'package:http/http.dart' as http;
 import 'api_exception.dart';
 import 'api_models.dart';
 
-/// Único punto de entrada del cliente web al servidor: reemplaza a
-/// `lib/data/` (ver `design.md`, decisión D6). Todas las llamadas viajan al
-/// mismo origen que sirvió la aplicación (`baseUrl` vacío por defecto), así
-/// que la cookie de sesión `httpOnly` va sola en cada petición sin que este
-/// cliente la toque — nunca hay un token que gestionar acá (ver capacidad
-/// `user-accounts`).
+/// Cliente HTTP usado por los servicios de lib/data/. Las peticiones van
+/// al mismo origen por defecto; el navegador envía la cookie de sesión
+/// HttpOnly sin exponer el token a este cliente.
 class ApiClient {
   final http.Client _client;
   final String baseUrl;

@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 /// Único punto de la interfaz que traduce una clave opaca de retrato
 /// (`Character.portraitPaths`) en la imagen que se muestra. Resuelve contra
 /// la API del mismo origen: la cookie de sesión ya autoriza la petición sin
-/// que este widget tenga que hacer nada (ver `design.md`, decisión D5).
+/// que este widget gestione el token.
 ///
 /// A diferencia de la versión de escritorio, no hay forma barata de saber de
 /// antemano si la clave resuelve a algo: la imagen se intenta siempre y un

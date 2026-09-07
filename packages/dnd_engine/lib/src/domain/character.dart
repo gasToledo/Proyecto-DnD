@@ -12,7 +12,7 @@ Map<Ability, int> _abilityMapFromJson(dynamic j) => {
     };
 
 /// Sistema de progresión de la mesa. Solo define si se anota PX como
-/// referencia; la subida de nivel es siempre manual (ver brief §6).
+/// referencia; la subida de nivel es siempre manual.
 enum Progression { xp, milestone }
 
 /// Configuración de reglas de la mesa que afecta la creación/progresión.

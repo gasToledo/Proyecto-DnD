@@ -1,7 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 
-/// Sagan "The Red" del brief §10 — Humano, Guerrero, Soldado (reglas 2024).
-/// Sirve como dato de demostración hasta que exista el wizard de creación.
+/// Sagan "The Red" — Humano, Guerrero, Soldado (reglas 2024).
+/// Personaje de referencia usado por las pruebas del cliente.
 Character demoSagan() => Character(
   id: 'sagan',
   name: 'Sagan "The Red"',

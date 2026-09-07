@@ -45,7 +45,7 @@ class _LevelUpStep {
   const _LevelUpStep(this.kind, this.label, this.icon);
 }
 
-/// Wizard de subida de nivel (manual, brief §3.D). Elige PG, resuelve el ASI
+/// Wizard de subida de nivel manual. Elige PG, resuelve el ASI
 /// si corresponde, muestra los rasgos ganados y devuelve el personaje
 /// actualizado. Los rasgos fijos de clase los aplica solo el compilador al
 /// subir el nivel; aquí solo se capturan las decisiones del jugador.

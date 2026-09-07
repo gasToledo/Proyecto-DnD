@@ -5,11 +5,8 @@ import '../api/api_models.dart';
 import '../data/settings_service.dart';
 import '../theme/app_widgets.dart';
 
-/// Ajustes de la cuenta: qué proveedor de retratos usar por defecto. Las
-/// claves de proveedor viven en la configuración del servidor (ver
-/// `design.md`, decisión D9), así que esta pantalla ya no pide ni guarda
-/// ninguna credencial — solo lista lo que `GET /api/portraits/providers`
-/// ofrece.
+/// Selecciona el proveedor de retratos entre los ofrecidos por
+/// `GET /api/portraits/providers`. Las credenciales quedan en el servidor.
 class SettingsDialog extends StatefulWidget {
   final ApiClient api;
 

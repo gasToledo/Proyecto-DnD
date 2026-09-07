@@ -12,7 +12,7 @@ class Dice {
   List<int> rollMany(int count, int sides) =>
       List.generate(count, (_) => roll(sides));
 
-  /// Puntuación por 4d6 descartando el menor (método del brief §3.A.4).
+  /// Puntuación por 4d6 descartando el menor.
   /// Devuelve la suma de los 3 dados mayores.
   int rollAbilityScore4d6DropLowest() {
     final dice = rollMany(4, 6)..sort();
@@ -27,7 +27,7 @@ class Dice {
   int rollHitDie(int sides) => roll(sides);
 }
 
-/// Array estándar oficial (brief §3.A.4).
+/// Array estándar oficial.
 const List<int> standardArray = [15, 14, 13, 12, 10, 8];
 
 /// Compra de puntos (PHB 2024, cap. 2), el tercer método oficial: 27 puntos

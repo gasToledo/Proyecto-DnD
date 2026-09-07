@@ -3,10 +3,8 @@ import 'dart:io';
 
 import 'content_repository.dart';
 
-/// Carga un pack desde un directorio con archivos
-/// races.json / classes.json / backgrounds.json / feats.json /
-/// weapons.json / armor.json (cada uno una lista JSON). Los faltantes se
-/// tratan como vacíos.
+/// Carga un pack desde un directorio: exige un manifiesto válido y lee los
+/// catálogos JSON. Los catálogos faltantes se tratan como listas vacías.
 ///
 /// Vive en un archivo aparte de `content_repository.dart` porque es el único
 /// punto del motor que usa `dart:io`; `content_repository.dart` lo alcanza

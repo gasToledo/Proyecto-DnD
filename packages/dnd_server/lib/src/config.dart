@@ -134,13 +134,9 @@ class AiProvidersConfig {
   }
 }
 
-/// Raíz del build web estático (`flutter build web`) que este mismo proceso
-/// sirve en el mismo origen que la API (ver capacidad `self-hosted-deployment`
-/// y decisión D5 de `design.md`: el cliente nunca guarda tokens, así que las
-/// peticiones a `/api` y a los archivos estáticos comparten cookie de
-/// sesión). Una cadena vacía SHALL deshabilitar el servido estático: es el
-/// caso de las pruebas y de correr el servidor suelto en desarrollo, no un
-/// error.
+/// Raíz del build web servido en el mismo origen que la API para compartir
+/// la cookie de sesión. Una cadena vacía deshabilita el servido estático
+/// en pruebas o cuando se ejecuta la API sola.
 class WebConfig {
   final String root;
 

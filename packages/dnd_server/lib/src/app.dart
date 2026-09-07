@@ -103,331 +103,231 @@ Handler buildHandler({
   /// hay nada detrás para el resto de las peticiones.
   Handler? webStaticHandler,
 }) {
+  final authenticated = requireSession(auth.resolveUserId);
   final router = Router()
     ..get('/health', _healthHandler)
     ..get('/auth/login', (request) => _loginHandler(request, auth))
     ..get('/auth/callback', (request) => _callbackHandler(request, auth))
     ..post('/auth/logout', (request) => _logoutHandler(request, auth))
-    ..get(
-      '/api/me',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _meHandler(request, auth)),
-    )
+    ..get('/api/me', authenticated((request) => _meHandler(request, auth)))
     ..get(
       '/api/characters',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _listCharactersHandler(request, characters)),
+      authenticated((request) => _listCharactersHandler(request, characters)),
     )
     ..post(
       '/api/characters',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _createCharacterHandler(request, characters),
-          ),
+      authenticated((request) => _createCharacterHandler(request, characters)),
     )
     ..put(
       '/api/characters/<id>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _upsertCharacterHandler(request, characters),
-          ),
+      authenticated((request) => _upsertCharacterHandler(request, characters)),
     )
     ..delete(
       '/api/characters/<id>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _deleteCharacterHandler(request, transactions),
-          ),
+      authenticated(
+        (request) => _deleteCharacterHandler(request, transactions),
+      ),
     )
     ..post(
       '/api/characters/<id>/share',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _shareCharacterHandler(request, characters, campaigns),
-          ),
+      authenticated(
+        (request) => _shareCharacterHandler(request, characters, campaigns),
+      ),
     )
     ..get(
       '/api/characters/<id>/shares',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _listCharacterSharesHandler(request, characters, campaigns),
-          ),
+      authenticated(
+        (request) =>
+            _listCharacterSharesHandler(request, characters, campaigns),
+      ),
     )
     ..get(
       '/api/characters/<id>/campaigns',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _listPlayerCampaignsHandler(
-              request,
-              characters,
-              campaigns,
-              chapters,
-              encounters,
-            ),
-          ),
+      authenticated(
+        (request) => _listPlayerCampaignsHandler(
+          request,
+          characters,
+          campaigns,
+          chapters,
+          encounters,
+        ),
+      ),
     )
     ..get(
       '/api/campaigns',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _listCampaignsHandler(request, campaigns)),
+      authenticated((request) => _listCampaignsHandler(request, campaigns)),
     )
     ..post(
       '/api/campaigns',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _createCampaignHandler(request, campaigns)),
+      authenticated((request) => _createCampaignHandler(request, campaigns)),
     )
     ..put(
       '/api/campaigns/<id>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _upsertCampaignHandler(request, campaigns)),
+      authenticated((request) => _upsertCampaignHandler(request, campaigns)),
     )
     ..delete(
       '/api/campaigns/<id>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _deleteCampaignHandler(request, campaigns)),
+      authenticated((request) => _deleteCampaignHandler(request, campaigns)),
     )
     ..get(
       '/api/campaigns/<id>/members',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _listCampaignMembersHandler(request, campaigns),
-          ),
+      authenticated(
+        (request) => _listCampaignMembersHandler(request, campaigns),
+      ),
     )
     ..post(
       '/api/campaigns/<id>/members',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _redeemShareCodeHandler(request, transactions),
-          ),
+      authenticated(
+        (request) => _redeemShareCodeHandler(request, transactions),
+      ),
     )
     ..get(
       '/api/campaigns/<campaignId>/members/<memberId>/portrait/<fileName>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _memberPortraitHandler(request, campaigns, portraits),
-          ),
+      authenticated(
+        (request) => _memberPortraitHandler(request, campaigns, portraits),
+      ),
     )
     ..delete(
       '/api/campaign-links/<memberId>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _deleteCampaignLinkHandler(request, transactions),
-          ),
+      authenticated(
+        (request) => _deleteCampaignLinkHandler(request, transactions),
+      ),
     )
     ..get(
       '/api/campaigns/<id>/chapters',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _listChaptersHandler(request, campaigns, chapters),
-          ),
+      authenticated(
+        (request) => _listChaptersHandler(request, campaigns, chapters),
+      ),
     )
     ..post(
       '/api/campaigns/<id>/chapters',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _createChapterHandler(request, campaigns, chapters),
-          ),
+      authenticated(
+        (request) => _createChapterHandler(request, campaigns, chapters),
+      ),
     )
     ..put(
       '/api/campaigns/<id>/chapters/<chapterId>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _upsertChapterHandler(request, campaigns, chapters),
-          ),
+      authenticated(
+        (request) => _upsertChapterHandler(request, campaigns, chapters),
+      ),
     )
     ..delete(
       '/api/campaigns/<id>/chapters/<chapterId>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _deleteChapterHandler(request, campaigns, chapters),
-          ),
+      authenticated(
+        (request) => _deleteChapterHandler(request, campaigns, chapters),
+      ),
     )
     ..post(
       '/api/campaigns/<id>/chapters/<chapterId>/close',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _closeChapterHandler(request, transactions)),
+      authenticated((request) => _closeChapterHandler(request, transactions)),
     )
     ..post(
       '/api/campaigns/<id>/members/<memberId>/heroic-inspiration',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _grantHeroicInspirationHandler(request, campaigns, events),
-          ),
+      authenticated(
+        (request) => _grantHeroicInspirationHandler(request, campaigns, events),
+      ),
     )
     ..get(
       '/api/campaigns/<id>/notebook',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _listNotebookHandler(request, campaigns, notes, encounters),
-          ),
+      authenticated(
+        (request) =>
+            _listNotebookHandler(request, campaigns, notes, encounters),
+      ),
     )
     ..post(
       '/api/campaigns/<id>/notes',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _createNoteHandler(request, campaigns, chapters, notes),
-          ),
+      authenticated(
+        (request) => _createNoteHandler(request, campaigns, chapters, notes),
+      ),
     )
     ..put(
       '/api/campaigns/<id>/notes/<noteId>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _upsertNoteHandler(request, campaigns, chapters, notes),
-          ),
+      authenticated(
+        (request) => _upsertNoteHandler(request, campaigns, chapters, notes),
+      ),
     )
     ..delete(
       '/api/campaigns/<id>/notes/<noteId>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _deleteNoteHandler(request, campaigns, notes),
-          ),
+      authenticated((request) => _deleteNoteHandler(request, campaigns, notes)),
     )
     ..get(
       '/api/campaigns/<id>/encounter',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _getEncounterHandler(request, campaigns, encounters),
-          ),
+      authenticated(
+        (request) => _getEncounterHandler(request, campaigns, encounters),
+      ),
     )
     ..put(
       '/api/campaigns/<id>/encounter',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _saveEncounterHandler(request, campaigns, encounters),
-          ),
+      authenticated(
+        (request) => _saveEncounterHandler(request, campaigns, encounters),
+      ),
     )
     ..delete(
       '/api/campaigns/<id>/encounter',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _endEncounterHandler(request, campaigns, chapters, encounters),
-          ),
+      authenticated(
+        (request) =>
+            _endEncounterHandler(request, campaigns, chapters, encounters),
+      ),
     )
     ..get(
       '/api/characters/<id>/turn',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _turnHandler(request, characters, encounters),
-          ),
+      authenticated((request) => _turnHandler(request, characters, encounters)),
     )
     ..get(
       '/api/events',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _listEventsHandler(request, events)),
+      authenticated((request) => _listEventsHandler(request, events)),
     )
     ..post(
       '/api/events/seen',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _markEventsSeenHandler(request, events)),
+      authenticated((request) => _markEventsSeenHandler(request, events)),
     )
     ..get(
       '/api/homebrew',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _listHomebrewHandler(request, homebrew)),
+      authenticated((request) => _listHomebrewHandler(request, homebrew)),
     )
     ..post(
       '/api/homebrew/import',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) => _importHomebrewHandler(request, importHomebrew),
-          ),
+      authenticated(
+        (request) => _importHomebrewHandler(request, importHomebrew),
+      ),
     )
     ..put(
       '/api/homebrew/<category>/<id>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _upsertHomebrewHandler(request, homebrew)),
+      authenticated((request) => _upsertHomebrewHandler(request, homebrew)),
     )
     ..delete(
       '/api/homebrew/<category>/<id>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _deleteHomebrewHandler(request, homebrew)),
+      authenticated((request) => _deleteHomebrewHandler(request, homebrew)),
     )
     ..get(
       '/api/settings',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _getSettingsHandler(request, settings)),
+      authenticated((request) => _getSettingsHandler(request, settings)),
     )
     ..put(
       '/api/settings',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _saveSettingsHandler(request, settings)),
+      authenticated((request) => _saveSettingsHandler(request, settings)),
     )
     ..get(
       '/api/portraits/<characterId>/<fileName>',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _portraitHandler(request, portraits)),
+      authenticated((request) => _portraitHandler(request, portraits)),
     )
     ..get(
       '/api/portraits/providers',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _portraitProvidersHandler(generation)),
+      authenticated((request) => _portraitProvidersHandler(generation)),
     )
     ..post(
       '/api/portraits/generate',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler(
-            (request) =>
-                _generatePortraitHandler(request, generation, portraits),
-          ),
+      authenticated(
+        (request) => _generatePortraitHandler(request, generation, portraits),
+      ),
     )
     ..post(
       '/api/characters/<characterId>/portraits',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _createPortraitHandler(request, portraits)),
+      authenticated((request) => _createPortraitHandler(request, portraits)),
     )
     ..post(
       '/api/import',
-      Pipeline()
-          .addMiddleware(requireSession(auth.resolveUserId))
-          .addHandler((request) => _importHandler(request, importBackup)),
+      authenticated((request) => _importHandler(request, importBackup)),
     );
 
   // El router va primero: solo cae al build web estático cuando no reconoce

@@ -41,7 +41,7 @@ const _fallbackSwatch = (Color(0xFFA08A5E), Color(0xFF2D2618));
 /// Generador de retratos por IA con proveedor enchufable. Auto-completa datos
 /// de la ficha, permite estilo + texto libre + referencia (si el proveedor la
 /// admite), y guarda la elegida. La generación y las claves de proveedor
-/// viven en el servidor (ver `design.md`, decisión D9): este cliente nunca ve
+/// viven en el servidor: este cliente nunca ve
 /// una key, solo la lista de proveedores ya configurados.
 class PortraitScreen extends StatefulWidget {
   final Character character;

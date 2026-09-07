@@ -1,7 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:test/test.dart';
 
-/// Caso validado del brief §10: Sagan "The Red" — Humano, Guerrero, Soldado.
+/// Personaje de referencia: Sagan "The Red" — Humano, Guerrero, Soldado.
 /// Baseline de reglas 2024 (trasfondo da +característica y dote de origen;
 /// Guerrero da Maestría de Armas).
 Character sagan({int level = 1, List<int>? hp}) => Character(

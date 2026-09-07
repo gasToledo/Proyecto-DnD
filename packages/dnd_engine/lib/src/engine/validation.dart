@@ -13,7 +13,7 @@ import 'inventory_ops.dart';
 enum WarningSeverity { info, warning }
 
 /// Advertencia de reglas. **Nunca bloquea**: la app siempre informa pero deja
-/// actuar (el DM puede autorizar excepciones). Ver brief §6.
+/// actuar (el DM puede autorizar excepciones).
 class ValidationWarning {
   final String code;
   final String message;

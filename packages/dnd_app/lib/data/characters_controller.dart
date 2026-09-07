@@ -8,13 +8,9 @@ import '../api/api_exception.dart';
 
 enum CharacterSaveState { saved, saving, error }
 
-/// Fuente de verdad en memoria de los personajes, respaldada por la API del
-/// servidor (ver `design.md`, decisión D6: reemplaza al `CharacterStore` de
-/// archivos, no lo porta). Notifica a la UI y persiste con **debounce** ante
-/// cada cambio relevante, igual que la versión de escritorio: el debounce y
-/// la cola de guardado serializada por personaje ya funcionan como el buffer
-/// local con envío periódico que pide la capacidad `web-client` para el
-/// estado de combate, sin necesidad de un mecanismo aparte.
+/// Estado en memoria de los personajes, respaldado por la API. Notifica a
+/// la UI y guarda con debounce y una cola serializada por personaje para
+/// evitar que una escritura anterior sobrescriba un cambio más reciente.
 class CharactersController extends ChangeNotifier {
   final ApiClient api;
   final List<Character> characters = [];

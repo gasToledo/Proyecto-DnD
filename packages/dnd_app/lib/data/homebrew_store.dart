@@ -14,10 +14,7 @@ class HomebrewLoadIssue {
   });
 }
 
-/// Contenido homebrew de la cuenta autenticada, respaldado por la API del
-/// servidor (ver `design.md`, decisión D6: reemplaza al almacén de archivos
-/// de escritorio, no lo porta). Mismo esquema en memoria que la versión de
-/// escritorio para que la UI de `homebrew/` no necesite cambios: un mapa por
+/// Contenido homebrew de la cuenta, respaldado por la API: un mapa por
 /// categoría, fusionable en un [ContentRepository].
 class HomebrewStore {
   final ApiClient api;

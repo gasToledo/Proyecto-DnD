@@ -12,7 +12,7 @@ List<String> skillOptions(List<String> from) =>
 /// Modo de reparto del aumento de característica del trasfondo 2024.
 enum AbilitySpreadMode { twoOne, oneOneOne }
 
-/// Método de puntuación de características (brief §3.A.4).
+/// Método de puntuación de características.
 ///
 /// Dos de los cuatro no reparten un pool y por eso escriben `assignedScores`
 /// directamente: `manual`, donde el usuario escribe cada número para digitalizar

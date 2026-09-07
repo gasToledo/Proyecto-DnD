@@ -111,11 +111,10 @@ Future<PreparedImport> prepareImport({
 ///
 /// Los personajes, el homebrew y las preferencias se escriben en una única
 /// transacción de Postgres: si cualquiera falla, ninguno de los tres queda
-/// modificado. Los retratos viven en un volumen aparte (ver capacidad
-/// `portrait-storage`) y por eso no pueden compartir esa transacción; un
+/// modificado. Los retratos viven en un volumen aparte
+/// y por eso no pueden compartir esa transacción; un
 /// fallo de disco a mitad de la subida puede dejar blobs huérfanos sin
-/// referenciar, que es la misma política de retención pendiente que ya
-/// declara `design.md` como fuera de alcance.
+/// referenciar. La limpieza de esos blobs sigue pendiente.
 ///
 /// La garantía de `Pool.runTx` requiere una base de datos viva para probarse
 /// en los hechos. La resolución de ids y el guardado de retratos sí tienen

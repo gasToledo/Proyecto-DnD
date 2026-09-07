@@ -369,7 +369,7 @@ class InventoryOps {
       final item = repo.item(e.itemId);
       final max = item?.maxCharges;
       final amount = item?.rechargeAmount;
-      final actual = e.charges ?? max;
+      final actual = chargesLeft(e, repo);
       // Sin máximo no hay cargas; sin fórmula el objeto no se recarga solo; con
       // máximo 0 la mesa lleva la cuenta y el motor no tiene qué techo aplicar.
       if (max == null ||
@@ -419,25 +419,6 @@ class InventoryOps {
       itemId,
       baseItemId: baseItemId,
       origin: 'artificer:replicate-magic-item:$itemId',
-    );
-  }
-
-  /// Cambia un plano y elimina únicamente su réplica asociada.
-  static Character replaceMagicItemChoice(
-    Character c,
-    String oldItemId,
-    String newItemId,
-  ) {
-    final choices = [...c.magicItemChoices];
-    final index = choices.indexOf(oldItemId);
-    if (index < 0) return c;
-    choices[index] = newItemId;
-    return c.copyWith(
-      magicItemChoices: choices.toSet().toList(),
-      inventory: [
-        for (final e in c.inventory)
-          if (e.origin != 'artificer:replicate-magic-item:$oldItemId') e,
-      ],
     );
   }
 

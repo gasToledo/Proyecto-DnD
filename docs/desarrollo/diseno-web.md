@@ -418,7 +418,7 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `Eyebrow` | Rótulo de sección en mayúsculas espaciadas | `text` |
 | `sheetCard(…)` | Tarjeta plegable con cabecera (ícono dorado 18 px + título Georgia 16 + acción) | `icon`, `title`, `trailing`, `child`, y `collapseKey` cuando el título se repite en la misma pantalla (dos campañas apiladas tienen dos tarjetas «Batallas») |
 | `responsiveColumns(…)` | Columnas lado a lado ≥ 640, apiladas debajo | `List<List<Widget>>` |
-| `appNavItem(…)` | Ítem del panel lateral | `icon`, `label`, `active`, `onTap` |
+| `appNavItem(…)` | Ítem del panel lateral | `icon`, `label`, `active`, `onTap`, y `count` para la cifra al final de la fila (en cifras tabulares: los ítems se apilan y la columna de números tiene que leerse como columna) |
 | `DisplayPreferences` | Pie del panel lateral: idioma + tema, juntos porque son lo mismo | Envuelve `LanguageSelector` y `ThemeModeSelector` |
 
 ### Datos de personaje

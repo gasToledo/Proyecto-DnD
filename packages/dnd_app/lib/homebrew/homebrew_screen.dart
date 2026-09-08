@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../data/homebrew_store.dart';
 import '../data/transfer_service.dart';
+import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../web/browser.dart' as browser;
 import 'effect_editor.dart';
@@ -19,7 +20,7 @@ part 'forms/item_form.dart';
 part 'forms/race_form.dart';
 part 'forms/spell_form.dart';
 part 'forms/weapon_form.dart';
-part 'homebrew_tabs.dart';
+part 'homebrew_sections.dart';
 
 // Los ids son el contrato con el motor de reglas y no cambian; lo que cambia
 // es que dejan de estar a la vista. Las habilidades salen de `Skill`, que ya es
@@ -91,6 +92,30 @@ const _raceSizes = {
   'Grande': 'Grande',
 };
 
+/// Las ocho categorías de contenido propio, en el orden en que se muestran.
+///
+/// Tenerlas acá —con su rótulo, su ícono y el verbo de agregar— es lo que
+/// mantiene juntos el panel, la portada y el contenido: sumar una categoría es
+/// sumar un valor y su `case`, no acordarse de tres listas paralelas que
+/// después se separan (que es lo que pasaba con las ocho pestañas escritas a
+/// mano al lado de las ocho vistas).
+enum _Category {
+  weapons('Armas', Icons.hardware, 'Agregar arma'),
+  armor('Armaduras', Icons.shield_outlined, 'Agregar armadura'),
+  items('Objetos', Icons.inventory_2_outlined, 'Agregar objeto'),
+  feats('Dotes', Icons.military_tech, 'Agregar dote'),
+  races('Razas', Icons.diversity_3, 'Agregar raza'),
+  backgrounds('Trasfondos', Icons.history_edu, 'Agregar trasfondo'),
+  spells('Conjuros', Icons.auto_stories, 'Agregar conjuro'),
+  creatures('Criaturas', Icons.pets_outlined, 'Agregar criatura');
+
+  final String label;
+  final IconData icon;
+  final String addLabel;
+
+  const _Category(this.label, this.icon, this.addLabel);
+}
+
 /// Editor de contenido homebrew. Lo creado se fusiona en el [ContentRepository]
 /// compartido, así queda disponible de inmediato en el wizard y la ficha.
 class HomebrewScreen extends StatefulWidget {
@@ -103,10 +128,27 @@ class HomebrewScreen extends StatefulWidget {
 }
 
 class _HomebrewScreenState extends State<HomebrewScreen> {
+  /// Ancho a partir del cual el panel de categorías entra al lado del
+  /// contenido. Es el mismo corte que el Modo DM y el dashboard.
+  static const double _wideBreakpoint = 900;
+
   ContentRepository get repo => widget.repo;
   HomebrewStore get store => widget.store;
 
+  /// Categoría abierta, o **null para la portada**.
+  ///
+  /// La portada es la entrada por defecto y no una categoría más: no tiene
+  /// lista ni botón de agregar, y representarla como la ausencia de categoría
+  /// evita darle a `_Category` un valor que ninguna de las ocho vistas sabría
+  /// atender. Es el mismo trato que le da el Modo DM al Bestiario.
+  _Category? _section;
+
   void _refresh() => setState(() {});
+
+  /// Abre una categoría, o la portada con `null`. Vive en el estado y no en la
+  /// extensión porque `setState` es protegido: desde afuera de la clase no se
+  /// puede llamar.
+  void _open(_Category? section) => setState(() => _section = section);
 
   /// Confirma un guardado. Sin este aviso, guardar y salir del formulario se
   /// ve igual que cancelar: se vuelve a la misma lista.
@@ -262,57 +304,37 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 8,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Contenido homebrew'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.upload_file),
-              tooltip: 'Exportar homebrew',
-              onPressed: _exportHomebrew,
-            ),
-            IconButton(
-              icon: const Icon(Icons.download),
-              tooltip: 'Importar homebrew',
-              onPressed: _importHomebrew,
-            ),
-          ],
-          bottom: const TabBar(
-            isScrollable: true,
-            tabs: [
-              Tab(text: 'Armas'),
-              Tab(text: 'Armaduras'),
-              Tab(text: 'Objetos'),
-              Tab(text: 'Dotes'),
-              Tab(text: 'Razas'),
-              Tab(text: 'Trasfondos'),
-              Tab(text: 'Conjuros'),
-              Tab(text: 'Criaturas'),
+    // `LayoutBuilder` y no `MediaQuery`: esta pantalla también se abre desde el
+    // dashboard, que ya se comió 236 px de panel que `MediaQuery` no descuenta.
+    return LayoutBuilder(
+      builder: (context, box) {
+        final wide = box.maxWidth >= _wideBreakpoint;
+        return Scaffold(
+          appBar: AppBar(title: const Text('Contenido homebrew')),
+          // Angosto: el panel se pliega al Drawer y el AppBar se gana solo su
+          // botón de menú.
+          drawer: wide
+              ? null
+              : Drawer(child: SafeArea(child: _rail(context, inDrawer: true))),
+          body: Column(
+            children: [
+              // El aviso va arriba de todo y a lo ancho: habla del contenido
+              // entero, no de la categoría que se esté mirando.
+              if (store.loadIssues.isNotEmpty) _loadIssues(),
+              Expanded(
+                child: wide
+                    ? Row(
+                        children: [
+                          _rail(context),
+                          Expanded(child: _content()),
+                        ],
+                      )
+                    : _content(),
+              ),
             ],
           ),
-        ),
-        body: Column(
-          children: [
-            if (store.loadIssues.isNotEmpty) _loadIssues(),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _weaponsTab(),
-                  _armorTab(),
-                  _itemsTab(),
-                  _featsTab(),
-                  _racesTab(),
-                  _backgroundsTab(),
-                  _spellsTab(),
-                  _creaturesTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

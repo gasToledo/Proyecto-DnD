@@ -50,6 +50,13 @@ Widget appNavItem(
   required String label,
   bool active = false,
   VoidCallback? onTap,
+
+  /// Cifra al final de la fila (cuántas entradas tiene esa sección).
+  ///
+  /// Va en cifras tabulares porque los ítems se apilan: sin ancho fijo de
+  /// dígito, la columna de números queda dentada y deja de leerse como una
+  /// columna.
+  String? count,
 }) {
   final palette = context.palette;
   final foreground = active
@@ -80,6 +87,15 @@ Widget appNavItem(
                   ),
                 ),
               ),
+              if (count != null)
+                Text(
+                  count,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                    color: active ? palette.gold : palette.textMuted,
+                  ),
+                ),
             ],
           ),
         ),

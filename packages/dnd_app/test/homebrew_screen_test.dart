@@ -19,57 +19,164 @@ void main() {
     );
   });
 
-  testWidgets(
-    'las ocho categorías y el formulario de armas siguen accesibles',
-    (tester) async {
-      tester.view.physicalSize = const Size(1000, 700);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+  testWidgets('el panel abre las ocho categorías y el formulario de armas', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.dark,
-          home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
-        ),
-      );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Contenido homebrew'), findsOneWidget);
+    // Se entra por la portada, no por Armas.
+    expect(find.text('Tu taller está vacío'), findsOneWidget);
+
+    const categories = {
+      'Armas': 'Agregar arma',
+      'Armaduras': 'Agregar armadura',
+      'Objetos': 'Agregar objeto',
+      'Dotes': 'Agregar dote',
+      'Razas': 'Agregar raza',
+      'Trasfondos': 'Agregar trasfondo',
+      'Conjuros': 'Agregar conjuro',
+      'Criaturas': 'Agregar criatura',
+    };
+    // Las ocho entran en el panel sin desplazarlo, que es justamente lo que
+    // no pasaba con la barra de pestañas. La primera aparición del rótulo es
+    // la del panel; la segunda, cuando está, el título del contenido.
+    for (final entry in categories.entries) {
+      await tester.tap(find.text(entry.key).first);
       await tester.pumpAndSettle();
-
-      expect(find.text('Contenido homebrew'), findsOneWidget);
-      expect(find.text('Agregar arma'), findsOneWidget);
-
-      const categories = {
-        'Armaduras': 'Agregar armadura',
-        'Objetos': 'Agregar objeto',
-        'Dotes': 'Agregar dote',
-        'Razas': 'Agregar raza',
-        'Trasfondos': 'Agregar trasfondo',
-        'Conjuros': 'Agregar conjuro',
-        'Criaturas': 'Agregar criatura',
-      };
-      // Con ocho pestañas la barra ya no entra entera: hay que traer cada una
-      // a la vista antes de tocarla, incluso para volver a la primera.
-      for (final entry in categories.entries) {
-        await tester.ensureVisible(find.text(entry.key));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text(entry.key));
-        await tester.pumpAndSettle();
-        expect(find.text(entry.value), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      }
-
-      await tester.ensureVisible(find.text('Armas'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Armas'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Agregar arma'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Arma'), findsOneWidget);
-      expect(find.text('Nombre'), findsOneWidget);
-      expect(find.text('Dado de daño (p.ej. 1d8)'), findsOneWidget);
+      expect(find.text(entry.value), findsOneWidget);
       expect(tester.takeException(), isNull);
-    },
-  );
+    }
+
+    await tester.tap(find.text('Armas').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Agregar arma'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Arma'), findsOneWidget);
+    expect(find.text('Nombre'), findsOneWidget);
+    expect(find.text('Dado de daño (p.ej. 1d8)'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // La portada existe para contestar «¿qué tengo?» sin recorrer categoría por
+  // categoría, así que lo que se prueba es el conteo, no el dibujo.
+  testWidgets('la portada cuenta lo que hay y la tarjeta abre su categoría', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = HomebrewStore(ApiClient())
+      ..weapons['hb-hoz'] = const Weapon(
+        id: 'hb-hoz',
+        name: 'Hoz de guerra',
+        source: ContentSource.homebrew,
+        category: 'martial',
+        damageDice: '1d8',
+        damageType: 'slashing',
+      )
+      ..weapons['hb-maza'] = const Weapon(
+        id: 'hb-maza',
+        name: 'Maza corta',
+        source: ContentSource.homebrew,
+        category: 'simple',
+        damageDice: '1d6',
+        damageType: 'bludgeoning',
+      );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: store),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tu taller'), findsOneWidget);
+    expect(find.textContaining('2 entradas propias'), findsOneWidget);
+    // La muestra de la tarjeta sale ordenada por nombre, igual que la lista.
+    expect(find.text('Hoz de guerra · Maza corta'), findsOneWidget);
+    // El panel y la tarjeta cuentan lo mismo, que es de dónde sale la cifra:
+    // las otras siete categorías están en cero.
+    expect(find.text('2'), findsNWidgets(2));
+
+    // La tarjeta es la segunda aparición de «Armas»; la primera es el panel.
+    await tester.tap(find.text('Armas').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Agregar arma'), findsOneWidget);
+    expect(find.text('Hoz de guerra'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // Una grilla de ocho ceros no explica para qué sirve la pantalla.
+  testWidgets('sin nada propio, la portada explica qué es el homebrew', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tu taller está vacío'), findsOneWidget);
+    expect(find.text('Importar un pack'), findsOneWidget);
+    expect(find.text('Tu taller'), findsNothing);
+
+    await tester.tap(find.text('Empezar por un arma'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Agregar arma'), findsOneWidget);
+    expect(find.text('Todavía no agregaste nada en armas.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // En una ventana angosta el panel se pliega al Drawer, y navegar desde ahí
+  // tiene que cerrarlo: si queda abierto, tapa el contenido que se acaba de
+  // pedir.
+  testWidgets('angosto, el panel va al Drawer y se cierra al navegar', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(700, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Criaturas'), findsNothing);
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Criaturas'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Agregar criatura'), findsOneWidget);
+    expect(find.text('Portada'), findsNothing, reason: 'el Drawer se cerró');
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('muestra y permite borrar homebrew histórico inválido', (
     tester,
@@ -113,6 +220,8 @@ void main() {
         home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Armas').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Agregar arma'));
     await tester.pumpAndSettle();
@@ -379,6 +488,8 @@ void main() {
         home: HomebrewScreen(repo: repo, store: store),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Armas').first);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byTooltip('Eliminar Hoz de guerra'));

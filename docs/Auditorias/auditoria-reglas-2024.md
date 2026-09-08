@@ -1012,3 +1012,23 @@ cd packages/dnd_engine && dart analyze && dart test
 cada rasgo contra los efectos que declara, y su trinquete de «rasgos que solo
 son texto» (hoy 300) falla si alguien **suma** uno. Es el único mecanismo del
 repositorio que detecta esta clase de defecto sin que nadie lo busque a mano.
+
+## Control de cambios — 2026-09-08
+
+### Conjuros estructurados para criaturas
+
+- Las 48 acciones oficiales de «Lanzamiento de conjuros» quedaron enlazadas
+  con `spells.json`: 99 grupos de frecuencia y 301 referencias canónicas.
+- El modelo conserva aptitud, CD, ataque, regla de componentes, frecuencia,
+  nivel de lanzamiento y notas particulares. La descripción original sigue
+  siendo la fuente textual y el fallback para contenido antiguo o casero.
+- Bestiario y Combate agrupan los conjuros y abren el mismo detalle reutilizado
+  por la ficha. No se descuentan usos diarios y `Encounter` no cambió.
+- El generador rechaza referencias inexistentes, ambiguas o repetidas y corrige
+  el corte del PDF que incorporaba «Provocar pesadillas» al lanzamiento de
+  conjuros de la Saga de la noche.
+
+Validación de esta entrega: `generate_bestiary.dart --check` reprodujo los 330
+perfiles sin diferencias; pasaron 107 pruebas focalizadas del motor y 70 de la
+interfaz de DM; el análisis estático de motor y aplicación quedó limpio; y
+`flutter build web --release --no-pub` finalizó correctamente.

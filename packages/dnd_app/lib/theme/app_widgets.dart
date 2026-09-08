@@ -1389,6 +1389,95 @@ class ActionTypeLegend extends StatelessWidget {
   }
 }
 
+/// Abre el mismo detalle de conjuro desde la ficha o desde una criatura.
+void showSpellDetailsDialog(
+  BuildContext context,
+  Spell spell, {
+  String contextTitle = '',
+  String contextText = '',
+}) {
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(spell.name),
+      content: SingleChildScrollView(
+        child: spellDetailsBody(
+          dialogContext,
+          spell,
+          contextTitle: contextTitle,
+          contextText: contextText,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text('Cerrar'),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget spellDetailsBody(
+  BuildContext context,
+  Spell spell, {
+  String contextTitle = '',
+  String contextText = '',
+}) {
+  final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        '${spell.isCantrip ? "Truco" : "Nivel ${spell.level}"} · ${spell.school}',
+        style: TextStyle(color: muted),
+      ),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          if (spell.actionType != SpellActionType.longer) ...[
+            ActionTypeIcon(spell.actionType, size: 15),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: _spellDetailMeta(context, 'Lanzamiento', spell.castingTime),
+          ),
+        ],
+      ),
+      _spellDetailMeta(context, 'Alcance', spell.range),
+      _spellDetailMeta(context, 'Componentes', spell.components),
+      _spellDetailMeta(context, 'Duración', spell.duration),
+      const SizedBox(height: 10),
+      Text(spell.description),
+      if (contextText.isNotEmpty) ...[
+        const SizedBox(height: 14),
+        Eyebrow(contextTitle),
+        Text(contextText, style: TextStyle(fontSize: 12, color: muted)),
+      ],
+    ],
+  );
+}
+
+Widget _spellDetailMeta(BuildContext context, String label, String value) {
+  if (value.isEmpty) return const SizedBox.shrink();
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 2),
+    child: Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '$label: ',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          TextSpan(text: value),
+        ],
+      ),
+      style: Theme.of(context).textTheme.bodyMedium,
+    ),
+  );
+}
+
 /// Una acción de criatura: nombre, daño, alcance y bono de ataque.
 ///
 /// Vive acá y no en la ficha porque la pintan dos pantallas: los compañeros
@@ -1597,6 +1686,7 @@ List<String> _defenseFragments(String defenses) => [
 /// cierto.
 List<Widget> creatureProfileBody(
   BuildContext context,
+  ContentRepository repo,
   Creature c, {
   bool dense = false,
 }) {
@@ -1615,7 +1705,7 @@ List<Widget> creatureProfileBody(
             const SizedBox(height: 18),
             _profileLines(context, c, wide: wide),
             ..._profileTraits(context, c),
-            ..._profileActions(context, c, wide: wide),
+            ..._profileActions(context, repo, c, wide: wide),
           ],
         );
       },
@@ -2017,6 +2107,7 @@ List<Widget> _profileTraits(BuildContext context, Creature c) {
 /// DM reconoce de un vistazo, y cambiarlo cuesta más de lo que rinde.
 List<Widget> _profileActions(
   BuildContext context,
+  ContentRepository repo,
   Creature c, {
   required bool wide,
 }) {
@@ -2027,7 +2118,9 @@ List<Widget> _profileActions(
     out.add(const SizedBox(height: 22));
     out.add(Eyebrow(_actionSectionLabel(kind, c)));
     for (var i = 0; i < group.length; i++) {
-      out.add(_profileAction(context, group[i], wide: wide, first: i == 0));
+      out.add(
+        _profileAction(context, repo, c, group[i], wide: wide, first: i == 0),
+      );
     }
   }
   return out;
@@ -2040,6 +2133,8 @@ List<Widget> _profileActions(
 /// uno en su placa rotulada, en cifras tabulares y del mismo tamaño.
 Widget _profileAction(
   BuildContext context,
+  ContentRepository repo,
+  Creature creature,
   CreatureAction a, {
   required bool wide,
   required bool first,
@@ -2086,7 +2181,7 @@ Widget _profileAction(
     a.name,
     style: const TextStyle(fontWeight: FontWeight.w500),
   );
-  final description = a.description.isEmpty
+  final description = a.description.isEmpty || a.spellcasting != null
       ? null
       : Padding(
           padding: const EdgeInsets.only(top: 3),
@@ -2103,7 +2198,12 @@ Widget _profileAction(
 
   Widget body = Column(
     crossAxisAlignment: CrossAxisAlignment.start,
-    children: [name, ?description],
+    children: [
+      name,
+      ?description,
+      if (a.spellcasting case final spellcasting?)
+        _creatureSpellcasting(context, repo, creature, spellcasting),
+    ],
   );
 
   return Container(
@@ -2153,6 +2253,120 @@ Widget _profileAction(
               ),
             ],
           ),
+  );
+}
+
+Widget _creatureSpellcasting(
+  BuildContext context,
+  ContentRepository repo,
+  Creature creature,
+  CreatureSpellcasting spellcasting,
+) {
+  final pal = context.palette;
+  final castingSummary = [
+    spellcasting.ability.label,
+    if (spellcasting.saveDc case final dc?) 'CD $dc',
+    if (spellcasting.attackBonus case final attack?)
+      'Ataque ${_signed(attack)}',
+  ].join(' · ');
+
+  return Padding(
+    padding: const EdgeInsets.only(top: 6),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          castingSummary,
+          style: TextStyle(fontSize: 12.5, color: pal.textMuted),
+        ),
+        if (spellcasting.componentRule.isNotEmpty)
+          Text(
+            spellcasting.componentRule,
+            style: TextStyle(fontSize: 12.5, color: pal.textMuted),
+          ),
+        for (final group in spellcasting.groups) ...[
+          const SizedBox(height: 10),
+          Text(
+            group.usesPerDay == null
+                ? 'A voluntad'
+                : '${group.usesPerDay}/día cada uno',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+          for (final ref in group.spells)
+            _creatureSpellRow(
+              context,
+              repo,
+              creature,
+              spellcasting,
+              ref,
+              castingSummary,
+            ),
+        ],
+      ],
+    ),
+  );
+}
+
+Widget _creatureSpellRow(
+  BuildContext context,
+  ContentRepository repo,
+  Creature creature,
+  CreatureSpellcasting spellcasting,
+  CreatureSpellRef ref,
+  String castingSummary,
+) {
+  final spell = repo.spell(ref.spellId);
+  final pal = context.palette;
+  final detail = [
+    if (ref.castAtLevel case final level?) 'Se lanza a nivel $level',
+    if (ref.note.isNotEmpty) ref.note,
+  ].join(' · ');
+  final contextText = [
+    castingSummary,
+    if (spellcasting.componentRule.isNotEmpty) spellcasting.componentRule,
+    if (detail.isNotEmpty) detail,
+  ].join('. ');
+
+  return InkWell(
+    key: ValueKey('creature-spell-${creature.id}-${ref.spellId}'),
+    onTap: spell == null
+        ? null
+        : () => showSpellDetailsDialog(
+            context,
+            spell,
+            contextTitle: 'Con ${creature.name}',
+            contextText: contextText,
+          ),
+    borderRadius: BorderRadius.circular(8),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 7),
+      child: Row(
+        children: [
+          if (spell != null && spell.actionType != SpellActionType.longer) ...[
+            ActionTypeIcon(spell.actionType, size: 14),
+            const SizedBox(width: 6),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  spell?.name ?? ref.spellId,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                if (detail.isNotEmpty)
+                  Text(
+                    detail,
+                    style: TextStyle(fontSize: 11.5, color: pal.textMuted),
+                  ),
+              ],
+            ),
+          ),
+          if (spell != null)
+            Icon(Icons.info_outline, size: 14, color: pal.textMuted),
+        ],
+      ),
+    ),
   );
 }
 

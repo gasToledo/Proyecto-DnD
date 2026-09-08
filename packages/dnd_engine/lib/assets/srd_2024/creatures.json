@@ -5228,7 +5228,73 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El archimago lanza uno de los siguientes conjuros, que utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 17): A voluntad: armadura de mago (incluido en la CA), detectar magia, detectar pensamientos, disfrazarse, invisibilidad, luz, mano de mago, prestidigitación 2/día cada uno: relámpago (versión de nivel 7), volar 1/día cada uno: cono de frío (versión de nivel 9), escudriñar, mente en blanco (lanzado antes del combate), teletransporte"
+        "description": "El archimago lanza uno de los siguientes conjuros, que utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 17): A voluntad: armadura de mago (incluido en la CA), detectar magia, detectar pensamientos, disfrazarse, invisibilidad, luz, mano de mago, prestidigitación 2/día cada uno: relámpago (versión de nivel 7), volar 1/día cada uno: cono de frío (versión de nivel 9), escudriñar, mente en blanco (lanzado antes del combate), teletransporte",
+        "spellcasting": {
+          "ability": "intelligence",
+          "saveDc": 17,
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "mage-armor",
+                  "note": "incluido en la CA"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "detect-thoughts"
+                },
+                {
+                  "spellId": "disguise-self"
+                },
+                {
+                  "spellId": "invisibility"
+                },
+                {
+                  "spellId": "light"
+                },
+                {
+                  "spellId": "mage-hand"
+                },
+                {
+                  "spellId": "prestidigitation"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "lightning-bolt",
+                  "castAtLevel": 7
+                },
+                {
+                  "spellId": "fly"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "cone-of-cold",
+                  "castAtLevel": 9
+                },
+                {
+                  "spellId": "scrying"
+                },
+                {
+                  "spellId": "mind-blank",
+                  "note": "lanzado antes del combate"
+                },
+                {
+                  "spellId": "teleport"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Paso brumoso (3/día)",
@@ -5844,7 +5910,31 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El búho lanza uno de los siguientes conjuros, que no requiere componentes y utiliza la Sabiduría como aptitud mágica: A voluntad: detectar el bien y el mal, detectar magia 1/día: clarividencia"
+        "description": "El búho lanza uno de los siguientes conjuros, que no requiere componentes y utiliza la Sabiduría como aptitud mágica: A voluntad: detectar el bien y el mal, detectar magia 1/día: clarividencia",
+        "spellcasting": {
+          "ability": "wisdom",
+          "componentRule": "No requiere componentes.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-evil-and-good"
+                },
+                {
+                  "spellId": "detect-magic"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "clairvoyance"
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "hitDice": "3d10 + 3"
@@ -6414,7 +6504,51 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El couatl lanza uno de los siguientes conjuros, que no requiere componentes y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 15): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar el bien y el mal, detectar magia, detectar pensamientos 1/día cada uno: crear comida y agua, dormir, ensueño, escudriñar, restablecimiento mayor"
+        "description": "El couatl lanza uno de los siguientes conjuros, que no requiere componentes y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 15): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar el bien y el mal, detectar magia, detectar pensamientos 1/día cada uno: crear comida y agua, dormir, ensueño, escudriñar, restablecimiento mayor",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 15,
+          "componentRule": "No requiere componentes.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-evil-and-good"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "detect-thoughts"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "create-food-and-water"
+                },
+                {
+                  "spellId": "sleep"
+                },
+                {
+                  "spellId": "dream"
+                },
+                {
+                  "spellId": "scrying"
+                },
+                {
+                  "spellId": "greater-restoration"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Auxilio divino (2/día)",
@@ -7051,7 +7185,36 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El deva lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar el bien y el mal 1/día cada uno: alzar a los muertos, comunión"
+        "description": "El deva lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar el bien y el mal 1/día cada uno: alzar a los muertos, comunión",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 17,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-evil-and-good"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "raise-dead"
+                },
+                {
+                  "spellId": "commune"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Auxilio divino (2/día)",
@@ -7588,7 +7751,59 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El djinn lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: detectar el bien y el mal, detectar magia 2/día cada uno: crear comida y agua (puede crear vino en lugar de agua), don de lenguas, viajar con el viento 1/día cada uno: creación, desplazamiento entre planos, forma gaseosa, imagen mayor, invisibilidad"
+        "description": "El djinn lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: detectar el bien y el mal, detectar magia 2/día cada uno: crear comida y agua (puede crear vino en lugar de agua), don de lenguas, viajar con el viento 1/día cada uno: creación, desplazamiento entre planos, forma gaseosa, imagen mayor, invisibilidad",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 17,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-evil-and-good"
+                },
+                {
+                  "spellId": "detect-magic"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "create-food-and-water",
+                  "note": "puede crear vino en lugar de agua"
+                },
+                {
+                  "spellId": "tongues"
+                },
+                {
+                  "spellId": "wind-walk"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "creation"
+                },
+                {
+                  "spellId": "plane-shift"
+                },
+                {
+                  "spellId": "gaseous-form"
+                },
+                {
+                  "spellId": "major-image"
+                },
+                {
+                  "spellId": "invisibility"
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "hitDice": "19d10 + 114"
@@ -7693,7 +7908,41 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 18): A voluntad: detectar magia, hacer añicos, invisibilidad, mano de mago 1/día cada uno: escudriñar, recado"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 18): A voluntad: detectar magia, hacer añicos, invisibilidad, mano de mago 1/día cada uno: escudriñar, recado",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 18,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "shatter"
+                },
+                {
+                  "spellId": "invisibility"
+                },
+                {
+                  "spellId": "mage-hand"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "scrying"
+                },
+                {
+                  "spellId": "sending"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Coletazo",
@@ -7761,7 +8010,42 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 22): A voluntad: detectar magia, hacer añicos (versión de nivel 3), invisibilidad, mano de mago 1/día cada uno: escudriñar, recado"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 22): A voluntad: detectar magia, hacer añicos (versión de nivel 3), invisibilidad, mano de mago 1/día cada uno: escudriñar, recado",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 22,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "shatter",
+                  "castAtLevel": 3
+                },
+                {
+                  "spellId": "invisibility"
+                },
+                {
+                  "spellId": "mage-hand"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "scrying"
+                },
+                {
+                  "spellId": "sending"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Coletazo",
@@ -8083,7 +8367,47 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17, +10 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, saeta guía (versión de nivel 2), taumaturgia 1/día cada uno: detectar pensamientos, respirar bajo el agua"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17, +10 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, saeta guía (versión de nivel 2), taumaturgia 1/día cada uno: detectar pensamientos, respirar bajo el agua",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 17,
+          "attackBonus": 10,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "speak-with-animals"
+                },
+                {
+                  "spellId": "guiding-bolt",
+                  "castAtLevel": 2
+                },
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "detect-thoughts"
+                },
+                {
+                  "spellId": "water-breathing"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8166,7 +8490,53 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 22, +14 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, saeta guía (versión de nivel 2), taumaturgia 1/día cada uno: controlar agua, detectar pensamientos, escudriñar, respirar bajo el agua"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 22, +14 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, saeta guía (versión de nivel 2), taumaturgia 1/día cada uno: controlar agua, detectar pensamientos, escudriñar, respirar bajo el agua",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 22,
+          "attackBonus": 14,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "speak-with-animals"
+                },
+                {
+                  "spellId": "guiding-bolt",
+                  "castAtLevel": 2
+                },
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "control-water"
+                },
+                {
+                  "spellId": "detect-thoughts"
+                },
+                {
+                  "spellId": "scrying"
+                },
+                {
+                  "spellId": "water-breathing"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8298,7 +8668,43 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), clavo mental (versión de nivel 4), detectar magia, ilusión menor 1/día cada uno: imagen mayor, restablecimiento mayor"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), clavo mental (versión de nivel 4), detectar magia, ilusión menor 1/día cada uno: imagen mayor, restablecimiento mayor",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 17,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "mind-spike",
+                  "castAtLevel": 4
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "minor-illusion"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "major-image"
+                },
+                {
+                  "spellId": "greater-restoration"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8371,7 +8777,46 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), clavo mental (versión de nivel 5), detectar magia, ilusión menor 1/día cada uno: imagen mayor, proyectar imagen, restablecimiento mayor"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), clavo mental (versión de nivel 5), detectar magia, ilusión menor 1/día cada uno: imagen mayor, proyectar imagen, restablecimiento mayor",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 21,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "mind-spike",
+                  "castAtLevel": 5
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "minor-illusion"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "major-image"
+                },
+                {
+                  "spellId": "project-image"
+                },
+                {
+                  "spellId": "greater-restoration"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8504,7 +8949,41 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21, +13 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, saeta guía (versión de nivel 2) 1/día cada uno: golpe flamígero, zona de la verdad"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21, +13 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, saeta guía (versión de nivel 2) 1/día cada uno: golpe flamígero, zona de la verdad",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 21,
+          "attackBonus": 13,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "guiding-bolt",
+                  "castAtLevel": 2
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "flame-strike"
+                },
+                {
+                  "spellId": "zone-of-truth"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8584,7 +9063,45 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 24, +16 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, saeta guía (versión de nivel 4) 1/día cada uno: golpe flamígero (versión de nivel 6), palabra de regreso, zona de la verdad"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 24, +16 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, saeta guía (versión de nivel 4) 1/día cada uno: golpe flamígero (versión de nivel 6), palabra de regreso, zona de la verdad",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 24,
+          "attackBonus": 16,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "guiding-bolt",
+                  "castAtLevel": 4
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "flame-strike",
+                  "castAtLevel": 6
+                },
+                {
+                  "spellId": "word-of-recall"
+                },
+                {
+                  "spellId": "zone-of-truth"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8722,7 +9239,45 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 16): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, ilusión menor, rayo abrasador 1/día cada uno: controlar el clima, detectar pensamientos"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 16): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, ilusión menor, rayo abrasador 1/día cada uno: controlar el clima, detectar pensamientos",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 16,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "speak-with-animals"
+                },
+                {
+                  "spellId": "minor-illusion"
+                },
+                {
+                  "spellId": "scorching-ray"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "control-weather"
+                },
+                {
+                  "spellId": "detect-thoughts"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8800,7 +9355,46 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 20): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, ilusión menor, rayo abrasador (versión de nivel 3) 1/día cada uno: controlar el clima, detectar pensamientos"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 20): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), detectar magia, hablar con los animales, ilusión menor, rayo abrasador (versión de nivel 3) 1/día cada uno: controlar el clima, detectar pensamientos",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 20,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "speak-with-animals"
+                },
+                {
+                  "spellId": "minor-illusion"
+                },
+                {
+                  "spellId": "scorching-ray",
+                  "castAtLevel": 3
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "control-weather"
+                },
+                {
+                  "spellId": "detect-thoughts"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -8930,7 +9524,44 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 19, +11 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), cuchillo de hielo, detectar magia, inmovilizar monstruo 1/día cada uno: tormenta de hielo (versión de nivel 5), zona de la verdad"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 19, +11 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), cuchillo de hielo, detectar magia, inmovilizar monstruo 1/día cada uno: tormenta de hielo (versión de nivel 5), zona de la verdad",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 19,
+          "attackBonus": 11,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "ice-knife"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "hold-monster"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "ice-storm",
+                  "castAtLevel": 5
+                },
+                {
+                  "spellId": "zone-of-truth"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9003,7 +9634,51 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 23, +15 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), cuchillo de hielo (versión de nivel 2), detectar magia, inmovilizar monstruo 1/día cada uno: controlar el clima, teletransporte, tormenta de hielo (versión de nivel 7), zona de la verdad"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 23, +15 a acertar con ataques de conjuro): A voluntad: cambiar de forma (solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro), cuchillo de hielo (versión de nivel 2), detectar magia, inmovilizar monstruo 1/día cada uno: controlar el clima, teletransporte, tormenta de hielo (versión de nivel 7), zona de la verdad",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 23,
+          "attackBonus": 15,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "shapechange",
+                  "note": "solo forma de bestia o humanoide, no se obtienen puntos de golpe temporales del conjuro y no se requieren concentración ni puntos de golpe temporales para mantener el conjuro"
+                },
+                {
+                  "spellId": "ice-knife",
+                  "castAtLevel": 2
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "hold-monster"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "control-weather"
+                },
+                {
+                  "spellId": "teleport"
+                },
+                {
+                  "spellId": "ice-storm",
+                  "castAtLevel": 7
+                },
+                {
+                  "spellId": "zone-of-truth"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9130,7 +9805,40 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17, +9 a acertar con ataques de conjuro): A voluntad: detectar magia, flecha ácida (versión de nivel 3), terror 1/día cada uno: esfera vitriólica, hablar con los muertos"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17, +9 a acertar con ataques de conjuro): A voluntad: detectar magia, flecha ácida (versión de nivel 3), terror 1/día cada uno: esfera vitriólica, hablar con los muertos",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 17,
+          "attackBonus": 9,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "melfs-acid-arrow",
+                  "castAtLevel": 3
+                },
+                {
+                  "spellId": "fear"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "vitriolic-sphere"
+                },
+                {
+                  "spellId": "speak-with-dead"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9204,7 +9912,44 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21, +13 a acertar con ataques de conjuro): A voluntad: detectar magia, flecha ácida (versión de nivel 4), terror 1/día cada uno: crear muerto viviente, esfera vitriólica (versión de nivel 5), hablar con los muertos"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21, +13 a acertar con ataques de conjuro): A voluntad: detectar magia, flecha ácida (versión de nivel 4), terror 1/día cada uno: crear muerto viviente, esfera vitriólica (versión de nivel 5), hablar con los muertos",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 21,
+          "attackBonus": 13,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "melfs-acid-arrow",
+                  "castAtLevel": 4
+                },
+                {
+                  "spellId": "fear"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "create-undead"
+                },
+                {
+                  "spellId": "vitriolic-sphere",
+                  "castAtLevel": 5
+                },
+                {
+                  "spellId": "speak-with-dead"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9326,7 +10071,37 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 20, +12 a acertar con ataques de conjuro): A voluntad: detectar magia, orden imperiosa (versión de nivel 2), rayo abrasador 1/día: bola de fuego"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 20, +12 a acertar con ataques de conjuro): A voluntad: detectar magia, orden imperiosa (versión de nivel 2), rayo abrasador 1/día: bola de fuego",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 20,
+          "attackBonus": 12,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "command",
+                  "castAtLevel": 2
+                },
+                {
+                  "spellId": "scorching-ray"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "fireball"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9394,7 +10169,42 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 23, +15 a acertar con ataques de conjuro): A voluntad: detectar magia, orden imperiosa (versión de nivel 2), rayo abrasador (versión de nivel 3) 1/día cada uno: bola de fuego (versión de nivel 6), escudriñar"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 23, +15 a acertar con ataques de conjuro): A voluntad: detectar magia, orden imperiosa (versión de nivel 2), rayo abrasador (versión de nivel 3) 1/día cada uno: bola de fuego (versión de nivel 6), escudriñar",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 23,
+          "attackBonus": 15,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "command",
+                  "castAtLevel": 2
+                },
+                {
+                  "spellId": "scorching-ray",
+                  "castAtLevel": 3
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "fireball",
+                  "castAtLevel": 6
+                },
+                {
+                  "spellId": "scrying"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9577,7 +10387,33 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: clavo mental (versión de nivel 3), detectar magia 1/día: geas"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 17): A voluntad: clavo mental (versión de nivel 3), detectar magia 1/día: geas",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 17,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "mind-spike",
+                  "castAtLevel": 3
+                },
+                {
+                  "spellId": "detect-magic"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "geas"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9653,7 +10489,36 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21): A voluntad: clavo mental (versión de nivel 5), detectar magia 1/día cada uno: alterar los recuerdos, geas"
+        "description": "El dragón lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 21): A voluntad: clavo mental (versión de nivel 5), detectar magia 1/día cada uno: alterar los recuerdos, geas",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 21,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "mind-spike",
+                  "castAtLevel": 5
+                },
+                {
+                  "spellId": "detect-magic"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "modify-memory"
+                },
+                {
+                  "spellId": "geas"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Abalanzarse",
@@ -9872,7 +10737,48 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El druida lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 13): A voluntad: hablar con los animales, saber druídico 2/día cada uno: enmarañar, ola atronadora 1/día cada uno: mensajero animal, rayo de luna, zancada prodigiosa"
+        "description": "El druida lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 13): A voluntad: hablar con los animales, saber druídico 2/día cada uno: enmarañar, ola atronadora 1/día cada uno: mensajero animal, rayo de luna, zancada prodigiosa",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 13,
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "speak-with-animals"
+                },
+                {
+                  "spellId": "druidcraft"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "entangle"
+                },
+                {
+                  "spellId": "thunderwave"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "animal-messenger"
+                },
+                {
+                  "spellId": "moonbeam"
+                },
+                {
+                  "spellId": "longstrider"
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "hitDice": "8d8 + 8"
@@ -9931,7 +10837,39 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La dríade lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 14): A voluntad: encantar animal, hechizar monstruo (dura 24 horas; termina antes de tiempo si la dríade vuelve a lanzarlo), saber druídico 1/día cada uno: enmarañar, pasar sin rastro"
+        "description": "La dríade lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 14): A voluntad: encantar animal, hechizar monstruo (dura 24 horas; termina antes de tiempo si la dríade vuelve a lanzarlo), saber druídico 1/día cada uno: enmarañar, pasar sin rastro",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 14,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "animal-friendship"
+                },
+                {
+                  "spellId": "charm-monster",
+                  "note": "dura 24 horas; termina antes de tiempo si la dríade vuelve a lanzarlo"
+                },
+                {
+                  "spellId": "druidcraft"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "entangle"
+                },
+                {
+                  "spellId": "pass-without-trace"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Paso arbóreo",
@@ -10747,7 +11685,56 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La esfinge lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, identificar, ilusión menor, mano de mago, prestidigitación 1/día cada uno: conocer las leyendas, desplazamiento entre planos, disipar magia, don de lenguas, levantar maldición, localizar objeto"
+        "description": "La esfinge lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, identificar, ilusión menor, mano de mago, prestidigitación 1/día cada uno: conocer las leyendas, desplazamiento entre planos, disipar magia, don de lenguas, levantar maldición, localizar objeto",
+        "spellcasting": {
+          "ability": "intelligence",
+          "saveDc": 16,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "identify"
+                },
+                {
+                  "spellId": "minor-illusion"
+                },
+                {
+                  "spellId": "mage-hand"
+                },
+                {
+                  "spellId": "prestidigitation"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "legend-lore"
+                },
+                {
+                  "spellId": "plane-shift"
+                },
+                {
+                  "spellId": "dispel-magic"
+                },
+                {
+                  "spellId": "tongues"
+                },
+                {
+                  "spellId": "remove-curse"
+                },
+                {
+                  "spellId": "locate-object"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Rugido desgarramentes (recarga 5–6)",
@@ -10819,7 +11806,44 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La esfinge lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 20): A voluntad: detectar el bien y el mal, taumaturgia 1/día cada uno: detectar magia, disipar magia, festín de héroes, restablecimiento mayor, zona de la verdad"
+        "description": "La esfinge lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 20): A voluntad: detectar el bien y el mal, taumaturgia 1/día cada uno: detectar magia, disipar magia, festín de héroes, restablecimiento mayor, zona de la verdad",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 20,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-evil-and-good"
+                },
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "dispel-magic"
+                },
+                {
+                  "spellId": "heroes-feast"
+                },
+                {
+                  "spellId": "greater-restoration"
+                },
+                {
+                  "spellId": "zone-of-truth"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Rugido (3/día)",
@@ -11260,7 +12284,40 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El sectario lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 12, +4 a acertar con ataques de conjuro): A voluntad: luz, taumaturgia 2/día: orden imperiosa 1/día: inmovilizar persona"
+        "description": "El sectario lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 12, +4 a acertar con ataques de conjuro): A voluntad: luz, taumaturgia 2/día: orden imperiosa 1/día: inmovilizar persona",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 12,
+          "attackBonus": 4,
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "light"
+                },
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "command"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "hold-person"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Arma espiritual (2/día)",
@@ -11623,7 +12680,41 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El gigante lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 15): A voluntad: detectar magia, luz, nube de oscurecimiento 1/día cada uno: controlar el clima, forma gaseosa, telequinesis"
+        "description": "El gigante lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 15): A voluntad: detectar magia, luz, nube de oscurecimiento 1/día cada uno: controlar el clima, forma gaseosa, telequinesis",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 15,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "light"
+                },
+                {
+                  "spellId": "fog-cloud"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "control-weather"
+                },
+                {
+                  "spellId": "gaseous-form"
+                },
+                {
+                  "spellId": "telekinesis"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Paso brumoso",
@@ -11693,7 +12784,32 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El gigante lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 18): A voluntad: detectar magia, luz 1/día: controlar el clima"
+        "description": "El gigante lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 18): A voluntad: detectar magia, luz 1/día: controlar el clima",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 18,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "light"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "control-weather"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Tormenta de relámpagos (recarga 5–6)",
@@ -11820,7 +12936,41 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El glabrezu lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, disipar magia, oscuridad 1/día cada uno: confusión, palabra de poder: aturdir, volar"
+        "description": "El glabrezu lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, disipar magia, oscuridad 1/día cada uno: confusión, palabra de poder: aturdir, volar",
+        "spellcasting": {
+          "ability": "intelligence",
+          "saveDc": 16,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "dispel-magic"
+                },
+                {
+                  "spellId": "darkness"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "confusion"
+                },
+                {
+                  "spellId": "power-word-stun"
+                },
+                {
+                  "spellId": "fly"
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "hitDice": "18d10 + 90"
@@ -13380,7 +14530,48 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El ifrit lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, elementalismo 1/día cada uno: desplazamiento entre planos, don de lenguas, forma gaseosa, imagen mayor, invisibilidad, muro de fuego (versión de nivel 7)"
+        "description": "El ifrit lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 16): A voluntad: detectar magia, elementalismo 1/día cada uno: desplazamiento entre planos, don de lenguas, forma gaseosa, imagen mayor, invisibilidad, muro de fuego (versión de nivel 7)",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 16,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "elementalism"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "plane-shift"
+                },
+                {
+                  "spellId": "tongues"
+                },
+                {
+                  "spellId": "gaseous-form"
+                },
+                {
+                  "spellId": "major-image"
+                },
+                {
+                  "spellId": "invisibility"
+                },
+                {
+                  "spellId": "wall-of-fire",
+                  "castAtLevel": 7
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "hitDice": "17d10 + 119"
@@ -13709,7 +14900,39 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La lamia lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 13): A voluntad: disfrazarse (puede presentarse como un bípedo Grande o Mediano), ilusión menor 1/día cada uno: escudriñar, geas, imagen mayor"
+        "description": "La lamia lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 13): A voluntad: disfrazarse (puede presentarse como un bípedo Grande o Mediano), ilusión menor 1/día cada uno: escudriñar, geas, imagen mayor",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 13,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "disguise-self",
+                  "note": "puede presentarse como un bípedo Grande o Mediano"
+                },
+                {
+                  "spellId": "minor-illusion"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "scrying"
+                },
+                {
+                  "spellId": "geas"
+                },
+                {
+                  "spellId": "major-image"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Toque corruptor",
@@ -13784,7 +15007,74 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El liche lanza uno de los siguientes conjuros, que utiliza la Inteligencia como  aptitud mágica (CD de salvación de conjuros 20): A voluntad: bola de fuego (versión de nivel 5), detectar magia, detectar pensamientos, disipar magia, invisibilidad, mano de mago, prestidigitación, relámpago (versión de nivel 5) 2/día cada uno: animar a los muertos, desplazamiento entre planos, puerta dimensional 1/día cada uno: dedo de la muerte, escudriñar, palabra de poder: matar, relámpago en cadena"
+        "description": "El liche lanza uno de los siguientes conjuros, que utiliza la Inteligencia como  aptitud mágica (CD de salvación de conjuros 20): A voluntad: bola de fuego (versión de nivel 5), detectar magia, detectar pensamientos, disipar magia, invisibilidad, mano de mago, prestidigitación, relámpago (versión de nivel 5) 2/día cada uno: animar a los muertos, desplazamiento entre planos, puerta dimensional 1/día cada uno: dedo de la muerte, escudriñar, palabra de poder: matar, relámpago en cadena",
+        "spellcasting": {
+          "ability": "intelligence",
+          "saveDc": 20,
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "fireball",
+                  "castAtLevel": 5
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "detect-thoughts"
+                },
+                {
+                  "spellId": "dispel-magic"
+                },
+                {
+                  "spellId": "invisibility"
+                },
+                {
+                  "spellId": "mage-hand"
+                },
+                {
+                  "spellId": "prestidigitation"
+                },
+                {
+                  "spellId": "lightning-bolt",
+                  "castAtLevel": 5
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "animate-dead"
+                },
+                {
+                  "spellId": "plane-shift"
+                },
+                {
+                  "spellId": "dimension-door"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "finger-of-death"
+                },
+                {
+                  "spellId": "scrying"
+                },
+                {
+                  "spellId": "power-word-kill"
+                },
+                {
+                  "spellId": "chain-lightning"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Magia protectora",
@@ -13977,7 +15267,56 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El mago lanza uno de los siguientes conjuros, que utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14): A voluntad: armadura de mago (incluido en la CA), detectar magia, luz, mano de mago, prestidigitación 2/día cada uno: bola de fuego (versión de nivel 4), invisibilidad 1/día cada uno: cono de frío, volar"
+        "description": "El mago lanza uno de los siguientes conjuros, que utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14): A voluntad: armadura de mago (incluido en la CA), detectar magia, luz, mano de mago, prestidigitación 2/día cada uno: bola de fuego (versión de nivel 4), invisibilidad 1/día cada uno: cono de frío, volar",
+        "spellcasting": {
+          "ability": "intelligence",
+          "saveDc": 14,
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "mage-armor",
+                  "note": "incluido en la CA"
+                },
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "light"
+                },
+                {
+                  "spellId": "mage-hand"
+                },
+                {
+                  "spellId": "prestidigitation"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "fireball",
+                  "castAtLevel": 4
+                },
+                {
+                  "spellId": "invisibility"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "cone-of-cold"
+                },
+                {
+                  "spellId": "fly"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Paso brumoso (3/día)",
@@ -14838,7 +16177,49 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La naga lanza uno de los  siguientes conjuros, que no requiere componentes  somáticos o materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14): A voluntad: detectar magia, ilusión menor, mano de mago, respirar bajo el agua 2/día cada uno: detectar pensamientos, inmovilizar persona (versión de nivel 3), puerta dimensional,  relámpago (versión de nivel 4)"
+        "description": "La naga lanza uno de los  siguientes conjuros, que no requiere componentes  somáticos o materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14): A voluntad: detectar magia, ilusión menor, mano de mago, respirar bajo el agua 2/día cada uno: detectar pensamientos, inmovilizar persona (versión de nivel 3), puerta dimensional,  relámpago (versión de nivel 4)",
+        "spellcasting": {
+          "ability": "intelligence",
+          "saveDc": 14,
+          "componentRule": "No requiere componentes somáticos o materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "minor-illusion"
+                },
+                {
+                  "spellId": "mage-hand"
+                },
+                {
+                  "spellId": "water-breathing"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "detect-thoughts"
+                },
+                {
+                  "spellId": "hold-person",
+                  "castAtLevel": 3
+                },
+                {
+                  "spellId": "dimension-door"
+                },
+                {
+                  "spellId": "lightning-bolt",
+                  "castAtLevel": 4
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "hitDice": "18d10 + 36"
@@ -14895,7 +16276,43 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La naga lanza uno de los siguientes conjuros, que no requiere componentes somáticos o materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 16): A voluntad: taumaturgia 1/día cada uno: clarividencia, curar heridas (versión de nivel 6), geas, golpe flamígero (versión de nivel 6), visión veraz"
+        "description": "La naga lanza uno de los siguientes conjuros, que no requiere componentes somáticos o materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 16): A voluntad: taumaturgia 1/día cada uno: clarividencia, curar heridas (versión de nivel 6), geas, golpe flamígero (versión de nivel 6), visión veraz",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 16,
+          "componentRule": "No requiere componentes somáticos o materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "clairvoyance"
+                },
+                {
+                  "spellId": "cure-wounds",
+                  "castAtLevel": 6
+                },
+                {
+                  "spellId": "geas"
+                },
+                {
+                  "spellId": "flame-strike",
+                  "castAtLevel": 6
+                },
+                {
+                  "spellId": "true-seeing"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Saliva venenosa",
@@ -15113,7 +16530,32 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El oni lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 13): 1/día cada uno: dormir, forma gaseosa, hechizar persona (versión de nivel 2), oscuridad"
+        "description": "El oni lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 13): 1/día cada uno: dormir, forma gaseosa, hechizar persona (versión de nivel 2), oscuridad",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 13,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "sleep"
+                },
+                {
+                  "spellId": "gaseous-form"
+                },
+                {
+                  "spellId": "charm-person",
+                  "castAtLevel": 2
+                },
+                {
+                  "spellId": "darkness"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Invisibilidad",
@@ -15631,7 +17073,38 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El planetar lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 20): A voluntad: detectar el bien y el mal 1/día cada uno: alzar a los muertos, comunión, controlar el clima, disipar el bien y el mal"
+        "description": "El planetar lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 20): A voluntad: detectar el bien y el mal 1/día cada uno: alzar a los muertos, comunión, controlar el clima, disipar el bien y el mal",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 20,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-evil-and-good"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "raise-dead"
+                },
+                {
+                  "spellId": "commune"
+                },
+                {
+                  "spellId": "control-weather"
+                },
+                {
+                  "spellId": "dispel-evil-and-good"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Auxilio divino (2/día)",
@@ -15875,7 +17348,50 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El rakshasa lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 18): A voluntad: detectar magia, detectar pensamientos, disfrazarse, ilusión menor, mano de mago 1/día cada uno: desplazamiento entre planos, imagen mayor, invisibilidad, volar"
+        "description": "El rakshasa lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 18): A voluntad: detectar magia, detectar pensamientos, disfrazarse, ilusión menor, mano de mago 1/día cada uno: desplazamiento entre planos, imagen mayor, invisibilidad, volar",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 18,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "detect-thoughts"
+                },
+                {
+                  "spellId": "disguise-self"
+                },
+                {
+                  "spellId": "minor-illusion"
+                },
+                {
+                  "spellId": "mage-hand"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "plane-shift"
+                },
+                {
+                  "spellId": "major-image"
+                },
+                {
+                  "spellId": "invisibility"
+                },
+                {
+                  "spellId": "fly"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Orden siniestra (recarga 5–6)",
@@ -16107,7 +17623,31 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El sacerdote lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 13): A voluntad: luz, taumaturgia 1/día: espíritus guardianes"
+        "description": "El sacerdote lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 13): A voluntad: luz, taumaturgia 1/día: espíritus guardianes",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 13,
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "light"
+                },
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "spirit-guardians"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Auxilio divino (3/día)",
@@ -16157,7 +17697,22 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El sacerdote lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica: A voluntad: luz, taumaturgia"
+        "description": "El sacerdote lanza uno de los siguientes conjuros, que utiliza la Sabiduría como aptitud mágica: A voluntad: luz, taumaturgia",
+        "spellcasting": {
+          "ability": "wisdom",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "light"
+                },
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Auxilio divino (1/día)",
@@ -16220,7 +17775,37 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La saga lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 12, +4 a acertar con ataques de conjuro): A voluntad: disfrazarse (24 horas de duración), ilusión menor, invisibilidad (solo lanzador y la saga no deja huellas mientras es invisible), luces danzantes, rayo nauseabundo (versión de nivel 3)"
+        "description": "La saga lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 12, +4 a acertar con ataques de conjuro): A voluntad: disfrazarse (24 horas de duración), ilusión menor, invisibilidad (solo lanzador y la saga no deja huellas mientras es invisible), luces danzantes, rayo nauseabundo (versión de nivel 3)",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 12,
+          "attackBonus": 4,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "disguise-self",
+                  "note": "24 horas de duración"
+                },
+                {
+                  "spellId": "minor-illusion"
+                },
+                {
+                  "spellId": "invisibility",
+                  "note": "solo lanzador y la saga no deja huellas mientras es invisible"
+                },
+                {
+                  "spellId": "dancing-lights"
+                },
+                {
+                  "spellId": "ray-of-sickness",
+                  "castAtLevel": 3
+                }
+              ]
+            }
+          ]
+        }
       }
     ],
     "hitDice": "11d8 + 33"
@@ -16280,7 +17865,44 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La saga lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14): A voluntad: detectar magia, excursión etérea, proyectil mágico (versión de nivel 4) 2/día cada uno: asesino fantasmal, desplazamiento entre planos (solo lanzador) Provocar pesadillas (1/día; requiere una bolsa de  almas). Mientras está en el Plano Etéreo, la saga lanza ensueño usando la misma aptitud mágica que para su lanzamiento de conjuros. Solo la saga puede actuar como mensajera del conjuro y el objetivo debe ser una criatura que la saga pueda ver en el Plano Material. El conjuro fallará y se desperdiciará si el objetivo se encuentra bajo el efecto de un conjuro protección contra el bien y el mal o dentro de un conjuro círculo mágico. Si el objetivo recibe daño del conjuro ensueño, sus puntos de golpe máximos se reducirán en una cantidad igual a ese daño. Si el conjuro mata al objetivo, su alma quedará atrapada en la bolsa de almas de la saga y el objetivo no podrá volver a la vida hasta que se libere su alma."
+        "description": "La saga lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Inteligencia como aptitud mágica (CD de salvación de conjuros 14): A voluntad: detectar magia, excursión etérea, proyectil mágico (versión de nivel 4) 2/día cada uno: asesino fantasmal, desplazamiento entre planos (solo lanzador)",
+        "spellcasting": {
+          "ability": "intelligence",
+          "saveDc": 14,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-magic"
+                },
+                {
+                  "spellId": "etherealness"
+                },
+                {
+                  "spellId": "magic-missile",
+                  "castAtLevel": 4
+                }
+              ]
+            },
+            {
+              "usesPerDay": 2,
+              "spells": [
+                {
+                  "spellId": "phantasmal-killer"
+                },
+                {
+                  "spellId": "plane-shift",
+                  "note": "solo lanzador"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "Provocar pesadillas (1/día)",
+        "description": "Requiere una bolsa de  almas. Mientras está en el Plano Etéreo, la saga lanza ensueño usando la misma aptitud mágica que para su lanzamiento de conjuros. Solo la saga puede actuar como mensajera del conjuro y el objetivo debe ser una criatura que la saga pueda ver en el Plano Material. El conjuro fallará y se desperdiciará si el objetivo se encuentra bajo el efecto de un conjuro protección contra el bien y el mal o dentro de un conjuro círculo mágico. Si el objetivo recibe daño del conjuro ensueño, sus puntos de golpe máximos se reducirán en una cantidad igual a ese daño. Si el conjuro mata al objetivo, su alma quedará atrapada en la bolsa de almas de la saga y el objetivo no podrá volver a la vida hasta que se libere su alma."
       },
       {
         "name": "Cambio de forma",
@@ -16626,7 +18248,40 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "La momia lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 17, +9 a acertar con ataques de conjuro): A voluntad: disipar magia, taumaturgia 1/día cada uno: animar a los muertos, dañar, plaga de insectos (versión de nivel 7)"
+        "description": "La momia lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza la Sabiduría como aptitud mágica (CD de salvación de conjuros 17, +9 a acertar con ataques de conjuro): A voluntad: disipar magia, taumaturgia 1/día cada uno: animar a los muertos, dañar, plaga de insectos (versión de nivel 7)",
+        "spellcasting": {
+          "ability": "wisdom",
+          "saveDc": 17,
+          "attackBonus": 9,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "dispel-magic"
+                },
+                {
+                  "spellId": "thaumaturgy"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "animate-dead"
+                },
+                {
+                  "spellId": "harm"
+                },
+                {
+                  "spellId": "insect-plague",
+                  "castAtLevel": 7
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Mirada espantosa",
@@ -16823,7 +18478,38 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El solar lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 25): A voluntad: detectar el bien y el mal 1/día cada uno: comunión, controlar el clima, disipar el bien y el mal, resurrección"
+        "description": "El solar lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 25): A voluntad: detectar el bien y el mal 1/día cada uno: comunión, controlar el clima, disipar el bien y el mal, resurrección",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 25,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-evil-and-good"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "commune"
+                },
+                {
+                  "spellId": "control-weather"
+                },
+                {
+                  "spellId": "dispel-evil-and-good"
+                },
+                {
+                  "spellId": "resurrection"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Auxilio divino (3/día)",
@@ -17540,7 +19226,44 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El unicornio lanza uno de los siguientes conjuros, que no requiere componentes y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 14): A voluntad: detectar el bien y el mal, saber druídico 1/día cada uno: calmar emociones, disipar el bien y el mal, enmarañar, palabra de regreso, pasar sin rastro"
+        "description": "El unicornio lanza uno de los siguientes conjuros, que no requiere componentes y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 14): A voluntad: detectar el bien y el mal, saber druídico 1/día cada uno: calmar emociones, disipar el bien y el mal, enmarañar, palabra de regreso, pasar sin rastro",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 14,
+          "componentRule": "No requiere componentes.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "detect-evil-and-good"
+                },
+                {
+                  "spellId": "druidcraft"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "calm-emotions"
+                },
+                {
+                  "spellId": "dispel-evil-and-good"
+                },
+                {
+                  "spellId": "entangle"
+                },
+                {
+                  "spellId": "word-of-recall"
+                },
+                {
+                  "spellId": "pass-without-trace"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Bendición de unicornio (3/día)",
@@ -17897,7 +19620,35 @@
       },
       {
         "name": "Lanzamiento de conjuros",
-        "description": "El íncubo lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 15): A voluntad: disfrazarse, excursión etérea 1/día cada uno: ensueño, patrón hipnótico"
+        "description": "El íncubo lanza uno de los siguientes conjuros, que no requiere componentes materiales y utiliza el Carisma como aptitud mágica (CD de salvación de conjuros 15): A voluntad: disfrazarse, excursión etérea 1/día cada uno: ensueño, patrón hipnótico",
+        "spellcasting": {
+          "ability": "charisma",
+          "saveDc": 15,
+          "componentRule": "No requiere componentes materiales.",
+          "groups": [
+            {
+              "spells": [
+                {
+                  "spellId": "disguise-self"
+                },
+                {
+                  "spellId": "etherealness"
+                }
+              ]
+            },
+            {
+              "usesPerDay": 1,
+              "spells": [
+                {
+                  "spellId": "dream"
+                },
+                {
+                  "spellId": "hypnotic-pattern"
+                }
+              ]
+            }
+          ]
+        }
       },
       {
         "name": "Pesadilla (recarga 6)",

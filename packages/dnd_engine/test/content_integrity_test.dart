@@ -1343,6 +1343,52 @@ void main() {
       }
     });
 
+    test('los 48 lanzadores enlazan conjuros válidos', () {
+      final actions = [
+        for (final creature in repo.creatures.values)
+          for (final action in creature.actions)
+            if (action.name == 'Lanzamiento de conjuros') action,
+      ];
+      expect(actions, hasLength(48));
+
+      for (final action in actions) {
+        final casting = action.spellcasting;
+        expect(casting, isNotNull, reason: action.description);
+        expect(casting!.groups, isNotEmpty);
+        final seen = <String>{};
+        for (final group in casting.groups) {
+          if (group.usesPerDay != null) {
+            expect(group.usesPerDay, greaterThan(0));
+          }
+          expect(group.spells, isNotEmpty);
+          for (final ref in group.spells) {
+            final spell = repo.spell(ref.spellId);
+            expect(spell, isNotNull, reason: ref.spellId);
+            expect(seen.add(ref.spellId), isTrue, reason: ref.spellId);
+            if (ref.castAtLevel != null) {
+              expect(
+                ref.castAtLevel,
+                greaterThanOrEqualTo(spell!.level),
+                reason: ref.spellId,
+              );
+            }
+          }
+        }
+      }
+    });
+
+    test('Provocar pesadillas no queda dentro de Lanzamiento de conjuros', () {
+      final actions = repo.creature('night-hag')!.actions;
+      final casting = actions.singleWhere(
+        (action) => action.name == 'Lanzamiento de conjuros',
+      );
+      expect(casting.description, isNot(contains('Provocar pesadillas')));
+      expect(
+        actions.map((action) => action.name),
+        contains('Provocar pesadillas (1/día)'),
+      );
+    });
+
     test('el tipo y el tamaño de cada perfil se resuelven', () {
       // `creatureType` y `creatureSize` caen a parsear `kind` cuando la entrada
       // no trae los campos estructurados, que hoy es todo el catálogo. Si un

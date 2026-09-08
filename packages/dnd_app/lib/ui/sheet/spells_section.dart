@@ -526,73 +526,21 @@ extension _SheetSpellsSection on _SheetScreenState {
   /// lanzan con la característica que fija el rasgo, que puede no ser la de la
   /// clase, así que los números tienen que salir de ahí y no de `spellcasting`.
   void _showSpellDialog(Spell s, {InnateSpell? innate}) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final sc = sheet.spellcasting;
     final ability = innate?.ability ?? sc?.ability;
     final attackBonus = innate?.attackBonus ?? sc?.attackBonus;
     final saveDc = innate?.saveDc ?? sc?.saveDc;
 
-    _infoDialog(
-      s.name,
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '${s.isCantrip ? "Truco" : "Nivel ${s.level}"} · ${s.school}',
-            style: TextStyle(color: muted),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              if (s.actionType != SpellActionType.longer) ...[
-                ActionTypeIcon(s.actionType, size: 15),
-                const SizedBox(width: 6),
-              ],
-              Flexible(child: _spellMeta('Lanzamiento', s.castingTime)),
-            ],
-          ),
-          _spellMeta('Alcance', s.range),
-          _spellMeta('Componentes', s.components),
-          _spellMeta('Duración', s.duration),
-          const SizedBox(height: 10),
-          Text(s.description),
-
-          // Los números resueltos a este personaje. La descripción del SRD dice
-          // "usando tu característica de conjuro" sin decir cuánto es, y en la
-          // mesa eso obliga a ir a buscarlo a otra tarjeta.
-          if (ability != null) ...[
-            const SizedBox(height: 14),
-            const Eyebrow('Con este personaje'),
-            Text(
-              'Lanzás con ${ability.label} '
-              '(${_signed(sheet.abilityModifiers[ability]!)}). '
-              'Ataque de conjuro ${_signed(attackBonus!)} · '
-              'CD de salvación $saveDc.',
-              style: TextStyle(fontSize: 12, color: muted),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _spellMeta(String label, String value) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            TextSpan(text: value),
-          ],
-        ),
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
+    showSpellDetailsDialog(
+      context,
+      s,
+      contextTitle: ability == null ? '' : 'Con este personaje',
+      contextText: ability == null
+          ? ''
+          : 'Lanzás con ${ability.label} '
+                '(${_signed(sheet.abilityModifiers[ability]!)}). '
+                'Ataque de conjuro ${_signed(attackBonus!)} · '
+                'CD de salvación $saveDc.',
     );
   }
 }

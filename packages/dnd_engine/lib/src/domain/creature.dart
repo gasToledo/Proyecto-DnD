@@ -347,6 +347,95 @@ enum CreatureActionKind {
   }
 }
 
+/// Un conjuro de criatura, enlazado al catálogo general.
+class CreatureSpellRef {
+  final String spellId;
+  final int? castAtLevel;
+  final String note;
+
+  const CreatureSpellRef({
+    required this.spellId,
+    this.castAtLevel,
+    this.note = '',
+  });
+
+  Map<String, dynamic> toJson() => {
+        'spellId': spellId,
+        if (castAtLevel != null) 'castAtLevel': castAtLevel,
+        if (note.isNotEmpty) 'note': note,
+      };
+
+  factory CreatureSpellRef.fromJson(Map<String, dynamic> j) => CreatureSpellRef(
+        spellId: j['spellId'] as String,
+        castAtLevel: j['castAtLevel'] as int?,
+        note: j['note'] as String? ?? '',
+      );
+}
+
+/// Conjuros que comparten frecuencia: sin límite o cierta cantidad por día.
+class CreatureSpellGroup {
+  /// Ausente significa «A voluntad».
+  final int? usesPerDay;
+  final List<CreatureSpellRef> spells;
+
+  const CreatureSpellGroup({this.usesPerDay, required this.spells});
+
+  Map<String, dynamic> toJson() => {
+        if (usesPerDay != null) 'usesPerDay': usesPerDay,
+        'spells': [for (final spell in spells) spell.toJson()],
+      };
+
+  factory CreatureSpellGroup.fromJson(Map<String, dynamic> j) =>
+      CreatureSpellGroup(
+        usesPerDay: j['usesPerDay'] as int?,
+        spells: [
+          for (final spell in (j['spells'] as List? ?? const []))
+            CreatureSpellRef.fromJson(
+              (spell as Map).cast<String, dynamic>(),
+            ),
+        ],
+      );
+}
+
+/// Datos comunes del bloque «Lanzamiento de conjuros» de una criatura.
+class CreatureSpellcasting {
+  final Ability ability;
+  final int? saveDc;
+  final int? attackBonus;
+  final String componentRule;
+  final List<CreatureSpellGroup> groups;
+
+  const CreatureSpellcasting({
+    required this.ability,
+    this.saveDc,
+    this.attackBonus,
+    this.componentRule = '',
+    required this.groups,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'ability': ability.name,
+        if (saveDc != null) 'saveDc': saveDc,
+        if (attackBonus != null) 'attackBonus': attackBonus,
+        if (componentRule.isNotEmpty) 'componentRule': componentRule,
+        'groups': [for (final group in groups) group.toJson()],
+      };
+
+  factory CreatureSpellcasting.fromJson(Map<String, dynamic> j) =>
+      CreatureSpellcasting(
+        ability: Ability.fromKey(j['ability'] as String),
+        saveDc: j['saveDc'] as int?,
+        attackBonus: j['attackBonus'] as int?,
+        componentRule: j['componentRule'] as String? ?? '',
+        groups: [
+          for (final group in (j['groups'] as List? ?? const []))
+            CreatureSpellGroup.fromJson(
+              (group as Map).cast<String, dynamic>(),
+            ),
+        ],
+      );
+}
+
 /// Acción de una criatura. Cuando [attackBonus] está presente es un ataque y la
 /// ficha lo pinta con el mismo formato que los del personaje; si no, es una
 /// acción descriptiva (Reparar, Detonar, Protector).
@@ -374,6 +463,9 @@ class CreatureAction {
   /// ([Creature.legendaryActionsPerRound]) gastando una por entrada.
   final CreatureActionKind kind;
 
+  /// Lista navegable del bloque de conjuros. Ausente conserva la prosa vieja.
+  final CreatureSpellcasting? spellcasting;
+
   const CreatureAction({
     required this.name,
     this.description = '',
@@ -382,6 +474,7 @@ class CreatureAction {
     this.damageType,
     this.reach = '',
     this.kind = CreatureActionKind.action,
+    this.spellcasting,
   });
 
   bool get isAttack => attackBonus != null;
@@ -397,6 +490,7 @@ class CreatureAction {
         'damageType': damageType,
         'reach': reach,
         if (kind != CreatureActionKind.action) 'kind': kind.toJson(),
+        if (spellcasting != null) 'spellcasting': spellcasting!.toJson(),
       };
 
   /// El catálogo anterior a [CreatureActionKind] marcaba la reacción con un
@@ -413,6 +507,11 @@ class CreatureAction {
             : (j['reaction'] as bool? ?? false)
                 ? CreatureActionKind.reaction
                 : CreatureActionKind.action,
+        spellcasting: j['spellcasting'] is Map
+            ? CreatureSpellcasting.fromJson(
+                (j['spellcasting'] as Map).cast<String, dynamic>(),
+              )
+            : null,
       );
 
   ResolvedCreatureAction resolve(CreatureVars vars) => ResolvedCreatureAction(
@@ -424,6 +523,7 @@ class CreatureAction {
         damageType: damageType,
         reach: reach,
         kind: kind,
+        spellcasting: spellcasting,
       );
 }
 
@@ -435,6 +535,7 @@ class ResolvedCreatureAction {
   final String? damageType;
   final String reach;
   final CreatureActionKind kind;
+  final CreatureSpellcasting? spellcasting;
 
   const ResolvedCreatureAction({
     required this.name,
@@ -444,6 +545,7 @@ class ResolvedCreatureAction {
     required this.damageType,
     required this.reach,
     this.kind = CreatureActionKind.action,
+    this.spellcasting,
   });
 
   bool get isAttack => attackBonus != null;

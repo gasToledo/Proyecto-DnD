@@ -245,7 +245,7 @@ class _BestiaryViewState extends State<BestiaryView> {
         Text(c.kind, style: TextStyle(fontSize: 13, color: pal.textMuted)),
         const SizedBox(height: 16),
 
-        ...creatureProfileBody(context, c),
+        ...creatureProfileBody(context, widget.repo, c),
       ],
     );
   }

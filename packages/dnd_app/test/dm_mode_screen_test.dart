@@ -1208,6 +1208,31 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('la columna del turno abre los conjuros de una criatura', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      await addMonsters(tester, 'mago', 'Mago');
+      await tirarIniciativa(tester);
+
+      final spellKey = find.byKey(
+        const ValueKey('creature-spell-mage-detect-magic'),
+      );
+      await tester.ensureVisible(spellKey);
+      await tester.pumpAndSettle();
+      expect(find.text('A voluntad'), findsOneWidget);
+      expect(find.text('2/día cada uno'), findsOneWidget);
+
+      await tester.tap(spellKey);
+      await tester.pumpAndSettle();
+      expect(find.text('CON MAGO'), findsOneWidget);
+      expect(find.textContaining('Componentes:'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     // La frontera del Modo DM también rige acá: la columna no puede convertirse
     // en una forma de leer la ficha de otra cuenta.
     testWidgets('cuando le toca a un jugador la columna no muestra su ficha', (
@@ -1641,6 +1666,30 @@ void main() {
       expect(find.text('ACCIONES'), findsOneWidget);
       // El tipo sale dos veces: como subtítulo en la lista y en el perfil.
       expect(find.text(ogre.kind), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el bestiario agrupa y abre conjuros de criatura', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, size: const Size(1100, 800), seed: seedTable);
+      await openBestiario(tester);
+      await buscar(tester, 'archimago');
+      await tester.tap(find.byKey(const ValueKey('bestiary-archmage')));
+      await tester.pumpAndSettle();
+
+      final spellKey = find.byKey(
+        const ValueKey('creature-spell-archmage-detect-magic'),
+      );
+      await tester.ensureVisible(spellKey);
+      await tester.pumpAndSettle();
+      expect(find.text('A voluntad'), findsOneWidget);
+      expect(find.text('1/día cada uno'), findsOneWidget);
+
+      await tester.tap(spellKey);
+      await tester.pumpAndSettle();
+      expect(find.text('CON ARCHIMAGO'), findsOneWidget);
+      expect(find.textContaining('Inteligencia · CD 17'), findsWidgets);
       expect(tester.takeException(), isNull);
     });
 

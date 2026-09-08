@@ -191,7 +191,31 @@ void main() {
       cr: 5,
       actions: const [
         CreatureAction(name: 'Desgarrar', attackBonus: '7', damage: '2d6+4'),
-        CreatureAction(name: 'Mordisco', kind: CreatureActionKind.bonus),
+        CreatureAction(
+          name: 'Lanzamiento de conjuros',
+          kind: CreatureActionKind.bonus,
+          spellcasting: CreatureSpellcasting(
+            ability: Ability.intelligence,
+            saveDc: 15,
+            attackBonus: 7,
+            componentRule: 'No requiere componentes materiales.',
+            groups: [
+              CreatureSpellGroup(
+                spells: [CreatureSpellRef(spellId: 'detect-magic')],
+              ),
+              CreatureSpellGroup(
+                usesPerDay: 1,
+                spells: [
+                  CreatureSpellRef(
+                    spellId: 'fireball',
+                    castAtLevel: 5,
+                    note: 'solo lanzador',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ],
     );
 
@@ -205,6 +229,23 @@ void main() {
     expect(copy.legendaryActionsPerRound, 3);
     expect(copy.initiativeBonus, 4);
     expect(copy.actions[1].kind, CreatureActionKind.bonus);
+    final spellcasting = copy.actions[1].spellcasting!;
+    expect(spellcasting.ability, Ability.intelligence);
+    expect(spellcasting.saveDc, 15);
+    expect(spellcasting.attackBonus, 7);
+    expect(spellcasting.groups.first.usesPerDay, isNull);
+    expect(spellcasting.groups.last.usesPerDay, 1);
+    expect(spellcasting.groups.last.spells.single.castAtLevel, 5);
+    expect(spellcasting.groups.last.spells.single.note, 'solo lanzador');
+  });
+
+  test('una acción vieja sin spellcasting conserva la prosa', () {
+    final action = CreatureAction.fromJson({
+      'name': 'Lanzamiento de conjuros',
+      'description': 'A voluntad: detectar magia',
+    });
+    expect(action.spellcasting, isNull);
+    expect(action.description, 'A voluntad: detectar magia');
   });
 
   test('una habilidad que no existe se ignora sin voltear la carga', () {

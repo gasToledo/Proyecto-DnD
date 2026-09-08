@@ -40,6 +40,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dnd_engine/dnd_engine.dart' show foldForSearch;
+
 /// Ruta del PDF, relativa a la raíz del repositorio.
 const _pdfPath = 'docs/Libros completos DnD/SP_SRD_CC_v5.2.1.pdf';
 
@@ -363,7 +365,34 @@ List<ParsedEntry> parseEntries(List<String> body) {
     buffer.clear();
   }
 
+  // En la Saga de la noche `pdftotext -raw` pega el final de Lanzamiento de
+  // conjuros con la acción siguiente. Es un corte conocido del PDF, no una
+  // regla general: abrir la heurística fabricaría encabezados desde la prosa.
+  final entryLines = <String>[];
+  const nightmare = ' Provocar pesadillas (1/día; requiere una bolsa de';
   for (final line in body) {
+    final at = line.indexOf(nightmare);
+    if (at < 0) {
+      entryLines.add(line);
+    } else {
+      entryLines
+        ..add(line.substring(0, at))
+        ..add(line.substring(at + 1));
+    }
+  }
+
+  final stitchedLines = <String>[];
+  for (var i = 0; i < entryLines.length; i++) {
+    var line = entryLines[i];
+    if (line.trimLeft().startsWith('Provocar pesadillas (1/día; ')) {
+      while (!line.contains('). ') && i + 1 < entryLines.length) {
+        line = '$line ${entryLines[++i].trim()}';
+      }
+    }
+    stitchedLines.add(line);
+  }
+
+  for (final line in stitchedLines) {
     final trimmed = line.trim();
     if (_sectionKinds.containsKey(trimmed)) {
       flush();
@@ -372,6 +401,21 @@ List<ParsedEntry> parseEntries(List<String> body) {
       continue;
     }
     if (!started) continue;
+    const nightmareStart = 'Provocar pesadillas (1/día; ';
+    if (trimmed.startsWith(nightmareStart)) {
+      flush();
+      name = 'Provocar pesadillas (1/día)';
+      final close = trimmed.indexOf('). ');
+      if (close < 0) {
+        throw FormatException('Acción de pesadillas incompleta: $trimmed');
+      }
+      final requirement = trimmed.substring(nightmareStart.length, close);
+      buffer.add(
+        '${requirement[0].toUpperCase()}${requirement.substring(1)}. '
+        '${trimmed.substring(close + 3)}',
+      );
+      continue;
+    }
     final m = _entryStart.firstMatch(trimmed);
     if (m != null && !_prose.any(m[1]!.startsWith)) {
       flush();
@@ -385,9 +429,129 @@ List<ParsedEntry> parseEntries(List<String> body) {
   return entries;
 }
 
+/// Estructura el bloque de conjuros de un perfil ya normalizado.
+///
+/// Los nombres se resuelven contra el catálogo, nunca contra una tabla paralela.
+/// Un nombre desconocido o repetido corta la generación: una referencia errónea
+/// es peor que conservar el bloque como prosa.
+Map<String, dynamic> parseCreatureSpellcasting(
+  String text,
+  Map<String, String> spellIdsByName,
+) {
+  const abilities = {
+    'fuerza': 'strength',
+    'destreza': 'dexterity',
+    'constitucion': 'constitution',
+    'inteligencia': 'intelligence',
+    'sabiduria': 'wisdom',
+    'carisma': 'charisma',
+  };
+  final foldedText = foldForSearch(text);
+  final abilityMatch = RegExp(
+    r'(fuerza|destreza|constitucion|inteligencia|sabiduria|carisma).*?aptitud\s+magica',
+  ).firstMatch(foldedText);
+  if (abilityMatch == null) {
+    throw FormatException('Lanzamiento sin aptitud mágica: $text');
+  }
+
+  final usePattern = RegExp(r'(A voluntad|(\d+)/día(?: cada uno)?):');
+  final uses = usePattern.allMatches(text).toList();
+  if (uses.isEmpty) {
+    throw FormatException('Lanzamiento sin grupos de uso: $text');
+  }
+
+  final header = text.substring(0, uses.first.start);
+  final saveDc =
+      RegExp(r'CD de salvación de conjuros (\d+)').firstMatch(header)?[1];
+  final attack = RegExp(r'([+-]\d+) a acertar con ataques de conjuro')
+      .firstMatch(header)?[1];
+  final componentMatch = RegExp(
+    r'que\s+(no requiere componentes.*?)\s+y\s+utiliza',
+  ).firstMatch(header)?[1];
+  final componentRule = componentMatch == null
+      ? null
+      : '${componentMatch[0].toUpperCase()}${componentMatch.substring(1).replaceAll(RegExp(r'\s+'), ' ')}.';
+
+  final seen = <String>{};
+  final groups = <Map<String, dynamic>>[];
+  for (var i = 0; i < uses.length; i++) {
+    final match = uses[i];
+    final chunk = text
+        .substring(match.end, i + 1 < uses.length ? uses[i + 1].start : null)
+        .trim();
+    final refs = <Map<String, dynamic>>[];
+    for (final raw in _splitOutsideParentheses(chunk)) {
+      var name = raw.trim();
+      var note = '';
+      final noteMatch = RegExp(r'^(.*?)\s+\((.*)\)$').firstMatch(name);
+      if (noteMatch != null) {
+        name = noteMatch[1]!.trim();
+        note = noteMatch[2]!.trim();
+      }
+
+      final key = foldForSearch(name);
+      final spellId = spellIdsByName[key];
+      if (spellId == null) {
+        throw FormatException('Conjuro de criatura desconocido: «$name»');
+      }
+      if (!seen.add(spellId)) {
+        throw FormatException('Conjuro de criatura repetido: «$name»');
+      }
+
+      final levelMatch = RegExp(r'versión de nivel (\d+)').firstMatch(note);
+      final castAtLevel = levelMatch == null ? null : int.parse(levelMatch[1]!);
+      if (levelMatch != null) {
+        note = (note.substring(0, levelMatch.start) +
+                note.substring(levelMatch.end))
+            .replaceAll(RegExp(r'^\s*[,;]\s*|\s*[,;]\s*$'), '')
+            .trim();
+      }
+      refs.add({
+        'spellId': spellId,
+        if (castAtLevel != null) 'castAtLevel': castAtLevel,
+        if (note.isNotEmpty) 'note': note,
+      });
+    }
+    groups.add({
+      if (match[2] != null) 'usesPerDay': int.parse(match[2]!),
+      'spells': refs,
+    });
+  }
+
+  return {
+    'ability': abilities[abilityMatch[1]]!,
+    if (saveDc != null) 'saveDc': int.parse(saveDc),
+    if (attack != null) 'attackBonus': int.parse(attack),
+    if (componentRule != null) 'componentRule': componentRule,
+    'groups': groups,
+  };
+}
+
+List<String> _splitOutsideParentheses(String text) {
+  final parts = <String>[];
+  var depth = 0;
+  var start = 0;
+  for (var i = 0; i < text.length; i++) {
+    switch (text[i]) {
+      case '(':
+        depth++;
+      case ')':
+        depth--;
+      case ',' when depth == 0:
+        parts.add(text.substring(start, i));
+        start = i + 1;
+    }
+  }
+  parts.add(text.substring(start));
+  return parts.where((part) => part.trim().isNotEmpty).toList();
+}
+
 /// Convierte una entrada de acción en el mapa JSON del catálogo, extrayendo el
 /// ataque si lo tiene.
-Map<String, dynamic> actionJson(ParsedEntry e) {
+Map<String, dynamic> actionJson(
+  ParsedEntry e, {
+  Map<String, String> spellIdsByName = const {},
+}) {
   final json = <String, dynamic>{'name': e.name};
   final text = e.text;
 
@@ -419,6 +583,10 @@ Map<String, dynamic> actionJson(ParsedEntry e) {
     if (rest.trim().isNotEmpty) json['description'] = rest.trim();
   } else {
     json['description'] = text;
+  }
+
+  if (e.name == 'Lanzamiento de conjuros' && spellIdsByName.isNotEmpty) {
+    json['spellcasting'] = parseCreatureSpellcasting(text, spellIdsByName);
   }
 
   if (e.kind != 'action') json['kind'] = e.kind;
@@ -475,7 +643,10 @@ Map<String, String> parseFields(List<String> body) {
   return fields;
 }
 
-Map<String, dynamic> parseBlock(RawBlock block) {
+Map<String, dynamic> parseBlock(
+  RawBlock block, {
+  Map<String, String> spellIdsByName = const {},
+}) {
   final body = block.body.map(feetify).toList();
   final text = body.join('\n');
   final fields = parseFields(body);
@@ -582,7 +753,7 @@ Map<String, dynamic> parseBlock(RawBlock block) {
   ];
   final actions = [
     for (final e in entries)
-      if (e.kind != 'trait') actionJson(e),
+      if (e.kind != 'trait') actionJson(e, spellIdsByName: spellIdsByName),
   ];
   if (traits.isNotEmpty) json['traits'] = traits;
   if (actions.isNotEmpty) json['actions'] = actions;
@@ -611,6 +782,7 @@ void main(List<String> args) async {
 
   final lines = normalize(result.stdout as String);
   final blocks = cutBlocks(lines);
+  final spellIdsByName = loadSpellIdsByName(root);
   stdout.writeln('Líneas normalizadas: ${lines.length}');
   stdout.writeln('Perfiles recortados: ${blocks.length}');
 
@@ -628,14 +800,40 @@ void main(List<String> args) async {
   }
 
   if (check) {
-    compareWithCatalog(blocks, root);
+    compareWithCatalog(blocks, root, spellIdsByName);
     return;
   }
   if (args.contains('--ids')) {
     buildIdMap(blocks, root, args);
     return;
   }
-  writeCatalog(blocks, root);
+  writeCatalog(blocks, root, spellIdsByName);
+}
+
+Map<String, String> loadSpellIdsByName(String root) {
+  final file = File('$root/lib/assets/srd_2024/spells.json');
+  final spells = (jsonDecode(file.readAsStringSync()) as List).cast<Map>();
+  final result = <String, String>{};
+  for (final spell in spells) {
+    final key = foldForSearch(spell['name'] as String);
+    final previous = result[key];
+    if (previous != null) {
+      throw StateError(
+        'Nombre de conjuro ambiguo: ${spell['name']} ($previous/${spell['id']})',
+      );
+    }
+    result[key] = spell['id'] as String;
+  }
+  // El perfil abrevia unos pocos nombres que el capítulo de conjuros imprime
+  // completos. Son el mismo conjuro, no traducciones alternativas inventadas.
+  const aliases = {'flecha ácida': 'melfs-acid-arrow'};
+  for (final entry in aliases.entries) {
+    if (!result.containsValue(entry.value)) {
+      throw StateError('Alias a conjuro inexistente: ${entry.value}');
+    }
+    result[foldForSearch(entry.key)] = entry.value;
+  }
+  return result;
 }
 
 /// Orden de las claves dentro de cada entrada, para que el JSON generado se lea
@@ -684,7 +882,11 @@ Map<String, dynamic> _ordered(Map<String, dynamic> json) => {
 /// 3. `source` se conserva de la entrada que ya existía. Un perfil impreso en
 ///    el SRD es `srd_2024`, pero decidir eso por una entrada ya clasificada
 ///    sería relicenciarla sola, y eso se decide a mano.
-void writeCatalog(List<RawBlock> blocks, String root) {
+void writeCatalog(
+  List<RawBlock> blocks,
+  String root,
+  Map<String, String> spellIdsByName,
+) {
   final idsFile = File('$root/tool/data/bestiario_ids.json');
   if (!idsFile.existsSync()) {
     stderr.writeln('Falta ${idsFile.path}: correr primero con --ids.');
@@ -712,7 +914,7 @@ void writeCatalog(List<RawBlock> blocks, String root) {
       skipped.add('${block.name} (invocación por fórmula)');
       continue;
     }
-    final json = parseBlock(block);
+    final json = parseBlock(block, spellIdsByName: spellIdsByName);
     generated[id] = _ordered({
       'id': id,
       ...json,
@@ -861,7 +1063,11 @@ String _slug(String name) => name
 /// viejo no tenía dónde poner una acción adicional y las codificaba en el
 /// nombre («Huida veloz (acción adicional)»), así que van a diferir a
 /// propósito.
-void compareWithCatalog(List<RawBlock> blocks, String root) {
+void compareWithCatalog(
+  List<RawBlock> blocks,
+  String root,
+  Map<String, String> spellIdsByName,
+) {
   final file = File('$root/lib/assets/srd_2024/creatures.json');
   final existing = (jsonDecode(file.readAsStringSync()) as List)
       .cast<Map<String, dynamic>>();
@@ -875,6 +1081,7 @@ void compareWithCatalog(List<RawBlock> blocks, String root) {
     'cr',
     'senses',
     'languages',
+    'actions',
   ];
   var matched = 0;
   final problems = <String>[];
@@ -883,7 +1090,7 @@ void compareWithCatalog(List<RawBlock> blocks, String root) {
     final old = byName[block.name];
     if (old == null) continue;
     matched++;
-    final fresh = parseBlock(block);
+    final fresh = parseBlock(block, spellIdsByName: spellIdsByName);
 
     for (final key in compared) {
       final a = old[key], b = fresh[key];

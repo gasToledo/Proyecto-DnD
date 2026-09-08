@@ -10,8 +10,9 @@ pasivos y estables que el motor puede representar sin ambigüedad. Cargas,
 activaciones, tablas aleatorias, conjuros contenidos y decisiones del GM quedan
 descritos en el objeto. No se agregó un segundo motor de combate.
 
-Los puntos 4–6 se registran como **pendiente opcional** y no se cuentan como
-contenido completo.
+El punto 4 quedó resuelto en una actualización posterior y el punto 5 ya
+estaba resuelto en esta auditoría. El punto 6 sigue siendo **pendiente
+opcional** y no se cuenta como contenido completo.
 
 ## Línea base anterior a este trabajo
 
@@ -140,13 +141,14 @@ matriz completa de clases/trasfondos y las familias arma/armadura/escudo/objeto
 mágico quedan cubiertos por pruebas automatizadas; no se repitieron manualmente
 las 46 combinaciones en navegador.
 
-## Pendientes opcionales auditados
+## Estado de los puntos opcionales auditados
 
-### 4. Capacidades adicionales de Artífice — pendiente opcional
+### 4. Capacidades adicionales de Artífice — resuelto posteriormente
 
-- Elixir Experimental.
-- Armadura Arcana.
-- Atlas del Aventurero.
+Elixir Experimental, Armadura Arcana y Atlas del Aventurero ya están cargados
+en las subclases del Artífice. Se muestran como texto descriptivo: no tienen un
+modelo mecánico propio en el motor, del mismo modo que otras reglas que el
+motor todavía no representa.
 
 ### 5. Bestiario completo — resuelto
 
@@ -160,13 +162,21 @@ competencias en habilidades, acciones adicionales, acciones legendarias con su
 presupuesto por ronda, bonificador de iniciativa impreso, y tipo y tamaño
 consultables aparte de la línea de perfil.
 
+Los 48 perfiles con «Lanzamiento de conjuros» enlazan cada entrada con el
+catálogo de conjuros. Bestiario y Combate muestran aptitud mágica, CD, ataque,
+componentes, frecuencia, nivel de lanzamiento y excepciones, y permiten abrir
+el detalle del conjuro sin salir del perfil. Es una ayuda de consulta: los usos
+diarios no se descuentan ni se persisten en el encuentro.
+
 Lo genera `packages/dnd_engine/tool/generate_bestiary.dart` desde el PDF en
 español; los ids ingleses salen del mapa commiteado en
 `tool/data/bestiario_ids.json`. Correrlo con `--check` avisa si
 `creatures.json` dejó de ser reproducible desde el PDF.
 
-Quedan afuera a propósito los conjuros de monstruo (`spellcasting`), que se
-muestran como texto del rasgo y no como lista estructurada.
+Quedan afuera a propósito las acciones independientes que solo mencionan un
+conjuro, además de los conjuros concedidos por objetos mágicos, bastiones o
+aeronaves. El alcance estructurado se limita al rasgo «Lanzamiento de
+conjuros» de esos 48 perfiles.
 
 ### 6. Sistemas de campaña — pendiente opcional
 

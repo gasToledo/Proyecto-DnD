@@ -735,7 +735,7 @@ class _EncounterViewState extends State<EncounterView> {
           ),
         ),
         const SizedBox(height: 16),
-        ...creatureProfileBody(context, creature, dense: true),
+        ...creatureProfileBody(context, widget.repo, creature, dense: true),
       ],
     );
   }

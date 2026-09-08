@@ -35,7 +35,14 @@ extension _DashboardActions on _DashboardScreenState {
   void _openHomebrew() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => HomebrewScreen(repo: repo, store: widget.homebrew),
+        builder: (_) => HomebrewScreen(
+          repo: repo,
+          store: widget.homebrew,
+          // Una foto de las fichas, para que borrar homebrew pueda decir
+          // quién lo está usando. Desde ahí no se toca ningún personaje, así
+          // que no puede quedar vieja mientras la pantalla está abierta.
+          characters: controller.characters,
+        ),
       ),
     );
   }

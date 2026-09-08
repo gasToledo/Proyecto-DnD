@@ -164,9 +164,18 @@ class _ItemFormState extends State<ItemForm> {
             .map((e) => e.trim())
             .where((e) => e.isNotEmpty)
             .toList(),
+        // Las cargas no se editan acá, pero un objeto del catálogo que las
+        // tiene deja de ser el mismo objeto sin ellas.
+        maxCharges: widget.initial?.maxCharges,
+        rechargeAmount: widget.initial?.rechargeAmount,
         effects: [
           if (acBonus != 0) ArmorClassBonusEffect(acBonus),
           for (final type in _resistances) ResistanceEffect(type),
+          // El formulario solo sabe de esos dos efectos: el resto se conserva
+          // tal cual en vez de desaparecer al guardar.
+          ...?widget.initial?.effects.where(
+            (e) => e is! ArmorClassBonusEffect && e is! ResistanceEffect,
+          ),
         ],
       ),
     );

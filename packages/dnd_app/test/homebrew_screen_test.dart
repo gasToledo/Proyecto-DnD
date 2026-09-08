@@ -149,6 +149,174 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  /// Una pantalla de homebrew con [store] y, si hace falta, las fichas que
+  /// miran el borrado.
+  Future<void> pumpHomebrew(
+    WidgetTester tester,
+    HomebrewStore store, {
+    List<Character> characters = const [],
+    Size size = const Size(1000, 900),
+  }) async {
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: store, characters: characters),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  /// Un store que **guarda de verdad**: sin servidor falso, cualquier
+  /// escritura falla y la copia nunca llega al store.
+  HomebrewStore fakeStore() =>
+      HomebrewStore(ApiClient(client: FakeApiServer().client));
+
+  HomebrewStore storeWithHoz() => fakeStore()
+    ..weapons['hb-hoz'] = const Weapon(
+      id: 'hb-hoz',
+      name: 'Hoz de guerra',
+      source: ContentSource.homebrew,
+      category: 'martial',
+      damageDice: '1d8',
+      damageType: 'slashing',
+      properties: ['finesse'],
+      weight: 3,
+      costCp: 1500,
+    );
+
+  // Un peso, un precio o un dado existen para compararse con los de la fila de
+  // al lado; en una línea de prosa gris eso no se puede hacer.
+  testWidgets('la fila separa lo cualitativo de lo que se compara', (
+    tester,
+  ) async {
+    await pumpHomebrew(tester, storeWithHoz());
+    await tester.tap(find.text('Armas').first);
+    await tester.pumpAndSettle();
+
+    // Pills.
+    expect(find.text('Marcial'), findsOneWidget);
+    expect(find.text('Sutil'), findsOneWidget);
+    expect(find.text(DamageType.labelFor('slashing')), findsOneWidget);
+    // Cifras, con su rótulo.
+    expect(find.text('DAÑO'), findsOneWidget);
+    expect(find.text('1d8'), findsOneWidget);
+    expect(find.text('PESO'), findsOneWidget);
+    expect(find.text('PRECIO'), findsOneWidget);
+    expect(find.text(formatCost(1500)), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('duplicar una entrada propia abre una copia con id nuevo', (
+    tester,
+  ) async {
+    final store = storeWithHoz();
+    await pumpHomebrew(tester, store, size: const Size(1000, 1200));
+    await tester.tap(find.text('Armas').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Duplicar Hoz de guerra'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.widgetWithText(TextFormField, 'Nombre'),
+      findsOneWidget,
+      reason: 'se abrió el formulario',
+    );
+    expect(find.text('Hoz de guerra (copia)'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    // El original sigue estando: duplicar no es renombrar.
+    expect(store.weapons.length, 2);
+    expect(store.weapons['hb-hoz']?.name, 'Hoz de guerra');
+    final copy = store.weapons.values.firstWhere((w) => w.id != 'hb-hoz');
+    expect(copy.name, 'Hoz de guerra (copia)');
+    expect(copy.damageDice, '1d8');
+    expect(copy.source, ContentSource.homebrew);
+  });
+
+  // Arrancar de la espada larga y cambiarle dos campos es como nace casi todo
+  // el homebrew real; el formulario en blanco es el camino largo.
+  testWidgets('duplicar del catálogo trae la entrada oficial completa', (
+    tester,
+  ) async {
+    final store = fakeStore();
+    final official = repo.weapons['dagger']!;
+    await pumpHomebrew(tester, store, size: const Size(1000, 1200));
+    await tester.tap(find.text('Armas').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Duplicar del catálogo'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, official.name);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(official.name).last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    final copy = store.weapons.values.single;
+    expect(copy.name, '${official.name} (copia)');
+    expect(copy.source, ContentSource.homebrew);
+    expect(copy.id, isNot(official.id));
+    // Lo que el formulario no muestra tiene que llegar igual: una copia a la
+    // que le falten campos no es una copia.
+    expect(copy.damageDice, official.damageDice);
+    expect(copy.damageType, official.damageType);
+    expect(copy.properties, official.properties);
+    expect(copy.weight, official.weight);
+    expect(copy.costCp, official.costCp);
+  });
+
+  // «Los personajes que ya lo estén usando» asusta sin informar: lo que hace
+  // falta saber es cuáles.
+  testWidgets('borrar nombra las fichas que usan la entrada', (tester) async {
+    final store = storeWithHoz();
+    final character = Character(
+      id: 'grommash',
+      name: 'Grommash',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      assignedScores: {for (final ability in Ability.values) ability: 10},
+      hpPerLevel: const [10],
+      equippedWeaponIds: const ['hb-hoz'],
+    );
+    await pumpHomebrew(tester, store, characters: [character]);
+    await tester.tap(find.text('Armas').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Eliminar Hoz de guerra'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lo usa 1 ficha:'), findsOneWidget);
+    expect(find.text('Grommash'), findsOneWidget);
+    final klass = repo.characterClass('fighter')!.name;
+    expect(find.text('$klass 1'), findsOneWidget);
+
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    expect(store.weapons.containsKey('hb-hoz'), isTrue);
+  });
+
+  // Y el contrario informa igual: nadie la usa es permiso para borrar.
+  testWidgets('borrar algo que nadie usa lo dice', (tester) async {
+    await pumpHomebrew(tester, storeWithHoz());
+    await tester.tap(find.text('Armas').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Eliminar Hoz de guerra'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ninguna de tus fichas lo está usando.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   // El buscador es global a propósito: con contenido propio uno se acuerda del
   // nombre, no de en qué categoría lo guardó.
   testWidgets('buscar cruza las categorías y agrupa lo que encuentra', (
@@ -280,7 +448,10 @@ void main() {
     await tester.tap(find.text('Criaturas'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Agregar criatura'), findsOneWidget);
+    // Angosto el botón se queda con el verbo: qué se agrega lo dice el título
+    // que tiene al lado.
+    expect(find.text('Criaturas'), findsOneWidget);
+    expect(find.text('Agregar'), findsOneWidget);
     expect(find.text('Portada'), findsNothing, reason: 'el Drawer se cerró');
     expect(tester.takeException(), isNull);
   });
@@ -303,11 +474,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining('1 entrada(s) homebrew inválida(s)'),
-      findsOneWidget,
-    );
-    await tester.tap(find.textContaining('1 entrada(s) homebrew inválida(s)'));
+    expect(find.text('1 entrada no se pudo cargar'), findsOneWidget);
+    await tester.tap(find.text('1 entrada no se pudo cargar'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Borrar entrada inválida'));
     await tester.pumpAndSettle();

@@ -100,6 +100,9 @@ class _WeaponFormState extends State<WeaponForm> {
         damageDice: _dice.text.trim(),
         damageType: _type,
         properties: _props.toList(),
+        // El formulario no la muestra: se conserva la del original para que
+        // editar —o duplicar— un arma del catálogo no le cambie la regla.
+        twoHandedUnlessMounted: widget.initial?.twoHandedUnlessMounted ?? false,
         versatileDice: _versatile.text.trim().isEmpty
             ? null
             : _versatile.text.trim(),

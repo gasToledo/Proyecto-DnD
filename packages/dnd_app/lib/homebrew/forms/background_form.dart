@@ -93,6 +93,11 @@ class _BackgroundFormState extends State<BackgroundForm> {
         toolProficiencies: tools,
         originFeatId: _originFeatId,
         effects: _effects,
+        // El equipo inicial y el emblema no se editan acá: un trasfondo del
+        // catálogo duplicado sin su equipo empezaría la partida con las manos
+        // vacías.
+        startingEquipment: widget.initial?.startingEquipment ?? const [],
+        iconId: widget.initial?.iconId,
       ),
     );
   }

@@ -76,6 +76,11 @@ class _RaceFormState extends State<RaceForm> {
         // El formulario no edita la elección de tamaño, así que se conserva la
         // que traiga el original: editar la velocidad no debería borrarla.
         sizeOptions: widget.initial?.sizeOptions ?? const [],
+        // Por lo mismo: la lista de habilidades entre las que elegir, el
+        // emblema y el lema tampoco se editan acá.
+        skillChoiceFrom: widget.initial?.skillChoiceFrom ?? const [],
+        iconId: widget.initial?.iconId,
+        tagline: widget.initial?.tagline,
         // Sin `?? 30` ni `?? 0`: el formulario ya validó los dos, y taparlos
         // con un defecto guardaba una especie distinta de la escrita.
         speed: int.parse(_speed.text.trim()),

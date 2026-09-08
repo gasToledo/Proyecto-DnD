@@ -408,25 +408,68 @@ extension _HomebrewSections on _HomebrewScreenState {
       children: [
         _pageWidth(
           const EdgeInsets.fromLTRB(20, 18, 20, 0),
-          Row(
-            children: [
-              Text(
-                category.label,
-                style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 18,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(width: 10),
-              GoldPill('${items.length}', highlighted: false),
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.add),
-                label: Text(category.addLabel),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, box) {
+              // Angosto, «Duplicar del catálogo» se queda con el ícono y
+              // «Agregar arma» con el verbo: los dos botones enteros miden
+              // unos 660 px juntos y no entran en un teléfono. Qué se agrega
+              // ya lo dice el título que está al lado.
+              final tight = box.maxWidth < _headerWideWidth;
+              // `Wrap` y no `Row` con `Spacer`: cuando el título y los dos
+              // botones no entran en una línea, los botones bajan a la
+              // siguiente en vez de desbordar. Con espacio de sobra queda
+              // igual que un Row —el título a la izquierda, los botones a la
+              // derecha— que es lo que hace `spaceBetween`.
+              return Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        category.label,
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      GoldPill('${items.length}', highlighted: false),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (tight)
+                        IconButton(
+                          tooltip: 'Duplicar del catálogo',
+                          icon: const Icon(Icons.content_copy_outlined),
+                          onPressed: () => _duplicateFromCatalog(category),
+                        )
+                      else
+                        OutlinedButton.icon(
+                          onPressed: () => _duplicateFromCatalog(category),
+                          icon: const Icon(
+                            Icons.content_copy_outlined,
+                            size: 18,
+                          ),
+                          label: const Text('Duplicar del catálogo'),
+                        ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: onAdd,
+                        icon: const Icon(Icons.add),
+                        label: Text(tight ? 'Agregar' : category.addLabel),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
         Expanded(
@@ -458,60 +501,161 @@ extension _HomebrewSections on _HomebrewScreenState {
     ),
   );
 
+  /// Una fila de contenido: el nombre, lo cualitativo en pills y lo comparable
+  /// en cifras.
+  ///
+  /// Antes todo eso era una sola línea gris de prosa separada por puntos.
+  /// Un peso, un precio o una CA existen para compararse con los de la fila de
+  /// al lado, y para eso piden cifras tabulares y una columna, no una oración.
+  ///
+  /// Las acciones están siempre a la vista y no al pasar el mouse: en un
+  /// teléfono no hay hover, y una acción que solo aparece al apuntarla no
+  /// existe para quien navega con el teclado o con el dedo.
   Widget _tile(
-    String title,
-    String subtitle, {
+    String title, {
+    List<String> pills = const [],
+    List<(String, String)> stats = const [],
     required VoidCallback onEdit,
+    required VoidCallback onDuplicate,
     required VoidCallback onDelete,
   }) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final pal = context.palette;
+
+    Widget stat((String, String) entry, {required bool wide}) => Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: wide
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        Text(
+          entry.$1.toUpperCase(),
+          style: TextStyle(
+            fontSize: 8.5,
+            letterSpacing: 1.2,
+            color: pal.textMuted,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          entry.$2,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
+
+    Widget statsBand({required bool wide}) => Wrap(
+      spacing: 18,
+      runSpacing: 6,
+      children: [for (final entry in stats) stat(entry, wide: wide)],
+    );
+
     return InkWell(
       onTap: onEdit,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+        padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
+        child: LayoutBuilder(
+          builder: (context, box) {
+            // Con ancho de sobra las cifras van a la derecha, donde se
+            // alinean con las de las otras filas y se pueden comparar de un
+            // barrido vertical. Apretadas caen debajo del nombre, que es lo
+            // único que entra en un teléfono sin encimarse.
+            final wide = box.maxWidth >= _rowWideWidth;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      if (pills.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            for (final pill in pills)
+                              GoldPill(pill, highlighted: false),
+                          ],
+                        ),
+                      ],
+                      if (!wide && stats.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        statsBand(wide: false),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 13, color: muted)),
+                ),
+                if (wide && stats.isNotEmpty) ...[
+                  const SizedBox(width: 16),
+                  // Flexible para que una fila con muchas cifras las apile en
+                  // dos corridas antes que desbordar.
+                  Flexible(child: statsBand(wide: true)),
                 ],
-              ),
-            ),
-            IconButton(
-              tooltip: 'Eliminar $title',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: onDelete,
-            ),
-          ],
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: 'Duplicar $title',
+                  icon: const Icon(Icons.content_copy_outlined),
+                  onPressed: onDuplicate,
+                ),
+                IconButton(
+                  tooltip: 'Eliminar $title',
+                  icon: const Icon(Icons.delete_outline),
+                  onPressed: onDelete,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   /// Las filas de una categoría: ordenadas, filtradas por la búsqueda y con
-  /// su acción de editar y de borrar.
+  /// sus tres acciones (editar tocándola, duplicar y borrar).
   ///
   /// Las arma un solo lugar porque las leen dos vistas —la lista de la
   /// categoría y los resultados de la búsqueda— y una fila que se dibujara
   /// distinto en cada una sería la misma entrada con dos caras.
+  ///
+  /// El reparto es siempre el mismo: en `pills` lo cualitativo (categoría,
+  /// propiedades, rareza) y en `stats` lo que se compara contra la fila de al
+  /// lado (peso, precio, CA, PG).
   List<Widget> _rowsOf(_Category category) => switch (category) {
     _Category.weapons => [
       for (final w in _filtered(store.weapons.values, (e) => e.name))
         _tile(
           w.name,
-          '${_weaponCategories[w.category] ?? w.category} · ${w.damageDice} '
-          '${DamageType.labelFor(w.damageType)}',
+          pills: [
+            _weaponCategories[w.category] ?? w.category,
+            DamageType.labelFor(w.damageType),
+            if (w.magicBonus != 0) '+${w.magicBonus}',
+            for (final property in w.properties)
+              _weaponPropOptions[property] ?? property,
+          ],
+          stats: [
+            (
+              'Daño',
+              w.versatileDice == null
+                  ? w.damageDice
+                  : '${w.damageDice} / ${w.versatileDice}',
+            ),
+            if (w.weight > 0) ('Peso', '${formatPounds(w.weight)} lb'),
+            if (w.costCp > 0) ('Precio', formatCost(w.costCp)),
+          ],
           onEdit: () => _editWeapon(w),
+          onDuplicate: () => _openCopy(category, w.toJson()),
           onDelete: () => _delete(
             'el arma',
             w.name,
+            w.id,
             () => store.deleteWeapon(w.id),
             () => repo.weapons.remove(w.id),
           ),
@@ -521,11 +665,21 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final a in _filtered(store.armor.values, (e) => e.name))
         _tile(
           a.name,
-          '${_armorCategories[a.category] ?? a.category} · CA ${a.baseAc}',
+          pills: [
+            _armorCategories[a.category] ?? a.category,
+            if (a.stealthDisadvantage) 'Sigilo con desventaja',
+          ],
+          stats: [
+            ('CA', '${a.baseAc}'),
+            if (a.weight > 0) ('Peso', '${formatPounds(a.weight)} lb'),
+            if (a.costCp > 0) ('Precio', formatCost(a.costCp)),
+          ],
           onEdit: () => _editArmor(a),
+          onDuplicate: () => _openCopy(category, a.toJson()),
           onDelete: () => _delete(
             'la armadura',
             a.name,
+            a.id,
             () => store.deleteArmor(a.id),
             () => repo.armor.remove(a.id),
           ),
@@ -535,17 +689,23 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final i in _filtered(store.items.values, (e) => e.name))
         _tile(
           i.name,
-          [
+          pills: [
             _itemCategories[i.category] ?? i.category,
-            formatCost(i.costCp),
-            if (i.weight > 0) '${formatPounds(i.weight)} lb',
-            if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
             if (i.rarity != null) _itemRarities[i.rarity] ?? i.rarity!,
-          ].join(' · '),
+            if (i.requiresAttunement) 'Sintonización',
+          ],
+          stats: [
+            if (i.weight > 0) ('Peso', '${formatPounds(i.weight)} lb'),
+            if (i.costCp > 0) ('Precio', formatCost(i.costCp)),
+            if (i.maxCharges != null) ('Cargas', '${i.maxCharges}'),
+            if (i.bundleSize > 1) ('Paquete', '${i.bundleSize}'),
+          ],
           onEdit: () => _editItem(i),
+          onDuplicate: () => _openCopy(category, i.toJson()),
           onDelete: () => _delete(
             'el objeto',
             i.name,
+            i.id,
             () => store.deleteItem(i.id),
             () => repo.items.remove(i.id),
           ),
@@ -555,12 +715,17 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final f in _filtered(store.feats.values, (e) => e.name))
         _tile(
           f.name,
-          '${_featCategories[f.category] ?? f.category} · '
-          '${f.effects.length} efecto(s)',
+          pills: [
+            _featCategories[f.category] ?? f.category,
+            if (f.repeatable) 'Repetible',
+          ],
+          stats: [('Efectos', '${f.effects.length}')],
           onEdit: () => _editFeat(f),
+          onDuplicate: () => _openCopy(category, f.toJson()),
           onDelete: () => _delete(
             'la dote',
             f.name,
+            f.id,
             () => store.deleteFeat(f.id),
             () => repo.feats.remove(f.id),
           ),
@@ -570,11 +735,17 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final r in _filtered(store.races.values, (e) => e.name))
         _tile(
           r.name,
-          '${r.size} · ${r.speed} ft · ${r.effects.length} rasgo(s)',
+          pills: [r.size],
+          stats: [
+            ('Velocidad', '${r.speed} ft'),
+            ('Rasgos', '${r.effects.length}'),
+          ],
           onEdit: () => _editRace(r),
+          onDuplicate: () => _openCopy(category, r.toJson()),
           onDelete: () => _delete(
             'la especie',
             r.name,
+            r.id,
             () => store.deleteRace(r.id),
             () => repo.races.remove(r.id),
           ),
@@ -584,11 +755,19 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final b in _filtered(store.backgrounds.values, (e) => e.name))
         _tile(
           b.name,
-          b.skillProficiencies.map(Skill.labelFor).join(', '),
+          pills: [
+            for (final skill in b.skillProficiencies) Skill.labelFor(skill),
+          ],
+          stats: [
+            if (b.toolProficiencies.isNotEmpty)
+              ('Herramientas', '${b.toolProficiencies.length}'),
+          ],
           onEdit: () => _editBackground(b),
+          onDuplicate: () => _openCopy(category, b.toJson()),
           onDelete: () => _delete(
             'el trasfondo',
             b.name,
+            b.id,
             () => store.deleteBackground(b.id),
             () => repo.backgrounds.remove(b.id),
           ),
@@ -607,13 +786,19 @@ extension _HomebrewSections on _HomebrewScreenState {
       ))
         _tile(
           s.name,
-          '${s.isCantrip ? "Truco" : "Nivel ${s.level}"}'
-          '${s.school.isEmpty ? "" : " · ${s.school}"}'
-          '${s.classes.isEmpty ? "" : " · ${s.classes.map((c) => _spellClasses[c] ?? c).join(", ")}"}',
+          pills: [
+            s.isCantrip ? 'Truco' : 'Nivel ${s.level}',
+            if (s.school.isNotEmpty) s.school,
+            if (s.concentration) 'Concentración',
+            if (s.ritual) 'Ritual',
+            for (final klass in s.classes) _spellClasses[klass] ?? klass,
+          ],
           onEdit: () => _editSpell(s),
+          onDuplicate: () => _openCopy(category, s.toJson()),
           onDelete: () => _delete(
             'el conjuro',
             s.name,
+            s.id,
             () => store.deleteSpell(s.id),
             () => repo.spells.remove(s.id),
           ),
@@ -623,23 +808,161 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final c in _filtered(store.creatures.values, (e) => e.name))
         _tile(
           c.name,
-          [
+          pills: [
             c.kind,
-            'CA ${c.ac}',
-            '${c.hp} PG',
-            if (c.cr != null) 'VD ${_formatCr(c.cr)}',
-            if (c.availableToCharacters) 'disponible para personajes',
-          ].join(' · '),
+            if (c.availableToCharacters) 'Disponible para personajes',
+          ],
+          stats: [
+            ('CA', c.ac),
+            ('PG', c.hp),
+            if (c.cr != null) ('VD', _formatCr(c.cr)),
+          ],
           onEdit: () => _editCreature(c),
+          onDuplicate: () => _openCopy(category, c.toJson()),
           onDelete: () => _delete(
             'la criatura',
             c.name,
+            c.id,
             () => store.deleteCreature(c.id),
             () => repo.creatures.remove(c.id),
           ),
         ),
     ],
   };
+
+  // ------------------------------------------------------------- Duplicar
+
+  /// Abre el formulario con una **copia** de [json].
+  ///
+  /// Duplicar es el atajo que más cambia el uso diario: casi ningún homebrew
+  /// nace de cero, nace de una espada larga a la que se le cambian dos campos.
+  /// La copia viaja por JSON porque es el mismo ida y vuelta que ya hacen el
+  /// guardado y la importación: lo que el formulario no edita llega igual al
+  /// documento nuevo.
+  void _openCopy(_Category category, Map<String, dynamic> json) {
+    final name = '${json['name']} (copia)';
+    final copy = {
+      ...json,
+      'id': homebrewId(name),
+      'name': name,
+      'source': ContentSource.homebrew.toJson(),
+    };
+    switch (category) {
+      case _Category.weapons:
+        _editWeapon(Weapon.fromJson(copy));
+      case _Category.armor:
+        _editArmor(Armor.fromJson(copy));
+      case _Category.items:
+        _editItem(Item.fromJson(copy));
+      case _Category.feats:
+        _editFeat(Feat.fromJson(copy));
+      case _Category.races:
+        _editRace(Race.fromJson(copy));
+      case _Category.backgrounds:
+        _editBackground(Background.fromJson(copy));
+      case _Category.spells:
+        _editSpell(Spell.fromJson(copy));
+      case _Category.creatures:
+        _editCreature(Creature.fromJson(copy));
+    }
+  }
+
+  /// Elegir una entrada oficial y abrirla como copia propia.
+  Future<void> _duplicateFromCatalog(_Category category) async {
+    final chosen = await showDialog<String>(
+      context: context,
+      builder: (_) =>
+          _CatalogPicker(category: category, options: _catalogOf(category)),
+    );
+    if (chosen == null || !mounted) return;
+    final json = _catalogJson(category, chosen);
+    if (json != null) _openCopy(category, json);
+  }
+
+  /// El catálogo elegible: todo lo que **no** es tuyo, por id y nombre.
+  ///
+  /// Lo propio queda afuera porque para eso está el botón de duplicar de cada
+  /// fila, que ya sabe cuál es.
+  List<(String, String)> _catalogOf(_Category category) {
+    List<(String, String)> from<T>(
+      Iterable<T> values,
+      String Function(T) id,
+      String Function(T) name,
+      ContentSource Function(T) source,
+    ) => [
+      for (final value in sortedByName(
+        values.where((v) => source(v) != ContentSource.homebrew),
+        name,
+      ))
+        (id(value), name(value)),
+    ];
+
+    return switch (category) {
+      _Category.weapons => from(
+        repo.weapons.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+      _Category.armor => from(
+        repo.armor.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+      _Category.items => from(
+        repo.items.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+      _Category.feats => from(
+        repo.feats.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+      _Category.races => from(
+        repo.races.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+      _Category.backgrounds => from(
+        repo.backgrounds.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+      _Category.spells => from(
+        repo.spells.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+      _Category.creatures => from(
+        repo.creatures.values,
+        (e) => e.id,
+        (e) => e.name,
+        (e) => e.source,
+      ),
+    };
+  }
+
+  /// El documento de una entrada del catálogo. Se resuelve recién al elegirla:
+  /// serializar los cientos de conjuros y criaturas para llenar una lista de
+  /// nombres sería trabajo tirado.
+  Map<String, dynamic>? _catalogJson(_Category category, String id) =>
+      switch (category) {
+        _Category.weapons => repo.weapons[id]?.toJson(),
+        _Category.armor => repo.armor[id]?.toJson(),
+        _Category.items => repo.items[id]?.toJson(),
+        _Category.feats => repo.feats[id]?.toJson(),
+        _Category.races => repo.races[id]?.toJson(),
+        _Category.backgrounds => repo.backgrounds[id]?.toJson(),
+        _Category.spells => repo.spells[id]?.toJson(),
+        _Category.creatures => repo.creatures[id]?.toJson(),
+      };
 
   /// Abre el formulario vacío de la categoría.
   void _add(_Category category) => switch (category) {
@@ -752,16 +1075,85 @@ extension _HomebrewSections on _HomebrewScreenState {
   Future<void> _delete(
     String kind,
     String name,
+    String id,
     Future<void> Function() fromStore,
     VoidCallback fromRepo,
   ) async {
+    final pal = context.palette;
+    // Quién lo usa se calcula antes de preguntar: es el dato que convierte el
+    // aviso en una decisión. Vacío también informa —«ninguna ficha lo usa» es
+    // permiso para borrar tranquilo—, así que no es un caso a esconder.
+    final users = charactersUsing(id, widget.characters);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('¿Eliminar $kind «$name»?'),
-        content: const Text(
-          'Esta acción no se puede deshacer. Los personajes que ya lo estén '
-          'usando van a quedar con una advertencia en la ficha.',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (users.isEmpty)
+              const Text('Ninguna de tus fichas lo está usando.')
+            else ...[
+              Text(
+                users.length == 1
+                    ? 'Lo usa 1 ficha:'
+                    : 'Lo usan ${users.length} fichas:',
+              ),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: pal.plaque,
+                  border: Border.all(color: pal.hairline),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final character in users)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                character.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '${repo.characterClass(character.classId)?.name ?? character.classId} '
+                              '${character.level}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: pal.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                users.length == 1
+                    ? 'Va a quedar con una advertencia en su ficha.'
+                    : 'Van a quedar con una advertencia en sus fichas.',
+                style: TextStyle(color: pal.textMuted),
+              ),
+            ],
+            const SizedBox(height: 12),
+            const Text('Esta acción no se puede deshacer.'),
+          ],
         ),
         actions: [
           TextButton(
@@ -786,5 +1178,111 @@ extension _HomebrewSections on _HomebrewScreenState {
         tone: AppMessageTone.success,
       );
     }
+  }
+}
+
+/// Ancho a partir del cual una fila muestra sus cifras a la derecha, donde se
+/// alinean con las de las filas vecinas. Es el mismo corte que usa el perfil
+/// de criatura para decidir si apila o no.
+const double _rowWideWidth = 520;
+
+/// Ancho a partir del cual el encabezado de la lista muestra sus dos botones
+/// con el rótulo entero. Sale de medirlos: juntos rondan los 660 px.
+const double _headerWideWidth = 700;
+
+/// Elegir una entrada del catálogo oficial para copiarla.
+///
+/// Vive acá y no en `app_widgets.dart` porque hoy la usa una sola pantalla; si
+/// aparece un segundo lugar que elija contenido por nombre, ahí se muda a la
+/// biblioteca compartida.
+class _CatalogPicker extends StatefulWidget {
+  final _Category category;
+
+  /// Las opciones como (id, nombre), ya ordenadas.
+  final List<(String, String)> options;
+
+  const _CatalogPicker({required this.category, required this.options});
+
+  @override
+  State<_CatalogPicker> createState() => _CatalogPickerState();
+}
+
+class _CatalogPickerState extends State<_CatalogPicker> {
+  final _controller = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  List<(String, String)> get _results {
+    final needle = foldForSearch(_query.trim());
+    if (needle.isEmpty) return widget.options;
+    return [
+      for (final option in widget.options)
+        if (foldForSearch(option.$2).contains(needle)) option,
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final results = _results;
+    return AlertDialog(
+      title: Text('Duplicar ${widget.category.label.toLowerCase()}'),
+      content: SizedBox(
+        width: 420,
+        height: 420,
+        child: Column(
+          children: [
+            TextField(
+              controller: _controller,
+              autofocus: true,
+              decoration: InputDecoration(
+                isDense: true,
+                labelText: 'Buscar en el catálogo',
+                prefixIcon: const Icon(Icons.search, size: 20),
+              ),
+              onChanged: (value) => setState(() => _query = value),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: results.isEmpty
+                  ? AppEmptyState(
+                      icon: Icons.search_off,
+                      message:
+                          'Nada del catálogo coincide con «${_query.trim()}».',
+                    )
+                  : ListView.separated(
+                      itemCount: results.length,
+                      separatorBuilder: (_, _) =>
+                          Divider(height: 1, color: pal.hairline),
+                      itemBuilder: (context, index) {
+                        final (id, name) = results[index];
+                        return InkWell(
+                          onTap: () => Navigator.pop(context, id),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 12,
+                            ),
+                            child: Text(name),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+      ],
+    );
   }
 }

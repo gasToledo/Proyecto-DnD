@@ -43,6 +43,13 @@ class _FeatFormState extends State<FeatForm> {
         source: ContentSource.homebrew,
         category: _category,
         effects: _effects,
+        // Lo que el formulario no edita se conserva: una dote del catálogo
+        // duplicada sin su prerrequisito sería otra dote.
+        repeatable: widget.initial?.repeatable ?? false,
+        exclusiveGroup: widget.initial?.exclusiveGroup,
+        prerequisite: widget.initial?.prerequisite,
+        spellcastingAbilityOptions:
+            widget.initial?.spellcastingAbilityOptions ?? const [],
       ),
     );
   }

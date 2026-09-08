@@ -121,7 +121,19 @@ enum _Category {
 class HomebrewScreen extends StatefulWidget {
   final ContentRepository repo;
   final HomebrewStore store;
-  const HomebrewScreen({super.key, required this.repo, required this.store});
+
+  /// Las fichas de la cuenta, para poder decir quién usa lo que se va a
+  /// borrar. Es una foto y no un controlador porque desde acá no se puede
+  /// tocar un personaje: mientras esta pantalla está abierta, la lista no
+  /// cambia.
+  final List<Character> characters;
+
+  const HomebrewScreen({
+    super.key,
+    required this.repo,
+    required this.store,
+    this.characters = const [],
+  });
 
   @override
   State<HomebrewScreen> createState() => _HomebrewScreenState();
@@ -308,31 +320,53 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     if (deleted && mounted) setState(() {});
   }
 
-  Widget _loadIssues() => Material(
-    color: Theme.of(context).colorScheme.errorContainer,
-    child: ExpansionTile(
-      leading: const Icon(Icons.warning_amber_rounded),
-      title: Text(
-        '${store.loadIssues.length} entrada(s) homebrew inválida(s) se omitieron',
+  /// Aviso de lo que no se pudo cargar.
+  ///
+  /// Es una placa hundida con filete y el carmesí solo en el ícono, y no la
+  /// banda `errorContainer` de Material que era: el problema es de dos
+  /// entradas, no de la pantalla, y pintarla entera de rojo le daba el peso de
+  /// una falla general.
+  Widget _loadIssues() {
+    final pal = context.palette;
+    final n = store.loadIssues.length;
+    return Container(
+      decoration: BoxDecoration(
+        color: pal.plaque,
+        border: Border(bottom: BorderSide(color: pal.hairline)),
       ),
-      subtitle: const Text(
-        'Podés revisarlas y borrarlas sin impedir el inicio.',
-      ),
-      children: [
-        for (final issue in store.loadIssues)
-          ListTile(
-            dense: true,
-            title: Text('${issue.category} · ${issue.id}'),
-            subtitle: Text(issue.message),
-            trailing: IconButton(
-              tooltip: 'Borrar entrada inválida',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () => _deleteInvalid(issue),
+      child: ExpansionTile(
+        shape: const Border(),
+        collapsedShape: const Border(),
+        leading: Icon(Icons.warning_amber_rounded, color: pal.crimson),
+        iconColor: pal.textMuted,
+        collapsedIconColor: pal.textMuted,
+        title: Text(
+          n == 1
+              ? '1 entrada no se pudo cargar'
+              : '$n entradas no se pudieron cargar',
+          style: const TextStyle(fontSize: 14),
+        ),
+        subtitle: Text(
+          '${n == 1 ? 'Se omitió' : 'Se omitieron'} al iniciar. El resto de '
+          'tu homebrew está intacto.',
+          style: TextStyle(fontSize: 13, color: pal.textMuted),
+        ),
+        children: [
+          for (final issue in store.loadIssues)
+            ListTile(
+              dense: true,
+              title: Text('${issue.category} · ${issue.id}'),
+              subtitle: Text(issue.message),
+              trailing: IconButton(
+                tooltip: 'Borrar entrada inválida',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => _deleteInvalid(issue),
+              ),
             ),
-          ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

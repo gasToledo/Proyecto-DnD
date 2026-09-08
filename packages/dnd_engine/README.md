@@ -7,7 +7,7 @@ por origen; ver [reglas y licencia](../../README.md#reglas-y-licencia).
 
 ## Idea central
 
-Razas, clases, trasfondos, dotes, armas y armaduras son **datos** (JSON) que
+Especies, clases, trasfondos, dotes, armas y armaduras son **datos** (JSON) que
 declaran una lista de [`Effect`](lib/src/domain/effects.dart). El
 [`CharacterCompiler`](lib/src/engine/character_compiler.dart) interpreta esos
 efectos sobre las elecciones del personaje y produce una `ComputedSheet`

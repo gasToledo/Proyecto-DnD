@@ -61,7 +61,7 @@ directo. El push dispara CI siempre, y CD cuando toca `packages/**`,
 
 El stack completo (Postgres + Zitadel + servidor + cloudflared) se levanta con
 `docker compose up -d --build`; el runbook está en
-`docs/Informacion tecnica del proyecto/despliegue.md`.
+`docs/operaciones/despliegue.md`.
 
 ## Los tres paquetes
 
@@ -126,7 +126,7 @@ convertiría la API en una forma de averiguar qué hay en otras cuentas.
 `campaign_members` es **la única puerta** por la que una cuenta alcanza datos de
 otra, y esa fila solo existe si el dueño del personaje emitió un código y
 alguien lo canjeó. Todo esto está explicado en
-`docs/Informacion tecnica del proyecto/vinculo-personaje-campania.md`, que es
+`docs/arquitectura/modo-dm.md`, que es
 lectura obligatoria antes de tocar rutas de campaña.
 
 **La única excepción viva**, y hay que conocerla: `_listPlayerCampaignsHandler`
@@ -166,7 +166,7 @@ catálogos mágicos. Si alguien regenera y se olvida del segundo paso,
 ## Frontend
 
 La guía completa es
-`docs/Informacion tecnica del proyecto/guia-diseno-web.md`, y su §8 es el
+`docs/desarrollo/diseno-web.md`, y su §8 es el
 catálogo de componentes: **antes de crear un widget visual nuevo, buscá ahí**.
 
 Lo que más se olvida:
@@ -210,14 +210,10 @@ leela — puede ser una decisión y no un olvido.
 
 ## Documentación
 
-- `README.md` — qué hace la aplicación, para quien la usa.
-- `docs/Informacion tecnica del proyecto/vinculo-personaje-campania.md` — el
-  Modo DM entero: vínculo, autorización, capítulos, combate, cuaderno y la
-  campaña vista por el jugador.
-- `docs/Informacion tecnica del proyecto/guia-diseno-web.md` — tokens,
-  componentes, accesibilidad, anti-patrones.
-- `docs/Informacion tecnica del proyecto/despliegue.md` — runbook del stack.
-- `docs/Auditorias/instrucciones-correccion-datos-dnd-2024.md` — la regla de
-  precedencia entre fuentes de datos de D&D. Importa: 5etools es la fuente
-  **estructural** (números, ids), y el PDF español del SRD es la autoridad de
-  **mecánica y texto en español**.
+El mapa y la convención de mantenimiento están en `docs/README.md`. No copies
+acá contenido de esas guías: enlazalo para que exista una sola fuente vigente.
+
+- `docs/arquitectura/modo-dm.md` — seguridad y contratos del Modo DM.
+- `docs/desarrollo/contenido-y-reglas.md` — fuentes, catálogo y validación.
+- `docs/desarrollo/diseno-web.md` — sistema visual y componentes.
+- `docs/operaciones/despliegue.md` — runbook del stack.

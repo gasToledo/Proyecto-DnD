@@ -1,6 +1,6 @@
 // Genera `lib/assets/srd_2024/items.json` y agrega peso y precio a
 // `weapons.json` y `armor.json`, leyendo el capítulo 6 del Player's Handbook
-// 2024 en `docs/Libros completos DnD/`.
+// 2024 en `referencias-locales/libros/`.
 //
 //     dart tool/generate_items.dart
 //
@@ -169,7 +169,7 @@ const _packContents = <String, Map<String, int>>{
 void main() {
   final root = _repoRoot();
   final phb = File(
-    '$root/docs/Libros completos DnD/Player\'s Handbook (2024).md',
+    '$root/referencias-locales/libros/Player\'s Handbook (2024).md',
   );
   if (!phb.existsSync()) {
     _fail('No encuentro el manual en ${phb.path}.');

@@ -1,6 +1,11 @@
-# Auditoría de contenido SRD/EFA posterior a 0.7.0
+# Auditoría de contenido SRD/EFA — 2026-09-08
 
-Fecha de corte: 13 de agosto de 2026.
+Estado: informe histórico cerrado. No usar como backlog ni como fuente
+normativa; el estado vigente está en
+[`contenido-y-reglas.md`](../desarrollo/contenido-y-reglas.md).
+
+La auditoría inicial cerró el 13 de agosto de 2026 y este informe incorporó sus
+resoluciones posteriores hasta el 8 de septiembre de 2026.
 
 ## Alcance y criterio
 
@@ -26,8 +31,8 @@ opcional** y no se cuenta como contenido completo.
 
 ## Fuentes fijadas
 
-- Fuente normativa de objetos mágicos: `docs/Libros completos
-  DnD/SP_SRD_CC_v5.2.1.pdf`, páginas impresas 223–277. Las reglas generales
+- Fuente normativa local de objetos mágicos: `referencias-locales/libros/
+  SP_SRD_CC_v5.2.1.pdf`, páginas impresas 223–277. Las reglas generales
   ocupan 223–227 y los bloques extraídos abarcan 228–277.
 - Datos estructurados compatibles con los Markdown locales de PHB/EFA:
   repositorio `5etools-mirror-3/5etools-src`, revisión inmutable
@@ -35,7 +40,7 @@ opcional** y no se cuenta como contenido completo.
 - Archivos estructurados usados: `data/backgrounds.json`,
   `data/class/class-artificer.json`, `data/items.json` y
   `data/magicvariants.json`. Las opciones de clase PHB se contrastaron además
-  con `docs/Libros completos DnD/Player's Handbook (2024).md`.
+  con `referencias-locales/libros/Player's Handbook (2024).md`.
 - La generación reproducible vive en
   `packages/dnd_engine/tool/generate_magic_items.py` y
   `packages/dnd_engine/tool/apply_structured_content.py`.

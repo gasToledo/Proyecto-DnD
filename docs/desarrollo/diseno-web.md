@@ -1,5 +1,7 @@
 # Guía de Diseño Web — Milantus, Asistente de Aventuras
 
+Estado: guía vigente de la aplicación web.
+
 Sistema de diseño del cliente web de **Milantus**. Documenta la tecnología, la
 composición de la interfaz, la paleta, la tipografía, la forma y el
 comportamiento tal como están **implementados hoy** en

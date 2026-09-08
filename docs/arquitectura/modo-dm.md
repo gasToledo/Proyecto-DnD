@@ -1,5 +1,7 @@
 # Vínculo entre un personaje y una campaña
 
+Estado: arquitectura vigente del Modo DM.
+
 Hasta la incorporación del Modo DM, Milantus era estrictamente de un solo
 dueño: toda tabla tenía `user_id` y toda consulta filtraba por él. Este
 documento describe la única excepción a esa regla y por qué está construida

@@ -1,5 +1,5 @@
 // Genera las criaturas de `lib/assets/srd_2024/creatures.json` leyendo los
-// perfiles del SRD 5.2.1 en español (`docs/Libros completos DnD/`).
+// perfiles del SRD 5.2.1 en español (`referencias-locales/libros/`).
 //
 //     dart tool/generate_bestiary.dart --check    # no escribe, compara
 //     dart tool/generate_bestiary.dart            # escribe el catálogo
@@ -7,10 +7,10 @@
 // Se corre a mano, no en CI: el PDF no se versiona dentro del paquete. La red
 // de seguridad de lo que produce es `content_integrity_test`.
 //
-// Reparto de fuentes, que es la convención del proyecto (§1.1 de las
-// instrucciones de corrección de datos) y no un detalle: **todo** el contenido
+// Reparto de fuentes, documentado en `docs/desarrollo/contenido-y-reglas.md`,
+// y no un detalle: **todo** el contenido
 // —mecánica y texto— sale del PDF en español, que es la autoridad. De
-// 5etools solo salen los **ids**, que son slugs ingleses congelados (§1.3) y
+// 5etools solo salen los **ids**, que son slugs ingleses congelados y
 // el PDF no tiene; viven ya resueltos en `tool/data/bestiario_ids.json`, así
 // que esta herramienta no necesita red.
 //
@@ -43,7 +43,7 @@ import 'dart:io';
 import 'package:dnd_engine/dnd_engine.dart' show foldForSearch;
 
 /// Ruta del PDF, relativa a la raíz del repositorio.
-const _pdfPath = 'docs/Libros completos DnD/SP_SRD_CC_v5.2.1.pdf';
+const _pdfPath = 'referencias-locales/libros/SP_SRD_CC_v5.2.1.pdf';
 
 /// `pdftotext` viene con Git para Windows. Hay que usar `-raw`: el PDF es a dos
 /// columnas y `-layout` intercala mal el texto entre ellas (hubo un falso

@@ -182,7 +182,7 @@ guarda pero no se dibuja) y poder marcar varios favoritos en vez de uno.
 El stack completo se levanta con `docker compose up -d --build` a partir de
 `docker-compose.yml` y `.env.example`. El procedimiento paso a paso, incluido
 el registro manual de la aplicación en Zitadel, está en
-[docs/Informacion tecnica del proyecto/despliegue.md](docs/Informacion%20tecnica%20del%20proyecto/despliegue.md),
+[Despliegue autoalojado](docs/operaciones/despliegue.md),
 junto con respaldo, restauración y las comprobaciones de seguridad previas a
 publicar un dominio.
 
@@ -200,9 +200,10 @@ git config core.hooksPath .githooks
 El cliente mantenido es web y `main` es el único tronco activo. Los cambios se
 validan localmente, se commitean y pushean directamente a `main`, y después se
 siguen CI y, cuando el cambio toca rutas desplegables, CD hasta comprobarlos en
-la web desplegada. La dirección visual, los componentes permitidos y el flujo
-completo están en la
-[Guía de Diseño Web](docs/Informacion%20tecnica%20del%20proyecto/guia-diseno-web.md).
+la web desplegada. La dirección visual y los componentes permitidos están en
+la [Guía de diseño web](docs/desarrollo/diseno-web.md). El
+[índice de documentación](docs/README.md) reúne arquitectura, contenido,
+operaciones y auditorías.
 
 ## Reglas y licencia
 

@@ -1,5 +1,7 @@
 # Despliegue autoalojado
 
+Estado: runbook operativo vigente.
+
 Runbook operativo del stack de contenedores.
 
 > Este documento se escribió **antes** del primer arranque real, en un entorno

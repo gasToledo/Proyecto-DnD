@@ -22,7 +22,7 @@ void main() {
   testWidgets('el panel abre las ocho categorías y el formulario de armas', (
     tester,
   ) async {
-    tester.view.physicalSize = const Size(1000, 700);
+    tester.view.physicalSize = const Size(1000, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -48,9 +48,10 @@ void main() {
       'Conjuros': 'Agregar conjuro',
       'Criaturas': 'Agregar criatura',
     };
-    // Las ocho entran en el panel sin desplazarlo, que es justamente lo que
-    // no pasaba con la barra de pestañas. La primera aparición del rótulo es
-    // la del panel; la segunda, cuando está, el título del contenido.
+    // En una ventana normal las ocho entran en el panel sin desplazarlo, que
+    // es justamente lo que no pasaba con la barra de pestañas. La primera
+    // aparición del rótulo es la del panel; la segunda, cuando está, el
+    // título del contenido.
     for (final entry in categories.entries) {
       await tester.tap(find.text(entry.key).first);
       await tester.pumpAndSettle();
@@ -145,6 +146,112 @@ void main() {
 
     expect(find.text('Agregar arma'), findsOneWidget);
     expect(find.text('Todavía no agregaste nada en armas.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // El buscador es global a propósito: con contenido propio uno se acuerda del
+  // nombre, no de en qué categoría lo guardó.
+  testWidgets('buscar cruza las categorías y agrupa lo que encuentra', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = HomebrewStore(ApiClient())
+      ..weapons['hb-hoz'] = const Weapon(
+        id: 'hb-hoz',
+        name: 'Hoz del faro',
+        source: ContentSource.homebrew,
+        category: 'martial',
+        damageDice: '1d8',
+        damageType: 'slashing',
+      )
+      ..weapons['hb-maza'] = const Weapon(
+        id: 'hb-maza',
+        name: 'Maza corta',
+        source: ContentSource.homebrew,
+        category: 'simple',
+        damageDice: '1d6',
+        damageType: 'bludgeoning',
+      )
+      ..items['hb-amuleto'] = const Item(
+        id: 'hb-amuleto',
+        name: 'Amuleto del Fáro',
+        source: ContentSource.homebrew,
+        category: 'gear',
+      );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: store),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'faro');
+    await tester.pumpAndSettle();
+
+    expect(find.text('2 resultados'), findsOneWidget);
+    // Los grupos llevan el rótulo de su categoría, en versalitas.
+    expect(find.text('ARMAS'), findsOneWidget);
+    expect(find.text('OBJETOS'), findsOneWidget);
+    expect(find.text('Hoz del faro'), findsOneWidget);
+    // La tilde no esconde una entrada: `foldForSearch` pliega acentos.
+    expect(find.text('Amuleto del Fáro'), findsOneWidget);
+    expect(find.text('Maza corta'), findsNothing);
+
+    // El panel deja de contar lo que hay y pasa a contar lo que coincide.
+    expect(find.text('Coincidencias'.toUpperCase()), findsOneWidget);
+
+    // Elegir una categoría cancela la búsqueda: pedir Armas y seguir viendo
+    // resultados mezclados sería contestar otra cosa.
+    await tester.tap(find.text('Armas').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Maza corta'), findsOneWidget);
+    expect(find.text('2 resultados'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sin coincidencias lo dice y ofrece limpiar la búsqueda', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final store = HomebrewStore(ApiClient())
+      ..weapons['hb-maza'] = const Weapon(
+        id: 'hb-maza',
+        name: 'Maza corta',
+        source: ContentSource.homebrew,
+        category: 'simple',
+        damageDice: '1d6',
+        damageType: 'bludgeoning',
+      );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: HomebrewScreen(repo: repo, store: store),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'grifo');
+    await tester.pumpAndSettle();
+
+    // «Nada coincide» pide corregir la búsqueda, no crear contenido: por eso
+    // no es el mismo vacío que el de una categoría sin nada.
+    expect(
+      find.text('Nada de tu contenido coincide con «grifo».'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Limpiar búsqueda'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tu taller'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

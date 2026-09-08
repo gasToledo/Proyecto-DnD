@@ -143,12 +143,44 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
   /// atender. Es el mismo trato que le da el Modo DM al Bestiario.
   _Category? _section;
 
+  /// Lo que se está buscando, **en todas las categorías a la vez**.
+  ///
+  /// Con contenido propio uno se acuerda del nombre, no de en qué categoría lo
+  /// guardó, así que la búsqueda no vive dentro de una sección: mientras haya
+  /// texto, el contenido son los resultados y el panel cuenta coincidencias.
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  String get _needle => _query.trim();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   void _refresh() => setState(() {});
 
   /// Abre una categoría, o la portada con `null`. Vive en el estado y no en la
   /// extensión porque `setState` es protegido: desde afuera de la clase no se
   /// puede llamar.
-  void _open(_Category? section) => setState(() => _section = section);
+  ///
+  /// Elegir una sección **cancela la búsqueda**: pedir una categoría y seguir
+  /// viendo resultados mezclados sería contestar otra cosa.
+  void _open(_Category? section) {
+    _searchController.clear();
+    setState(() {
+      _section = section;
+      _query = '';
+    });
+  }
+
+  void _search(String value) => setState(() => _query = value);
+
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _query = '');
+  }
 
   /// Confirma un guardado. Sin este aviso, guardar y salir del formulario se
   /// ve igual que cancelar: se vuelve a la misma lista.

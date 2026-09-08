@@ -11,6 +11,7 @@ extension _HomebrewSections on _HomebrewScreenState {
   /// de lo que había adentro de cada una.
   Widget _rail(BuildContext context, {bool inDrawer = false}) {
     final pal = context.palette;
+    final searching = _needle.isNotEmpty;
     // Desde el Drawer, navegar tiene que cerrarlo primero.
     void run(VoidCallback action) {
       if (inDrawer) Navigator.of(context).pop();
@@ -27,16 +28,37 @@ extension _HomebrewSections on _HomebrewScreenState {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Arriba de la navegación y no adentro de una categoría: lo que se
+          // busca es una entrada, y de qué categoría es se ve en el resultado.
+          TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              isDense: true,
+              labelText: 'Buscar',
+              prefixIcon: const Icon(Icons.search, size: 20),
+              suffixIcon: searching
+                  ? IconButton(
+                      tooltip: 'Limpiar búsqueda',
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => run(_clearSearch),
+                    )
+                  : null,
+            ),
+            onChanged: _search,
+          ),
+          const SizedBox(height: 12),
           appNavItem(
             context,
             icon: Icons.auto_fix_high,
             label: 'Portada',
-            active: _section == null,
+            // Buscando no hay sección abierta: marcar una sería mentir sobre
+            // lo que se está mostrando.
+            active: !searching && _section == null,
             onTap: () => run(() => _open(null)),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(8, 14, 8, 0),
-            child: Eyebrow('Tu contenido'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 14, 8, 0),
+            child: Eyebrow(searching ? 'Coincidencias' : 'Tu contenido'),
           ),
           Expanded(
             child: ListView(
@@ -47,7 +69,7 @@ extension _HomebrewSections on _HomebrewScreenState {
                     context,
                     icon: category.icon,
                     label: category.label,
-                    active: _section == category,
+                    active: !searching && _section == category,
                     count: '${_namesOf(category).length}',
                     onTap: () => run(() => _open(category)),
                   ),
@@ -75,21 +97,94 @@ extension _HomebrewSections on _HomebrewScreenState {
     );
   }
 
-  Widget _content() => switch (_section) {
-    null => _portada(),
-    _Category.weapons => _weaponsSection(),
-    _Category.armor => _armorSection(),
-    _Category.items => _itemsSection(),
-    _Category.feats => _featsSection(),
-    _Category.races => _racesSection(),
-    _Category.backgrounds => _backgroundsSection(),
-    _Category.spells => _spellsSection(),
-    _Category.creatures => _creaturesSection(),
-  };
+  Widget _content() {
+    // La búsqueda manda sobre la sección: mientras haya texto, lo que se
+    // muestra son las coincidencias de todas las categorías.
+    if (_needle.isNotEmpty) return _searchResults();
+    final section = _section;
+    if (section == null) return _portada();
+    return _list(section, onAdd: () => _add(section), items: _rowsOf(section));
+  }
 
-  /// Nombres de una categoría, ordenados. De acá salen tanto el conteo del
-  /// panel como la muestra de la portada, así que las dos cifras no pueden
-  /// discrepar.
+  /// Los resultados de buscar, agrupados por categoría.
+  ///
+  /// Agrupados y no en una lista sola porque el mismo nombre significa cosas
+  /// distintas según de dónde salga: un conjuro «Marea baja» y una criatura
+  /// «Marea baja» son dos entradas, no una repetida.
+  Widget _searchResults() {
+    final groups = <_Category, List<Widget>>{};
+    for (final category in _Category.values) {
+      final rows = _rowsOf(category);
+      if (rows.isNotEmpty) groups[category] = rows;
+    }
+    final total = groups.values.fold(0, (sum, rows) => sum + rows.length);
+
+    // «Nada coincide» no es «no hay nada»: acá lo que corresponde es corregir
+    // la búsqueda, no crear contenido.
+    if (total == 0) {
+      return AppEmptyState(
+        icon: Icons.search_off,
+        message: 'Nada de tu contenido coincide con «$_needle».',
+        actions: [
+          OutlinedButton.icon(
+            onPressed: _clearSearch,
+            icon: const Icon(Icons.close, size: 20),
+            label: const Text('Limpiar búsqueda'),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        _pageWidth(
+          const EdgeInsets.fromLTRB(20, 18, 20, 0),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '$total ${total == 1 ? 'resultado' : 'resultados'}',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'para «$_needle»',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: context.palette.textMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: PageBody(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+            children: [
+              for (final group in groups.entries) ...[
+                Eyebrow(group.key.label),
+                DenseRows(children: group.value),
+                const SizedBox(height: 18),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Nombres de una categoría, ordenados y filtrados por la búsqueda. De acá
+  /// salen tanto el conteo del panel como la muestra de la portada, así que
+  /// las dos cifras no pueden discrepar.
   List<String> _namesOf(_Category category) => switch (category) {
     _Category.weapons => _sortedNames(store.weapons.values, (e) => e.name),
     _Category.armor => _sortedNames(store.armor.values, (e) => e.name),
@@ -105,7 +200,26 @@ extension _HomebrewSections on _HomebrewScreenState {
   };
 
   List<String> _sortedNames<T>(Iterable<T> values, String Function(T) name) =>
-      sortedByName(values, name).map(name).toList();
+      _filtered(values, name).map(name).toList();
+
+  /// Ordenadas por nombre y, si hay búsqueda activa, solo las que coinciden.
+  List<T> _filtered<T>(Iterable<T> values, String Function(T) name) =>
+      _matching(sortedByName(values, name), name);
+
+  /// El filtro de la búsqueda, y el **único** lugar donde se decide qué
+  /// coincide: el conteo del panel y las filas de la lista tienen que estar de
+  /// acuerdo o el número miente.
+  ///
+  /// Pliega tildes y mayúsculas con `foldForSearch`, así «hoz de guerra»
+  /// encuentra «Hoz de Guerra» y «pirana» encuentra «Piraña».
+  List<T> _matching<T>(Iterable<T> values, String Function(T) name) {
+    final needle = foldForSearch(_needle);
+    if (needle.isEmpty) return values.toList();
+    return [
+      for (final value in values)
+        if (foldForSearch(name(value)).contains(needle)) value,
+    ];
+  }
 
   /// La portada: qué tenés, de un vistazo.
   ///
@@ -381,28 +495,165 @@ extension _HomebrewSections on _HomebrewScreenState {
     );
   }
 
-  // -------------------------------------------------------------- Armas
-  Widget _weaponsSection() => _list(
-    _Category.weapons,
-    onAdd: () => _editWeapon(),
-    items: sortedByName(store.weapons.values, (e) => e.name)
-        .map(
-          (w) => _tile(
+  /// Las filas de una categoría: ordenadas, filtradas por la búsqueda y con
+  /// su acción de editar y de borrar.
+  ///
+  /// Las arma un solo lugar porque las leen dos vistas —la lista de la
+  /// categoría y los resultados de la búsqueda— y una fila que se dibujara
+  /// distinto en cada una sería la misma entrada con dos caras.
+  List<Widget> _rowsOf(_Category category) => switch (category) {
+    _Category.weapons => [
+      for (final w in _filtered(store.weapons.values, (e) => e.name))
+        _tile(
+          w.name,
+          '${_weaponCategories[w.category] ?? w.category} · ${w.damageDice} '
+          '${DamageType.labelFor(w.damageType)}',
+          onEdit: () => _editWeapon(w),
+          onDelete: () => _delete(
+            'el arma',
             w.name,
-            '${_weaponCategories[w.category] ?? w.category} · ${w.damageDice} '
-            '${DamageType.labelFor(w.damageType)}',
-            onEdit: () => _editWeapon(w),
-            onDelete: () => _delete(
-              'el arma',
-              w.name,
-              () => store.deleteWeapon(w.id),
-              () => repo.weapons.remove(w.id),
-            ),
+            () => store.deleteWeapon(w.id),
+            () => repo.weapons.remove(w.id),
           ),
-        )
-        .toList(),
-  );
+        ),
+    ],
+    _Category.armor => [
+      for (final a in _filtered(store.armor.values, (e) => e.name))
+        _tile(
+          a.name,
+          '${_armorCategories[a.category] ?? a.category} · CA ${a.baseAc}',
+          onEdit: () => _editArmor(a),
+          onDelete: () => _delete(
+            'la armadura',
+            a.name,
+            () => store.deleteArmor(a.id),
+            () => repo.armor.remove(a.id),
+          ),
+        ),
+    ],
+    _Category.items => [
+      for (final i in _filtered(store.items.values, (e) => e.name))
+        _tile(
+          i.name,
+          [
+            _itemCategories[i.category] ?? i.category,
+            formatCost(i.costCp),
+            if (i.weight > 0) '${formatPounds(i.weight)} lb',
+            if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
+            if (i.rarity != null) _itemRarities[i.rarity] ?? i.rarity!,
+          ].join(' · '),
+          onEdit: () => _editItem(i),
+          onDelete: () => _delete(
+            'el objeto',
+            i.name,
+            () => store.deleteItem(i.id),
+            () => repo.items.remove(i.id),
+          ),
+        ),
+    ],
+    _Category.feats => [
+      for (final f in _filtered(store.feats.values, (e) => e.name))
+        _tile(
+          f.name,
+          '${_featCategories[f.category] ?? f.category} · '
+          '${f.effects.length} efecto(s)',
+          onEdit: () => _editFeat(f),
+          onDelete: () => _delete(
+            'la dote',
+            f.name,
+            () => store.deleteFeat(f.id),
+            () => repo.feats.remove(f.id),
+          ),
+        ),
+    ],
+    _Category.races => [
+      for (final r in _filtered(store.races.values, (e) => e.name))
+        _tile(
+          r.name,
+          '${r.size} · ${r.speed} ft · ${r.effects.length} rasgo(s)',
+          onEdit: () => _editRace(r),
+          onDelete: () => _delete(
+            'la especie',
+            r.name,
+            () => store.deleteRace(r.id),
+            () => repo.races.remove(r.id),
+          ),
+        ),
+    ],
+    _Category.backgrounds => [
+      for (final b in _filtered(store.backgrounds.values, (e) => e.name))
+        _tile(
+          b.name,
+          b.skillProficiencies.map(Skill.labelFor).join(', '),
+          onEdit: () => _editBackground(b),
+          onDelete: () => _delete(
+            'el trasfondo',
+            b.name,
+            () => store.deleteBackground(b.id),
+            () => repo.backgrounds.remove(b.id),
+          ),
+        ),
+    ],
+    // Los conjuros son la excepción del orden: van por nivel y recién después
+    // por nombre, que es como se los busca en el manual y en la ficha.
+    _Category.spells => [
+      for (final s in _matching(
+        store.spells.values.toList()..sort(
+          (a, b) => a.level != b.level
+              ? a.level.compareTo(b.level)
+              : compareContentNames(a.name, b.name),
+        ),
+        (e) => e.name,
+      ))
+        _tile(
+          s.name,
+          '${s.isCantrip ? "Truco" : "Nivel ${s.level}"}'
+          '${s.school.isEmpty ? "" : " · ${s.school}"}'
+          '${s.classes.isEmpty ? "" : " · ${s.classes.map((c) => _spellClasses[c] ?? c).join(", ")}"}',
+          onEdit: () => _editSpell(s),
+          onDelete: () => _delete(
+            'el conjuro',
+            s.name,
+            () => store.deleteSpell(s.id),
+            () => repo.spells.remove(s.id),
+          ),
+        ),
+    ],
+    _Category.creatures => [
+      for (final c in _filtered(store.creatures.values, (e) => e.name))
+        _tile(
+          c.name,
+          [
+            c.kind,
+            'CA ${c.ac}',
+            '${c.hp} PG',
+            if (c.cr != null) 'VD ${_formatCr(c.cr)}',
+            if (c.availableToCharacters) 'disponible para personajes',
+          ].join(' · '),
+          onEdit: () => _editCreature(c),
+          onDelete: () => _delete(
+            'la criatura',
+            c.name,
+            () => store.deleteCreature(c.id),
+            () => repo.creatures.remove(c.id),
+          ),
+        ),
+    ],
+  };
 
+  /// Abre el formulario vacío de la categoría.
+  void _add(_Category category) => switch (category) {
+    _Category.weapons => _editWeapon(),
+    _Category.armor => _editArmor(),
+    _Category.items => _editItem(),
+    _Category.feats => _editFeat(),
+    _Category.races => _editRace(),
+    _Category.backgrounds => _editBackground(),
+    _Category.spells => _editSpell(),
+    _Category.creatures => _editCreature(),
+  };
+
+  // -------------------------------------------------------------- Armas
   Future<void> _editWeapon([Weapon? initial]) async {
     final w = await Navigator.of(context).push<Weapon>(
       MaterialPageRoute(builder: (_) => WeaponForm(initial: initial)),
@@ -414,26 +665,6 @@ extension _HomebrewSections on _HomebrewScreenState {
   }
 
   // ---------------------------------------------------------- Armaduras
-  Widget _armorSection() => _list(
-    _Category.armor,
-    onAdd: () => _editArmor(),
-    items: sortedByName(store.armor.values, (e) => e.name)
-        .map(
-          (a) => _tile(
-            a.name,
-            '${_armorCategories[a.category] ?? a.category} · CA ${a.baseAc}',
-            onEdit: () => _editArmor(a),
-            onDelete: () => _delete(
-              'la armadura',
-              a.name,
-              () => store.deleteArmor(a.id),
-              () => repo.armor.remove(a.id),
-            ),
-          ),
-        )
-        .toList(),
-  );
-
   Future<void> _editArmor([Armor? initial]) async {
     final a = await Navigator.of(context).push<Armor>(
       MaterialPageRoute(builder: (_) => ArmorForm(initial: initial)),
@@ -445,32 +676,6 @@ extension _HomebrewSections on _HomebrewScreenState {
   }
 
   // ------------------------------------------------------------- Objetos
-  Widget _itemsSection() => _list(
-    _Category.items,
-    onAdd: () => _editItem(),
-    items: sortedByName(store.items.values, (e) => e.name)
-        .map(
-          (i) => _tile(
-            i.name,
-            [
-              _itemCategories[i.category] ?? i.category,
-              formatCost(i.costCp),
-              if (i.weight > 0) '${formatPounds(i.weight)} lb',
-              if (i.bundleSize > 1) 'paquete de ${i.bundleSize}',
-              if (i.rarity != null) _itemRarities[i.rarity] ?? i.rarity!,
-            ].join(' · '),
-            onEdit: () => _editItem(i),
-            onDelete: () => _delete(
-              'el objeto',
-              i.name,
-              () => store.deleteItem(i.id),
-              () => repo.items.remove(i.id),
-            ),
-          ),
-        )
-        .toList(),
-  );
-
   Future<void> _editItem([Item? initial]) async {
     final i = await Navigator.of(
       context,
@@ -482,27 +687,6 @@ extension _HomebrewSections on _HomebrewScreenState {
   }
 
   // --------------------------------------------------------------- Dotes
-  Widget _featsSection() => _list(
-    _Category.feats,
-    onAdd: () => _editFeat(),
-    items: sortedByName(store.feats.values, (e) => e.name)
-        .map(
-          (f) => _tile(
-            f.name,
-            '${_featCategories[f.category] ?? f.category} · '
-            '${f.effects.length} efecto(s)',
-            onEdit: () => _editFeat(f),
-            onDelete: () => _delete(
-              'la dote',
-              f.name,
-              () => store.deleteFeat(f.id),
-              () => repo.feats.remove(f.id),
-            ),
-          ),
-        )
-        .toList(),
-  );
-
   Future<void> _editFeat([Feat? initial]) async {
     final f = await Navigator.of(
       context,
@@ -514,26 +698,6 @@ extension _HomebrewSections on _HomebrewScreenState {
   }
 
   // --------------------------------------------------------------- Razas
-  Widget _racesSection() => _list(
-    _Category.races,
-    onAdd: () => _editRace(),
-    items: sortedByName(store.races.values, (e) => e.name)
-        .map(
-          (r) => _tile(
-            r.name,
-            '${r.size} · ${r.speed} ft · ${r.effects.length} rasgo(s)',
-            onEdit: () => _editRace(r),
-            onDelete: () => _delete(
-              'la especie',
-              r.name,
-              () => store.deleteRace(r.id),
-              () => repo.races.remove(r.id),
-            ),
-          ),
-        )
-        .toList(),
-  );
-
   Future<void> _editRace([Race? initial]) async {
     final r = await Navigator.of(
       context,
@@ -545,26 +709,6 @@ extension _HomebrewSections on _HomebrewScreenState {
   }
 
   // ---------------------------------------------------------- Trasfondos
-  Widget _backgroundsSection() => _list(
-    _Category.backgrounds,
-    onAdd: () => _editBackground(),
-    items: sortedByName(store.backgrounds.values, (e) => e.name)
-        .map(
-          (b) => _tile(
-            b.name,
-            b.skillProficiencies.map(Skill.labelFor).join(', '),
-            onEdit: () => _editBackground(b),
-            onDelete: () => _delete(
-              'el trasfondo',
-              b.name,
-              () => store.deleteBackground(b.id),
-              () => repo.backgrounds.remove(b.id),
-            ),
-          ),
-        )
-        .toList(),
-  );
-
   Future<void> _editBackground([Background? initial]) async {
     final b = await Navigator.of(context).push<Background>(
       MaterialPageRoute(
@@ -578,33 +722,6 @@ extension _HomebrewSections on _HomebrewScreenState {
   }
 
   // ---------------------------------------------------------- Conjuros
-  Widget _spellsSection() => _list(
-    _Category.spells,
-    onAdd: () => _editSpell(),
-    items:
-        (store.spells.values.toList()..sort(
-              (a, b) => a.level != b.level
-                  ? a.level.compareTo(b.level)
-                  : compareContentNames(a.name, b.name),
-            ))
-            .map(
-              (s) => _tile(
-                s.name,
-                '${s.isCantrip ? "Truco" : "Nivel ${s.level}"}'
-                '${s.school.isEmpty ? "" : " · ${s.school}"}'
-                '${s.classes.isEmpty ? "" : " · ${s.classes.map((c) => _spellClasses[c] ?? c).join(", ")}"}',
-                onEdit: () => _editSpell(s),
-                onDelete: () => _delete(
-                  'el conjuro',
-                  s.name,
-                  () => store.deleteSpell(s.id),
-                  () => repo.spells.remove(s.id),
-                ),
-              ),
-            )
-            .toList(),
-  );
-
   Future<void> _editSpell([Spell? initial]) async {
     final s = await Navigator.of(context).push<Spell>(
       MaterialPageRoute(builder: (_) => SpellForm(initial: initial)),
@@ -616,32 +733,6 @@ extension _HomebrewSections on _HomebrewScreenState {
   }
 
   // ------------------------------------------------------------ Criaturas
-  Widget _creaturesSection() => _list(
-    _Category.creatures,
-    onAdd: () => _editCreature(),
-    items: sortedByName(store.creatures.values, (e) => e.name)
-        .map(
-          (c) => _tile(
-            c.name,
-            [
-              c.kind,
-              'CA ${c.ac}',
-              '${c.hp} PG',
-              if (c.cr != null) 'VD ${_formatCr(c.cr)}',
-              if (c.availableToCharacters) 'disponible para personajes',
-            ].join(' · '),
-            onEdit: () => _editCreature(c),
-            onDelete: () => _delete(
-              'la criatura',
-              c.name,
-              () => store.deleteCreature(c.id),
-              () => repo.creatures.remove(c.id),
-            ),
-          ),
-        )
-        .toList(),
-  );
-
   Future<void> _editCreature([Creature? initial]) async {
     final c = await Navigator.of(context).push<Creature>(
       MaterialPageRoute(builder: (_) => CreatureForm(initial: initial)),

@@ -1277,7 +1277,7 @@ extension _SheetGeneralSection on _SheetScreenState {
       onTap: () => _showAbilityBreakdown(s, ability),
       borderRadius: BorderRadius.circular(12),
       child: AbilityPlaque(
-        abbr: ability.abbr,
+        ability: ability,
         score: s.abilityScores[ability]!,
         // La prueba de característica y no el modificador crudo: bajo
         // Cansancio no son lo mismo, y lo que se toca en la mesa cuando el DM

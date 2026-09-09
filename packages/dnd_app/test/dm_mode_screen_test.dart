@@ -1722,6 +1722,39 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // La banda de cifras abrevia por ancho («CA», «Perc. pasiva»), y dicha así
+    // en voz alta no se entiende. Es la misma celda en los dos layouts.
+    testWidgets('la banda del perfil se anuncia con la palabra entera', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      final diablo = repo.creature('bone-devil')!;
+      await buscar(tester, diablo.name);
+      await tester.tap(find.byKey(const ValueKey('bestiary-bone-devil')));
+      await tester.pumpAndSettle();
+
+      Finder anuncio(String label) => find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.label == label,
+      );
+
+      // La cifra se ve abreviada y se escucha entera.
+      expect(find.text('CA'), findsOneWidget);
+      expect(anuncio('Clase de armadura: ${diablo.ac}'), findsOneWidget);
+      expect(
+        anuncio('Percepción pasiva: ${diablo.passivePerceptionValue}'),
+        findsOneWidget,
+      );
+      // Los rótulos que ya vienen enteros componen solos.
+      expect(
+        anuncio('Iniciativa: +${diablo.initiativeModifier}'),
+        findsOneWidget,
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('sin coincidencias lo dice y deja limpiar', (tester) async {
       await pumpDmMode(tester, seed: seedTable);
       await openBestiario(tester);

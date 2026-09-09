@@ -546,6 +546,80 @@ void main() {
     expect(find.text('Sutil'), findsOneWidget);
     expect(find.text('finesse'), findsNothing);
     expect(find.text('two-handed'), findsNothing);
+    // La maestría se elegía escribiendo el id en inglés («sap»), con el
+    // glosario traducido ya en el motor y usado por la ficha.
+    expect(find.text('Sin maestría'), findsOneWidget);
+    expect(find.text('sap'), findsNothing);
+  });
+
+  // El glosario de maestrías es cerrado, pero `Weapon.mastery` acepta cualquier
+  // cadena a propósito: un pack importado puede traer una propia. El
+  // desplegable no puede borrarla por el solo hecho de abrir el formulario.
+  testWidgets('la maestría se elige traducida y guarda el id en inglés', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    Weapon? guardada;
+    Weapon porra(String? mastery) => Weapon(
+      id: 'hb-porra',
+      name: 'Porra pesada',
+      source: ContentSource.homebrew,
+      category: 'simple',
+      damageDice: '1d6',
+      damageType: 'bludgeoning',
+      weight: 2,
+      costCp: 100,
+      mastery: mastery,
+    );
+
+    Future<void> abrir(Weapon inicial) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: FilledButton(
+                onPressed: () async => guardada = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => WeaponForm(initial: inicial),
+                  ),
+                ),
+                child: const Text('Editar'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Editar'));
+      await tester.pumpAndSettle();
+    }
+
+    // Una maestría del glosario se muestra por su nombre del PHB, nunca por el
+    // id, y vuelve a guardarse como id.
+    await abrir(porra('sap'));
+    expect(find.text(weaponMasteries['sap']!.name), findsOneWidget);
+    expect(find.text('sap'), findsNothing);
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+    expect(guardada?.mastery, 'sap');
+
+    // Una maestría ajena al glosario se conserva, marcada como desconocida.
+    await abrir(porra('arrancar'));
+    expect(find.text('arrancar (desconocido)'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+    expect(guardada?.mastery, 'arrancar');
+
+    // Sin maestría se guarda como null y no como cadena vacía.
+    await abrir(porra(null));
+    expect(find.text('Sin maestría'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+    expect(guardada?.mastery, isNull);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('editar arma y armadura conserva peso, precio y bono mágico', (

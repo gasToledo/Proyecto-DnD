@@ -712,6 +712,7 @@ class _EncounterViewState extends State<EncounterView> {
                 dense: true,
                 label: 'Inic',
                 value: '${combatant.initiative}',
+                semantics: 'Iniciativa: ${combatant.initiative}',
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -730,7 +731,12 @@ class _EncounterViewState extends State<EncounterView> {
                 ),
               ),
               const SizedBox(width: 8),
-              StatPlaque(dense: true, label: 'CA', value: creature.ac),
+              StatPlaque(
+                dense: true,
+                label: 'CA',
+                value: creature.ac,
+                semantics: 'Clase de armadura: ${creature.ac}',
+              ),
             ],
           ),
         ),

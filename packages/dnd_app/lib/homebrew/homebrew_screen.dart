@@ -43,6 +43,15 @@ const _weaponPropOptions = {
 
 const _weaponCategories = {'simple': 'Simple', 'martial': 'Marcial'};
 
+/// Maestrías con arma, tomadas del glosario del motor: es la única fuente de
+/// la traducción y la ficha ya la usa para la píldora del ataque. La cadena
+/// vacía significa "sin maestría" por el mismo motivo que [_mundane]: el
+/// desplegable no acepta una opción nula.
+final _masteryOptions = {
+  '': 'Sin maestría',
+  for (final m in weaponMasteries.values) m.id: m.name,
+};
+
 const _armorCategories = {
   'light': 'Ligera',
   'medium': 'Media',

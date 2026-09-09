@@ -170,6 +170,7 @@ class _SummaryStep extends StatelessWidget {
                             label: 'PG',
                             value: '${s.maxHp}',
                             valueColor: pal.crimson,
+                            semantics: 'Puntos de golpe: ${s.maxHp}',
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -177,6 +178,7 @@ class _SummaryStep extends StatelessWidget {
                           child: StatPlaque(
                             label: 'CA',
                             value: '${s.armorClass}',
+                            semantics: 'Clase de armadura: ${s.armorClass}',
                           ),
                         ),
                         const SizedBox(width: 10),

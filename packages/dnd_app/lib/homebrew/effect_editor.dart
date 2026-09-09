@@ -285,8 +285,11 @@ class _AddEffectDialogState extends State<_AddEffectDialog> {
       labelText: 'Característica',
       border: OutlineInputBorder(),
     ),
+    // El nombre completo y no la abreviatura: acá se está eligiendo, y "STR"
+    // obliga a saber inglés para tomar la decisión. El resumen del efecto ya
+    // creado sí usa la abreviatura, que ahí es un rótulo compacto.
     items: Ability.values
-        .map((a) => DropdownMenuItem(value: a, child: Text(a.abbr)))
+        .map((a) => DropdownMenuItem(value: a, child: Text(a.label)))
         .toList(),
     onChanged: (v) => setState(() => _ability = v ?? _ability),
   );

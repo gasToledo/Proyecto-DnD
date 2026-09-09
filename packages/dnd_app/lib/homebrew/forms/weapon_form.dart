@@ -16,9 +16,7 @@ class _WeaponFormState extends State<WeaponForm> {
   late final _versatile = TextEditingController(
     text: widget.initial?.versatileDice ?? '',
   );
-  late final _mastery = TextEditingController(
-    text: widget.initial?.mastery ?? '',
-  );
+  late String _mastery = widget.initial?.mastery ?? '';
   late final _weight = TextEditingController(
     text: widget.initial == null ? '0' : '${widget.initial!.weight}',
   );
@@ -64,7 +62,12 @@ class _WeaponFormState extends State<WeaponForm> {
           'Dado versátil (opcional, p.ej. 1d10)',
           validator: (v) => _diceValue(v, optional: true),
         ),
-        _text(_mastery, 'Maestría (opcional, p.ej. sap)'),
+        _idDropdown(
+          label: 'Maestría',
+          value: _mastery,
+          options: _masteryOptions,
+          onChanged: (v) => setState(() => _mastery = v),
+        ),
         _text(
           _weight,
           'Peso en libras (0 si no cuenta)',
@@ -106,7 +109,7 @@ class _WeaponFormState extends State<WeaponForm> {
         versatileDice: _versatile.text.trim().isEmpty
             ? null
             : _versatile.text.trim(),
-        mastery: _mastery.text.trim().isEmpty ? null : _mastery.text.trim(),
+        mastery: _mastery.isEmpty ? null : _mastery,
         weight: double.parse(_weight.text.trim()),
         costCp: int.parse(_costCp.text.trim()),
         rangeNormal: int.parse(_rangeNormal.text.trim()),

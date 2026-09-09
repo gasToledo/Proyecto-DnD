@@ -847,6 +847,12 @@ class StatPlaque extends StatelessWidget {
 
   /// Variante compacta, para tarjetas densas (las cajas VEL/INIC del dashboard).
   final bool dense;
+
+  /// Lo que lee un lector de pantalla, cuando «$label: $value» no se entiende
+  /// dicho en voz alta: el rótulo puede venir abreviado («CA») y a veces el
+  /// valor también («STR»). Mismo parámetro que ya tiene `_StatCell` en el
+  /// dashboard; acá es opcional porque muchas placas ya se rotulan enteras.
+  final String? semantics;
   const StatPlaque({
     super.key,
     required this.label,
@@ -854,13 +860,14 @@ class StatPlaque extends StatelessWidget {
     this.valueColor,
     this.footer,
     this.dense = false,
+    this.semantics,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     return Semantics(
-      label: '$label: $value',
+      label: semantics ?? '$label: $value',
       excludeSemantics: true,
       child: Container(
         padding: dense
@@ -1129,13 +1136,16 @@ class ShieldBadge extends StatelessWidget {
 /// alcanza. La altura de la plaqueta no depende de eso, así que las seis se
 /// alinean tenga o no salvación cada una.
 class AbilityPlaque extends StatelessWidget {
-  final String abbr;
+  /// La característica entera y no su abreviatura: la placa muestra «DES» pero
+  /// el lector de pantalla tiene que decir «Destreza», y separarlo en dos
+  /// parámetros deja que se contradigan.
+  final Ability ability;
   final int score;
   final int modifier;
   final bool saveProficient;
   const AbilityPlaque({
     super.key,
-    required this.abbr,
+    required this.ability,
     required this.score,
     required this.modifier,
     required this.saveProficient,
@@ -1145,9 +1155,10 @@ class AbilityPlaque extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = context.palette;
     final mod = modifier >= 0 ? '+$modifier' : '$modifier';
+    final abbr = ability.abbr;
     return Semantics(
       label:
-          '$abbr: modificador $mod, puntuación $score'
+          '${ability.label}: modificador $mod, puntuación $score'
           '${saveProficient ? ', competente en salvación' : ''}',
       excludeSemantics: true,
       child: Container(
@@ -1987,79 +1998,121 @@ Widget _profileNumbers(
   required bool wide,
 }) {
   final pal = context.palette;
-  final cells = <({String label, String value, String? suffix, Color? color})>[
-    // En Combate la CA y los PG los lleva el encuentro, no el catálogo: el
-    // máximo del libro deja de ser cierto en el primer golpe.
-    if (!dense) (label: 'CA', value: c.ac, suffix: null, color: null),
-    if (!dense)
-      (
-        label: 'Puntos de golpe',
-        value: c.hp,
-        suffix: wide ? c.hitDice : null,
-        color: pal.crimson,
-      ),
-    // Tampoco la iniciativa: ahí ya está la tirada de esta mesa, que es la
-    // que manda sobre el modificador impreso.
-    if (!dense)
-      (
-        label: 'Iniciativa',
-        value: _signed(c.initiativeModifier),
-        suffix: null,
-        color: null,
-      ),
-    if (c.cr != null)
-      (
-        label: 'Valor de desafío',
-        value: challengeRatingLabel(c.cr!),
-        suffix: null,
-        color: pal.gold,
-      ),
-    if (c.passivePerceptionValue case final p?)
-      (label: 'Perc. pasiva', value: '$p', suffix: null, color: null),
-  ];
+  // `semantics` solo donde el rótulo va abreviado por ancho: dicho en voz alta
+  // «CA» no se entiende. Los demás ya se rotulan enteros y componen solos.
+  final cells =
+      <
+        ({
+          String label,
+          String value,
+          String? suffix,
+          Color? color,
+          String? semantics,
+        })
+      >[
+        // En Combate la CA y los PG los lleva el encuentro, no el catálogo: el
+        // máximo del libro deja de ser cierto en el primer golpe.
+        if (!dense)
+          (
+            label: 'CA',
+            value: c.ac,
+            suffix: null,
+            color: null,
+            semantics: 'Clase de armadura: ${c.ac}',
+          ),
+        if (!dense)
+          (
+            label: 'Puntos de golpe',
+            value: c.hp,
+            suffix: wide ? c.hitDice : null,
+            color: pal.crimson,
+            semantics: null,
+          ),
+        // Tampoco la iniciativa: ahí ya está la tirada de esta mesa, que es la
+        // que manda sobre el modificador impreso.
+        if (!dense)
+          (
+            label: 'Iniciativa',
+            value: _signed(c.initiativeModifier),
+            suffix: null,
+            color: null,
+            semantics: null,
+          ),
+        if (c.cr != null)
+          (
+            label: 'Valor de desafío',
+            value: challengeRatingLabel(c.cr!),
+            suffix: null,
+            color: pal.gold,
+            semantics: null,
+          ),
+        if (c.passivePerceptionValue case final p?)
+          (
+            label: 'Perc. pasiva',
+            value: '$p',
+            suffix: null,
+            color: null,
+            semantics: 'Percepción pasiva: $p',
+          ),
+      ];
   if (cells.isEmpty) return const SizedBox.shrink();
 
+  // La semántica va acá y no en cada layout: la banda ancha y la envuelta
+  // arman la misma celda, y ponerla dos veces es dejar que se separen.
   Widget content(
-    ({String label, String value, String? suffix, Color? color}) e,
-  ) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      _profileLabel(context, e.label),
-      const SizedBox(height: 6),
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              e.value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                height: 1,
-                color: e.color,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ),
-          if (e.suffix != null) ...[
-            const SizedBox(width: 5),
+    ({
+      String label,
+      String value,
+      String? suffix,
+      Color? color,
+      String? semantics,
+    })
+    e,
+  ) => Semantics(
+    label:
+        e.semantics ??
+        '${e.label}: ${e.value}${e.suffix == null ? '' : ' ${e.suffix}'}',
+    excludeSemantics: true,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _profileLabel(context, e.label),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          mainAxisSize: MainAxisSize.min,
+          children: [
             Flexible(
               child: Text(
-                e.suffix!,
+                e.value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 12, color: pal.textMuted),
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                  color: e.color,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
             ),
+            if (e.suffix != null) ...[
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  e.suffix!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12, color: pal.textMuted),
+                ),
+              ),
+            ],
           ],
-        ],
-      ),
-    ],
+        ),
+      ],
+    ),
   );
 
   if (!wide) {

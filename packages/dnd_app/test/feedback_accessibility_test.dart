@@ -4,6 +4,7 @@ import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:dnd_app/ui/settings_dialog.dart';
+import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -118,13 +119,57 @@ void main() {
       MaterialApp(
         theme: AppTheme.dark,
         home: const Scaffold(
-          body: StatPlaque(label: 'Velocidad', value: '30'),
+          body: Column(
+            children: [
+              StatPlaque(label: 'Velocidad', value: '30'),
+              // Un rótulo abreviado por ancho dice la palabra entera en voz
+              // alta: «CA: 16» no se entiende dicho.
+              StatPlaque(
+                label: 'CA',
+                value: '16',
+                semantics: 'Clase de armadura: 16',
+              ),
+            ],
+          ),
         ),
       ),
     );
     final semantics = tester.ensureSemantics();
 
     expect(find.bySemanticsLabel('Velocidad: 30'), findsOneWidget);
+    expect(find.bySemanticsLabel('Clase de armadura: 16'), findsOneWidget);
+    expect(find.bySemanticsLabel('CA: 16'), findsNothing);
+    semantics.dispose();
+  });
+
+  // La placa de característica muestra «DES» y no puede decir «de e ese» en voz
+  // alta: por eso recibe la `Ability` entera y no su abreviatura.
+  testWidgets('la placa de característica dice el nombre entero', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: const Scaffold(
+          body: AbilityPlaque(
+            ability: Ability.dexterity,
+            score: 14,
+            modifier: 2,
+            saveProficient: true,
+          ),
+        ),
+      ),
+    );
+    final semantics = tester.ensureSemantics();
+
+    expect(find.text(Ability.dexterity.abbr), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        '${Ability.dexterity.label}: modificador +2, puntuación 14, '
+        'competente en salvación',
+      ),
+      findsOneWidget,
+    );
     semantics.dispose();
   });
 

@@ -61,7 +61,13 @@ extension _SheetSpellsSection on _SheetScreenState {
               Row(
                 children: [
                   Expanded(
-                    child: StatPlaque(label: 'CD SALV.', value: '${sc.saveDc}'),
+                    child: StatPlaque(
+                      label: 'CD SALV.',
+                      value: '${sc.saveDc}',
+                      semantics:
+                          'Clase de dificultad de las salvaciones contra tus '
+                          'conjuros: ${sc.saveDc}',
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -73,7 +79,13 @@ extension _SheetSpellsSection on _SheetScreenState {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: StatPlaque(label: 'APTITUD', value: sc.ability.abbr),
+                    // La placa muestra la abreviatura porque el ancho es un
+                    // tercio de la fila; dicha en voz alta no se entiende.
+                    child: StatPlaque(
+                      label: 'APTITUD',
+                      value: sc.ability.abbr,
+                      semantics: 'Aptitud mágica: ${sc.ability.label}',
+                    ),
                   ),
                 ],
               ),

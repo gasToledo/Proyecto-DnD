@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'dialog_finders.dart';
 import 'fakes/fake_api_server.dart';
 
 /// Si el `IconButton` con ese tooltip está deshabilitado.
@@ -933,7 +934,7 @@ void main() {
       // completos, así que la herramienta del Soldado va en el mismo viaje.
       await tester.tap(find.widgetWithText(FilterChip, 'Juego de dados'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
 
       expect(
@@ -961,7 +962,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(FilterChip, 'Juego de dados'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
 
       expect(find.text('Soldado: elegiste 0 de 1.'), findsNothing);
@@ -1020,7 +1021,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(FilterChip, 'Defensa'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
 
       final saved = controller.characters.single;
@@ -1448,7 +1449,7 @@ void main() {
       // así que el único nivel ofrecido es el 5. Se busca dentro del diálogo:
       // la tarjeta de Conjuros también rotula sus filas "Nivel N".
       Finder inDialog(String text) => find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(AppDialog),
         matching: find.text(text),
       );
       expect(inDialog('Nivel 5'), findsOneWidget);
@@ -1491,7 +1492,7 @@ void main() {
 
       await tapVisible(tester, find.text('Invocar'));
       Finder inDialog(String text) => find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(AppDialog),
         matching: find.text(text),
       );
 
@@ -1542,7 +1543,7 @@ void main() {
       await tapVisible(tester, find.text('Invocar'));
 
       // No abre el selector: avisa y no invoca nada.
-      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(AppDialog), findsNothing);
       expect(paladin.combat.companions, isEmpty);
       expect(find.textContaining('No te quedan espacios'), findsOneWidget);
 
@@ -1568,7 +1569,7 @@ void main() {
       await tester.pumpAndSettle();
 
       Finder inDialog(String text) => find.descendant(
-        of: find.byType(AlertDialog),
+        of: find.byType(AppDialog),
         matching: find.text(text),
       );
 

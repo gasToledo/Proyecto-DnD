@@ -79,12 +79,16 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
         if (c.kind == CombatantKind.monster) c,
     ];
 
-    return AlertDialog(
-      title: const Text('Tirar iniciativa'),
-      content: SizedBox(
-        width: 620,
-        child: SingleChildScrollView(
-          child: LayoutBuilder(
+    return AppDialog(
+      title: 'Tirar iniciativa',
+      // Más ancho que el molde: son dos bandos lado a lado, y por debajo de
+      // 520 el propio `LayoutBuilder` los apila.
+      width: 620,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LayoutBuilder(
             builder: (context, box) {
               // Los dos bandos lado a lado cuando entran, apilados cuando no.
               // El corte lo decide el ancho real del diálogo, no la ventana.
@@ -117,25 +121,26 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
                     );
             },
           ),
-        ),
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: Text(
+          // El aviso va en el cuerpo: en el pie, entre celdas que se tocan, un
+          // texto se lee como un botón muerto.
+          const SizedBox(height: 14),
+          Text(
             'Al confirmar arranca la ronda 1.',
             style: TextStyle(fontSize: 12, color: pal.textMuted),
           ),
-        ),
-        TextButton(
+        ],
+      ),
+      actions: [
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
         ),
-        FilledButton.icon(
+        DialogAction(
+          'Empezar',
+          primary: true,
+          color: pal.verdant,
           onPressed: () => Navigator.of(context).pop(_values),
-          icon: const Icon(Icons.play_arrow),
-          label: const Text('Empezar'),
         ),
       ],
     );

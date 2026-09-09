@@ -1,6 +1,8 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../../theme/app_widgets.dart';
+
 /// Escribir o corregir una nota del Cuaderno.
 ///
 /// Devuelve la nota con los campos cargados, o `null` si se canceló. No guarda
@@ -68,63 +70,62 @@ class _NoteEditorDialogState extends State<_NoteEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
-      content: SizedBox(
-        width: 460,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              DropdownButtonFormField<String>(
-                initialValue: _chapterId,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Capítulo'),
-                items: [
-                  for (final chapter in widget.chapters)
-                    DropdownMenuItem(
-                      value: chapter.id,
-                      child: Text(
-                        '${chapter.name} · ${chapter.state.label}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                ],
-                onChanged: (v) => setState(() => _chapterId = v ?? _chapterId),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _title,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: 'Título',
-                  // El título es campo aparte y no la primera línea del texto
-                  // porque es lo que se ve con la nota plegada y al buscar.
-                  helperText: 'Es lo que se ve en el listado y al buscar.',
+    return AppDialog(
+      title: widget.title,
+      width: 460,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DropdownButtonFormField<String>(
+            initialValue: _chapterId,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'Capítulo'),
+            items: [
+              for (final chapter in widget.chapters)
+                DropdownMenuItem(
+                  value: chapter.id,
+                  child: Text(
+                    '${chapter.name} · ${chapter.state.label}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _body,
-                minLines: 5,
-                maxLines: 10,
-                decoration: const InputDecoration(
-                  labelText: 'Nota',
-                  alignLabelWithHint: true,
-                ),
-              ),
             ],
+            onChanged: (v) => setState(() => _chapterId = v ?? _chapterId),
           ),
-        ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _title,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'Título',
+              // El título es campo aparte y no la primera línea del texto
+              // porque es lo que se ve con la nota plegada y al buscar.
+              helperText: 'Es lo que se ve en el listado y al buscar.',
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _body,
+            minLines: 5,
+            maxLines: 10,
+            decoration: const InputDecoration(
+              labelText: 'Nota',
+              alignLabelWithHint: true,
+            ),
+          ),
+        ],
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
         ),
-        FilledButton.icon(
+        DialogAction(
+          'Guardar',
+          primary: true,
           // Misma regla que hace cumplir el servidor: sin título no se guarda.
           onPressed: _title.text.trim().isEmpty
               ? null
@@ -135,8 +136,6 @@ class _NoteEditorDialogState extends State<_NoteEditorDialog> {
                     body: _body.text.trim(),
                   ),
                 ),
-          icon: const Icon(Icons.check),
-          label: const Text('Guardar'),
         ),
       ],
     );

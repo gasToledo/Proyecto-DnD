@@ -1,10 +1,12 @@
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/theme/app_theme.dart';
+import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:dnd_app/ui/dm/dm_mode_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'dialog_finders.dart';
 import 'fakes/fake_api_server.dart';
 
 void main() {
@@ -109,7 +111,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('En pausa').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.tap(dialogAction('Guardar'));
     await tester.pumpAndSettle();
 
     final campaign = server.campaigns.values.single;
@@ -143,7 +145,7 @@ void main() {
       find.byType(TextField).last,
       'El mar reclama las calles cada noche.',
     );
-    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.tap(dialogAction('Guardar'));
     await tester.pumpAndSettle();
 
     final campaign = server.campaigns['tumba']!;
@@ -299,7 +301,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Echar de la mesa'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Echar personaje'));
+    await tester.tap(dialogAction('Echar personaje'));
     await tester.pumpAndSettle();
     // Igual que sumar: reprograma un chequeo de avisos a los 3 segundos.
     await tester.pump(const Duration(seconds: 3));
@@ -428,7 +430,7 @@ void main() {
       if (items != null) {
         await tester.enterText(find.byType(TextField).at(3), items);
       }
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
     }
 
@@ -506,11 +508,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('le llega el aviso'), findsOneWidget);
 
-      // El de la tarjeta y el del diálogo dicen lo mismo; el del diálogo es el
-      // último en el árbol.
-      await tester.tap(
-        find.widgetWithText(FilledButton, 'Cerrar capítulo').last,
-      );
+      // El de la tarjeta y el del diálogo dicen lo mismo: lo que los separa es
+      // que uno es celda del pie del diálogo.
+      await tester.tap(dialogAction('Cerrar capítulo'));
       await tester.pumpAndSettle();
 
       expect(find.text('COMPLETADO'), findsOneWidget);
@@ -590,13 +590,13 @@ void main() {
 
       await tester.tap(find.widgetWithText(TextButton, 'Borrar'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.tap(dialogAction('Cancelar'));
       await tester.pumpAndSettle();
       expect(server.chapters['tumba']!, hasLength(1));
 
       await tester.tap(find.widgetWithText(TextButton, 'Borrar'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Borrar capítulo'));
+      await tester.tap(dialogAction('Borrar capítulo'));
       await tester.pumpAndSettle();
 
       expect(server.chapters['tumba']!, isEmpty);
@@ -626,7 +626,7 @@ void main() {
         // **adentro del diálogo**: el mismo nombre está también en la fila del
         // combatiente que quedó atrás, y sin acotar se engancha esa.
         final nombre = find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(AppDialog),
           matching: find.text(entry.key),
         );
         await tester.enterText(
@@ -638,7 +638,7 @@ void main() {
         );
       }
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Empezar'));
+      await tester.tap(dialogAction('Empezar'));
       await tester.pumpAndSettle();
     }
 
@@ -853,7 +853,7 @@ void main() {
       );
       await tester.tap(find.byTooltip('Anotar'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
 
       expect(tagsOf(server), ['marcado por el pícaro']);
@@ -868,7 +868,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilterChip, 'Envenenado'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
 
       expect(tagsOf(server), ['Envenenado']);
@@ -886,7 +886,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilterChip, 'Derribado'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
       expect(tagsOf(server), ['Derribado']);
 
@@ -904,7 +904,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilterChip, 'Aturdido'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.tap(dialogAction('Cancelar'));
       await tester.pumpAndSettle();
 
       expect(tagsOf(server), isEmpty);
@@ -975,7 +975,7 @@ void main() {
           of: find
               .ancestor(
                 of: find.descendant(
-                  of: find.byType(AlertDialog),
+                  of: find.byType(AppDialog),
                   matching: find.text(nombre),
                 ),
                 matching: find.byType(Row),
@@ -1000,7 +1000,7 @@ void main() {
 
       await tester.tap(find.text('Tirar iniciativa'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.tap(dialogAction('Cancelar'));
       await tester.pumpAndSettle();
 
       expect(server.encounters['tumba']!.isPreparing, isTrue);
@@ -1031,7 +1031,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Terminar y guardar'));
+      await tester.tap(find.text('Terminar y guardar'));
       await tester.pumpAndSettle();
 
       expect(server.encounters, isNot(contains('tumba')));
@@ -1050,9 +1050,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.widgetWithText(TextButton, 'Descartar sin guardar'),
-      );
+      await tester.tap(find.text('Descartar sin guardar'));
       await tester.pumpAndSettle();
 
       expect(server.encounters, isNot(contains('tumba')));
@@ -1071,7 +1069,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Terminar combate'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(TextButton, 'Cancelar'));
+      await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
 
       expect(server.encounters, contains('tumba'));
@@ -1276,7 +1274,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilterChip, 'Envenenado'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+      await tester.tap(dialogAction('Guardar'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const ValueKey('combate-solapa-efectos')));
@@ -1412,7 +1410,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Borrar nota'), findsWidgets);
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Borrar nota'));
+      await tester.tap(dialogAction('Borrar nota'));
       await tester.pumpAndSettle();
 
       expect(server.notes['tumba'], isEmpty);

@@ -200,21 +200,22 @@ class _NotebookViewState extends State<NotebookView> {
   Future<void> _confirmDelete(BuildContext context, Note note) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Borrar nota'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: context.palette.crimson,
+        title: 'Borrar nota',
         content: Text('Se borra «${note.title}» y no se puede deshacer.'),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton.icon(
+          DialogAction(
+            'Borrar nota',
+            primary: true,
+            color: context.palette.crimson,
             onPressed: () => Navigator.of(ctx).pop(true),
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('Borrar nota'),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.palette.crimson,
-            ),
           ),
         ],
       ),

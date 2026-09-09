@@ -82,90 +82,88 @@ class _TagsDialogState extends State<_TagsDialog> {
           tag,
     ];
 
-    return AlertDialog(
-      title: Text('Efectos de ${widget.name}'),
-      content: SizedBox(
-        width: 460,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    return AppDialog(
+      title: 'Efectos de ${widget.name}',
+      width: 460,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      autofocus: true,
-                      textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
-                        labelText: 'Anotar un efecto',
-                        hintText: 'Marcado por el pícaro…',
-                        border: OutlineInputBorder(),
-                      ),
-                      onSubmitted: (_) => _addTyped(),
-                    ),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    labelText: 'Anotar un efecto',
+                    hintText: 'Marcado por el pícaro…',
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    tooltip: 'Anotar',
-                    onPressed: _addTyped,
-                    icon: const Icon(Icons.add_circle_outline),
-                  ),
-                ],
-              ),
-              if (libres.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final tag in libres)
-                      InputChip(
-                        label: Text(tag),
-                        onDeleted: () => setState(() => _tags.remove(tag)),
-                        deleteButtonTooltipMessage: 'Sacar «$tag»',
-                      ),
-                  ],
+                  onSubmitted: (_) => _addTyped(),
                 ),
-              ],
-              const SizedBox(height: 20),
-              const Eyebrow('Condiciones del libro'),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  for (final condition in conditions.values)
-                    Tooltip(
-                      message: condition.description,
-                      waitDuration: const Duration(milliseconds: 400),
-                      child: FilterChip(
-                        label: Text(condition.label),
-                        selected: _has(condition.label),
-                        onSelected: (_) => _toggle(condition.label),
-                      ),
-                    ),
-                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Los efectos son tuyos: al jugador no le llega nada, se lo '
-                'decís en la mesa.',
-                style: TextStyle(fontSize: 12, color: pal.textMuted),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'Anotar',
+                onPressed: _addTyped,
+                icon: const Icon(Icons.add_circle_outline),
               ),
             ],
           ),
-        ),
+          if (libres.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final tag in libres)
+                  InputChip(
+                    label: Text(tag),
+                    onDeleted: () => setState(() => _tags.remove(tag)),
+                    deleteButtonTooltipMessage: 'Sacar «$tag»',
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 20),
+          const Eyebrow('Condiciones del libro'),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final condition in conditions.values)
+                Tooltip(
+                  message: condition.description,
+                  waitDuration: const Duration(milliseconds: 400),
+                  child: FilterChip(
+                    label: Text(condition.label),
+                    selected: _has(condition.label),
+                    onSelected: (_) => _toggle(condition.label),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Los efectos son tuyos: al jugador no le llega nada, se lo '
+            'decís en la mesa.',
+            style: TextStyle(fontSize: 12, color: pal.textMuted),
+          ),
+        ],
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
         ),
-        FilledButton(
+        DialogAction(
+          'Guardar',
+          primary: true,
           onPressed: () => Navigator.of(context).pop(_tags),
-          child: const Text('Guardar'),
         ),
       ],
     );

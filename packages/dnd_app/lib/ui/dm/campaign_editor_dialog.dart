@@ -1,6 +1,8 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../../theme/app_widgets.dart';
+
 /// Editor corto de la identidad de una campaña.
 ///
 /// [Campaign] ya guarda la premisa y el estado. Este diálogo los expone junto
@@ -55,60 +57,59 @@ class _CampaignEditorDialogState extends State<_CampaignEditorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
-      content: SizedBox(
-        width: 440,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _nameController,
-              autofocus: true,
-              textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Nombre de la campaña',
-                border: OutlineInputBorder(),
-              ),
+    return AppDialog(
+      title: widget.title,
+      width: 440,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+              labelText: 'Nombre de la campaña',
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _premiseController,
-              minLines: 2,
-              maxLines: 4,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Premisa',
-                hintText: 'El conflicto que pone esta historia en marcha…',
-                alignLabelWithHint: true,
-                border: OutlineInputBorder(),
-              ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _premiseController,
+            minLines: 2,
+            maxLines: 4,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: const InputDecoration(
+              labelText: 'Premisa',
+              hintText: 'El conflicto que pone esta historia en marcha…',
+              alignLabelWithHint: true,
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<CampaignState>(
-              initialValue: _state,
-              decoration: const InputDecoration(
-                labelText: 'Estado',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                for (final state in CampaignState.values)
-                  DropdownMenuItem(value: state, child: Text(state.label)),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => _state = value);
-              },
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<CampaignState>(
+            initialValue: _state,
+            decoration: const InputDecoration(
+              labelText: 'Estado',
+              border: OutlineInputBorder(),
             ),
-          ],
-        ),
+            items: [
+              for (final state in CampaignState.values)
+                DropdownMenuItem(value: state, child: Text(state.label)),
+            ],
+            onChanged: (value) {
+              if (value != null) setState(() => _state = value);
+            },
+          ),
+        ],
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
         ),
-        FilledButton(onPressed: _save, child: const Text('Guardar')),
+        DialogAction('Guardar', primary: true, onPressed: _save),
       ],
     );
   }

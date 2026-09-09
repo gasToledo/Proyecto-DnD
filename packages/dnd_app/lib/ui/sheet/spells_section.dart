@@ -320,10 +320,11 @@ extension _SheetSpellsSection on _SheetScreenState {
 
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Cambiar ${granted?.name ?? innate.grantedSpellId}'),
+      builder: (dialogContext) => AppDialog(
+        title: 'Cambiar ${granted?.name ?? innate.grantedSpellId}',
+        width: 420,
+        scrollable: false,
         content: SizedBox(
-          width: 420,
           height: 420,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,9 +360,11 @@ extension _SheetSpellsSection on _SheetScreenState {
           ),
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cerrar',
+            primary: true,
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cerrar'),
           ),
         ],
       ),

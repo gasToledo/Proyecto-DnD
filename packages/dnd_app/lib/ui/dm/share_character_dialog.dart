@@ -80,24 +80,25 @@ class _ShareCharacterDialogState extends State<_ShareCharacterDialog> {
   Future<void> _stopSharing(CharacterShare share) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Dejar de compartir'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: context.palette.crimson,
+        title: 'Dejar de compartir',
         content: Text(
           'El DM de «${share.campaignName}» deja de ver a '
           '${widget.characterName}. Tu ficha no se toca.',
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton.icon(
+          DialogAction(
+            'Dejar de compartir',
+            primary: true,
+            color: context.palette.crimson,
             onPressed: () => Navigator.of(ctx).pop(true),
-            icon: const Icon(Icons.link_off),
-            label: const Text('Dejar de compartir'),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.palette.crimson,
-            ),
           ),
         ],
       ),
@@ -120,43 +121,43 @@ class _ShareCharacterDialogState extends State<_ShareCharacterDialog> {
   @override
   Widget build(BuildContext context) {
     final pal = context.palette;
-    return AlertDialog(
-      title: Text('Compartir a ${widget.characterName}'),
-      content: SizedBox(
-        width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Generá un código y pasáselo a tu DM. Él lo pega en su campaña y '
-              've tu ficha; nunca puede editarla.',
-              style: TextStyle(fontSize: 13, color: pal.textMuted),
+    return AppDialog(
+      title: 'Compartir a ${widget.characterName}',
+      width: 420,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Generá un código y pasáselo a tu DM. Él lo pega en su campaña y '
+            've tu ficha; nunca puede editarla.',
+            style: TextStyle(fontSize: 13, color: pal.textMuted),
+          ),
+          const SizedBox(height: 16),
+          if (_code case final code?)
+            _codeBox(context, code)
+          else
+            FilledButton.icon(
+              onPressed: _generating ? null : _generate,
+              icon: const Icon(Icons.key),
+              label: Text(_generating ? 'Generando…' : 'Generar código'),
             ),
-            const SizedBox(height: 16),
-            if (_code case final code?)
-              _codeBox(context, code)
-            else
-              FilledButton.icon(
-                onPressed: _generating ? null : _generate,
-                icon: const Icon(Icons.key),
-                label: Text(_generating ? 'Generando…' : 'Generar código'),
-              ),
-            if (_error case final error?) ...[
-              const SizedBox(height: 12),
-              Text(error, style: TextStyle(fontSize: 12, color: pal.crimson)),
-            ],
-            const SizedBox(height: 24),
-            const Eyebrow('Compartido con'),
-            const SizedBox(height: 8),
-            _sharesList(context),
+          if (_error case final error?) ...[
+            const SizedBox(height: 12),
+            Text(error, style: TextStyle(fontSize: 12, color: pal.crimson)),
           ],
-        ),
+          const SizedBox(height: 24),
+          const Eyebrow('Compartido con'),
+          const SizedBox(height: 8),
+          _sharesList(context),
+        ],
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cerrar',
+          primary: true,
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cerrar'),
         ),
       ],
     );

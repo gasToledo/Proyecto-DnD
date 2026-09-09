@@ -2,6 +2,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
+import '../../theme/app_widgets.dart';
 
 /// Buscador de monstruos del bestiario para sumarlos al combate.
 ///
@@ -42,21 +43,24 @@ class _AddMonsterDialogState extends State<_AddMonsterDialog> {
   @override
   Widget build(BuildContext context) {
     final selected = _selected;
-    return AlertDialog(
-      title: const Text('Sumar monstruo'),
-      content: SizedBox(
-        width: 360,
-        child: selected == null
-            ? _search(context)
-            : _quantity(context, selected),
-      ),
+    return AppDialog(
+      title: 'Sumar monstruo',
+      width: 360,
+      // El buscador trae su propia lista con alto acotado.
+      scrollable: false,
+      content: selected == null
+          ? _search(context)
+          : _quantity(context, selected),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
         ),
         if (selected != null)
-          FilledButton(
+          DialogAction(
+            'Sumar',
+            primary: true,
             onPressed: () => Navigator.of(context).pop((
               creature: selected,
               count: _count,
@@ -65,7 +69,6 @@ class _AddMonsterDialogState extends State<_AddMonsterDialog> {
               // criatura anterior.
               rollHp: _rollHp && selected.hitDice != null,
             )),
-            child: const Text('Sumar'),
           ),
       ],
     );

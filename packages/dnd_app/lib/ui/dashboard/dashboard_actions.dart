@@ -104,17 +104,22 @@ extension _DashboardActions on _DashboardScreenState {
   Future<void> _confirmDelete(Character c) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('¿Eliminar a ${c.name}?'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: context.palette.crimson,
+        title: '¿Eliminar a ${c.name}?',
         content: const Text('Esta acción no se puede deshacer.'),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton(
+          DialogAction(
+            'Eliminar',
+            primary: true,
+            color: context.palette.crimson,
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar'),
           ),
         ],
       ),
@@ -190,8 +195,8 @@ extension _DashboardActions on _DashboardScreenState {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Importar respaldo'),
+      builder: (ctx) => AppDialog(
+        title: 'Importar respaldo',
         content: Text(
           'Se van a agregar los personajes (y el homebrew y las preferencias, '
           'si el respaldo los incluye) de "${file!.name}" a esta cuenta. Los '
@@ -199,13 +204,15 @@ extension _DashboardActions on _DashboardScreenState {
           'copia nueva.',
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton(
+          DialogAction(
+            'Importar',
+            primary: true,
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Importar'),
           ),
         ],
       ),

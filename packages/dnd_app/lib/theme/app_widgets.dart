@@ -440,6 +440,245 @@ class PageBody extends StatelessWidget {
   );
 }
 
+/// Una celda de la barra de acciones de [AppDialog].
+///
+/// [primary] es el verbo de la acción: va en negrita y, si no se le pasa color,
+/// en oro. El resto de las celdas se leen como alternativas.
+///
+/// [keyHint] dibuja la tecla que dispara la celda, y **se pone solo cuando es
+/// cierto**: `Esc` lo es siempre que el diálogo se abra con el
+/// `barrierDismissible: true` de fábrica, porque de eso se encarga la ruta
+/// modal; `↵` solo donde alguien lo ató (hoy, el campo de una línea de
+/// [showTextPromptDialog]).
+class DialogAction {
+  final String label;
+  final VoidCallback? onPressed;
+  final Color? color;
+  final bool primary;
+  final String? keyHint;
+
+  const DialogAction(
+    this.label, {
+    required this.onPressed,
+    this.color,
+    this.primary = false,
+    this.keyHint,
+  });
+}
+
+/// El molde de diálogo de la aplicación.
+///
+/// Es la placa del sistema —el filete y el radio los pone `dialogTheme`— con
+/// dos decisiones que un tema no puede tomar:
+///
+/// 1. **La medida de lectura.** Sin tope, un `AlertDialog` con un párrafo largo
+///    se estira hasta el ancho de la ventana y la línea se vuelve ilegible.
+///    Los 480 px por defecto dan unos 66 caracteres.
+/// 2. **La barra de acciones a lo ancho.** Celdas de 48 px sobre `plaque`,
+///    separadas por filete, que llegan al borde del diálogo. Es lo que lo
+///    distingue de una tarjeta cualquiera y lo que le da blancos táctiles del
+///    mínimo de Material (§11.3) sin ocupar más alto.
+///
+/// El cuerpo scrollea solo y el pie queda fijo, así que sirve igual para tres
+/// líneas que para el detalle de un conjuro.
+///
+/// [scrollable] en `false` para un cuerpo que ya resuelve su propio alto —una
+/// lista con buscador, una columna con `Expanded`—: dos scrolls del mismo eje
+/// uno adentro del otro dejan el de adentro sin alto y revientan en tiempo de
+/// dibujo.
+class AppDialog extends StatelessWidget {
+  final String title;
+  final IconData? icon;
+  final Color? iconColor;
+
+  /// Lo que va al final de la línea del título, hoy siempre una `GoldPill` con
+  /// el cupo (`2/3`). No es para acciones: el pie es el único lugar donde el
+  /// diálogo ofrece algo que tocar.
+  final Widget? titleTrailing;
+
+  final Widget content;
+  final List<DialogAction> actions;
+  final double width;
+  final bool scrollable;
+
+  const AppDialog({
+    super.key,
+    required this.title,
+    required this.content,
+    required this.actions,
+    this.icon,
+    this.iconColor,
+    this.titleTrailing,
+    this.width = 480,
+    this.scrollable = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final theme = Theme.of(context);
+    final dialogTheme = theme.dialogTheme;
+    return Dialog(
+      // El pie llega al borde: sin recorte se le escapan las esquinas del radio.
+      clipBehavior: Clip.antiAlias,
+      // `LayoutBuilder` y no `MediaQuery`: lo que hay que medir es lo que el
+      // `Dialog` deja libre después de su margen, no la ventana.
+      child: LayoutBuilder(
+        builder: (context, constraints) => SizedBox(
+          width: width < constraints.maxWidth ? width : constraints.maxWidth,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (icon != null) ...[
+                            Icon(icon, size: 17, color: iconColor ?? pal.gold),
+                            const SizedBox(width: 8),
+                          ],
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: dialogTheme.titleTextStyle,
+                            ),
+                          ),
+                          if (titleTrailing != null) ...[
+                            const SizedBox(width: 8),
+                            titleTrailing!,
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Flexible(
+                        child: DefaultTextStyle(
+                          style:
+                              dialogTheme.contentTextStyle ??
+                              theme.textTheme.bodyMedium!,
+                          child: scrollable
+                              ? SingleChildScrollView(child: content)
+                              : content,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              _DialogActionBar(actions),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DialogActionBar extends StatelessWidget {
+  final List<DialogAction> actions;
+
+  const _DialogActionBar(this.actions);
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final cells = <Widget>[];
+    for (final action in actions) {
+      if (cells.isNotEmpty) cells.add(Container(width: 1, color: pal.hairline));
+      cells.add(Expanded(child: _cell(context, action)));
+    }
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: pal.hairline)),
+      ),
+      child: Material(
+        color: pal.plaque,
+        child: SizedBox(
+          height: 48,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: cells,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _cell(BuildContext context, DialogAction action) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    final color =
+        action.color ?? (action.primary ? pal.gold : scheme.onSurfaceVariant);
+    return InkWell(
+      onTap: action.onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Center(
+          // Las celdas reparten el ancho en partes iguales, así que un rótulo
+          // largo en un diálogo angosto se achica en vez de desbordar.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (action.keyHint != null) ...[
+                  _KeyCap(action.keyHint!),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  action.label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: action.primary
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    letterSpacing: 0.1,
+                    color: action.onPressed == null
+                        ? color.withValues(alpha: 0.38)
+                        : color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// La tecla dibujada al lado de un rótulo. Se lee por el filete: el relleno es
+/// el mismo `plaque` de la barra a propósito, para que no compita con el texto.
+class _KeyCap extends StatelessWidget {
+  final String label;
+
+  const _KeyCap(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Container(
+      constraints: const BoxConstraints(minWidth: 20),
+      height: 18,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      decoration: BoxDecoration(
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 11, height: 1, color: pal.textMuted),
+      ),
+    );
+  }
+}
+
 /// Diálogo de un solo campo de texto. Devuelve el valor recortado, o null si se
 /// canceló o quedó vacío.
 ///
@@ -508,8 +747,9 @@ class _TextPromptDialogState extends State<_TextPromptDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: Text(widget.title),
+  Widget build(BuildContext context) => AppDialog(
+    title: widget.title,
+    width: 420,
     content: TextField(
       controller: _ctrl,
       autofocus: true,
@@ -526,13 +766,17 @@ class _TextPromptDialogState extends State<_TextPromptDialog> {
           : null,
     ),
     actions: [
-      TextButton(
+      DialogAction(
+        'Cancelar',
+        keyHint: 'Esc',
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
       ),
-      FilledButton(
+      DialogAction(
+        'Guardar',
+        primary: true,
+        // La tecla se dibuja solo donde el campo la ata de verdad.
+        keyHint: widget.maxLines == 1 ? '↵' : null,
         onPressed: () => Navigator.pop(context, _ctrl.text),
-        child: const Text('Guardar'),
       ),
     ],
   );
@@ -1414,20 +1658,22 @@ void showSpellDetailsDialog(
 }) {
   showDialog<void>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(spell.name),
-      content: SingleChildScrollView(
-        child: spellDetailsBody(
-          dialogContext,
-          spell,
-          contextTitle: contextTitle,
-          contextText: contextText,
-        ),
+    builder: (dialogContext) => AppDialog(
+      title: spell.name,
+      // Más ancho que el molde por defecto: acá no hay un párrafo sino una
+      // ficha con placas rotuladas, y a 480 se apilan de a una.
+      width: 560,
+      content: spellDetailsBody(
+        dialogContext,
+        spell,
+        contextTitle: contextTitle,
+        contextText: contextText,
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cerrar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(dialogContext).pop(),
-          child: const Text('Cerrar'),
         ),
       ],
     ),

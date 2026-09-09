@@ -245,18 +245,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('La sesión terminó'),
+      builder: (ctx) => AppDialog(
+        title: 'La sesión terminó',
         content: const Text(
           'Los cambios que todavía no se pudieron guardar siguen en '
           'pantalla. Iniciá sesión de nuevo para seguir editando.',
         ),
         actions: [
-          FilledButton.icon(
+          // Sin `keyHint: 'Esc'`: este diálogo abre con `barrierDismissible`
+          // en false y la tecla no lo cierra. La tecla se dibuja solo cuando
+          // hace algo.
+          DialogAction(
+            'Iniciar sesión',
+            primary: true,
             onPressed: () =>
                 browser.redirectTo(controller.api.loginUri.toString()),
-            icon: const Icon(Icons.login),
-            label: const Text('Iniciar sesión'),
           ),
         ],
       ),

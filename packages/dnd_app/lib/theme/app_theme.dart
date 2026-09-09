@@ -235,6 +235,37 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
+      // El diálogo es una placa del sistema y nada más: mismo `surface`, mismo
+      // filete de 1 px, mismo radio 12 que cualquier tarjeta. Material 3 lo
+      // dibuja por defecto con radio 28, sombra y `surfaceContainerHigh`, tres
+      // cosas que el sistema no usa en ningún otro lado. Lo que separa del
+      // fondo es el velo, no la elevación.
+      //
+      // El ancho **no** se topea acá a propósito: varios diálogos ya traen el
+      // suyo (`roll_initiative_dialog` mide 620) y un `maxWidth` global se los
+      // comería. La medida de lectura la pone [AppDialog].
+      dialogTheme: DialogThemeData(
+        backgroundColor: surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: palette.hairline),
+        ),
+        // Georgia 16, el mismo título que la cabecera de `sheetCard`: un
+        // diálogo pesa lo que una tarjeta, no lo que una pantalla.
+        titleTextStyle: TextStyle(
+          fontFamily: _displayFont,
+          fontSize: 16,
+          color: onSurface,
+        ),
+        contentTextStyle: TextStyle(
+          fontSize: 14,
+          height: 1.55,
+          color: onSurfaceVariant,
+        ),
+      ),
       dividerTheme: DividerThemeData(color: palette.hairline, thickness: 1),
       tabBarTheme: TabBarThemeData(
         labelColor: palette.gold,

@@ -82,32 +82,31 @@ class _SettingsDialogState extends State<SettingsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Ajustes · Generación de imágenes'),
-      content: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: (MediaQuery.sizeOf(context).width - 80).clamp(240, 480),
-          maxHeight: MediaQuery.sizeOf(context).height * .65,
-        ),
-        child: !_loaded && _loadError == null
-            ? const SizedBox(
-                height: 80,
-                child: Center(child: AppBusyLabel('Cargando ajustes…')),
-              )
-            : _loadError != null
-            ? _errorContent()
-            : _formContent(),
-      ),
+    // El alto lo acota el propio molde y el ancho angosto también, así que acá
+    // no hace falta medir la ventana.
+    return AppDialog(
+      title: 'Ajustes · Generación de imágenes',
+      content: !_loaded && _loadError == null
+          ? const SizedBox(
+              height: 80,
+              child: Center(child: AppBusyLabel('Cargando ajustes…')),
+            )
+          : _loadError != null
+          ? _errorContent()
+          : _formContent(),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: _saving ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Cancelar'),
         ),
-        FilledButton(
+        // Guardando, la celda queda deshabilitada y lo dice el rótulo: en una
+        // barra de celdas no entra el spinner de `AppBusyLabel`, y el texto es
+        // lo que informa de todos modos.
+        DialogAction(
+          _saving ? 'Guardando…' : 'Guardar',
+          primary: true,
           onPressed: _loaded && !_saving && _providerId != null ? _save : null,
-          child: _saving
-              ? const AppBusyLabel('Guardando…', indicatorSize: 15)
-              : const Text('Guardar'),
         ),
       ],
     );

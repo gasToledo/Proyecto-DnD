@@ -272,21 +272,26 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       if (collisions > 0) {
         final overwrite = await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Sobrescribir homebrew'),
+          builder: (ctx) => AppDialog(
+            icon: Icons.warning_amber_rounded,
+            iconColor: context.palette.crimson,
+            title: 'Sobrescribir homebrew',
             content: Text(
               '$collisions entrada(s) del pack comparten id con '
               'contenido que ya tenés. Al importar se reemplazarán. '
               '¿Continuar?',
             ),
             actions: [
-              TextButton(
+              DialogAction(
+                'Cancelar',
+                keyHint: 'Esc',
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancelar'),
               ),
-              FilledButton(
+              DialogAction(
+                'Sobrescribir',
+                primary: true,
+                color: context.palette.crimson,
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Sobrescribir'),
               ),
             ],
           ),

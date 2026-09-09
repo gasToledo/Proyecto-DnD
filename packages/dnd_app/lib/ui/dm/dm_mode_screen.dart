@@ -131,25 +131,26 @@ class _DmModeScreenState extends State<DmModeScreen> {
   Future<void> _deleteCampaign(Campaign campaign) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Borrar campaña'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: context.palette.crimson,
+        title: 'Borrar campaña',
         content: Text(
           'Se borra «${campaign.name}» y se sueltan los personajes que los '
           'jugadores le compartieron. Las fichas no se tocan: siguen siendo '
           'de sus dueños.',
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton.icon(
+          DialogAction(
+            'Borrar campaña',
+            primary: true,
+            color: context.palette.crimson,
             onPressed: () => Navigator.of(ctx).pop(true),
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('Borrar campaña'),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.palette.crimson,
-            ),
           ),
         ],
       ),
@@ -731,25 +732,26 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   Future<void> _removeMember(CampaignMember member) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Echar personaje'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: context.palette.crimson,
+        title: 'Echar personaje',
         content: Text(
           '${member.character.name} sale de «${widget.campaign.name}» y dejás '
           'de ver su ficha. El personaje sigue siendo de su dueño y no se '
           'toca; puede volver con un código nuevo.',
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton.icon(
+          DialogAction(
+            'Echar personaje',
+            primary: true,
+            color: context.palette.crimson,
             onPressed: () => Navigator.of(ctx).pop(true),
-            icon: const Icon(Icons.person_remove_outlined),
-            label: const Text('Echar personaje'),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.palette.crimson,
-            ),
           ),
         ],
       ),

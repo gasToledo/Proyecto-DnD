@@ -971,8 +971,13 @@ class _EncounterViewState extends State<EncounterView> {
     final pal = context.palette;
     final choice = await showDialog<_CloseKind>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Terminar combate'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: pal.crimson,
+        title: 'Terminar combate',
+        // El carmesí queda para el camino irreversible y nada más. Terminar
+        // guardando conserva el registro, así que va en verde heráldico: es la
+        // salida esperada del combate, no una pérdida.
         content: const Text(
           'Se borra el orden de turnos en los dos casos. Si lo terminás queda '
           'un registro liviano de lo que pasó (sin PG ni daños: eso lo lleva '
@@ -980,21 +985,21 @@ class _EncounterViewState extends State<EncounterView> {
           'nunca hubiera empezado.',
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
           ),
-          TextButton.icon(
+          DialogAction(
+            'Descartar sin guardar',
+            color: pal.crimson,
             onPressed: () => Navigator.of(ctx).pop(_CloseKind.discard),
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('Descartar sin guardar'),
-            style: TextButton.styleFrom(foregroundColor: pal.crimson),
           ),
-          FilledButton.icon(
+          DialogAction(
+            'Terminar y guardar',
+            primary: true,
+            color: pal.verdant,
             onPressed: () => Navigator.of(ctx).pop(_CloseKind.save),
-            icon: const Icon(Icons.done_all),
-            label: const Text('Terminar y guardar'),
-            style: FilledButton.styleFrom(backgroundColor: pal.crimson),
           ),
         ],
       ),

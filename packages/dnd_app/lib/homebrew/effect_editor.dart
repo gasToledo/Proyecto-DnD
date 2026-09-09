@@ -183,41 +183,40 @@ class _AddEffectDialogState extends State<_AddEffectDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      scrollable: true,
-      title: const Text('Agregar efecto'),
-      content: SizedBox(
-        width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<_Kind>(
-              initialValue: _kind,
-              decoration: const InputDecoration(
-                labelText: 'Tipo',
-                border: OutlineInputBorder(),
-              ),
-              items: _Kind.values
-                  .map((k) => DropdownMenuItem(value: k, child: Text(k.label)))
-                  .toList(),
-              onChanged: (v) => setState(() => _kind = v ?? _kind),
+    return AppDialog(
+      title: 'Agregar efecto',
+      width: 420,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonFormField<_Kind>(
+            initialValue: _kind,
+            decoration: const InputDecoration(
+              labelText: 'Tipo',
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 12),
-            ..._fields(),
-          ],
-        ),
+            items: _Kind.values
+                .map((k) => DropdownMenuItem(value: k, child: Text(k.label)))
+                .toList(),
+            onChanged: (v) => setState(() => _kind = v ?? _kind),
+          ),
+          const SizedBox(height: 12),
+          ..._fields(),
+        ],
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
         ),
-        FilledButton(
+        DialogAction(
+          'Agregar',
+          primary: true,
           onPressed: () {
             final e = _build();
             if (e != null) Navigator.of(context).pop(e);
           },
-          child: const Text('Agregar'),
         ),
       ],
     );

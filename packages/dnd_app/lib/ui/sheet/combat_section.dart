@@ -673,10 +673,10 @@ extension _SheetCombatSection on _SheetScreenState {
     final result = await showDialog<List<String>>(
       context: context,
       builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text('Formas conocidas (${chosen.length}/${slot.count})'),
+        builder: (context, setDialogState) => AppDialog(
+          title: 'Formas conocidas (${chosen.length}/${slot.count})',
+          scrollable: false,
           content: SizedBox(
-            width: double.maxFinite,
             // Alto fijo: el pozo tiene decenas de bestias y sin esto el
             // diálogo intenta crecer hasta pasarse de la pantalla.
             height: 420,
@@ -706,13 +706,15 @@ extension _SheetCombatSection on _SheetScreenState {
             ),
           ),
           actions: [
-            TextButton(
+            DialogAction(
+              'Cancelar',
+              keyHint: 'Esc',
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancelar'),
             ),
-            FilledButton(
+            DialogAction(
+              'Guardar',
+              primary: true,
               onPressed: () => Navigator.of(dialogContext).pop(chosen),
-              child: const Text('Guardar'),
             ),
           ],
         ),
@@ -813,17 +815,19 @@ extension _SheetCombatSection on _SheetScreenState {
   Future<bool> _confirmDialog(String title, String message) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(title),
+      builder: (dialogContext) => AppDialog(
+        title: title,
         content: Text(message),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton(
+          DialogAction(
+            'Invocar igual',
+            primary: true,
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Invocar igual'),
           ),
         ],
       ),
@@ -969,29 +973,28 @@ extension _SheetCombatSection on _SheetScreenState {
   }) {
     return showDialog<T>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(title),
-        // `maxFinite` deja que el diálogo imponga su propio ancho. Fijar 360
-        // desbordaba en un teléfono angosto, y el familiar abre acá con sus 24
-        // formas: es el selector más grande de la app.
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              for (final option in options)
-                ListTile(
-                  title: Text(label(option)),
-                  subtitle: subtitle == null ? null : Text(subtitle(option)),
-                  onTap: () => Navigator.of(dialogContext).pop(option),
-                ),
-            ],
-          ),
+      builder: (dialogContext) => AppDialog(
+        title: title,
+        // La lista resuelve su propio alto: crece con las opciones hasta lo que
+        // le deje el diálogo. El familiar abre acá con sus 24 formas, que es el
+        // selector más grande de la aplicación.
+        scrollable: false,
+        content: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final option in options)
+              ListTile(
+                title: Text(label(option)),
+                subtitle: subtitle == null ? null : Text(subtitle(option)),
+                onTap: () => Navigator.of(dialogContext).pop(option),
+              ),
+          ],
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancelar'),
           ),
         ],
       ),
@@ -1542,13 +1545,14 @@ extension _SheetCombatSection on _SheetScreenState {
   void _infoDialog(String title, Widget content) {
     showDialog<void>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(child: content),
+      builder: (_) => AppDialog(
+        title: title,
+        content: content,
         actions: [
-          TextButton(
+          DialogAction(
+            'Cerrar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
           ),
         ],
       ),

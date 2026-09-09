@@ -107,19 +107,24 @@ class _CreationWizardState extends State<CreationWizard> {
     final discard =
         await showDialog<bool>(
           context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('¿Descartar este personaje?'),
+          builder: (ctx) => AppDialog(
+            icon: Icons.warning_amber_rounded,
+            iconColor: context.palette.crimson,
+            title: '¿Descartar este personaje?',
             content: const Text(
               'Las elecciones realizadas en el asistente se perderán.',
             ),
             actions: [
-              TextButton(
+              DialogAction(
+                'Seguir creando',
+                keyHint: 'Esc',
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Seguir creando'),
               ),
-              FilledButton(
+              DialogAction(
+                'Descartar',
+                primary: true,
+                color: context.palette.crimson,
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Descartar'),
               ),
             ],
           ),

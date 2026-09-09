@@ -1086,8 +1086,10 @@ extension _HomebrewSections on _HomebrewScreenState {
     final users = charactersUsing(id, widget.characters);
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('¿Eliminar $kind «$name»?'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: pal.crimson,
+        title: '¿Eliminar $kind «$name»?',
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1156,13 +1158,16 @@ extension _HomebrewSections on _HomebrewScreenState {
           ],
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton(
+          DialogAction(
+            'Eliminar',
+            primary: true,
+            color: pal.crimson,
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar'),
           ),
         ],
       ),
@@ -1230,10 +1235,11 @@ class _CatalogPickerState extends State<_CatalogPicker> {
   Widget build(BuildContext context) {
     final pal = context.palette;
     final results = _results;
-    return AlertDialog(
-      title: Text('Duplicar ${widget.category.label.toLowerCase()}'),
+    return AppDialog(
+      title: 'Duplicar ${widget.category.label.toLowerCase()}',
+      width: 420,
+      scrollable: false,
       content: SizedBox(
-        width: 420,
         height: 420,
         child: Column(
           children: [
@@ -1278,9 +1284,10 @@ class _CatalogPickerState extends State<_CatalogPicker> {
         ),
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
         ),
       ],
     );

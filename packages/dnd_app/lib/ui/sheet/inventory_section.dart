@@ -1179,104 +1179,99 @@ extension _SheetInventorySection on _SheetScreenState {
                 _c.inventory.firstWhere((entry) => entry.entryId == entryId),
           ];
 
-          return AlertDialog(
-            title: Row(
-              children: [
-                Expanded(child: Text(slot.name)),
-                GoldPill('${chosen.length}/${slot.count}'),
-              ],
-            ),
-            content: SizedBox(
-              width: 560,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 560),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Elegí un ejemplar de la mochila o creá uno de los '
-                        'permitidos por el rasgo.',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+          return AppDialog(
+            title: slot.name,
+            titleTrailing: GoldPill('${chosen.length}/${slot.count}'),
+            width: 560,
+            scrollable: false,
+            content: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 560),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Elegí un ejemplar de la mochila o creá uno de los '
+                      'permitidos por el rasgo.',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(height: 16),
-                      const Eyebrow('En la mochila'),
-                      if (existing.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Text('No hay ejemplares elegibles.'),
-                        )
-                      else
-                        for (final entry in existing)
-                          ListTile(
-                            key: ValueKey('target-$groupId-${entry.entryId}'),
-                            contentPadding: EdgeInsets.zero,
-                            leading: Icon(
-                              chosen.contains(entry.entryId)
-                                  ? Icons.check_circle
-                                  : Icons.radio_button_unchecked,
-                            ),
-                            title: Text(InventoryOps.resolve(entry, repo).name),
-                            subtitle: entry.origin == 'effect-target:$groupId'
-                                ? const Text('Creada por este rasgo')
-                                : null,
-                            enabled:
-                                chosen.contains(entry.entryId) || canReplace,
-                            onTap: chosen.contains(entry.entryId) || !canReplace
-                                ? null
-                                : () => apply(
-                                    InventoryOps.setEffectTarget(
-                                      _c,
-                                      groupId,
-                                      entry.entryId,
-                                      count: slot.count,
-                                    ),
-                                  ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Eyebrow('En la mochila'),
+                    if (existing.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                        child: Text('No hay ejemplares elegibles.'),
+                      )
+                    else
+                      for (final entry in existing)
+                        ListTile(
+                          key: ValueKey('target-$groupId-${entry.entryId}'),
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            chosen.contains(entry.entryId)
+                                ? Icons.check_circle
+                                : Icons.radio_button_unchecked,
                           ),
-                      if (slot.creatableWeaponIds.isNotEmpty) ...[
-                        const Divider(height: 28),
-                        const Eyebrow('Crear arma'),
-                        for (final weaponId in slot.creatableWeaponIds)
-                          ListTile(
-                            key: ValueKey('target-create-$groupId-$weaponId'),
-                            contentPadding: EdgeInsets.zero,
-                            leading: const Icon(Icons.add_circle_outline),
-                            title: Text(
-                              repo.weapon(weaponId)?.name ?? weaponId,
-                            ),
-                            subtitle: const Text('Agregar y equipar'),
-                            enabled: canReplace,
-                            onTap: !canReplace
-                                ? null
-                                : () => apply(
-                                    InventoryOps.createEffectTarget(
-                                      _c,
-                                      groupId,
-                                      weaponId,
-                                      repo,
-                                      count: slot.count,
-                                    ),
+                          title: Text(InventoryOps.resolve(entry, repo).name),
+                          subtitle: entry.origin == 'effect-target:$groupId'
+                              ? const Text('Creada por este rasgo')
+                              : null,
+                          enabled: chosen.contains(entry.entryId) || canReplace,
+                          onTap: chosen.contains(entry.entryId) || !canReplace
+                              ? null
+                              : () => apply(
+                                  InventoryOps.setEffectTarget(
+                                    _c,
+                                    groupId,
+                                    entry.entryId,
+                                    count: slot.count,
                                   ),
-                          ),
-                      ],
+                                ),
+                        ),
+                    if (slot.creatableWeaponIds.isNotEmpty) ...[
+                      const Divider(height: 28),
+                      const Eyebrow('Crear arma'),
+                      for (final weaponId in slot.creatableWeaponIds)
+                        ListTile(
+                          key: ValueKey('target-create-$groupId-$weaponId'),
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.add_circle_outline),
+                          title: Text(repo.weapon(weaponId)?.name ?? weaponId),
+                          subtitle: const Text('Agregar y equipar'),
+                          enabled: canReplace,
+                          onTap: !canReplace
+                              ? null
+                              : () => apply(
+                                  InventoryOps.createEffectTarget(
+                                    _c,
+                                    groupId,
+                                    weaponId,
+                                    repo,
+                                    count: slot.count,
+                                  ),
+                                ),
+                        ),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
             actions: [
               if (chosen.isNotEmpty && slot.replaceable)
-                TextButton(
+                DialogAction(
+                  'Limpiar vínculo',
+                  color: context.palette.crimson,
                   onPressed: () =>
                       apply(InventoryOps.clearEffectTargets(_c, groupId)),
-                  child: const Text('Limpiar vínculo'),
                 ),
-              TextButton(
+              DialogAction(
+                'Cerrar',
+                keyHint: 'Esc',
+                primary: true,
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cerrar'),
               ),
             ],
           );
@@ -1308,69 +1303,71 @@ extension _SheetInventorySection on _SheetScreenState {
             refresh(() {});
           }
 
-          return AlertDialog(
-            title: Row(
-              children: [
-                Expanded(child: Text(slot.name)),
-                GoldPill('${chosen.length}/${slot.count}'),
-              ],
-            ),
-            content: SizedBox(
-              width: 560,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+          return AppDialog(
+            title: slot.name,
+            titleTrailing: GoldPill('${chosen.length}/${slot.count}'),
+            width: 560,
+            scrollable: false,
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Elegís ${slot.count} planos. Después decidís cuál '
+                    'replicar: podés tener ${slot.maxActive} '
+                    '${slot.maxActive == 1 ? 'réplica activa' : 'réplicas activas'} '
+                    'a la vez.',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.5,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final id in slot.optionItemIds)
+                        FilterChip(
+                          label: Text(repo.item(id)?.name ?? id),
+                          selected: chosen.contains(id),
+                          onSelected:
+                              !chosen.contains(id) &&
+                                  chosen.length >= slot.count
+                              ? null
+                              : (on) => apply(_togglePlan(id, on)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1),
+                  const SizedBox(height: 14),
+                  const Eyebrow('Réplicas activas'),
+                  _replicaBlock(slot, apply),
+                  // El aviso de cupo vive en el cuerpo y no en el pie: la
+                  // barra de acciones es de celdas que se tocan, y un texto
+                  // ahí se lee como un botón muerto.
+                  if (missing > 0) ...[
+                    const SizedBox(height: 12),
                     Text(
-                      'Elegís ${slot.count} planos. Después decidís cuál '
-                      'replicar: podés tener ${slot.maxActive} '
-                      '${slot.maxActive == 1 ? 'réplica activa' : 'réplicas activas'} '
-                      'a la vez.',
+                      'Falta elegir $missing.',
                       style: TextStyle(
-                        fontSize: 12.5,
-                        height: 1.5,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                        color: context.palette.gold,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final id in slot.optionItemIds)
-                          FilterChip(
-                            label: Text(repo.item(id)?.name ?? id),
-                            selected: chosen.contains(id),
-                            onSelected:
-                                !chosen.contains(id) &&
-                                    chosen.length >= slot.count
-                                ? null
-                                : (on) => apply(_togglePlan(id, on)),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(height: 1),
-                    const SizedBox(height: 14),
-                    const Eyebrow('Réplicas activas'),
-                    _replicaBlock(slot, apply),
                   ],
-                ),
+                ],
               ),
             ),
             actions: [
-              if (missing > 0)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Text(
-                    'Falta elegir $missing.',
-                    style: TextStyle(fontSize: 12, color: context.palette.gold),
-                  ),
-                ),
-              FilledButton(
+              DialogAction(
+                'Listo',
+                primary: true,
+                keyHint: 'Esc',
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Listo'),
               ),
             ],
           );
@@ -1706,10 +1703,11 @@ class _AddItemDialogState extends State<_AddItemDialog> {
     // píldora fija dejaría fuera categorías nuevas y ofrecería vacías.
     final families = {for (final e in all) e.family};
 
-    return AlertDialog(
-      title: const Text('Agregar objeto'),
+    return AppDialog(
+      title: 'Agregar objeto',
+      width: 460,
+      scrollable: false,
       content: SizedBox(
-        width: 460,
         height: 460,
         child: Column(
           children: [
@@ -1821,24 +1819,29 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                       },
                     ),
             ),
+            // El contador vive abajo del cuerpo: el pie es una fila de celdas
+            // que se tocan y un texto ahí se lee como un botón muerto.
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _added == 0
+                    ? 'Se pueden agregar varios sin cerrar.'
+                    : _added == 1
+                    ? '1 objeto agregado a la mochila.'
+                    : '$_added objetos agregados a la mochila.',
+                style: TextStyle(fontSize: 12, color: muted),
+              ),
+            ),
           ],
         ),
       ),
-      // `actions` es un OverflowBar y no una fila: `Expanded` ahí revienta, así
-      // que el contador se separa del botón con la alineación del propio bar.
-      actionsAlignment: MainAxisAlignment.spaceBetween,
       actions: [
-        Text(
-          _added == 0
-              ? 'Se pueden agregar varios sin cerrar.'
-              : _added == 1
-              ? '1 objeto agregado a la mochila.'
-              : '$_added objetos agregados a la mochila.',
-          style: TextStyle(fontSize: 12, color: muted),
-        ),
-        TextButton(
+        DialogAction(
+          'Cerrar',
+          primary: true,
+          keyHint: 'Esc',
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cerrar'),
         ),
       ],
     );

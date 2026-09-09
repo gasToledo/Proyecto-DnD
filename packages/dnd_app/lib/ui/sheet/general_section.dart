@@ -231,98 +231,98 @@ extension _SheetGeneralSection on _SheetScreenState {
                 selected.every(slot.options.contains);
           });
 
-          return AlertDialog(
-            title: Text(
-              slots.isNotEmpty && slots.every((s) => s.expertise)
-                  ? 'Elegir Pericia'
-                  : 'Elegir competencias',
-            ),
-            content: SizedBox(
-              width: 720,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Las opciones que ya ten\u00e9s por otra v\u00eda quedan '
-                      'bloqueadas. En los cupos de Pericia es al rev\u00e9s: '
-                      'solo se ofrecen las habilidades en las que ya sos '
-                      'competente, y duplic\u00e1s el bonificador en ellas.',
+          return AppDialog(
+            title: slots.isNotEmpty && slots.every((s) => s.expertise)
+                ? 'Elegir Pericia'
+                : 'Elegir competencias',
+            // Más ancho que el molde: son varios cupos de chips en columna y a
+            // 480 cada grupo se parte en demasiadas filas para compararlos.
+            width: 720,
+            scrollable: false,
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Las opciones que ya ten\u00e9s por otra v\u00eda quedan '
+                    'bloqueadas. En los cupos de Pericia es al rev\u00e9s: '
+                    'solo se ofrecen las habilidades en las que ya sos '
+                    'competente, y duplic\u00e1s el bonificador en ellas.',
+                  ),
+                  const SizedBox(height: 16),
+                  for (final slot in slots) ...[
+                    Text(
+                      slot.name,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 16),
-                    for (final slot in slots) ...[
-                      Text(
-                        slot.name,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        '${choices[slot.groupId]?.length ?? 0}/${slot.count}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final id in slot.options)
-                            Builder(
-                              builder: (context) {
-                                final selected =
-                                    choices[slot.groupId]?.contains(id) ??
-                                    false;
-                                final selectedElsewhere = choices.entries
-                                    .where((entry) => entry.key != slot.groupId)
-                                    .expand((entry) => entry.value)
-                                    .contains(id);
-                                // En un cupo de Pericia, tener la competencia
-                                // es el requisito para elegirla: `fixed` no
-                                // debe bloquear. Lo elegido en otro cupo sí,
-                                // en los dos casos.
-                                final locked =
-                                    !selected &&
-                                    ((!slot.expertise && fixed.contains(id)) ||
-                                        selectedElsewhere);
-                                return FilterChip(
-                                  label: Text(
-                                    slot.skills.contains(id)
-                                        ? Skill.labelFor(id)
-                                        : toolProficiencyLabel(id),
-                                  ),
-                                  selected: selected,
-                                  onSelected: locked
-                                      ? null
-                                      : (value) => setDialogState(() {
-                                          final current =
-                                              choices[slot.groupId] ??= [];
-                                          if (!value) {
-                                            current.remove(id);
-                                          } else if (current.length <
-                                              slot.count) {
-                                            current.add(id);
-                                          }
-                                        }),
-                                );
-                              },
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                    ],
+                    Text(
+                      '${choices[slot.groupId]?.length ?? 0}/${slot.count}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final id in slot.options)
+                          Builder(
+                            builder: (context) {
+                              final selected =
+                                  choices[slot.groupId]?.contains(id) ?? false;
+                              final selectedElsewhere = choices.entries
+                                  .where((entry) => entry.key != slot.groupId)
+                                  .expand((entry) => entry.value)
+                                  .contains(id);
+                              // En un cupo de Pericia, tener la competencia
+                              // es el requisito para elegirla: `fixed` no
+                              // debe bloquear. Lo elegido en otro cupo sí,
+                              // en los dos casos.
+                              final locked =
+                                  !selected &&
+                                  ((!slot.expertise && fixed.contains(id)) ||
+                                      selectedElsewhere);
+                              return FilterChip(
+                                label: Text(
+                                  slot.skills.contains(id)
+                                      ? Skill.labelFor(id)
+                                      : toolProficiencyLabel(id),
+                                ),
+                                selected: selected,
+                                onSelected: locked
+                                    ? null
+                                    : (value) => setDialogState(() {
+                                        final current =
+                                            choices[slot.groupId] ??= [];
+                                        if (!value) {
+                                          current.remove(id);
+                                        } else if (current.length <
+                                            slot.count) {
+                                          current.add(id);
+                                        }
+                                      }),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
                   ],
-                ),
+                ],
               ),
             ),
             actions: [
-              TextButton(
+              DialogAction(
+                'Cancelar',
+                keyHint: 'Esc',
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar'),
               ),
-              FilledButton(
+              DialogAction(
+                'Guardar',
+                primary: true,
                 onPressed: complete()
                     ? () => Navigator.pop(dialogContext, choices)
                     : null,
-                child: const Text('Guardar'),
               ),
             ],
           );
@@ -345,8 +345,8 @@ extension _SheetGeneralSection on _SheetScreenState {
     required T? current,
   }) => showDialog<T>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(title),
+    builder: (dialogContext) => AppDialog(
+      title: title,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,9 +368,10 @@ extension _SheetGeneralSection on _SheetScreenState {
         ],
       ),
       actions: [
-        TextButton(
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
           onPressed: () => Navigator.pop(dialogContext),
-          child: const Text('Cancelar'),
         ),
       ],
     ),
@@ -481,86 +482,84 @@ extension _SheetGeneralSection on _SheetScreenState {
             (slot) => (choices[slot.groupId] ?? const []).length >= slot.count,
           );
 
-          return AlertDialog(
-            title: const Text('Elegir rasgos'),
-            content: SizedBox(
-              width: 720,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final slot in slots) ...[
-                      Text(
-                        slot.name,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Builder(
-                        builder: (context) {
-                          final chosen = choices[slot.groupId] ??= [];
-                          final options = repo
-                              .featureChoiceOptions(slot)
-                              .where(
-                                (f) =>
-                                    chosen.contains(f.id) ||
-                                    validator.unmetFeatPrerequisite(
-                                          f,
-                                          preview,
-                                          previewSheet,
-                                        ) ==
-                                        null,
-                              )
-                              .toList();
-                          if (options.isEmpty) {
-                            return Text(
-                              'No hay opciones disponibles todavía.',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            );
-                          }
-                          // ponytail: el `Set` no representa una opción
-                          // repetible tomada dos veces. Acá sólo se completan
-                          // huecos; para repetir está la subida de nivel, que
-                          // sí lleva contador.
-                          final selected = chosen.toSet();
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${chosen.length}/${slot.count}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              const SizedBox(height: 8),
-                              CappedChipSelect(
-                                options: {
-                                  for (final f in options) f.id: f.name,
-                                },
-                                selected: selected,
-                                max: slot.count,
-                                onChanged: () => setDialogState(
-                                  () =>
-                                      choices[slot.groupId] = selected.toList(),
-                                ),
-                              ),
-                            ],
+          return AppDialog(
+            title: 'Elegir rasgos',
+            width: 720,
+            scrollable: false,
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final slot in slots) ...[
+                    Text(
+                      slot.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Builder(
+                      builder: (context) {
+                        final chosen = choices[slot.groupId] ??= [];
+                        final options = repo
+                            .featureChoiceOptions(slot)
+                            .where(
+                              (f) =>
+                                  chosen.contains(f.id) ||
+                                  validator.unmetFeatPrerequisite(
+                                        f,
+                                        preview,
+                                        previewSheet,
+                                      ) ==
+                                      null,
+                            )
+                            .toList();
+                        if (options.isEmpty) {
+                          return Text(
+                            'No hay opciones disponibles todavía.',
+                            style: Theme.of(context).textTheme.bodySmall,
                           );
-                        },
-                      ),
-                      const SizedBox(height: 18),
-                    ],
+                        }
+                        // ponytail: el `Set` no representa una opción
+                        // repetible tomada dos veces. Acá sólo se completan
+                        // huecos; para repetir está la subida de nivel, que
+                        // sí lleva contador.
+                        final selected = chosen.toSet();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${chosen.length}/${slot.count}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 8),
+                            CappedChipSelect(
+                              options: {for (final f in options) f.id: f.name},
+                              selected: selected,
+                              max: slot.count,
+                              onChanged: () => setDialogState(
+                                () => choices[slot.groupId] = selected.toList(),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 18),
                   ],
-                ),
+                ],
               ),
             ),
             actions: [
-              TextButton(
+              DialogAction(
+                'Cancelar',
+                keyHint: 'Esc',
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar'),
               ),
-              FilledButton(
+              DialogAction(
+                'Guardar',
+                primary: true,
                 onPressed: complete()
                     ? () => Navigator.pop(dialogContext, choices)
                     : null,
-                child: const Text('Guardar'),
               ),
             ],
           );
@@ -601,73 +600,73 @@ extension _SheetGeneralSection on _SheetScreenState {
             (slot) => (choices[slot.groupId] ?? const []).length >= slot.count,
           );
 
-          return AlertDialog(
-            title: const Text('Elegir conjuros'),
-            content: SizedBox(
-              width: 720,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    for (final slot in slots) ...[
-                      Text(
-                        slot.name,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Builder(
-                        builder: (context) {
-                          final chosen = choices[slot.groupId] ??= [];
-                          if (slot.options.isEmpty) {
-                            return Text(
-                              'No hay conjuros disponibles para este rasgo.',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            );
-                          }
-                          final selected = chosen.toSet();
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${chosen.length}/${slot.count}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              const SizedBox(height: 8),
-                              CappedChipSelect(
-                                options: {
-                                  for (final id in slot.options)
-                                    if (repo.spell(id) case final s?)
-                                      id: s.isCantrip
-                                          ? '${s.name} (truco)'
-                                          : '${s.name} (Nv ${s.level})',
-                                },
-                                selected: selected,
-                                max: slot.count,
-                                onChanged: () => setDialogState(
-                                  () =>
-                                      choices[slot.groupId] = selected.toList(),
-                                ),
-                              ),
-                            ],
+          return AppDialog(
+            title: 'Elegir conjuros',
+            width: 720,
+            scrollable: false,
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final slot in slots) ...[
+                    Text(
+                      slot.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Builder(
+                      builder: (context) {
+                        final chosen = choices[slot.groupId] ??= [];
+                        if (slot.options.isEmpty) {
+                          return Text(
+                            'No hay conjuros disponibles para este rasgo.',
+                            style: Theme.of(context).textTheme.bodySmall,
                           );
-                        },
-                      ),
-                      const SizedBox(height: 18),
-                    ],
+                        }
+                        final selected = chosen.toSet();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${chosen.length}/${slot.count}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 8),
+                            CappedChipSelect(
+                              options: {
+                                for (final id in slot.options)
+                                  if (repo.spell(id) case final s?)
+                                    id: s.isCantrip
+                                        ? '${s.name} (truco)'
+                                        : '${s.name} (Nv ${s.level})',
+                              },
+                              selected: selected,
+                              max: slot.count,
+                              onChanged: () => setDialogState(
+                                () => choices[slot.groupId] = selected.toList(),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 18),
                   ],
-                ),
+                ],
               ),
             ),
             actions: [
-              TextButton(
+              DialogAction(
+                'Cancelar',
+                keyHint: 'Esc',
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar'),
               ),
-              FilledButton(
+              DialogAction(
+                'Guardar',
+                primary: true,
                 onPressed: complete()
                     ? () => Navigator.pop(dialogContext, choices)
                     : null,
-                child: const Text('Guardar'),
               ),
             ],
           );
@@ -706,73 +705,74 @@ extension _SheetGeneralSection on _SheetScreenState {
               origen.length == cupo &&
               preview.languageChoiceSlots.every((s) => s.pending == 0);
 
-          return AlertDialog(
-            title: const Text('Elegir idiomas'),
-            content: SizedBox(
-              width: 720,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          return AppDialog(
+            title: 'Elegir idiomas',
+            width: 720,
+            scrollable: false,
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Todo personaje sabe ${Language.labelFor(Language.universal.id)}, '
+                    'que no ocupa una elección.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'De tu origen (${origen.length}/$cupo)',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  CappedChipSelect(
+                    options: {
+                      for (final l in Language.originChoices) l.id: l.label,
+                    },
+                    selected: origen,
+                    max: cupo,
+                    onChanged: () => setDialogState(() {}),
+                  ),
+                  for (final slot in preview.languageChoiceSlots) ...[
+                    const SizedBox(height: 18),
                     Text(
-                      'Todo personaje sabe ${Language.labelFor(Language.universal.id)}, '
-                      'que no ocupa una elección.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      'De tu origen (${origen.length}/$cupo)',
+                      '${slot.name} '
+                      '(${(porRasgo[slot.groupId] ?? const []).length}/${slot.count})',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    CappedChipSelect(
-                      options: {
-                        for (final l in Language.originChoices) l.id: l.label,
+                    Builder(
+                      builder: (context) {
+                        final sel = {...?porRasgo[slot.groupId]};
+                        return CappedChipSelect(
+                          options: {
+                            for (final id in slot.options)
+                              id: Language.labelFor(id),
+                          },
+                          selected: sel,
+                          max: slot.count,
+                          onChanged: () => setDialogState(
+                            () => porRasgo[slot.groupId] = sel.toList(),
+                          ),
+                        );
                       },
-                      selected: origen,
-                      max: cupo,
-                      onChanged: () => setDialogState(() {}),
                     ),
-                    for (final slot in preview.languageChoiceSlots) ...[
-                      const SizedBox(height: 18),
-                      Text(
-                        '${slot.name} '
-                        '(${(porRasgo[slot.groupId] ?? const []).length}/${slot.count})',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Builder(
-                        builder: (context) {
-                          final sel = {...?porRasgo[slot.groupId]};
-                          return CappedChipSelect(
-                            options: {
-                              for (final id in slot.options)
-                                id: Language.labelFor(id),
-                            },
-                            selected: sel,
-                            max: slot.count,
-                            onChanged: () => setDialogState(
-                              () => porRasgo[slot.groupId] = sel.toList(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
             actions: [
-              TextButton(
+              DialogAction(
+                'Cancelar',
+                keyHint: 'Esc',
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancelar'),
               ),
-              FilledButton(
+              DialogAction(
+                'Guardar',
+                primary: true,
                 onPressed: completo
                     ? () => Navigator.pop(dialogContext, true)
                     : null,
-                child: const Text('Guardar'),
               ),
             ],
           );

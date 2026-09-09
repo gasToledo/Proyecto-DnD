@@ -114,18 +114,19 @@ class ChaptersView extends StatelessWidget {
   Future<void> _confirmClose(BuildContext context, Chapter chapter) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Cerrar capítulo'),
+      builder: (ctx) => AppDialog(
+        title: 'Cerrar capítulo',
         content: Text(_closeMessage(chapter)),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton.icon(
+          DialogAction(
+            'Cerrar capítulo',
+            primary: true,
             onPressed: () => Navigator.of(ctx).pop(true),
-            icon: const Icon(Icons.done_all),
-            label: const Text('Cerrar capítulo'),
           ),
         ],
       ),
@@ -136,24 +137,25 @@ class ChaptersView extends StatelessWidget {
   Future<void> _confirmDelete(BuildContext context, Chapter chapter) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Borrar capítulo'),
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: context.palette.crimson,
+        title: 'Borrar capítulo',
         content: Text(
           'Se borra «${chapter.name}» y lo que hayas escrito en él. A los '
           'jugadores no les llega nada.',
         ),
         actions: [
-          TextButton(
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar'),
           ),
-          FilledButton.icon(
+          DialogAction(
+            'Borrar capítulo',
+            primary: true,
+            color: context.palette.crimson,
             onPressed: () => Navigator.of(ctx).pop(true),
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('Borrar capítulo'),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.palette.crimson,
-            ),
           ),
         ],
       ),

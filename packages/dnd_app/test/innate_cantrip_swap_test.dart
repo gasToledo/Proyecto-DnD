@@ -1,6 +1,7 @@
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/data/characters_controller.dart';
 import 'package:dnd_app/theme/app_theme.dart';
+import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
@@ -104,7 +105,7 @@ void main() {
         option,
         120,
         scrollable: find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(AppDialog),
           matching: find.byType(Scrollable),
         ),
       );

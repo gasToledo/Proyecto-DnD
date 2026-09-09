@@ -458,10 +458,49 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `AppEmptyState` | Ícono 40 px `onSurfaceVariant` + mensaje centrado + acciones opcionales | El mensaje es región viva. Distinguir **«no hay nada»** de **«nada coincide con la búsqueda»**: son situaciones distintas y piden acciones distintas |
 | `AppErrorView` | Ícono de error + mensaje + `SelectableText` del detalle + botón "Reintentar" | El detalle técnico se puede copiar. `onRetry` es lo que lo separa de un cartel muerto |
 | `showTextPromptDialog(…)` / `showRenameDialog(…)` | Diálogo de un solo campo de texto | Para más de un campo, diálogo propio (ver `chapter_editor_dialog.dart`) |
+| `AppDialog` | **El molde de diálogo**: placa del sistema con la barra de acciones a lo ancho | `title`, `icon`, `iconColor`, `titleTrailing`, `content`, `actions`, `width` (480), `scrollable` |
+| `DialogAction` | Una celda de esa barra | `label`, `onPressed`, `color`, `primary`, `keyHint` |
 
-**Los diálogos siguen siempre el mismo molde**: `AlertDialog`, `TextButton`
-"Cancelar" a la izquierda, `FilledButton` con el verbo de la acción a la
-derecha.
+### El molde de diálogo
+
+Un diálogo es **una placa del sistema**, no una superficie nueva: `surface`,
+filete `hairline` de 1 px, radio 12 y cero elevación. Eso lo pone `dialogTheme`
+en `app_theme.dart` y lo hereda todo `Dialog` / `AlertDialog` de la aplicación
+sin pedir nada. Lo que separa del fondo es el velo, no una sombra.
+
+`AppDialog` agrega las dos cosas que un tema no puede decidir:
+
+- **La medida de lectura.** Sin tope, un párrafo largo estira el diálogo hasta
+  el ancho de la ventana. 480 px por defecto (unos 66 caracteres); 560 cuando el
+  cuerpo es una ficha y no prosa, como el detalle de un conjuro. El ancho **no**
+  se topea en el tema porque varios diálogos ya traen el suyo
+  (`roll_initiative_dialog` mide 620).
+- **La barra de acciones.** Celdas de 48 px sobre `plaque`, separadas por
+  filete, que llegan al borde del diálogo. Cancelar primero, el verbo de la
+  acción último y en negrita (`primary: true`). El cuerpo scrollea solo y el pie
+  queda fijo; `scrollable: false` para un cuerpo que ya resuelve su propio alto
+  (una lista con buscador, una columna con `Expanded`).
+
+`keyHint` dibuja la tecla al lado del rótulo, y **se pone solo cuando es
+cierta**: `Esc` lo es siempre que el diálogo se abra con el
+`barrierDismissible: true` de fábrica, porque de eso se ocupa la ruta modal —el
+de «La sesión terminó» lo abre en `false` y por eso no la lleva—; `↵` solo donde
+alguien la ató, que hoy es el campo de una línea de `showTextPromptDialog`.
+
+**En la barra solo van celdas que se tocan.** Un texto suelto entre botones —el
+contador de objetos agregados, «Falta elegir 2», «Al confirmar arranca la ronda
+1»— va al final del cuerpo: en una fila de celdas se lee como un botón muerto.
+
+**Color de las acciones**: el carmesí queda para el camino irreversible y nada
+más; `verdant` para la salida esperada que conserva algo (terminar un combate
+guardando el registro, empezar la ronda); oro —el que pone `primary` sin
+`color`— para todo lo demás. Un diálogo destructivo además abre con
+`icon: Icons.warning_amber_rounded` en carmesí.
+
+No quedan `AlertDialog` en `lib/`: los ~35 que había están todos pasados al
+molde. En los tests, la celda del pie se busca con `dialogAction('…')`
+(`test/dialog_finders.dart`) y no por el tipo del botón, porque varios rótulos
+se repiten a propósito entre la pantalla y el diálogo.
 
 ---
 

@@ -140,6 +140,15 @@ void main() {
     expect(find.text('Trucos'), findsOneWidget);
     expect(find.text('Tu clase no lanza conjuros'), findsNothing);
 
+    // --- Truco, preparado y espacio son tres cosas distintas, y la pantalla
+    // las usaba como si se explicaran solas. El Mago prepara, así que le toca
+    // esa mitad y no la de «conocidos».
+    expect(find.text('Cómo funciona tu magia'), findsOneWidget);
+    expect(find.textContaining('Los trucos se lanzan siempre'), findsOneWidget);
+    expect(find.textContaining('conjuros preparados'), findsOneWidget);
+    expect(find.textContaining('Los conjuros conocidos'), findsNothing);
+    expect(find.textContaining('gastás un espacio de conjuro'), findsOneWidget);
+
     // --- Solo se puede equipar lo recibido: la espada larga no está.
     expect(
       find.ancestor(of: find.text('Daga'), matching: find.byType(FilterChip)),
@@ -208,6 +217,8 @@ void main() {
     expect(find.text('CONJUROS'), findsOneWidget);
     expect(find.text('Tu clase no lanza conjuros'), findsOneWidget);
     expect(find.text('Trucos'), findsNothing);
+    // Sin magia no hay nada que explicar: la ayuda no aparece vacía.
+    expect(find.text('Cómo funciona tu magia'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

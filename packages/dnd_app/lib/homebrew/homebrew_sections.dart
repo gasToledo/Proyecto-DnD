@@ -1000,9 +1000,11 @@ extension _HomebrewSections on _HomebrewScreenState {
 
   // ------------------------------------------------------------- Objetos
   Future<void> _editItem([Item? initial]) async {
-    final i = await Navigator.of(
-      context,
-    ).push<Item>(MaterialPageRoute(builder: (_) => ItemForm(initial: initial)));
+    final i = await Navigator.of(context).push<Item>(
+      MaterialPageRoute(
+        builder: (_) => ItemForm(repo: repo, initial: initial),
+      ),
+    );
     if (i == null) return _discarded();
     if (!await _persist(() => store.saveItem(i))) return;
     repo.items[i.id] = i;

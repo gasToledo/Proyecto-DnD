@@ -225,8 +225,15 @@ class _ClassStep extends StatelessWidget {
                       if (slots > 0) ...[
                         const SizedBox(height: 18),
                         Eyebrow('Maestría de armas (elige $slots)'),
+                        // Faltaba la mitad de adelante: la lista dice de qué
+                        // armas se puede elegir, pero no qué se gana al
+                        // elegirlas. El nombre de cada maestría lo trae el
+                        // subtítulo del arma.
                         Text(
-                          'Solo armas con las que ${klass.name} es competente.',
+                          'Dominás el arma lo suficiente como para sacarle un '
+                          'efecto extra cada vez que acertás —derribar, '
+                          'entorpecer, rozar—, sin gastar nada. Solo armas con '
+                          'las que ${klass.name} es competente.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                         const SizedBox(height: 6),

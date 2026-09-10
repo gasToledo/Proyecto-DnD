@@ -622,6 +622,100 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // Las bases permitidas se escribían como una lista de ids del catálogo
+  // separados por coma: el último campo del homebrew que pedía conocer la
+  // estructura interna de los datos.
+  testWidgets('las bases permitidas se eligen por nombre y según la familia', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    Item? guardado;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: FilledButton(
+              onPressed: () async => guardado = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => ItemForm(repo: repo)),
+              ),
+              child: const Text('Crear objeto'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Crear objeto'));
+    await tester.pumpAndSettle();
+
+    // El nombre se escribe ahora: el formulario scrollea y el campo se destruye
+    // en cuanto se baja hasta los chips.
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Nombre'),
+      'Daga rúnica',
+    );
+    await tester.pumpAndSettle();
+
+    // Sin objeto base no hay nada que restringir: el bloque no está.
+    expect(find.text('BASES PERMITIDAS'), findsNothing);
+
+    Future<void> elegirFamilia(String label) async {
+      final campo = find.ancestor(
+        of: find.text('Objeto base'),
+        matching: find.byType(DropdownButtonFormField<String>),
+      );
+      await tester.ensureVisible(campo);
+      await tester.pumpAndSettle();
+      await tester.tap(campo);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+    }
+
+    await elegirFamilia('Arma');
+    expect(find.text('BASES PERMITIDAS'), findsOneWidget);
+    // Nombres del catálogo, no ids, y solo de la familia elegida.
+    final daga = repo.weapon('dagger')!;
+    expect(find.text(daga.name), findsWidgets);
+    expect(find.text('dagger'), findsNothing);
+    expect(find.text(repo.armorPiece('chain-mail')!.name), findsNothing);
+    expect(
+      find.textContaining('sirve cualquiera de la familia'),
+      findsOneWidget,
+    );
+
+    final chip = find.widgetWithText(FilterChip, daga.name);
+    await tester.ensureVisible(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Solo se va a poder usar'), findsOneWidget);
+
+    // Cambiar de familia no puede dejar guardada una base de la anterior: el
+    // motor la rechazaría y nada en la pantalla la mostraría.
+    await elegirFamilia('Armadura');
+    expect(find.text(daga.name), findsNothing);
+
+    await elegirFamilia('Arma');
+    expect(tester.widget<FilterChip>(chip).selected, isFalse);
+
+    await tester.ensureVisible(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+
+    // Lo que se guarda sigue siendo el id, que es el contrato con el motor.
+    expect(guardado?.eligibleBaseItemIds, ['dagger']);
+    expect(guardado?.baseItemKind, 'weapon');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('editar arma y armadura conserva peso, precio y bono mágico', (
     tester,
   ) async {

@@ -417,6 +417,26 @@ class _SpellsSection extends StatelessWidget {
           '${sc.attackBonus >= 0 ? '+' : ''}${sc.attackBonus} (${sc.ability.abbr})',
           style: Theme.of(context).textTheme.bodyMedium,
         ),
+        const SizedBox(height: 14),
+        // Tres palabras que la pantalla usa como si se explicaran solas.
+        // Se arma según la clase: sin trucos no se los nombra, y preparar y
+        // conocer no son lo mismo aunque la grilla de abajo se vea igual.
+        AppHelpCallout(
+          icon: Icons.auto_stories,
+          title: 'Cómo funciona tu magia',
+          message: [
+            if (sc.cantripsKnown > 0)
+              'Los trucos se lanzan siempre y no gastan nada.',
+            prepared
+                ? 'Los conjuros preparados son los que dejás listos para usar; '
+                      'podés cambiarlos al descansar.'
+                : 'Los conjuros conocidos son los que aprendiste y quedan '
+                      'disponibles para lanzar.',
+            'Cada vez que lanzás uno gastás un espacio de conjuro, que es un '
+                'recurso aparte: los espacios dicen cuántas veces podés '
+                'lanzar, no cuántos conjuros tenés.',
+          ].join(' '),
+        ),
         if (sc.cantripsKnown > 0) ...[
           const SizedBox(height: 18),
           _SpellGroupHeader(

@@ -8,7 +8,11 @@ part of '../homebrew_screen.dart';
 class ItemForm extends StatefulWidget {
   final Item? initial;
 
-  const ItemForm({super.key, this.initial});
+  /// Para ofrecer las bases permitidas por su nombre. Es la única cosa del
+  /// formulario que sale del catálogo y no de lo que se escribe.
+  final ContentRepository repo;
+
+  const ItemForm({super.key, required this.repo, this.initial});
 
   @override
   State<ItemForm> createState() => _ItemFormState();
@@ -31,9 +35,9 @@ class _ItemFormState extends State<ItemForm> {
   late final _magicBonus = TextEditingController(
     text: '${widget.initial?.magicBonus ?? 0}',
   );
-  late final _eligibleBases = TextEditingController(
-    text: widget.initial?.eligibleBaseItemIds.join(', ') ?? '',
-  );
+  late final Set<String> _eligibleBases = {
+    ...?widget.initial?.eligibleBaseItemIds,
+  };
   late String _category = widget.initial?.category ?? 'gear';
   late String? _rarity = widget.initial?.rarity;
   late bool _attunement = widget.initial?.requiresAttunement ?? false;
@@ -111,7 +115,13 @@ class _ItemFormState extends State<ItemForm> {
             'armor': 'Armadura',
             'shield': 'Escudo',
           },
-          onChanged: (v) => setState(() => _baseItemKind = v),
+          // Las bases elegidas son de la familia anterior y no valen para la
+          // nueva: el motor las rechazaría igual (`_validBase`), pero quedarían
+          // guardadas y sin nada que las muestre.
+          onChanged: (v) => setState(() {
+            _baseItemKind = v;
+            _eligibleBases.clear();
+          }),
         ),
         _text(
           _magicBonus,
@@ -119,10 +129,21 @@ class _ItemFormState extends State<ItemForm> {
           number: true,
           validator: (v) => _intInRange(v, -5, 10, optional: false),
         ),
-        _text(
-          _eligibleBases,
-          'IDs de bases permitidas (separados por coma, opcional)',
-        ),
+        // Solo con una familia elegida: sin objeto base no hay nada que
+        // restringir, y el campo pedía escribir los ids del catálogo a mano.
+        if (_baseItemKind != 'none') ...[
+          const SizedBox(height: 8),
+          const Eyebrow('Bases permitidas'),
+          const SizedBox(height: 4),
+          Text(
+            _eligibleBases.isEmpty
+                ? 'Sin marcar ninguna, sirve cualquiera de la familia elegida.'
+                : 'Solo se va a poder usar lo que marques acá.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          _idChips(_baseOptions(), _eligibleBases, () => setState(() {})),
+        ],
         const SizedBox(height: 8),
         const Eyebrow('Efectos mientras esté equipado'),
         _text(
@@ -143,6 +164,22 @@ class _ItemFormState extends State<ItemForm> {
     );
   }
 
+  /// Las bases del catálogo que puede tomar la familia elegida, por su nombre.
+  /// Escudo y armadura salen del mismo catálogo y los separa `isShield`, igual
+  /// que en `InventoryOps._validBase`.
+  Map<String, String> _baseOptions() => switch (_baseItemKind) {
+    'weapon' => {for (final w in widget.repo.weaponsSorted) w.id: w.name},
+    'armor' => {
+      for (final a in widget.repo.armorSorted)
+        if (!a.isShield) a.id: a.name,
+    },
+    'shield' => {
+      for (final a in widget.repo.armorSorted)
+        if (a.isShield) a.id: a.name,
+    },
+    _ => const {},
+  };
+
   void _save() {
     final acBonus = int.parse(_acBonus.text.trim());
     Navigator.of(context).pop(
@@ -159,11 +196,7 @@ class _ItemFormState extends State<ItemForm> {
         requiresAttunement: _attunement,
         magicBonus: int.parse(_magicBonus.text.trim()),
         baseItemKind: _baseItemKind == 'none' ? null : _baseItemKind,
-        eligibleBaseItemIds: _eligibleBases.text
-            .split(',')
-            .map((e) => e.trim())
-            .where((e) => e.isNotEmpty)
-            .toList(),
+        eligibleBaseItemIds: _eligibleBases.toList(),
         // Las cargas no se editan acá, pero un objeto del catálogo que las
         // tiene deja de ser el mismo objeto sin ellas.
         maxCharges: widget.initial?.maxCharges,

@@ -155,6 +155,11 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
     await tester.pumpAndSettle();
 
+    // La lista decía de qué armas se puede elegir pero no qué se gana al
+    // hacerlo, que es lo que hay que saber para elegir.
+    expect(find.textContaining('un efecto extra cada vez'), findsOneWidget);
+    expect(find.textContaining('es competente'), findsOneWidget);
+
     // (ver también la prueba del modo dividido más abajo)
     // El paso de Clase tiene dos listas con scroll propio: la de clases (panel
     // izquierdo del modo dividido) y el checklist de maestrías. Esta prueba

@@ -848,6 +848,9 @@ class _SpellChoiceGroup extends StatelessWidget {
       selected: selected,
       max: slot.count,
       onChanged: () => onChanged(selected.toList()),
+      onInfo: (id) {
+        if (repo.spell(id) case final s?) showSpellDetailsDialog(context, s);
+      },
     );
   }
 }

@@ -149,6 +149,22 @@ void main() {
     expect(find.textContaining('Los conjuros conocidos'), findsNothing);
     expect(find.textContaining('gastás un espacio de conjuro'), findsOneWidget);
 
+    // --- Un nombre no dice qué hace el conjuro. El botón abre el mismo detalle
+    // que la ficha, y leerlo no lo elige.
+    final rayo = repo.spell('ray-of-frost')!;
+    final verRayo = find.byTooltip('Ver qué hace ${rayo.name}');
+    await tester.ensureVisible(verRayo);
+    await tester.pumpAndSettle();
+    await tester.tap(verRayo);
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining(rayo.description.split('.').first),
+      findsWidgets,
+    );
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Trucos'), findsOneWidget, reason: 'seguimos en el paso');
+
     // --- Solo se puede equipar lo recibido: la espada larga no está.
     expect(
       find.ancestor(of: find.text('Daga'), matching: find.byType(FilterChip)),

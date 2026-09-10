@@ -53,6 +53,14 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
   int get _maxSlotLevel =>
       _sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
 
+  /// El mismo diálogo que la ficha: elegir un conjuro sin poder leerlo obligaba
+  /// a buscar qué hace afuera de la aplicación.
+  void _showSpell(String id) {
+    if (widget.repo.spell(id) case final spell?) {
+      showSpellDetailsDialog(context, spell);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final all = widget.repo.spellsForList(
@@ -99,6 +107,7 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
               selected: _cantrips,
               max: _sc.cantripsKnown,
               onChanged: () => setState(() {}),
+              onInfo: _showSpell,
             ),
             const SizedBox(height: 20),
           ],
@@ -125,6 +134,7 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
             selected: _spells,
             max: _prepared ? _sc.preparedCount : 9999,
             onChanged: () => setState(() {}),
+            onInfo: _showSpell,
           ),
         ],
       ),

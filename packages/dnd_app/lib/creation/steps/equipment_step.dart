@@ -363,6 +363,11 @@ class _SpellChoicesSection extends StatelessWidget {
                   draft.spellChoices[slot.groupId] = selected.toList();
                   onChanged();
                 },
+                onInfo: (id) {
+                  if (draft.repo.spell(id) case final s?) {
+                    showSpellDetailsDialog(context, s);
+                  }
+                },
               );
             },
           ),
@@ -591,15 +596,37 @@ class _SpellChips extends StatelessWidget {
                               : pal.textMuted,
                         ),
                         const SizedBox(width: 7),
-                        Text(
-                          showLevel ? '${s.name} (Nv ${s.level})' : s.name,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: on
-                                ? pal.gold
-                                : enabled
-                                ? scheme.onSurface
-                                : pal.textMuted,
+                        Flexible(
+                          child: Text(
+                            showLevel ? '${s.name} (Nv ${s.level})' : s.name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: on
+                                  ? pal.gold
+                                  : enabled
+                                  ? scheme.onSurface
+                                  : pal.textMuted,
+                            ),
+                          ),
+                        ),
+                        // Su propio `InkWell` adentro del chip: el toque del
+                        // chip ya elige, y con el cupo lleno es justo cuando
+                        // más falta poder leer lo que todavía no elegiste.
+                        //
+                        // Acá sí anida, a diferencia de `CappedChipSelect`:
+                        // este chip es un `InkWell` propio y no un `FilterChip`,
+                        // que se queda con todos los toques de su superficie.
+                        const SizedBox(width: 6),
+                        InkWell(
+                          onTap: () => showSpellDetailsDialog(context, s),
+                          customBorder: const CircleBorder(),
+                          child: Tooltip(
+                            message: 'Ver qué hace ${s.name}',
+                            child: Icon(
+                              Icons.info_outline,
+                              size: 15,
+                              color: pal.textMuted,
+                            ),
                           ),
                         ),
                       ],

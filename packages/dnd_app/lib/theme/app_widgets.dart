@@ -1464,6 +1464,14 @@ class CappedChipSelect extends StatelessWidget {
   final int max;
   final VoidCallback onChanged;
   final Set<String> disabled;
+
+  /// Abre el detalle de una opción sin elegirla. Existe para los conjuros: un
+  /// nombre como «Rayo de Escarcha» no dice qué hace, y hasta ahora la única
+  /// forma de averiguarlo era buscarlo afuera de la aplicación.
+  ///
+  /// Opcional porque no toda opción tiene detalle que mostrar: una competencia
+  /// o un idioma se explican con su nombre.
+  final ValueChanged<String>? onInfo;
   const CappedChipSelect({
     super.key,
     required this.options,
@@ -1471,6 +1479,7 @@ class CappedChipSelect extends StatelessWidget {
     required this.max,
     required this.onChanged,
     this.disabled = const {},
+    this.onInfo,
   });
 
   @override
@@ -1482,7 +1491,8 @@ class CappedChipSelect extends StatelessWidget {
         final isSel = selected.contains(e.key);
         final blocked =
             (disabled.contains(e.key) || selected.length >= max) && !isSel;
-        return FilterChip(
+        final info = onInfo;
+        final chip = FilterChip(
           label: Text(e.value),
           selected: isSel,
           onSelected: blocked
@@ -1496,6 +1506,29 @@ class CappedChipSelect extends StatelessWidget {
                   }
                   onChanged();
                 },
+        );
+        if (info == null) return chip;
+        // El botón va **al lado** del chip y no adentro: `FilterChip` se queda
+        // con todos los toques de su superficie —un `InkWell` en el rótulo no
+        // llega a recibirlos—, y además dos blancos separados se ven como dos
+        // cosas distintas, que es lo que son.
+        //
+        // Sigue vivo con el cupo lleno a propósito: es justo cuando más falta
+        // poder mirar qué hace lo que todavía no elegiste.
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            chip,
+            IconButton(
+              onPressed: () => info(e.key),
+              icon: const Icon(Icons.info_outline, size: 17),
+              color: context.palette.textMuted,
+              tooltip: 'Ver qué hace ${e.value}',
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+            ),
+          ],
         );
       }).toList(),
     );

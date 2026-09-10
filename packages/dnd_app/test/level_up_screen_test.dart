@@ -2,6 +2,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/levelup/level_up_screen.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
+import 'package:dnd_app/ui/spell_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -969,6 +970,62 @@ void main() {
     },
     spellChoices: spellChoices,
   );
+
+  // Elegir un conjuro por su nombre no se puede: «Rayo de Escarcha» no dice qué
+  // hace, y hasta acá la única forma de averiguarlo era buscarlo afuera de la
+  // aplicación. El botón es el mismo diálogo que ya usaba la ficha.
+  //
+  // Es la pantalla que abre «Preparar conjuros» de la subida de nivel, y la
+  // misma que abre «Preparar» en la ficha.
+  testWidgets('el detalle de un conjuro se puede leer antes de elegirlo', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final personaje = wizard(level: 3);
+    final sc = CharacterCompiler(repo).compile(personaje).spellcasting!;
+    final rayo = repo.spell('ray-of-frost')!;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: SpellEditScreen(
+          character: personaje,
+          repo: repo,
+          spellcasting: sc,
+          onSave: (_, _) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final boton = find.byTooltip('Ver qué hace ${rayo.name}');
+    await tester.ensureVisible(boton);
+    await tester.pumpAndSettle();
+    await tester.tap(boton);
+    await tester.pumpAndSettle();
+
+    // El diálogo trae la regla del catálogo, no un resumen escrito acá.
+    expect(find.text(rayo.name), findsWidgets);
+    expect(
+      find.textContaining(rayo.description.split('.').first),
+      findsWidgets,
+    );
+
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+
+    // Y leerlo no lo elige: el botón y el chip son dos blancos distintos.
+    final chip = find.widgetWithText(FilterChip, rayo.name);
+    expect(tester.widget<FilterChip>(chip).selected, isFalse);
+
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilterChip>(chip).selected, isTrue);
+    expect(tester.takeException(), isNull);
+  });
 
   /// Avanza tocando "Continuar" hasta que aparezca [target], con tope: un paso
   /// que bloquea haría girar el bucle para siempre y el fallo saldría como un

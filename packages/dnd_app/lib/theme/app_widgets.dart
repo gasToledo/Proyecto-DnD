@@ -1675,6 +1675,65 @@ String featSummary(Feat feat) {
       .join(' ');
 }
 
+/// Detalle completo de una dote, para donde el resumen va recortado.
+///
+/// Separa los rasgos en vez de pegarlos como hace [featSummary]: ahí se unen
+/// con un espacio y dos rasgos distintos terminan leyéndose como un párrafo
+/// solo. Suma los aumentos de característica, que en las dotes de origen son
+/// parte de la decisión y no aparecen en ningún rasgo.
+///
+/// No enumera el resto de los efectos —listas de conjuros, competencias,
+/// recursos—: son maquinaria del motor y su consecuencia visible ya está
+/// contada en el rasgo que la acompaña.
+void showFeatDetailsDialog(BuildContext context, Feat feat) {
+  final traits = feat.effects.whereType<PassiveTraitEffect>().toList();
+  final bonuses = feat.effects.whereType<AbilityScoreBonusEffect>().toList();
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) {
+      final muted = Theme.of(dialogContext).colorScheme.onSurfaceVariant;
+      return AppDialog(
+        title: feat.name,
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final bonus in bonuses) ...[
+              Text(
+                '${bonus.ability.label} '
+                '${bonus.amount >= 0 ? '+' : ''}${bonus.amount}',
+                style: TextStyle(color: context.palette.gold),
+              ),
+              const SizedBox(height: 10),
+            ],
+            for (var i = 0; i < traits.length; i++) ...[
+              if (i > 0) const SizedBox(height: 14),
+              if (traits[i].name.isNotEmpty) ...[
+                Text(
+                  traits[i].name,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+              ],
+              Text(
+                traits[i].description,
+                style: TextStyle(color: muted, height: 1.5),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          DialogAction(
+            'Cerrar',
+            keyHint: 'Esc',
+            onPressed: () => Navigator.of(dialogContext).pop(),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 /// Ícono y color de un tipo de acción. Verde = acción, rojo = adicional,
 /// ámbar = reacción; lo que tarda minutos u horas no lleva distintivo porque no
 /// compite por la economía del turno.

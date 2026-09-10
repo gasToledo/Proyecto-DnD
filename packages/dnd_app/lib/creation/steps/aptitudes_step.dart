@@ -682,6 +682,31 @@ class _FeatCard extends StatelessWidget {
                   ],
                 ),
               ),
+              // El resumen de la tarjeta va recortado a tres líneas para que la
+              // grilla no quede despareja, y varias dotes de origen no entran
+              // ahí. La decisión se toma acá, así que el texto entero tiene que
+              // poder leerse sin elegirla primero.
+              //
+              // Anida adentro de la tarjeta y funciona: es un `InkWell` propio
+              // y no un `FilterChip`, que se queda con todos sus toques.
+              if (featSummary(feat).isNotEmpty) ...[
+                const SizedBox(width: 4),
+                InkWell(
+                  onTap: () => showFeatDetailsDialog(context, feat),
+                  customBorder: const CircleBorder(),
+                  child: Tooltip(
+                    message: 'Ver qué hace ${feat.name}',
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 17,
+                        color: pal.textMuted,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(width: 10),
               Container(
                 width: 22,

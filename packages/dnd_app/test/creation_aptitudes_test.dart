@@ -1,6 +1,7 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:dnd_app/creation/creation_wizard.dart';
 import 'package:dnd_app/theme/app_theme.dart';
+import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -121,6 +122,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(iniciado, findsOneWidget);
     expect(find.text('Atacante Salvaje'), findsNothing);
+
+    // --- El resumen de la tarjeta va recortado y varias dotes no entran ahí.
+    // El botón abre el texto entero, y leerlo no elige la dote: la elección es
+    // permanente y no puede pasar por mirar qué hace.
+    final habilidoso = repo.feat('skilled')!;
+    final verDote = find.byTooltip('Ver qué hace ${habilidoso.name}');
+    await tester.scrollUntilVisible(verDote, 200);
+    await tester.pumpAndSettle();
+    await tester.tap(verDote);
+    await tester.pumpAndSettle();
+    // El texto sale de los rasgos de la dote, no de un literal escrito acá.
+    expect(
+      find.textContaining(featSummary(habilidoso).split('.').first),
+      findsWidgets,
+    );
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+    // Nada se eligió: el cupo de competencias sigue siendo el del Soldado.
+    expect(find.text('0/1'), findsOneWidget);
 
     // --- Habilidoso suma tres competencias a la elección que ya traía el
     // Soldado (su set de juego).

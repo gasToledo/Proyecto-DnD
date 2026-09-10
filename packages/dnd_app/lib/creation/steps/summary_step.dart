@@ -308,6 +308,11 @@ class _DetailPanel extends StatelessWidget {
                 runSpacing: 6,
                 children: [
                   for (final (label, value) in facts)
+                    // Mismo caso que los chips con procedencia: el par vive en
+                    // un `Wrap`, que le da como mucho el ancho de la línea, y
+                    // un valor largo —el nombre de un trasfondo, una especie
+                    // con linaje— pedía más y desbordaba. El rótulo no se
+                    // encoge: son dos palabras en cuerpo 10.
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -319,11 +324,13 @@ class _DetailPanel extends StatelessWidget {
                             color: pal.textMuted,
                           ),
                         ),
-                        Text(
-                          value,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: scheme.onSurface,
+                        Flexible(
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: scheme.onSurface,
+                            ),
                           ),
                         ),
                       ],

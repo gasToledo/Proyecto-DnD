@@ -108,12 +108,9 @@ void main() {
       expect(find.textContaining('Escribí la puntuación base'), findsNothing);
 
       // La ayuda es texto largo arriba de una grilla que ya se apila a una
-      // columna: tiene que entrar en el ancho compacto del asistente, el mismo
-      // que fija `creation_wizard_test`.
-      //
-      // Ojo con bajar este número: el paso ya desbordaba por su cuenta abajo de
-      // ~420 px antes de que existiera esta ayuda, y eso es otro arreglo.
-      tester.view.physicalSize = const Size(480, 900);
+      // columna. El ancho más angosto que cubre el asistente lo fija
+      // `creation_wizard_test`, que recorre los pasos buscando desbordes.
+      tester.view.physicalSize = const Size(360, 900);
       await tester.pumpAndSettle();
       expect(find.text('¿Qué método conviene?'), findsOneWidget);
       expect(tester.takeException(), isNull);

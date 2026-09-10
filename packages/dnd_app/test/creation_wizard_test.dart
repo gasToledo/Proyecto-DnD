@@ -90,6 +90,50 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // Tres desbordes distintos convivían en el asistente en un ancho de teléfono,
+  // los tres por lo mismo: un `Row` sin nada flexible adentro. El peor tapaba el
+  // botón de avanzar, que es el que hace funcionar la pantalla. Se recorre hasta
+  // Puntuaciones porque cada paso los disparaba en un lugar distinto.
+  testWidgets('el asistente no desborda en un teléfono angosto', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: CreationWizard(repo: repo, onCreate: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    Future<void> next() async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
+      await tester.pumpAndSettle();
+    }
+
+    // Raza: los linajes son chips con procedencia, el caso más largo.
+    await tapOption(tester, 'Humano');
+    await pickSize(tester);
+    await next();
+    await tapOption(tester, 'Mago');
+    await next();
+    await tapOption(tester, 'Soldado');
+    await tester.ensureVisible(find.text('+1 / +1 / +1'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('+1 / +1 / +1'));
+    await tester.pumpAndSettle();
+    await next();
+
+    // «Atrás» queda en ícono para que «Siguiente» conserve su rótulo entero.
+    expect(find.widgetWithText(FilledButton, 'Siguiente'), findsOneWidget);
+    expect(find.byTooltip('Atrás'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Atrás'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('la lista de maestrías scrollea sola, no estira el paso', (
     tester,
   ) async {

@@ -27,10 +27,16 @@ class _SingleSelect extends StatelessWidget {
         for (final e in options.entries)
           ChoiceChip(
             label: switch (sources?[e.key]) {
+              // `Flexible` y no `Text` a secas: el chip vive en un `Wrap`, que
+              // le da como mucho el ancho de la línea, y un nombre largo —una
+              // dote con su clase entre paréntesis, un linaje— pedía más que
+              // eso y desbordaba en cuanto la ventana se angostaba. El nombre
+              // se parte en dos renglones; la procedencia no se toca, que es
+              // media docena de píxeles y sin ella el chip miente.
               final source? => Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(e.value),
+                  Flexible(child: Text(e.value)),
                   const SizedBox(width: 8),
                   SourceBadge(source),
                 ],

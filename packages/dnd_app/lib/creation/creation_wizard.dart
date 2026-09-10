@@ -440,31 +440,51 @@ class _CreationWizardState extends State<CreationWizard> {
         border: Border(top: BorderSide(color: pal.hairline)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      child: Row(
-        children: [
-          if (_step != _steps.first)
-            OutlinedButton.icon(
-              onPressed: _back,
-              icon: const Icon(Icons.arrow_back, size: 18),
-              label: const Text('Atrás'),
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              blocked ? 'Falta: ${pending.join('  ·  ')}' : '',
-              textAlign: TextAlign.end,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-          const SizedBox(width: 12),
-          FilledButton.icon(
-            onPressed: blocked ? null : _next,
-            icon: Icon(_isLast ? Icons.check : Icons.arrow_forward, size: 20),
-            label: Text(_isLast ? 'Crear personaje' : 'Siguiente'),
-          ),
-        ],
+      // Los dos botones tienen ancho propio y no se encogen: en un teléfono
+      // angosto sumaban más que la barra y el pie desbordaba —tres píxeles a
+      // 400, cuarenta a 360—, justo donde vive el botón que hace avanzar el
+      // asistente. Abajo del umbral «Atrás» pasa a ser solo su ícono: es el
+      // secundario, el gesto de volver ya está en la barra del sistema, y así
+      // el primario conserva su rótulo entero en vez de recortarse.
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final tight = box.maxWidth < 380;
+          return Row(
+            children: [
+              if (_step != _steps.first)
+                tight
+                    ? IconButton(
+                        onPressed: _back,
+                        icon: const Icon(Icons.arrow_back, size: 18),
+                        tooltip: 'Atrás',
+                      )
+                    : OutlinedButton.icon(
+                        onPressed: _back,
+                        icon: const Icon(Icons.arrow_back, size: 18),
+                        label: const Text('Atrás'),
+                      ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  blocked ? 'Falta: ${pending.join('  ·  ')}' : '',
+                  textAlign: TextAlign.end,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              const SizedBox(width: 12),
+              FilledButton.icon(
+                onPressed: blocked ? null : _next,
+                icon: Icon(
+                  _isLast ? Icons.check : Icons.arrow_forward,
+                  size: 20,
+                ),
+                label: Text(_isLast ? 'Crear personaje' : 'Siguiente'),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

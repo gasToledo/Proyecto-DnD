@@ -86,6 +86,9 @@ void main() {
   ) async {
     await gotoAptitudes(tester);
 
+    // --- El paso reparte competencias de cuatro orígenes sin decir qué es una.
+    expect(find.text('Qué es una competencia'), findsOneWidget);
+
     // --- Los nombres son los del catálogo, no ids en inglés, y lo que ya da el
     // trasfondo aparece bloqueado.
     expect(find.text('Competencias de clase'.toUpperCase()), findsOneWidget);

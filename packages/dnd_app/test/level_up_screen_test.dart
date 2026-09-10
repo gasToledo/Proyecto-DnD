@@ -96,6 +96,12 @@ void main() {
     expect(find.text('Subir a nivel 4'), findsOneWidget);
     expect(find.text('Continuar'), findsOneWidget);
     expect(find.textContaining('Paso 1 de'), findsWidgets);
+    // La ayuda del resumen entra en la ventana chica junto con todo lo demás:
+    // es el renglón más largo del paso y va arriba de las tarjetas.
+    expect(
+      find.textContaining('Nada se guarda en la ficha hasta que confirmes'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

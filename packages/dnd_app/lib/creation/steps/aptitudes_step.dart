@@ -315,6 +315,20 @@ class _AptitudesStep extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // El paso entero reparte competencias de cuatro orígenes distintos sin
+        // decir nunca qué es una. La pericia **no** se explica acá: ya está
+        // dicha en su propia sección, que es donde se elige y donde puede no
+        // aparecer.
+        const AppHelpCallout(
+          title: 'Qué es una competencia',
+          message:
+              'Ser competente en algo te deja sumar tu bonificador por '
+              'competencia cuando tirás con eso: una habilidad, un arma, una '
+              'herramienta o una salvación. Acá elegís las tuyas entre las que '
+              'ofrecen tu clase, tu especie y tu trasfondo; las que ya vienen '
+              'dadas aparecen bloqueadas.',
+        ),
+        const SizedBox(height: 22),
         if (klass != null) ...[
           _SectionHeader(
             title: 'Competencias de clase',

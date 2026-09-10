@@ -418,6 +418,81 @@ class AppEmptyState extends StatelessWidget {
   }
 }
 
+/// Ayuda breve, del ancho de su contenedor, para explicar un concepto justo
+/// donde hay que decidir algo. Informa y nada más: no pide una acción, no es un
+/// error y no se cierra.
+///
+/// Es el `_ManualHint` del paso de puntuaciones, que ya era esto mismo escrito
+/// a mano. A propósito **no** trae botón de «Más información» ni diálogo de
+/// detalle: mientras ninguna pantalla los pida son maquinaria sin uso, y una
+/// ayuda que ocupa cuatro renglones no los necesita.
+///
+/// Va en `surface` con filete y sin sombra, como el resto: es una superficie
+/// más del mismo nivel, no una tarjeta elevada de tutorial.
+class AppHelpCallout extends StatelessWidget {
+  /// Encabeza la ayuda cuando el concepto tiene nombre («Competencias»). Sin
+  /// título el cuerpo arranca solo, que alcanza para una frase sola.
+  final String? title;
+  final String message;
+  final IconData icon;
+  const AppHelpCallout({
+    super.key,
+    required this.message,
+    this.title,
+    this.icon = Icons.info_outline,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border.all(color: pal.hairline),
+        borderRadius: BorderRadius.circular(13),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sin `semanticLabel`: el ícono acompaña al texto, que es el que
+          // dice todo. Nombrarlo solo agrega «información» antes de cada ayuda.
+          Icon(icon, size: 19, color: pal.textMuted),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (title != null) ...[
+                  Text(
+                    title!,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.45,
+                    color: pal.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Cuerpo de página centrado con ancho máximo, para que el contenido no se
 /// estire de borde a borde en ventanas anchas de escritorio.
 class PageBody extends StatelessWidget {

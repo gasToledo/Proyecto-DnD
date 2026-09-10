@@ -13,6 +13,20 @@ class _ScoresStep extends StatelessWidget {
       children: [
         const Eyebrow('Método'),
         const SizedBox(height: 10),
+        // Los cuatro botones no se leen como cuatro formas de hacer lo mismo
+        // si no sabés que las puntuaciones se generan. Va antes de los botones
+        // porque es lo que hace falta para elegir uno.
+        const AppHelpCallout(
+          icon: Icons.casino_outlined,
+          title: '¿Qué método conviene?',
+          message:
+              'Los cuatro generan las seis puntuaciones del personaje, con '
+              'distinto grado de azar. Array estándar reparte valores fijos y '
+              'equilibrados: es el camino corto. Tirar 4d6 los sortea. Compra '
+              'de puntos te deja armarlos con un presupuesto. Escribir a mano '
+              'sirve si ya los tenés decididos.',
+        ),
+        const SizedBox(height: 14),
         Wrap(
           spacing: 10,
           runSpacing: 10,
@@ -56,8 +70,17 @@ class _ScoresStep extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 18),
+        // Reemplaza a `_PoolBar` en modo manual: ahí no hay pool que repartir.
         if (draft.scoreMethod == ScoreMethod.manual)
-          const _ManualHint()
+          const AppHelpCallout(
+            icon: Icons.keyboard,
+            message:
+                'Escribí la puntuación base de cada característica '
+                '($manualScoreMin a $manualScoreMax), sin contar el aumento '
+                'del trasfondo. Si alguna queda fuera del rango habitual de '
+                'generación (3 a 18) la ficha lo va a señalar como aviso, '
+                'pero no te impide seguir.',
+          )
         else if (draft.scoreMethod == ScoreMethod.pointBuy)
           _PointBuyBar(draft: draft, onChanged: onChanged)
         else
@@ -542,41 +565,6 @@ class _ScoreCard extends StatelessWidget {
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: assigned == null ? pal.textMuted : pal.crimson,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Reemplaza a `_PoolBar` en modo manual: ahí no hay pool que repartir.
-class _ManualHint extends StatelessWidget {
-  const _ManualHint();
-
-  @override
-  Widget build(BuildContext context) {
-    final pal = context.palette;
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        border: Border.all(color: pal.hairline),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.keyboard, size: 19, color: pal.textMuted),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Escribí la puntuación base de cada característica '
-              '($manualScoreMin a $manualScoreMax), sin contar el aumento del '
-              'trasfondo. Si alguna queda fuera del rango habitual de '
-              'generación (3 a 18) la ficha lo va a señalar como aviso, pero no '
-              'te impide seguir.',
-              style: TextStyle(fontSize: 12, color: pal.textMuted),
             ),
           ),
         ],

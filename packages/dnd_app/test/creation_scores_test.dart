@@ -86,4 +86,37 @@ void main() {
     expect(find.text('sin asignar'), findsNWidgets(5));
     expect(tester.takeException(), isNull);
   });
+
+  // Los cuatro métodos no se explican solos, y la ayuda del modo manual es la
+  // única que aparece y desaparece: sirve para comprobar que sigue atada al
+  // método después de pasar a `AppHelpCallout`.
+  testWidgets(
+    'la ayuda del método está siempre y la del manual solo en manual',
+    (tester) async {
+      await gotoScores(tester);
+
+      expect(find.text('¿Qué método conviene?'), findsOneWidget);
+      expect(find.textContaining('Escribí la puntuación base'), findsNothing);
+
+      await tester.tap(find.text('Escribir a mano'));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Qué método conviene?'), findsOneWidget);
+      expect(find.textContaining('Escribí la puntuación base'), findsOneWidget);
+
+      await tester.tap(find.text('Array estándar'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Escribí la puntuación base'), findsNothing);
+
+      // La ayuda es texto largo arriba de una grilla que ya se apila a una
+      // columna: tiene que entrar en el ancho compacto del asistente, el mismo
+      // que fija `creation_wizard_test`.
+      //
+      // Ojo con bajar este número: el paso ya desbordaba por su cuenta abajo de
+      // ~420 px antes de que existiera esta ayuda, y eso es otro arreglo.
+      tester.view.physicalSize = const Size(480, 900);
+      await tester.pumpAndSettle();
+      expect(find.text('¿Qué método conviene?'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

@@ -205,6 +205,19 @@ extension _LevelUpSections on _LevelUpScreenState {
             ],
           ),
         ),
+        const SizedBox(height: 22),
+        // Los dos encabezados de abajo ya separan lo automático de lo que se
+        // elige. Lo que no dice ninguna pantalla es por qué la lista de pasos
+        // cambia de personaje a personaje, ni que hasta el final no se tocó
+        // nada: sin eso, salir del wizard da miedo. La única escritura es
+        // `onDone`, y la hace `_confirm`.
+        const AppHelpCallout(
+          message:
+              'Solo aparecen los pasos que le tocan a este personaje en este '
+              'nivel, así que la lista es distinta cada vez. Nada se guarda en '
+              'la ficha hasta que confirmes la subida, así que podés rehacer '
+              'cualquier elección antes de terminar.',
+        ),
         const SizedBox(height: 28),
         const Eyebrow('Cambios automáticos'),
         _responsiveCards(automatic),

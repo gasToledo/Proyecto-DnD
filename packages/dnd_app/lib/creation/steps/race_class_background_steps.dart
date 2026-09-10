@@ -61,7 +61,9 @@ class _RaceStep extends StatelessWidget {
                         Text(race.description),
                         const SizedBox(height: 18),
                       ],
-                      _TraitList(effects: race.effects),
+                      const Eyebrow('Rasgos'),
+                      const SizedBox(height: 8),
+                      _TraitList(_TraitList.ofEffects(race.effects)),
                       if (race.sizeOptions.isNotEmpty) ...[
                         const SizedBox(height: 18),
                         const Eyebrow('Tamaño'),
@@ -110,12 +112,16 @@ class _RaceStep extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(lineage.description),
                           if (lineage.featuresUpTo(1).isNotEmpty) ...[
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 10),
                             Text(
-                              'Nivel 1: '
-                              '${lineage.featuresUpTo(1).map((f) => f.name).join(", ")}',
+                              'Lo que te da a nivel 1',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
+                            const SizedBox(height: 6),
+                            _TraitList([
+                              for (final f in lineage.featuresUpTo(1))
+                                (name: f.name, description: f.description),
+                            ]),
                           ],
                         ],
                         if (draft.lineageUsesSpellcastingAbility) ...[
@@ -326,6 +332,25 @@ class _BackgroundStep extends StatelessWidget {
                           tagline,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
+                        const SizedBox(height: 18),
+                      ],
+                      // El renglón de datos de arriba nombra la dote; acá se
+                      // dice qué hace. Elegir trasfondo es elegirla, y hasta
+                      // ahora el nombre era todo lo que se sabía de ella.
+                      if (repo.feat(bg.originFeatId ?? '')
+                          case final feat?) ...[
+                        const Eyebrow('Qué te da su dote de origen'),
+                        const SizedBox(height: 8),
+                        _TraitList([
+                          for (final t in _TraitList.ofEffects(feat.effects))
+                            // Casi toda dote de origen trae un rasgo único con
+                            // su mismo nombre, y el renglón de datos de arriba
+                            // ya lo dijo. Repetirlo no agrega nada.
+                            (
+                              name: t.name == feat.name ? '' : t.name,
+                              description: t.description,
+                            ),
+                        ]),
                         const SizedBox(height: 18),
                       ],
                       const Eyebrow('Aumento de característica (2024)'),

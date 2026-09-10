@@ -339,5 +339,43 @@ void main() {
       lessThan(tester.getRect(find.text(tagline)).left),
       reason: 'el sabor tiene que quedar en el panel derecho',
     );
+
+    // Elegir el trasfondo es elegir su dote de origen, y de ella solo se sabía
+    // el nombre. El texto sale del rasgo de la dote, no de un literal.
+    final dote = repo.feat(repo.background('soldier')!.originFeatId!)!;
+    final rasgo = dote.effects.whereType<PassiveTraitEffect>().first;
+    expect(
+      find.textContaining(rasgo.description.split('.').first),
+      findsWidgets,
+    );
+    // El rasgo se llama igual que la dote y el renglón de datos ya la nombra:
+    // el nombre tiene que salir una sola vez.
+    expect(rasgo.name, dote.name, reason: 'premisa del caso');
+    expect(find.text(dote.name), findsOneWidget);
+  });
+
+  // Los rasgos de una especie eran una línea de nombres pegados con comas, que
+  // para quien no juega dice tan poco como una lista de conjuros sin
+  // descripción.
+  testWidgets('los rasgos de la especie se leen con su texto', (tester) async {
+    await pumpAt(tester, const Size(1500, 1400));
+
+    final elfo = repo.race('elf')!;
+    final rasgos = elfo.effects.whereType<PassiveTraitEffect>().toList();
+    expect(rasgos, isNotEmpty, reason: 'el catálogo cambió');
+
+    await tapOption(tester, elfo.name);
+    await tester.pumpAndSettle();
+
+    expect(find.text('RASGOS'), findsOneWidget);
+    for (final rasgo in rasgos) {
+      expect(find.text(rasgo.name), findsWidgets, reason: rasgo.name);
+      expect(
+        find.textContaining(rasgo.description.split('.').first),
+        findsWidgets,
+        reason: 'falta el texto de ${rasgo.name}',
+      );
+    }
+    expect(tester.takeException(), isNull);
   });
 }

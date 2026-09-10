@@ -296,19 +296,57 @@ class _WeaponSearchField extends StatelessWidget {
   }
 }
 
+/// Rasgos con su texto, para los paneles de detalle de la creación.
+///
+/// Antes era una sola línea con los nombres pegados con comas —«Rasgos: Visión
+/// en la Oscuridad, Ascendencia Feérica, Trance»—, que para quien no juega hace
+/// tan poco como una lista de conjuros sin descripción: había que buscar afuera
+/// qué significaba cada uno.
+///
+/// Se muestran abiertos y no detrás de un botón: el panel existe justamente
+/// para leer, ya scrollea, y son dos o tres frases por rasgo.
 class _TraitList extends StatelessWidget {
-  final List<Effect> effects;
-  const _TraitList({required this.effects});
+  final List<({String name, String description})> traits;
+  const _TraitList(this.traits);
+
+  /// Los rasgos pasivos de una lista de efectos: es de donde salen los de una
+  /// especie o los de una dote.
+  static List<({String name, String description})> ofEffects(
+    List<Effect> effects,
+  ) => [
+    for (final e in effects.whereType<PassiveTraitEffect>())
+      (name: e.name, description: e.description),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final traits = effects
-        .whereType<PassiveTraitEffect>()
-        .map((e) => e.name)
-        .toList();
-    if (traits.isEmpty) return const SizedBox.shrink();
-    return Text(
-      'Rasgos: ${traits.join(", ")}',
-      style: Theme.of(context).textTheme.bodySmall,
+    // El nombre puede venir vacío a propósito: quien ya lo dijo más arriba lo
+    // manda así para no repetirlo. Vacío queda el rótulo, no el rasgo.
+    final withText = [
+      for (final t in traits)
+        if (t.name.isNotEmpty || t.description.isNotEmpty) t,
+    ];
+    if (withText.isEmpty) return const SizedBox.shrink();
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < withText.length; i++) ...[
+          if (i > 0) const SizedBox(height: 10),
+          if (withText[i].name.isNotEmpty) ...[
+            Text(
+              withText[i].name,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 2),
+          ],
+          if (withText[i].description.isNotEmpty)
+            Text(
+              withText[i].description,
+              style: TextStyle(fontSize: 12.5, height: 1.45, color: muted),
+            ),
+        ],
+      ],
     );
   }
 }

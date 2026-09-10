@@ -840,6 +840,23 @@ void main() {
     List<String> tagsOf(FakeApiServer server) =>
         server.encounters['tumba']!.combatants.single.tags;
 
+    // El rótulo decía «Golpe rápido», pero el mismo número lo usa el botón de
+    // curar: nombraba la mitad de lo que hace. Y que la cifra sea de toda la
+    // mesa —y no de la fila que estás mirando— no lo decía nada.
+    testWidgets('la cifra compartida dice que también cura', (tester) async {
+      await withGoblin(tester);
+      await tirarIniciativa(tester);
+
+      expect(find.text('DAÑO O CURACIÓN'), findsOneWidget);
+      expect(find.text('GOLPE RÁPIDO'), findsNothing);
+      // Los dos botones que la gastan siguen teniendo su nombre.
+      expect(find.byTooltip('Dañar'), findsOneWidget);
+      expect(find.byTooltip('Curar'), findsOneWidget);
+      // Y los atajos dejan de ser tres números sueltos.
+      expect(find.byTooltip('Poner 5'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     // Lo que se olvida en la mesa no siempre es una condición del libro: hay
     // que poder escribir cualquier cosa.
     testWidgets('anotar un efecto a mano lo deja en la fila', (tester) async {

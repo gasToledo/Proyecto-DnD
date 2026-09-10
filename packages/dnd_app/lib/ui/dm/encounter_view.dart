@@ -360,25 +360,43 @@ class _EncounterViewState extends State<EncounterView> {
 
   /// El número con el que pegan los −/+ de todas las filas, escrito una sola
   /// vez. También es un `Wrap`: el rótulo baja solo cuando la barra se angosta.
+  ///
+  /// Se llamaba «Golpe rápido», que decía la mitad: el mismo número lo usa el
+  /// botón de curar. Y un rótulo de dos palabras en cuerpo 10 no alcanza para
+  /// contar que la cifra es de toda la mesa y no de una fila, así que eso lo
+  /// dice la etiqueta accesible del campo, que es donde se pregunta.
   Widget _quickAmount(BuildContext context) {
+    const explicacion =
+        'Es el número que aplican los botones de dañar y curar de cualquier '
+        'fila. Vale para toda la mesa.';
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
       runSpacing: 6,
       children: [
-        _columnLabel(context, 'Golpe rápido'),
+        _columnLabel(context, 'Daño o curación'),
         SizedBox(
           width: 56,
-          child: TextField(
-            controller: _amountController,
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            decoration: const InputDecoration(isDense: true),
+          child: Tooltip(
+            message: explicacion,
+            child: Semantics(
+              label: 'Daño o curación. $explicacion',
+              textField: true,
+              child: TextField(
+                controller: _amountController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(isDense: true),
+              ),
+            ),
           ),
         ),
+        // Un «5» suelto no dice nada dicho en voz alta, y son atajos del campo
+        // de al lado y no una cantidad más.
         for (final n in const [1, 5, 10])
           ActionChip(
             label: Text('$n'),
+            tooltip: 'Poner $n',
             visualDensity: VisualDensity.compact,
             onPressed: () => setState(() {
               _amountController.text = '$n';

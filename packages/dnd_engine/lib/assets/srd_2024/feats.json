@@ -478,6 +478,11 @@
       {
         "type": "armorClassBonus",
         "amount": 1
+      },
+      {
+        "type": "passiveTrait",
+        "name": "Defensa",
+        "description": "Mientras lleves armadura, ganás un +1 a la Clase de Armadura."
       }
     ],
     "prerequisite": {

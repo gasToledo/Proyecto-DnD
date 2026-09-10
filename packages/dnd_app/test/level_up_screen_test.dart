@@ -587,6 +587,32 @@ void main() {
     // Bloquea hasta elegir, y dice por qué.
     expect(find.text('Te falta una elección para continuar.'), findsOneWidget);
 
+    // El chip mostraba solo el nombre: «Defensa» no dice qué hace. Son dotes,
+    // así que las abre el mismo diálogo que el resto de la aplicación, y
+    // leerlas no las elige —el paso sigue bloqueado—.
+    final defensa = repo
+        .featsByCategory('fighting-style')
+        .firstWhere((f) => f.name == 'Defensa');
+    final verDefensa = find.byTooltip('Ver qué hace ${defensa.name}');
+    await tester.ensureVisible(verDefensa);
+    await tester.pumpAndSettle();
+    await tester.tap(verDefensa);
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining(
+        defensa.effects
+            .whereType<PassiveTraitEffect>()
+            .first
+            .description
+            .split('.')
+            .first,
+      ),
+      findsWidgets,
+    );
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Te falta una elección para continuar.'), findsOneWidget);
+
     final chip = find.widgetWithText(InkWell, 'Defensa');
     await tester.ensureVisible(chip);
     await tester.pumpAndSettle();

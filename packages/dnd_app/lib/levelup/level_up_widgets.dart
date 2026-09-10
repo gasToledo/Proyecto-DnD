@@ -781,6 +781,31 @@ class _FeatureChoiceChip extends StatelessWidget {
                     ),
                   ),
                 ],
+                // Estas opciones son dotes —Invocaciones, Metamagia, Estilo de
+                // Combate— y el chip mostraba solo el nombre: «Conjuro Sutil»
+                // no dice qué hace. Mismo diálogo que la ficha y la creación.
+                //
+                // Sigue vivo con el chip deshabilitado, que es cuando más falta
+                // hace: el grupo lleno es justo el momento de comparar contra
+                // lo que no elegiste.
+                if (featSummary(feat).isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: () => showFeatDetailsDialog(context, feat),
+                    borderRadius: BorderRadius.circular(9),
+                    child: Tooltip(
+                      message: 'Ver qué hace ${feat.name}',
+                      child: Padding(
+                        padding: const EdgeInsets.all(2),
+                        child: Icon(
+                          Icons.info_outline,
+                          size: 16,
+                          color: pal.textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
                 if (onRemove case final remove?) ...[
                   const SizedBox(width: 8),
                   InkWell(

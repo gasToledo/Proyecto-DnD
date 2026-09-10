@@ -160,6 +160,31 @@ void main() {
     expect(find.textContaining('un efecto extra cada vez'), findsOneWidget);
     expect(find.textContaining('es competente'), findsOneWidget);
 
+    // El Estilo de Combate se elegía entre cuatro nombres pelados. Son dotes,
+    // así que las explica el mismo diálogo que la dote de origen.
+    final duelo = repo
+        .featsByCategory('fighting-style')
+        .firstWhere((f) => f.name == 'Duelo');
+    final rasgo = duelo.effects.whereType<PassiveTraitEffect>().first;
+    final verDuelo = find.byTooltip('Ver qué hace ${duelo.name}');
+    await tester.ensureVisible(verDuelo);
+    await tester.pumpAndSettle();
+    await tester.tap(verDuelo);
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining(rasgo.description.split('.').first),
+      findsWidgets,
+    );
+    await tester.tap(find.text('Cerrar'));
+    await tester.pumpAndSettle();
+    // Leerlo no lo elige: el estilo sigue sin resolverse.
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Duelo'))
+          .selected,
+      isFalse,
+    );
+
     // (ver también la prueba del modo dividido más abajo)
     // El paso de Clase tiene dos listas con scroll propio: la de clases (panel
     // izquierdo del modo dividido) y el checklist de maestrías. Esta prueba

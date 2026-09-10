@@ -11,44 +11,78 @@ class _SingleSelect extends StatelessWidget {
   /// puede venir de otro libro y eso hay que verlo antes de elegirla.
   final Map<String, ContentSource>? sources;
 
+  /// Abre el detalle de una opción sin elegirla. Lo usa el Estilo de Combate y
+  /// las demás elecciones de rasgo, donde el nombre —«Duelo», «Arquería»— no
+  /// alcanza para decidir. Opcional: un tamaño se explica solo.
+  final ValueChanged<String>? onInfo;
+
   const _SingleSelect({
     required this.options,
     required this.selected,
     required this.onSelect,
     this.sources,
+    this.onInfo,
   });
 
   @override
   Widget build(BuildContext context) {
+    final info = onInfo;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
         for (final e in options.entries)
-          ChoiceChip(
-            label: switch (sources?[e.key]) {
-              // `Flexible` y no `Text` a secas: el chip vive en un `Wrap`, que
-              // le da como mucho el ancho de la línea, y un nombre largo —una
-              // dote con su clase entre paréntesis, un linaje— pedía más que
-              // eso y desbordaba en cuanto la ventana se angostaba. El nombre
-              // se parte en dos renglones; la procedencia no se toca, que es
-              // media docena de píxeles y sin ella el chip miente.
-              final source? => Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(child: Text(e.value)),
-                  const SizedBox(width: 8),
-                  SourceBadge(source),
-                ],
-              ),
-              null => Text(e.value),
-            },
-            selected: selected == e.key,
-            onSelected: (_) => onSelect(e.key),
-          ),
+          if (info != null)
+            // Al lado del chip y no adentro, igual que en `CappedChipSelect`:
+            // el chip se queda con todos los toques de su superficie.
+            //
+            // Y el chip va en `Flexible`: la fila vive en un `Wrap`, que le da
+            // como mucho el ancho de la línea, y un nombre largo la desborda.
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(child: _chip(context, e)),
+                IconButton(
+                  onPressed: () => info(e.key),
+                  icon: const Icon(Icons.info_outline, size: 17),
+                  color: context.palette.textMuted,
+                  tooltip: 'Ver qué hace ${e.value}',
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 34,
+                    minHeight: 34,
+                  ),
+                ),
+              ],
+            )
+          else
+            _chip(context, e),
       ],
     );
   }
+
+  Widget _chip(BuildContext context, MapEntry<String, String> e) => ChoiceChip(
+    label: switch (sources?[e.key]) {
+      // `Flexible` y no `Text` a secas: el chip vive en un `Wrap`, que
+      // le da como mucho el ancho de la línea, y un nombre largo —una
+      // dote con su clase entre paréntesis, un linaje— pedía más que
+      // eso y desbordaba en cuanto la ventana se angostaba. El nombre
+      // se parte en dos renglones; la procedencia no se toca, que es
+      // media docena de píxeles y sin ella el chip miente.
+      final source? => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(child: Text(e.value)),
+          const SizedBox(width: 8),
+          SourceBadge(source),
+        ],
+      ),
+      null => Text(e.value),
+    },
+    selected: selected == e.key,
+    onSelected: (_) => onSelect(e.key),
+  );
 }
 
 /// Etiqueta en español de la categoría de arma.
@@ -400,12 +434,22 @@ class _FeatureChoiceSelect extends StatelessWidget {
       onChanged();
     }
 
+    // «Duelo», «Arquería», «Conjuro Sutil»: el nombre no alcanza para decidir,
+    // y estas opciones son dotes, así que las explica el mismo diálogo que la
+    // dote de origen y la subida de nivel.
+    void verDetalle(String id) {
+      if (options.where((f) => f.id == id).firstOrNull case final feat?) {
+        showFeatDetailsDialog(context, feat);
+      }
+    }
+
     if (slot.count == 1) {
       return _SingleSelect(
         options: {for (final f in options) f.id: f.name},
         selected: chosen.isEmpty ? null : chosen.first,
         sources: {for (final f in options) f.id: f.source},
         onSelect: (id) => setChoices([id]),
+        onInfo: verDetalle,
       );
     }
 
@@ -419,6 +463,7 @@ class _FeatureChoiceSelect extends StatelessWidget {
       selected: selected,
       max: slot.count,
       onChanged: () => setChoices(selected.toList()),
+      onInfo: verDetalle,
     );
   }
 }

@@ -285,12 +285,32 @@ extension _LevelUpSections on _LevelUpScreenState {
                 ),
               ),
             );
+            // La tarjeta mostraba el resultado y escondía los sumandos: decía
+            // «ganancia base +4» de un lado y «40 → 46» del otro, sin nada que
+            // explicara los otros dos. Quien hizo el personaje no podía
+            // reconstruirlo, y quien recién empieza concluye que la cuenta está
+            // mal.
+            //
+            // El resto no se desglosa más ni se nombra el rasgo que lo da: eso
+            // sale de agregar efectos y lo hace el motor, no un widget. Sumado
+            // así, los tres renglones siempre cierran contra la cifra de al
+            // lado, aunque mañana aparezca otra fuente de PG.
+            final conMod = after.abilityModifiers[Ability.constitution] ?? 0;
+            final delta = after.maxHp - before.maxHp;
+            final resto = delta - _hpGain - conMod;
+            final sinTirar = _hpMethod == _HpMethod.roll && _rolledHp == null;
+            String firmado(int n) => n >= 0 ? '+$n' : '$n';
             final preview = _LevelUpCard(
               icon: Icons.favorite,
               title: 'PG máximos',
-              body:
-                  'La revisión final incorporará también cualquier rasgo o '
-                  'mejora de Constitución elegida después.',
+              // El aviso de la revisión final sale solo cuando este nivel trae
+              // mejora de característica: sin un lugar donde subir Constitución
+              // era un renglón que no le hablaba a nadie, y de paso empujaba
+              // los botones de método fuera de una ventana baja.
+              body: sinTirar
+                  ? 'Tirá el dado para ver la cuenta.'
+                  : '${['+$_hpGain del dado', '${firmado(conMod)} de Constitución', if (resto != 0) '${firmado(resto)} de tus rasgos'].join(' · ')} = ${firmado(delta)} PG.'
+                        '${_isAsi ? ' Si subís Constitución más adelante, se recalcula.' : ''}',
               trailing: Text(
                 '${before.maxHp} → ${after.maxHp}',
                 style: TextStyle(

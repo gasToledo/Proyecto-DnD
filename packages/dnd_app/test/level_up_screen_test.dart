@@ -106,6 +106,107 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // La tarjeta mostraba «ganancia base +4» de un lado y «40 → 46» del otro, sin
+  // nada que explicara los otros dos puntos. Quien hizo el personaje no podía
+  // reconstruir la cuenta y concluía que estaba mal.
+  testWidgets('los PG del nivel muestran de dónde sale cada punto', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: fighterL3(), repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    // Los tres números salen del catálogo y del motor, no de literales: el
+    // trasfondo mueve la Constitución y escribirla a mano acá la deja mintiendo
+    // en cuanto alguien toque el contenido.
+    final promedio = repo.characterClass('fighter')!.hitDie ~/ 2 + 1;
+    final conMod = CharacterCompiler(
+      repo,
+    ).compile(fighterL3()).abilityModifiers[Ability.constitution]!;
+
+    expect(find.textContaining('+$promedio del dado'), findsOneWidget);
+    expect(find.textContaining('+$conMod de Constitución'), findsOneWidget);
+    expect(
+      find.textContaining('= +${promedio + conMod} PG'),
+      findsOneWidget,
+      reason: 'los sumandos tienen que cerrar contra la cifra de al lado',
+    );
+    // El Campeón no tiene ningún rasgo que sume PG por nivel.
+    expect(find.textContaining('de tus rasgos'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  /// Hechicero dracónico: su subclase da +1 PG por nivel, que es el sumando que
+  /// no aparecía por ningún lado y hacía que la cuenta pareciera equivocada.
+  ///
+  /// Soldado y no Granjero: el Granjero concede la dote Duro, que suma otros +2
+  /// por nivel y dejaría el caso con dos fuentes mezcladas. Que se sumen bien
+  /// entre ellas es asunto del motor; acá se mira que la tarjeta las muestre.
+  Character sorcererL3() => Character(
+    id: 't-sorcerer',
+    name: 'Prueba',
+    raceId: 'human',
+    classId: 'sorcerer',
+    backgroundId: 'soldier',
+    subclassId: 'draconic-sorcery',
+    level: 3,
+    assignedScores: {
+      Ability.strength: 8,
+      Ability.dexterity: 14,
+      Ability.constitution: 14,
+      Ability.intelligence: 10,
+      Ability.wisdom: 10,
+      Ability.charisma: 16,
+    },
+    hpPerLevel: const [6, 4, 4],
+  );
+
+  testWidgets('un rasgo que suma PG por nivel se cuenta aparte', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(
+          character: sorcererL3(),
+          repo: repo,
+          onDone: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+
+    final promedio = repo.characterClass('sorcerer')!.hitDie ~/ 2 + 1;
+    final conMod = CharacterCompiler(
+      repo,
+    ).compile(sorcererL3()).abilityModifiers[Ability.constitution]!;
+    // El +1 lo declara la subclase, no este test.
+    final porNivel = repo
+        .subclass('draconic-sorcery')!
+        .features
+        .expand((f) => f.effects)
+        .whereType<BonusMaxHpPerLevelEffect>()
+        .single
+        .perLevel;
+
+    expect(find.textContaining('+$promedio del dado'), findsOneWidget);
+    expect(find.textContaining('+$conMod de Constitución'), findsOneWidget);
+    expect(find.textContaining('+$porNivel de tus rasgos'), findsOneWidget);
+    expect(
+      find.textContaining('= +${promedio + conMod + porNivel} PG'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('tirar PG bloquea el avance hasta obtener un resultado', (
     tester,
   ) async {

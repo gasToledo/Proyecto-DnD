@@ -88,6 +88,12 @@ class _PortraitScreenState extends State<PortraitScreen> {
   /// haberlo visto en serio.
   int? _preview;
 
+  /// Cuál de los retratos ya guardados se está viendo grande. Va aparte de
+  /// [_preview] porque ese indexa bytes recién generados y esto es una clave
+  /// que ya vive en el servidor: se dibuja con `PortraitImage` y volver a él no
+  /// sube nada.
+  String? _previewKey;
+
   static const _importExtensions = ['png', 'jpg', 'jpeg', 'webp'];
 
   PortraitProviderInfo? get _provider =>
@@ -191,6 +197,9 @@ class _PortraitScreenState extends State<PortraitScreen> {
       _error = null;
       _results = [];
       _preview = null;
+      // Lo que llegue va a quedar en vista previa; un retrato anterior mirado
+      // de antes dejaría dos cosas compitiendo por el mismo lienzo.
+      _previewKey = null;
     });
     try {
       final images = await widget.api.generatePortraits(
@@ -289,6 +298,108 @@ class _PortraitScreenState extends State<PortraitScreen> {
     Navigator.of(context).pop();
   }
 
+  /// Vuelve a un retrato ya guardado. No sube nada: la imagen sigue en el
+  /// almacén —que no tiene `delete`— y la clave sigue en `portraitPaths`. Solo
+  /// pasa adelante, que es lo único que leen las demás pantallas (`.first`).
+  ///
+  /// Se mueve y no se antepone una copia: la lista es el historial, y repetir
+  /// una clave haría que el mismo retrato apareciera dos veces en la tira.
+  void _restore(String key) {
+    final paths = widget.character.portraitPaths;
+    widget.onUpdated(
+      widget.character.copyWith(
+        portraitPaths: [key, ...paths.where((p) => p != key)],
+      ),
+    );
+    showAppMessage(
+      context,
+      'Retrato restaurado.',
+      tone: AppMessageTone.success,
+    );
+    Navigator.of(context).pop();
+  }
+
+  /// Los retratos que ya tuvo el personaje, el actual primero. Mismo molde que
+  /// [_resultsStrip]: tocar muestra en grande y un botón aparte confirma, para
+  /// que un toque de más no cambie el retrato ni cierre la pantalla.
+  Widget _historyStrip() {
+    final pal = context.palette;
+    final paths = widget.character.portraitPaths;
+    // Miniatura del servidor y no el original: la celda mide 57 px, y bajar un
+    // retrato de 1024 para eso es justo lo que `PortraitImage.provider` evita.
+    final width = PortraitImage.thumbnailWidthFor(
+      57,
+      MediaQuery.devicePixelRatioOf(context),
+    );
+    return SizedBox(
+      height: 76,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: paths.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          final key = paths[i];
+          final actual = i == 0;
+          // El actual se marca cuando el lienzo lo está mostrando, que es
+          // cuando no hay nada más en vista previa.
+          final on = actual
+              ? _previewKey == null && _preview == null
+              : _previewKey == key;
+          return Semantics(
+            button: true,
+            selected: on,
+            label: actual ? 'Retrato actual' : 'Retrato anterior $i',
+            child: InkWell(
+              key: ValueKey('portrait-history-$key'),
+              onTap: _busy
+                  ? null
+                  : () => setState(() {
+                      _preview = null;
+                      // Volver al actual no es volver a nada: se limpia la
+                      // vista previa en vez de ofrecer confirmarlo.
+                      _previewKey = actual ? null : key;
+                    }),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                width: 57,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: on ? pal.gold : pal.hairline,
+                    width: on ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image(
+                      image: PortraitImage.provider(key, width: width),
+                      fit: BoxFit.cover,
+                      // Una clave que ya no resuelve deja la celda vacía en
+                      // vez de tirar un error, igual que `PortraitImage`.
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
+                    if (actual)
+                      Positioned(
+                        top: 3,
+                        right: 3,
+                        child: Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: pal.gold,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   // ------------------------------------------------------------------ build
 
   @override
@@ -380,6 +491,21 @@ class _PortraitScreenState extends State<PortraitScreen> {
               label: Text(_saving ? 'Guardando…' : 'Usar este retrato'),
             ),
           ],
+          // Con un solo retrato no hay adónde volver.
+          if (widget.character.portraitPaths.length > 1) ...[
+            const SizedBox(height: 16),
+            const Eyebrow('Retratos anteriores'),
+            const SizedBox(height: 8),
+            _historyStrip(),
+          ],
+          if (_previewKey case final key?) ...[
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: _busy ? null : () => _restore(key),
+              icon: const Icon(Icons.history),
+              label: const Text('Volver a este retrato'),
+            ),
+          ],
           if (_mode == _PortraitMode.ia) ...[
             const SizedBox(height: 14),
             _promptPanel(),
@@ -405,6 +531,8 @@ class _PortraitScreenState extends State<PortraitScreen> {
     final Widget layer;
     if (previewed != null && previewed < _results.length) {
       layer = Image.memory(_results[previewed], fit: BoxFit.cover);
+    } else if (_previewKey case final key?) {
+      layer = PortraitImage(portraitKey: key);
     } else if (existing != null) {
       layer = PortraitImage(portraitKey: existing);
     } else {
@@ -582,7 +710,10 @@ class _PortraitScreenState extends State<PortraitScreen> {
         itemBuilder: (_, i) {
           final on = _preview == i;
           return InkWell(
-            onTap: () => setState(() => _preview = i),
+            onTap: () => setState(() {
+              _preview = i;
+              _previewKey = null;
+            }),
             borderRadius: BorderRadius.circular(8),
             child: Container(
               width: 57,

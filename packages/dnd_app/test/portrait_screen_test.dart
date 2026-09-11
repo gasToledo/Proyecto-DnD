@@ -110,4 +110,116 @@ void main() {
     expect(find.text('Elegir imagen…'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // Guardar un retrato nuevo nunca borró los anteriores: `_use` los antepone en
+  // `portraitPaths` y el almacén no tiene `delete`. Lo que faltaba era poder
+  // verlos, así que quien probaba otro aspecto creía perder el de antes.
+  group('retratos anteriores', () {
+    /// Abre la pantalla desde otra ruta —igual que la ficha— para que el `pop`
+    /// de confirmar tenga adónde volver.
+    Future<void> abrir(
+      WidgetTester tester,
+      Character personaje,
+      ValueChanged<Character> onUpdated,
+    ) async {
+      tester.view.physicalSize = const Size(1000, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final server = FakeApiServer()..providers = const [];
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: FilledButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PortraitScreen(
+                      character: personaje,
+                      repo: repo,
+                      api: ApiClient(client: server.client),
+                      onUpdated: onUpdated,
+                    ),
+                  ),
+                ),
+                child: const Text('Abrir'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Abrir'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('se puede volver a uno anterior sin subir nada', (
+      tester,
+    ) async {
+      // El primero es el que se muestra; los otros dos son los que antes no
+      // se veían en ningún lado.
+      const actual = 'sagan/2.png';
+      const anterior = 'sagan/1.png';
+      const primero = 'sagan/0.png';
+      Character? guardado;
+      await abrir(
+        tester,
+        demoSagan().copyWith(portraitPaths: [actual, anterior, primero]),
+        (c) => guardado = c,
+      );
+
+      expect(find.text('RETRATOS ANTERIORES'), findsOneWidget);
+      for (final clave in [actual, anterior, primero]) {
+        expect(find.byKey(ValueKey('portrait-history-$clave')), findsOneWidget);
+      }
+      // Mirar no compromete nada: no hay botón hasta elegir uno distinto.
+      expect(find.text('Volver a este retrato'), findsNothing);
+
+      await tester.tap(
+        find.byKey(const ValueKey('portrait-history-$anterior')),
+      );
+      await tester.pumpAndSettle();
+      expect(guardado, isNull, reason: 'tocar la miniatura solo lo muestra');
+
+      await tester.tap(find.text('Volver a este retrato'));
+      await tester.pumpAndSettle();
+
+      // Pasa adelante sin duplicarse ni perder a nadie: sigue siendo historial.
+      expect(guardado?.portraitPaths, [anterior, actual, primero]);
+      expect(
+        find.text('Abrir'),
+        findsOneWidget,
+        reason: 'la pantalla se cerró',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('tocar el retrato actual no ofrece volver a él', (
+      tester,
+    ) async {
+      const actual = 'sagan/1.png';
+      await abrir(
+        tester,
+        demoSagan().copyWith(portraitPaths: [actual, 'sagan/0.png']),
+        (_) {},
+      );
+
+      await tester.tap(find.byKey(const ValueKey('portrait-history-$actual')));
+      await tester.pumpAndSettle();
+      expect(find.text('Volver a este retrato'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('con un solo retrato no hay historial que mostrar', (
+      tester,
+    ) async {
+      await abrir(
+        tester,
+        demoSagan().copyWith(portraitPaths: const ['sagan/0.png']),
+        (_) {},
+      );
+
+      expect(find.text('RETRATOS ANTERIORES'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  });
 }

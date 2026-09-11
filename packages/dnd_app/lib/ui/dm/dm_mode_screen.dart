@@ -17,6 +17,7 @@ import 'campaign_editor_dialog.dart';
 import 'chapter_editor_dialog.dart';
 import 'chapters_view.dart';
 import 'encounter_view.dart';
+import 'member_sheet_screen.dart';
 import 'note_editor_dialog.dart';
 import 'notebook_view.dart';
 import 'roll_initiative_dialog.dart';
@@ -1410,6 +1411,17 @@ class _CampaignDetailState extends State<_CampaignDetail> {
             repo: widget.repo,
             onRemove: () => _removeMember(members[i]),
             onGrantInspiration: () => _grantInspiration(members[i]),
+            onOpenSheet: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MemberSheetScreen(
+                  campaignId: widget.campaign.id,
+                  memberId: members[i].memberId,
+                  characterName: members[i].character.name,
+                  repo: widget.repo,
+                  api: widget.api,
+                ),
+              ),
+            ),
           ),
         );
       },
@@ -1468,12 +1480,18 @@ class _MemberCard extends StatelessWidget {
   final VoidCallback onRemove;
   final VoidCallback onGrantInspiration;
 
+  /// Abre la ficha completa de solo lectura ([MemberSheetScreen]). Esta
+  /// tarjeta sigue siendo el vistazo — CA, PG, nivel — y no repite nada de lo
+  /// que la ficha ya muestra ampliado.
+  final VoidCallback onOpenSheet;
+
   const _MemberCard({
     required this.campaignId,
     required this.member,
     required this.repo,
     required this.onRemove,
     required this.onGrantInspiration,
+    required this.onOpenSheet,
   });
 
   @override
@@ -1488,146 +1506,175 @@ class _MemberCard extends StatelessWidget {
     final portraitKey = character.portraitPaths.firstOrNull;
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
         border: Border.all(color: pal.hairline),
         borderRadius: BorderRadius.circular(12),
       ),
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClassMedallion(
-            klass: klass,
-            portraitKey: portraitKey,
-            portraitUrlBase: portraitKey == null
-                ? null
-                : PortraitImage.urlForMember(
-                    campaignId,
-                    member.memberId,
-                    portraitKey,
-                  ),
-            fallback: character.name.characters.firstOrNull ?? '?',
-            size: 48,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        character.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 19,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GoldPill('Nivel ${character.level}', highlighted: false),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  [
-                    if (race != null) race.name,
-                    if (klass != null) klass.name,
-                  ].join(' · '),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: pal.textMuted),
-                ),
-                const SizedBox(height: 11),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Semantics(
-                        label: 'Puntos de golpe: $currentHp de $maxHp',
-                        excludeSemantics: true,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.favorite_outline,
-                                  size: 14,
-                                  color: pal.crimson,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'PG $currentHp/$maxHp',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            ThinBar(
-                              ratio: maxHp == 0 ? 0 : currentHp / maxHp,
-                              color: pal.crimson,
-                              track: pal.plaque,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    ShieldBadge('${sheet.armorClass}', height: 40),
-                  ],
-                ),
-              ],
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        child: InkWell(
+          onTap: onOpenSheet,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: _memberCardBody(
+              context,
+              character,
+              sheet,
+              race,
+              klass,
+              currentHp,
+              maxHp,
+              portraitKey,
+              pal,
             ),
           ),
-          PopupMenuButton<_MemberMenuAction>(
-            tooltip: 'Acciones de ${character.name}',
-            // `switch` sobre el valor y no `(_) => onRemove()`: con un solo
-            // ítem daba igual, pero con dos, elegir "conceder" echaría al
-            // jugador de la mesa.
-            onSelected: (action) {
-              switch (action) {
-                case _MemberMenuAction.grantHeroicInspiration:
-                  onGrantInspiration();
-                case _MemberMenuAction.remove:
-                  onRemove();
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: _MemberMenuAction.grantHeroicInspiration,
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(Icons.auto_awesome, color: pal.gold),
-                  title: const Text('Conceder Inspiración Heroica'),
+        ),
+      ),
+    );
+  }
+
+  Widget _memberCardBody(
+    BuildContext context,
+    Character character,
+    ComputedSheet sheet,
+    Race? race,
+    CharacterClass? klass,
+    int currentHp,
+    int maxHp,
+    String? portraitKey,
+    AppPalette pal,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClassMedallion(
+          klass: klass,
+          portraitKey: portraitKey,
+          portraitUrlBase: portraitKey == null
+              ? null
+              : PortraitImage.urlForMember(
+                  campaignId,
+                  member.memberId,
+                  portraitKey,
                 ),
+          fallback: character.name.characters.firstOrNull ?? '?',
+          size: 48,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      character.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 19,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GoldPill('Nivel ${character.level}', highlighted: false),
+                ],
               ),
-              PopupMenuItem(
-                value: _MemberMenuAction.remove,
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    Icons.person_remove_outlined,
-                    color: pal.crimson,
+              const SizedBox(height: 2),
+              Text(
+                [
+                  if (race != null) race.name,
+                  if (klass != null) klass.name,
+                ].join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: pal.textMuted),
+              ),
+              const SizedBox(height: 11),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      label: 'Puntos de golpe: $currentHp de $maxHp',
+                      excludeSemantics: true,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.favorite_outline,
+                                size: 14,
+                                color: pal.crimson,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                'PG $currentHp/$maxHp',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          ThinBar(
+                            ratio: maxHp == 0 ? 0 : currentHp / maxHp,
+                            color: pal.crimson,
+                            track: pal.plaque,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  title: Text(
-                    'Echar de la mesa',
-                    style: TextStyle(color: pal.crimson),
-                  ),
-                ),
+                  const SizedBox(width: 14),
+                  ShieldBadge('${sheet.armorClass}', height: 40),
+                ],
               ),
             ],
-            icon: const Icon(Icons.more_vert),
           ),
-        ],
-      ),
+        ),
+        PopupMenuButton<_MemberMenuAction>(
+          tooltip: 'Acciones de ${character.name}',
+          // `switch` sobre el valor y no `(_) => onRemove()`: con un solo
+          // ítem daba igual, pero con dos, elegir "conceder" echaría al
+          // jugador de la mesa.
+          onSelected: (action) {
+            switch (action) {
+              case _MemberMenuAction.grantHeroicInspiration:
+                onGrantInspiration();
+              case _MemberMenuAction.remove:
+                onRemove();
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: _MemberMenuAction.grantHeroicInspiration,
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.auto_awesome, color: pal.gold),
+                title: const Text('Conceder Inspiración Heroica'),
+              ),
+            ),
+            PopupMenuItem(
+              value: _MemberMenuAction.remove,
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.person_remove_outlined, color: pal.crimson),
+                title: Text(
+                  'Echar de la mesa',
+                  style: TextStyle(color: pal.crimson),
+                ),
+              ),
+            ),
+          ],
+          icon: const Icon(Icons.more_vert),
+        ),
+      ],
     );
   }
 }

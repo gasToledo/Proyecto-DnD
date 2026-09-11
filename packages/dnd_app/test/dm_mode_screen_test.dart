@@ -1772,6 +1772,23 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // Que el bestiario es de consulta y se suma desde Combate lo decía solo un
+    // comentario del código.
+    testWidgets('el perfil dice dónde se suma la criatura al combate', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      final diablo = repo.creature('bone-devil')!;
+      await buscar(tester, diablo.name);
+      await tester.tap(find.byKey(const ValueKey('bestiary-bone-devil')));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Sumar monstruo'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('sin coincidencias lo dice y deja limpiar', (tester) async {
       await pumpDmMode(tester, seed: seedTable);
       await openBestiario(tester);

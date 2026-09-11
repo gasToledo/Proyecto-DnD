@@ -1054,7 +1054,11 @@ class _PortraitScreenState extends State<PortraitScreen> {
         minLines: 3,
         maxLines: 6,
         decoration: InputDecoration(
-          hintText: 'Sumá detalles: color de pelo, cicatrices, actitud…',
+          // Rótulo además del ejemplo: el placeholder se borra con la primera
+          // letra, y a mitad de escribir el campo quedaba sin decir para qué
+          // era, a la vista y para un lector de pantalla.
+          labelText: 'Detalles adicionales',
+          hintText: 'Color de pelo, cicatrices, actitud…',
           filled: true,
           fillColor: context.palette.plaque,
           border: OutlineInputBorder(

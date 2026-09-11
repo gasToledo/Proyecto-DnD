@@ -812,7 +812,15 @@ extension _SheetCombatSection on _SheetScreenState {
   }
 
   /// Diálogo de sí o no. Devuelve false si se cancela o se cierra.
-  Future<bool> _confirmDialog(String title, String message) async {
+  ///
+  /// [confirmLabel] nombra lo que se hace igual. Arrancó siendo solo de la
+  /// invocación y el texto estaba fijo; concentrarse en otro conjuro pide la
+  /// misma pregunta con otro verbo.
+  Future<bool> _confirmDialog(
+    String title,
+    String message, {
+    String confirmLabel = 'Invocar igual',
+  }) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AppDialog(
@@ -825,7 +833,7 @@ extension _SheetCombatSection on _SheetScreenState {
             onPressed: () => Navigator.of(dialogContext).pop(false),
           ),
           DialogAction(
-            'Invocar igual',
+            confirmLabel,
             primary: true,
             onPressed: () => Navigator.of(dialogContext).pop(true),
           ),

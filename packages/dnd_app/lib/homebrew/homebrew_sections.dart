@@ -363,11 +363,17 @@ extension _HomebrewSections on _HomebrewScreenState {
                   ),
                 ),
                 const SizedBox(height: 12),
+                // Decía que todo aparecía en la creación y en las fichas, con
+                // una criatura de ejemplo, y las criaturas no llegan ahí: viven
+                // en el Modo DM. La excepción —una bestia marcada disponible
+                // entra en Forma Salvaje— se explica en el formulario, donde se
+                // activa, y no hace falta cargarla acá.
                 const Text(
                   'Homebrew es contenido tuyo: un arma, un conjuro, una '
-                  'criatura. Se guarda en tu cuenta y se suma al catálogo, '
-                  'así que desde que lo guardes aparece en la creación de '
-                  'personajes y en las fichas, al lado del oficial.',
+                  'criatura. Se guarda en tu cuenta y se suma al catálogo, al '
+                  'lado del oficial. Armas, armaduras, objetos, conjuros, dotes, '
+                  'especies y trasfondos aparecen en la creación de personajes '
+                  'y en las fichas; las criaturas, en el Bestiario y en Combate.',
                   style: TextStyle(height: 1.5),
                 ),
                 const SizedBox(height: 22),

@@ -97,6 +97,26 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // El rótulo vivía solo en el placeholder, que se borra con la primera letra:
+  // a mitad de escribir, el campo quedaba sin decir para qué era.
+  testWidgets('el campo de detalles conserva su rótulo al escribir', (
+    tester,
+  ) async {
+    await pumpScreen(tester, providers: [pollinations]);
+
+    final campo = find.widgetWithText(TextField, 'Detalles adicionales');
+    expect(campo, findsOneWidget);
+
+    await tester.enterText(campo, 'una cicatriz en la ceja');
+    await tester.pumpAndSettle();
+
+    expect(
+      find.widgetWithText(TextField, 'Detalles adicionales'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('la referencia solo se ofrece si el proveedor la admite', (
     tester,
   ) async {

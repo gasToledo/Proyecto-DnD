@@ -139,6 +139,12 @@ void main() {
 
     expect(find.text('Tu taller está vacío'), findsOneWidget);
     expect(find.text('Importar un pack'), findsOneWidget);
+    // Prometía que todo aparecía en la creación y en las fichas, con una
+    // criatura de ejemplo; las criaturas van al Modo DM.
+    expect(
+      find.textContaining('las criaturas, en el Bestiario y en Combate'),
+      findsOneWidget,
+    );
     expect(find.text('Tu taller'), findsNothing);
 
     await tester.tap(find.text('Empezar por un arma'));

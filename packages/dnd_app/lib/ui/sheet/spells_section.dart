@@ -296,14 +296,57 @@ extension _SheetSpellsSection on _SheetScreenState {
             ),
           if (spell?.concentration == true)
             TextButton(
-              onPressed: () => _mutateCombat(
-                () => CombatOps.startConcentration(_c.combat, innate.name),
-              ),
+              key: ValueKey('concentrate-innate-${innate.spellId}'),
+              onPressed: () => _concentrate(innate.name),
               child: const Text('Concentrar'),
             ),
         ],
       ),
     );
+  }
+
+  /// Empieza a concentrarse en [spell].
+  ///
+  /// Concentrarse en otro conjuro corta el anterior, y
+  /// `CombatOps.startConcentration` se lleva a los compañeros que lo sostenían.
+  /// El botón lo hacía en silencio: un espíritu invocado desaparecía de la
+  /// ficha sin que nada lo dijera. La invocación ya avisaba lo mismo; este
+  /// camino no podía ser el que no.
+  Future<void> _concentrate(String spell) async {
+    final previous = _c.combat.concentratingOn;
+    // Volver a tocar el conjuro en que ya te concentrás no cambia nada en la
+    // mesa, pero para el motor sí: despediría a lo que ese mismo conjuro
+    // sostiene.
+    if (previous == spell) return;
+
+    final dependents = [
+      for (final i in _c.combat.companions)
+        if (i.concentration) repo.creature(i.creatureId)?.name ?? i.creatureId,
+    ];
+    final leaving = dependents.join(', ');
+    final goes = dependents.length == 1 ? 'se va' : 'se van';
+
+    // Perder un compañero se pregunta antes; cambiar de conjuro sin nada que
+    // dependa de él solo se avisa después, igual que en la invocación.
+    if (dependents.isNotEmpty) {
+      final ok = await _confirmDialog(
+        'Cortar la concentración',
+        'Concentrarte en $spell termina '
+            '${previous ?? 'tu concentración actual'}, y con ella $goes '
+            '$leaving.',
+        confirmLabel: 'Concentrar igual',
+      );
+      if (!ok || !mounted) return;
+    }
+
+    _mutateCombat(() => CombatOps.startConcentration(_c.combat, spell));
+    if (previous != null) {
+      _snack(
+        dependents.isEmpty
+            ? 'Te concentrás en $spell: dejaste $previous.'
+            : 'Te concentrás en $spell: dejaste $previous y $goes $leaving.',
+      );
+    }
   }
 
   /// Cambia un truco innato que el rasgo declara reemplazable (Alto Elfo, Don
@@ -527,9 +570,8 @@ extension _SheetSpellsSection on _SheetScreenState {
           ),
           if (s.concentration)
             TextButton(
-              onPressed: () => _mutateCombat(
-                () => CombatOps.startConcentration(_c.combat, s.name),
-              ),
+              key: ValueKey('concentrate-${s.id}'),
+              onPressed: () => _concentrate(s.name),
               child: const Text('Concentrar'),
             ),
         ],

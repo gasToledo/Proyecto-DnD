@@ -1472,6 +1472,74 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
     });
 
+    // «Concentrar» cortaba la concentración anterior en silencio, y con ella se
+    // iba el espíritu que la sostenía: desaparecía de la ficha sin aviso. La
+    // invocación ya lo avisaba; el botón tenía que preguntar lo mismo.
+    testWidgets(
+      'concentrarse en otro conjuro pregunta si se lleva al espíritu',
+      (tester) async {
+        final wizard = Character(
+          id: 'maga-volar',
+          name: 'Ilyra',
+          raceId: 'human',
+          classId: 'wizard',
+          backgroundId: 'scribe',
+          level: 9,
+          assignedScores: {for (final a in Ability.values) a: 14},
+          spellIds: const ['summon-dragon', 'fly'],
+          hpPerLevel: List.filled(9, 4),
+          combat: CombatState(currentHp: 40),
+        );
+        final dragon = repo.spell('summon-dragon')!;
+        final volar = repo.spell('fly')!;
+        expect(volar.concentration, isTrue, reason: 'premisa del caso');
+
+        // Mismo alto que el test de invocación: el bloque del dragón es largo.
+        await pumpSheet(tester, wizard, size: const Size(900, 6000));
+        await tester.tap(find.text('Combate'));
+        await tester.pumpAndSettle();
+
+        Finder inDialog(String text) => find.descendant(
+          of: find.byType(AppDialog),
+          matching: find.text(text),
+        );
+        await tapVisible(tester, find.text('Invocar'));
+        await tester.tap(inDialog('Nivel 5'));
+        await tester.pumpAndSettle();
+        expect(wizard.combat.concentratingOn, dragon.name);
+        expect(wizard.combat.companions, hasLength(1));
+
+        // Tocar el conjuro en que ya te concentrás no es un cambio, aunque para
+        // el motor lo sería: el espíritu se queda y no se pregunta nada.
+        await tapVisible(
+          tester,
+          find.byKey(const ValueKey('concentrate-summon-dragon')),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(AppDialog), findsNothing);
+        expect(wizard.combat.companions, hasLength(1));
+
+        // Otro conjuro sí: pregunta antes, y cancelar no toca nada.
+        await tapVisible(tester, find.byKey(const ValueKey('concentrate-fly')));
+        await tester.pumpAndSettle();
+        expect(inDialog('Cortar la concentración'), findsOneWidget);
+        await tester.tap(inDialog('Cancelar'));
+        await tester.pumpAndSettle();
+        expect(wizard.combat.concentratingOn, dragon.name);
+        expect(wizard.combat.companions, hasLength(1));
+
+        await tapVisible(tester, find.byKey(const ValueKey('concentrate-fly')));
+        await tester.pumpAndSettle();
+        await tester.tap(inDialog('Concentrar igual'));
+        await tester.pumpAndSettle();
+        expect(wizard.combat.concentratingOn, volar.name);
+        expect(wizard.combat.companions, isEmpty);
+
+        // Invocar y concentrarse dejan SnackBar con temporizador.
+        await tester.pump(const Duration(seconds: 5));
+      },
+    );
+
     testWidgets('el Paladín puede invocar el corcel sin gastar espacio', (
       tester,
     ) async {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:flutter/material.dart';
@@ -155,6 +157,22 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  // Los diálogos pasaron al molde propio en un solo commit y tres se escaparon,
+  // porque nada lo verificaba: siguieron con la placa de Material hasta que
+  // alguien los vio. Recorre el código y no la pantalla a propósito: un diálogo
+  // que ningún test abre es justo el que se escapa.
+  test('ningún diálogo de la aplicación usa el molde de Material', () {
+    final crudo = RegExp(r'\b(SimpleDialog|AlertDialog)\(');
+    final encontrados = [
+      for (final file in Directory('lib').listSync(recursive: true))
+        if (file is File && file.path.endsWith('.dart'))
+          for (final (i, line) in file.readAsLinesSync().indexed)
+            if (crudo.hasMatch(line)) '${file.path}:${i + 1}',
+    ];
+
+    expect(encontrados, isEmpty, reason: 'usá AppDialog');
+  });
 
   testWidgets('el molde es plano: sin elevación ni sombra', (tester) async {
     await _abrir(tester, actions: _tresAcciones);

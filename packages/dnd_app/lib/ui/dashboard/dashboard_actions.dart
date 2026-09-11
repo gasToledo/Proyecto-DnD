@@ -72,16 +72,31 @@ extension _DashboardActions on _DashboardScreenState {
   Future<void> _transferDialog() async {
     final action = await showDialog<String>(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: const Text('Importar / Exportar'),
-        children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, 'import'),
-            child: const Text('Importar…'),
-          ),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(ctx, 'backup'),
-            child: const Text('Exportar respaldo completo'),
+      // `AppDialog` y no `SimpleDialog`: era uno de los tres que quedaron con el
+      // molde de Material cuando la aplicación pasó al suyo. Las opciones van en
+      // el cuerpo y el pie queda para salir, como en los selectores de la ficha.
+      builder: (ctx) => AppDialog(
+        title: 'Importar / Exportar',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.download),
+              title: const Text('Importar…'),
+              onTap: () => Navigator.pop(ctx, 'import'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.upload_file),
+              title: const Text('Exportar respaldo completo'),
+              onTap: () => Navigator.pop(ctx, 'backup'),
+            ),
+          ],
+        ),
+        actions: [
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
+            onPressed: () => Navigator.pop(ctx),
           ),
         ],
       ),

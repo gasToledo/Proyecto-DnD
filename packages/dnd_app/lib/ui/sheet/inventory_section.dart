@@ -1091,19 +1091,16 @@ extension _SheetInventorySection on _SheetScreenState {
   }
 
   Future<void> _transmuteReplica(InventoryEntry entry) async {
-    final itemId = await showDialog<String>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('Transmutar en'),
-        children: [
-          for (final id in _c.magicItemChoices)
-            if (id != entry.itemId)
-              SimpleDialogOption(
-                onPressed: () => Navigator.pop(context, id),
-                child: Text(repo.item(id)?.name ?? id),
-              ),
-        ],
-      ),
+    // El mismo selector que el resto de la ficha y no un `SimpleDialog`: era de
+    // los tres diálogos que quedaron con el molde de Material cuando la
+    // aplicación pasó al suyo.
+    final itemId = await _pickFromList<String>(
+      title: 'Transmutar en',
+      options: [
+        for (final id in _c.magicItemChoices)
+          if (id != entry.itemId) id,
+      ],
+      label: (id) => repo.item(id)?.name ?? id,
     );
     if (itemId == null) return;
     final item = repo.item(itemId);
@@ -1491,37 +1488,32 @@ extension _SheetInventorySection on _SheetScreenState {
     );
   }
 
-  Future<String?> _chooseMagicBase(Item item) => showDialog<String>(
-    context: context,
-    builder: (context) {
-      final ids = item.eligibleBaseItemIds.isNotEmpty
-          ? item.eligibleBaseItemIds
-          : switch (item.baseItemKind) {
-              'weapon' => repo.weaponsSorted.map((e) => e.id).toList(),
-              'armor' =>
-                repo.armorSorted
-                    .where((e) => !e.isShield)
-                    .map((e) => e.id)
-                    .toList(),
-              'shield' =>
-                repo.armorSorted
-                    .where((e) => e.isShield)
-                    .map((e) => e.id)
-                    .toList(),
-              _ => <String>[],
-            };
-      return SimpleDialog(
-        title: const Text('Elegí el objeto base'),
-        children: [
-          for (final id in ids)
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, id),
-              child: Text(repo.catalogEntry(id)?.name ?? id),
-            ),
-        ],
-      );
-    },
-  );
+  Future<String?> _chooseMagicBase(Item item) {
+    final ids = item.eligibleBaseItemIds.isNotEmpty
+        ? item.eligibleBaseItemIds
+        : switch (item.baseItemKind) {
+            'weapon' => repo.weaponsSorted.map((e) => e.id).toList(),
+            'armor' =>
+              repo.armorSorted
+                  .where((e) => !e.isShield)
+                  .map((e) => e.id)
+                  .toList(),
+            'shield' =>
+              repo.armorSorted
+                  .where((e) => e.isShield)
+                  .map((e) => e.id)
+                  .toList(),
+            _ => <String>[],
+          };
+    // `_pickFromList` y no un `SimpleDialog` con el molde de Material. Además
+    // resuelve su propio alto, que es lo que pide una lista con todas las
+    // armas del catálogo.
+    return _pickFromList<String>(
+      title: 'Elegí el objeto base',
+      options: ids,
+      label: (id) => repo.catalogEntry(id)?.name ?? id,
+    );
+  }
 
   /// Todo lo que la fila necesita saber del objeto, resuelto una sola vez.
   _ItemInfo _itemInfo(InventoryEntry e) {

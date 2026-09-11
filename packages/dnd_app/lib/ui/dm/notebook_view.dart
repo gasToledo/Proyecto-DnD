@@ -524,10 +524,12 @@ String _logBody(EncounterLog log) {
     for (final m in log.monsters)
       m.count == 1 ? m.name : '${m.count} ${m.name}',
   ].join(' y ');
+  // El sujeto va siempre explícito: "cayeron todos" a secas, al lado de
+  // "Sagan, Lyra contra 3 Goblins", se puede leer como que cayó el grupo.
   final fell = log.totalDefeated == 0
-      ? 'No cayó ninguno.'
+      ? 'No cayó ningún enemigo.'
       : log.totalDefeated == log.totalMonsters
-      ? 'Cayeron todos.'
-      : 'Cayeron ${log.totalDefeated} de ${log.totalMonsters}.';
+      ? 'Cayeron todos los enemigos.'
+      : 'Cayeron ${log.totalDefeated} de ${log.totalMonsters} enemigos.';
   return '$who contra $against. $fell';
 }

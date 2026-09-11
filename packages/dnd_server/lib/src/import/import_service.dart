@@ -82,6 +82,7 @@ Future<PreparedImport> prepareImport({
     reservedIds.add(id);
 
     final portraitKeys = <String>[];
+    final portraitPrompts = <String, String>{};
     for (final portrait in entry.portraits) {
       final key = await portraits.save(
         userId: userId,
@@ -89,6 +90,8 @@ Future<PreparedImport> prepareImport({
         bytes: portrait.bytes,
       );
       portraitKeys.add(key);
+      // La clave cambia al guardar; el prompt la sigue.
+      if (portrait.prompt case final prompt?) portraitPrompts[key] = prompt;
       portraitsImported++;
     }
 
@@ -96,7 +99,12 @@ Future<PreparedImport> prepareImport({
     if (character.id != id) {
       character = Character.fromJson(character.toJson()..['id'] = id);
     }
-    preparedCharacters.add(character.copyWith(portraitPaths: portraitKeys));
+    preparedCharacters.add(
+      character.copyWith(
+        portraitPaths: portraitKeys,
+        portraitPrompts: portraitPrompts,
+      ),
+    );
   }
 
   return PreparedImport(

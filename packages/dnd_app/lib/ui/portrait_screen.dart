@@ -94,6 +94,12 @@ class _PortraitScreenState extends State<PortraitScreen> {
   /// sube nada.
   String? _previewKey;
 
+  /// El prompt con que se pidieron los [_results], tomado al pedirlos. No se
+  /// recalcula al guardar: el texto extra puede haber cambiado entre generar y
+  /// elegir, y lo que se guarda tiene que ser lo que realmente produjo la
+  /// imagen.
+  String? _resultsPrompt;
+
   static const _importExtensions = ['png', 'jpg', 'jpeg', 'webp'];
 
   PortraitProviderInfo? get _provider =>
@@ -202,14 +208,16 @@ class _PortraitScreenState extends State<PortraitScreen> {
       _previewKey = null;
     });
     try {
+      final prompt = _prompt;
       final images = await widget.api.generatePortraits(
         providerId: provider.id,
-        prompt: _prompt,
+        prompt: prompt,
         reference: provider.supportsReference ? _referenceBytes : null,
       );
       if (!mounted) return;
       setState(() {
         _results = images;
+        _resultsPrompt = prompt;
         // La primera queda vista de entrada: si solo vino una, usarla sigue
         // siendo un toque, como cuando las miniaturas se guardaban al tocarlas.
         _preview = images.isEmpty ? null : 0;
@@ -275,7 +283,8 @@ class _PortraitScreenState extends State<PortraitScreen> {
     }
   }
 
-  Future<void> _use(Uint8List bytes) async {
+  /// [prompt] es el que produjo la imagen, o `null` si vino de un archivo.
+  Future<void> _use(Uint8List bytes, {String? prompt}) async {
     setState(() => _saving = true);
     final String key;
     try {
@@ -290,6 +299,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
     }
     final updated = widget.character.copyWith(
       portraitPaths: [key, ...widget.character.portraitPaths],
+      portraitPrompts: {...widget.character.portraitPrompts, key: ?prompt},
     );
     widget.onUpdated(updated);
     if (!mounted) return;
@@ -317,6 +327,102 @@ class _PortraitScreenState extends State<PortraitScreen> {
       tone: AppMessageTone.success,
     );
     Navigator.of(context).pop();
+  }
+
+  /// Borra un retrato guardado, del almacén y de la ficha. Es lo único de esta
+  /// pantalla sin vuelta atrás, así que se confirma antes.
+  ///
+  /// Primero el almacén y después la ficha: si el borrado falla no se toca
+  /// nada, y si falla el guardado de la ficha lo que queda es una clave que no
+  /// resuelve, que ya se dibuja vacía en todos lados. Al revés quedaría un
+  /// archivo huérfano ocupando el disco, que es justo lo que se vino a evitar.
+  Future<void> _deletePortrait(String key) async {
+    final pal = context.palette;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AppDialog(
+        title: 'Borrar retrato',
+        content: const Text(
+          'El retrato se borra para siempre y no se puede recuperar.',
+        ),
+        actions: [
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+          ),
+          DialogAction(
+            'Borrar',
+            primary: true,
+            color: pal.crimson,
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    setState(() => _saving = true);
+    try {
+      await widget.api.deletePortrait(key);
+    } catch (e) {
+      if (mounted) setState(() => _saving = false);
+      _fail('No se pudo borrar el retrato: $e');
+      return;
+    }
+    widget.onUpdated(
+      widget.character.copyWith(
+        portraitPaths: [
+          for (final existing in widget.character.portraitPaths)
+            if (existing != key) existing,
+        ],
+        portraitPrompts: {...widget.character.portraitPrompts}..remove(key),
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    showAppMessage(context, 'Retrato borrado.', tone: AppMessageTone.success);
+    Navigator.of(context).pop();
+  }
+
+  /// El retrato guardado que está en el lienzo: el que se mira en la tira, o
+  /// el actual si no se está mirando nada. `null` mientras se ve un resultado
+  /// recién generado, que todavía no es de nadie.
+  String? get _shownSavedKey {
+    if (_preview != null) return null;
+    return _previewKey ?? widget.character.portraitPaths.firstOrNull;
+  }
+
+  /// Lo que se puede hacer con el retrato guardado del lienzo: volver a él si
+  /// no es el actual, leer el prompt con que se generó, y borrarlo.
+  List<Widget> _savedPortraitActions() {
+    final key = _shownSavedKey;
+    if (key == null) return const [];
+    final prompt = widget.character.portraitPrompts[key];
+    return [
+      if (_previewKey == key) ...[
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _busy ? null : () => _restore(key),
+          icon: const Icon(Icons.history),
+          label: const Text('Volver a este retrato'),
+        ),
+      ],
+      if (prompt != null && prompt.isNotEmpty) ...[
+        const SizedBox(height: 12),
+        _usedPromptPanel(prompt),
+      ],
+      const SizedBox(height: 4),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: _busy ? null : () => _deletePortrait(key),
+          style: TextButton.styleFrom(foregroundColor: context.palette.crimson),
+          icon: const Icon(Icons.delete_outline, size: 18),
+          label: const Text('Borrar este retrato'),
+        ),
+      ),
+    ];
   }
 
   /// Los retratos que ya tuvo el personaje, el actual primero. Mismo molde que
@@ -481,7 +587,9 @@ class _PortraitScreenState extends State<PortraitScreen> {
           if (_preview != null) ...[
             const SizedBox(height: 12),
             FilledButton.icon(
-              onPressed: _busy ? null : () => _use(_results[_preview!]),
+              onPressed: _busy
+                  ? null
+                  : () => _use(_results[_preview!], prompt: _resultsPrompt),
               icon: _saving
                   ? const SizedBox.square(
                       dimension: 16,
@@ -491,20 +599,14 @@ class _PortraitScreenState extends State<PortraitScreen> {
               label: Text(_saving ? 'Guardando…' : 'Usar este retrato'),
             ),
           ],
-          // Con un solo retrato no hay adónde volver.
-          if (widget.character.portraitPaths.length > 1) ...[
+          // Aparece con uno solo: aunque no haya adónde volver, sí hay qué
+          // borrar y un prompt que leer.
+          if (widget.character.portraitPaths.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Eyebrow('Retratos anteriores'),
+            const Eyebrow('Retratos guardados'),
             const SizedBox(height: 8),
             _historyStrip(),
-          ],
-          if (_previewKey case final key?) ...[
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: _busy ? null : () => _restore(key),
-              icon: const Icon(Icons.history),
-              label: const Text('Volver a este retrato'),
-            ),
+            ..._savedPortraitActions(),
           ],
           if (_mode == _PortraitMode.ia) ...[
             const SizedBox(height: 14),
@@ -743,6 +845,52 @@ class _PortraitScreenState extends State<PortraitScreen> {
     final full = _prompt;
     final extra = full.startsWith(base) ? full.substring(base.length) : '';
 
+    return _descriptionCard(
+      icon: Icons.description_outlined,
+      title: 'DESCRIPCIÓN BASE · AUTOMÁTICA',
+      body: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(text: base),
+            if (extra.isNotEmpty)
+              TextSpan(
+                text: extra,
+                style: TextStyle(color: pal.gold),
+              ),
+          ],
+        ),
+        style: TextStyle(fontSize: 12.5, height: 1.5, color: muted),
+      ),
+    );
+  }
+
+  /// El prompt con que se generó el retrato guardado que está en el lienzo.
+  /// Misma tarjeta que [_promptPanel] a propósito: es la misma clase de texto
+  /// —el que va al proveedor—, visto después de que produjo la imagen.
+  ///
+  /// Seleccionable porque lo más probable es querer reusarlo como punto de
+  /// partida para otro intento.
+  Widget _usedPromptPanel(String prompt) => _descriptionCard(
+    icon: Icons.history_edu,
+    title: 'PROMPT USADO',
+    body: SelectableText(
+      prompt,
+      style: TextStyle(
+        fontSize: 12.5,
+        height: 1.5,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    ),
+  );
+
+  /// Placa hundida con filete dorado a la izquierda y rótulo en versalitas: el
+  /// molde de los textos que la pantalla arma o guarda para el proveedor.
+  Widget _descriptionCard({
+    required IconData icon,
+    required String title,
+    required Widget body,
+  }) {
+    final pal = context.palette;
     return Container(
       decoration: BoxDecoration(
         color: pal.plaque,
@@ -763,15 +911,11 @@ class _PortraitScreenState extends State<PortraitScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(
-                          Icons.description_outlined,
-                          size: 15,
-                          color: pal.gold,
-                        ),
+                        Icon(icon, size: 15, color: pal.gold),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'DESCRIPCIÓN BASE · AUTOMÁTICA',
+                            title,
                             style: TextStyle(
                               fontSize: 10,
                               letterSpacing: 1.1,
@@ -782,23 +926,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
                       ],
                     ),
                     const SizedBox(height: 7),
-                    Text.rich(
-                      TextSpan(
-                        children: [
-                          TextSpan(text: base),
-                          if (extra.isNotEmpty)
-                            TextSpan(
-                              text: extra,
-                              style: TextStyle(color: pal.gold),
-                            ),
-                        ],
-                      ),
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        height: 1.5,
-                        color: muted,
-                      ),
-                    ),
+                    body,
                   ],
                 ),
               ),

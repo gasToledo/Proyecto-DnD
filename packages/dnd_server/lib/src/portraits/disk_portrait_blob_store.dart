@@ -61,6 +61,53 @@ class DiskPortraitBlobStore implements PortraitBlobStore {
     required String portraitKey,
     int? width,
   }) async {
+    final (:dir, :fileName) = _locate(userId, portraitKey);
+
+    final type = portraitImageTypeForExtension(p.extension(fileName));
+    if (type == null) return null;
+
+    final file = File(p.join(dir, fileName));
+    if (!await file.exists()) return null;
+
+    if (width != null) {
+      final thumbnail = await _thumbnail(dir, fileName, file, width);
+      if (thumbnail != null) return thumbnail;
+    }
+    return PortraitBlob(await file.readAsBytes(), type.contentType);
+  }
+
+  @override
+  Future<bool> delete({
+    required String userId,
+    required String portraitKey,
+  }) async {
+    final (:dir, :fileName) = _locate(userId, portraitKey);
+    // Una extensión que no es de imagen no puede ser un retrato guardado por
+    // [save], así que no hay nada que borrar: mismo criterio que [read].
+    if (portraitImageTypeForExtension(p.extension(fileName)) == null) {
+      return false;
+    }
+    final file = File(p.join(dir, fileName));
+    if (!await file.exists()) return false;
+    await file.delete();
+
+    // Las miniaturas se llaman `<original>@<ancho>.png` (ver [_thumbnail]), y
+    // los temporales de una escritura a medias llevan el mismo prefijo. Sin
+    // esto, borrar el retrato dejaría sus derivados ocupando el disco para
+    // siempre, que es justo lo que el borrado vino a evitar.
+    await for (final entity in Directory(dir).list()) {
+      if (entity is File && p.basename(entity.path).startsWith('$fileName@')) {
+        await entity.delete();
+      }
+    }
+    return true;
+  }
+
+  /// Valida [portraitKey] y la resuelve a su carpeta dentro de la cuenta.
+  ///
+  /// Una sola validación para leer y para borrar: si las dos divergieran, la
+  /// que quedara más floja sería un camino para salir del espacio de la cuenta.
+  ({String dir, String fileName}) _locate(String userId, String portraitKey) {
     final segments = portraitKey.split('/');
     if (segments.length != 2) {
       throw FormatException(
@@ -76,19 +123,10 @@ class DiskPortraitBlobStore implements PortraitBlobStore {
       segments[1],
       label: 'archivo de retrato',
     );
-
-    final type = portraitImageTypeForExtension(p.extension(safeFileName));
-    if (type == null) return null;
-
-    final dir = p.join(root, safeUserId, safeCharacterId);
-    final file = File(p.join(dir, safeFileName));
-    if (!await file.exists()) return null;
-
-    if (width != null) {
-      final thumbnail = await _thumbnail(dir, safeFileName, file, width);
-      if (thumbnail != null) return thumbnail;
-    }
-    return PortraitBlob(await file.readAsBytes(), type.contentType);
+    return (
+      dir: p.join(root, safeUserId, safeCharacterId),
+      fileName: safeFileName,
+    );
   }
 
   /// Miniatura de [width] píxeles de ancho, generada una vez y guardada al

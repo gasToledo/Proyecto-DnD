@@ -241,6 +241,14 @@ class FakeApiServer {
       portraits[key] = bytes;
       return _json({'key': key});
     }
+    // Misma poda que el servidor: lo que no está —propio o ajeno— es 404.
+    if (method == 'DELETE' && path.startsWith('/api/portraits/')) {
+      final key = _segment(path, '/api/portraits/');
+      if (portraits.remove(key) == null) {
+        return _json({'error': 'Retrato no encontrado.'}, 404);
+      }
+      return _json({'status': 'ok'});
+    }
     if (method == 'GET' && path.startsWith('/api/portraits/')) {
       final key = _segment(path, '/api/portraits/');
       final bytes = portraits[key];

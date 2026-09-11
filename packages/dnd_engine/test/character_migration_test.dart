@@ -459,6 +459,57 @@ void main() {
     });
   });
 
+  group('v21 → v22: prompt de cada retrato', () {
+    test('una ficha anterior arranca sin prompts', () {
+      final migrated = Character.migrateJson({
+        'schemaVersion': 21,
+        'portraitPaths': ['sagan/0.png'],
+      });
+
+      expect(migrated['schemaVersion'], Character.currentSchemaVersion);
+      expect(migrated['portraitPrompts'], isEmpty);
+    });
+
+    test('los prompts sobreviven el ida y vuelta de la versión actual', () {
+      final original = Character(
+        id: 'retratada',
+        name: 'Retratada',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'sage',
+        assignedScores: const {},
+        portraitPaths: const ['retratada/1.png', 'retratada/0.png'],
+        portraitPrompts: const {
+          'retratada/1.png': 'una hechicera de pelo rojo',
+        },
+      );
+
+      final round = Character.fromJson(original.toJson());
+      expect(round.portraitPrompts, {
+        'retratada/1.png': 'una hechicera de pelo rojo',
+      });
+    });
+
+    // Un prompt es decorativo: un valor raro no puede costar la ficha entera.
+    test('descarta un prompt con basura y conserva los válidos', () {
+      final base = Character(
+        id: 'rara',
+        name: 'Rara',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'sage',
+        assignedScores: const {},
+      ).toJson();
+
+      final round = Character.fromJson({
+        ...base,
+        'portraitPrompts': {'rara/0.png': 'válido', 'rara/1.png': 3},
+      });
+
+      expect(round.portraitPrompts, {'rara/0.png': 'válido'});
+    });
+  });
+
   group('la entrada de inventario sobrevive el ida y vuelta', () {
     test('conserva cantidad, equipado, sintonizado y nota', () {
       final original = Character(
@@ -1002,7 +1053,12 @@ void main() {
     test('la versión del esquema no se movió', () {
       // Si este número cambia por sumar un bool al estado de combate, algo se
       // entendió al revés: lo que falta se defaultea al leer.
-      expect(Character.currentSchemaVersion, 21);
+      //
+      // El 22 no contradice eso. Lo trajo `portraitPrompts`, un campo de primer
+      // nivel que no se puede reconstruir: una versión vieja de la aplicación
+      // que abriera la ficha y la guardara de vuelta lo perdería en silencio.
+      // Subir la versión es lo que hace que la rechace en vez de pisarlo.
+      expect(Character.currentSchemaVersion, 22);
     });
   });
 }

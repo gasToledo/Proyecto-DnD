@@ -311,6 +311,10 @@ Handler buildHandler({
       '/api/portraits/<characterId>/<fileName>',
       authenticated((request) => _portraitHandler(request, portraits)),
     )
+    ..delete(
+      '/api/portraits/<characterId>/<fileName>',
+      authenticated((request) => _deletePortraitHandler(request, portraits)),
+    )
     ..get(
       '/api/portraits/providers',
       authenticated((request) => _portraitProvidersHandler(generation)),
@@ -1699,6 +1703,33 @@ Future<Response> _portraitHandler(
       'cache-control': 'private, max-age=31536000, immutable',
     },
   );
+}
+
+/// Borra un retrato propio. Deriva la propiedad igual que [_portraitHandler]:
+/// la cuenta sale de la sesión y el almacén está partido por cuenta, así que
+/// un retrato ajeno responde como inexistente (404) sin distinguir un caso del
+/// otro. Una clave mal formada sube como [FormatException] y termina en 400.
+///
+/// No toca la ficha: soltar la clave de `portraitPaths` lo hace el cliente con
+/// un guardado del documento, igual que al agregarla. Si ese guardado no llega,
+/// queda una clave que no resuelve, y eso ya se tolera en todos lados (ver
+/// `PortraitImage` en el cliente).
+Future<Response> _deletePortraitHandler(
+  Request request,
+  PortraitBlobStore portraits,
+) async {
+  final key = '${request.params['characterId']}/${request.params['fileName']}';
+  final deleted = await portraits.delete(
+    userId: request.userId,
+    portraitKey: key,
+  );
+  if (!deleted) {
+    return Response.notFound(
+      jsonEncode({'error': 'Retrato no encontrado.'}),
+      headers: {'content-type': 'application/json'},
+    );
+  }
+  return _jsonOk({'status': 'ok'});
 }
 
 /// Lista los proveedores de generación que este servidor puede ofrecer: uno

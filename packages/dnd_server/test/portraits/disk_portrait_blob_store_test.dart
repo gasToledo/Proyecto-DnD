@@ -194,6 +194,97 @@ void main() {
     });
   });
 
+  group('borrado', () {
+    test('borra el retrato y deja de poder leerse', () async {
+      final store = DiskPortraitBlobStore(
+        root: tempDir.path,
+        maxBytes: 1024 * 1024,
+      );
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      expect(await store.delete(userId: 'user-a', portraitKey: key), isTrue);
+      expect(await store.read(userId: 'user-a', portraitKey: key), isNull);
+    });
+
+    // Sin esto, borrar el retrato dejaría sus miniaturas ocupando el disco,
+    // que es justo lo que el borrado vino a evitar.
+    test('se lleva sus miniaturas y no las de otro retrato', () async {
+      final store = DiskPortraitBlobStore(
+        root: tempDir.path,
+        maxBytes: 1024 * 1024,
+      );
+      // Extensiones distintas a propósito: dos guardados seguidos pueden caer
+      // en el mismo microsegundo y el nombre sale de la hora.
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+      final otro = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(jpegBytes),
+      );
+      final dir = p.join(tempDir.path, 'user-a', 'sagan');
+      final propia = File(p.join(dir, '${p.basename(key)}@128.png'))
+        ..writeAsBytesSync([1]);
+      final ajena = File(p.join(dir, '${p.basename(otro)}@128.png'))
+        ..writeAsBytesSync([1]);
+
+      await store.delete(userId: 'user-a', portraitKey: key);
+
+      expect(propia.existsSync(), isFalse);
+      expect(ajena.existsSync(), isTrue);
+      expect(await store.read(userId: 'user-a', portraitKey: otro), isNotNull);
+    });
+
+    test('un retrato de otra cuenta no se puede borrar con su clave', () async {
+      final store = DiskPortraitBlobStore(
+        root: tempDir.path,
+        maxBytes: 1024 * 1024,
+      );
+      final key = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      expect(await store.delete(userId: 'user-b', portraitKey: key), isFalse);
+      expect(await store.read(userId: 'user-a', portraitKey: key), isNotNull);
+    });
+
+    test('una clave inexistente devuelve false, no un error', () async {
+      final store = DiskPortraitBlobStore(
+        root: tempDir.path,
+        maxBytes: 1024 * 1024,
+      );
+
+      expect(
+        await store.delete(userId: 'user-a', portraitKey: 'sagan/no-hay.png'),
+        isFalse,
+      );
+    });
+
+    test(
+      'una clave que intenta escapar se rechaza igual que al leer',
+      () async {
+        final store = DiskPortraitBlobStore(
+          root: tempDir.path,
+          maxBytes: 1024 * 1024,
+        );
+
+        await expectLater(
+          store.delete(userId: 'user-a', portraitKey: '../x.png'),
+          throwsFormatException,
+        );
+      },
+    );
+  });
+
   group('miniaturas', () {
     // Un PNG de verdad, no la cabecera de mentira que alcanza para el resto de
     // las pruebas: acá hay que decodificarlo.

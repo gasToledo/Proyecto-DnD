@@ -26,7 +26,29 @@ class BundlePortrait {
   final String fileName;
   final Uint8List bytes;
 
-  const BundlePortrait({required this.fileName, required this.bytes});
+  /// Prompt con que se generó, si la ficha lo tenía. Viaja pegado al retrato
+  /// porque la clave vieja no sobrevive la importación: el retrato se vuelve a
+  /// guardar con una clave nueva, y el prompt tiene que encontrarla.
+  final String? prompt;
+
+  const BundlePortrait({
+    required this.fileName,
+    required this.bytes,
+    this.prompt,
+  });
+}
+
+/// El prompt del retrato que viaja como [fileName], buscado por posición.
+///
+/// El exportador nombra cada retrato por su índice en `portraitPaths`
+/// (`portraits/<id>/<índice>.png`), y es la única pista que queda: la clave
+/// original no viaja como nombre de archivo. Un nombre que no empieza con un
+/// número —un respaldo de otra herramienta— se queda sin prompt en vez de
+/// adivinar a cuál le corresponde.
+String? _promptFor(Character character, String fileName) {
+  final index = int.tryParse(RegExp(r'^\d+').stringMatch(fileName) ?? '');
+  if (index == null || index >= character.portraitPaths.length) return null;
+  return character.portraitPrompts[character.portraitPaths[index]];
 }
 
 class BundleCharacter {
@@ -172,16 +194,24 @@ class BackupBundleCodec {
         // intento de escapar de la carpeta del personaje.
         final entry = files[rawPath];
         if (entry == null) continue;
+        final fileName = _safeFileName(p.posix.basename(rawPath));
         portraits.add(
           BundlePortrait(
-            fileName: _safeFileName(p.posix.basename(rawPath)),
+            fileName: fileName,
             bytes: _readBytes(entry),
+            prompt: _promptFor(character, fileName),
           ),
         );
       }
       characters.add(
         BundleCharacter(
-          character: character.copyWith(portraitPaths: const []),
+          // Las claves viejas no sirven en la cuenta que importa: los retratos
+          // se guardan de nuevo con claves propias, y sus prompts ya viajan
+          // pegados a cada uno.
+          character: character.copyWith(
+            portraitPaths: const [],
+            portraitPrompts: const {},
+          ),
           portraits: portraits,
         ),
       );

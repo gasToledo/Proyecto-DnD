@@ -167,7 +167,7 @@ void main() {
         (c) => guardado = c,
       );
 
-      expect(find.text('RETRATOS ANTERIORES'), findsOneWidget);
+      expect(find.text('RETRATOS GUARDADOS'), findsOneWidget);
       for (final clave in [actual, anterior, primero]) {
         expect(find.byKey(ValueKey('portrait-history-$clave')), findsOneWidget);
       }
@@ -193,6 +193,76 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('sin retratos guardados no hay tira', (tester) async {
+      await abrir(tester, demoSagan(), (_) {});
+
+      expect(find.text('RETRATOS GUARDADOS'), findsNothing);
+      expect(find.text('Borrar este retrato'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Guardar nunca borraba, así que cada retrato que no gustaba quedaba
+    // ocupando el disco para siempre.
+    testWidgets('borrar pide confirmación y saca el retrato y su prompt', (
+      tester,
+    ) async {
+      const actual = 'sagan/1.png';
+      const otro = 'sagan/0.png';
+      Character? guardado;
+      // El almacén falso no tiene estos archivos, así que el borrado responde
+      // 404: sirve también para ver que eso no traba soltar la clave.
+      await abrir(
+        tester,
+        demoSagan().copyWith(
+          portraitPaths: const [actual, otro],
+          portraitPrompts: const {
+            actual: 'prompt del actual',
+            otro: 'prompt del otro',
+          },
+        ),
+        (c) => guardado = c,
+      );
+
+      await tester.tap(find.text('Borrar este retrato'));
+      await tester.pumpAndSettle();
+      expect(find.text('Borrar retrato'), findsOneWidget);
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+      expect(guardado, isNull, reason: 'cancelar no toca nada');
+
+      await tester.tap(find.text('Borrar este retrato'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Borrar'));
+      await tester.pumpAndSettle();
+
+      // Sin nada en vista previa, lo que se borra es el actual.
+      expect(guardado?.portraitPaths, [otro]);
+      expect(guardado?.portraitPrompts, {otro: 'prompt del otro'});
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el prompt usado se lee en la misma tarjeta', (tester) async {
+      const generado = 'sagan/1.png';
+      const subido = 'sagan/0.png';
+      await abrir(
+        tester,
+        demoSagan().copyWith(
+          portraitPaths: const [generado, subido],
+          portraitPrompts: const {generado: 'una guerrera de armadura roja'},
+        ),
+        (_) {},
+      );
+
+      expect(find.text('PROMPT USADO'), findsOneWidget);
+      expect(find.text('una guerrera de armadura roja'), findsOneWidget);
+
+      // Un retrato subido desde un archivo no tiene prompt que mostrar.
+      await tester.tap(find.byKey(const ValueKey('portrait-history-$subido')));
+      await tester.pumpAndSettle();
+      expect(find.text('PROMPT USADO'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('tocar el retrato actual no ofrece volver a él', (
       tester,
     ) async {
@@ -209,7 +279,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('con un solo retrato no hay historial que mostrar', (
+    testWidgets('con un solo retrato la tira aparece para poder borrarlo', (
       tester,
     ) async {
       await abrir(
@@ -218,7 +288,10 @@ void main() {
         (_) {},
       );
 
-      expect(find.text('RETRATOS ANTERIORES'), findsNothing);
+      // No hay adónde volver, pero sí qué borrar.
+      expect(find.text('RETRATOS GUARDADOS'), findsOneWidget);
+      expect(find.text('Volver a este retrato'), findsNothing);
+      expect(find.text('Borrar este retrato'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

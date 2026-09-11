@@ -592,6 +592,72 @@ void main() {
       }
     });
 
+    test('DELETE borra el retrato propio', () async {
+      final token = await _loginAs('subject-borra');
+      final me = jsonDecode(
+        await (await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/me'),
+            headers: {'cookie': 'dnd_session=$token'},
+          ),
+        )).readAsString(),
+      );
+      final userId = me['userId'] as String;
+      final key = await portraits.save(
+        userId: userId,
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      final response = await handler(
+        Request(
+          'DELETE',
+          Uri.parse('http://localhost/api/portraits/$key'),
+          headers: {'cookie': 'dnd_session=$token'},
+        ),
+      );
+
+      expect(response.statusCode, 200);
+      expect(await portraits.read(userId: userId, portraitKey: key), isNull);
+    });
+
+    // Lo ajeno responde igual que lo inexistente: distinguirlos haría de la
+    // ruta una forma de averiguar qué retratos tiene otra cuenta.
+    test('DELETE de un retrato ajeno responde 404 y no lo toca', () async {
+      final ownerToken = await _loginAs('subject-duenio-borrado');
+      final ownerMe = jsonDecode(
+        await (await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/me'),
+            headers: {'cookie': 'dnd_session=$ownerToken'},
+          ),
+        )).readAsString(),
+      );
+      final ownerId = ownerMe['userId'] as String;
+      final key = await portraits.save(
+        userId: ownerId,
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      final intruderToken = await _loginAs('subject-intruso-borrado');
+      final response = await handler(
+        Request(
+          'DELETE',
+          Uri.parse('http://localhost/api/portraits/$key'),
+          headers: {'cookie': 'dnd_session=$intruderToken'},
+        ),
+      );
+
+      expect(response.statusCode, 404);
+      expect(
+        await portraits.read(userId: ownerId, portraitKey: key),
+        isNotNull,
+      );
+    });
+
     test('un retrato inexistente también responde 404', () async {
       final token = await _loginAs('subject-empty');
 

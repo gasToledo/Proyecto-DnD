@@ -378,7 +378,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 21;
+  static const int currentSchemaVersion = 22;
 
   final String id;
   String name;
@@ -567,6 +567,14 @@ class Character {
   /// La primera es la que se muestra como retrato activo.
   final List<String> portraitPaths;
 
+  /// Prompt con que se generó cada retrato: clave de [portraitPaths] → texto.
+  ///
+  /// Un mapa y no una lista paralela: un retrato subido desde un archivo no
+  /// tiene prompt, y una lista con huecos se desalinearía apenas se borre o se
+  /// reordene uno. Una clave que ya no está en [portraitPaths] es un resto sin
+  /// efecto, no un error.
+  final Map<String, String> portraitPrompts;
+
   /// Notas libres del jugador (autoguardadas).
   String notes;
 
@@ -619,6 +627,7 @@ class Character {
     this.magicItemChoices = const [],
     this.coins = const {},
     this.portraitPaths = const [],
+    this.portraitPrompts = const {},
     this.notes = '',
     this.alignment,
     this.personalityTrait = '',
@@ -677,6 +686,7 @@ class Character {
         'weaponTwoHanded': weaponTwoHanded,
         'weaponOffHand': weaponOffHand,
         'portraitPaths': portraitPaths,
+        'portraitPrompts': portraitPrompts,
         'notes': notes,
         'alignment': alignment?.toJson(),
         'personalityTrait': personalityTrait,
@@ -1086,6 +1096,12 @@ class Character {
           migrated.putIfAbsent('effectTargets', () => <String, dynamic>{});
           version = 21;
           migrated['schemaVersion'] = version;
+        case 21:
+          // Los prompts se empiezan a guardar recién acá: los retratos que ya
+          // había no tienen el suyo y no hay de dónde reconstruirlo.
+          migrated.putIfAbsent('portraitPrompts', () => <String, dynamic>{});
+          version = 22;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -1173,6 +1189,12 @@ class Character {
       portraitPaths: (j['portraitPaths'] as List? ?? const [])
           .map((e) => e as String)
           .toList(),
+      portraitPrompts: {
+        // Tolera basura en vez de costar la ficha: un prompt es decorativo.
+        for (final e in (j['portraitPrompts'] as Map? ?? const {}).entries)
+          if (e.key is String && e.value is String)
+            e.key as String: e.value as String,
+      },
       notes: j['notes'] as String? ?? '',
       alignment: CharacterAlignment.fromJson(j['alignment'] as String?),
       personalityTrait: j['personalityTrait'] as String? ?? '',
@@ -1217,6 +1239,7 @@ class Character {
     Map<String, bool>? weaponTwoHanded,
     Map<String, bool>? weaponOffHand,
     List<String>? portraitPaths,
+    Map<String, String>? portraitPrompts,
     String? notes,
     Object? alignment = _unset,
     String? personalityTrait,
@@ -1273,6 +1296,7 @@ class Character {
       weaponTwoHanded: weaponTwoHanded ?? this.weaponTwoHanded,
       weaponOffHand: weaponOffHand ?? this.weaponOffHand,
       portraitPaths: portraitPaths ?? this.portraitPaths,
+      portraitPrompts: portraitPrompts ?? this.portraitPrompts,
       notes: notes ?? this.notes,
       // Centinela: pasar `alignment: null` sí lo limpia.
       alignment: identical(alignment, _unset)

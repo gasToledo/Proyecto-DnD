@@ -101,6 +101,42 @@ void main() {
       },
     );
 
+    test('el prompt de cada retrato sigue a su clave nueva', () async {
+      final portraits = InMemoryPortraitBlobStore();
+      final bundle = BackupBundle(
+        formatVersion: 2,
+        scope: BackupScope.character,
+        characters: [
+          BundleCharacter(
+            character: _character('sagan'),
+            portraits: [
+              BundlePortrait(
+                fileName: '0.png',
+                bytes: Uint8List.fromList(_pngBytes),
+              ),
+              BundlePortrait(
+                fileName: '1.png',
+                bytes: Uint8List.fromList(_pngBytes),
+                prompt: 'un guerrero con capa',
+              ),
+            ],
+          ),
+        ],
+      );
+
+      final prepared = await prepareImport(
+        portraits: portraits,
+        userId: 'user-a',
+        bundle: bundle,
+        existingIds: const {},
+      );
+
+      final character = prepared.characters.single;
+      expect(character.portraitPrompts, {
+        character.portraitPaths[1]: 'un guerrero con capa',
+      });
+    });
+
     test('importar el mismo respaldo dos veces produce copias con ids '
         'distintos, sin tocar la primera', () async {
       final portraits = InMemoryPortraitBlobStore();

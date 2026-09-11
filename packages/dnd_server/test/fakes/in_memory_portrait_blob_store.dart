@@ -75,4 +75,28 @@ class InMemoryPortraitBlobStore implements PortraitBlobStore {
     final thumbnail = encodePortraitThumbnail(blob.bytes, width);
     return thumbnail == null ? blob : PortraitBlob(thumbnail, 'image/png');
   }
+
+  @override
+  Future<bool> delete({
+    required String userId,
+    required String portraitKey,
+  }) async {
+    // Misma validación que [read]: un doble más permisivo dejaría pasar una
+    // ruta que el almacén real rechaza.
+    final segments = portraitKey.split('/');
+    if (segments.length != 2) {
+      throw FormatException(
+        'La clave de retrato "$portraitKey" no tiene el formato esperado.',
+      );
+    }
+    final safeCharacterId = requireSafePathSegment(
+      segments[0],
+      label: 'id de personaje',
+    );
+    final safeFileName = requireSafePathSegment(
+      segments[1],
+      label: 'archivo de retrato',
+    );
+    return _byUser[userId]?[safeCharacterId]?.remove(safeFileName) != null;
+  }
 }

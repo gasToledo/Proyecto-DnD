@@ -214,6 +214,17 @@ class ApiClient {
     return _json(response)['key'] as String;
   }
 
+  /// Borra un retrato del almacén. Un 404 cuenta como hecho: la clave ya no
+  /// resuelve, que es exactamente el estado que se buscaba, y la ficha tiene
+  /// que poder soltarla igual en vez de quedar atada a un archivo que no está.
+  Future<void> deletePortrait(String portraitKey) async {
+    try {
+      await _send('DELETE', '/api/portraits/$portraitKey');
+    } on ApiException catch (e) {
+      if (e.statusCode != 404) rethrow;
+    }
+  }
+
   /// Bytes de un retrato, para armar un respaldo ZIP en el navegador (ver
   /// `TransferService`). `null` si el retrato ya no existe: un respaldo no
   /// debe fallar por completo por una referencia huérfana (misma tolerancia

@@ -53,4 +53,17 @@ abstract class PortraitBlobStore {
     required String portraitKey,
     int? width,
   });
+
+  /// Borra el retrato de [portraitKey] dentro del espacio de [userId], junto
+  /// con las miniaturas que se hayan derivado de él. Devuelve `false` si no
+  /// había nada que borrar, incluido el caso en que la clave es de otra cuenta:
+  /// igual que en [read], lo ajeno y lo inexistente no se distinguen.
+  ///
+  /// No toca la ficha. Sacar la clave de `Character.portraitPaths` es un
+  /// guardado del documento, igual que agregarla después de [save].
+  ///
+  /// Lanza [FormatException] ante una clave mal formada, con la misma
+  /// validación que [read]: un borrado es la última operación donde se puede
+  /// relajar un intento de escapar del espacio de la cuenta.
+  Future<bool> delete({required String userId, required String portraitKey});
 }

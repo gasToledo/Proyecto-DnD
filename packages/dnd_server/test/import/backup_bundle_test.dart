@@ -133,6 +133,48 @@ void main() {
       expect(entry.portraits.single.bytes, portraitBytes);
     });
 
+    // La clave vieja no sobrevive la importación, así que el prompt tiene que
+    // viajar pegado a su retrato. La única pista es el índice con que el
+    // exportador nombra cada archivo.
+    test('pega a cada retrato el prompt que tenía por su posición', () {
+      final portraitBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 2,
+          'scope': 'character',
+          'characters': [
+            {
+              'id': 'sagan',
+              'file': 'characters/sagan.json',
+              'portraits': ['portraits/sagan/0.png', 'portraits/sagan/1.png'],
+            },
+          ],
+        },
+        characterFiles: {
+          'characters/sagan.json': {
+            ..._characterJson('sagan'),
+            'portraitPaths': ['sagan/subido.png', 'sagan/generado.png'],
+            'portraitPrompts': {'sagan/generado.png': 'un guerrero con capa'},
+          },
+        },
+        extraBinaryEntries: {
+          'portraits/sagan/0.png': portraitBytes,
+          'portraits/sagan/1.png': portraitBytes,
+        },
+      );
+
+      final entry = BackupBundleCodec.decode(zip).characters.single;
+
+      // El primero se subió desde un archivo y no tiene prompt.
+      expect(
+        [for (final r in entry.portraits) r.prompt],
+        [null, 'un guerrero con capa'],
+      );
+      // Y la ficha suelta los viejos: quedarían apuntando a claves ajenas.
+      expect(entry.character.portraitPrompts, isEmpty);
+    });
+
     // Un retrato declarado que no viaja en el ZIP costaba el personaje entero:
     // el import fallaba con "Falta un retrato declarado." y el jugador perdía
     // la ficha por un archivo decorativo. El codificador ya trata una clave

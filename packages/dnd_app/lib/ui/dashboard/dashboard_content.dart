@@ -294,7 +294,7 @@ extension _DashboardContent on _DashboardScreenState {
             final c = list[i];
             final card = _CharacterCard(
               character: c,
-              sheet: CharacterCompiler(repo).compile(c),
+              sheet: _sheetOf(c),
               repo: repo,
               scale: scale,
               isFavorite: _isFavorite(c),

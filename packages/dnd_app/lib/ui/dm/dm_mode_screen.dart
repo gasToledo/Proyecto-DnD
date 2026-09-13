@@ -662,6 +662,10 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   Timer? _memberPollTimer;
   int _idCounter = 0;
 
+  /// Las escrituras del combate, en fila y en el orden en que el DM las pidió.
+  /// Ver [_saveEncounter].
+  Future<void> _encounterWrites = Future.value();
+
   @override
   void initState() {
     super.initState();
@@ -989,36 +993,69 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     }
   }
 
-  Future<void> _saveEncounter(Encounter encounter) async {
-    try {
-      await widget.api.saveEncounter(widget.campaign.id, encounter);
-      if (!mounted) return;
-      setState(() => _encounter = encounter);
-      _syncMemberPolling();
-    } on ApiException catch (e) {
-      if (mounted) {
-        showAppMessage(context, e.message, tone: AppMessageTone.error);
+  /// Encola [operation] detrás de las escrituras del combate que falten.
+  ///
+  /// [operation] no puede tirar: atrapa sus errores y los muestra. Una
+  /// excepción que se escapara cortaría la fila, y desde ahí ninguna acción
+  /// del combate volvería a guardarse.
+  Future<void> _enqueueEncounterWrite(Future<void> Function() operation) {
+    return _encounterWrites = _encounterWrites.then((_) => operation());
+  }
+
+  void _reportEncounterError(Object error) {
+    if (!mounted) return;
+    showAppMessage(
+      context,
+      error is ApiException ? error.message : '$error',
+      tone: AppMessageTone.error,
+    );
+  }
+
+  /// Guarda lo que devuelve [change] aplicado al combate **tal como lo dejó la
+  /// escritura anterior**, no al que se veía al tocar. `null` es «no hay nada
+  /// que guardar»: el combatiente ya no está, o el combate se cerró.
+  ///
+  /// El cambio se calcula adentro de la fila a propósito. Calculado al tocar,
+  /// dos golpes seguidos antes de que respondiera el servidor partían del
+  /// mismo estado y el segundo pisaba al primero: el goblin recibía uno solo.
+  Future<void> _saveEncounter(Encounter? Function(Encounter? current) change) {
+    return _enqueueEncounterWrite(() async {
+      try {
+        final next = change(_encounter);
+        if (next == null) return;
+        await widget.api.saveEncounter(widget.campaign.id, next);
+        if (mounted) {
+          setState(() => _encounter = next);
+          _syncMemberPolling();
+        } else {
+          // Lo que quede en la fila parte de acá aunque la pantalla ya no esté.
+          _encounter = next;
+        }
+      } catch (error) {
+        _reportEncounterError(error);
       }
-    }
+    });
   }
 
   String _newId(String prefix) =>
       '$prefix-${DateTime.now().microsecondsSinceEpoch}-${_idCounter++}';
 
-  void _startEncounter() => _saveEncounter(Encounter(id: _newId('encounter')));
+  void _startEncounter() => _saveEncounter(
+    (current) => current == null ? Encounter(id: _newId('encounter')) : null,
+  );
 
   void _addPlayerToEncounter(String memberId, String name, int initiative) {
-    final encounter = _encounter ?? Encounter(id: _newId('encounter'));
     _saveEncounter(
-      encounter.withCombatant(
-        Combatant(
-          id: _newId('c'),
-          kind: CombatantKind.player,
-          name: name,
-          initiative: initiative,
-          memberId: memberId,
-        ),
-      ),
+      (current) =>
+          (current ?? Encounter(id: _newId('encounter'))).withCombatant(
+            Combatant(
+              id: _newId('c'),
+              kind: CombatantKind.player,
+              name: name,
+              initiative: initiative,
+              memberId: memberId,
+            ),
+          ),
     );
   }
 
@@ -1029,37 +1066,41 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   /// `2d6` entran con seis vidas distintas. Sin él, todas arrancan con el
   /// promedio del libro, que es lo que corresponde para un jefe.
   void _addMonsters(Creature creature, int count, {bool rollHp = false}) {
-    var encounter = _encounter ?? Encounter(id: _newId('encounter'));
-    final already = encounter.combatants
-        .where((c) => c.creatureId == creature.id)
-        .length;
     final resolved = creature.resolve(const CreatureVars({}));
     final formula = rollHp
         ? DiceFormula.tryParse(creature.hitDice ?? '')
         : null;
     final dice = Dice();
 
-    for (var i = 0; i < count; i++) {
-      final n = already + i + 1;
-      final hp = formula?.roll(dice) ?? resolved.maxHp;
-      encounter = encounter.withCombatant(
-        Combatant(
-          id: _newId('c'),
-          kind: CombatantKind.monster,
-          name: n == 1 ? creature.name : '${creature.name} $n',
-          // Si el combate ya arrancó, el que entra tarde tira en el acto.
-          // Si todavía se está armando, la tirada es de todos juntos al
-          // empezar, así que acá entra sin iniciativa.
-          initiative: encounter.isPreparing ? 0 : rollInitiative(creature),
-          creatureId: creature.id,
-          currentHp: hp,
-          // El máximo es el tirado y no el del libro: si no, un goblin que
-          // sacó 5 se vería «5 / 7» y la barra arrancaría a media asta.
-          maxHp: hp,
-        ),
-      );
-    }
-    _saveEncounter(encounter);
+    // La numeración cuenta sobre la mesa ya guardada, no sobre la que se veía
+    // al tocar: dos tandas seguidas no pueden repetir «Goblin 2».
+    _saveEncounter((current) {
+      var encounter = current ?? Encounter(id: _newId('encounter'));
+      final already = encounter.combatants
+          .where((c) => c.creatureId == creature.id)
+          .length;
+      for (var i = 0; i < count; i++) {
+        final n = already + i + 1;
+        final hp = formula?.roll(dice) ?? resolved.maxHp;
+        encounter = encounter.withCombatant(
+          Combatant(
+            id: _newId('c'),
+            kind: CombatantKind.monster,
+            name: n == 1 ? creature.name : '${creature.name} $n',
+            // Si el combate ya arrancó, el que entra tarde tira en el acto.
+            // Si todavía se está armando, la tirada es de todos juntos al
+            // empezar, así que acá entra sin iniciativa.
+            initiative: encounter.isPreparing ? 0 : rollInitiative(creature),
+            creatureId: creature.id,
+            currentHp: hp,
+            // El máximo es el tirado y no el del libro: si no, un goblin que
+            // sacó 5 se vería «5 / 7» y la barra arrancaría a media asta.
+            maxHp: hp,
+          ),
+        );
+      }
+      return encounter;
+    });
   }
 
   /// Tira la iniciativa de toda la mesa y arranca la ronda 1.
@@ -1069,6 +1110,10 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   /// corregir. A los jugadores se les deja en blanco: ese número lo cantan
   /// ellos desde la mesa, que es donde tiraron el dado de verdad.
   Future<void> _rollInitiative() async {
+    // Primero lo que falte guardar: un monstruo recién sumado tiene que estar
+    // en el diálogo para recibir su tirada.
+    await _encounterWrites;
+    if (!mounted) return;
     final encounter = _encounter;
     if (encounter == null) return;
 
@@ -1085,51 +1130,47 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       suggested: suggested,
     );
     if (values == null || !mounted) return;
-    _saveEncounter(encounter.start(values));
+    _saveEncounter((current) => current?.start(values));
   }
 
-  void _setCombatantTags(String combatantId, List<String> tags) {
-    final encounter = _encounter;
-    if (encounter != null) {
-      _saveEncounter(encounter.withTags(combatantId, tags));
-    }
-  }
+  void _setCombatantTags(String combatantId, List<String> tags) =>
+      _saveEncounter((current) => current?.withTags(combatantId, tags));
 
-  void _nextTurn() {
-    final encounter = _encounter;
-    if (encounter != null) _saveEncounter(encounter.next());
-  }
+  void _nextTurn() => _saveEncounter((current) => current?.next());
 
   void _adjustCombatantHp(String combatantId, int delta) {
-    final encounter = _encounter;
-    if (encounter == null) return;
-    final combatant = encounter.combatants
-        .where((c) => c.id == combatantId)
-        .firstOrNull;
-    if (combatant == null) return;
-    _saveEncounter(encounter.withHp(combatantId, combatant.currentHp + delta));
+    _saveEncounter((current) {
+      final combatant = current?.combatants
+          .where((c) => c.id == combatantId)
+          .firstOrNull;
+      if (combatant == null) return null;
+      return current!.withHp(combatantId, combatant.currentHp + delta);
+    });
   }
 
-  void _removeCombatant(String combatantId) {
-    final encounter = _encounter;
-    if (encounter != null) {
-      _saveEncounter(encounter.withoutCombatant(combatantId));
-    }
-  }
+  void _removeCombatant(String combatantId) =>
+      _saveEncounter((current) => current?.withoutCombatant(combatantId));
 
-  Future<void> _closeEncounter({bool discard = false}) async {
-    try {
-      await widget.api.endEncounter(widget.campaign.id, discard: discard);
-      if (!mounted) return;
-      setState(() => _encounter = null);
-      _syncMemberPolling();
-      // Archivar el combate le agrega una entrada al cuaderno; descartarlo no.
-      if (!discard) await _loadNotebook();
-    } on ApiException catch (e) {
-      if (mounted) {
-        showAppMessage(context, e.message, tone: AppMessageTone.error);
+  /// Va por la misma fila que los guardados: un golpe todavía sin guardar que
+  /// llegara al servidor después de cerrar volvería a crear el combate.
+  Future<void> _closeEncounter({bool discard = false}) {
+    return _enqueueEncounterWrite(() async {
+      try {
+        await widget.api.endEncounter(widget.campaign.id, discard: discard);
+        if (!mounted) {
+          // Igual que al guardar: lo que quede en la fila tiene que ver que el
+          // combate ya no está, o volvería a crearlo.
+          _encounter = null;
+          return;
+        }
+        setState(() => _encounter = null);
+        _syncMemberPolling();
+        // Archivar le agrega una entrada al cuaderno; descartar no.
+        if (!discard) await _loadNotebook();
+      } catch (error) {
+        _reportEncounterError(error);
       }
-    }
+    });
   }
 
   @override
@@ -1342,7 +1383,11 @@ class _CampaignDetailState extends State<_CampaignDetail> {
         label: const Text('Escribir nota'),
       ),
       _CampaignSection.combate when _encounter == null => FilledButton.icon(
-        onPressed: _encounterLoading ? null : _startEncounter,
+        // Sin haber podido leer el combate no se sabe si hay uno en curso, y
+        // armar otro lo reemplazaría: el guardado pisa el combate entero.
+        onPressed: _encounterLoading || _encounterError != null
+            ? null
+            : _startEncounter,
         icon: const Icon(Icons.local_fire_department_outlined),
         label: const Text('Armar combate'),
       ),

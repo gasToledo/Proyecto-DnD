@@ -32,8 +32,8 @@ extension _DashboardActions on _DashboardScreenState {
     );
   }
 
-  void _openHomebrew() {
-    Navigator.of(context).push(
+  Future<void> _openHomebrew() async {
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => HomebrewScreen(
           repo: repo,
@@ -45,6 +45,10 @@ extension _DashboardActions on _DashboardScreenState {
         ),
       ),
     );
+    // Lo editado cambió el contenido debajo de personajes que siguen siendo
+    // los mismos objetos: sin descartar las fichas, las tarjetas quedarían
+    // con los números de antes.
+    if (mounted) _updateState(() => _sheets = Expando());
   }
 
   /// Entra al Modo DM. Es una pantalla más sobre el Navigator, como Homebrew:
@@ -240,6 +244,9 @@ extension _DashboardActions on _DashboardScreenState {
       await controller.load();
       await widget.homebrew.load();
       repo.addAll(widget.homebrew.toRepository());
+      // Mismo motivo que al volver de Homebrew, y acá además la recarga de
+      // personajes de arriba ya las compiló sin el homebrew nuevo.
+      _sheets = Expando();
       if (!mounted) return;
       showAppMessage(
         context,

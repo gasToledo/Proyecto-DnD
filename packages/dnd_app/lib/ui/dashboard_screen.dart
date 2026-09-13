@@ -213,6 +213,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ContentRepository get repo => widget.repo;
   CharactersController get controller => widget.controller;
 
+  /// Fichas compiladas de las tarjetas, por identidad de personaje.
+  ///
+  /// La grilla se reconstruye con cada aviso del controlador —cada tecla en las
+  /// notas de una ficha abierta encima, cada guardado—, y compilar ahí todas
+  /// las tarjetas visibles trababa la escritura. La identidad alcanza por lo
+  /// mismo que en la caché de `SheetScreen`: lo que se muta in situ (combate,
+  /// notas) no entra en la compilación, y cualquier otro cambio llega como un
+  /// personaje nuevo.
+  ///
+  /// Lo que la identidad no ve es el contenido: el homebrew se edita sobre el
+  /// mismo [repo]. Por eso se descarta entera al volver de Homebrew y al
+  /// importar un respaldo, los dos lugares que lo cambian con el panel vivo.
+  Expando<ComputedSheet> _sheets = Expando();
+
+  ComputedSheet _sheetOf(Character c) =>
+      _sheets[c] ??= CharacterCompiler(repo).compile(c);
+
   /// Un guardado fallido por sesión expirada (401) se trata distinto de
   /// cualquier otro error: no alcanza con un aviso, hay que ofrecer volver a
   /// autenticarse (ver capacidad `user-accounts`, sesión expirada durante el

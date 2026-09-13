@@ -5,6 +5,7 @@ import 'package:dnd_app/data/characters_controller.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:dnd_app/data/settings_service.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
+import 'package:dnd_app/homebrew/homebrew_screen.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/class_visuals.dart';
 import 'package:dnd_app/ui/dashboard_screen.dart';
@@ -502,6 +503,32 @@ void main() {
     expect(find.text('VEL'), findsOneWidget);
     expect(find.text('INIC'), findsOneWidget);
     // Sin overflow: un RenderFlex desbordado dispararía una excepción acá.
+    expect(tester.takeException(), isNull);
+  });
+
+  // Las tarjetas guardan la ficha compilada para no recompilar el roster en
+  // cada aviso del controlador. Homebrew, en cambio, edita el contenido debajo
+  // de personajes que no cambian: al volver, la tarjeta tiene que recalcularse.
+  testWidgets('al volver de Homebrew la tarjeta refleja el contenido editado', (
+    tester,
+  ) async {
+    await pumpDashboard(tester, const Size(1280, 800));
+    final human = repo.race('human')!;
+    addTearDown(() => repo.races['human'] = human);
+    final speed = CharacterCompiler(repo).compile(demoSagan()).speed;
+    expect(find.text('$speed pies'), findsOneWidget);
+
+    await tester.tap(find.text('Homebrew'));
+    await tester.pumpAndSettle();
+    // Es lo que hace guardar una especie editada: reemplazarla en el repo.
+    repo.races['human'] = Race.fromJson({
+      ...human.toJson(),
+      'speed': human.speed + 10,
+    });
+    Navigator.of(tester.element(find.byType(HomebrewScreen))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('${speed + 10} pies'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

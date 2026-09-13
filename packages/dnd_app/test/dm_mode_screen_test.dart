@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
@@ -1167,6 +1169,107 @@ void main() {
         find.textContaining('No queda ningún enemigo en pie'),
         findsOneWidget,
       );
+      expect(tester.takeException(), isNull);
+    });
+
+    /// Un combate ya jugándose, con un solo goblin a PG completos. Los números
+    /// salen del bestiario, igual que cuando el DM lo suma desde la pantalla.
+    Encounter combateConGoblin() {
+      final goblin = repo.creatures.values.firstWhere(
+        (c) => c.name == 'Guerrero goblin',
+      );
+      final pg = goblin.resolve(const CreatureVars({})).maxHp;
+      return Encounter(
+        id: 'en-curso',
+        stage: EncounterStage.running,
+        combatants: [
+          Combatant(
+            id: 'goblin-1',
+            kind: CombatantKind.monster,
+            name: goblin.name,
+            initiative: 10,
+            creatureId: goblin.id,
+            currentHp: pg,
+            maxHp: pg,
+          ),
+        ],
+      );
+    }
+
+    // Cada golpe sale del combate que dejó guardado el anterior. Con el
+    // servidor lento, los dos partían del mismo estado y el segundo pisaba al
+    // primero: el goblin recibía un solo golpe.
+    testWidgets('dos golpes seguidos se suman aunque el servidor tarde', (
+      tester,
+    ) async {
+      final combate = combateConGoblin();
+      final pg = combate.combatants.single.maxHp;
+      final server = await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedTable(s);
+          s.encounters['tumba'] = combate;
+        },
+      );
+      await openCombate(tester);
+
+      final respuesta = Completer<void>();
+      server.beforeHandle = (request) async {
+        if (request.method == 'PUT' &&
+            request.url.path.endsWith('/encounter')) {
+          await respuesta.future;
+        }
+      };
+      // La cantidad trae «1»: dos toques antes de que conteste el primero.
+      await tester.tap(find.byTooltip('Dañar'));
+      await tester.pump();
+      await tester.tap(find.byTooltip('Dañar'));
+      await tester.pump();
+      respuesta.complete();
+      await tester.pumpAndSettle();
+
+      expect(server.encounters['tumba']!.combatants.single.currentHp, pg - 2);
+      // La fila y la columna del turno muestran los mismos PG, y ninguna se
+      // queda con los de un solo golpe.
+      expect(find.text('${pg - 2}/$pg'), findsWidgets);
+      expect(find.text('${pg - 1}/$pg'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Sin haber podido leer el combate no se sabe si hay uno: armar otro lo
+    // reemplazaría entero en el servidor. La salida es reintentar.
+    testWidgets('si no se pudo leer el combate no deja armar otro encima', (
+      tester,
+    ) async {
+      final combate = combateConGoblin();
+      final server = await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedTable(s);
+          s.encounters['tumba'] = combate;
+          s.beforeHandle = (request) async {
+            if (request.method == 'GET' &&
+                request.url.path.endsWith('/encounter')) {
+              throw Exception('Sin conexión');
+            }
+          };
+        },
+      );
+      await openCombate(tester);
+
+      expect(find.text('No se pudo leer el combate.'), findsOneWidget);
+      final armar = find.widgetWithText(FilledButton, 'Armar combate');
+      expect(tester.widget<FilledButton>(armar).onPressed, isNull);
+      await tester.tap(armar);
+      await tester.pumpAndSettle();
+      expect(server.encounters['tumba'], same(combate));
+
+      server.beforeHandle = null;
+      await tester.tap(find.text('Reintentar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(combate.combatants.single.name), findsWidgets);
+      expect(find.text('Siguiente turno'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

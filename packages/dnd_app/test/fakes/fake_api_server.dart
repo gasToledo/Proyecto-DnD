@@ -89,10 +89,16 @@ class FakeApiServer {
   /// Si no es null, toda llamada lanza esto (simula falta de conexión).
   Object? failWith;
 
+  /// Corre antes de atender cada petición, para demorar o hacer fallar una
+  /// ruta puntual. [failWith] corta todas a la vez, y hay carreras que solo se
+  /// ven si una respuesta tarda mientras el resto de la pantalla sigue andando.
+  Future<void> Function(http.Request request)? beforeHandle;
+
   late final http.Client client = MockClient(_handle);
 
   Future<http.Response> _handle(http.Request request) async {
     if (failWith != null) throw failWith!;
+    await beforeHandle?.call(request);
     final path = request.url.path;
     final method = request.method;
 

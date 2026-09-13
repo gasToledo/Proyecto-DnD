@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
@@ -263,11 +265,16 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   /// La Pericia queda fuera de este filtro a propósito: ya se comportaba así
   /// antes de que el paso cubriera las competencias, y cambiarlo de paso sería
   /// una segunda modificación escondida en esta.
-  late final Set<String> _oldProficiencyGroups = CharacterCompiler(widget.repo)
-      .compile(widget.character)
+  late final Set<String> _oldProficiencyGroups = _sheetBefore
       .proficiencyChoiceSlots
       .map((s) => s.groupId)
       .toSet();
+
+  /// La ficha antes de subir. El personaje no cambia mientras dura el
+  /// asistente, así que se compila una vez y la comparten todas las secciones.
+  late final ComputedSheet _sheetBefore = CharacterCompiler(
+    widget.repo,
+  ).compile(widget.character);
 
   ({List<ProficiencyChoiceSlot> slots, Set<String> fixed})? _proficiencyCache;
   String? _proficiencySig;
@@ -435,9 +442,27 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     ];
   }
 
-  bool get _hasSpellcasting =>
-      CharacterCompiler(widget.repo).compile(_buildUpdated()).spellcasting !=
-      null;
+  bool get _hasSpellcasting => _updatedSheet.spellcasting != null;
+
+  ComputedSheet? _updatedSheetCache;
+  String? _updatedSheetKey;
+
+  /// La ficha tal como quedará al confirmar, compilada una sola vez por estado.
+  ///
+  /// `_steps` y cada sección la pedían por su cuenta en cada build —el
+  /// stepper, además, una vez por paso—, y compilar no es gratis. La clave es
+  /// el documento entero y no una firma a mano como la de [_choiceSlots]: una
+  /// firma que se olvida de un campo devuelve una ficha vieja sin avisar, y el
+  /// JSON no se olvida de ninguno.
+  ComputedSheet get _updatedSheet {
+    final updated = _buildUpdated();
+    final key = jsonEncode(updated.toJson());
+    if (key != _updatedSheetKey) {
+      _updatedSheetCache = CharacterCompiler(widget.repo).compile(updated);
+      _updatedSheetKey = key;
+    }
+    return _updatedSheetCache!;
+  }
 
   _LevelUpStep get _activeStep {
     final steps = _steps;

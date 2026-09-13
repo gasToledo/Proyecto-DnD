@@ -1115,6 +1115,22 @@ class _CombatantRow extends StatelessWidget {
 
   bool get _isPlayer => combatant.kind == CombatantKind.player;
 
+  /// Fichas compiladas de los jugadores, por identidad de personaje.
+  ///
+  /// Cada fila compilaba la ficha entera tres veces por build (PG, nivel y
+  /// CA), y la planilla se reconstruye con cada golpe y con el sondeo de 5 s.
+  /// La identidad alcanza: entre un sondeo y el siguiente la ficha de un
+  /// jugador no cambia, y cada sondeo trae personajes nuevos. `Expando` no
+  /// retiene a los viejos.
+  static final _sheets = Expando<ComputedSheet>();
+
+  /// La ficha del jugador de esta fila, o null si no es un jugador de la mesa.
+  ComputedSheet? get _playerSheet {
+    final c = member?.character;
+    if (c == null) return null;
+    return _sheets[c] ??= CharacterCompiler(repo).compile(c);
+  }
+
   /// Los PG de la fila, de la fuente que corresponda: los del monstruo son del
   /// encuentro, los del jugador de su ficha real.
   (int, int)? _hp() {
@@ -1124,8 +1140,8 @@ class _CombatantRow extends StatelessWidget {
           : null;
     }
     final m = member;
-    if (m == null) return null;
-    final sheet = CharacterCompiler(repo).compile(m.character);
+    final sheet = _playerSheet;
+    if (m == null || sheet == null) return null;
     return (m.character.combat.currentHp, sheet.maxHp);
   }
 
@@ -1316,8 +1332,7 @@ class _CombatantRow extends StatelessWidget {
     final c = m.character;
     final race = repo.race(c.raceId)?.name ?? c.raceId;
     final klass = repo.characterClass(c.classId)?.name ?? c.classId;
-    final level = CharacterCompiler(repo).compile(c).level;
-    return '$race · $klass nv $level';
+    return '$race · $klass nv ${c.level}';
   }
 
   /// Lo que el DM necesita de un monstruo sin abrir nada: con qué pega.
@@ -1367,11 +1382,7 @@ class _CombatantRow extends StatelessWidget {
     final creature = combatant.creatureId == null
         ? null
         : repo.creature(combatant.creatureId!);
-    final ac = _isPlayer
-        ? (member == null
-              ? null
-              : '${CharacterCompiler(repo).compile(member!.character).armorClass}')
-        : creature?.ac;
+    final ac = _isPlayer ? _playerSheet?.armorClass.toString() : creature?.ac;
     if (ac == null || ac.isEmpty) return const SizedBox.shrink();
     return Semantics(
       label: 'Clase de armadura: $ac',

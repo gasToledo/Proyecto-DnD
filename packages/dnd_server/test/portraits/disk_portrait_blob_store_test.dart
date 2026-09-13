@@ -283,6 +283,69 @@ void main() {
         );
       },
     );
+
+    // Borrar el personaje tiene que llevarse su carpeta entera: nadie vuelve a
+    // nombrar esos archivos, así que quedarían ocupando el volumen.
+    test('borrar todos los de un personaje no toca los de otro', () async {
+      final store = DiskPortraitBlobStore(
+        root: tempDir.path,
+        maxBytes: 1024 * 1024,
+      );
+      final propio = await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+      final miniatura = File(
+        p.join(
+          tempDir.path,
+          'user-a',
+          'sagan',
+          '${p.basename(propio)}@128.png',
+        ),
+      )..writeAsBytesSync([1]);
+      final ajeno = await store.save(
+        userId: 'user-a',
+        characterId: 'lyra',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      await store.deleteAllFor(userId: 'user-a', characterId: 'sagan');
+
+      expect(
+        Directory(p.join(tempDir.path, 'user-a', 'sagan')).existsSync(),
+        isFalse,
+      );
+      expect(miniatura.existsSync(), isFalse);
+      expect(await store.read(userId: 'user-a', portraitKey: ajeno), isNotNull);
+    });
+
+    test('un personaje sin retratos no es un error', () async {
+      final store = DiskPortraitBlobStore(
+        root: tempDir.path,
+        maxBytes: 1024 * 1024,
+      );
+
+      await store.deleteAllFor(userId: 'user-a', characterId: 'sin-retratos');
+    });
+
+    test('un id de personaje que intenta escapar se rechaza', () async {
+      final store = DiskPortraitBlobStore(
+        root: tempDir.path,
+        maxBytes: 1024 * 1024,
+      );
+      await store.save(
+        userId: 'user-a',
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(pngBytes),
+      );
+
+      await expectLater(
+        store.deleteAllFor(userId: 'user-a', characterId: '..'),
+        throwsFormatException,
+      );
+      expect(Directory(p.join(tempDir.path, 'user-a')).existsSync(), isTrue);
+    });
   });
 
   group('miniaturas', () {

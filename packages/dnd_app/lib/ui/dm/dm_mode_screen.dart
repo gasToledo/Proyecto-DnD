@@ -681,13 +681,25 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     super.dispose();
   }
 
+  /// Cuántas lecturas de la mesa se pidieron. Solo se aplica la respuesta de
+  /// la última: con la red lenta el sondeo de 5 s y una recarga a mano se
+  /// cruzan, y una respuesta vieja que llegara tarde pisaría los PG nuevos.
+  int _membersRequest = 0;
+
   Future<void> _loadMembers() async {
-    setState(() => _error = null);
+    final request = ++_membersRequest;
+    // Sin error que limpiar no hay nada que redibujar, y el sondeo pasa por
+    // acá cada 5 s.
+    if (_error != null) setState(() => _error = null);
     try {
       final members = await widget.api.listCampaignMembers(widget.campaign.id);
-      if (mounted) setState(() => _members = members);
+      if (mounted && request == _membersRequest) {
+        setState(() => _members = members);
+      }
     } catch (error) {
-      if (mounted) setState(() => _error = error);
+      if (mounted && request == _membersRequest) {
+        setState(() => _error = error);
+      }
     }
   }
 

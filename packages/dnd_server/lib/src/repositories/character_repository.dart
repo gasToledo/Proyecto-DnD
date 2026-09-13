@@ -38,6 +38,12 @@ abstract class CharacterRepository {
   Future<void> delete(String userId, String id);
 
   Future<Set<String>> existingIds(String userId);
+
+  /// Si [id] existe en la cuenta, sin traer el documento. Es lo que preguntan
+  /// las rutas que solo necesitan saber que el personaje es propio —la del
+  /// turno se consulta cada pocos segundos por ficha abierta—, y leer y migrar
+  /// la ficha entera para eso era trabajo tirado.
+  Future<bool> exists(String userId, String id);
 }
 
 class PostgresCharacterRepository implements CharacterRepository {
@@ -153,6 +159,20 @@ class PostgresCharacterRepository implements CharacterRepository {
       parameters: {'userId': TypedValue(Type.uuid, userId)},
     );
     return {for (final row in result) row.toColumnMap()['id'] as String};
+  }
+
+  @override
+  Future<bool> exists(String userId, String id) async {
+    final result = await _session.execute(
+      Sql.named('''
+        SELECT 1 FROM characters WHERE user_id = @userId AND id = @id
+      '''),
+      parameters: {
+        'userId': TypedValue(Type.uuid, userId),
+        'id': TypedValue(Type.text, id),
+      },
+    );
+    return result.isNotEmpty;
   }
 
   String _generateId() => DateTime.now().microsecondsSinceEpoch.toString();

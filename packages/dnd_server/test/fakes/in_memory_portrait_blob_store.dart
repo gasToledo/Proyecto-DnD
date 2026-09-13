@@ -99,4 +99,14 @@ class InMemoryPortraitBlobStore implements PortraitBlobStore {
     );
     return _byUser[userId]?[safeCharacterId]?.remove(safeFileName) != null;
   }
+
+  @override
+  Future<void> deleteAllFor({
+    required String userId,
+    required String characterId,
+  }) async {
+    _byUser[userId]?.remove(
+      requireSafePathSegment(characterId, label: 'id de personaje'),
+    );
+  }
 }

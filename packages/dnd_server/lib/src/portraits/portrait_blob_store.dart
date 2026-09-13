@@ -66,4 +66,17 @@ abstract class PortraitBlobStore {
   /// validación que [read]: un borrado es la última operación donde se puede
   /// relajar un intento de escapar del espacio de la cuenta.
   Future<bool> delete({required String userId, required String portraitKey});
+
+  /// Borra todos los retratos de [characterId] dentro del espacio de
+  /// [userId], con sus miniaturas. Es la otra mitad de borrar el personaje:
+  /// sin esto sus archivos quedaban en el volumen para siempre, porque ninguna
+  /// ficha los vuelve a nombrar.
+  ///
+  /// Un personaje sin retratos no deja nada que borrar, y eso no es un error.
+  /// Lanza [FormatException] ante un id que intente escapar del espacio de la
+  /// cuenta, con la misma validación que al guardar.
+  Future<void> deleteAllFor({
+    required String userId,
+    required String characterId,
+  });
 }

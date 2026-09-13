@@ -816,6 +816,60 @@ void main() {
         expect(body['error'], 'el proveedor rechazó el pedido');
       },
     );
+
+    // Cada candidato es una llamada al proveedor y la cantidad la pide el
+    // cliente: sin techo, un solo pedido podía gastar el crédito entero.
+    test(
+      'una cantidad fuera de rango se rechaza sin llamar al proveedor',
+      () async {
+        var calls = 0;
+        generation = PortraitGenerationService([
+          FakePortraitProvider(
+            id: 'pollinations',
+            onGenerate: ({required prompt, reference, count}) async {
+              calls++;
+              return [
+                Uint8List.fromList(const [1, 2, 3]),
+              ];
+            },
+          ),
+        ]);
+        handler = buildHandler(
+          auth: fakeAuth.dependencies,
+          portraits: portraits,
+          generation: generation,
+          importBackup: importBackup,
+          importHomebrew: importHomebrew,
+          characters: characters,
+          campaigns: campaigns,
+          chapters: chapters,
+          notes: notes,
+          encounters: encounters,
+          events: events,
+          transactions: transactions,
+          homebrew: homebrewRepo,
+          settings: settingsRepo,
+        );
+        final token = await _login('subject-gen-count');
+
+        for (final count in [0, PortraitGenerationService.maxCount + 1]) {
+          final response = await handler(
+            Request(
+              'POST',
+              Uri.parse('http://localhost/api/portraits/generate'),
+              headers: {'cookie': 'dnd_session=$token'},
+              body: jsonEncode({
+                'providerId': 'pollinations',
+                'prompt': 'x',
+                'count': count,
+              }),
+            ),
+          );
+          expect(response.statusCode, 400, reason: 'count: $count');
+        }
+        expect(calls, 0);
+      },
+    );
   });
 
   group('POST /api/characters/<id>/portraits', () {
@@ -1097,6 +1151,49 @@ void main() {
       final listedBody = jsonDecode(await listed.readAsString());
       expect(listedBody['characters'], hasLength(1));
       expect(listedBody['characters'][0]['character']['id'], 'sagan');
+    });
+
+    // Borrar el personaje se lleva sus retratos: ninguna ficha los vuelve a
+    // nombrar, así que quedarían ocupando el volumen para siempre.
+    test('borrar un personaje borra sus retratos', () async {
+      final token = await login('subject-chars-portraits');
+      final me = jsonDecode(
+        await (await handler(
+          Request(
+            'GET',
+            Uri.parse('http://localhost/api/me'),
+            headers: {'cookie': 'dnd_session=$token'},
+          ),
+        )).readAsString(),
+      );
+      final userId = me['userId'] as String;
+      await handler(
+        Request(
+          'POST',
+          Uri.parse('http://localhost/api/characters'),
+          headers: {'cookie': 'dnd_session=$token'},
+          body: jsonEncode({'character': characterJson('sagan')}),
+        ),
+      );
+      final key = await portraits.save(
+        userId: userId,
+        characterId: 'sagan',
+        bytes: Uint8List.fromList(const [
+          0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, //
+          1, 2, 3,
+        ]),
+      );
+
+      final deleted = await handler(
+        Request(
+          'DELETE',
+          Uri.parse('http://localhost/api/characters/sagan'),
+          headers: {'cookie': 'dnd_session=$token'},
+        ),
+      );
+
+      expect(deleted.statusCode, 200);
+      expect(await portraits.read(userId: userId, portraitKey: key), isNull);
     });
 
     test('crear con un id ya usado en la cuenta asigna uno libre en vez de '

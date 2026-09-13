@@ -276,6 +276,40 @@ void main() {
       expect(e.current!.id, 'b');
     });
 
+    Encounter tresEnCurso() {
+      var e = enCurso;
+      for (final (id, initiative) in [('a', 20), ('b', 15), ('c', 10)]) {
+        e = e.withCombatant(Combatant(
+          id: id,
+          kind: CombatantKind.player,
+          name: id,
+          initiative: initiative,
+        ));
+      }
+      return e;
+    }
+
+    // Si el que se va es el último de la ronda y tenía el turno, el turno
+    // vuelve arriba y con él empieza la ronda siguiente.
+    test('sacar al último con el turno arranca la ronda siguiente', () {
+      var e = tresEnCurso().next().next(); // el turno es de 'c', ronda 1
+      expect(e.round, 1);
+
+      e = e.withoutCombatant('c');
+
+      expect(e.current!.id, 'a');
+      expect(e.round, 2);
+    });
+
+    test('sacar al del turno en el medio se lo pasa al siguiente', () {
+      var e = tresEnCurso().next(); // el turno es de 'b'
+
+      e = e.withoutCombatant('b');
+
+      expect(e.current!.id, 'c');
+      expect(e.round, 1);
+    });
+
     test('withHp clampea los PG entre 0 y el máximo', () {
       var e = enCurso;
       e = e.withCombatant(

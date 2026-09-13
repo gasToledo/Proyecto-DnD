@@ -90,4 +90,8 @@ class InMemoryCharacterRepository implements CharacterRepository {
   @override
   Future<Set<String>> existingIds(String userId) async =>
       _byUser[userId]?.keys.toSet() ?? const {};
+
+  @override
+  Future<bool> exists(String userId, String id) async =>
+      _byUser[userId]?.containsKey(id) ?? false;
 }

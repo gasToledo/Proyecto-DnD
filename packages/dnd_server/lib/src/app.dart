@@ -125,7 +125,7 @@ Handler buildHandler({
     ..delete(
       '/api/characters/<id>',
       authenticated(
-        (request) => _deleteCharacterHandler(request, transactions),
+        (request) => _deleteCharacterHandler(request, transactions, portraits),
       ),
     )
     ..post(
@@ -581,12 +581,13 @@ Future<Response> _upsertCharacterHandler(
 Future<Response> _deleteCharacterHandler(
   Request request,
   RepositoryTransactionRunner transactions,
+  PortraitBlobStore portraits,
 ) async {
   final id = requireSafePathSegment(
     request.params['id']!,
     label: 'id de personaje',
   );
-  return transactions.run((repositories) async {
+  await transactions.run<void>((repositories) async {
     final character = await repositories.characters.find(request.userId, id);
     final shares = character == null
         ? const <CharacterShare>[]
@@ -604,8 +605,18 @@ Future<Response> _deleteCharacterHandler(
         {'characterName': character!.name, 'campaignName': share.campaignName},
       );
     }
-    return _jsonOk({'status': 'ok'});
   });
+
+  // Los retratos viven en disco y no entran en la transacción, así que se
+  // borran con la ficha ya borrada: si esto falla quedan archivos huérfanos,
+  // como pasaba siempre, pero nunca un personaje vivo sin sus retratos.
+  try {
+    await portraits.deleteAllFor(userId: request.userId, characterId: id);
+  } catch (error, stackTrace) {
+    // ignore: avoid_print
+    print('No se pudieron borrar los retratos de "$id": $error\n$stackTrace');
+  }
+  return _jsonOk({'status': 'ok'});
 }
 
 // --- Campañas y vínculo con personajes ajenos ---
@@ -824,7 +835,7 @@ Future<Response> _shareCharacterHandler(
     request.params['id']!,
     label: 'id de personaje',
   );
-  if (await characters.find(request.userId, id) == null) {
+  if (!await characters.exists(request.userId, id)) {
     return _notFound('Personaje no encontrado.');
   }
   final code = await campaigns.createShareCode(
@@ -853,7 +864,7 @@ Future<Response> _listCharacterSharesHandler(
     request.params['id']!,
     label: 'id de personaje',
   );
-  if (await characters.find(request.userId, id) == null) {
+  if (!await characters.exists(request.userId, id)) {
     return _notFound('Personaje no encontrado.');
   }
   final shares = await campaigns.listSharesForCharacter(
@@ -1540,7 +1551,7 @@ Future<Response> _turnHandler(
     request.params['id']!,
     label: 'id de personaje',
   );
-  if (await characters.find(request.userId, id) == null) {
+  if (!await characters.exists(request.userId, id)) {
     return _notFound('Personaje no encontrado.');
   }
   final status = await encounters.turnFor(

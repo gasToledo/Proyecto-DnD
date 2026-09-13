@@ -361,10 +361,15 @@ class Encounter {
   }
 
   /// Saca un combatiente de la mesa, ajustando [turnIndex] para seguir
-  /// apuntando al mismo combatiente que tenía el turno (o quedarse quieto si
-  /// el que se fue era justo ese).
+  /// apuntando al mismo combatiente que tenía el turno.
+  ///
+  /// Si el que se va es justo el del turno, el turno pasa al que venía
+  /// después. Si era el último de la ronda, ese es el primero de la lista y
+  /// con él empieza la ronda siguiente: quedarse en la misma haría actuar dos
+  /// veces al primero, y el registro contaría una ronda menos que las jugadas.
   Encounter withoutCombatant(String combatantId) {
     final currentId = current?.id;
+    final removedIndex = combatants.indexWhere((c) => c.id == combatantId);
     final next = [
       for (final c in combatants)
         if (c.id != combatantId) c,
@@ -378,7 +383,17 @@ class Encounter {
         stage: stage,
       );
     }
-    final newIndex = currentId == null || currentId == combatantId
+    if (currentId != null && currentId == combatantId) {
+      final wraps = removedIndex >= next.length;
+      return Encounter(
+        id: id,
+        round: wraps ? round + 1 : round,
+        turnIndex: wraps ? 0 : removedIndex,
+        combatants: next,
+        stage: stage,
+      );
+    }
+    final newIndex = currentId == null
         ? turnIndex % next.length
         : next.indexWhere((c) => c.id == currentId);
     return Encounter(

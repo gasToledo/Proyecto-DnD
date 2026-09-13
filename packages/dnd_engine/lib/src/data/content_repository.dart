@@ -222,20 +222,21 @@ class ContentRepository {
             (s) => s.classes.contains(classId) || extraSpellIds.contains(s.id),
           )
           .toList()
-        ..sort(
-          (a, b) => a.level != b.level
-              ? a.level.compareTo(b.level)
-              : compareContentNames(a.name, b.name),
-        );
+        ..sort(compareSpells);
 
   /// Todos los conjuros por nivel y nombre (catálogo homebrew, que no filtra
   /// por lista de clase).
-  List<Spell> get spellsSorted => spells.values.toList()
-    ..sort(
-      (a, b) => a.level != b.level
-          ? a.level.compareTo(b.level)
-          : compareContentNames(a.name, b.name),
-    );
+  List<Spell> get spellsSorted => spells.values.toList()..sort(compareSpells);
+
+  /// El orden en que se leen los conjuros en la ficha: por nivel, y dentro de
+  /// cada nivel por nombre.
+  ///
+  /// Suelto y no solo adentro de [spellsSorted] para poder ordenar un recorte
+  /// ya filtrado: ordenar el catálogo entero para quedarse con cuatro conjuros
+  /// es lo que hacía el compilador en cada compilación.
+  static int compareSpells(Spell a, Spell b) => a.level != b.level
+      ? a.level.compareTo(b.level)
+      : compareContentNames(a.name, b.name);
 
   /// Incorpora contenido homebrew (mismo esquema) sobre el oficial.
   void addAll(ContentRepository other) {

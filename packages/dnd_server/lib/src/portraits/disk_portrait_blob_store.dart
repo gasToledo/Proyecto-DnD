@@ -103,6 +103,23 @@ class DiskPortraitBlobStore implements PortraitBlobStore {
     return true;
   }
 
+  @override
+  Future<void> deleteAllFor({
+    required String userId,
+    required String characterId,
+  }) async {
+    // Es un borrado recursivo: sin validar, un id como `..` apuntaría a la
+    // carpeta de la cuenta entera.
+    final dir = Directory(
+      p.join(
+        root,
+        requireSafePathSegment(userId, label: 'cuenta'),
+        requireSafePathSegment(characterId, label: 'id de personaje'),
+      ),
+    );
+    if (await dir.exists()) await dir.delete(recursive: true);
+  }
+
   /// Valida [portraitKey] y la resuelve a su carpeta dentro de la cuenta.
   ///
   /// Una sola validación para leer y para borrar: si las dos divergieran, la

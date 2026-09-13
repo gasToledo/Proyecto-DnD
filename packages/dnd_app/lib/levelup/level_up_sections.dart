@@ -251,9 +251,8 @@ extension _LevelUpSections on _LevelUpScreenState {
   }
 
   Widget _buildHitPointsStep() {
-    final compiler = CharacterCompiler(widget.repo);
-    final before = compiler.compile(widget.character);
-    final after = compiler.compile(_buildUpdated());
+    final before = _sheetBefore;
+    final after = _updatedSheet;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -389,7 +388,7 @@ extension _LevelUpSections on _LevelUpScreenState {
   /// que es lo que pide la regla de las invocaciones.
   Widget _buildFeatureChoicesSection() {
     final target = _buildUpdated();
-    final sheet = CharacterCompiler(widget.repo).compile(target);
+    final sheet = _updatedSheet;
     final validator = CharacterValidator(widget.repo);
 
     return Column(
@@ -538,10 +537,9 @@ extension _LevelUpSections on _LevelUpScreenState {
   }
 
   Widget _buildReviewStep() {
-    final compiler = CharacterCompiler(widget.repo);
-    final before = compiler.compile(widget.character);
+    final before = _sheetBefore;
     final updated = _buildUpdated();
-    final after = compiler.compile(updated);
+    final after = _updatedSheet;
     final diff = diffSheets(before, after);
     final beforeResources = {
       for (final resource in before.resources) resource.id: resource,
@@ -782,10 +780,9 @@ extension _LevelUpSections on _LevelUpScreenState {
   /// espacios y cupos al nuevo nivel, marca los niveles de espacio recién
   /// abiertos y permite preparar/aprender conjuros sin salir de la subida.
   Widget _buildSpellSection() {
-    final compiler = CharacterCompiler(widget.repo);
-    final after = compiler.compile(_buildUpdated()).spellcasting;
+    final after = _updatedSheet.spellcasting;
     if (after == null) return const SizedBox.shrink();
-    final before = compiler.compile(widget.character).spellcasting;
+    final before = _sheetBefore.spellcasting;
     final beforeLevels = before?.slotsByLevel.keys.toSet() ?? const <int>{};
 
     final slots = after.slotsByLevel.entries.toList()
@@ -874,15 +871,7 @@ extension _LevelUpSections on _LevelUpScreenState {
             const SizedBox(height: 22),
             Eyebrow('La dote sube una característica (+${aumento.amount})'),
             const SizedBox(height: 10),
-            Builder(
-              builder: (context) {
-                final compiler = CharacterCompiler(widget.repo);
-                return _buildAbilityGrid(
-                  compiler.compile(widget.character),
-                  compiler.compile(_buildUpdated()),
-                );
-              },
-            ),
+            _buildAbilityGrid(_sheetBefore, _updatedSheet),
             // El techo solo se aclara cuando no es el de siempre: decir "hasta
             // 20" en una marca mayor sería ruido, porque es el techo normal.
             if (aumento.max != 20) ...[
@@ -903,9 +892,8 @@ extension _LevelUpSections on _LevelUpScreenState {
   }
 
   Widget _buildImprove() {
-    final compiler = CharacterCompiler(widget.repo);
-    final before = compiler.compile(widget.character);
-    final after = compiler.compile(_buildUpdated());
+    final before = _sheetBefore;
+    final after = _updatedSheet;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

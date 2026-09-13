@@ -1273,6 +1273,62 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // El sondeo de la mesa y una respuesta lenta se cruzan: la que llega tarde
+    // no puede pisar a la que se pidió después.
+    testWidgets('una lectura vieja de la mesa no pisa los PG más nuevos', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(
+        tester,
+        seed: (s) {
+          seedTable(s);
+          // Con PG por nivel anotados, para que el valor viejo y el nuevo no
+          // coincidan: sin ellos el máximo da 1.
+          s.characters['sagan'] = s.characters['sagan']!.copyWith(
+            hpPerLevel: const [10],
+          );
+        },
+      );
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar a la mesa'));
+      await tester.pumpAndSettle();
+
+      final sagan = server.characters['sagan']!;
+      final max = CharacterCompiler(repo).compile(sagan).maxHp;
+      final lenta = Completer<void>();
+      var lecturas = 0;
+      server.beforeHandle = (request) async {
+        if (request.method == 'GET' &&
+            request.url.path.endsWith('/members') &&
+            lecturas++ == 0) {
+          await lenta.future;
+        }
+      };
+
+      // La primera lectura del sondeo sale con los PG completos y se queda
+      // esperando.
+      sagan.combat.currentHp = max;
+      await tester.pump(const Duration(seconds: 5));
+      // El jugador se anota daño y la segunda lectura vuelve enseguida.
+      sagan.combat.currentHp = 1;
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump();
+      expect(find.text('1/$max'), findsWidgets);
+
+      // La primera contesta recién ahora, con lo que había cuando salió.
+      sagan.combat.currentHp = max;
+      lenta.complete();
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('1/$max'), findsWidgets);
+      expect(find.text('$max/$max'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     // La planilla tiene dos disposiciones —con columnas y partida en dos
     // líneas— y la columna derecha dos lugares. Ninguna combinación puede
     // desbordar: en la mesa se juega en la ventana que haya.

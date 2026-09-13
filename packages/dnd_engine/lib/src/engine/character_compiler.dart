@@ -8,6 +8,7 @@ import '../domain/content.dart';
 import '../domain/creature.dart';
 import '../domain/effects.dart';
 import '../domain/language.dart';
+import '../domain/name_sort.dart';
 import '../domain/proficiency_labels.dart';
 import '../domain/skill.dart';
 import '../domain/spell_slots.dart';
@@ -35,26 +36,31 @@ class CharacterCompiler {
     // una rareza concreta, aunque su registro de catálogo conserve una rareza
     // de presentación.
     if (effect.groupId == 'artificer-magic-item-plans') {
-      for (final item in repo.itemsSorted) {
-        final description = item.description.trimLeft().toLowerCase();
-        final cursed =
-            description.contains('maldici') || description.contains('maldito');
-        final variable = description.contains('rareza variable');
-        final potionOrScroll = description.startsWith('poción') ||
-            description.startsWith('pergamino');
-        final wondrous = description.startsWith('objeto maravilloso');
-        if (!cursed &&
-            !variable &&
-            (character.level >= 2 &&
-                    item.rarity == 'common' &&
-                    !potionOrScroll ||
-                character.level >= 10 &&
-                    item.rarity == 'uncommon' &&
-                    wondrous ||
-                character.level >= 14 && item.rarity == 'rare' && wondrous)) {
-          eligible.add(item.id);
-        }
-      }
+      // Se filtra primero y se ordena lo que queda: ordenar el catálogo entero
+      // de objetos en cada compilación para quedarse con un recorte era trabajo
+      // tirado, y la ficha se compila muchas veces por pantalla.
+      final plans = sortedByName(
+        repo.items.values.where((item) {
+          final description = item.description.trimLeft().toLowerCase();
+          final cursed = description.contains('maldici') ||
+              description.contains('maldito');
+          final variable = description.contains('rareza variable');
+          final potionOrScroll = description.startsWith('poción') ||
+              description.startsWith('pergamino');
+          final wondrous = description.startsWith('objeto maravilloso');
+          return !cursed &&
+              !variable &&
+              (character.level >= 2 &&
+                      item.rarity == 'common' &&
+                      !potionOrScroll ||
+                  character.level >= 10 &&
+                      item.rarity == 'uncommon' &&
+                      wondrous ||
+                  character.level >= 14 && item.rarity == 'rare' && wondrous);
+        }),
+        (item) => item.name,
+      );
+      eligible.addAll([for (final item in plans) item.id]);
     }
 
     return ItemChoiceSlot(
@@ -821,9 +827,11 @@ class CharacterCompiler {
             : effect.maxLevel;
 
         // El pozo se rearma en cada compilación y nunca se confía en lo
-        // guardado, igual que la pasada de Pericia y `_replacementFor`.
-        final options = [
-          for (final s in repo.spellsSorted)
+        // guardado, igual que la pasada de Pericia y `_replacementFor`. Se
+        // filtra antes de ordenar: ordenar el catálogo entero para quedarse con
+        // un puñado era trabajo tirado, y la ficha se compila muy seguido.
+        final pool = [
+          for (final s in repo.spells.values)
             if (s.level >= effect.minLevel &&
                 (ceiling == null || s.level <= ceiling) &&
                 (effect.fromClasses.isEmpty ||
@@ -836,8 +844,9 @@ class CharacterCompiler {
                 // Como lo elegido se vuelca abajo, esto cubre también los cupos
                 // anteriores de este mismo recorrido.
                 !builder.alwaysPreparedSpellIds.contains(s.id))
-              s.id,
-        ];
+              s,
+        ]..sort(ContentRepository.compareSpells);
+        final options = [for (final s in pool) s.id];
 
         // Lanzador Ritual crece con el bonificador por competencia en vez de
         // declarar un grupo por tramo.
@@ -1090,16 +1099,23 @@ class CharacterCompiler {
       }
       entryIdsByGroup[effect.groupId] = chosen.toSet();
 
-      final creatableWeaponIds = effect.createFilter == null
+      final createFilter = effect.createFilter;
+      final creatableWeaponIds = createFilter == null
           ? const <String>[]
           : [
-              for (final weapon in repo.weaponsSorted)
-                if (_weaponMatches(
-                  effect.createFilter!,
-                  weapon,
-                  isMagic: weapon.magicBonus != 0,
-                ))
-                  weapon.id,
+              // Mismo criterio que los planes del Artífice: filtrar antes de
+              // ordenar, en vez de ordenar todas las armas del catálogo.
+              for (final weapon in sortedByName(
+                repo.weapons.values.where(
+                  (w) => _weaponMatches(
+                    createFilter,
+                    w,
+                    isMagic: w.magicBonus != 0,
+                  ),
+                ),
+                (w) => w.name,
+              ))
+                weapon.id,
             ];
 
       slots.add(TargetChoiceSlot(

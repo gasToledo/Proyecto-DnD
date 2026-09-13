@@ -23,6 +23,13 @@ class PortraitGenerationFailure implements Exception {
 class PortraitGenerationService {
   final List<PortraitProvider> providers;
 
+  /// Techo de candidatos por pedido. La cantidad la manda el cliente y cada
+  /// imagen es una llamada al proveedor —paga en los que llevan credencial—:
+  /// sin techo, un solo pedido podía gastar el crédito entero. Cuatro alcanza
+  /// para una grilla de opciones; hoy la pantalla ni la manda y se usa la de
+  /// cada proveedor, que es 1 o 2.
+  static const int maxCount = 4;
+
   const PortraitGenerationService(this.providers);
 
   /// Proveedores que este servidor puede ofrecer como opción seleccionable.
@@ -47,6 +54,11 @@ class PortraitGenerationService {
     if (reference != null && !provider.supportsReference) {
       throw FormatException(
         'El proveedor "$providerId" no admite imagen de referencia.',
+      );
+    }
+    if (count != null && (count < 1 || count > maxCount)) {
+      throw FormatException(
+        'La cantidad de retratos a generar va de 1 a $maxCount.',
       );
     }
 

@@ -250,8 +250,10 @@ extension _DashboardActions on _DashboardScreenState {
       if (!mounted) return;
       showAppMessage(
         context,
+        // «imagen(es)» y no «retrato(s)»: la cuenta incluye las imágenes del
+        // Diario, que van al mismo almacén sin ser retratos.
         'Importados ${summary.charactersImported} personaje(s) y '
-        '${summary.portraitsImported} retrato(s).',
+        '${summary.portraitsImported} imagen(es).',
         tone: AppMessageTone.success,
       );
     } catch (e) {

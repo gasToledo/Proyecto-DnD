@@ -39,6 +39,94 @@ void main() {
       expect(prepared.portraitsImported, 0);
     });
 
+    // La imagen vuelve a su entrada por `entryId`: la grilla del Diario se
+    // reordena arrastrando, así que la posición no identifica nada.
+    test(
+      'la imagen del diario vuelve a su entrada con la clave nueva',
+      () async {
+        final portraits = InMemoryPortraitBlobStore();
+        final personaje = _character('sagan').copyWith(
+          diary: const [
+            DiaryEntry(entryId: 'otra', title: 'Manías', body: 'Cuenta pasos.'),
+            DiaryEntry(
+              entryId: 'e1',
+              kind: DiaryEntryKind.image,
+              title: 'Boceto',
+            ),
+          ],
+        );
+        final bundle = BackupBundle(
+          formatVersion: 3,
+          scope: BackupScope.character,
+          characters: [
+            BundleCharacter(
+              character: personaje,
+              diaryImages: [
+                BundleDiaryImage(
+                  entryId: 'e1',
+                  bytes: Uint8List.fromList(_pngBytes),
+                ),
+              ],
+            ),
+          ],
+        );
+
+        final prepared = await prepareImport(
+          portraits: portraits,
+          userId: 'user-a',
+          bundle: bundle,
+          existingIds: const {},
+        );
+
+        final diario = prepared.characters.single.diary;
+        final conImagen = diario.firstWhere((e) => e.entryId == 'e1');
+        expect(conImagen.imageKey, isNotNull);
+        // Guardada bajo el id efectivo del personaje, como los retratos.
+        expect(conImagen.imageKey, startsWith('sagan/'));
+        expect(
+          await portraits.read(
+            userId: 'user-a',
+            portraitKey: conImagen.imageKey!,
+          ),
+          isNotNull,
+        );
+        // La entrada de texto queda intacta.
+        expect(diario.firstWhere((e) => e.entryId == 'otra').imageKey, isNull);
+        expect(prepared.portraitsImported, 1);
+      },
+    );
+
+    test('una entrada cuya imagen no viajó queda sin imagen', () async {
+      final portraits = InMemoryPortraitBlobStore();
+      final bundle = BackupBundle(
+        formatVersion: 3,
+        scope: BackupScope.character,
+        characters: [
+          BundleCharacter(
+            character: _character('sagan').copyWith(
+              diary: const [
+                DiaryEntry(
+                  entryId: 'e1',
+                  kind: DiaryEntryKind.image,
+                  title: 'Boceto',
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+
+      final prepared = await prepareImport(
+        portraits: portraits,
+        userId: 'user-a',
+        bundle: bundle,
+        existingIds: const {},
+      );
+
+      expect(prepared.characters.single.diary.single.imageKey, isNull);
+      expect(prepared.portraitsImported, 0);
+    });
+
     test(
       'reasigna un id libre si ya existe en la cuenta, sin sobrescribir',
       () async {

@@ -371,6 +371,120 @@ class InventoryEntry {
       );
 }
 
+/// De qué es una entrada del Diario.
+///
+/// Tres y no más: el enlace se guarda como texto pelado, sin vista previa ni
+/// miniatura del destino, así que no hace falta distinguir un video de una
+/// playlist. El día que haga falta, se suma un valor acá y no un campo nuevo.
+enum DiaryEntryKind {
+  text,
+  image,
+  link;
+
+  /// Un tipo desconocido —documento importado, versión más nueva que escribió
+  /// algo que acá no existe— se lee como texto en vez de costar la entrada: el
+  /// título y el cuerpo siguen siendo legibles.
+  static DiaryEntryKind fromJson(Object? value) {
+    for (final kind in DiaryEntryKind.values) {
+      if (kind.name == value) return kind;
+    }
+    return DiaryEntryKind.text;
+  }
+}
+
+/// Una entrada del Diario: arte, una historia corta, una manía, un enlace a la
+/// playlist con la que se escribe al personaje.
+///
+/// Es lo que el jugador quiera contar y **nada de esto es una regla**: no llega
+/// al `ComputedSheet` ni cambia un número de la ficha.
+class DiaryEntry {
+  /// Identidad del ejemplar. Sin esto, editar o borrar una de dos entradas que
+  /// comparten título tocaría la equivocada.
+  final String entryId;
+
+  final DiaryEntryKind kind;
+
+  /// Siempre lo hay, y es lo que identifica la entrada en la grilla.
+  final String title;
+
+  /// La prosa de una entrada de texto, o la URL de una de enlace.
+  ///
+  /// Un campo y no dos: ninguna entrada usa los dos a la vez, así que el
+  /// segundo quedaría vacío en la mitad del diario. Una entrada de imagen lo
+  /// deja vacío.
+  final String body;
+
+  /// Clave del almacén de imágenes, solo en las entradas de tipo imagen.
+  ///
+  /// Es una clave de **retrato**: el Diario reusa ese almacén en vez de
+  /// estrenar uno propio. Sale gratis la validación de tipo y tamaño que ya
+  /// hace `PortraitBlobStore`, y borrar el personaje ya se lleva sus imágenes
+  /// sin que nadie agregue una cascada nueva.
+  final String? imageKey;
+
+  /// Cuándo se agregó y cuándo se tocó por última vez.
+  ///
+  /// Nulas en la entrada que salió de las notas viejas: esa ficha no guardaba
+  /// ninguna fecha, y estamparle la de la migración diría que se escribió el
+  /// día que se actualizó la aplicación, que es falso. La grilla no muestra
+  /// fecha cuando no la hay.
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const DiaryEntry({
+    required this.entryId,
+    this.kind = DiaryEntryKind.text,
+    this.title = '',
+    this.body = '',
+    this.imageKey,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  DiaryEntry copyWith({
+    DiaryEntryKind? kind,
+    String? title,
+    String? body,
+    Object? imageKey = _unset,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) =>
+      DiaryEntry(
+        entryId: entryId,
+        kind: kind ?? this.kind,
+        title: title ?? this.title,
+        body: body ?? this.body,
+        // Centinela: pasar `imageKey: null` sí la suelta, que es lo que hace
+        // falta cuando una entrada de imagen pasa a ser de texto.
+        imageKey:
+            identical(imageKey, _unset) ? this.imageKey : imageKey as String?,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'entryId': entryId,
+        'kind': kind.name,
+        'title': title,
+        if (body.isNotEmpty) 'body': body,
+        if (imageKey != null) 'imageKey': imageKey,
+        if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
+        if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+      };
+
+  factory DiaryEntry.fromJson(Map<String, dynamic> j) => DiaryEntry(
+        entryId: j['entryId'] as String? ?? '',
+        kind: DiaryEntryKind.fromJson(j['kind']),
+        title: j['title'] as String? ?? '',
+        body: j['body'] as String? ?? '',
+        imageKey: j['imageKey'] as String?,
+        // `tryParse` y no `parse`: una fecha ilegible de una importación es un
+        // dato decorativo perdido, no motivo para perder la entrada entera.
+        createdAt: DateTime.tryParse(j['createdAt'] as String? ?? ''),
+        updatedAt: DateTime.tryParse(j['updatedAt'] as String? ?? ''),
+      );
+}
+
 /// Centinela para distinguir "no se pasó el argumento" de "se pasó null" en
 /// [Character.copyWith] (necesario para poder **desequipar** la armadura).
 const Object _unset = Object();
@@ -378,7 +492,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 22;
+  static const int currentSchemaVersion = 23;
 
   final String id;
   String name;
@@ -575,8 +689,24 @@ class Character {
   /// efecto, no un error.
   final Map<String, String> portraitPrompts;
 
-  /// Notas libres del jugador (autoguardadas).
-  String notes;
+  /// El trasfondo del personaje, en Markdown.
+  ///
+  /// Es lo único del Diario que está siempre: un personaje sin entradas igual
+  /// tiene de dónde viene, y vacío la ficha lo dice («Origen desconocido») en
+  /// vez de esconder la sección.
+  /// Mutable, como lo eran las notas que reemplaza: se escribe tecleando y la
+  /// ficha lo autoguarda con `touch`. Con un campo final habría que producir un
+  /// [Character] nuevo por cada tecla, y eso invalidaría la caché de la ficha
+  /// compilada —que va por identidad— recompilándola entera mientras alguien
+  /// escribe su trasfondo.
+  String background;
+
+  /// Las entradas del Diario, **en el orden en que el jugador las acomodó**.
+  ///
+  /// El orden es el de la lista y no una fecha: la grilla se reordena
+  /// arrastrando, y ordenar por fecha al leer tiraría esa decisión a la basura
+  /// en cada apertura.
+  final List<DiaryEntry> diary;
 
   /// Alineamiento (sabor, opcional). No afecta ninguna regla.
   final CharacterAlignment? alignment;
@@ -628,7 +758,8 @@ class Character {
     this.coins = const {},
     this.portraitPaths = const [],
     this.portraitPrompts = const {},
-    this.notes = '',
+    this.background = '',
+    this.diary = const [],
     this.alignment,
     this.personalityTrait = '',
     this.tableConfig = const TableConfig(),
@@ -687,7 +818,8 @@ class Character {
         'weaponOffHand': weaponOffHand,
         'portraitPaths': portraitPaths,
         'portraitPrompts': portraitPrompts,
-        'notes': notes,
+        'background': background,
+        'diary': [for (final e in diary) e.toJson()],
         'alignment': alignment?.toJson(),
         'personalityTrait': personalityTrait,
         'tableConfig': tableConfig.toJson(),
@@ -1102,6 +1234,33 @@ class Character {
           migrated.putIfAbsent('portraitPrompts', () => <String, dynamic>{});
           version = 22;
           migrated['schemaVersion'] = version;
+        case 22:
+          // Las notas libres pasan a ser el Diario. Lo que había escrito no se
+          // vuelca al trasfondo: nadie dijo que esas notas fueran de dónde
+          // viene el personaje —podían ser recordatorios de la mesa— y
+          // ascenderlas a trasfondo pondría en la sección más visible de la
+          // ficha un texto que el jugador escribió para otra cosa. Va como la
+          // primera entrada, que es lo que era: una nota.
+          //
+          // Sin fechas a propósito: la ficha vieja no guardaba ninguna, y
+          // estampar la de hoy diría que se escribió el día de la
+          // actualización.
+          final legacy = migrated.remove('notes');
+          migrated.putIfAbsent('background', () => '');
+          migrated.putIfAbsent(
+            'diary',
+            () => [
+              if (legacy is String && legacy.trim().isNotEmpty)
+                {
+                  'entryId': 'nota-migrada',
+                  'kind': DiaryEntryKind.text.name,
+                  'title': 'Nota',
+                  'body': legacy,
+                },
+            ],
+          );
+          version = 23;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -1195,7 +1354,11 @@ class Character {
           if (e.key is String && e.value is String)
             e.key as String: e.value as String,
       },
-      notes: j['notes'] as String? ?? '',
+      background: j['background'] as String? ?? '',
+      diary: [
+        for (final e in (j['diary'] as List? ?? const []))
+          if (e is Map) DiaryEntry.fromJson(e.cast<String, dynamic>()),
+      ],
       alignment: CharacterAlignment.fromJson(j['alignment'] as String?),
       personalityTrait: j['personalityTrait'] as String? ?? '',
       tableConfig: TableConfig.fromJson(
@@ -1240,7 +1403,8 @@ class Character {
     Map<String, bool>? weaponOffHand,
     List<String>? portraitPaths,
     Map<String, String>? portraitPrompts,
-    String? notes,
+    String? background,
+    List<DiaryEntry>? diary,
     Object? alignment = _unset,
     String? personalityTrait,
     CombatState? combat,
@@ -1297,7 +1461,8 @@ class Character {
       weaponOffHand: weaponOffHand ?? this.weaponOffHand,
       portraitPaths: portraitPaths ?? this.portraitPaths,
       portraitPrompts: portraitPrompts ?? this.portraitPrompts,
-      notes: notes ?? this.notes,
+      background: background ?? this.background,
+      diary: diary ?? this.diary,
       // Centinela: pasar `alignment: null` sí lo limpia.
       alignment: identical(alignment, _unset)
           ? this.alignment

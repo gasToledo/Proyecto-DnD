@@ -51,11 +51,29 @@ String? _promptFor(Character character, String fileName) {
   return character.portraitPrompts[character.portraitPaths[index]];
 }
 
+/// La imagen de una entrada del Diario, con el id de la entrada a la que
+/// vuelve.
+///
+/// A diferencia de un retrato, acá el vínculo no puede ser posicional: las
+/// entradas se reordenan arrastrando, así que la posición no identifica nada.
+/// El `entryId` sí, y es lo que el exportador escribe en el manifiesto.
+class BundleDiaryImage {
+  final String entryId;
+  final Uint8List bytes;
+
+  const BundleDiaryImage({required this.entryId, required this.bytes});
+}
+
 class BundleCharacter {
   final Character character;
   final List<BundlePortrait> portraits;
+  final List<BundleDiaryImage> diaryImages;
 
-  const BundleCharacter({required this.character, this.portraits = const []});
+  const BundleCharacter({
+    required this.character,
+    this.portraits = const [],
+    this.diaryImages = const [],
+  });
 }
 
 class BackupBundle {
@@ -76,7 +94,9 @@ class BackupBundle {
 
 class BackupBundleCodec {
   static const type = 'dnd_bundle';
-  static const formatVersion = 2;
+
+  /// La 3 suma las imágenes del Diario.
+  static const formatVersion = 3;
   static const maxArchiveBytes = 256 * 1024 * 1024;
   static const maxEntryBytes = 32 * 1024 * 1024;
   static const maxJsonBytes = 8 * 1024 * 1024;
@@ -133,8 +153,13 @@ class BackupBundleCodec {
     if (manifest['type'] != type) {
       throw const FormatException('El ZIP no es un respaldo de Fichas D&D.');
     }
+    // Se rechaza lo que viene del futuro y se acepta lo del pasado, igual que
+    // `Character.migrateJson`: un respaldo más nuevo puede traer cosas que acá
+    // no se sabrían guardar, pero uno viejo solo trae menos. Antes se exigía
+    // igualdad exacta, y con eso el primer cambio de formato habría dejado sin
+    // importar todos los respaldos ya hechos.
     final version = manifest['formatVersion'];
-    if (version != formatVersion) {
+    if (version is! int || version < 1 || version > formatVersion) {
       throw FormatException(
         'Versión de respaldo no compatible: ${version ?? "ausente"}.',
       );
@@ -203,16 +228,52 @@ class BackupBundleCodec {
           ),
         );
       }
+      // Las imágenes del Diario, declaradas por el id de su entrada. Un
+      // respaldo de formato 2 no trae esta clave y no la necesita.
+      final diaryImages = <BundleDiaryImage>[];
+      final rawDiary = item['diary'] as List? ?? const [];
+      for (final raw in rawDiary) {
+        if (raw is! Map) {
+          throw const FormatException('Entrada de diario inválida.');
+        }
+        final entryId = raw['entryId'];
+        final rawPath = raw['file'];
+        if (entryId is! String || entryId.isEmpty) {
+          throw const FormatException('Entrada de diario sin identificador.');
+        }
+        if (rawPath is! String ||
+            !rawPath.startsWith('portraits/$id/') ||
+            !_isSafeArchivePath(rawPath)) {
+          throw const FormatException('Ruta de imagen de diario inválida.');
+        }
+        // Misma tolerancia que con los retratos: el archivo ausente se omite
+        // —la entrada queda sin imagen y su texto intacto— pero una ruta que
+        // intenta escapar sigue abortando.
+        final entry = files[rawPath];
+        if (entry == null) continue;
+        diaryImages.add(
+          BundleDiaryImage(entryId: entryId, bytes: _readBytes(entry)),
+        );
+      }
+
       characters.add(
         BundleCharacter(
           // Las claves viejas no sirven en la cuenta que importa: los retratos
           // se guardan de nuevo con claves propias, y sus prompts ya viajan
-          // pegados a cada uno.
+          // pegados a cada uno. Las del Diario corren la misma suerte, así que
+          // se sueltan acá y `prepareImport` escribe las nuevas; una entrada
+          // cuya imagen no viajó queda sin imagen en vez de apuntar a una
+          // clave muerta.
           character: character.copyWith(
             portraitPaths: const [],
             portraitPrompts: const {},
+            diary: [
+              for (final entry in character.diary)
+                entry.copyWith(imageKey: null),
+            ],
           ),
           portraits: portraits,
+          diaryImages: diaryImages,
         ),
       );
     }

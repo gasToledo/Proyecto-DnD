@@ -1054,11 +1054,14 @@ void main() {
       // Si este número cambia por sumar un bool al estado de combate, algo se
       // entendió al revés: lo que falta se defaultea al leer.
       //
-      // El 22 no contradice eso. Lo trajo `portraitPrompts`, un campo de primer
-      // nivel que no se puede reconstruir: una versión vieja de la aplicación
-      // que abriera la ficha y la guardara de vuelta lo perdería en silencio.
-      // Subir la versión es lo que hace que la rechace en vez de pisarlo.
-      expect(Character.currentSchemaVersion, 22);
+      // Ni el 22 ni el 23 contradicen eso, y por el mismo motivo: los dos los
+      // trajo un campo de primer nivel que no se puede reconstruir al leer.
+      // El 22 fue `portraitPrompts`; el 23, el Diario (`background` y
+      // `diary`, que además se lleva puestas las viejas `notes`). Una versión
+      // vieja de la aplicación que abriera la ficha y la guardara de vuelta los
+      // perdería en silencio: subir la versión es lo que hace que la rechace en
+      // vez de pisarlos.
+      expect(Character.currentSchemaVersion, 23);
     });
   });
 }

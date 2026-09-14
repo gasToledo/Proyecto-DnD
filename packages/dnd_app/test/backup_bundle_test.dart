@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:dnd_app/data/backup_bundle.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
+import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -141,5 +142,66 @@ void main() {
       ),
       throwsFormatException,
     );
+  });
+
+  // Sin esto el respaldo se llevaba el texto de cada entrada y perdía la
+  // imagen: las claves del Diario no están en `portraitPaths`, que es lo único
+  // que el codificador recorría.
+  test('las imágenes del diario viajan con su entrada', () async {
+    final character = demoSagan().copyWith(
+      diary: const [
+        DiaryEntry(
+          entryId: 'e1',
+          kind: DiaryEntryKind.image,
+          title: 'Hoja de personaje',
+          imageKey: 'sagan/boceto.png',
+        ),
+        DiaryEntry(entryId: 'e2', title: 'Manías', body: 'Cuenta los pasos.'),
+      ],
+    );
+    final imageBytes = Uint8List.fromList([0x89, 0x50, 0x4e, 0x47, 9]);
+
+    final bytes = await BackupBundleCodec.encode(
+      scope: BackupScope.character,
+      characters: [character],
+      readPortrait: (key) async {
+        expect(key, 'sagan/boceto.png');
+        return imageBytes;
+      },
+    );
+
+    final manifest = manifestOf(bytes);
+    expect((manifest['characters'] as List).single['diary'], [
+      // Vuelve por el id de la entrada y no por posición: la grilla se
+      // reordena arrastrando.
+      {'entryId': 'e1', 'file': 'portraits/sagan/d0.png'},
+    ]);
+    final archive = ZipDecoder().decodeBytes(bytes);
+    expect(archive.findFile('portraits/sagan/d0.png')!.content, imageBytes);
+  });
+
+  test('una imagen de diario que ya no resuelve se omite sin fallar', () async {
+    final character = demoSagan().copyWith(
+      diary: const [
+        DiaryEntry(
+          entryId: 'e1',
+          kind: DiaryEntryKind.image,
+          title: 'Borrada',
+          imageKey: 'sagan/borrada.png',
+        ),
+      ],
+    );
+
+    final bytes = await BackupBundleCodec.encode(
+      scope: BackupScope.character,
+      characters: [character],
+      readPortrait: (_) async => null,
+    );
+
+    // Sin imágenes, el manifiesto es exactamente el de antes de que esto
+    // existiera: la clave `diary` ni aparece.
+    expect(manifestOf(bytes)['characters'], [
+      {'id': 'sagan', 'file': 'characters/sagan.json', 'portraits': []},
+    ]);
   });
 }

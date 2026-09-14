@@ -32,7 +32,11 @@ String requireSafePathSegment(String value, {String label = 'identificador'}) {
 /// ajenos corresponde al servidor, en `POST /api/import`.
 class BackupBundleCodec {
   static const type = 'dnd_bundle';
-  static const formatVersion = 2;
+
+  /// La 3 suma las imágenes del Diario. Un respaldo viejo (2) se sigue
+  /// importando: el lector acepta versiones anteriores y solo rechaza las
+  /// futuras, igual que la migración de esquema de una ficha.
+  static const formatVersion = 3;
   static const maxArchiveBytes = 256 * 1024 * 1024;
   static const maxEntryBytes = 32 * 1024 * 1024;
 
@@ -81,6 +85,29 @@ class BackupBundleCodec {
         portraitEntries.add(archivePath);
       }
 
+      // Las imágenes del Diario viajan aparte de los retratos porque no están
+      // en `portraitPaths` —una imagen del diario no es un retrato— y sin esto
+      // el respaldo se llevaba el texto de cada entrada y perdía la imagen.
+      //
+      // Van bajo la misma carpeta `portraits/<id>/` a propósito: el lector ya
+      // valida que nada se escape de ahí, y estrenar una segunda carpeta
+      // obligaría a duplicar esa comprobación.
+      final diaryEntries = <Map<String, String>>[];
+      for (final entry in character.diary) {
+        final imageKey = entry.imageKey;
+        if (entry.kind != DiaryEntryKind.image || imageKey == null) continue;
+        final bytes = await readPortrait(imageKey);
+        if (bytes == null) continue;
+        if (bytes.length > maxEntryBytes) {
+          throw const FormatException(
+            'Una imagen del diario supera el tamaño máximo permitido.',
+          );
+        }
+        final archivePath = 'portraits/$id/d${diaryEntries.length}.png';
+        archive.add(ArchiveFile.bytes(archivePath, bytes));
+        diaryEntries.add({'entryId': entry.entryId, 'file': archivePath});
+      }
+
       archive.add(
         ArchiveFile.string(
           characterPath,
@@ -91,6 +118,9 @@ class BackupBundleCodec {
         'id': id,
         'file': characterPath,
         'portraits': portraitEntries,
+        // Ausente cuando no hay ninguna: un personaje sin imágenes en el
+        // diario produce el mismo manifiesto que antes de que esto existiera.
+        if (diaryEntries.isNotEmpty) 'diary': diaryEntries,
       });
     }
 

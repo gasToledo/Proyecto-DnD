@@ -325,5 +325,124 @@ void main() {
         expect(() => BackupBundleCodec.decode(zip), throwsFormatException);
       },
     );
+
+    // Las claves del Diario tampoco sobreviven la importación, así que la
+    // imagen viaja aparte y vuelve a su entrada por `entryId`.
+    test('trae las imágenes del diario y suelta sus claves viejas', () {
+      final imageBytes = [0x89, 0x50, 0x4E, 0x47, 7, 7];
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 3,
+          'scope': 'character',
+          'characters': [
+            {
+              'id': 'sagan',
+              'file': 'characters/sagan.json',
+              'portraits': [],
+              'diary': [
+                {'entryId': 'e1', 'file': 'portraits/sagan/d0.png'},
+              ],
+            },
+          ],
+        },
+        characterFiles: {
+          'characters/sagan.json': {
+            ..._characterJson('sagan'),
+            'diary': [
+              {
+                'entryId': 'e1',
+                'kind': 'image',
+                'title': 'Boceto',
+                'imageKey': 'una-clave-vieja/0.png',
+              },
+            ],
+          },
+        },
+        extraBinaryEntries: {'portraits/sagan/d0.png': imageBytes},
+      );
+
+      final entry = BackupBundleCodec.decode(zip).characters.single;
+
+      expect(entry.diaryImages, hasLength(1));
+      expect(entry.diaryImages.single.entryId, 'e1');
+      expect(entry.diaryImages.single.bytes, imageBytes);
+      // La clave vieja apuntaría a la carpeta de otra cuenta.
+      expect(entry.character.diary.single.imageKey, isNull);
+    });
+
+    // Es lo que hace que un respaldo hecho antes del Diario se siga pudiendo
+    // importar: se rechaza el futuro, no el pasado.
+    test('un respaldo del formato 2 se sigue importando', () {
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 2,
+          'scope': 'character',
+          'characters': [
+            {'id': 'sagan', 'file': 'characters/sagan.json', 'portraits': []},
+          ],
+        },
+        characterFiles: {'characters/sagan.json': _characterJson('sagan')},
+      );
+
+      final bundle = BackupBundleCodec.decode(zip);
+
+      expect(bundle.characters.single.character.id, 'sagan');
+      expect(bundle.characters.single.diaryImages, isEmpty);
+    });
+
+    test('una imagen de diario declarada que falta no cuesta el personaje', () {
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 3,
+          'scope': 'character',
+          'characters': [
+            {
+              'id': 'sagan',
+              'file': 'characters/sagan.json',
+              'portraits': [],
+              'diary': [
+                {'entryId': 'e1', 'file': 'portraits/sagan/d0.png'},
+              ],
+            },
+          ],
+        },
+        characterFiles: {'characters/sagan.json': _characterJson('sagan')},
+      );
+
+      final bundle = BackupBundleCodec.decode(zip);
+
+      expect(bundle.characters.single.character.id, 'sagan');
+      expect(bundle.characters.single.diaryImages, isEmpty);
+    });
+
+    // La tolerancia es solo para el archivo ausente, igual que con retratos.
+    test('una imagen de diario con ruta ajena sigue abortando', () {
+      final zip = _buildZip(
+        manifest: {
+          'type': 'dnd_bundle',
+          'formatVersion': 3,
+          'scope': 'character',
+          'characters': [
+            {
+              'id': 'sagan',
+              'file': 'characters/sagan.json',
+              'portraits': [],
+              'diary': [
+                {'entryId': 'e1', 'file': 'portraits/otro/d0.png'},
+              ],
+            },
+          ],
+        },
+        characterFiles: {'characters/sagan.json': _characterJson('sagan')},
+        extraBinaryEntries: {
+          'portraits/otro/d0.png': [1, 2, 3],
+        },
+      );
+
+      expect(() => BackupBundleCodec.decode(zip), throwsFormatException);
+    });
   });
 }

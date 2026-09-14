@@ -177,9 +177,9 @@ void main() {
     expect(find.byKey(ValueKey('inv-${sword.entryId}')), findsOneWidget);
     expect(find.byKey(ValueKey('inv-${leather.entryId}')), findsOneWidget);
 
-    await tester.tap(find.text('Notas'));
+    await tester.tap(find.text('Diario'));
     await tester.pumpAndSettle();
-    expect(find.text('Notas del personaje'), findsOneWidget);
+    expect(find.text('Trasfondo'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -1905,14 +1905,14 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('la pestaña va entre Inventario y Notas', (tester) async {
+    testWidgets('la pestaña va entre Inventario y Diario', (tester) async {
       await pumpSheet(tester, demoSagan());
 
       // El panel las pinta en el orden del enum, así que comparar posiciones
       // verticales prueba el orden real y no solo que existan.
       double y(String label) => tester.getTopLeft(find.text(label)).dy;
       expect(y('Inventario'), lessThan(y('Campaña')));
-      expect(y('Campaña'), lessThan(y('Notas')));
+      expect(y('Campaña'), lessThan(y('Diario')));
       expect(tester.takeException(), isNull);
     });
 
@@ -2237,6 +2237,177 @@ void main() {
         findsOneWidget,
       );
       await tester.pump(const Duration(seconds: 5));
+    });
+  });
+
+  group('Diario', () {
+    Character diarista({
+      String background = '',
+      List<DiaryEntry> diary = const [],
+    }) => Character(
+      id: 'mirna',
+      name: 'Mirna',
+      raceId: 'human',
+      classId: 'druid',
+      backgroundId: 'sage',
+      level: 3,
+      assignedScores: {for (final a in Ability.values) a: 12},
+      hpPerLevel: List.filled(3, 5),
+      background: background,
+      diary: diary,
+    );
+
+    Future<void> openDiario(WidgetTester tester) async {
+      await tester.tap(find.text('Diario'));
+      await tester.pumpAndSettle();
+    }
+
+    // Los dos vacíos dicen cosas distintas a propósito: el trasfondo afirma
+    // algo del personaje, las entradas admiten que no hay nada.
+    testWidgets('vacío, el trasfondo y las entradas no dicen lo mismo', (
+      tester,
+    ) async {
+      await pumpSheet(tester, diarista());
+      await openDiario(tester);
+
+      expect(find.text('Origen desconocido'), findsOneWidget);
+      expect(find.textContaining('todavía está en blanco'), findsOneWidget);
+      // Sin trasfondo no hay archivo que bajar.
+      expect(_botonDeshabilitado(tester, 'Exportar como .md'), isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el lápiz abre el editor y lo escrito queda en la ficha', (
+      tester,
+    ) async {
+      final mirna = diarista();
+      await pumpSheet(tester, mirna);
+      await openDiario(tester);
+
+      await tester.tap(find.byTooltip('Editar el trasfondo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Creció en el pantano.');
+      await tester.pumpAndSettle();
+
+      // Se escribe sobre el mismo personaje, como hacían las notas.
+      expect(mirna.background, 'Creció en el pantano.');
+      expect(tester.takeException(), isNull);
+      // Escribir agenda el autoguardado con debounce: sin dejarlo correr, el
+      // temporizador sigue vivo cuando el árbol ya se desmontó.
+      await tester.pump(const Duration(seconds: 1));
+    });
+
+    testWidgets('el trasfondo se lee renderizado y no en crudo', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        diarista(
+          background: '# La hija del pantano\n\nLlegó **antes** de hablar.',
+        ),
+      );
+      await openDiario(tester);
+
+      // El título pierde su almohadilla y el énfasis sus asteriscos.
+      expect(find.text('La hija del pantano'), findsOneWidget);
+      expect(find.textContaining('**'), findsNothing);
+      expect(find.textContaining('Llegó antes de hablar'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('una entrada nueva aparece en la grilla y se guarda', (
+      tester,
+    ) async {
+      final controller = await pumpSheet(tester, diarista());
+      await openDiario(tester);
+
+      await tester.tap(find.byTooltip('Agregar una entrada'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Título'),
+        'Manías',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Texto'),
+        'Cuenta los pasos al cruzar un puente.',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Manías'), findsOneWidget);
+      expect(controller.characters.single.diary.single.title, 'Manías');
+      expect(tester.takeException(), isNull);
+    });
+
+    // Sin título no hay con qué identificar la tarjeta en la grilla.
+    testWidgets('sin título no se puede guardar', (tester) async {
+      await pumpSheet(tester, diarista());
+      await openDiario(tester);
+
+      await tester.tap(find.byTooltip('Agregar una entrada'));
+      await tester.pumpAndSettle();
+
+      final guardar = tester.widget<InkWell>(
+        find
+            .descendant(
+              of: find.byType(AppDialog),
+              matching: find.widgetWithText(InkWell, 'Guardar'),
+            )
+            .first,
+      );
+      expect(guardar.onTap, isNull);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('borrar una entrada pide confirmación', (tester) async {
+      final controller = await pumpSheet(
+        tester,
+        diarista(
+          diary: const [
+            DiaryEntry(
+              entryId: 'e1',
+              title: 'Manías',
+              body: 'Cuenta los pasos.',
+            ),
+          ],
+        ),
+      );
+      await openDiario(tester);
+
+      await tester.tap(find.text('Manías'));
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Editar'));
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Borrar'));
+      await tester.pumpAndSettle();
+
+      // El diálogo destructivo dice qué se lleva puesto antes de llevárselo.
+      expect(find.text('Borrar la entrada'), findsOneWidget);
+
+      await tester.tap(dialogAction('Borrar'));
+      await tester.pumpAndSettle();
+
+      expect(controller.characters.single.diary, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    // La entrada que salió de las notas viejas no tiene fecha, y la ficha no
+    // se la inventa: la tarjeta simplemente no la muestra.
+    testWidgets('una entrada sin fecha no muestra ninguna', (tester) async {
+      await pumpSheet(
+        tester,
+        diarista(
+          diary: const [
+            DiaryEntry(entryId: 'nota-migrada', title: 'Nota', body: 'Algo'),
+          ],
+        ),
+      );
+      await openDiario(tester);
+
+      expect(find.text('Nota'), findsOneWidget);
+      expect(find.textContaining('editada'), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   });
 }

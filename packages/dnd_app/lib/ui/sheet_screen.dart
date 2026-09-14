@@ -1,16 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dnd_engine/dnd_engine.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../api/api_client.dart';
 import '../api/api_models.dart';
 import '../data/characters_controller.dart';
 import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';
+import '../web/browser.dart' as browser;
 import 'conditions.dart';
 import 'dm/share_character_dialog.dart';
 import 'portrait_image.dart';
@@ -19,9 +23,9 @@ import 'spell_edit_screen.dart';
 
 part 'sheet/campaign_section.dart';
 part 'sheet/combat_section.dart';
+part 'sheet/diary_section.dart';
 part 'sheet/general_section.dart';
 part 'sheet/inventory_section.dart';
-part 'sheet/notes_section.dart';
 part 'sheet/sheet_navigation.dart';
 part 'sheet/sheet_widgets.dart';
 part 'sheet/spells_section.dart';
@@ -35,14 +39,14 @@ enum _SheetTab {
   combate('Combate', Icons.sports_martial_arts),
   inventario('Inventario', Icons.backpack),
   campana('Campaña', Icons.flag_outlined),
-  notas('Notas', Icons.edit_note);
+  diario('Diario', Icons.auto_stories_outlined);
 
   const _SheetTab(this.label, this.icon);
   final String label;
   final IconData icon;
 }
 
-/// Ficha editable. Combate/Inventario/Notas modifican el personaje y disparan
+/// Ficha editable. Combate/Inventario/Diario modifican el personaje y disparan
 /// el autoguardado del [CharactersController]. General lee de la [ComputedSheet].
 class SheetScreen extends StatefulWidget {
   final Character character;
@@ -126,9 +130,15 @@ class _SheetScreenState extends State<SheetScreen> {
   /// del propio daño sigue escrito arriba, y compartir el campo obligaría a
   /// borrarlo cada vez.
   final _companionAmountCtrl = TextEditingController();
-  // Controlador propio de las notas: sobrevive los cambios de tab y evita el
+  // Controlador propio del trasfondo: sobrevive los cambios de tab y evita el
   // footgun de TextFormField(initialValue:), que ignora cambios posteriores.
-  late final _notesCtrl = TextEditingController(text: widget.character.notes);
+  late final _backgroundCtrl = TextEditingController(
+    text: widget.character.background,
+  );
+
+  /// Si el trasfondo está en modo edición. Arranca en lectura: el Diario se
+  /// abre para leerlo, y el lápiz es el que pide escribir.
+  bool _editingBackground = false;
 
   /// Un controlador por denominación de moneda, por el mismo motivo que las
   /// notas. Se crean acá y no en la tarjeta: la pestaña se reconstruye en cada
@@ -179,7 +189,7 @@ class _SheetScreenState extends State<SheetScreen> {
     _turnTimer?.cancel();
     _amountCtrl.dispose();
     _companionAmountCtrl.dispose();
-    _notesCtrl.dispose();
+    _backgroundCtrl.dispose();
     _invSearchCtrl.dispose();
     for (final c in _coinCtrls.values) {
       c.dispose();
@@ -235,6 +245,25 @@ class _SheetScreenState extends State<SheetScreen> {
   void _toggleCard(String title) => setState(() {
     if (!_collapsedCards.remove(title)) _collapsedCards.add(title);
   });
+
+  /// Entra y sale del modo edición del trasfondo.
+  ///
+  /// Vive acá y no en la extensión del Diario porque `setState` es
+  /// `@protected`: solo la clase que lo hereda puede llamarlo. Es el mismo
+  /// motivo por el que `_mutateCombat` y `_replace` están en el State.
+  void _setEditingBackground(bool editing) =>
+      setState(() => _editingBackground = editing);
+
+  /// Adopta un trasfondo importado: lo escribe en la ficha, lo pone en el
+  /// campo y vuelve a modo lectura para que se vea ya renderizado.
+  void _adoptBackground(String text) {
+    setState(() {
+      _c.background = text;
+      _backgroundCtrl.text = text;
+      _editingBackground = false;
+    });
+    ctrl.touch(_c);
+  }
 
   void _searchInventory(String query) => setState(() => _invQuery = query);
 
@@ -305,7 +334,7 @@ class _SheetScreenState extends State<SheetScreen> {
     _SheetTab.combate => _buildCombat(),
     _SheetTab.inventario => _buildInventory(),
     _SheetTab.campana => _buildCampana(),
-    _SheetTab.notas => _buildNotes(),
+    _SheetTab.diario => _buildDiario(),
   };
 
   @override

@@ -95,6 +95,19 @@ Future<PreparedImport> prepareImport({
       portraitsImported++;
     }
 
+    // Las imágenes del Diario van al mismo almacén y bajo el mismo id
+    // efectivo, pero vuelven a su entrada por `entryId` y no por posición: la
+    // grilla se reordena arrastrando, así que la posición no identifica nada.
+    final diaryKeys = <String, String>{};
+    for (final image in entry.diaryImages) {
+      diaryKeys[image.entryId] = await portraits.save(
+        userId: userId,
+        characterId: id,
+        bytes: image.bytes,
+      );
+      portraitsImported++;
+    }
+
     var character = entry.character;
     if (character.id != id) {
       character = Character.fromJson(character.toJson()..['id'] = id);
@@ -103,6 +116,13 @@ Future<PreparedImport> prepareImport({
       character.copyWith(
         portraitPaths: portraitKeys,
         portraitPrompts: portraitPrompts,
+        diary: [
+          for (final diaryEntry in character.diary)
+            if (diaryKeys[diaryEntry.entryId] case final key?)
+              diaryEntry.copyWith(imageKey: key)
+            else
+              diaryEntry,
+        ],
       ),
     );
   }

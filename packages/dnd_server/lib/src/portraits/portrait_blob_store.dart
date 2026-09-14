@@ -12,6 +12,22 @@ class PortraitBlob {
 /// Contrato de almacenamiento de blobs de retrato: detrás de esta interfaz
 /// se puede cambiar el medio de almacenamiento (disco, almacén de objetos)
 /// sin modificar la API ni el cliente (ver capacidad `portrait-storage`).
+///
+/// **No todo lo que hay bajo un personaje es un retrato.** Las imágenes del
+/// Diario (`DiaryEntry.imageKey`) se guardan acá mismo, con este [save], para
+/// no estrenar un almacén paralelo que repitiera la validación de tipo y
+/// tamaño y la cascada de borrado.
+///
+/// Lo que las mantiene separadas no es la carpeta sino **el documento**: el
+/// selector de retratos se dibuja desde `Character.portraitPaths`, una imagen
+/// del Diario nunca entra en esa lista, y no existe ninguna ruta que liste la
+/// carpeta — así que el cliente no puede descubrir un blob que la ficha no
+/// nombre.
+///
+/// Consecuencia para quien escriba algo nuevo acá: **enumerar la carpeta y
+/// tratar lo que aparezca como retratos está mal**; hay que ir por las claves
+/// que la ficha nombra. [deleteAllFor] es la excepción deliberada, y es lo que
+/// hace que borrar un personaje se lleve las dos cosas sin código extra.
 abstract class PortraitBlobStore {
   int get maxBytes;
 

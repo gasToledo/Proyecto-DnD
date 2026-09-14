@@ -351,6 +351,7 @@ class Background {
   final List<Ability> abilityOptions;
   final List<String> skillProficiencies;
   final List<String> toolProficiencies;
+  final String description;
   final String? originFeatId;
   final List<Effect> effects;
   final List<StartingEquipmentOption> startingEquipment;
@@ -368,6 +369,7 @@ class Background {
     this.abilityOptions = const [],
     this.skillProficiencies = const [],
     this.toolProficiencies = const [],
+    this.description = '',
     this.originFeatId,
     this.effects = const [],
     this.startingEquipment = const [],
@@ -382,6 +384,7 @@ class Background {
         'abilityOptions': abilityOptions.map((a) => a.name).toList(),
         'skillProficiencies': skillProficiencies,
         'toolProficiencies': toolProficiencies,
+        'description': description,
         'originFeatId': originFeatId,
         'iconId': iconId,
         'tagline': tagline,
@@ -402,6 +405,7 @@ class Background {
         toolProficiencies: (j['toolProficiencies'] as List? ?? const [])
             .map((e) => e as String)
             .toList(),
+        description: j['description'] as String? ?? '',
         originFeatId: j['originFeatId'] as String?,
         effects: Effect.listFromJson(j['effects']),
         iconId: j['iconId'] as String?,
@@ -586,6 +590,7 @@ class Feat {
   final String name;
   final ContentSource source;
   final String category;
+  final String description;
   final bool repeatable;
   final String? exclusiveGroup;
   final List<Effect> effects;
@@ -604,6 +609,7 @@ class Feat {
     required this.name,
     required this.source,
     this.category = 'general',
+    this.description = '',
     this.repeatable = false,
     this.exclusiveGroup,
     this.effects = const [],
@@ -616,6 +622,7 @@ class Feat {
         'name': name,
         'source': source.toJson(),
         'category': category,
+        'description': description,
         'repeatable': repeatable,
         if (exclusiveGroup != null) 'exclusiveGroup': exclusiveGroup,
         'effects': effects.map((e) => e.toJson()).toList(),
@@ -630,6 +637,7 @@ class Feat {
         name: j['name'] as String,
         source: ContentSource.fromJson(j['source'] as String?),
         category: j['category'] as String? ?? 'general',
+        description: j['description'] as String? ?? '',
         repeatable: j['repeatable'] as bool? ?? false,
         exclusiveGroup: j['exclusiveGroup'] as String?,
         effects: Effect.listFromJson(j['effects']),
@@ -701,6 +709,9 @@ class Weapon {
   /// mágica es un arma más del catálogo, homebrew o no.
   final int magicBonus;
 
+  /// Texto libre: la leyenda de un arma mágica u homebrew.
+  final String description;
+
   const Weapon({
     required this.id,
     required this.name,
@@ -717,6 +728,7 @@ class Weapon {
     this.rangeNormal = 0,
     this.rangeLong = 0,
     this.magicBonus = 0,
+    this.description = '',
   });
 
   bool get isRanged => properties.contains('ranged');
@@ -769,6 +781,7 @@ class Weapon {
         if (rangeNormal != 0) 'rangeNormal': rangeNormal,
         if (rangeLong != 0) 'rangeLong': rangeLong,
         if (magicBonus != 0) 'magicBonus': magicBonus,
+        'description': description,
       };
 
   factory Weapon.fromJson(Map<String, dynamic> j) => Weapon(
@@ -789,6 +802,7 @@ class Weapon {
         rangeNormal: j['rangeNormal'] as int? ?? 0,
         rangeLong: j['rangeLong'] as int? ?? 0,
         magicBonus: j['magicBonus'] as int? ?? 0,
+        description: j['description'] as String? ?? '',
       );
 }
 
@@ -901,6 +915,9 @@ class Armor {
   /// Precio en piezas de cobre. Ver [Weapon.costCp].
   final int costCp;
 
+  /// Texto libre: la leyenda de una armadura mágica u homebrew.
+  final String description;
+
   const Armor({
     required this.id,
     required this.name,
@@ -913,6 +930,7 @@ class Armor {
     this.stealthDisadvantage = false,
     this.weight = 0,
     this.costCp = 0,
+    this.description = '',
   });
 
   bool get isShield => category == 'shield';
@@ -929,6 +947,7 @@ class Armor {
         'stealthDisadvantage': stealthDisadvantage,
         'weight': weight,
         'costCp': costCp,
+        'description': description,
       };
 
   factory Armor.fromJson(Map<String, dynamic> j) => Armor(
@@ -943,6 +962,7 @@ class Armor {
         stealthDisadvantage: j['stealthDisadvantage'] as bool? ?? false,
         weight: (j['weight'] as num? ?? 0).toDouble(),
         costCp: j['costCp'] as int? ?? 0,
+        description: j['description'] as String? ?? '',
       );
 }
 

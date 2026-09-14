@@ -34,6 +34,9 @@ class _WeaponFormState extends State<WeaponForm> {
   );
   late String _category = widget.initial?.category ?? 'simple';
   late final Set<String> _props = {...?widget.initial?.properties};
+  late final _description = TextEditingController(
+    text: widget.initial?.description ?? '',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +92,11 @@ class _WeaponFormState extends State<WeaponForm> {
         const SizedBox(height: 8),
         const Eyebrow('Propiedades'),
         _idChips(_weaponPropOptions, _props, () => setState(() {})),
+        _text(
+          _description,
+          'Descripción (opcional, la leyenda del arma)',
+          maxLines: 5,
+        ),
       ],
     );
   }
@@ -115,6 +123,7 @@ class _WeaponFormState extends State<WeaponForm> {
         rangeNormal: int.parse(_rangeNormal.text.trim()),
         rangeLong: int.parse(_rangeLong.text.trim()),
         magicBonus: int.parse(_magicBonus.text.trim()),
+        description: _description.text.trim(),
       ),
     );
   }

@@ -27,6 +27,9 @@ class _ArmorFormState extends State<ArmorForm> {
   late String _category = widget.initial?.category ?? 'light';
   late bool _addDex = widget.initial?.addDexMod ?? true;
   late bool _stealth = widget.initial?.stealthDisadvantage ?? false;
+  late final _description = TextEditingController(
+    text: widget.initial?.description ?? '',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +89,11 @@ class _ArmorFormState extends State<ArmorForm> {
           value: _stealth,
           onChanged: (v) => setState(() => _stealth = v),
         ),
+        _text(
+          _description,
+          'Descripción (opcional, la leyenda de la armadura)',
+          maxLines: 5,
+        ),
       ],
     );
   }
@@ -107,6 +115,7 @@ class _ArmorFormState extends State<ArmorForm> {
         stealthDisadvantage: _stealth,
         weight: double.parse(_weight.text.trim()),
         costCp: int.parse(_costCp.text.trim()),
+        description: _description.text.trim(),
       ),
     );
   }

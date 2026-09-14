@@ -10,6 +10,9 @@ class FeatForm extends StatefulWidget {
 class _FeatFormState extends State<FeatForm> {
   late final _name = TextEditingController(text: widget.initial?.name ?? '');
   late String _category = widget.initial?.category ?? 'general';
+  late final _description = TextEditingController(
+    text: widget.initial?.description ?? '',
+  );
   late final List<Effect> _effects = [...?widget.initial?.effects];
 
   @override
@@ -28,6 +31,7 @@ class _FeatFormState extends State<FeatForm> {
           _category,
           (v) => setState(() => _category = v),
         ),
+        _text(_description, 'Descripción', maxLines: 5),
         const SizedBox(height: 12),
         const Eyebrow('Efectos'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
@@ -42,6 +46,7 @@ class _FeatFormState extends State<FeatForm> {
         name: _name.text.trim(),
         source: ContentSource.homebrew,
         category: _category,
+        description: _description.text.trim(),
         effects: _effects,
         // Lo que el formulario no edita se conserva: una dote del catálogo
         // duplicada sin su prerrequisito sería otra dote.

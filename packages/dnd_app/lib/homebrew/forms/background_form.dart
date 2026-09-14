@@ -16,6 +16,9 @@ class _BackgroundFormState extends State<BackgroundForm> {
   late final Set<Ability> _abilities = {...?widget.initial?.abilityOptions};
   late final Set<String> _skills2 = {...?widget.initial?.skillProficiencies};
   late String? _originFeatId = widget.initial?.originFeatId;
+  late final _description = TextEditingController(
+    text: widget.initial?.description ?? '',
+  );
   late final List<Effect> _effects = [...?widget.initial?.effects];
 
   @override
@@ -70,6 +73,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
           ],
           onChanged: (v) => setState(() => _originFeatId = v),
         ),
+        _text(_description, 'Descripción', maxLines: 5),
         const SizedBox(height: 12),
         const Eyebrow('Efectos adicionales'),
         EffectEditor(effects: _effects, onChanged: () => setState(() {})),
@@ -92,6 +96,7 @@ class _BackgroundFormState extends State<BackgroundForm> {
         skillProficiencies: _skills2.toList(),
         toolProficiencies: tools,
         originFeatId: _originFeatId,
+        description: _description.text.trim(),
         effects: _effects,
         // El equipo inicial y el emblema no se editan acá: un trasfondo del
         // catálogo duplicado sin su equipo empezaría la partida con las manos

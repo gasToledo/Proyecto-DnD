@@ -16,6 +16,22 @@ part of '../sheet_screen.dart';
 /// fin dentro de una tarjeta— y conviene que se resuelva con la misma medida.
 const double _kBackgroundMaxHeight = 300;
 
+/// El enlace de una entrada, pero **solo si se puede abrir**: `http` o
+/// `https`, y con host.
+///
+/// Lo escribe el jugador a mano en un campo de texto libre, así que un
+/// `javascript:` pegado ahí se ejecutaría en el origen de la propia aplicación
+/// si se navegara sin mirar. Exigir autoridad (`//host`) descarta además las
+/// formas sin host, que no llevan a ninguna parte.
+///
+/// Lo que no pasa el filtro no se ofrece para abrir: se muestra como texto,
+/// que es lo honesto y encima deja copiarlo.
+Uri? _openableLink(String raw) {
+  final uri = Uri.tryParse(raw.trim());
+  if (uri == null || !uri.hasAuthority) return null;
+  return uri.scheme == 'http' || uri.scheme == 'https' ? uri : null;
+}
+
 extension _SheetDiarySection on _SheetScreenState {
   Widget _buildDiario() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -447,11 +463,18 @@ extension _SheetDiarySection on _SheetScreenState {
           ),
         );
       case DiaryEntryKind.link:
+        // El oro dice «esto es un enlace». Uno que no se va a poder abrir se
+        // pinta como el resto del texto: si no, la tarjeta promete algo que el
+        // modal después no cumple.
         return Text(
           e.body,
           maxLines: 6,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 12.5, height: 1.6, color: pal.gold),
+          style: TextStyle(
+            fontSize: 12.5,
+            height: 1.6,
+            color: _openableLink(e.body) == null ? pal.textMuted : pal.gold,
+          ),
         );
       case DiaryEntryKind.text:
         return Text(
@@ -552,19 +575,67 @@ extension _SheetDiarySection on _SheetScreenState {
       case DiaryEntryKind.image:
         final key = e.imageKey;
         if (key == null) return const Text('Esta entrada no tiene imagen.');
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            PortraitImage.urlFor(key),
-            fit: BoxFit.contain,
-            errorBuilder: (_, _, _) =>
-                const Text('La imagen ya no está en el almacén.'),
+        // Reusa el visor del retrato: misma clave, mismo almacén, y ya trae
+        // zoom, arrastre y cierre con Escape. Se abre **encima** del diálogo,
+        // así que cerrarlo devuelve a la entrada en vez de a la grilla.
+        return Semantics(
+          button: true,
+          label: 'Ver la imagen completa',
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              key: const ValueKey('entrada-imagen'),
+              onTap: () => _openPortraitViewer(key),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  PortraitImage.urlFor(key),
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) =>
+                      const Text('La imagen ya no está en el almacén.'),
+                ),
+              ),
+            ),
           ),
         );
       case DiaryEntryKind.link:
-        return SelectableText(
-          e.body,
-          style: TextStyle(fontSize: 14, height: 1.55, color: pal.gold),
+        final link = _openableLink(e.body);
+        if (link == null) {
+          // No se finge que es un enlace lo que no se va a poder abrir: queda
+          // como texto, y seleccionable para poder copiarlo a mano.
+          return SelectableText(
+            e.body,
+            style: TextStyle(fontSize: 14, height: 1.55, color: pal.textMuted),
+          );
+        }
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: InkWell(
+            onTap: () => browser.openInNewTab(link.toString()),
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      e.body,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.55,
+                        color: pal.gold,
+                        decoration: TextDecoration.underline,
+                        decorationColor: pal.gold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(Icons.open_in_new, size: 15, color: pal.gold),
+                ],
+              ),
+            ),
+          ),
         );
       case DiaryEntryKind.text:
         return SelectableText(

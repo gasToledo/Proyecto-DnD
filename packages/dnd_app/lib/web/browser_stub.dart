@@ -17,3 +17,7 @@ void downloadBytes(
 }) {
   throw UnsupportedError('downloadBytes solo está disponible en el build web.');
 }
+
+void openInNewTab(String url) {
+  throw UnsupportedError('openInNewTab solo está disponible en el build web.');
+}

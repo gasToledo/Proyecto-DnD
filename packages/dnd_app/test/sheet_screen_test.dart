@@ -2440,5 +2440,94 @@ void main() {
       expect(find.textContaining('editada'), findsNothing);
       expect(tester.takeException(), isNull);
     });
+
+    /// Abre la entrada [titulo] desde la grilla.
+    Future<void> abrirEntrada(WidgetTester tester, String titulo) async {
+      await tester.tap(find.text(titulo));
+      await tester.pumpAndSettle();
+    }
+
+    // Lleva al visor a pantalla completa, que es el mismo del retrato: misma
+    // clave, mismo almacén, y ya trae zoom y cierre con Escape.
+    testWidgets('la imagen de una entrada se abre en grande', (tester) async {
+      await pumpSheet(
+        tester,
+        diarista(
+          diary: const [
+            DiaryEntry(
+              entryId: 'e1',
+              kind: DiaryEntryKind.image,
+              title: 'Boceto',
+              imageKey: 'mirna/boceto.png',
+            ),
+          ],
+        ),
+      );
+      await openDiario(tester);
+      await abrirEntrada(tester, 'Boceto');
+
+      await tester.tap(find.byKey(const ValueKey('entrada-imagen')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(InteractiveViewer), findsOneWidget);
+      expect(find.byTooltip('Cerrar el retrato'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un enlace http se ofrece para abrir', (tester) async {
+      await pumpSheet(
+        tester,
+        diarista(
+          diary: const [
+            DiaryEntry(
+              entryId: 'e1',
+              kind: DiaryEntryKind.link,
+              title: 'La playlist',
+              body: 'https://example.com/pantano',
+            ),
+          ],
+        ),
+      );
+      await openDiario(tester);
+      await abrirEntrada(tester, 'La playlist');
+
+      expect(find.byIcon(Icons.open_in_new), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    // El texto lo escribe el jugador en un campo libre: un `javascript:`
+    // pegado ahí se ejecutaría en el origen de la propia aplicación, así que
+    // no se ofrece para abrir. Se muestra igual, para poder copiarlo.
+    testWidgets('un enlace que no es http no se ofrece para abrir', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        diarista(
+          diary: const [
+            DiaryEntry(
+              entryId: 'e1',
+              kind: DiaryEntryKind.link,
+              title: 'Sospechoso',
+              body: 'javascript:alert(1)',
+            ),
+          ],
+        ),
+      );
+      await openDiario(tester);
+      await abrirEntrada(tester, 'Sospechoso');
+
+      expect(find.byIcon(Icons.open_in_new), findsNothing);
+      // Acotado al diálogo: el mismo texto está también en la tarjeta de la
+      // grilla, que quedó abierta detrás.
+      expect(
+        find.descendant(
+          of: find.byType(AppDialog),
+          matching: find.textContaining('javascript:alert(1)'),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
   });
 }

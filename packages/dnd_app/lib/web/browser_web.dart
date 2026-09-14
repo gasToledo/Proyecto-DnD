@@ -37,3 +37,18 @@ void downloadBytes(
     ..click();
   html.Url.revokeObjectUrl(url);
 }
+
+/// Abre [url] en una pestaña nueva, para los enlaces que el jugador guarda en
+/// el Diario.
+///
+/// `noopener,noreferrer` corta el acceso de la página abierta a
+/// `window.opener`: sin eso, un sitio enlazado desde una entrada podría
+/// redirigir la pestaña de la aplicación a donde quisiera.
+///
+/// **Quien llama valida el esquema** (`_openableLink`, en el Diario): un
+/// `javascript:` llegando hasta acá se ejecutaría en el origen de la propia
+/// aplicación. Esta función es el mecanismo, no la política, y hoy tiene un
+/// solo llamador.
+void openInNewTab(String url) {
+  html.window.open(url, '_blank', 'noopener,noreferrer');
+}

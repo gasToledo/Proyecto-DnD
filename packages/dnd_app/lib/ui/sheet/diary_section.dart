@@ -9,6 +9,13 @@ part of '../sheet_screen.dart';
 /// arrastrando, sin orden impuesto por la fecha.
 ///
 /// Nada de acá es una regla: no llega al `ComputedSheet` ni cambia un número.
+/// Techo de alto de la tarjeta de Trasfondo.
+///
+/// Es el mismo que ya usan los pickers de arma (§8 de la guía de diseño) y no
+/// un número nuevo: el problema es idéntico —contenido que puede crecer sin
+/// fin dentro de una tarjeta— y conviene que se resuelva con la misma medida.
+const double _kBackgroundMaxHeight = 300;
+
 extension _SheetDiarySection on _SheetScreenState {
   Widget _buildDiario() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -53,13 +60,33 @@ extension _SheetDiarySection on _SheetScreenState {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-        child: _editingBackground
-            ? _backgroundEditor()
-            : vacio
-            ? _backgroundEmpty()
-            : _MarkdownText(_c.background),
+      // Un trasfondo largo estiraba la tarjeta hasta empujar las entradas
+      // fuera de la pantalla: lo que sobra scrollea acá adentro.
+      //
+      // `ConstrainedBox` y no un alto fijo: con dos renglones escritos, una
+      // caja de 300 px dejaría un hueco vacío del mismo tamaño. Crece con el
+      // texto hasta el techo y recién ahí scrollea.
+      //
+      // El techo vale igual en lectura y en edición. Si solo lo llevara la
+      // lectura, tocar el lápiz haría saltar la tarjeta de 300 px a lo que
+      // midiera el texto entero.
+      //
+      // Un scroll adentro del `ListView` de la ficha es legal **porque el alto
+      // está acotado**; el que revienta es el que se queda sin alto (por eso
+      // `_entriesGrid` se arma con filas y no con un `GridView`).
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: _kBackgroundMaxHeight),
+        child: SingleChildScrollView(
+          key: const ValueKey('trasfondo-scroll'),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+            child: _editingBackground
+                ? _backgroundEditor()
+                : vacio
+                ? _backgroundEmpty()
+                : _MarkdownText(_c.background),
+          ),
+        ),
       ),
     );
   }

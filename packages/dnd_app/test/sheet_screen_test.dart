@@ -2315,6 +2315,37 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    double altoDelTrasfondo(WidgetTester tester) =>
+        tester.getSize(find.byKey(const ValueKey('trasfondo-scroll'))).height;
+
+    // Antes, un trasfondo largo estiraba la tarjeta hasta empujar las entradas
+    // fuera de la pantalla.
+    testWidgets('un trasfondo largo se acota y scrollea', (tester) async {
+      await pumpSheet(
+        tester,
+        diarista(
+          background: List.filled(
+            120,
+            'Una línea más de la historia del pantano.',
+          ).join('\n\n'),
+        ),
+      );
+      await openDiario(tester);
+
+      expect(altoDelTrasfondo(tester), lessThanOrEqualTo(300));
+      expect(tester.takeException(), isNull);
+    });
+
+    // El techo es un máximo y no un alto fijo: con dos renglones no puede
+    // dejar un hueco vacío de 300 px.
+    testWidgets('un trasfondo corto no reserva el alto máximo', (tester) async {
+      await pumpSheet(tester, diarista(background: 'Nació en el pantano.'));
+      await openDiario(tester);
+
+      expect(altoDelTrasfondo(tester), lessThan(150));
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('una entrada nueva aparece en la grilla y se guarda', (
       tester,
     ) async {

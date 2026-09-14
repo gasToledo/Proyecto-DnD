@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:test/test.dart';
 
@@ -473,6 +475,30 @@ void main() {
     for (final s in repo.spells.values) {
       expect(metric.hasMatch(s.range), isFalse,
           reason: '${s.id}: alcance en métrico "${s.range}"');
+    }
+  });
+
+  test('ningún catálogo mide en metros', () {
+    // El SRD en español mide en metros y el catálogo en pies: una frase en
+    // metros queda al lado de alcances en pies. Se busca en el texto crudo
+    // porque la prosa vive en campos distintos según el tipo de contenido, y
+    // porque es lo que atrapa a un generador que se olvidó de convertir.
+    // Sin `\b`: en Dart solo conoce letras ASCII, y «5 más» pasaría por medida.
+    final metros = RegExp(r'\d+(,\d+)? m(?![\p{L}\p{N}_])', unicode: true);
+    final archivos = Directory('lib/assets/srd_2024')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.json'));
+    // Y el rastro de haber convertido con `\b`: «CD 5 más» terminaba en
+    // «CD 17 piesás», que ya no tiene metros pero tampoco tiene sentido.
+    final pegadas = RegExp(r'\d+ pies\p{L}', unicode: true);
+    for (final archivo in archivos) {
+      final texto = archivo.readAsStringSync();
+      final hallados = [
+        for (final m in metros.allMatches(texto)) m[0],
+        for (final m in pegadas.allMatches(texto)) m[0],
+      ];
+      expect(hallados, isEmpty, reason: archivo.path);
     }
   });
 

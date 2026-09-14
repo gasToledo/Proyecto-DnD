@@ -35,7 +35,7 @@ const Map<String, WeaponMastery> weaponMasteries = {
     description:
         'Si acertás a una criatura con un ataque cuerpo a cuerpo con esta '
         'arma, podés hacer un ataque cuerpo a cuerpo con ella contra una '
-        'segunda criatura que esté a 1,5 m o menos de la primera y dentro de '
+        'segunda criatura que esté a 5 pies o menos de la primera y dentro de '
         'tu alcance. Si acertás, la segunda criatura sufre el daño del arma, '
         'pero no sumás tu modificador de característica salvo que sea '
         'negativo. Solo una vez por turno.',
@@ -61,7 +61,7 @@ const Map<String, WeaponMastery> weaponMasteries = {
     id: 'push',
     name: 'Empujar',
     description:
-        'Si acertás a una criatura con esta arma, podés empujarla hasta 3 m '
+        'Si acertás a una criatura con esta arma, podés empujarla hasta 10 pies '
         'en línea recta alejándola de vos, siempre que sea Grande o más '
         'pequeña.',
   ),
@@ -77,9 +77,9 @@ const Map<String, WeaponMastery> weaponMasteries = {
     name: 'Ralentizar',
     description:
         'Si acertás a una criatura con esta arma y le causás daño, podés '
-        'reducir su velocidad en 3 m hasta el principio de tu siguiente '
+        'reducir su velocidad en 10 pies hasta el principio de tu siguiente '
         'turno. Varios ataques con esta propiedad no acumulan: la reducción '
-        'nunca supera los 3 m.',
+        'nunca supera los 10 pies.',
   ),
   'topple': WeaponMastery(
     id: 'topple',

@@ -379,7 +379,7 @@
       {
         "level": 1,
         "name": "Excursión de las Nubes",
-        "description": "Como acción adicional, te teletransportás mágicamente hasta 9 m a un espacio sin ocupar que puedas ver.",
+        "description": "Como acción adicional, te teletransportás mágicamente hasta 30 pies a un espacio sin ocupar que puedas ver.",
         "effects": [
           {
             "type": "resource",
@@ -388,7 +388,7 @@
             "max": 0,
             "maxFromProficiency": true,
             "recharge": "long",
-            "description": "Excursión de las nubes: como acción adicional, te teletransportás hasta 9 m a un espacio sin ocupar que puedas ver."
+            "description": "Excursión de las nubes: como acción adicional, te teletransportás hasta 30 pies a un espacio sin ocupar que puedas ver."
           }
         ]
       }
@@ -429,7 +429,7 @@
       {
         "level": 1,
         "name": "Frío de la Escarcha",
-        "description": "Cuando acertás un ataque y causás daño, podés causar además 1d6 de daño de frío y reducir la velocidad del objetivo en 3 m hasta el principio de tu siguiente turno.",
+        "description": "Cuando acertás un ataque y causás daño, podés causar además 1d6 de daño de frío y reducir la velocidad del objetivo en 10 pies hasta el principio de tu siguiente turno.",
         "effects": [
           {
             "type": "resource",
@@ -438,7 +438,7 @@
             "max": 0,
             "maxFromProficiency": true,
             "recharge": "long",
-            "description": "Frío de la escarcha: al acertar un ataque con daño, causás además 1d6 de frío y reducís 3 m la velocidad del objetivo hasta el principio de tu siguiente turno."
+            "description": "Frío de la escarcha: al acertar un ataque con daño, causás además 1d6 de frío y reducís 10 pies la velocidad del objetivo hasta el principio de tu siguiente turno."
           }
         ]
       }
@@ -504,7 +504,7 @@
       {
         "level": 1,
         "name": "Trueno de la Tormenta",
-        "description": "Cuando una criatura a 18 m o menos te causa daño, podés usar una reacción para infligirle 1d8 de daño de trueno.",
+        "description": "Cuando una criatura a 60 pies o menos te causa daño, podés usar una reacción para infligirle 1d8 de daño de trueno.",
         "effects": [
           {
             "type": "resource",
@@ -513,7 +513,7 @@
             "max": 0,
             "maxFromProficiency": true,
             "recharge": "long",
-            "description": "Trueno de la tormenta: como reacción cuando una criatura a 18 m o menos te causa daño, le causás 1d8 de daño de trueno."
+            "description": "Trueno de la tormenta: como reacción cuando una criatura a 60 pies o menos te causa daño, le causás 1d8 de daño de trueno."
           }
         ]
       }

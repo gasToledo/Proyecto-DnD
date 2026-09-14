@@ -4321,7 +4321,7 @@
     "traits": [
       {
         "name": "Fortaleza de muerto viviente",
-        "description": "Si el daño reduce a 0 los puntos de golpe del zombi, hará una tirada de salvación de Constitución (CD 17 piesás el daño sufrido), siempre que el daño no sea radiante o proceda de un crítico. Si la supera, el zombi se queda con 1 punto de golpe."
+        "description": "Si el daño reduce a 0 los puntos de golpe del zombi, hará una tirada de salvación de Constitución (CD 5 más el daño sufrido), siempre que el daño no sea radiante o proceda de un crítico. Si la supera, el zombi se queda con 1 punto de golpe."
       }
     ],
     "actions": [
@@ -16453,7 +16453,7 @@
     "traits": [
       {
         "name": "Fortaleza de muerto viviente",
-        "description": "Si el daño reduce a 0 los puntos de golpe del zombi, hará una tirada de salvación de Constitución (CD 17 piesás el daño sufrido), siempre que el daño no sea radiante o proceda de un crítico. Si la supera, el zombi se queda con 1 punto de golpe."
+        "description": "Si el daño reduce a 0 los puntos de golpe del zombi, hará una tirada de salvación de Constitución (CD 5 más el daño sufrido), siempre que el daño no sea radiante o proceda de un crítico. Si la supera, el zombi se queda con 1 punto de golpe."
       }
     ],
     "actions": [

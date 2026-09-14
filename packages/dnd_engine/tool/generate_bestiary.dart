@@ -118,12 +118,15 @@ int metersToFeet(String meters) {
 String feetify(String text) {
   // Primero los rangos, porque «9/36 m» contiene un número suelto seguido de
   // «m» y la regla de abajo lo partiría al medio.
+  //
+  // Sin `\b`: en Dart solo conoce letras ASCII, así que la «á» de «más» contaba
+  // como borde y «CD 5 más el daño» salía «CD 17 piesás el daño».
   text = text.replaceAllMapped(
-    RegExp(r'(\d+(?:,\d+)?)/(\d+(?:,\d+)?) m\b'),
+    RegExp(r'(\d+(?:,\d+)?)/(\d+(?:,\d+)?) m(?![\p{L}\p{N}_])', unicode: true),
     (m) => '${metersToFeet(m[1]!)}/${metersToFeet(m[2]!)} pies',
   );
   return text.replaceAllMapped(
-    RegExp(r'(\d+(?:,\d+)?) m\b'),
+    RegExp(r'(\d+(?:,\d+)?) m(?![\p{L}\p{N}_])', unicode: true),
     (m) => '${metersToFeet(m[1]!)} pies',
   );
 }

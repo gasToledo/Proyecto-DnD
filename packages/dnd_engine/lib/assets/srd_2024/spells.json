@@ -1486,7 +1486,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Conjurás espíritus de la naturaleza, que aparecen como una manada Grande de animales espectrales en un espacio libre que veas a tu alcance. Tenés ventaja en las salvaciones de Fuerza mientras estés a 1,5 m o menos de la manada, y al moverte en tu turno podés moverla hasta 9 m a otro espacio libre. Cuando la manada se acerca a 3 m o menos de una criatura que veas, o una criatura termina su turno ahí, podés obligarla a hacer una salvación de Destreza: si falla, recibe 3d10 de daño cortante. Cada criatura hace esta tirada una sola vez por turno. Con un espacio de nivel superior, el daño sube 1d10 por nivel por encima del 3.",
+    "description": "Conjurás espíritus de la naturaleza, que aparecen como una manada Grande de animales espectrales en un espacio libre que veas a tu alcance. Tenés ventaja en las salvaciones de Fuerza mientras estés a 5 pies o menos de la manada, y al moverte en tu turno podés moverla hasta 30 pies a otro espacio libre. Cuando la manada se acerca a 10 pies o menos de una criatura que veas, o una criatura termina su turno ahí, podés obligarla a hacer una salvación de Destreza: si falla, recibe 3d10 de daño cortante. Cada criatura hace esta tirada una sola vez por turno. Con un espacio de nivel superior, el daño sube 1d10 por nivel por encima del 3.",
     "classes": [
       "druid",
       "ranger"

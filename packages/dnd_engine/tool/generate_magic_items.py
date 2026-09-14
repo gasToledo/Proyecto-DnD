@@ -184,6 +184,51 @@ def passive_effects(name: str, metadata: str):
     return effects
 
 
+# El PDF mide en metros y el catálogo en pies, igual que en
+# generate_bestiary.dart. content_integrity_test falla si queda algún metro.
+#
+# Estos fragmentos van primero y con los valores del manual en inglés, porque
+# la regla general los resolvería mal: centímetros pegados a una medida en
+# metros (convertir solo la mitad deja «90 cm × 5 pies») y volúmenes cúbicos,
+# cuyo exponente el PDF corta y deja en otra línea en medio de una palabra.
+MEDIDAS_ESPECIALES = [
+    ("01–20 90 cm × 1,5 m", "01–20 3 pies × 1,5 m"),
+    ("\n60 cm de lado y 1,2 m de profundidad", "\n2 pies de lado y 1,2 m de profundidad"),
+    (
+        "Ventana (60 cm por 1,2 m, con una profundi-\ndad de hasta 60 cm)",
+        "Ventana (2 pies por 1,2 m, con una profundi-\ndad de hasta 2 pies)",
+    ),
+    ("1,2 m de altura y 60 cm de ancho", "1,2 m de altura y 2 pies de ancho"),
+    ("9 m de largo\ny 30 cm de ancho", "9 m de largo\ny 1 pie de ancho"),
+    ("volu-\n3\nmen máximo de 2 m .", "volumen máximo de 64 pies cúbicos."),
+    (
+        "en la\n3\nbolsa, que puede albergar 0,03 m de dicho material.",
+        "en la\nbolsa, que puede albergar 1 pie cúbico de dicho material.",
+    ),
+]
+
+
+def pies(metros: str) -> int:
+    # La escala del libro (1,5 m = 5 pies, 12 m = 40), no el factor físico.
+    # `round` de Python redondea al par; esto redondea como Dart.
+    return int(float(metros.replace(",", ".")) * 10 / 3 + 0.5)
+
+
+def feetify(text: str) -> str:
+    for antes, despues in MEDIDAS_ESPECIALES:
+        text = text.replace(antes, despues)
+    text = re.sub(
+        r"(\d+(?:,\d+)?)/(\d+(?:,\d+)?) m\b",
+        lambda m: f"{pies(m[1])}/{pies(m[2])} pies",
+        text,
+    )
+    return re.sub(
+        r"(\d+(?:,\d+)?) m\b",
+        lambda m: f"{pies(m[1])} {'pie' if pies(m[1]) == 1 else 'pies'}",
+        text,
+    )
+
+
 def expand(block):
     names = [block["name"]]
     if "+1, +2 o +3" in block["name"]:
@@ -200,7 +245,7 @@ def expand(block):
                 "category": "magic",
                 "weight": 0,
                 "costCp": cost_cp(item_rarity, block["metadata"]),
-                "description": block["description"],
+                "description": feetify(block["description"]),
                 "rarity": item_rarity,
                 "requiresAttunement": "requiere sintonización" in block["metadata"].lower(),
                 **({"magicBonus": int(match.group(1))} if match else {}),

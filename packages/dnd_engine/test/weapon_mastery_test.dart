@@ -34,6 +34,16 @@ void main() {
     }
   });
 
+  test('las distancias están en pies, como el resto del catálogo', () {
+    // El texto viene del SRD en español, que mide en metros: la ficha mostraba
+    // «a 1,5 m» al lado de alcances en pies.
+    for (final m in weaponMasteries.values) {
+      // Sin `\b`, que en Dart solo conoce letras ASCII.
+      final metros = RegExp(r'\d+(,\d+)? m(?![\p{L}\p{N}_])', unicode: true);
+      expect(m.description, isNot(matches(metros)), reason: m.id);
+    }
+  });
+
   test('los nombres son los oficiales del PHB, no una traducción propia', () {
     // El manual usa Debilitar, Hender, Molestar, Ralentizar y Rozar, que no son
     // las traducciones literales que uno supondría de sap/cleave/vex/slow/graze.

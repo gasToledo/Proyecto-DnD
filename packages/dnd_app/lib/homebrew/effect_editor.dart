@@ -1,37 +1,32 @@
-import 'package:dnd_engine/dnd_engine.dart';
-import 'package:flutter/material.dart';
-
-import '../theme/app_widgets.dart';
-
-const _skills = [
-  'acrobatics',
-  'animal-handling',
-  'arcana',
-  'athletics',
-  'deception',
-  'history',
-  'insight',
-  'intimidation',
-  'investigation',
-  'medicine',
-  'nature',
-  'perception',
-  'performance',
-  'persuasion',
-  'religion',
-  'sleight-of-hand',
-  'stealth',
-  'survival',
-];
+part of 'homebrew_screen.dart';
 
 /// Descripción legible de un efecto, para listarlo en el editor.
-String describeEffect(Effect e) => switch (e) {
+///
+/// Los que nombran contenido (un conjuro, una dote) se resuelven contra el
+/// catálogo: guardado queda el id, que es el contrato con el motor, pero en la
+/// lista se lee el nombre. Un id que ya no existe cae al id crudo en vez de
+/// desaparecer, porque borrar una dote no debería volver ilegible al rasgo que
+/// la concedía.
+String _describeEffect(Effect e, ContentRepository repo) => switch (e) {
   AbilityScoreBonusEffect(:final ability, :final amount) =>
     '${ability.abbr} ${amount >= 0 ? '+$amount' : '$amount'}',
-  SkillProficiencyEffect(:final skill) => 'Competencia: $skill',
+  SetAbilityScoreEffect(:final ability, :final score) =>
+    '${ability.abbr} = $score',
+  SkillProficiencyEffect(:final skill) =>
+    'Competencia: ${Skill.labelFor(skill)}',
   SavingThrowProficiencyEffect(:final ability) => 'Salvación: ${ability.abbr}',
+  SavingThrowBonusEffect(:final amount) => 'Salvaciones +$amount',
+  WeaponProficiencyEffect(:final category) =>
+    'Competencia: ${repo.weapon(category)?.name ?? weaponProficiencyLabel(category)}',
+  ArmorProficiencyEffect(:final category) =>
+    'Competencia: ${armorTrainingLabel(category)}',
+  ToolProficiencyEffect(:final tool) =>
+    'Competencia: ${toolProficiencyLabel(tool)}',
+  LanguageEffect(:final language) => 'Idioma: ${Language.labelFor(language)}',
   ResistanceEffect(:final damageType) =>
     'Resistencia: ${DamageType.labelFor(damageType)}',
+  ImmunityEffect(:final damageType) =>
+    'Inmunidad: ${DamageType.labelFor(damageType)}',
   DarkvisionEffect(:final range) => 'Visión en la oscuridad: $range ft',
   SpeedBonusEffect(:final feet) => 'Velocidad +$feet ft',
   SetSpeedEffect(:final feet) => 'Velocidad = $feet ft',
@@ -41,16 +36,36 @@ String describeEffect(Effect e) => switch (e) {
   PassiveTraitEffect(:final name) => 'Pasiva: $name',
   WeaponMasterySlotsEffect(:final count) => 'Maestrías de arma: $count',
   ExtraAttackEffect(:final extra) => 'Ataque adicional +$extra',
+  GrantFeatEffect(:final featId) =>
+    'Dote: ${featId == null ? 'a elección' : repo.feat(featId)?.name ?? featId}',
+  GrantSpellEffect(:final spellId, :final use) =>
+    'Conjuro: ${repo.spell(spellId)?.name ?? spellId} (${_spellUseLabels[use]})',
+  AlwaysPreparedSpellEffect(:final spellId) =>
+    'Siempre preparado: ${repo.spell(spellId)?.name ?? spellId}',
+  SpellListAdditionEffect(:final spellId) =>
+    'Se suma a tu lista: ${repo.spell(spellId)?.name ?? spellId}',
   _ => e.toJson()['type'].toString(),
 };
 
 /// Editor de una lista de [Effect]. Permite agregar tipos comunes y quitarlos.
+///
+/// ponytail: no edita un efecto ya agregado —se quita y se vuelve a poner— ni
+/// ofrece los efectos de **elección** (`ProficiencyChoiceEffect` y familia), que
+/// piden un subformulario con su propia lista de opciones, ni la maquinaria de
+/// clase (`SpellcastingEffect`, `ResourceEffect`, `CompanionEffect`), que no
+/// aparece en una dote ni en una especie. Todo eso se sigue cargando por JSON e
+/// importando el pack, y el editor lo conserva tal cual: lo que no sabe
+/// describir lo muestra por su tipo, pero nunca lo borra.
 class EffectEditor extends StatefulWidget {
   final List<Effect> effects;
+
+  /// Para nombrar y ofrecer el contenido que un efecto puede conceder.
+  final ContentRepository repo;
   final VoidCallback onChanged;
   const EffectEditor({
     super.key,
     required this.effects,
+    required this.repo,
     required this.onChanged,
   });
 
@@ -82,7 +97,9 @@ class _EffectEditorState extends State<EffectEditor> {
                   ),
                   child: Row(
                     children: [
-                      Expanded(child: Text(describeEffect(entry.value))),
+                      Expanded(
+                        child: Text(_describeEffect(entry.value, widget.repo)),
+                      ),
                       IconButton(
                         tooltip: 'Quitar efecto',
                         icon: const Icon(Icons.delete_outline),
@@ -109,7 +126,7 @@ class _EffectEditorState extends State<EffectEditor> {
   Future<void> _add() async {
     final effect = await showDialog<Effect>(
       context: context,
-      builder: (_) => const _AddEffectDialog(),
+      builder: (_) => _AddEffectDialog(repo: widget.repo),
     );
     if (effect != null) {
       setState(() => widget.effects.add(effect));
@@ -118,39 +135,81 @@ class _EffectEditorState extends State<EffectEditor> {
   }
 }
 
-enum _Kind {
+/// Los tipos que el diálogo sabe construir, en el orden en que se ofrecen:
+/// primero lo que toca los números de la ficha, después lo que concede
+/// competencias, después la magia y por último lo narrativo.
+enum _EffectKind {
   abilityBonus('Bonus a característica'),
+  setAbilityScore('Fijar una característica'),
+  hpPerLevel('PG máx por nivel'),
+  hpFlat('PG máx, una vez'),
+  acBonus('Bonus a CA'),
+  speedBonus('Bonus de velocidad'),
+  setSpeed('Fijar la velocidad'),
+  darkvision('Visión en la oscuridad'),
   skillProf('Competencia en habilidad'),
   saveProf('Competencia en salvación'),
+  saveBonus('Bonus a las salvaciones'),
+  weaponProf('Competencia con armas'),
+  armorProf('Competencia con armadura'),
+  toolProf('Competencia con herramienta'),
+  language('Idioma'),
   resistance('Resistencia a daño'),
-  darkvision('Visión en la oscuridad'),
-  speed('Bonus de velocidad'),
-  acBonus('Bonus a CA'),
-  hpPerLevel('PG máx por nivel'),
+  immunity('Inmunidad a daño'),
+  grantSpell('Conceder un conjuro'),
+  alwaysPrepared('Conjuro siempre preparado'),
+  spellListAddition('Sumar un conjuro a tu lista'),
+  grantFeat('Conceder una dote'),
+  extraAttack('Ataque adicional'),
+  masterySlots('Maestrías de arma'),
   passive('Rasgo pasivo');
 
   final String label;
-  const _Kind(this.label);
+  const _EffectKind(this.label);
 }
 
+/// Cómo se usa un conjuro innato, en español. Se usa para elegirlo y para
+/// describirlo después en la lista.
+const _spellUseLabels = {
+  InnateSpellUse.atWill: 'a voluntad',
+  InnateSpellUse.oncePerLongRest: 'una vez por descanso largo',
+  InnateSpellUse.oncePerShortRest: 'una vez por descanso corto',
+  InnateSpellUse.proficiencyBonusPerLongRest:
+      'tantas veces como tu bono de competencia',
+};
+
 class _AddEffectDialog extends StatefulWidget {
-  const _AddEffectDialog();
+  final ContentRepository repo;
+  const _AddEffectDialog({required this.repo});
   @override
   State<_AddEffectDialog> createState() => _AddEffectDialogState();
 }
 
 class _AddEffectDialogState extends State<_AddEffectDialog> {
-  _Kind _kind = _Kind.abilityBonus;
+  _EffectKind _kind = _EffectKind.abilityBonus;
   Ability _ability = Ability.strength;
-  String _skill = _skills.first;
+  late String _skill = _skillOptions.keys.first;
+  late String _damageType = DamageType.values.first.id;
+  late String _weaponCategory = weaponProficiencyIds.first;
+  late String _armorCategory = armorTrainingIds.first;
+  late String _tool = toolProficiencyIds.first;
+  late String _language = Language.values.first.id;
+
+  /// Arrancan en la primera entrada del catálogo y no en null para que el botón
+  /// Agregar nunca quede sin efecto que construir: el conjuro y la dote son
+  /// listas largas, pero siempre hay uno elegido.
+  late String _spellId = widget.repo.spellsSorted.first.id;
+  late String? _featId = widget.repo.featsSorted.firstOrNull?.id;
+  InnateSpellUse _spellUse = InnateSpellUse.atWill;
+
   final _amountCtrl = TextEditingController(text: '1');
-  final _textCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
 
   @override
   void dispose() {
     _amountCtrl.dispose();
-    _textCtrl.dispose();
+    _nameCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
   }
@@ -158,25 +217,46 @@ class _AddEffectDialogState extends State<_AddEffectDialog> {
   int get _amount => int.tryParse(_amountCtrl.text.trim()) ?? 0;
 
   Effect? _build() => switch (_kind) {
-    _Kind.abilityBonus => AbilityScoreBonusEffect(
+    _EffectKind.abilityBonus => AbilityScoreBonusEffect(
       ability: _ability,
       amount: _amount,
     ),
-    _Kind.skillProf => SkillProficiencyEffect(_skill),
-    _Kind.saveProf => SavingThrowProficiencyEffect(_ability),
-    _Kind.resistance =>
-      _textCtrl.text.trim().isEmpty
-          ? null
-          : ResistanceEffect(_textCtrl.text.trim()),
-    _Kind.darkvision => DarkvisionEffect(_amount),
-    _Kind.speed => SpeedBonusEffect(_amount),
-    _Kind.acBonus => ArmorClassBonusEffect(_amount),
-    _Kind.hpPerLevel => BonusMaxHpPerLevelEffect(_amount),
-    _Kind.passive =>
-      _textCtrl.text.trim().isEmpty
+    _EffectKind.setAbilityScore => SetAbilityScoreEffect(
+      ability: _ability,
+      score: _amount,
+    ),
+    _EffectKind.hpPerLevel => BonusMaxHpPerLevelEffect(_amount),
+    _EffectKind.hpFlat => BonusMaxHpFlatEffect(_amount),
+    _EffectKind.acBonus => ArmorClassBonusEffect(_amount),
+    _EffectKind.speedBonus => SpeedBonusEffect(_amount),
+    _EffectKind.setSpeed => SetSpeedEffect(_amount),
+    _EffectKind.darkvision => DarkvisionEffect(_amount),
+    _EffectKind.skillProf => SkillProficiencyEffect(_skill),
+    _EffectKind.saveProf => SavingThrowProficiencyEffect(_ability),
+    _EffectKind.saveBonus => SavingThrowBonusEffect(_amount),
+    _EffectKind.weaponProf => WeaponProficiencyEffect(_weaponCategory),
+    _EffectKind.armorProf => ArmorProficiencyEffect(_armorCategory),
+    _EffectKind.toolProf => ToolProficiencyEffect(_tool),
+    _EffectKind.language => LanguageEffect(_language),
+    _EffectKind.resistance => ResistanceEffect(_damageType),
+    _EffectKind.immunity => ImmunityEffect(_damageType),
+    _EffectKind.grantSpell => GrantSpellEffect(
+      spellId: _spellId,
+      ability: _ability,
+      use: _spellUse,
+    ),
+    _EffectKind.alwaysPrepared => AlwaysPreparedSpellEffect(spellId: _spellId),
+    _EffectKind.spellListAddition => SpellListAdditionEffect(spellId: _spellId),
+    // Sin dote elegida es "una dote a elección del jugador", que es un efecto
+    // legítimo y no un formulario a medio llenar (la dote de origen 2024).
+    _EffectKind.grantFeat => GrantFeatEffect(featId: _featId),
+    _EffectKind.extraAttack => ExtraAttackEffect(_amount),
+    _EffectKind.masterySlots => WeaponMasterySlotsEffect(_amount),
+    _EffectKind.passive =>
+      _nameCtrl.text.trim().isEmpty
           ? null
           : PassiveTraitEffect(
-              name: _textCtrl.text.trim(),
+              name: _nameCtrl.text.trim(),
               description: _descCtrl.text.trim(),
             ),
   };
@@ -185,22 +265,17 @@ class _AddEffectDialogState extends State<_AddEffectDialog> {
   Widget build(BuildContext context) {
     return AppDialog(
       title: 'Agregar efecto',
-      width: 420,
+      width: 460,
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          DropdownButtonFormField<_Kind>(
-            initialValue: _kind,
-            decoration: const InputDecoration(
-              labelText: 'Tipo',
-              border: OutlineInputBorder(),
-            ),
-            items: _Kind.values
-                .map((k) => DropdownMenuItem(value: k, child: Text(k.label)))
-                .toList(),
-            onChanged: (v) => setState(() => _kind = v ?? _kind),
+          _idDropdown(
+            label: 'Tipo',
+            value: _kind.name,
+            options: {for (final k in _EffectKind.values) k.name: k.label},
+            onChanged: (v) =>
+                setState(() => _kind = _EffectKind.values.byName(v)),
           ),
-          const SizedBox(height: 12),
           ..._fields(),
         ],
       ),
@@ -215,91 +290,149 @@ class _AddEffectDialogState extends State<_AddEffectDialog> {
           primary: true,
           onPressed: () {
             final e = _build();
-            if (e != null) Navigator.of(context).pop(e);
+            // Antes el botón no hacía nada y el diálogo se quedaba abierto sin
+            // decir por qué: un control que no responde se lee como roto.
+            if (e == null) {
+              showAppMessage(
+                context,
+                'Escribí el nombre del rasgo.',
+                tone: AppMessageTone.error,
+              );
+              return;
+            }
+            Navigator.of(context).pop(e);
           },
         ),
       ],
     );
   }
 
-  List<Widget> _fields() {
-    switch (_kind) {
-      case _Kind.abilityBonus:
-        return [_abilityDropdown(), const SizedBox(height: 8), _amountField()];
-      case _Kind.saveProf:
-        return [_abilityDropdown()];
-      case _Kind.skillProf:
-        return [
-          DropdownButtonFormField<String>(
-            initialValue: _skill,
-            decoration: const InputDecoration(
-              labelText: 'Habilidad',
-              border: OutlineInputBorder(),
-            ),
-            items: _skills
-                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                .toList(),
-            onChanged: (v) => setState(() => _skill = v ?? _skill),
-          ),
-        ];
-      case _Kind.resistance:
-        return [
-          TextField(
-            controller: _textCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Tipo de daño (p.ej. fuego)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ];
-      case _Kind.darkvision:
-      case _Kind.speed:
-      case _Kind.acBonus:
-      case _Kind.hpPerLevel:
-        return [_amountField()];
-      case _Kind.passive:
-        return [
-          TextField(
-            controller: _textCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Nombre del rasgo',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _descCtrl,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Descripción',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ];
-    }
-  }
+  List<Widget> _fields() => switch (_kind) {
+    _EffectKind.abilityBonus ||
+    _EffectKind.setAbilityScore => [_abilityDropdown(), _amountField()],
+    _EffectKind.hpPerLevel ||
+    _EffectKind.hpFlat ||
+    _EffectKind.acBonus ||
+    _EffectKind.speedBonus ||
+    _EffectKind.setSpeed ||
+    _EffectKind.darkvision ||
+    _EffectKind.saveBonus ||
+    _EffectKind.extraAttack ||
+    _EffectKind.masterySlots => [_amountField()],
+    _EffectKind.saveProf => [_abilityDropdown()],
+    _EffectKind.skillProf => [
+      _idDropdown(
+        label: 'Habilidad',
+        value: _skill,
+        options: _skillOptions,
+        onChanged: (v) => setState(() => _skill = v),
+      ),
+    ],
+    _EffectKind.weaponProf => [
+      _idDropdown(
+        label: 'Armas',
+        value: _weaponCategory,
+        options: {
+          for (final id in weaponProficiencyIds) id: weaponProficiencyLabel(id),
+          // Un rasgo también puede conceder **un arma concreta** (el Bardo con
+          // el estoque), y ahí el id es el del arma, no una categoría.
+          for (final w in widget.repo.weaponsSorted) w.id: w.name,
+        },
+        onChanged: (v) => setState(() => _weaponCategory = v),
+      ),
+    ],
+    _EffectKind.armorProf => [
+      _idDropdown(
+        label: 'Armadura',
+        value: _armorCategory,
+        options: {
+          for (final id in armorTrainingIds) id: armorTrainingLabel(id),
+        },
+        onChanged: (v) => setState(() => _armorCategory = v),
+      ),
+    ],
+    _EffectKind.toolProf => [
+      _idDropdown(
+        label: 'Herramienta',
+        value: _tool,
+        options: {
+          for (final id in toolProficiencyIds) id: toolProficiencyLabel(id),
+        },
+        onChanged: (v) => setState(() => _tool = v),
+      ),
+    ],
+    _EffectKind.language => [
+      _idDropdown(
+        label: 'Idioma',
+        value: _language,
+        options: {for (final l in Language.values) l.id: l.label},
+        onChanged: (v) => setState(() => _language = v),
+      ),
+    ],
+    _EffectKind.resistance || _EffectKind.immunity => [
+      // Desplegable y no texto libre: escrito a mano, "fuego" no coincide con
+      // el id `fire` y el efecto quedaba guardado sin hacer nada.
+      _damageTypeDropdown(_damageType, (v) => setState(() => _damageType = v)),
+    ],
+    _EffectKind.grantSpell => [
+      _spellDropdown(),
+      _idDropdown(
+        label: 'Cómo se usa',
+        value: _spellUse.name,
+        options: {
+          for (final entry in _spellUseLabels.entries)
+            entry.key.name: entry.value,
+        },
+        onChanged: (v) =>
+            setState(() => _spellUse = InnateSpellUse.values.byName(v)),
+      ),
+      _abilityDropdown(label: 'Característica para lanzarlo'),
+    ],
+    _EffectKind.alwaysPrepared ||
+    _EffectKind.spellListAddition => [_spellDropdown()],
+    _EffectKind.grantFeat => [
+      _idDropdown(
+        label: 'Dote',
+        value: _featId ?? _anyFeat,
+        options: {
+          _anyFeat: 'A elección del jugador',
+          for (final f in widget.repo.featsSorted) f.id: f.name,
+        },
+        onChanged: (v) => setState(() => _featId = v == _anyFeat ? null : v),
+      ),
+    ],
+    _EffectKind.passive => [
+      _text(_nameCtrl, 'Nombre del rasgo'),
+      _text(_descCtrl, 'Descripción', maxLines: 2),
+    ],
+  };
 
-  Widget _abilityDropdown() => DropdownButtonFormField<Ability>(
-    initialValue: _ability,
-    decoration: const InputDecoration(
-      labelText: 'Característica',
-      border: OutlineInputBorder(),
-    ),
+  Widget _spellDropdown() => _idDropdown(
+    label: 'Conjuro',
+    value: _spellId,
+    options: {
+      for (final s in widget.repo.spellsSorted)
+        s.id: s.isCantrip
+            ? '${s.name} (truco)'
+            : '${s.name} (nivel ${s.level})',
+    },
+    onChanged: (v) => setState(() => _spellId = v),
+  );
+
+  Widget _abilityDropdown({String label = 'Característica'}) => _idDropdown(
+    label: label,
+    value: _ability.name,
     // El nombre completo y no la abreviatura: acá se está eligiendo, y "STR"
     // obliga a saber inglés para tomar la decisión. El resumen del efecto ya
     // creado sí usa la abreviatura, que ahí es un rótulo compacto.
-    items: Ability.values
-        .map((a) => DropdownMenuItem(value: a, child: Text(a.label)))
-        .toList(),
-    onChanged: (v) => setState(() => _ability = v ?? _ability),
+    options: {for (final a in Ability.values) a.name: a.label},
+    onChanged: (v) => setState(() => _ability = Ability.values.byName(v)),
   );
 
-  Widget _amountField() => TextField(
-    controller: _amountCtrl,
-    keyboardType: TextInputType.number,
-    decoration: const InputDecoration(
-      labelText: 'Valor',
-      border: OutlineInputBorder(),
-    ),
-  );
+  Widget _amountField() => _text(_amountCtrl, 'Valor', number: true);
 }
+
+/// Valor del desplegable de dote que significa "la elige el jugador". Va como
+/// texto y no como null por lo mismo que [_mundane]: el desplegable no acepta
+/// una opción nula.
+const _anyFeat = 'any';

@@ -9,8 +9,8 @@ import '../data/transfer_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../web/browser.dart' as browser;
-import 'effect_editor.dart';
 
+part 'effect_editor.dart';
 part 'forms/armor_form.dart';
 part 'forms/background_form.dart';
 part 'forms/creature_form.dart';

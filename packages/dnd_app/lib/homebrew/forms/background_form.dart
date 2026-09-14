@@ -76,7 +76,11 @@ class _BackgroundFormState extends State<BackgroundForm> {
         _text(_description, 'Descripción', maxLines: 5),
         const SizedBox(height: 12),
         const Eyebrow('Efectos adicionales'),
-        EffectEditor(effects: _effects, onChanged: () => setState(() {})),
+        EffectEditor(
+          effects: _effects,
+          repo: widget.repo,
+          onChanged: () => setState(() {}),
+        ),
       ],
     );
   }

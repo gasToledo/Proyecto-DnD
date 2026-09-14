@@ -2,7 +2,11 @@ part of '../homebrew_screen.dart';
 
 class FeatForm extends StatefulWidget {
   final Feat? initial;
-  const FeatForm({super.key, this.initial});
+
+  /// Para que el editor de efectos pueda ofrecer y nombrar contenido del
+  /// catálogo (los conjuros y las dotes que la dote conceda).
+  final ContentRepository repo;
+  const FeatForm({super.key, required this.repo, this.initial});
   @override
   State<FeatForm> createState() => _FeatFormState();
 }
@@ -34,7 +38,11 @@ class _FeatFormState extends State<FeatForm> {
         _text(_description, 'Descripción', maxLines: 5),
         const SizedBox(height: 12),
         const Eyebrow('Efectos'),
-        EffectEditor(effects: _effects, onChanged: () => setState(() {})),
+        EffectEditor(
+          effects: _effects,
+          repo: widget.repo,
+          onChanged: () => setState(() {}),
+        ),
       ],
     );
   }

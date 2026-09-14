@@ -124,6 +124,14 @@ const musicalInstrumentProficiencyIds = <String>[
 /// Nombre del entrenamiento con armadura [id] ("light" → "Armadura ligera").
 String armorTrainingLabel(String id) => _armorLabels[id] ?? titleCaseId(id);
 
+/// Las categorías de armadura que se pueden conceder, para ofrecerlas en un
+/// selector. Existe por lo mismo que [toolProficiencyIds]: la tabla es privada
+/// y copiar los ids en la UI era abrir una segunda fuente que se separa.
+List<String> get armorTrainingIds => _armorLabels.keys.toList();
+
+/// Las categorías de arma que se pueden conceder, medias categorías incluidas.
+List<String> get weaponProficiencyIds => _weaponLabels.keys.toList();
+
 /// Nombre de la categoría de arma [id] ("martial" → "Armas marciales").
 ///
 /// Un rasgo también puede conceder competencia con **un arma concreta** por su

@@ -1063,6 +1063,86 @@ void main() {
     expect(saved?.cr, 0.25);
   });
 
+  // El editor de efectos es lo que separa una dote homebrew decorativa de una
+  // que hace algo. Se monta suelto porque lo comparten dote, especie y
+  // trasfondo: probarlo por dentro de uno de los tres ataría la prueba a ese
+  // formulario.
+  Future<List<Effect>> runEffectEditor(
+    WidgetTester tester, {
+    List<Effect> initial = const [],
+  }) async {
+    tester.view.physicalSize = const Size(1000, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final effects = [...initial];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Scaffold(
+          body: EffectEditor(effects: effects, repo: repo, onChanged: () {}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    return effects;
+  }
+
+  /// Elige [option] en el desplegable rotulado [label]. La primera aparición
+  /// del texto es la del campo cerrado; la del menú abierto es la última.
+  Future<void> pickOption(
+    WidgetTester tester,
+    String label,
+    String option,
+  ) async {
+    await tester.tap(
+      find.widgetWithText(DropdownButtonFormField<String>, label),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(option).last);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('el editor concede competencias que antes pedían JSON a mano', (
+    tester,
+  ) async {
+    final effects = await runEffectEditor(tester);
+
+    await tester.tap(find.text('Agregar efecto'));
+    await tester.pumpAndSettle();
+    await pickOption(tester, 'Tipo', 'Competencia con armadura');
+    await pickOption(tester, 'Armadura', 'Escudos');
+    await tester.tap(find.text('Agregar'));
+    await tester.pumpAndSettle();
+
+    expect(effects, hasLength(1));
+    expect((effects.single as ArmorProficiencyEffect).category, 'shield');
+    // Y la fila lo nombra en español, no por el id que viajó al JSON.
+    expect(find.text('Competencia: Escudos'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // Lo que se guarda es el id —el contrato con el motor— pero lo que se lee es
+  // el nombre del catálogo: una lista de ids no dice qué concede el rasgo.
+  testWidgets('la lista nombra el conjuro y la dote que el rasgo concede', (
+    tester,
+  ) async {
+    final spell = repo.spellsSorted.first;
+    final feat = repo.featsSorted.first;
+    await runEffectEditor(
+      tester,
+      initial: [
+        GrantSpellEffect(spellId: spell.id, ability: Ability.charisma),
+        GrantFeatEffect(featId: feat.id),
+        const GrantFeatEffect(),
+      ],
+    );
+
+    expect(find.textContaining('Conjuro: ${spell.name}'), findsOneWidget);
+    expect(find.text('Dote: ${feat.name}'), findsOneWidget);
+    expect(find.text('Dote: a elección'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('unos dados de golpe ilegibles frenan el guardado', (
     tester,
   ) async {

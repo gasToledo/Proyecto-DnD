@@ -2,7 +2,10 @@ part of '../homebrew_screen.dart';
 
 class RaceForm extends StatefulWidget {
   final Race? initial;
-  const RaceForm({super.key, this.initial});
+
+  /// Ver [FeatForm.repo].
+  final ContentRepository repo;
+  const RaceForm({super.key, required this.repo, this.initial});
   @override
   State<RaceForm> createState() => _RaceFormState();
 }
@@ -59,7 +62,11 @@ class _RaceFormState extends State<RaceForm> {
         ),
         const SizedBox(height: 12),
         const Eyebrow('Rasgos (efectos)'),
-        EffectEditor(effects: _effects, onChanged: () => setState(() {})),
+        EffectEditor(
+          effects: _effects,
+          repo: widget.repo,
+          onChanged: () => setState(() {}),
+        ),
       ],
     );
   }

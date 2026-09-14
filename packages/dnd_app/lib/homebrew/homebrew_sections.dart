@@ -1019,9 +1019,11 @@ extension _HomebrewSections on _HomebrewScreenState {
 
   // --------------------------------------------------------------- Dotes
   Future<void> _editFeat([Feat? initial]) async {
-    final f = await Navigator.of(
-      context,
-    ).push<Feat>(MaterialPageRoute(builder: (_) => FeatForm(initial: initial)));
+    final f = await Navigator.of(context).push<Feat>(
+      MaterialPageRoute(
+        builder: (_) => FeatForm(repo: repo, initial: initial),
+      ),
+    );
     if (f == null) return _discarded();
     if (!await _persist(() => store.saveFeat(f))) return;
     repo.feats[f.id] = f;
@@ -1030,9 +1032,11 @@ extension _HomebrewSections on _HomebrewScreenState {
 
   // --------------------------------------------------------------- Razas
   Future<void> _editRace([Race? initial]) async {
-    final r = await Navigator.of(
-      context,
-    ).push<Race>(MaterialPageRoute(builder: (_) => RaceForm(initial: initial)));
+    final r = await Navigator.of(context).push<Race>(
+      MaterialPageRoute(
+        builder: (_) => RaceForm(repo: repo, initial: initial),
+      ),
+    );
     if (r == null) return _discarded();
     if (!await _persist(() => store.saveRace(r))) return;
     repo.races[r.id] = r;

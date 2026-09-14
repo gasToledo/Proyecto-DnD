@@ -509,13 +509,14 @@ class _ReviewRow extends StatelessWidget {
 /// permanente y el motivo de este panel es justamente poder leerla entera.
 class _FeatDetail extends StatelessWidget {
   final Feat feat;
-  const _FeatDetail(this.feat);
+  final ContentRepository repo;
+  const _FeatDetail(this.feat, this.repo);
 
   @override
   Widget build(BuildContext context) {
     final pal = context.palette;
     final scheme = Theme.of(context).colorScheme;
-    final summary = featSummary(feat);
+    final summary = featSummary(feat, repo);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -632,12 +633,14 @@ class _FeatureChoiceGroup extends StatelessWidget {
   final FeatureChoiceSlot slot;
   final List<String> chosen;
   final List<Feat> options;
+  final ContentRepository repo;
   final ValueChanged<List<String>> onChanged;
 
   const _FeatureChoiceGroup({
     required this.slot,
     required this.chosen,
     required this.options,
+    required this.repo,
     required this.onChanged,
   });
 
@@ -679,6 +682,7 @@ class _FeatureChoiceGroup extends StatelessWidget {
               if (feat.repeatable)
                 _FeatureChoiceChip(
                   feat: feat,
+                  repo: repo,
                   count: chosen.where((id) => id == feat.id).length,
                   enabled: !full,
                   accent: pal.gold,
@@ -691,6 +695,7 @@ class _FeatureChoiceGroup extends StatelessWidget {
               else
                 _FeatureChoiceChip(
                   feat: feat,
+                  repo: repo,
                   count: chosen.contains(feat.id) ? 1 : 0,
                   // Con el grupo lleno solo se puede soltar lo ya elegido; un
                   // grupo no revisable ni siquiera eso.
@@ -709,7 +714,7 @@ class _FeatureChoiceGroup extends StatelessWidget {
           if (options.where((f) => f.id == id).firstOrNull case final feat?)
             Padding(
               padding: const EdgeInsets.only(top: 10),
-              child: _FeatDetail(feat),
+              child: _FeatDetail(feat, repo),
             ),
       ],
     );
@@ -720,6 +725,7 @@ class _FeatureChoiceGroup extends StatelessWidget {
 /// puede llevar más de una, y entonces muestra "×N" y un botón para restar.
 class _FeatureChoiceChip extends StatelessWidget {
   final Feat feat;
+  final ContentRepository repo;
   final int count;
   final bool enabled;
   final Color accent;
@@ -728,6 +734,7 @@ class _FeatureChoiceChip extends StatelessWidget {
 
   const _FeatureChoiceChip({
     required this.feat,
+    required this.repo,
     required this.count,
     required this.enabled,
     required this.accent,
@@ -788,10 +795,10 @@ class _FeatureChoiceChip extends StatelessWidget {
                 // Sigue vivo con el chip deshabilitado, que es cuando más falta
                 // hace: el grupo lleno es justo el momento de comparar contra
                 // lo que no elegiste.
-                if (featSummary(feat).isNotEmpty) ...[
+                if (featSummary(feat, repo).isNotEmpty) ...[
                   const SizedBox(width: 6),
                   InkWell(
-                    onTap: () => showFeatDetailsDialog(context, feat),
+                    onTap: () => showFeatDetailsDialog(context, feat, repo),
                     borderRadius: BorderRadius.circular(9),
                     child: Tooltip(
                       message: 'Ver qué hace ${feat.name}',

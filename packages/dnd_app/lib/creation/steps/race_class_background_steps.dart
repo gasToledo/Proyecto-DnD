@@ -63,7 +63,7 @@ class _RaceStep extends StatelessWidget {
                       ],
                       const Eyebrow('Rasgos'),
                       const SizedBox(height: 8),
-                      _TraitList(_TraitList.ofEffects(race.effects)),
+                      _TraitList(readableTraits(race.effects, draft.repo)),
                       if (race.sizeOptions.isNotEmpty) ...[
                         const SizedBox(height: 18),
                         const Eyebrow('Tamaño'),
@@ -337,12 +337,17 @@ class _BackgroundStep extends StatelessWidget {
                       // El renglón de datos de arriba nombra la dote; acá se
                       // dice qué hace. Elegir trasfondo es elegirla, y hasta
                       // ahora el nombre era todo lo que se sabía de ella.
-                      if (repo.feat(bg.originFeatId ?? '')
-                          case final feat?) ...[
+                      // Sin nada que leer, el rótulo quedaba solo: es lo que
+                      // pasaba con Duro antes de describir sus efectos.
+                      if (repo.feat(bg.originFeatId ?? '') case final feat?
+                          when readableTraits(
+                            feat.effects,
+                            repo,
+                          ).isNotEmpty) ...[
                         const Eyebrow('Qué te da su dote de origen'),
                         const SizedBox(height: 8),
                         _TraitList([
-                          for (final t in _TraitList.ofEffects(feat.effects))
+                          for (final t in readableTraits(feat.effects, repo))
                             // Casi toda dote de origen trae un rasgo único con
                             // su mismo nombre, y el renglón de datos de arriba
                             // ya lo dijo. Repetirlo no agrega nada.

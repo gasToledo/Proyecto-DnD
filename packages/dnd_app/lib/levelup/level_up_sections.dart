@@ -402,6 +402,7 @@ extension _LevelUpSections on _LevelUpScreenState {
           _FeatureChoiceGroup(
             slot: slot,
             chosen: _choicesFor(slot.groupId),
+            repo: widget.repo,
             options: widget.repo
                 .featureChoiceOptions(slot)
                 .where(
@@ -1044,7 +1045,10 @@ extension _LevelUpSections on _LevelUpScreenState {
               .where(
                 (feat) =>
                     feat.name.toLowerCase().contains(query) ||
-                    featSummary(feat).toLowerCase().contains(query),
+                    featSummary(
+                      feat,
+                      widget.repo,
+                    ).toLowerCase().contains(query),
               )
               .toList();
     final selected = _featId == null
@@ -1084,7 +1088,7 @@ extension _LevelUpSections on _LevelUpScreenState {
                         return _LevelUpCard(
                           icon: Icons.workspace_premium,
                           title: feat.name,
-                          body: featSummary(feat),
+                          body: featSummary(feat, widget.repo),
                           selected: _featId == feat.id,
                           trailing: SourceBadge(feat.source),
                           onTap: () => _updateState(() => _featId = feat.id),
@@ -1093,7 +1097,7 @@ extension _LevelUpSections on _LevelUpScreenState {
                     ),
             );
             final detail = selected != null
-                ? _FeatDetail(selected)
+                ? _FeatDetail(selected, widget.repo)
                 : _LevelUpCard(
                     icon: Icons.touch_app,
                     title: 'Elegí una dote',

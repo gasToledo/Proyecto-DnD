@@ -408,6 +408,7 @@ class _AptitudesStep extends StatelessWidget {
                       width: w,
                       child: _FeatCard(
                         feat: f,
+                        repo: draft.repo,
                         selected: draft.raceFeatId == f.id,
                         onTap: () {
                           draft.raceFeatId = draft.raceFeatId == f.id
@@ -607,10 +608,12 @@ List<Feat> _eligibleOriginFeats(CreationDraft draft) {
 /// Tarjeta de dote: ícono, nombre, descripción y marca de selección.
 class _FeatCard extends StatelessWidget {
   final Feat feat;
+  final ContentRepository repo;
   final bool selected;
   final VoidCallback onTap;
   const _FeatCard({
     required this.feat,
+    required this.repo,
     required this.selected,
     required this.onTap,
   });
@@ -664,10 +667,10 @@ class _FeatCard extends StatelessWidget {
                         color: scheme.onSurface,
                       ),
                     ),
-                    if (featSummary(feat).isNotEmpty) ...[
+                    if (featSummary(feat, repo).isNotEmpty) ...[
                       const SizedBox(height: 5),
                       Text(
-                        featSummary(feat),
+                        featSummary(feat, repo),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -689,10 +692,10 @@ class _FeatCard extends StatelessWidget {
               //
               // Anida adentro de la tarjeta y funciona: es un `InkWell` propio
               // y no un `FilterChip`, que se queda con todos sus toques.
-              if (featSummary(feat).isNotEmpty) ...[
+              if (featSummary(feat, repo).isNotEmpty) ...[
                 const SizedBox(width: 4),
                 InkWell(
-                  onTap: () => showFeatDetailsDialog(context, feat),
+                  onTap: () => showFeatDetailsDialog(context, feat, repo),
                   customBorder: const CircleBorder(),
                   child: Tooltip(
                     message: 'Ver qué hace ${feat.name}',

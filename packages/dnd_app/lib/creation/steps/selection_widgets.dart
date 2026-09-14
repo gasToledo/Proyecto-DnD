@@ -343,15 +343,6 @@ class _TraitList extends StatelessWidget {
   final List<({String name, String description})> traits;
   const _TraitList(this.traits);
 
-  /// Los rasgos pasivos de una lista de efectos: es de donde salen los de una
-  /// especie o los de una dote.
-  static List<({String name, String description})> ofEffects(
-    List<Effect> effects,
-  ) => [
-    for (final e in effects.whereType<PassiveTraitEffect>())
-      (name: e.name, description: e.description),
-  ];
-
   @override
   Widget build(BuildContext context) {
     // El nombre puede venir vacío a propósito: quien ya lo dijo más arriba lo
@@ -439,7 +430,7 @@ class _FeatureChoiceSelect extends StatelessWidget {
     // dote de origen y la subida de nivel.
     void verDetalle(String id) {
       if (options.where((f) => f.id == id).firstOrNull case final feat?) {
-        showFeatDetailsDialog(context, feat);
+        showFeatDetailsDialog(context, feat, draft.repo);
       }
     }
 

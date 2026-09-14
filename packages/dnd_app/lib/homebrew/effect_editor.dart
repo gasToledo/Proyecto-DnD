@@ -1,52 +1,5 @@
 part of 'homebrew_screen.dart';
 
-/// Descripción legible de un efecto, para listarlo en el editor.
-///
-/// Los que nombran contenido (un conjuro, una dote) se resuelven contra el
-/// catálogo: guardado queda el id, que es el contrato con el motor, pero en la
-/// lista se lee el nombre. Un id que ya no existe cae al id crudo en vez de
-/// desaparecer, porque borrar una dote no debería volver ilegible al rasgo que
-/// la concedía.
-String _describeEffect(Effect e, ContentRepository repo) => switch (e) {
-  AbilityScoreBonusEffect(:final ability, :final amount) =>
-    '${ability.abbr} ${amount >= 0 ? '+$amount' : '$amount'}',
-  SetAbilityScoreEffect(:final ability, :final score) =>
-    '${ability.abbr} = $score',
-  SkillProficiencyEffect(:final skill) =>
-    'Competencia: ${Skill.labelFor(skill)}',
-  SavingThrowProficiencyEffect(:final ability) => 'Salvación: ${ability.abbr}',
-  SavingThrowBonusEffect(:final amount) => 'Salvaciones +$amount',
-  WeaponProficiencyEffect(:final category) =>
-    'Competencia: ${repo.weapon(category)?.name ?? weaponProficiencyLabel(category)}',
-  ArmorProficiencyEffect(:final category) =>
-    'Competencia: ${armorTrainingLabel(category)}',
-  ToolProficiencyEffect(:final tool) =>
-    'Competencia: ${toolProficiencyLabel(tool)}',
-  LanguageEffect(:final language) => 'Idioma: ${Language.labelFor(language)}',
-  ResistanceEffect(:final damageType) =>
-    'Resistencia: ${DamageType.labelFor(damageType)}',
-  ImmunityEffect(:final damageType) =>
-    'Inmunidad: ${DamageType.labelFor(damageType)}',
-  DarkvisionEffect(:final range) => 'Visión en la oscuridad: $range ft',
-  SpeedBonusEffect(:final feet) => 'Velocidad +$feet ft',
-  SetSpeedEffect(:final feet) => 'Velocidad = $feet ft',
-  ArmorClassBonusEffect(:final amount) => 'CA +$amount',
-  BonusMaxHpPerLevelEffect(:final perLevel) => 'PG máx +$perLevel por nivel',
-  BonusMaxHpFlatEffect(:final amount) => 'PG máx +$amount',
-  PassiveTraitEffect(:final name) => 'Pasiva: $name',
-  WeaponMasterySlotsEffect(:final count) => 'Maestrías de arma: $count',
-  ExtraAttackEffect(:final extra) => 'Ataque adicional +$extra',
-  GrantFeatEffect(:final featId) =>
-    'Dote: ${featId == null ? 'a elección' : repo.feat(featId)?.name ?? featId}',
-  GrantSpellEffect(:final spellId, :final use) =>
-    'Conjuro: ${repo.spell(spellId)?.name ?? spellId} (${_spellUseLabels[use]})',
-  AlwaysPreparedSpellEffect(:final spellId) =>
-    'Siempre preparado: ${repo.spell(spellId)?.name ?? spellId}',
-  SpellListAdditionEffect(:final spellId) =>
-    'Se suma a tu lista: ${repo.spell(spellId)?.name ?? spellId}',
-  _ => e.toJson()['type'].toString(),
-};
-
 /// Editor de una lista de [Effect]. Permite agregar tipos comunes y quitarlos.
 ///
 /// ponytail: no edita un efecto ya agregado —se quita y se vuelve a poner— ni
@@ -98,7 +51,13 @@ class _EffectEditorState extends State<EffectEditor> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(_describeEffect(entry.value, widget.repo)),
+                        // Al jugador lo que no se puede describir no se le
+                        // muestra; acá mira quien arma el contenido, y
+                        // ocultarlo escondería un efecto que igual se guarda.
+                        child: Text(
+                          describeEffect(entry.value, widget.repo) ??
+                              entry.value.toJson()['type'].toString(),
+                        ),
                       ),
                       IconButton(
                         tooltip: 'Quitar efecto',
@@ -167,16 +126,6 @@ enum _EffectKind {
   final String label;
   const _EffectKind(this.label);
 }
-
-/// Cómo se usa un conjuro innato, en español. Se usa para elegirlo y para
-/// describirlo después en la lista.
-const _spellUseLabels = {
-  InnateSpellUse.atWill: 'a voluntad',
-  InnateSpellUse.oncePerLongRest: 'una vez por descanso largo',
-  InnateSpellUse.oncePerShortRest: 'una vez por descanso corto',
-  InnateSpellUse.proficiencyBonusPerLongRest:
-      'tantas veces como tu bono de competencia',
-};
 
 class _AddEffectDialog extends StatefulWidget {
   final ContentRepository repo;
@@ -380,7 +329,7 @@ class _AddEffectDialogState extends State<_AddEffectDialog> {
         label: 'Cómo se usa',
         value: _spellUse.name,
         options: {
-          for (final entry in _spellUseLabels.entries)
+          for (final entry in innateSpellUseLabels.entries)
             entry.key.name: entry.value,
         },
         onChanged: (v) =>

@@ -1662,17 +1662,100 @@ String sourceLabel(ContentSource source) => switch (source) {
   ContentSource.homebrew => 'Propio',
 };
 
-/// Resumen legible de una dote. `Feat` no tiene descripción propia: lo que se
-/// muestra sale de sus rasgos pasivos, y si no tiene ninguno, queda vacío.
+/// Cómo se usa un conjuro innato, en español. Lo leen el editor de efectos,
+/// para elegirlo, y [describeEffect], para nombrarlo.
+const innateSpellUseLabels = {
+  InnateSpellUse.atWill: 'a voluntad',
+  InnateSpellUse.oncePerLongRest: 'una vez por descanso largo',
+  InnateSpellUse.oncePerShortRest: 'una vez por descanso corto',
+  InnateSpellUse.proficiencyBonusPerLongRest:
+      'tantas veces como tu bono de competencia',
+};
+
+/// Un efecto en una línea legible, o null si es maquinaria que un jugador no
+/// tiene por qué leer: recursos, listas de conjuros, elecciones.
+///
+/// Lo que nombra contenido (un conjuro, una dote) se resuelve contra el
+/// catálogo: guardado queda el id, que es el contrato con el motor, pero se lee
+/// el nombre. Un id que ya no existe cae al id crudo en vez de desaparecer,
+/// porque borrar una dote no debería volver ilegible al rasgo que la concedía.
+String? describeEffect(Effect e, ContentRepository repo) => switch (e) {
+  AbilityScoreBonusEffect(:final ability, :final amount) =>
+    '${ability.abbr} ${amount >= 0 ? '+$amount' : '$amount'}',
+  SetAbilityScoreEffect(:final ability, :final score) =>
+    '${ability.abbr} = $score',
+  SkillProficiencyEffect(:final skill) =>
+    'Competencia: ${Skill.labelFor(skill)}',
+  SavingThrowProficiencyEffect(:final ability) => 'Salvación: ${ability.abbr}',
+  SavingThrowBonusEffect(:final amount) => 'Salvaciones +$amount',
+  WeaponProficiencyEffect(:final category) =>
+    'Competencia: ${repo.weapon(category)?.name ?? weaponProficiencyLabel(category)}',
+  ArmorProficiencyEffect(:final category) =>
+    'Competencia: ${armorTrainingLabel(category)}',
+  ToolProficiencyEffect(:final tool) =>
+    'Competencia: ${toolProficiencyLabel(tool)}',
+  LanguageEffect(:final language) => 'Idioma: ${Language.labelFor(language)}',
+  ResistanceEffect(:final damageType) =>
+    'Resistencia: ${DamageType.labelFor(damageType)}',
+  ImmunityEffect(:final damageType) =>
+    'Inmunidad: ${DamageType.labelFor(damageType)}',
+  DarkvisionEffect(:final range) => 'Visión en la oscuridad: $range ft',
+  SpeedBonusEffect(:final feet) => 'Velocidad +$feet ft',
+  SetSpeedEffect(:final feet) => 'Velocidad = $feet ft',
+  ArmorClassBonusEffect(:final amount) => 'CA +$amount',
+  BonusMaxHpPerLevelEffect(:final perLevel) => 'PG máx +$perLevel por nivel',
+  BonusMaxHpFlatEffect(:final amount) => 'PG máx +$amount',
+  PassiveTraitEffect(:final name) => 'Pasiva: $name',
+  WeaponMasterySlotsEffect(:final count) => 'Maestrías de arma: $count',
+  ExtraAttackEffect(:final extra) => 'Ataque adicional +$extra',
+  GrantFeatEffect(:final featId) =>
+    'Dote: ${featId == null ? 'a elección' : repo.feat(featId)?.name ?? featId}',
+  GrantSpellEffect(:final spellId, :final use) =>
+    'Conjuro: ${repo.spell(spellId)?.name ?? spellId} (${innateSpellUseLabels[use]})',
+  AlwaysPreparedSpellEffect(:final spellId) =>
+    'Siempre preparado: ${repo.spell(spellId)?.name ?? spellId}',
+  SpellListAdditionEffect(:final spellId) =>
+    'Se suma a tu lista: ${repo.spell(spellId)?.name ?? spellId}',
+  _ => null,
+};
+
+/// Lo que un jugador lee de una lista de efectos: sus rasgos pasivos o, si no
+/// trae ninguno, sus efectos descriptos uno por línea.
+///
+/// Es una cosa o la otra a propósito. 26 dotes del catálogo traen un rasgo que
+/// ya cuenta en prosa lo mismo que su efecto, y sumar las dos lo diría dos
+/// veces. Sin rasgo —Duro, Resiliente, casi todo el homebrew hecho con el
+/// editor— la alternativa era no mostrar nada.
+List<({String name, String description})> readableTraits(
+  List<Effect> effects,
+  ContentRepository repo,
+) {
+  final traits = [
+    for (final t in effects.whereType<PassiveTraitEffect>())
+      (name: t.name, description: t.description),
+  ];
+  if (traits.isNotEmpty) return traits;
+  return [
+    for (final e in effects)
+      if (describeEffect(e, repo) case final line?)
+        (name: line, description: ''),
+  ];
+}
+
+/// Resumen legible de una dote: su descripción si la tiene y, si no, lo que se
+/// lee de sus efectos según [readableTraits].
 ///
 /// Vive acá, y no en una pantalla, porque lo usan tanto el paso de dotes de la
 /// creación como el selector de dote de la subida de nivel.
-String featSummary(Feat feat) {
-  final traits = feat.effects.whereType<PassiveTraitEffect>();
-  if (traits.isEmpty) return '';
+String featSummary(Feat feat, ContentRepository repo) {
+  if (feat.description.isNotEmpty) return feat.description;
+  final traits = readableTraits(feat.effects, repo);
+  // Los rasgos son prosa y se leen seguidos; las líneas de efecto son rótulos
+  // cortos («FUE +1», «Salvación: FUE») que pegados con un espacio se mezclan.
+  final prose = traits.any((t) => t.description.isNotEmpty);
   return traits
       .map((t) => t.description.isEmpty ? t.name : t.description)
-      .join(' ');
+      .join(prose ? ' ' : ' · ');
 }
 
 /// Detalle completo de una dote, para donde el resumen va recortado.
@@ -1682,12 +1765,21 @@ String featSummary(Feat feat) {
 /// solo. Suma los aumentos de característica, que en las dotes de origen son
 /// parte de la decisión y no aparecen en ningún rasgo.
 ///
-/// No enumera el resto de los efectos —listas de conjuros, competencias,
-/// recursos—: son maquinaria del motor y su consecuencia visible ya está
-/// contada en el rasgo que la acompaña.
-void showFeatDetailsDialog(BuildContext context, Feat feat) {
-  final traits = feat.effects.whereType<PassiveTraitEffect>().toList();
+/// Del resto de los efectos muestra lo que deja leer [readableTraits]: con
+/// rasgos pasivos, su consecuencia ya está contada ahí; sin ellos, se
+/// describen.
+void showFeatDetailsDialog(
+  BuildContext context,
+  Feat feat,
+  ContentRepository repo,
+) {
   final bonuses = feat.effects.whereType<AbilityScoreBonusEffect>().toList();
+  // Los aumentos ya van arriba en dorado: sin sacarlos, una dote sin rasgo como
+  // Resiliente los diría dos veces.
+  final traits = readableTraits([
+    for (final e in feat.effects)
+      if (e is! AbilityScoreBonusEffect) e,
+  ], repo);
   showDialog<void>(
     context: context,
     builder: (dialogContext) {
@@ -1705,6 +1797,13 @@ void showFeatDetailsDialog(BuildContext context, Feat feat) {
                 style: TextStyle(color: context.palette.gold),
               ),
               const SizedBox(height: 10),
+            ],
+            if (feat.description.isNotEmpty) ...[
+              Text(
+                feat.description,
+                style: TextStyle(color: muted, height: 1.5),
+              ),
+              if (traits.isNotEmpty) const SizedBox(height: 14),
             ],
             for (var i = 0; i < traits.length; i++) ...[
               if (i > 0) const SizedBox(height: 14),

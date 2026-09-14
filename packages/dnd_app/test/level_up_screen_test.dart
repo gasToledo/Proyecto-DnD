@@ -477,7 +477,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // El texto sale de los rasgos pasivos de la dote, no de un literal.
-    final esperado = featSummary(repo.feat('chef-wisdom')!);
+    final esperado = featSummary(repo.feat('chef-wisdom')!, repo);
     expect(esperado, isNotEmpty);
     // La tarjeta y el panel de detalle comparten el resumen.
     expect(find.text(esperado), findsWidgets);

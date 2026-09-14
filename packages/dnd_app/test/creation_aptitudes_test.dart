@@ -23,6 +23,41 @@ void main() {
     );
   });
 
+  // Duro solo suma PG por nivel y no trae rasgo pasivo: la creación, que leía
+  // únicamente rasgos, lo mostraba sin nada debajo del nombre.
+  group('Una dote sin rasgo pasivo', () {
+    test('se lee por sus efectos en vez de quedar en blanco', () {
+      final duro = repo.feat('tough')!;
+      expect(
+        duro.effects.whereType<PassiveTraitEffect>(),
+        isEmpty,
+        reason: 'premisa del caso',
+      );
+      expect(featSummary(duro, repo), isNotEmpty);
+      expect(
+        featSummary(duro, repo),
+        describeEffect(duro.effects.single, repo),
+      );
+    });
+
+    test('con rasgo pasivo no repite sus efectos', () {
+      // El rasgo ya cuenta en prosa lo que hace: sumar la línea mecánica lo
+      // diría dos veces.
+      final conAmbos = repo.feats.values.firstWhere(
+        (f) =>
+            f.effects.any((e) => e is PassiveTraitEffect) &&
+            f.effects.any(
+              (e) =>
+                  e is! PassiveTraitEffect && describeEffect(e, repo) != null,
+            ),
+      );
+      expect(
+        readableTraits(conAmbos.effects, repo),
+        hasLength(conAmbos.effects.whereType<PassiveTraitEffect>().length),
+      );
+    });
+  });
+
   /// Navega hasta Aptitudes con Humano + Mago + el trasfondo indicado.
   Future<void> gotoAptitudes(
     WidgetTester tester, {
@@ -134,7 +169,7 @@ void main() {
     await tester.pumpAndSettle();
     // El texto sale de los rasgos de la dote, no de un literal escrito acá.
     expect(
-      find.textContaining(featSummary(habilidoso).split('.').first),
+      find.textContaining(featSummary(habilidoso, repo).split('.').first),
       findsWidgets,
     );
     await tester.tap(find.text('Cerrar'));

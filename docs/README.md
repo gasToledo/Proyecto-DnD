@@ -17,6 +17,8 @@ trabajar en el repositorio. Los detalles viven acá, una sola vez.
   precedencia, estructura del catálogo, generadores y verificaciones.
 - [Diseño web](desarrollo/diseno-web.md): lenguaje visual, componentes,
   responsividad y accesibilidad.
+- [Versionado y changelog](desarrollo/versionado-y-changelog.md): versión
+  visible, flujo de releases y formato obligatorio de cambios.
 
 ## Operaciones
 
@@ -38,8 +40,11 @@ trabajar en el repositorio. Los detalles viven acá, una sola vez.
 - Todo pendiente debe citar la ruta o prueba que demuestra que sigue abierto.
 - Si el código y una guía discrepan, manda el código y se corrige la guía en el
   mismo cambio.
+- Cada versión publicada tiene una entrada en
+  [CHANGELOG.md](../CHANGELOG.md), con las categorías Nuevo, Modificado y
+  Eliminado.
 - Manuales, transcripciones y planes privados viven en
   `referencias-locales/`, que Git ignora. No se enlazan como requisito para
   clonar, compilar o mantener el proyecto.
-- Git y las releases conservan el historial. No se duplica en un changelog
-  manual.
+- Git conserva el historial técnico; `CHANGELOG.md` resume el impacto visible
+  de cada versión.

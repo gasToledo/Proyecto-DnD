@@ -100,6 +100,13 @@ const Map<String, WeaponProperty> weaponProperties = {
   ),
 };
 
+/// Lo que significan los dos números del alcance (`Weapon.rangeNormal` y
+/// `Weapon.rangeLong`), que valen igual para A distancia y Arrojadiza.
+const weaponRangeRule =
+    'Hasta el alcance normal se ataca sin problema; entre el normal y el '
+    'largo, con desventaja; más allá del largo no se puede atacar. Se mide '
+    'en pies.';
+
 /// Qué implica cada categoría de arma, por su id (`Weapon.category`).
 const Map<String, String> weaponCategoryRules = {
   'simple':

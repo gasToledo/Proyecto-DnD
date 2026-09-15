@@ -1317,6 +1317,66 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // El alcance no se editaba: un arco propio quedaba en 0 y no había forma de
+  // cargarle a qué distancia dispara.
+  testWidgets('con A distancia marcada se carga el alcance y se guarda', (
+    tester,
+  ) async {
+    final distancia = weaponProperties['ranged']!;
+    final saved = await runForm<Weapon>(
+      tester,
+      const WeaponForm(),
+      edit: () async {
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Nombre'),
+          'Arco de ceniza',
+        );
+        await tester.tap(find.text('Propiedades'));
+        await tester.pumpAndSettle();
+        expect(find.text('Alcance normal (pies)'), findsNothing);
+        await tester.tap(find.widgetWithText(FilterChip, distancia.name));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Alcance normal (pies)'),
+          '80',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Alcance largo (pies)'),
+          '320',
+        );
+        await tester.pumpAndSettle();
+        // La fila de la vista previa lo muestra igual que la lista.
+        expect(find.text('80/320'), findsOneWidget);
+      },
+    );
+
+    expect(saved?.rangeNormal, 80);
+    expect(saved?.rangeLong, 320);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('el alcance largo no puede ser menor que el normal', (
+    tester,
+  ) async {
+    final arco = repo.weapon('shortbow')!;
+    final saved = await runForm<Weapon>(
+      tester,
+      WeaponForm(initial: arco),
+      edit: () async {
+        await tester.tap(find.text('Propiedades'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Alcance largo (pies)'),
+          '${arco.rangeNormal - 10}',
+        );
+      },
+    );
+
+    expect(saved, isNull);
+    expect(find.text('No puede ser menor que el normal.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('unos dados de golpe ilegibles frenan el guardado', (
     tester,
   ) async {

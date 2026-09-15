@@ -8,9 +8,9 @@ part of '../homebrew_screen.dart';
 /// ni «Derribar», y ese es el momento de decírselo. En una pantalla angosta no
 /// hay panel: la explicación aparece debajo del campo.
 ///
-/// ponytail: el alcance normal y largo no se edita (se conserva el del
-/// original). Va en Propiedades, mostrándose con «A distancia» o «Arrojadiza»
-/// marcadas, cuando alguien arme un arco propio.
+/// El alcance va en Propiedades y aparece con «A distancia» o «Arrojadiza»
+/// marcadas: sin una de las dos, el arma no ataca desde lejos y los dos
+/// números no significan nada.
 class WeaponForm extends StatefulWidget {
   final Weapon? initial;
   const WeaponForm({super.key, this.initial});
@@ -32,6 +32,27 @@ class _WeaponFormState extends State<WeaponForm> with _GuidedForm {
   late String _category = widget.initial?.category ?? 'simple';
   late final Set<String> _props = {...?widget.initial?.properties};
   late final _description = watch(widget.initial?.description ?? '');
+  late final _rangeNormal = watch(_rangeText(widget.initial?.rangeNormal));
+  late final _rangeLong = watch(_rangeText(widget.initial?.rangeLong));
+
+  /// 0 es «sin alcance» en el modelo, y en el campo se lee mejor vacío.
+  static String _rangeText(int? feet) =>
+      feet == null || feet <= 0 ? '' : '$feet';
+
+  /// Con alguna de las dos propiedades el arma ataca desde lejos, y entonces
+  /// el alcance es obligatorio: un arco sin alcance no tiene a quién pegarle.
+  bool get _needsRange =>
+      _props.contains('ranged') || _props.contains('thrown');
+
+  String? _rangeLongValue(String? value) {
+    final error = _intInRange(value, 5, 1000, optional: !_needsRange);
+    if (error != null) return error;
+    final normal = int.tryParse(_rangeNormal.text.trim());
+    final long = int.tryParse((value ?? '').trim());
+    return normal != null && long != null && long < normal
+        ? 'No puede ser menor que el normal.'
+        : null;
+  }
 
   /// El arma tal como está escrita.
   ///
@@ -49,8 +70,8 @@ class _WeaponFormState extends State<WeaponForm> with _GuidedForm {
     // Lo que el formulario no muestra se conserva del original, para que
     // editar —o duplicar— un arma del catálogo no le cambie la regla.
     twoHandedUnlessMounted: widget.initial?.twoHandedUnlessMounted ?? false,
-    rangeNormal: widget.initial?.rangeNormal ?? 0,
-    rangeLong: widget.initial?.rangeLong ?? 0,
+    rangeNormal: int.tryParse(_rangeNormal.text.trim()) ?? 0,
+    rangeLong: int.tryParse(_rangeLong.text.trim()) ?? 0,
     versatileDice: _versatile.text.trim().isEmpty
         ? null
         : _versatile.text.trim(),
@@ -99,6 +120,14 @@ class _WeaponFormState extends State<WeaponForm> with _GuidedForm {
           mastery.name,
           mastery.description,
           weaponMasteryRule,
+        );
+      case 'range':
+        final normal = _rangeNormal.text.trim();
+        final long = _rangeLong.text.trim();
+        return _explained(
+          'Alcance',
+          normal.isEmpty ? 'Sin alcance' : '$normal/$long pies',
+          weaponRangeRule,
         );
     }
     final property = weaponProperties[key.substring('prop:'.length)];
@@ -207,7 +236,31 @@ class _WeaponFormState extends State<WeaponForm> with _GuidedForm {
                 validator: (v) => _diceValue(v, optional: true),
               ),
             ],
-            explainHere((f) => f.startsWith('prop:')),
+            // Mismo criterio que el dado versátil: un alcance ya cargado se
+            // sigue viendo aunque se desmarque la propiedad.
+            if (_needsRange ||
+                _rangeNormal.text.trim().isNotEmpty ||
+                _rangeLong.text.trim().isNotEmpty) ...[
+              const SizedBox(height: 6),
+              _fieldRow([
+                _text(
+                  _rangeNormal,
+                  'Alcance normal (pies)',
+                  number: true,
+                  validator: (v) =>
+                      _intInRange(v, 5, 1000, optional: !_needsRange),
+                  onTap: () => focusOn('range'),
+                ),
+                _text(
+                  _rangeLong,
+                  'Alcance largo (pies)',
+                  number: true,
+                  validator: _rangeLongValue,
+                  onTap: () => focusOn('range'),
+                ),
+              ]),
+            ],
+            explainHere((f) => f.startsWith('prop:') || f == 'range'),
           ],
         ),
         section(
@@ -311,6 +364,13 @@ List<(String, String)> _weaponStats(Weapon w) => [
         ? w.damageDice
         : '${w.damageDice} / ${w.versatileDice}',
   ),
+  if (w.rangeNormal > 0)
+    (
+      'Alcance',
+      w.rangeLong > w.rangeNormal
+          ? '${w.rangeNormal}/${w.rangeLong}'
+          : '${w.rangeNormal}',
+    ),
   if (w.weight > 0) ('Peso', '${formatPounds(w.weight)} lb'),
   if (w.costCp > 0) ('Precio', formatCost(w.costCp)),
 ];

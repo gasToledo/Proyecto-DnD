@@ -525,39 +525,8 @@ extension _HomebrewSections on _HomebrewScreenState {
     required VoidCallback onDuplicate,
     required VoidCallback onDelete,
   }) {
-    final pal = context.palette;
-
-    Widget stat((String, String) entry, {required bool wide}) => Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: wide
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
-      children: [
-        Text(
-          entry.$1.toUpperCase(),
-          style: TextStyle(
-            fontSize: 8.5,
-            letterSpacing: 1.2,
-            color: pal.textMuted,
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          entry.$2,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
-        ),
-      ],
-    );
-
-    Widget statsBand({required bool wide}) => Wrap(
-      spacing: 18,
-      runSpacing: 6,
-      children: [for (final entry in stats) stat(entry, wide: wide)],
-    );
+    Widget statsBand({required bool wide}) =>
+        _statBand(context, stats, wide: wide);
 
     return InkWell(
       onTap: onEdit,
@@ -639,23 +608,8 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final w in _filtered(store.weapons.values, (e) => e.name))
         _tile(
           w.name,
-          pills: [
-            _weaponCategories[w.category] ?? w.category,
-            DamageType.labelFor(w.damageType),
-            if (w.magicBonus != 0) '+${w.magicBonus}',
-            for (final property in w.properties)
-              _weaponPropOptions[property] ?? property,
-          ],
-          stats: [
-            (
-              'Daño',
-              w.versatileDice == null
-                  ? w.damageDice
-                  : '${w.damageDice} / ${w.versatileDice}',
-            ),
-            if (w.weight > 0) ('Peso', '${formatPounds(w.weight)} lb'),
-            if (w.costCp > 0) ('Precio', formatCost(w.costCp)),
-          ],
+          pills: _weaponPills(w),
+          stats: _weaponStats(w),
           onEdit: () => _editWeapon(w),
           onDuplicate: () => _openCopy(category, w.toJson()),
           onDelete: () => _delete(

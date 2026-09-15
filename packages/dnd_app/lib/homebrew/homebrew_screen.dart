@@ -28,17 +28,10 @@ part 'homebrew_sections.dart';
 // arriesgarse a que las dos listas se separaran.
 final _skillOptions = {for (final id in Skill.allIds) id: Skill.labelFor(id)};
 
-const _weaponPropOptions = {
-  'finesse': 'Sutil',
-  'versatile': 'Versátil',
-  'two-handed': 'A dos manos',
-  'light': 'Ligera',
-  'heavy': 'Pesada',
-  'thrown': 'Arrojadiza',
-  'ranged': 'A distancia',
-  'ammunition': 'Munición',
-  'reach': 'Alcance',
-  'loading': 'Recarga',
+/// Propiedades de arma, tomadas del glosario del motor: la misma fuente que
+/// explica cada una en el formulario, así el nombre y la regla no se separan.
+final _weaponPropOptions = {
+  for (final p in weaponProperties.values) p.id: p.name,
 };
 
 const _weaponCategories = {'simple': 'Simple', 'martial': 'Marcial'};

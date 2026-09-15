@@ -3,6 +3,7 @@ import 'package:dnd_app/data/characters_controller.dart';
 import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:dnd_app/homebrew/homebrew_screen.dart';
 import 'package:dnd_app/theme/app_theme.dart';
+import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +67,7 @@ void main() {
 
     expect(find.text('Arma'), findsOneWidget);
     expect(find.text('Nombre'), findsOneWidget);
-    expect(find.text('Dado de daño (p.ej. 1d8)'), findsOneWidget);
+    expect(find.text('Dado de daño'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -231,7 +232,11 @@ void main() {
       findsOneWidget,
       reason: 'se abrió el formulario',
     );
-    expect(find.text('Hoz de guerra (copia)'), findsOneWidget);
+    // En el campo: la vista previa del panel repite el nombre a propósito.
+    expect(
+      find.widgetWithText(TextFormField, 'Hoz de guerra (copia)'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
     await tester.pumpAndSettle();
@@ -518,7 +523,7 @@ void main() {
 
     await tester.enterText(find.widgetWithText(TextFormField, 'Nombre'), 'Hoz');
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Dado de daño (p.ej. 1d8)'),
+      find.widgetWithText(TextFormField, 'Dado de daño'),
       'muchos',
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
@@ -548,7 +553,13 @@ void main() {
     await openWeaponForm(tester);
 
     expect(find.text('Marcial'), findsNothing, reason: 'está sin desplegar');
-    expect(find.text('Simple'), findsOneWidget);
+    // Una en el desplegable y otra en la pill de la vista previa.
+    expect(find.text('Simple'), findsWidgets);
+    // Propiedades y maestría son opcionales y arrancan plegadas.
+    await tester.tap(find.text('Propiedades'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Maestría y magia'));
+    await tester.pumpAndSettle();
     expect(find.text('Sutil'), findsOneWidget);
     expect(find.text('finesse'), findsNothing);
     expect(find.text('two-handed'), findsNothing);
@@ -614,6 +625,8 @@ void main() {
 
     // Una maestría ajena al glosario se conserva, marcada como desconocida.
     await abrir(porra('arrancar'));
+    await tester.tap(find.text('Maestría y magia'));
+    await tester.pumpAndSettle();
     expect(find.text('arrancar (desconocido)'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
     await tester.pumpAndSettle();
@@ -621,10 +634,53 @@ void main() {
 
     // Sin maestría se guarda como null y no como cadena vacía.
     await abrir(porra(null));
+    await tester.tap(find.text('Maestría y magia'));
+    await tester.pumpAndSettle();
     expect(find.text('Sin maestría'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
     await tester.pumpAndSettle();
     expect(guardada?.mastery, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  // «Sutil» no dice qué hace, y elegirla es justo cuando hace falta saberlo.
+  // El texto sale del glosario del motor, no de un literal escrito acá.
+  testWidgets(
+    'tocar una propiedad la explica en el panel y en la vista previa',
+    (tester) async {
+      final sutil = weaponProperties['finesse']!;
+      await openWeaponForm(tester);
+
+      expect(find.text('Así queda en tu lista'.toUpperCase()), findsOneWidget);
+      await tester.tap(find.text('Propiedades'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilterChip, sutil.name));
+      await tester.pumpAndSettle();
+
+      expect(find.text(sutil.description), findsOneWidget);
+      // La fila de la vista previa es la misma que después muestra la lista.
+      expect(find.widgetWithText(GoldPill, sutil.name), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  // Por debajo de 900 px no entra el panel: lo que explica queda debajo del
+  // campo que se está tocando.
+  testWidgets('angosto, la explicación va debajo del campo', (tester) async {
+    final derribar = weaponMasteries['topple']!;
+    await openWeaponForm(tester);
+    tester.view.physicalSize = const Size(700, 1400);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Así queda en tu lista'.toUpperCase()), findsNothing);
+    await tester.tap(find.text('Maestría y magia'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sin maestría'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(derribar.name).last);
+    await tester.pumpAndSettle();
+
+    expect(find.text(derribar.description), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -100,6 +100,12 @@ const Map<String, WeaponMastery> weaponMasteries = {
   ),
 };
 
+/// La condición para aprovechar cualquier maestría, que el glosario no repite
+/// en cada entrada.
+const weaponMasteryRule =
+    'Solo la aprovecha quien tiene el rasgo Maestría con armas y es competente '
+    'con el arma.';
+
 /// Nombre en español de una maestría, o el identificador si es desconocida
 /// (puede venir de homebrew o de una importación).
 String weaponMasteryName(String id) => weaponMasteries[id]?.name ?? id;

@@ -448,6 +448,18 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `_WeaponSelect` / `_WeaponChecklist` | Pickers de armas con búsqueda y agrupación Simples/Marciales, **acotados a 300 px de alto con scroll propio** |
 | `SpendRecoverButtons` | Par −/+ para gastar y restaurar un uso |
 
+### Formularios homebrew
+
+En `lib/homebrew/forms/form_widgets.dart`, para los ocho formularios de contenido propio. Hoy los usa entero el de arma; el resto va migrando.
+
+| Componente | Qué es | Regla |
+| --- | --- | --- |
+| `_FormScaffold` | El armazón: `Form` con Guardar siempre habilitado y, con `panel`, dos columnas desde 900 px (campos a la izquierda, panel de 400 a la derecha) | Por debajo de 900 no hay panel; lo que igual tiene que decirse va entre los campos con `_WithoutPanel` |
+| `_FormSection` | Sección plegable con la forma de `sheetCard` y el resumen de lo ya cargado en la cabecera | Plegada **no desmonta** su contenido, para que sus campos sigan validando. Si Guardar falla, el formulario las abre (`onInvalid`) |
+| `_Explanation` | Qué significa lo que se está eligiendo: rótulo dorado, título Georgia 20, regla y nota atenuada, sobre `plaque` | Los textos salen de glosarios del motor (`weaponProperties`, `weaponMasteries`, `DamageType.description`), nunca de la pantalla |
+| `_ChosenList` | «Lo que ya elegiste»: cada elección con su explicación corta | No repite lo que ya está explicando `_Explanation` |
+| `_fieldRow` | Campos en una fila hasta 520 px, apilados por debajo | Mismo corte que las filas de la lista (`_rowWideWidth`) |
+
 ### Retroalimentación
 
 | Componente | Qué es | Regla |

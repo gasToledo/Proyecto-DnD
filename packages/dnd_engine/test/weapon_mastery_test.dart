@@ -66,6 +66,18 @@ void main() {
     }
   });
 
+  test('toda propiedad y categoría del catálogo tiene su regla', () {
+    // El formulario homebrew explica cada una al elegirla: una que faltara en
+    // el glosario se ofrecería sin decir qué hace.
+    for (final w in repo.weapons.values) {
+      for (final p in w.properties) {
+        expect(weaponProperties, contains(p),
+            reason: '${w.id}: propiedad "$p"');
+      }
+      expect(weaponCategoryRules, contains(w.category), reason: w.id);
+    }
+  });
+
   test('una maestría desconocida cae en su identificador sin romper', () {
     // Puede venir de homebrew o de una importación, que son datos no confiables.
     expect(weaponMasteryName('inventada'), 'inventada');

@@ -1538,7 +1538,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Buscar en el cuaderno'), findsOneWidget);
-      expect(find.text('La cripta sellada'), findsOneWidget);
+      expect(find.text('La cripta sellada').last, findsOneWidget);
       expect(
         find.text('Todavía no hay nada anotado en este capítulo.'),
         findsOneWidget,

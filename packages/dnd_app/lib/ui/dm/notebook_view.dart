@@ -27,6 +27,7 @@ import '../../theme/app_widgets.dart';
 class NotebookView extends StatefulWidget {
   final List<Chapter> chapters;
   final Notebook? notebook;
+  final String? initialChapterId;
   final bool loading;
   final Object? error;
 
@@ -38,6 +39,7 @@ class NotebookView extends StatefulWidget {
     super.key,
     required this.chapters,
     required this.notebook,
+    this.initialChapterId,
     required this.loading,
     required this.error,
     required this.onRetry,
@@ -70,7 +72,8 @@ class _NotebookViewState extends State<NotebookView> {
   Set<String> get _open {
     return _expanded ??= {
       for (final c in widget.chapters)
-        if (c.state == ChapterState.active) c.id,
+        if (c.state == ChapterState.active || c.id == widget.initialChapterId)
+          c.id,
     };
   }
 

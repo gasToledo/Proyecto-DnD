@@ -129,8 +129,8 @@ Los capítulos (migración `0008_chapters`) viven en su propia tabla, keyeada po
 campaña porque entonces renombrarla reescribiría todos sus capítulos, y ese
 documento crecería sin techo.
 
-**La descripción de un capítulo no la lee ningún jugador**, ni siquiera con el
-capítulo cerrado: la escribe el DM y no viaja a ninguna cuenta ajena.
+**El objetivo de un capítulo no lo lee ningún jugador**, ni siquiera con el
+capítulo cerrado: lo escribe el DM y no viaja a ninguna cuenta ajena.
 
 Lo que sí cambió: el jugador ahora ve el **nombre** y las recompensas de los
 capítulos ya cerrados de su campaña, desde la pestaña Campaña de su ficha (ver
@@ -331,8 +331,8 @@ estar bien.
 
 Lo que la respuesta **no** lleva, y no por olvido:
 
-- **La descripción de los capítulos.** `Chapter.summary` es lo que el DM escribe
-  adentro del capítulo, y su propia documentación dice que no la ve ningún
+- **El objetivo de los capítulos.** `Chapter.summary` es lo que el DM escribe
+  adentro del capítulo, y su propia documentación dice que no lo ve ningún
   jugador ni siquiera con el capítulo cerrado. Se poda en `_playerChapterJson`,
   y hay una prueba que busca el texto en el cuerpo entero de la respuesta — no
   en un campo, para que también agarre el día que alguien lo anide en otro lado.
@@ -384,9 +384,9 @@ El subgrupo `capítulos` agrega:
 El subgrupo `campaña vista por el jugador` agrega:
 
 - el jugador ve su campaña con los capítulos cerrados y las batallas;
-- **la descripción del capítulo no aparece en el cuerpo** — y la misma prueba
-  comprueba primero que el DM sí la ve, para no pasar por tener un capítulo sin
-  descripción;
+- **el objetivo del capítulo no aparece en el cuerpo** — y la misma prueba
+  comprueba primero que el DM sí lo ve, para no pasar por tener un capítulo sin
+  objetivo;
 - los capítulos `planned` y `active` no se devuelven;
 - las notas del cuaderno no se devuelven;
 - no viaja el id de la campaña ni el del DM;

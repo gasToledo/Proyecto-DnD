@@ -411,7 +411,7 @@ void main() {
     }
 
     /// Crea un capítulo desde el diálogo. Los campos van en el orden en que se
-    /// leen: nombre, descripción, oro e ítems.
+    /// leen: nombre, objetivo, oro e ítems.
     Future<void> newChapter(
       WidgetTester tester,
       String name, {
@@ -1526,6 +1526,25 @@ void main() {
       await tester.tap(find.text('Cuaderno'));
       await tester.pumpAndSettle();
     }
+
+    testWidgets('un capítulo abre directamente su bloque del Cuaderno', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedChapter);
+      await tester.tap(find.text('Capítulos'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(TextButton, 'Ver en Cuaderno'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Buscar en el cuaderno'), findsOneWidget);
+      expect(find.text('La cripta sellada'), findsOneWidget);
+      expect(
+        find.text('Todavía no hay nada anotado en este capítulo.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets('sin capítulos manda a crear uno primero', (tester) async {
       await pumpDmMode(tester, seed: seedTable);

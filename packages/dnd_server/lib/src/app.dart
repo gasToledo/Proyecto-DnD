@@ -879,11 +879,11 @@ Future<Response> _listCharacterSharesHandler(
   });
 }
 
-/// Un capítulo tal como puede verlo el jugador: **sin la descripción**.
+/// Un capítulo tal como puede verlo el jugador: **sin el objetivo**.
 ///
-/// No es una omisión defensiva de más. `Chapter.summary` es lo que el DM
-/// escribe adentro del capítulo, y su propia documentación dice que no la ve
-/// ningún jugador ni siquiera con el capítulo ya cerrado. Mandarla acá sería
+/// No es una omisión defensiva de más. `Chapter.summary` es el objetivo que el
+/// DM escribe adentro del capítulo, y su propia documentación dice que no lo ve
+/// ningún jugador ni siquiera con el capítulo ya cerrado. Mandarlo acá sería
 /// publicar las notas del DM en la ficha de cada jugador de la mesa.
 ///
 /// `Chapter.fromJson` la default-ea a vacío, así que del otro lado el campo
@@ -912,7 +912,7 @@ Map<String, dynamic> _playerChapterJson(Chapter chapter) =>
 /// `dm_user_id`»). Si alguna vez este handler deja de arrancar por
 /// `listSharesForCharacter`, deja de estar bien.
 ///
-/// Lo que **no** viaja, y no por olvido: la descripción de los capítulos (ver
+/// Lo que **no** viaja, y no por olvido: el objetivo de los capítulos (ver
 /// [_playerChapterJson]), los capítulos que todavía no se cerraron, las notas
 /// del cuaderno, el id de la campaña y el del DM. La clave de cada bloque es el
 /// `memberId`, que ya es el asa que el jugador tiene sobre el vínculo.

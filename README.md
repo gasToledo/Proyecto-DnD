@@ -101,12 +101,13 @@ de las dos cosas toca la ficha. Cada vez que algo de esto pasa, a la otra parte
 le llega el aviso la próxima vez que abre la aplicación.
 
 La pestaña **Capítulos** divide la campaña en tramos: cada uno con su nombre y
-su descripción, y pasando de **Próximamente** a **En marcha** y a **Completado**.
+un objetivo breve, y pasando de **Próximamente** a **En marcha** y a
+**Completado**.
 Solo podés tener uno en marcha a la vez. Al cerrar uno, a cada jugador de la
 mesa le llega el aviso — y si marcaste que ese capítulo sube de nivel, el aviso
 se lo dice. Subir de nivel lo sigue haciendo cada jugador desde su ficha: la
-aplicación no se lo aplica a nadie. La descripción que escribís en un capítulo
-es solo tuya, los jugadores no la ven.
+aplicación no se lo aplica a nadie. El objetivo que escribís en un capítulo es
+solo tuyo, los jugadores no lo ven.
 
 Al cerrar un capítulo también podés declarar qué se lleva la mesa: oro por
 personaje y objetos por nombre. Se los anuncia el aviso y cada jugador lo anota
@@ -139,7 +140,7 @@ en qué mesa está y quiénes más juegan, las batallas que se pelearon —agrup
 por capítulo, con cuántas rondas duraron y cuántos enemigos cayeron— y los
 capítulos ya cerrados con lo que repartió cada uno.
 
-Lo que no ve: el capítulo en marcha, ni la descripción que el DM escribió en
+Lo que no ve: el capítulo en marcha, ni el objetivo que el DM escribió en
 ninguno. De lo que están jugando ahora se entera en la mesa, que es donde
 corresponde.
 

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 
-/// Editor de un capítulo: nombre, descripción y qué reparte al cerrarse.
+/// Editor de un capítulo: nombre, objetivo y qué reparte al cerrarse.
 ///
 /// Es un diálogo propio y no `showTextPromptDialog` porque ese resuelve un solo
 /// campo y acá hacen falta varios. Devuelve el capítulo con los cambios, o `null`
@@ -100,12 +100,13 @@ class _ChapterEditorDialogState extends State<_ChapterEditorDialog> {
           const SizedBox(height: 16),
           TextField(
             controller: _summaryController,
-            minLines: 4,
-            maxLines: 8,
+            minLines: 2,
+            maxLines: 4,
             keyboardType: TextInputType.multiline,
             decoration: const InputDecoration(
-              labelText: 'Descripción',
-              hintText: 'Qué pasa en este tramo de la historia…',
+              labelText: 'Objetivo del capítulo',
+              hintText: 'Qué debería lograr o descubrir la mesa…',
+              helperText: 'Una guía breve; el relato va en el Cuaderno.',
               alignLabelWithHint: true,
               border: OutlineInputBorder(),
             ),

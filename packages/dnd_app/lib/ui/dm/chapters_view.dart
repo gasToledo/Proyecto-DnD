@@ -21,6 +21,7 @@ class ChaptersView extends StatelessWidget {
   final void Function(Chapter chapter) onStart;
   final void Function(Chapter chapter) onClose;
   final void Function(Chapter chapter) onDelete;
+  final void Function(Chapter chapter) onOpenNotebook;
 
   const ChaptersView({
     super.key,
@@ -33,6 +34,7 @@ class ChaptersView extends StatelessWidget {
     required this.onStart,
     required this.onClose,
     required this.onDelete,
+    required this.onOpenNotebook,
   });
 
   @override
@@ -90,6 +92,7 @@ class ChaptersView extends StatelessWidget {
                   onStart: () => onStart(chapter),
                   onClose: () => _confirmClose(context, chapter),
                   onDelete: () => _confirmDelete(context, chapter),
+                  onOpenNotebook: () => onOpenNotebook(chapter),
                 ),
               ),
           ],
@@ -170,6 +173,7 @@ class _ChapterCard extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback onClose;
   final VoidCallback onDelete;
+  final VoidCallback onOpenNotebook;
 
   const _ChapterCard({
     required this.chapter,
@@ -177,6 +181,7 @@ class _ChapterCard extends StatelessWidget {
     required this.onStart,
     required this.onClose,
     required this.onDelete,
+    required this.onOpenNotebook,
   });
 
   @override
@@ -222,7 +227,7 @@ class _ChapterCard extends StatelessWidget {
           if (chapter.summary.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              chapter.summary,
+              'Objetivo: ${chapter.summary}',
               style: TextStyle(
                 fontSize: 13,
                 color: isDone ? pal.textMuted : null,
@@ -260,6 +265,11 @@ class _ChapterCard extends StatelessWidget {
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
+              TextButton.icon(
+                onPressed: onOpenNotebook,
+                icon: const Icon(Icons.menu_book_outlined),
+                label: const Text('Ver en Cuaderno'),
+              ),
               if (chapter.state == ChapterState.planned)
                 FilledButton.icon(
                   onPressed: onStart,

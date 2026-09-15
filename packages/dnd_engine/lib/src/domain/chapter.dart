@@ -42,10 +42,9 @@ class Chapter {
   final String id;
   final String name;
 
-  /// Descripción libre, de varias líneas: qué pasa en este tramo de la
-  /// historia. La escribe el DM y **no la ve ningún jugador** — de un capítulo
-  /// solo se entera cuando ya está cerrado, y ni siquiera entonces se le
-  /// muestra este texto.
+  /// Objetivo o premisa breve de este tramo de la historia. La escribe el DM
+  /// y **no la ve ningún jugador** — de un capítulo solo se entera cuando ya
+  /// está cerrado, y ni siquiera entonces se le muestra este texto.
   final String summary;
 
   final ChapterState state;

@@ -55,6 +55,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
   /// De regalo, las cuatro asignaciones de `_section = mesa` que ya existían
   /// (elegir campaña, crearla, borrarla) salen del Bestiario solas.
   _CampaignSection? _section = _CampaignSection.mesa;
+  String? _notebookChapterId;
   Object? _loadError;
 
   Campaign? get _effectiveSelection =>
@@ -104,6 +105,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
       setState(() {
         _selected = created;
         _section = _CampaignSection.mesa;
+        _notebookChapterId = null;
       });
     } on ApiException catch (e) {
       if (mounted) {
@@ -163,6 +165,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
         setState(() {
           _selected = null;
           _section = _CampaignSection.mesa;
+          _notebookChapterId = null;
         });
       }
     } on ApiException catch (e) {
@@ -403,6 +406,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
         setState(() {
           _selected = campaign;
           _section = _CampaignSection.mesa;
+          _notebookChapterId = null;
         });
         if (inDrawer) Navigator.of(context).pop();
       },
@@ -410,8 +414,18 @@ class _DmModeScreenState extends State<DmModeScreen> {
   }
 
   void _selectSection(_CampaignSection? section, {required bool inDrawer}) {
-    setState(() => _section = section);
+    setState(() {
+      _section = section;
+      _notebookChapterId = null;
+    });
     if (inDrawer) Navigator.of(context).pop();
+  }
+
+  void _openNotebook(String chapterId) {
+    setState(() {
+      _section = _CampaignSection.cuaderno;
+      _notebookChapterId = chapterId;
+    });
   }
 
   Widget _content(BuildContext context) {
@@ -453,10 +467,12 @@ class _DmModeScreenState extends State<DmModeScreen> {
           key: ValueKey(campaign.id),
           campaign: campaign,
           section: section,
+          notebookChapterId: _notebookChapterId,
           api: widget.api,
           repo: widget.repo,
           onEdit: () => _editCampaign(campaign),
           onDelete: () => _deleteCampaign(campaign),
+          onOpenNotebook: _openNotebook,
         );
       },
     );
@@ -614,19 +630,23 @@ class _OnboardingStep extends StatelessWidget {
 class _CampaignDetail extends StatefulWidget {
   final Campaign campaign;
   final _CampaignSection section;
+  final String? notebookChapterId;
   final ApiClient api;
   final ContentRepository repo;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final void Function(String chapterId) onOpenNotebook;
 
   const _CampaignDetail({
     super.key,
     required this.campaign,
     required this.section,
+    required this.notebookChapterId,
     required this.api,
     required this.repo,
     required this.onEdit,
     required this.onDelete,
+    required this.onOpenNotebook,
   });
 
   @override
@@ -1336,10 +1356,12 @@ class _CampaignDetailState extends State<_CampaignDetail> {
               onStart: _startChapter,
               onClose: _closeChapter,
               onDelete: _deleteChapter,
+              onOpenNotebook: (chapter) => widget.onOpenNotebook(chapter.id),
             ),
             _CampaignSection.cuaderno => NotebookView(
               chapters: _chapters ?? const [],
               notebook: _notebook,
+              initialChapterId: widget.notebookChapterId,
               loading: _notebookLoading || _chaptersLoading,
               error: _notebookError ?? _chaptersError,
               onRetry: () {

@@ -722,6 +722,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // La base es de lo opcional y arranca plegada.
+    await tester.tap(find.text('Objeto base').first);
+    await tester.pumpAndSettle();
+
     // Sin objeto base no hay nada que restringir: el bloque no está.
     expect(find.text('BASES PERMITIDAS'), findsNothing);
 
@@ -887,6 +891,8 @@ void main() {
         find.widgetWithText(TextFormField, 'Nombre'),
         'Broche protector',
       );
+      await tester.tap(find.text('Efectos mientras esté equipado'));
+      await settle();
       await tester.enterText(
         find.widgetWithText(
           TextFormField,
@@ -959,6 +965,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Agregar objeto'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Magia'));
+    await tester.pumpAndSettle();
 
     final toggle = find.widgetWithText(
       SwitchListTile,
@@ -1028,7 +1036,7 @@ void main() {
               onPressed: () async => saved = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => CreatureForm(initial: initial),
+                  builder: (_) => CreatureForm(repo: repo, initial: initial),
                 ),
               ),
               child: const Text('Abrir'),
@@ -1196,6 +1204,116 @@ void main() {
     expect(find.textContaining('Conjuro: ${spell.name}'), findsOneWidget);
     expect(find.text('Dote: ${feat.name}'), findsOneWidget);
     expect(find.text('Dote: a elección'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  /// Abre [form] desde un botón y devuelve lo que se guardó al pulsar Guardar
+  /// después de [edit]. Null si el formulario no dejó guardar.
+  Future<T?> runForm<T>(
+    WidgetTester tester,
+    Widget form, {
+    Future<void> Function()? edit,
+  }) async {
+    tester.view.physicalSize = const Size(1200, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    T? saved;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: FilledButton(
+              onPressed: () async => saved = await Navigator.push<T>(
+                context,
+                MaterialPageRoute(builder: (_) => form),
+              ),
+              child: const Text('Abrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+    if (edit != null) await edit();
+    await tester.tap(find.widgetWithText(FilledButton, 'Guardar'));
+    await tester.pumpAndSettle();
+    return saved;
+  }
+
+  // Con menos de tres, la creación no puede repartir el +2/+1: el trasfondo
+  // se guardaba igual y quedaba inservible.
+  testWidgets('el trasfondo exige exactamente tres características', (
+    tester,
+  ) async {
+    final original = repo.backgroundsSorted.first;
+    final saved = await runForm<Background>(
+      tester,
+      BackgroundForm(initial: original, repo: repo),
+      edit: () async {
+        await tester.tap(
+          find.widgetWithText(FilterChip, original.abilityOptions.first.abbr),
+        );
+        await tester.pumpAndSettle();
+      },
+    );
+
+    expect(saved, isNull);
+    expect(
+      find.text('Elegí exactamente tres características.'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  // «Tope +2» no dice nada hasta que se ve la CA que queda; la cuenta es la
+  // del motor, la misma que usa la ficha.
+  testWidgets('la vista previa de la armadura muestra la CA de la ficha', (
+    tester,
+  ) async {
+    final media = repo.armorPiece('breastplate')!;
+    await runForm<Armor>(
+      tester,
+      ArmorForm(initial: media),
+      edit: () async {
+        expect(find.text('${media.armorClassFor(3)}'), findsOneWidget);
+        expect(find.text('CA con DES +3'.toUpperCase()), findsOneWidget);
+      },
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  // El catálogo entero guarda los componentes como una línea, y así los lee
+  // el detalle del conjuro: elegirlos de a uno no puede cambiar ese formato.
+  testWidgets('los componentes se eligen de a uno y se guardan en una línea', (
+    tester,
+  ) async {
+    final saved = await runForm<Spell>(
+      tester,
+      const SpellForm(),
+      edit: () async {
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Nombre'),
+          'Lanza de ceniza',
+        );
+        await tester.tap(find.text('Componentes'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilterChip, 'M · Material'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(
+            TextFormField,
+            'Material (p.ej. una pizca de ceniza)',
+          ),
+          'una pizca de ceniza',
+        );
+        await tester.pumpAndSettle();
+        expect(find.text(spellComponentRules['M']!), findsOneWidget);
+      },
+    );
+
+    expect(saved?.components, 'V, S, M (una pizca de ceniza)');
     expect(tester.takeException(), isNull);
   });
 

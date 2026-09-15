@@ -1044,12 +1044,7 @@ class CharacterCompiler {
         .firstOrNull;
     final shield = equipped.where((e) => e.armor?.isShield == true).firstOrNull;
     if (armor != null && !armor.isShield) {
-      ac = armor.baseAc;
-      if (armor.addDexMod) {
-        ac += armor.maxDexBonus == null
-            ? dexMod
-            : min(dexMod, armor.maxDexBonus!);
-      }
+      ac = armor.armorClassFor(dexMod);
     } else if (b.unarmoredDefenseAbility != null) {
       // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
       // El Monje la pierde si empuña un escudo; el Bárbaro la conserva.

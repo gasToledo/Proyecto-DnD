@@ -450,13 +450,15 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 
 ### Formularios homebrew
 
-En `lib/homebrew/forms/form_widgets.dart`, para los ocho formularios de contenido propio. Hoy los usa entero el de arma; el resto va migrando.
+En `lib/homebrew/forms/form_widgets.dart`, para los ocho formularios de contenido propio. Todos siguen la misma forma: arriba lo que hace falta para guardar, la regla «Lo demás es opcional» y el resto en secciones plegadas; al costado, cómo va a quedar y qué significa lo que se está tocando.
 
 | Componente | Qué es | Regla |
 | --- | --- | --- |
-| `_FormScaffold` | El armazón: `Form` con Guardar siempre habilitado y, con `panel`, dos columnas desde 900 px (campos a la izquierda, panel de 400 a la derecha) | Por debajo de 900 no hay panel; lo que igual tiene que decirse va entre los campos con `_WithoutPanel` |
-| `_FormSection` | Sección plegable con la forma de `sheetCard` y el resumen de lo ya cargado en la cabecera | Plegada **no desmonta** su contenido, para que sus campos sigan validando. Si Guardar falla, el formulario las abre (`onInvalid`) |
-| `_Explanation` | Qué significa lo que se está eligiendo: rótulo dorado, título Georgia 20, regla y nota atenuada, sobre `plaque` | Los textos salen de glosarios del motor (`weaponProperties`, `weaponMasteries`, `DamageType.description`), nunca de la pantalla |
+| `_GuidedForm` | Mixin del estado de cada formulario: foco, secciones abiertas y panel lateral (`guidePanel`) | Cada formulario solo pone `explain` (qué significa cada clave) y `chosenKeys`; los controladores van por `watch`, que redibuja la vista previa y los libera |
+| `_FormScaffold` | El armazón: `Form` con Guardar siempre habilitado y, con `panel`, dos columnas desde 900 px (campos a la izquierda, panel de 400 a la derecha) | Por debajo de 900 no hay panel; la explicación va debajo del campo con `explainHere` |
+| `_FormSection` | Sección plegable con la forma de `sheetCard` y el resumen de lo ya cargado en la cabecera | Plegada **no desmonta** su contenido, para que sus campos sigan validando. Si Guardar falla, el formulario las abre (`openAllSections`) |
+| `_Explanation` | Qué significa lo que se está eligiendo: rótulo dorado, título Georgia 20, regla y nota atenuada, sobre `plaque` | Los textos salen de glosarios del motor (`weaponProperties`, `weaponMasteries`, `DamageType.description`, `rules_glossary.dart`), nunca de la pantalla |
+| `_rowPreview` | La vista previa de lo que se ve como fila de la lista (arma, armadura, objeto) | Usa las mismas pills y cifras que la lista (`_weaponPills`, `_armorStats`…): si se separan, la vista previa miente. El resto muestra lo que de verdad lo lee: el detalle de conjuro, la creación de personaje, el perfil del Bestiario |
 | `_ChosenList` | «Lo que ya elegiste»: cada elección con su explicación corta | No repite lo que ya está explicando `_Explanation` |
 | `_fieldRow` | Campos en una fila hasta 520 px, apilados por debajo | Mismo corte que las filas de la lista (`_rowWideWidth`) |
 

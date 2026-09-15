@@ -9,6 +9,7 @@ export 'src/domain/damage_type.dart';
 export 'src/domain/language.dart';
 export 'src/domain/name_sort.dart';
 export 'src/domain/proficiency_labels.dart';
+export 'src/domain/rules_glossary.dart';
 export 'src/domain/skill.dart';
 export 'src/domain/weapon_mastery.dart';
 export 'src/domain/weapon_properties.dart';

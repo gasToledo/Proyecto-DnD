@@ -625,15 +625,8 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final a in _filtered(store.armor.values, (e) => e.name))
         _tile(
           a.name,
-          pills: [
-            _armorCategories[a.category] ?? a.category,
-            if (a.stealthDisadvantage) 'Sigilo con desventaja',
-          ],
-          stats: [
-            ('CA', '${a.baseAc}'),
-            if (a.weight > 0) ('Peso', '${formatPounds(a.weight)} lb'),
-            if (a.costCp > 0) ('Precio', formatCost(a.costCp)),
-          ],
+          pills: _armorPills(a),
+          stats: _armorStats(a),
           onEdit: () => _editArmor(a),
           onDuplicate: () => _openCopy(category, a.toJson()),
           onDelete: () => _delete(
@@ -649,17 +642,8 @@ extension _HomebrewSections on _HomebrewScreenState {
       for (final i in _filtered(store.items.values, (e) => e.name))
         _tile(
           i.name,
-          pills: [
-            _itemCategories[i.category] ?? i.category,
-            if (i.rarity != null) _itemRarities[i.rarity] ?? i.rarity!,
-            if (i.requiresAttunement) 'Sintonización',
-          ],
-          stats: [
-            if (i.weight > 0) ('Peso', '${formatPounds(i.weight)} lb'),
-            if (i.costCp > 0) ('Precio', formatCost(i.costCp)),
-            if (i.maxCharges != null) ('Cargas', '${i.maxCharges}'),
-            if (i.bundleSize > 1) ('Paquete', '${i.bundleSize}'),
-          ],
+          pills: _itemPills(i),
+          stats: _itemStats(i),
           onEdit: () => _editItem(i),
           onDuplicate: () => _openCopy(category, i.toJson()),
           onDelete: () => _delete(
@@ -1024,7 +1008,9 @@ extension _HomebrewSections on _HomebrewScreenState {
   // ------------------------------------------------------------ Criaturas
   Future<void> _editCreature([Creature? initial]) async {
     final c = await Navigator.of(context).push<Creature>(
-      MaterialPageRoute(builder: (_) => CreatureForm(initial: initial)),
+      MaterialPageRoute(
+        builder: (_) => CreatureForm(repo: repo, initial: initial),
+      ),
     );
     if (c == null) return _discarded();
     if (!await _persist(() => store.saveCreature(c))) return;

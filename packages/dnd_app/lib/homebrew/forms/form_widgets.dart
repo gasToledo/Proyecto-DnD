@@ -394,6 +394,225 @@ class _ChosenList extends StatelessWidget {
   }
 }
 
+/// Lo que comparten los formularios que explican lo que se elige: qué se está
+/// tocando, qué secciones están abiertas y el panel lateral.
+///
+/// Cada formulario pone lo suyo en [explain] (qué significa cada clave) y en
+/// [chosenKeys] (qué lleva elegido); el resto —dónde va la explicación según
+/// haya panel o no, abrir todo si guardar falla— es igual en los ocho.
+mixin _GuidedForm<T extends StatefulWidget> on State<T> {
+  /// Qué se está tocando, como clave que entiende [explain]. Null hasta la
+  /// primera elección.
+  String? focus;
+
+  final Set<String> _open = {};
+  final Set<String> _sections = {};
+  final List<TextEditingController> _watched = [];
+
+  /// La explicación de [key], o null si no hay texto que dar: un valor que
+  /// trajo un pack y el glosario no conoce.
+  _Explained? explain(String key);
+
+  /// Las claves de lo ya elegido, en el orden en que se listan en el panel.
+  Iterable<String> get chosenKeys;
+
+  /// Controlador que la vista previa refleja: cada tecla redibuja, y se
+  /// libera con el formulario.
+  TextEditingController watch(String text) {
+    final c = TextEditingController(text: text)..addListener(redraw);
+    _watched.add(c);
+    return c;
+  }
+
+  @override
+  void dispose() {
+    for (final c in _watched) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  void redraw() => setState(() {});
+
+  void focusOn(String key) => setState(() => focus = key);
+
+  /// Para [_FormScaffold.onInvalid]: un campo en rojo adentro de una sección
+  /// cerrada no se ve.
+  void openAllSections() => setState(() => _open.addAll(_sections));
+
+  /// Una [_FormSection] cuyo estado abierto lleva el formulario, por título.
+  Widget section({
+    required IconData icon,
+    required String title,
+    required String summary,
+    required List<Widget> children,
+  }) {
+    _sections.add(title);
+    return _FormSection(
+      icon: icon,
+      title: title,
+      summary: summary,
+      expanded: _open.contains(title),
+      onToggle: () => setState(
+        () => _open.contains(title) ? _open.remove(title) : _open.add(title),
+      ),
+      children: children,
+    );
+  }
+
+  /// La explicación debajo del campo, para cuando no hay panel lateral.
+  /// [here] dice si el foco actual es de este lugar del formulario.
+  Widget explainHere(bool Function(String focus) here) {
+    final key = focus;
+    final explained = key == null || !here(key) ? null : explain(key);
+    if (explained == null) return const SizedBox.shrink();
+    return _WithoutPanel(
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: _Explanation(explained),
+      ),
+    );
+  }
+
+  /// El panel lateral: [preview] bajo [previewTitle], lo que se está tocando
+  /// (o [hint] mientras no se tocó nada) y lo que ya se eligió.
+  Widget guidePanel({
+    required String previewTitle,
+    required Widget preview,
+    required String hint,
+  }) {
+    final key = focus;
+    final explained = key == null ? null : explain(key);
+    final chosen = [
+      for (final k in chosenKeys)
+        if (k != key) ?explain(k),
+    ];
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Eyebrow(previewTitle),
+        preview,
+        const SizedBox(height: 16),
+        if (explained != null)
+          _Explanation(explained)
+        else
+          Text(
+            hint,
+            style: TextStyle(fontSize: 13, height: 1.45, color: muted),
+          ),
+        if (chosen.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          _ChosenList(chosen),
+        ],
+      ],
+    );
+  }
+}
+
+/// La fila de la lista tal como va a quedar, para la vista previa de los
+/// formularios cuyo contenido se ve así (arma, armadura, objeto).
+Widget _rowPreview(
+  String name, {
+  List<String> pills = const [],
+  List<(String, String)> stats = const [],
+}) => Builder(
+  builder: (context) => DenseRows(
+    children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _previewName(context, name),
+            if (pills.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final pill in pills) GoldPill(pill, highlighted: false),
+                ],
+              ),
+            ],
+            if (stats.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _statBand(context, stats, wide: false),
+            ],
+          ],
+        ),
+      ),
+    ],
+  ),
+);
+
+/// El nombre de lo que se está armando, o un aviso atenuado mientras falta.
+Widget _previewName(BuildContext context, String name, {double? size}) => Text(
+  name.trim().isEmpty ? 'Todavía sin nombre' : name.trim(),
+  style: TextStyle(
+    fontWeight: size == null ? FontWeight.w500 : null,
+    fontFamily: size == null ? null : 'Georgia',
+    fontSize: size,
+    color: name.trim().isEmpty
+        ? Theme.of(context).colorScheme.onSurfaceVariant
+        : null,
+  ),
+);
+
+/// El resumen de una sección cerrada: [parts] unidas, o [none] si no hay nada.
+String _orNone(List<String> parts, String none) =>
+    parts.isEmpty ? none : parts.join(' · ');
+
+/// Lo que concede una lista de efectos tal como lo lee el jugador al crear un
+/// personaje: los rasgos con su texto, o los efectos descritos si no hay
+/// rasgos. Es [readableTraits], la misma lectura que usa la creación.
+List<Widget> _traitsPreview(
+  BuildContext context,
+  List<Effect> effects,
+  ContentRepository repo,
+) {
+  final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+  final traits = readableTraits(effects, repo);
+  if (traits.isEmpty) {
+    return [
+      Text(
+        'Todavía no concede nada.',
+        style: TextStyle(fontSize: 13, color: muted),
+      ),
+    ];
+  }
+  return [
+    for (final t in traits)
+      Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: t.name,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              if (t.description.isNotEmpty)
+                TextSpan(
+                  text: '  ${t.description}',
+                  style: TextStyle(color: muted),
+                ),
+            ],
+          ),
+          style: const TextStyle(fontSize: 13, height: 1.45),
+        ),
+      ),
+  ];
+}
+
+/// Una explicación armada con los glosarios del motor.
+_Explained _explained(
+  String kicker,
+  String title,
+  String text, [
+  String? note,
+]) => (kicker: kicker, title: title, text: text, note: note);
+
 /// Las cifras de una fila de contenido: rótulo chico arriba y valor en cifras
 /// tabulares. Las comparten la lista y la vista previa del formulario, que
 /// tiene que verse igual que la fila que va a quedar.
@@ -486,6 +705,7 @@ Widget _text(
   bool number = false,
   int maxLines = 1,
   String? Function(String?)? validator,
+  VoidCallback? onTap,
 }) => Padding(
   padding: const EdgeInsets.symmetric(vertical: 6),
   child: TextFormField(
@@ -493,6 +713,7 @@ Widget _text(
     keyboardType: number ? TextInputType.number : null,
     maxLines: maxLines,
     validator: validator,
+    onTap: onTap,
     decoration: InputDecoration(
       labelText: label,
       border: const OutlineInputBorder(),

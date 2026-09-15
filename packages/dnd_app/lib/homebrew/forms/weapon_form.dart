@@ -18,71 +18,20 @@ class WeaponForm extends StatefulWidget {
   State<WeaponForm> createState() => _WeaponFormState();
 }
 
-enum _WeaponSection { properties, mastery, economy, legend }
-
-class _WeaponFormState extends State<WeaponForm> {
-  late final _name = TextEditingController(text: widget.initial?.name ?? '');
-  late final _dice = TextEditingController(
-    text: widget.initial?.damageDice ?? '1d6',
-  );
+class _WeaponFormState extends State<WeaponForm> with _GuidedForm {
+  late final _name = watch(widget.initial?.name ?? '');
+  late final _dice = watch(widget.initial?.damageDice ?? '1d6');
   late String _type = widget.initial?.damageType ?? DamageType.slashing.id;
-  late final _versatile = TextEditingController(
-    text: widget.initial?.versatileDice ?? '',
-  );
+  late final _versatile = watch(widget.initial?.versatileDice ?? '');
   late String _mastery = widget.initial?.mastery ?? '';
-  late final _weight = TextEditingController(
-    text: widget.initial == null ? '0' : '${widget.initial!.weight}',
+  late final _weight = watch(
+    widget.initial == null ? '0' : '${widget.initial!.weight}',
   );
-  late final _costCp = TextEditingController(
-    text: '${widget.initial?.costCp ?? 0}',
-  );
-  late final _magicBonus = TextEditingController(
-    text: '${widget.initial?.magicBonus ?? 0}',
-  );
+  late final _costCp = watch('${widget.initial?.costCp ?? 0}');
+  late final _magicBonus = watch('${widget.initial?.magicBonus ?? 0}');
   late String _category = widget.initial?.category ?? 'simple';
   late final Set<String> _props = {...?widget.initial?.properties};
-  late final _description = TextEditingController(
-    text: widget.initial?.description ?? '',
-  );
-
-  /// Qué se está tocando, para explicarlo: `category`, `type`, `mastery` o
-  /// `prop:<id>`. Null hasta la primera elección.
-  String? _focus;
-  final Set<_WeaponSection> _open = {};
-
-  List<TextEditingController> get _controllers => [
-    _name,
-    _dice,
-    _versatile,
-    _weight,
-    _costCp,
-    _magicBonus,
-    _description,
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    // La vista previa y los resúmenes de las secciones cerradas muestran lo
-    // que se escribe, así que cada tecla redibuja.
-    for (final c in _controllers) {
-      c.addListener(_redraw);
-    }
-  }
-
-  @override
-  void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  void _redraw() => setState(() {});
-
-  void _toggle(_WeaponSection section) => setState(
-    () => _open.contains(section) ? _open.remove(section) : _open.add(section),
-  );
+  late final _description = watch(widget.initial?.description ?? '');
 
   /// El arma tal como está escrita.
   ///
@@ -114,72 +63,57 @@ class _WeaponFormState extends State<WeaponForm> {
 
   void _save() => Navigator.of(context).pop(_weapon());
 
-  /// La explicación de [key], con el mismo formato de [_focus]. Null cuando
-  /// no hay texto que dar: una categoría o una propiedad que trajo un pack y
-  /// el glosario no conoce.
-  _Explained? _explain(String key) {
+  /// Claves: `category`, `type`, `mastery` o `prop:<id>`.
+  @override
+  _Explained? explain(String key) {
     switch (key) {
       case 'category':
         final rule = weaponCategoryRules[_category];
         if (rule == null) return null;
-        return (
-          kicker: 'Categoría',
-          title: _weaponCategories[_category] ?? _category,
-          text: rule,
-          note: null,
+        return _explained(
+          'Categoría',
+          _weaponCategories[_category] ?? _category,
+          rule,
         );
       case 'type':
         final type = DamageType.fromId(_type);
         if (type == null) return null;
-        return (
-          kicker: 'Tipo de daño',
-          title: type.label,
-          text: type.description,
-          note: damageTypeRule,
+        return _explained(
+          'Tipo de daño',
+          type.label,
+          type.description,
+          damageTypeRule,
         );
       case 'mastery':
         if (_mastery.isEmpty) {
-          return (
-            kicker: 'Maestría',
-            title: 'Sin maestría',
-            text: 'Al que tiene el rasgo Maestría con armas no le suma nada.',
-            note: null,
+          return _explained(
+            'Maestría',
+            'Sin maestría',
+            'Al que tiene el rasgo Maestría con armas no le suma nada.',
           );
         }
         final mastery = weaponMasteries[_mastery];
         if (mastery == null) return null;
-        return (
-          kicker: 'Maestría',
-          title: mastery.name,
-          text: mastery.description,
-          note: weaponMasteryRule,
+        return _explained(
+          'Maestría',
+          mastery.name,
+          mastery.description,
+          weaponMasteryRule,
         );
     }
     final property = weaponProperties[key.substring('prop:'.length)];
     if (property == null) return null;
-    return (
-      kicker: 'Propiedad',
-      title: property.name,
-      text: property.description,
-      note: null,
-    );
+    return _explained('Propiedad', property.name, property.description);
   }
 
-  /// La explicación debajo del campo, para cuando no hay panel lateral.
-  /// [here] dice si el foco actual es de este lugar del formulario.
-  Widget _explainHere(bool Function(String focus) here) {
-    final focus = _focus;
-    final explained = focus == null ? null : _explain(focus);
-    if (focus == null || explained == null || !here(focus)) {
-      return const SizedBox.shrink();
-    }
-    return _WithoutPanel(
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: _Explanation(explained),
-      ),
-    );
-  }
+  @override
+  Iterable<String> get chosenKeys => [
+    'category',
+    'type',
+    if (_mastery.isNotEmpty) 'mastery',
+    for (final p in weaponProperties.keys)
+      if (_props.contains(p)) 'prop:$p',
+  ];
 
   String get _propertiesSummary {
     final names = [
@@ -197,23 +131,24 @@ class _WeaponFormState extends State<WeaponForm> {
     ].join(' · ');
   }
 
-  String get _economySummary {
-    final weight = double.tryParse(_weight.text.trim()) ?? 0;
-    final cost = int.tryParse(_costCp.text.trim()) ?? 0;
-    if (weight <= 0 && cost <= 0) return 'sin cargar';
-    return [
-      if (weight > 0) '${formatPounds(weight)} lb',
-      if (cost > 0) formatCost(cost),
-    ].join(' · ');
-  }
-
   @override
   Widget build(BuildContext context) {
+    final weapon = _weapon();
     return _FormScaffold(
       title: 'Arma',
       onSave: _save,
-      onInvalid: () => setState(() => _open.addAll(_WeaponSection.values)),
-      panel: _panel(_weapon()),
+      onInvalid: openAllSections,
+      panel: guidePanel(
+        previewTitle: 'Así queda en tu lista',
+        preview: _rowPreview(
+          weapon.name,
+          pills: _weaponPills(weapon),
+          stats: _weaponStats(weapon),
+        ),
+        hint:
+            'Tocá la categoría, el tipo de daño, una propiedad o la maestría '
+            'para ver qué hace.',
+      ),
       children: [
         _text(
           _name,
@@ -228,9 +163,9 @@ class _WeaponFormState extends State<WeaponForm> {
               _category,
               (v) => setState(() {
                 _category = v;
-                _focus = 'category';
+                focus = 'category';
               }),
-              onTap: () => setState(() => _focus = 'category'),
+              onTap: () => focusOn('category'),
             ),
             _text(
               _dice,
@@ -241,26 +176,24 @@ class _WeaponFormState extends State<WeaponForm> {
               _type,
               (v) => setState(() {
                 _type = v;
-                _focus = 'type';
+                focus = 'type';
               }),
-              onTap: () => setState(() => _focus = 'type'),
+              onTap: () => focusOn('type'),
             ),
           ],
         ),
-        _explainHere((f) => f == 'category' || f == 'type'),
+        explainHere((f) => f == 'category' || f == 'type'),
         ..._optionalRule,
-        _FormSection(
+        section(
           icon: Icons.tune,
           title: 'Propiedades',
           summary: _propertiesSummary,
-          expanded: _open.contains(_WeaponSection.properties),
-          onToggle: () => _toggle(_WeaponSection.properties),
           children: [
             _idChips(
               _weaponPropOptions,
               _props,
-              _redraw,
-              onTap: (id) => _focus = 'prop:$id',
+              redraw,
+              onTap: (id) => focus = 'prop:$id',
             ),
             // A dos manos, el dado versátil reemplaza al normal: sin la
             // propiedad no significa nada. Si el arma ya trae uno se muestra
@@ -274,15 +207,13 @@ class _WeaponFormState extends State<WeaponForm> {
                 validator: (v) => _diceValue(v, optional: true),
               ),
             ],
-            _explainHere((f) => f.startsWith('prop:')),
+            explainHere((f) => f.startsWith('prop:')),
           ],
         ),
-        _FormSection(
+        section(
           icon: Icons.auto_awesome,
           title: 'Maestría y magia',
           summary: _masterySummary,
-          expanded: _open.contains(_WeaponSection.mastery),
-          onToggle: () => _toggle(_WeaponSection.mastery),
           children: [
             _fieldRow(
               flex: const [3, 2],
@@ -293,9 +224,9 @@ class _WeaponFormState extends State<WeaponForm> {
                   options: _masteryOptions,
                   onChanged: (v) => setState(() {
                     _mastery = v;
-                    _focus = 'mastery';
+                    focus = 'mastery';
                   }),
-                  onTap: () => setState(() => _focus = 'mastery'),
+                  onTap: () => focusOn('mastery'),
                 ),
                 _text(
                   _magicBonus,
@@ -305,123 +236,63 @@ class _WeaponFormState extends State<WeaponForm> {
                 ),
               ],
             ),
-            _explainHere((f) => f == 'mastery'),
+            explainHere((f) => f == 'mastery'),
           ],
         ),
-        _FormSection(
-          icon: Icons.paid_outlined,
-          title: 'Economía',
-          summary: _economySummary,
-          expanded: _open.contains(_WeaponSection.economy),
-          onToggle: () => _toggle(_WeaponSection.economy),
-          children: [
-            _fieldRow([
-              _text(
-                _weight,
-                'Peso en libras (0 si no cuenta)',
-                number: true,
-                validator: _weightValue,
-              ),
-              _text(
-                _costCp,
-                'Precio en piezas de cobre (1 po = 100)',
-                number: true,
-                validator: (v) => _intInRange(v, 0, 100000000, optional: false),
-              ),
-            ]),
-          ],
-        ),
-        _FormSection(
-          icon: Icons.menu_book_outlined,
-          title: 'Leyenda',
-          summary: _description.text.trim().isEmpty ? 'sin cargar' : 'cargada',
-          expanded: _open.contains(_WeaponSection.legend),
-          onToggle: () => _toggle(_WeaponSection.legend),
-          children: [
-            _text(
-              _description,
-              'Descripción (la leyenda del arma)',
-              maxLines: 5,
-            ),
-          ],
-        ),
+        _economySection(this, _weight, _costCp),
+        _legendSection(this, _description, 'la leyenda del arma'),
       ],
     );
   }
-
-  /// El panel lateral: la fila de la lista, lo que se está tocando y lo que ya
-  /// se eligió.
-  Widget _panel(Weapon weapon) {
-    final focus = _focus;
-    final explained = focus == null ? null : _explain(focus);
-    final chosen = [
-      for (final key in [
-        'category',
-        'type',
-        if (_mastery.isNotEmpty) 'mastery',
-        for (final p in weaponProperties.keys)
-          if (_props.contains(p)) 'prop:$p',
-      ])
-        if (key != focus) ?_explain(key),
-    ];
-    return Builder(
-      builder: (context) {
-        final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Eyebrow('Así queda en tu lista'),
-            DenseRows(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        weapon.name.isEmpty
-                            ? 'Todavía sin nombre'
-                            : weapon.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: weapon.name.isEmpty ? muted : null,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: [
-                          for (final pill in _weaponPills(weapon))
-                            GoldPill(pill, highlighted: false),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      _statBand(context, _weaponStats(weapon), wide: false),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (explained != null)
-              _Explanation(explained)
-            else
-              Text(
-                'Tocá la categoría, el tipo de daño, una propiedad o la '
-                'maestría para ver qué hace.',
-                style: TextStyle(fontSize: 13, height: 1.45, color: muted),
-              ),
-            if (chosen.isNotEmpty) ...[
-              const SizedBox(height: 18),
-              _ChosenList(chosen),
-            ],
-          ],
-        );
-      },
-    );
-  }
 }
+
+/// Peso y precio, que arma, armadura y objeto piden igual.
+Widget _economySection(
+  _GuidedForm form,
+  TextEditingController weight,
+  TextEditingController costCp,
+) {
+  final w = double.tryParse(weight.text.trim()) ?? 0;
+  final cost = int.tryParse(costCp.text.trim()) ?? 0;
+  return form.section(
+    icon: Icons.paid_outlined,
+    title: 'Economía',
+    summary: w <= 0 && cost <= 0
+        ? 'sin cargar'
+        : [
+            if (w > 0) '${formatPounds(w)} lb',
+            if (cost > 0) formatCost(cost),
+          ].join(' · '),
+    children: [
+      _fieldRow([
+        _text(
+          weight,
+          'Peso en libras (0 si no cuenta)',
+          number: true,
+          validator: _weightValue,
+        ),
+        _text(
+          costCp,
+          'Precio en piezas de cobre (1 po = 100)',
+          number: true,
+          validator: (v) => _intInRange(v, 0, 100000000, optional: false),
+        ),
+      ]),
+    ],
+  );
+}
+
+/// El texto libre al final de arma y armadura.
+Widget _legendSection(
+  _GuidedForm form,
+  TextEditingController description,
+  String what,
+) => form.section(
+  icon: Icons.menu_book_outlined,
+  title: 'Leyenda',
+  summary: description.text.trim().isEmpty ? 'sin cargar' : 'cargada',
+  children: [_text(description, 'Descripción ($what)', maxLines: 5)],
+);
 
 /// Las pills de un arma en la lista. Las comparten la lista y la vista previa
 /// del formulario: si se separaran, la vista previa mostraría otra fila.

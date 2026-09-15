@@ -935,6 +935,17 @@ class Armor {
 
   bool get isShield => category == 'shield';
 
+  /// La CA de quien la lleva con [dexMod] de Destreza, sin escudo ni bonos.
+  ///
+  /// Vive en el modelo y no adentro del compilador porque también la lee el
+  /// formulario homebrew, que muestra cómo va a quedar la CA mientras se arma
+  /// la armadura: una copia de la cuenta en la pantalla se separaría de esta.
+  int armorClassFor(int dexMod) {
+    if (!addDexMod) return baseAc;
+    final cap = maxDexBonus;
+    return baseAc + (cap == null || dexMod < cap ? dexMod : cap);
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,

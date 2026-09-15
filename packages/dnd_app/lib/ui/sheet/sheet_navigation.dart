@@ -142,45 +142,49 @@ extension _SheetNavigation on _SheetScreenState {
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Wrap(
-                crossAxisAlignment: WrapCrossAlignment.end,
-                spacing: 12,
-                children: [
-                  InkWell(
-                    onTap: _editName,
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Flexible: un nombre largo en un teléfono angosto
-                          // desbordaba la cabecera en vez de recortarse.
-                          Flexible(
-                            child: Text(
-                              _c.name,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.headlineSmall,
+        if (_showSheetHeader) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.end,
+                  spacing: 12,
+                  children: [
+                    InkWell(
+                      onTap: _editName,
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Flexible: un nombre largo en un teléfono angosto
+                            // desbordaba la cabecera en vez de recortarse.
+                            Flexible(
+                              child: Text(
+                                _c.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(Icons.edit_outlined, size: 16, color: muted),
-                        ],
+                            const SizedBox(width: 6),
+                            Icon(Icons.edit_outlined, size: 16, color: muted),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Text(subtitle, style: TextStyle(color: muted)),
-                  GoldPill('Nivel ${_c.level}'),
-                ],
+                    Text(subtitle, style: TextStyle(color: muted)),
+                    GoldPill('Nivel ${_c.level}'),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
         // Antes que la Forma Salvaje: es lo más urgente que puede decir esta
         // pantalla, y se ve en todas las pestañas porque nadie mira Combate
         // todo el tiempo esperando su turno.
@@ -195,8 +199,7 @@ extension _SheetNavigation on _SheetScreenState {
           _wildShapeBanner(beast),
           const SizedBox(height: 16),
         ],
-        _tacticalBand(s),
-        const SectionRule(),
+        if (_showSheetHeader) ...[_tacticalBand(s), const SectionRule()],
         _tabContent(_tab),
       ],
     );

@@ -337,6 +337,9 @@ class _SheetScreenState extends State<SheetScreen> {
     _SheetTab.diario => _buildDiario(),
   };
 
+  bool get _showSheetHeader =>
+      _tab == _SheetTab.personaje || _tab == _SheetTab.combate;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -354,7 +357,11 @@ class _SheetScreenState extends State<SheetScreen> {
           );
         }
         return Scaffold(
-          appBar: AppBar(title: Text('${_c.name} · Nivel ${_c.level}')),
+          appBar: AppBar(
+            title: Text(
+              _showSheetHeader ? '${_c.name} · Nivel ${_c.level}' : _tab.label,
+            ),
+          ),
           drawer: Drawer(
             child: SafeArea(
               child: Builder(builder: (ctx) => _sidebar(ctx, inDrawer: true)),

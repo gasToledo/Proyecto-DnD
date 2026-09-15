@@ -183,6 +183,30 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('el encabezado de datos solo aparece en Personaje y Combate', (
+    tester,
+  ) async {
+    final character = demoSagan();
+    await pumpSheet(tester, character);
+
+    Finder levelPill() => find.byWidgetPredicate(
+      (widget) =>
+          widget is GoldPill && widget.text == 'Nivel ${character.level}',
+    );
+
+    expect(levelPill(), findsOneWidget);
+
+    for (final tab in ['Combate', 'Inventario', 'Campaña', 'Diario']) {
+      await tester.tap(find.text(tab));
+      await tester.pumpAndSettle();
+      if (tab == 'Combate') {
+        expect(levelPill(), findsOneWidget);
+      } else {
+        expect(levelPill(), findsNothing);
+      }
+    }
+  });
+
   group('Inventario', () {
     Character mochilera() => Character(
       id: 'mochilera',

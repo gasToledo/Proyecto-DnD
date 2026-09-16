@@ -1577,7 +1577,7 @@
     "category": "magic",
     "weight": 0,
     "costCp": 40000,
-    "description": "Objeto maravilloso, infrecuente\nEste frasco con tapón suena cuando se agita, como\nsi tuviera agua dentro. Pesa 2 libras.\nPuedes utilizar una acción de magia para retirar\nel tapón y pronunciar una de las tres palabras de\nactivación. A continuación, cierta cantidad de agua\ndulce o salada (a tu elección) saldrá del frasco.\nEl agua dejará de salir al principio de tu siguiente\nturno. Elige una de las siguientes palabras de acti-\nSalpicadura.\nvación:\nFuente.\nEl decantador produce 1 galón de agua.\nGéiser.\nEl decantador produce 5 galones de agua.\nEl decantador produce 30 galones de agua que\nsalen disparados en una línea de 30 pies de largo\ny 1 pie de ancho. Si sostienes el decantador,\npuedes apuntar el géiser en una dirección (no\nrequiere acción). Una criatura de tu elección en\nesa línea deberá superar una tirada de salvación\nde Fuerza con CD 13 o sufrirá 1d4 de daño contun-\ndente y tendrá el estado de derribada. En vez de\nuna criatura, puedes apuntar a un objeto en esa\nlínea que no lleve ni vista nadie y que no pese más",
+    "description": "Objeto maravilloso, infrecuente\nEste frasco con tapón suena cuando se agita, como\nsi tuviera agua dentro. Pesa 2 libras.\nPuedes utilizar una acción de magia para retirar\nel tapón y pronunciar una de las tres palabras de\nactivación. A continuación, cierta cantidad de agua\ndulce o salada (a tu elección) saldrá del frasco.\nEl agua dejará de salir al principio de tu siguiente\nturno. Elige una de las siguientes palabras de activación:\nSalpicadura.\nEl decantador produce 1 galón de agua.\nFuente.\nEl decantador produce 5 galones de agua.\nGéiser.\nEl decantador produce 30 galones de agua que\nsalen disparados en una línea de 30 pies de largo\ny 1 pie de ancho. Si sostienes el decantador,\npuedes apuntar el géiser en una dirección (no\nrequiere acción). Una criatura de tu elección en\nesa línea deberá superar una tirada de salvación\nde Fuerza con CD 13 o sufrirá 1d4 de daño contun-\ndente y tendrá el estado de derribada. En vez de\nuna criatura, puedes apuntar a un objeto en esa\nlínea que no lleve ni vista nadie y que no pese más",
     "rarity": "uncommon",
     "requiresAttunement": false,
     "sourcePage": 251
@@ -1633,7 +1633,7 @@
     "category": "magic",
     "weight": 0,
     "costCp": 20000000,
-    "description": "Objeto maravilloso, legendario\nEste tubo contiene un líquido lechoso con un fuerte\nolor a alcohol. En el momento de encontrar el tubo,\ncontendrá 1d6 + 1 onzas.\nPuedes emplear una acción de utilizar para verter\n1 onza o más de disolvente en una superficie dentro\ndel alcance. Con cada onza se disolverán de manera\npegamento soberano 2\ninstantánea hasta 0 pies de adhesivo que toque,",
+    "description": "Objeto maravilloso, legendario\nEste tubo contiene un líquido lechoso con un fuerte\nolor a alcohol. En el momento de encontrar el tubo,\ncontendrá 1d6 + 1 onzas.\nPuedes emplear una acción de utilizar para verter\n1 onza o más de disolvente en una superficie dentro\ndel alcance. Con cada onza se disolverán de manera\npegamento soberano 2\ninstantánea hasta 1 pie cuadrado de adhesivo que toque,",
     "rarity": "legendary",
     "requiresAttunement": false,
     "sourcePage": 252

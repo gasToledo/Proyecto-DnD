@@ -3650,7 +3650,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Creás o destruís hasta 40 litros de agua, o hacés llover en un cubo de 30 pies para apagar llamas.",
+    "description": "Creás o destruís hasta 10 galones de agua, o hacés llover en un cubo de 30 pies para apagar llamas.",
     "classes": [
       "cleric",
       "druid"
@@ -3725,7 +3725,7 @@
     "duration": "1 hora",
     "concentration": false,
     "ritual": true,
-    "description": "Un disco de fuerza flota a tu lado y carga hasta 250 kg; te sigue si te alejás menos de 20 pies.",
+    "description": "Un disco de fuerza flota a tu lado y carga hasta 500 libras; te sigue si te alejás menos de 20 pies.",
     "classes": [
       "wizard"
     ]

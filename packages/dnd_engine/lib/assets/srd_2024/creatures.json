@@ -759,7 +759,7 @@
     "traits": [
       {
         "name": "Compresión",
-        "description": "El pulpo puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "El pulpo puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       },
       {
         "name": "Respirar en el agua",
@@ -4679,7 +4679,7 @@
       },
       {
         "name": "Dominar la mente (2/día)",
-        "description": "Tirada de salvación de Sabiduría: CD 16, una criatura que el aboleth pueda ver a 30 pies o menos. Fallo: el objetivo tendrá el estado de hechizado hasta que el aboleth muera o esté en un plano de existencia diferente al del objetivo. Mientras esté hechizado, el objetivo actuará como aliado del aboleth y estará bajo su control si se encuentra a 60 pies o menos de él. Además, el aboleth y el objetivo se podrán comunicar telepáticamente entre sí a cualquier distancia. El objetivo repetirá la tirada de salvación siempre que reciba daño y tras cada 24 horas que pase a al menos 1,5 km de distancia del aboleth; si la supera, se librará del efecto."
+        "description": "Tirada de salvación de Sabiduría: CD 16, una criatura que el aboleth pueda ver a 30 pies o menos. Fallo: el objetivo tendrá el estado de hechizado hasta que el aboleth muera o esté en un plano de existencia diferente al del objetivo. Mientras esté hechizado, el objetivo actuará como aliado del aboleth y estará bajo su control si se encuentra a 60 pies o menos de él. Además, el aboleth y el objetivo se podrán comunicar telepáticamente entre sí a cualquier distancia. El objetivo repetirá la tirada de salvación siempre que reciba daño y tras cada 24 horas que pase a al menos 1 milla de distancia del aboleth; si la supera, se librará del efecto."
       },
       {
         "name": "Drenaje psíquico",
@@ -4722,7 +4722,7 @@
     "traits": [
       {
         "name": "Forma de aire",
-        "description": "El acechador puede entrar en el espacio de un enemigo y detenerse allí. Puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "El acechador puede entrar en el espacio de un enemigo y detenerse allí. Puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       },
       {
         "name": "Invisibilidad",
@@ -6357,11 +6357,11 @@
     "traits": [
       {
         "name": "Amorfo",
-        "description": "El cieno puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "El cieno puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       },
       {
         "name": "Forma corrosiva",
-        "description": "La munición no mágica se destruirá de inmediato tras impactar en el cieno y causarle daño. Cualquier arma no mágica recibirá un penalizador acumulativo de -1 a las tiradas de ataque inmediatamente después de causar daño al cieno y entrar en contacto con él. Si el penalizador llega a -5, el arma se destruirá. El penalizador se puede eliminar lanzando el conjuro reparar sobre el arma. El cieno es capaz de devorar 5 cm de madera o metal no mágicos en 1 asalto."
+        "description": "La munición no mágica se destruirá de inmediato tras impactar en el cieno y causarle daño. Cualquier arma no mágica recibirá un penalizador acumulativo de -1 a las tiradas de ataque inmediatamente después de causar daño al cieno y entrar en contacto con él. Si el penalizador llega a -5, el arma se destruirá. El penalizador se puede eliminar lanzando el conjuro reparar sobre el arma. El cieno es capaz de devorar 2 pulgadas de madera o metal no mágicos en 1 asalto."
       }
     ],
     "actions": [
@@ -10946,7 +10946,7 @@
       },
       {
         "name": "Forma de agua",
-        "description": "El elemental puede entrar en el espacio de un enemigo y detenerse allí. Puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "El elemental puede entrar en el espacio de un enemigo y detenerse allí. Puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       }
     ],
     "actions": [
@@ -10992,7 +10992,7 @@
     "traits": [
       {
         "name": "Forma de aire",
-        "description": "El elemental puede entrar en el espacio de una criatura y detenerse allí. Puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "El elemental puede entrar en el espacio de una criatura y detenerse allí. Puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       }
     ],
     "actions": [
@@ -11041,7 +11041,7 @@
       },
       {
         "name": "Forma de fuego",
-        "description": "El elemental puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar  movimiento adicional para hacerlo y puede entrar en el espacio de una criatura y detenerse allí. La primera vez que entre en el espacio de una criatura durante un turno, la criatura recibirá 5 (1d10) de daño de fuego."
+        "description": "El elemental puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar  movimiento adicional para hacerlo y puede entrar en el espacio de una criatura y detenerse allí. La primera vez que entre en el espacio de una criatura durante un turno, la criatura recibirá 5 (1d10) de daño de fuego."
       },
       {
         "name": "Iluminación",
@@ -11049,7 +11049,7 @@
       },
       {
         "name": "Susceptibilidad al agua",
-        "description": "El elemental sufre 3 (1d6) de daño de frío por cada 5 pies que se mueva en el agua o por cada 4 litros de agua que se viertan sobre él."
+        "description": "El elemental sufre 3 (1d6) de daño de frío por cada 5 pies que se mueva en el agua o por cada galón de agua que se vierta sobre él."
       }
     ],
     "actions": [
@@ -12405,7 +12405,7 @@
     "traits": [
       {
         "name": "Amorfa",
-        "description": "La gelatina puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "La gelatina puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       },
       {
         "name": "Trepar cual arácnido",
@@ -16114,7 +16114,7 @@
       },
       {
         "name": "Destruir metal",
-        "description": "El monstruo corrosivo toca un objeto no mágico de metal a 5 pies o menos de él que no vista o lleve nadie. El contacto destruye un cubo de 30 cm de lado del objeto."
+        "description": "El monstruo corrosivo toca un objeto no mágico de metal a 5 pies o menos de él que no vista o lleve nadie. El contacto destruye un cubo de 1 pie de lado del objeto."
       },
       {
         "name": "Antenas reflexivas",
@@ -17213,11 +17213,11 @@
     "traits": [
       {
         "name": "Amorfo",
-        "description": "El pudin puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "El pudin puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       },
       {
         "name": "Forma corrosiva",
-        "description": "Una criatura que acierte al pudin con una tirada de ataque cuerpo a cuerpo recibirá 4 (1d8) de daño de ácido. La munición no mágica se destruirá de inmediato tras impactar en el pudin y causarle daño. Cualquier arma no mágica recibirá un penalizador acumulativo de -1 a las tiradas de ataque inmediatamente después de causar daño al pudin y entrar en contacto con él. Si el penalizador llega a -5, el arma se destruirá. El penalizador se puede eliminar lanzando el conjuro reparar sobre el arma. En 1 minuto, el pudin puede devorar y atravesar 60 cm de madera o metal no mágicos."
+        "description": "Una criatura que acierte al pudin con una tirada de ataque cuerpo a cuerpo recibirá 4 (1d8) de daño de ácido. La munición no mágica se destruirá de inmediato tras impactar en el pudin y causarle daño. Cualquier arma no mágica recibirá un penalizador acumulativo de -1 a las tiradas de ataque inmediatamente después de causar daño al pudin y entrar en contacto con él. Si el penalizador llega a -5, el arma se destruirá. El penalizador se puede eliminar lanzando el conjuro reparar sobre el arma. En 1 minuto, el pudin puede devorar y atravesar 2 pies de madera o metal no mágicos."
       },
       {
         "name": "Trepar cual arácnido",
@@ -18610,7 +18610,7 @@
     "traits": [
       {
         "name": "Amorfa",
-        "description": "La sombra puede moverse a través de un espacio de solo 2,5 cm de ancho sin gastar movimiento adicional para hacerlo."
+        "description": "La sombra puede moverse a través de un espacio de solo 1 pulgada de ancho sin gastar movimiento adicional para hacerlo."
       },
       {
         "name": "Debilidad a la luz solar",

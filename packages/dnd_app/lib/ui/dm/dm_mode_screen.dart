@@ -1186,6 +1186,17 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     });
   }
 
+  /// Saca un combatiente de la mesa. No pregunta ni avisa: en combate se saca
+  /// al que ya murió y confirmarlo cada vez cansaría.
+  ///
+  /// ponytail: por eso mismo, sacar al equivocado se lleva sus PG, sus
+  /// etiquetas y su iniciativa sin red. El «Deshacer» que tienen la mochila y
+  /// el diario (`showAppMessage(onUndo:)`) acá no alcanza, y por dos motivos:
+  /// `withoutCombatant` además recalcula ronda y turno, así que devolver al
+  /// combatiente no devuelve el estado; y restaurar el encuentro entero desde
+  /// una foto revertiría en silencio el daño que el DM haya repartido en esos
+  /// ocho segundos. La salida es que `Encounter` sepa reinsertar en su lugar
+  /// sin tocar el turno — o sea, diseño propio en el engine, no un cartel.
   void _removeCombatant(String combatantId) =>
       _saveEncounter((current) => current?.withoutCombatant(combatantId));
 

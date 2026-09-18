@@ -689,8 +689,10 @@ extension _SheetDiarySection on _SheetScreenState {
         title: 'Borrar la entrada',
         content: Text(
           '«${e.title.isEmpty ? 'Sin título' : e.title}» se va del diario'
-          '${tieneImagen ? ', y la imagen que subiste se borra con ella' : ''}. '
-          'No hay forma de recuperarla.',
+          // Con imagen no hay vuelta atrás: el blob se borra del servidor y
+          // no se puede reponer. Sin imagen sí, así que decirlo igual sería
+          // asustar de más por algo que el cartel de después deshace.
+          '${tieneImagen ? ', y la imagen que subiste se borra con ella. No hay forma de recuperarla.' : '.'}',
         ),
         actions: [
           DialogAction(
@@ -709,6 +711,7 @@ extension _SheetDiarySection on _SheetScreenState {
     );
     if (ok != true || !mounted) return;
 
+    final antes = _c;
     _replace(
       _c.copyWith(
         diary: [
@@ -718,7 +721,17 @@ extension _SheetDiarySection on _SheetScreenState {
       ),
     );
     final key = e.imageKey;
-    if (key == null) return;
+    if (key == null) {
+      // Solo acá se ofrece deshacer: la entrada vive entera en el documento
+      // del personaje, así que volver es poner de nuevo la ficha de antes.
+      // Con imagen no, porque el blob ya se fue y volvería rota.
+      showAppMessage(
+        context,
+        'Borraste «${e.title.isEmpty ? 'Sin título' : e.title}».',
+        onUndo: () => _replace(antes),
+      );
+      return;
+    }
     try {
       await ctrl.api.deletePortrait(key);
     } catch (_) {

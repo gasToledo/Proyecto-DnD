@@ -338,6 +338,37 @@ void main() {
       expect(CharacterCompiler(repo).compile(saved(controller)).armorClass, 18);
     });
 
+    // Quitar es el único borrado de la ficha que no pregunta nada, y tampoco
+    // decía nada: el objeto desaparecía y listo. En vez de un diálogo —quitar
+    // cosas de la mochila es rutina— va la salida.
+    testWidgets('quitar un objeto se avisa y se puede deshacer', (
+      tester,
+    ) async {
+      final controller = await pumpSheet(tester, mochilera());
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Agregar objeto'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'Armadura de placas');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-plate')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cerrar'));
+      await tester.pumpAndSettle();
+
+      await tapItemAction(tester, 'plate', 'Quitar');
+      expect(find.text('Quitaste Armadura de placas.'), findsOneWidget);
+      expect(find.text('La mochila está vacía.'), findsOneWidget);
+
+      await tester.tap(find.text('Deshacer'));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Armadura de placas'), findsOneWidget);
+      expect(saved(controller).inventory.single.itemId, 'plate');
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('cargar monedas suma a la carga: 50 hacen una libra', (
       tester,
     ) async {
@@ -2464,6 +2495,47 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(controller.characters.single.diary, isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Una entrada de texto vive entera en el documento del personaje, así que
+    // volver atrás es exacto. La que tiene imagen no, y por eso no se ofrece:
+    // el blob ya se borró del servidor y la entrada volvería rota.
+    testWidgets('borrar una entrada de texto se puede deshacer', (
+      tester,
+    ) async {
+      final controller = await pumpSheet(
+        tester,
+        diarista(
+          diary: const [
+            DiaryEntry(
+              entryId: 'e1',
+              title: 'Manías',
+              body: 'Cuenta los pasos.',
+            ),
+          ],
+        ),
+      );
+      await openDiario(tester);
+
+      await tester.tap(find.text('Manías'));
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Editar'));
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Borrar'));
+      await tester.pumpAndSettle();
+      // Sin imagen de por medio, el diálogo ya no amenaza con lo irreversible.
+      expect(find.textContaining('No hay forma de recuperarla'), findsNothing);
+      await tester.tap(dialogAction('Borrar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Borraste «Manías».'), findsOneWidget);
+      await tester.tap(find.text('Deshacer'));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(controller.characters.single.diary.single.entryId, 'e1');
+      expect(find.text('Manías'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

@@ -1078,7 +1078,16 @@ extension _SheetInventorySection on _SheetScreenState {
         );
       case 'transmute':
         await _transmuteReplica(e);
+      // El único borrado de la ficha que no pregunta nada, y hasta acá tampoco
+      // decía nada: el objeto desaparecía de la lista y listo. No le pongo un
+      // diálogo —quitar cosas de la mochila es rutina y confirmarlas cada vez
+      // cansa— sino la salida: el cartel con «Deshacer».
+      //
+      // `InventoryOps.remove` es puro (devuelve copias), así que el personaje
+      // de antes es una foto válida para volver.
       case 'remove':
+        final antes = _c;
+        final info = _itemInfo(e);
         _replace(
           InventoryOps.remove(
             _c.copyWith(inventory: _inventoryEntries),
@@ -1086,6 +1095,11 @@ extension _SheetInventorySection on _SheetScreenState {
             repo,
             quantity: e.quantity,
           ),
+        );
+        showAppMessage(
+          context,
+          'Quitaste ${info.name}.',
+          onUndo: () => _replace(antes),
         );
     }
   }

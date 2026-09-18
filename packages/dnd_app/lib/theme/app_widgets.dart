@@ -7,11 +7,19 @@ import 'app_theme.dart';
 
 enum AppMessageTone { info, success, error }
 
+/// [onUndo] agrega el botón «Deshacer» y le da más tiempo al cartel: el que
+/// borró sin querer tarda en darse cuenta, y tres segundos no alcanzan para
+/// leer, entender y estirar la mano.
+///
+/// Solo lo pasa un borrado que se pueda revertir de verdad, con lo que ya
+/// está en memoria. Un «Deshacer» que restaura a medias —porque el servidor
+/// borró en cascada, o porque la imagen ya no está— es peor que no ofrecerlo.
 void showAppMessage(
   BuildContext context,
   String message, {
   AppMessageTone tone = AppMessageTone.info,
   Duration? duration,
+  VoidCallback? onUndo,
 }) {
   final scheme = Theme.of(context).colorScheme;
   final (icon, color) = switch (tone) {
@@ -26,9 +34,14 @@ void showAppMessage(
       SnackBar(
         duration:
             duration ??
-            (tone == AppMessageTone.error
+            (onUndo != null
+                ? const Duration(seconds: 8)
+                : tone == AppMessageTone.error
                 ? const Duration(seconds: 6)
                 : const Duration(seconds: 3)),
+        action: onUndo == null
+            ? null
+            : SnackBarAction(label: 'Deshacer', onPressed: onUndo),
         content: Semantics(
           liveRegion: true,
           label: message,

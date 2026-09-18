@@ -142,7 +142,7 @@ extension _DashboardContent on _DashboardScreenState {
     final controls = [
       _sortButton(context),
       Container(width: 1, height: 24, color: pal.hairline),
-      _SaveStatusIndicator(controller: controller),
+      SaveStatusIndicator(controller: controller),
       if (_activeOperation != null)
         AppBusyLabel(_activeOperation!, indicatorSize: 16),
     ];

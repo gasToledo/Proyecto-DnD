@@ -3,6 +3,7 @@ import 'package:dnd_app/data/characters_controller.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
+import 'package:dnd_app/ui/save_status_indicator.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
@@ -180,6 +181,25 @@ void main() {
     await tester.tap(find.text('Diario'));
     await tester.pumpAndSettle();
     expect(find.text('Trasfondo'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // La ficha guarda sola, sin botón. El cartel estaba solo en la barra del
+  // roster, así que justo donde más se escribe no se veía nada: hay que poder
+  // saber si lo tipeado llegó sin abrir ningún menú.
+  testWidgets('el estado del guardado se ve en la ficha, en los dos anchos', (
+    tester,
+  ) async {
+    await pumpSheet(tester, demoSagan());
+    expect(find.byType(SaveStatusIndicator), findsOneWidget);
+    expect(find.text('Guardado'), findsOneWidget);
+
+    // En angosto el panel está adentro del Drawer, cerrado: el cartel tiene
+    // que estar igual en la barra, aunque sea sin la palabra al lado.
+    await tester.pumpWidget(const SizedBox.shrink());
+    await pumpSheet(tester, demoSagan(), size: const Size(360, 1400));
+    expect(find.byType(Drawer), findsNothing);
+    expect(find.byType(SaveStatusIndicator), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

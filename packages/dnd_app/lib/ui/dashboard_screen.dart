@@ -15,6 +15,7 @@ import '../theme/class_visuals.dart';
 import '../web/browser.dart' as browser;
 import 'dm/dm_mode_screen.dart';
 import 'pending_events_gate.dart';
+import 'save_status_indicator.dart';
 import 'sheet_screen.dart';
 
 part 'dashboard/dashboard_actions.dart';

@@ -19,6 +19,7 @@ import 'conditions.dart';
 import 'dm/share_character_dialog.dart';
 import 'portrait_image.dart';
 import 'portrait_screen.dart';
+import 'save_status_indicator.dart';
 import 'spell_edit_screen.dart';
 
 part 'sheet/campaign_section.dart';
@@ -361,6 +362,16 @@ class _SheetScreenState extends State<SheetScreen> {
             title: Text(
               _showSheetHeader ? '${_c.name} · Nivel ${_c.level}' : _tab.label,
             ),
+            // En angosto el panel vive adentro del Drawer, o sea cerrado: el
+            // estado del guardado tiene que estar acá o no se ve nunca.
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Center(
+                  child: SaveStatusIndicator(controller: ctrl, compact: true),
+                ),
+              ),
+            ],
           ),
           drawer: Drawer(
             child: SafeArea(

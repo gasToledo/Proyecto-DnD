@@ -928,14 +928,20 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   /// muestra el mensaje del servidor si algo no se pudo. Los errores que
   /// importan acá llegan con texto propio y legible (dos capítulos en marcha,
   /// cerrar con un `PUT`), así que se muestran tal cual.
-  Future<void> _chapterAction(Future<void> Function() action) async {
+  ///
+  /// Devuelve si la acción entró. Quien quiera confirmar el éxito con un
+  /// cartel tiene que preguntarlo: `showAppMessage` reemplaza el aviso
+  /// anterior, así que un éxito incondicional taparía el error de acá.
+  Future<bool> _chapterAction(Future<void> Function() action) async {
     try {
       await action();
       await _loadChapters();
+      return true;
     } on ApiException catch (e) {
       if (mounted) {
         showAppMessage(context, e.message, tone: AppMessageTone.error);
       }
+      return false;
     }
   }
 
@@ -971,10 +977,10 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   );
 
   Future<void> _closeChapter(Chapter chapter) async {
-    await _chapterAction(
+    final cerrado = await _chapterAction(
       () => widget.api.closeChapter(widget.campaign.id, chapter.id),
     );
-    if (mounted) {
+    if (cerrado && mounted) {
       showAppMessage(
         context,
         'Se cerró «${chapter.name}». Les llega el aviso a los jugadores.',

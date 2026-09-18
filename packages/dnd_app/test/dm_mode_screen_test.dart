@@ -520,6 +520,32 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // Si el cierre no entró, el cartel de éxito no puede salir igual: tapa al
+    // error (un aviso reemplaza al anterior) y deja al DM creyendo que a los
+    // jugadores les llegó el aviso.
+    testWidgets('cerrar un capítulo que falla no dice que se cerró', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+      await newChapter(tester, 'La Cripta');
+      await tester.tap(find.widgetWithText(FilledButton, 'Empezar'));
+      await tester.pumpAndSettle();
+
+      // El capítulo desapareció del servidor entre medio: el cierre responde
+      // 404, y ese es el mensaje que tiene que quedar en pantalla.
+      server.chapters['tumba']!.clear();
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Cerrar capítulo'));
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Cerrar capítulo'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Capítulo no encontrado'), findsOneWidget);
+      expect(find.textContaining('Se cerró'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     // El flag no reparte nada: solo cambia lo que dice el aviso, así que el
     // DM tiene que verlo marcado en la lista antes de cerrar.
     testWidgets('un capítulo que da nivel lo muestra en la lista', (

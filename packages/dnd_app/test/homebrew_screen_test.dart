@@ -9,6 +9,7 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'dialog_finders.dart';
 import 'fakes/fake_api_server.dart';
 
 void main() {
@@ -543,6 +544,44 @@ void main() {
 
     expect(find.text('Escribí el nombre del arma.'), findsOneWidget);
     expect(find.text('Arma'), findsOneWidget);
+  });
+
+  // Salir con lo escrito a medias tiraba el trabajo sin preguntar: el aviso
+  // de «No se guardó ningún cambio» llega cuando ya no hay nada que hacer.
+  testWidgets('salir con cambios sin guardar pregunta antes', (tester) async {
+    await openWeaponForm(tester);
+    await tester.enterText(find.widgetWithText(TextFormField, 'Nombre'), 'Hoz');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancelar'));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Salir sin guardar?'), findsOneWidget);
+
+    // Seguir editando no se lleva lo escrito.
+    await tester.tap(dialogAction('Seguir editando'));
+    await tester.pumpAndSettle();
+    expect(find.text('Arma'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Hoz'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancelar'));
+    await tester.pumpAndSettle();
+    await tester.tap(dialogAction('Salir sin guardar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Arma'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  // Y sin haber tocado nada, salir no pregunta: abrir un formulario para
+  // mirarlo y cerrarlo no puede costar un diálogo.
+  testWidgets('salir sin haber tocado nada no pregunta', (tester) async {
+    await openWeaponForm(tester);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Cancelar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Salir sin guardar?'), findsNothing);
+    expect(find.text('Arma'), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   // Los ids internos (`simple`, `finesse`) son el contrato con el motor, pero

@@ -50,6 +50,46 @@ class _FormScaffoldState extends State<_FormScaffold> {
   /// ruido. Se enciende en el primer intento de guardar que falla.
   var _autovalidate = AutovalidateMode.disabled;
 
+  /// Si se tocó algo desde que se abrió el formulario. Sin esto, salir con la
+  /// flecha tira a la basura un rato de trabajo sin preguntar: el aviso de
+  /// «No se guardó ningún cambio» llega cuando ya no hay nada que hacer.
+  ///
+  /// ponytail: lo arma solo lo que pasa por un campo del [Form] — todos los
+  /// `_text` y los `_idDropdown`, que es donde se tipea. Un cambio hecho
+  /// únicamente en el editor de efectos o en un chip no lo arma, porque esos
+  /// no son `FormField`. Si alguna vez duele, esos widgets tienen que recibir
+  /// un `markDirty` del formulario y llamarlo en su `onChanged`.
+  var _dirty = false;
+
+  /// Pregunta antes de tirar lo escrito. Devuelve por [Navigator.pop] directo
+  /// y no por `maybePop`, que volvería a entrar acá.
+  Future<void> _confirmDiscard() async {
+    final pal = context.palette;
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: pal.crimson,
+        title: '¿Salir sin guardar?',
+        content: Text('Lo que escribiste en «${widget.title}» se pierde.'),
+        actions: [
+          DialogAction(
+            'Seguir editando',
+            keyHint: 'Esc',
+            onPressed: () => Navigator.pop(ctx, false),
+          ),
+          DialogAction(
+            'Salir sin guardar',
+            primary: true,
+            color: pal.crimson,
+            onPressed: () => Navigator.pop(ctx, true),
+          ),
+        ],
+      ),
+    );
+    if (discard == true && mounted) Navigator.of(context).pop();
+  }
+
   void _save() {
     if (_form.currentState!.validate()) {
       widget.onSave();
@@ -66,11 +106,24 @@ class _FormScaffoldState extends State<_FormScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      // Cubre la flecha del AppBar y el gesto de atrás del navegador, que es
+      // por donde de verdad se sale de acá sin querer.
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmDiscard();
+      },
+      child: _scaffold(context),
+    );
+  }
+
+  Widget _scaffold(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
       body: Form(
         key: _form,
         autovalidateMode: _autovalidate,
+        onChanged: () => _dirty = true,
         child: LayoutBuilder(
           builder: (context, box) {
             final panel = widget.panel;
@@ -114,9 +167,12 @@ class _FormScaffoldState extends State<_FormScaffold> {
             children: [
               // Cancelar explícito: la flecha del AppBar hace lo mismo, pero
               // ahí arriba no se lee como "salir sin guardar".
+              //
+              // `maybePop` y no `pop`: es lo único que consulta al [PopScope],
+              // así que un `pop` directo se saltearía la pregunta.
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Navigator.maybePop(context),
                   child: const Text('Cancelar'),
                 ),
               ),

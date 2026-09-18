@@ -43,9 +43,18 @@ class _CampaignEditorDialogState extends State<_CampaignEditorDialog> {
     super.dispose();
   }
 
+  /// Se enciende en el primer intento de guardar sin nombre, igual que la
+  /// validación de los formularios homebrew: marcar en rojo un campo que
+  /// todavía se está tipeando es ruido, pero un botón que no hace nada y no
+  /// dice por qué se lee como que la app se colgó.
+  String? _nameError;
+
   void _save() {
     final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty) {
+      setState(() => _nameError = 'Poné un nombre para guardarla.');
+      return;
+    }
     Navigator.of(context).pop(
       widget.current.copyWith(
         name: name,
@@ -68,10 +77,19 @@ class _CampaignEditorDialogState extends State<_CampaignEditorDialog> {
             controller: _nameController,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Nombre de la campaña',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
+              errorText: _nameError,
             ),
+            // El rojo se apaga solo al escribir: dejarlo puesto mientras ya
+            // se está corrigiendo es regañar de más.
+            onChanged: (_) {
+              if (_nameError != null) setState(() => _nameError = null);
+            },
+            // Enter guarda, como en el editor de capítulo: el nombre es el
+            // único campo obligatorio y una campaña se crea de apuro.
+            onSubmitted: (_) => _save(),
           ),
           const SizedBox(height: 16),
           TextField(

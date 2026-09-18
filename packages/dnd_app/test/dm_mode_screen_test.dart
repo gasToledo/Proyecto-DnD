@@ -436,6 +436,28 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    // Guardar sin nombre no guardaba nada y tampoco decía por qué: el diálogo
+    // se quedaba quieto y se lee como que la app se colgó.
+    testWidgets('guardar un capítulo sin nombre explica qué falta', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openCapitulos(tester);
+      await tester.tap(find.text('Nuevo capítulo').last);
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Poné un nombre para guardarlo.'), findsOneWidget);
+      expect(server.chapters['tumba'] ?? const [], isEmpty);
+
+      // Y se apaga al escribir, sin tener que reintentar para limpiarlo.
+      await tester.enterText(find.byType(TextField).first, 'La Cripta');
+      await tester.pumpAndSettle();
+      expect(find.text('Poné un nombre para guardarlo.'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('sin capítulos explica para qué sirven', (tester) async {
       await pumpDmMode(tester, seed: seedTable);
       await openCapitulos(tester);

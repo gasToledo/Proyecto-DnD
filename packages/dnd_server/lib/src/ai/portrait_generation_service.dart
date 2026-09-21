@@ -25,10 +25,12 @@ class PortraitGenerationService {
 
   /// Techo de candidatos por pedido. La cantidad la manda el cliente y cada
   /// imagen es una llamada al proveedor —paga en los que llevan credencial—:
-  /// sin techo, un solo pedido podía gastar el crédito entero. Cuatro alcanza
-  /// para una grilla de opciones; hoy la pantalla ni la manda y se usa la de
-  /// cada proveedor, que es 1 o 2.
-  static const int maxCount = 4;
+  /// sin techo, un solo pedido podía gastar el crédito entero. Diez deja pedir
+  /// un lote amplio de opciones; hoy la pantalla ni la manda y se usa la de
+  /// cada proveedor, que es 1 o 2. Ojo con pedir el techo entero de una vez:
+  /// un fallo a mitad descarta todo el lote y, en Pollinations, que genera en
+  /// secuencia, 10 imágenes se acercan a lo que aguanta un pedido HTTP.
+  static const int maxCount = 10;
 
   const PortraitGenerationService(this.providers);
 

@@ -31,6 +31,11 @@ class InMemoryCampaignRepository implements CampaignRepository {
   final Map<String, _StoredShareCode> _codes = {};
   final List<CampaignLink> _links = [];
   int _memberCounter = 0;
+  int playerProjectionCalls = 0;
+  Future<List<Chapter>> Function(String dmUserId, String campaignId)?
+  playerChaptersFor;
+  Future<List<EncounterLog>> Function(String dmUserId, String campaignId)?
+  playerBattlesFor;
 
   Object snapshot() => (
     byDm: {for (final entry in _byDm.entries) entry.key: Map.of(entry.value)},
@@ -276,6 +281,45 @@ class InMemoryCampaignRepository implements CampaignRepository {
           a.campaignName.toLowerCase().compareTo(b.campaignName.toLowerCase()),
     );
     return shares;
+  }
+
+  @override
+  Future<List<PlayerCampaignProjection>> listPlayerCampaignProjection({
+    required String ownerUserId,
+    required String characterId,
+  }) async {
+    playerProjectionCalls++;
+    final shares = await listSharesForCharacter(
+      ownerUserId: ownerUserId,
+      characterId: characterId,
+    );
+    final projections = <PlayerCampaignProjection>[];
+    for (final share in shares) {
+      final campaign = await find(share.dmUserId, share.campaignId);
+      if (campaign == null) continue;
+      final members = await listMembers(share.dmUserId, share.campaignId);
+      final chapters = playerChaptersFor == null
+          ? const <Chapter>[]
+          : await playerChaptersFor!(share.dmUserId, share.campaignId);
+      final battles = playerBattlesFor == null
+          ? const <EncounterLog>[]
+          : await playerBattlesFor!(share.dmUserId, share.campaignId);
+      projections.add(
+        PlayerCampaignProjection(
+          memberId: share.memberId,
+          campaign: campaign,
+          party: [
+            for (final member in members)
+              if (!(member.ownerUserId == ownerUserId &&
+                  member.character.id == characterId))
+                member.character.name,
+          ],
+          chapters: chapters,
+          battles: battles,
+        ),
+      );
+    }
+    return projections;
   }
 
   @override

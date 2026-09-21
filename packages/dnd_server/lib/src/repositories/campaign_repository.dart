@@ -44,6 +44,25 @@ class CharacterShare {
   });
 }
 
+/// Proyección de una campaña tal como la puede leer el dueño de un personaje.
+/// Los campos de autorización (`dmUserId`, `campaignId` y dueños ajenos) no
+/// forman parte del DTO: solo se usan dentro de la consulta que lo arma.
+class PlayerCampaignProjection {
+  final String memberId;
+  final Campaign campaign;
+  final List<String> party;
+  final List<Chapter> chapters;
+  final List<EncounterLog> battles;
+
+  const PlayerCampaignProjection({
+    required this.memberId,
+    required this.campaign,
+    this.party = const [],
+    this.chapters = const [],
+    this.battles = const [],
+  });
+}
+
 /// Las cuatro puntas de un vínculo. Es lo que devuelve borrarlo, para poder
 /// avisarle a la parte que no ejecutó la acción.
 class CampaignLink {
@@ -120,6 +139,14 @@ abstract class CampaignRepository {
 
   /// En qué campañas está este personaje. Solo lo puede preguntar su dueño.
   Future<List<CharacterShare>> listSharesForCharacter({
+    required String ownerUserId,
+    required String characterId,
+  });
+
+  /// Proyección completa de las campañas que ve el dueño de un personaje.
+  /// Debe resolverse como una lectura agrupada, no como una secuencia de
+  /// consultas por cada vínculo.
+  Future<List<PlayerCampaignProjection>> listPlayerCampaignProjection({
     required String ownerUserId,
     required String characterId,
   });
@@ -430,6 +457,92 @@ class PostgresCampaignRepository implements CampaignRepository {
     ];
   }
 
+  @override
+  Future<List<PlayerCampaignProjection>> listPlayerCampaignProjection({
+    required String ownerUserId,
+    required String characterId,
+  }) async {
+    final result = await _session.execute(
+      Sql.named('''
+        WITH linked AS (
+          SELECT m.id AS member_id,
+                 m.dm_user_id,
+                 m.campaign_id,
+                 c.name AS campaign_name,
+                 c.document AS campaign_document
+          FROM campaign_members m
+          JOIN campaigns c
+            ON c.dm_user_id = m.dm_user_id AND c.id = m.campaign_id
+          WHERE m.owner_user_id = @ownerUserId
+            AND m.character_id = @characterId
+        ),
+        party AS (
+          SELECT l.member_id,
+                 jsonb_agg(
+                   member_character.document ->> 'name'
+                   ORDER BY member_character.name
+                 ) AS party
+          FROM linked l
+          JOIN campaign_members m
+            ON m.dm_user_id = l.dm_user_id AND m.campaign_id = l.campaign_id
+          JOIN characters member_character
+            ON member_character.user_id = m.owner_user_id
+           AND member_character.id = m.character_id
+          WHERE NOT (
+            m.owner_user_id = @ownerUserId
+            AND m.character_id = @characterId
+          )
+          GROUP BY l.member_id
+        ),
+        completed_chapters AS (
+          SELECT l.member_id,
+                 jsonb_agg(
+                   chapter.document - 'summary'
+                   ORDER BY chapter.created_at
+                 ) FILTER (
+                   WHERE chapter.id IS NOT NULL
+                     AND chapter.document ->> 'state' = 'completed'
+                 ) AS chapters
+          FROM linked l
+          LEFT JOIN chapters chapter
+            ON chapter.dm_user_id = l.dm_user_id
+           AND chapter.campaign_id = l.campaign_id
+          GROUP BY l.member_id
+        ),
+        battles AS (
+          SELECT l.member_id,
+                 jsonb_agg(
+                   encounter.document
+                   ORDER BY encounter.ended_at DESC
+                 ) FILTER (WHERE encounter.id IS NOT NULL) AS battles
+          FROM linked l
+          LEFT JOIN encounter_logs encounter
+            ON encounter.dm_user_id = l.dm_user_id
+           AND encounter.campaign_id = l.campaign_id
+          GROUP BY l.member_id
+        )
+        SELECT l.member_id,
+               l.campaign_document,
+               COALESCE(p.party, '[]'::jsonb) AS party,
+               COALESCE(c.chapters, '[]'::jsonb) AS chapters,
+               COALESCE(b.battles, '[]'::jsonb) AS battles
+        FROM linked l
+        LEFT JOIN party p ON p.member_id = l.member_id
+        LEFT JOIN completed_chapters c ON c.member_id = l.member_id
+        LEFT JOIN battles b ON b.member_id = l.member_id
+        ORDER BY l.campaign_name
+      '''),
+      parameters: {
+        'ownerUserId': TypedValue(Type.uuid, ownerUserId),
+        'characterId': TypedValue(Type.text, characterId),
+      },
+    );
+
+    return [
+      for (final row in result) _playerCampaignProjectionOf(row.toColumnMap()),
+    ];
+  }
+
   /// La autorización va en el `WHERE`, no en una comprobación previa: así no
   /// existe forma de borrar un vínculo del que no se es parte, ni siquiera
   /// llamando mal a este método.
@@ -460,6 +573,34 @@ class PostgresCampaignRepository implements CampaignRepository {
 
   Map<String, dynamic> _documentOf(ResultRow row) =>
       (row.toColumnMap()['document'] as Map).cast<String, dynamic>();
+
+  PlayerCampaignProjection _playerCampaignProjectionOf(
+    Map<String, dynamic> columns,
+  ) => PlayerCampaignProjection(
+    memberId: '${columns['member_id']}',
+    campaign: Campaign.fromJson(
+      (columns['campaign_document'] as Map).cast<String, dynamic>(),
+    ),
+    party: _stringList(columns['party']),
+    chapters: [
+      for (final json in _objectList(columns['chapters']))
+        Chapter.fromJson(json),
+    ],
+    battles: [
+      for (final json in _objectList(columns['battles']))
+        EncounterLog.fromJson(json),
+    ],
+  );
+
+  List<Map<String, dynamic>> _objectList(Object? value) => [
+    for (final item in value is List ? value : const [])
+      if (item is Map) item.cast<String, dynamic>(),
+  ];
+
+  List<String> _stringList(Object? value) => [
+    for (final item in value is List ? value : const [])
+      if (item is String) item,
+  ];
 
   String _generateId() => DateTime.now().microsecondsSinceEpoch.toString();
 }

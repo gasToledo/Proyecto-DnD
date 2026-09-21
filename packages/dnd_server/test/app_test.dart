@@ -82,6 +82,9 @@ void main() {
     chapters = InMemoryChapterRepository(campaigns);
     notes = InMemoryNoteRepository(campaigns, chapters);
     encounters = InMemoryEncounterRepository(campaigns);
+    campaigns
+      ..playerChaptersFor = chapters.listFor
+      ..playerBattlesFor = encounters.logsFor;
     events = InMemoryEventRepository();
     transactions = InMemoryRepositoryTransactionRunner(
       characters: characters,
@@ -1909,12 +1912,16 @@ void main() {
     }
 
     /// Deja un personaje creado y devuelve un código para compartirlo.
-    Future<String> shareCharacter(String token, String characterId) async {
+    Future<String> shareCharacter(
+      String token,
+      String characterId, {
+      String name = 'Sagan',
+    }) async {
       await send(
         'POST',
         '/api/characters',
         token: token,
-        body: {'character': characterJson(characterId)},
+        body: {'character': characterJson(characterId, name: name)},
       );
       final shared = await send(
         'POST',
@@ -1924,11 +1931,15 @@ void main() {
       return shared['body']['code'] as String;
     }
 
-    Future<void> createCampaign(String token, String id) => send(
+    Future<void> createCampaign(
+      String token,
+      String id, {
+      String name = 'La Tumba',
+    }) => send(
       'POST',
       '/api/campaigns',
       token: token,
-      body: {'campaign': campaignJson(id)},
+      body: {'campaign': campaignJson(id, name: name)},
     );
 
     Future<({String owner, String dm, String memberId})> linkCharacter(
@@ -3493,11 +3504,12 @@ void main() {
         String token,
         String id,
         String name, {
+        String campaignId = 'tumba',
         String state = 'planned',
         int grantsGold = 0,
       }) => send(
         'POST',
-        '/api/campaigns/tumba/chapters',
+        '/api/campaigns/$campaignId/chapters',
         token: token,
         body: {
           'chapter': {
@@ -3693,6 +3705,79 @@ void main() {
 
         expect((await campaignsOf(player)).single['party'], ['Mirna']);
       });
+
+      test(
+        'agrupa varias campañas, conserva el orden y oculta datos ajenos',
+        () async {
+          final player = await login('varias-player');
+          final code = await shareCharacter(player, 'sagan');
+          final dm = await login('varias-dm');
+
+          await createCampaign(dm, 'zorro', name: 'El Zorro');
+          await send(
+            'POST',
+            '/api/campaigns/zorro/members',
+            token: dm,
+            body: {'code': code},
+          );
+          await createChapter(
+            dm,
+            'cripta',
+            'La cripta',
+            campaignId: 'zorro',
+            grantsGold: 100,
+          );
+          await send(
+            'POST',
+            '/api/campaigns/zorro/chapters/cripta/close',
+            token: dm,
+          );
+
+          final otro = await login('varias-otro');
+          final otroCode = await shareCharacter(otro, 'mirna', name: 'Mirna');
+          await send(
+            'POST',
+            '/api/campaigns/zorro/members',
+            token: dm,
+            body: {'code': otroCode},
+          );
+
+          final secondCode = await shareCharacter(player, 'sagan');
+          await createCampaign(dm, 'alfa', name: 'El Alfa');
+          await send(
+            'POST',
+            '/api/campaigns/alfa/members',
+            token: dm,
+            body: {'code': secondCode},
+          );
+
+          final campaignBlocks = await campaignsOf(player);
+          expect(campaignBlocks, hasLength(2));
+          expect(
+            campaignBlocks.map((campaign) => campaign['campaign']['name']),
+            ['El Alfa', 'El Zorro'],
+          );
+          final alfa = campaignBlocks.first as Map<String, dynamic>;
+          final zorro = campaignBlocks.last as Map<String, dynamic>;
+          expect(alfa['party'], isEmpty);
+          expect(zorro['party'], ['Mirna'], reason: jsonEncode(campaignBlocks));
+          expect(zorro['chapters'], hasLength(1));
+          expect(zorro.containsKey('dmUserId'), isFalse);
+          expect(zorro['campaign'].containsKey('id'), isFalse);
+          expect(campaigns.playerProjectionCalls, 1);
+        },
+      );
+
+      test(
+        'si la campaña desaparece, el vínculo no rompe la respuesta',
+        () async {
+          final (player, dm) = await table('campana-borrada');
+
+          await send('DELETE', '/api/campaigns/tumba', token: dm);
+
+          expect(await campaignsOf(player), isEmpty);
+        },
+      );
 
       // El id de la campaña y el del DM no viajan: el jugador no tiene ninguna
       // ruta que los tome, y mandarlos solo serviría para tantear qué existe

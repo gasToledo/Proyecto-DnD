@@ -144,13 +144,8 @@ Handler buildHandler({
     ..get(
       '/api/characters/<id>/campaigns',
       authenticated(
-        (request) => _listPlayerCampaignsHandler(
-          request,
-          characters,
-          campaigns,
-          chapters,
-          encounters,
-        ),
+        (request) =>
+            _listPlayerCampaignsHandler(request, characters, campaigns),
       ),
     )
     ..get(
@@ -900,17 +895,11 @@ Map<String, dynamic> _playerChapterJson(Chapter chapter) =>
 /// un jugador no tiene por qué nombrar un id de campaña — una ruta que se lo
 /// aceptara sería una forma de tantear cuáles existen.
 ///
-/// **De dónde sale la autorización.** `listSharesForCharacter` filtra por
-/// `owner_user_id = quien pide`, así que cada fila que devuelve *es* la prueba
-/// de que este jugador está vinculado a esa campaña. Recién con el `dmUserId`
-/// que sale de ahí se consultan los cuatro repositorios de abajo.
-///
-/// Ojo con eso, que es la única vez en todo el servidor que pasa: a esos
-/// repositorios se les entrega un `dmUserId` **que no es de quien hace la
-/// petición**. Está bien porque salió de una fila ya autorizada, pero invierte
-/// el supuesto de su contrato («la autorización va adentro del `WHERE` con
-/// `dm_user_id`»). Si alguna vez este handler deja de arrancar por
-/// `listSharesForCharacter`, deja de estar bien.
+/// **De dónde sale la autorización.** El repositorio recibe
+/// `owner_user_id = quien pide` junto con el personaje y aplica ambos filtros
+/// dentro de la lectura agrupada. Cada fila que devuelve ya es la prueba de
+/// que ese jugador está vinculado a esa campaña; el handler no necesita
+/// resolver ids ajenos ni repartir la autorización entre otros repositorios.
 ///
 /// Lo que **no** viaja, y no por olvido: el objetivo de los capítulos (ver
 /// [_playerChapterJson]), los capítulos que todavía no se cerraron, las notas
@@ -920,8 +909,6 @@ Future<Response> _listPlayerCampaignsHandler(
   Request request,
   CharacterRepository characters,
   CampaignRepository campaigns,
-  ChapterRepository chapters,
-  EncounterRepository encounters,
 ) async {
   final id = requireSafePathSegment(
     request.params['id']!,
@@ -930,47 +917,25 @@ Future<Response> _listPlayerCampaignsHandler(
   final character = await characters.find(request.userId, id);
   if (character == null) return _notFound('Personaje no encontrado.');
 
-  final shares = await campaigns.listSharesForCharacter(
+  final projections = await campaigns.listPlayerCampaignProjection(
     ownerUserId: request.userId,
     characterId: id,
   );
 
-  // ponytail: cuatro consultas por campaña. Un personaje está en una o dos, así
-  // que no molesta; el día que moleste, es una sola consulta con joins.
-  final payload = <Map<String, dynamic>>[];
-  for (final share in shares) {
-    final campaign = await campaigns.find(share.dmUserId, share.campaignId);
-    // La campaña se borró entre el listado y esto. No es un error: el vínculo
-    // se va en cascada, así que el bloque simplemente no existe.
-    if (campaign == null) continue;
-
-    final members = await campaigns.listMembers(
-      share.dmUserId,
-      share.campaignId,
-    );
-    final all = await chapters.listFor(share.dmUserId, share.campaignId);
-    final battles = await encounters.logsFor(share.dmUserId, share.campaignId);
-
-    payload.add({
-      'memberId': share.memberId,
-      'campaign': campaign.toJson()..remove('id'),
-      // Los demás de la mesa. Se compara la cuenta **y** el id: los ids de
-      // personaje son por cuenta, así que dos jugadores distintos pueden tener
-      // los dos un «sagan» y mirar solo el id echaría al ajeno de la lista.
-      'party': [
-        for (final member in members)
-          if (!(member.ownerUserId == request.userId &&
-              member.character.id == character.id))
-            member.character.name,
-      ],
-      'chapters': [
-        for (final chapter in all)
-          if (chapter.state == ChapterState.completed)
-            _playerChapterJson(chapter),
-      ],
-      'battles': [for (final log in battles) log.toJson()],
-    });
-  }
+  final payload = [
+    for (final projection in projections)
+      {
+        'memberId': projection.memberId,
+        'campaign': projection.campaign.toJson()..remove('id'),
+        'party': projection.party,
+        'chapters': [
+          for (final chapter in projection.chapters)
+            if (chapter.state == ChapterState.completed)
+              _playerChapterJson(chapter),
+        ],
+        'battles': [for (final log in projection.battles) log.toJson()],
+      },
+  ];
   return _jsonOk({'campaigns': payload});
 }
 

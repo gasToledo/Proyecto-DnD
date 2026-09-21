@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -11,11 +12,35 @@ import 'api_models.dart';
 /// al mismo origen por defecto; el navegador envía la cookie de sesión
 /// HttpOnly sin exponer el token a este cliente.
 class ApiClient {
-  final http.Client _client;
-  final String baseUrl;
+  static const defaultRequestTimeout = Duration(seconds: 15);
 
-  ApiClient({http.Client? client, this.baseUrl = ''})
-    : _client = client ?? http.Client();
+  http.Client _client;
+  final bool _ownsClient;
+  final String baseUrl;
+  final Duration requestTimeout;
+  int _requestGeneration = 0;
+
+  ApiClient({
+    http.Client? client,
+    this.baseUrl = '',
+    this.requestTimeout = defaultRequestTimeout,
+  }) : _client = client ?? http.Client(),
+       _ownsClient = client == null;
+
+  /// Invalida las solicitudes que pertenezcan a un intento anterior.
+  ///
+  /// El transporte creado internamente se cierra para abortar las peticiones
+  /// abiertas y se reemplaza por uno nuevo. Un cliente inyectado pertenece a
+  /// su llamador, así que solo se invalida lógicamente y no se cierra.
+  void cancelPendingRequests({bool recreateClient = true}) {
+    _requestGeneration++;
+    if (!_ownsClient) return;
+
+    _client.close();
+    if (recreateClient) {
+      _client = http.Client();
+    }
+  }
 
   Uri _uri(String path) => Uri.parse('$baseUrl$path');
 
@@ -26,22 +51,38 @@ class ApiClient {
     String path, {
     Object? jsonBody,
   }) async {
+    final generation = _requestGeneration;
     final request = http.Request(method, _uri(path));
     if (jsonBody != null) {
       request.headers['content-type'] = 'application/json';
       request.body = jsonEncode(jsonBody);
     }
-    final http.StreamedResponse streamed;
     try {
-      streamed = await _client.send(request);
+      final response = await (() async {
+        final streamed = await _client.send(request);
+        return http.Response.fromStream(streamed);
+      })().timeout(requestTimeout);
+
+      if (generation != _requestGeneration) {
+        throw const ApiException(null, 'La solicitud fue cancelada.');
+      }
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return response;
+      }
+      throw ApiException(response.statusCode, _errorMessageFrom(response));
+    } on TimeoutException {
+      throw const ApiException(
+        null,
+        'La conexión tardó demasiado en responder.',
+      );
+    } on ApiException {
+      rethrow;
     } catch (_) {
+      if (generation != _requestGeneration) {
+        throw const ApiException(null, 'La solicitud fue cancelada.');
+      }
       throw const ApiException(null, 'No se pudo conectar con el servidor.');
     }
-    final response = await http.Response.fromStream(streamed);
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return response;
-    }
-    throw ApiException(response.statusCode, _errorMessageFrom(response));
   }
 
   String _errorMessageFrom(http.Response response) {

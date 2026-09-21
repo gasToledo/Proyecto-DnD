@@ -26,7 +26,12 @@ class DndApp extends StatefulWidget {
   /// (`test/main_dev.dart`): la aplicación real habla con el mismo origen que
   /// la sirvió, así que le alcanza con el cliente por defecto.
   final ApiClient? api;
-  const DndApp({super.key, this.api});
+
+  /// Loader alternativo para arranques controlados; producción usa el pack
+  /// incluido en los assets del cliente.
+  final Future<ContentRepository> Function()? contentLoader;
+
+  const DndApp({super.key, this.api, this.contentLoader});
 
   @override
   State<DndApp> createState() => _DndAppState();
@@ -53,7 +58,11 @@ class _DndAppState extends State<DndApp> {
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,
         themeMode: mode,
-        home: _Bootstrap(theme: _theme, api: widget.api),
+        home: _Bootstrap(
+          theme: _theme,
+          api: widget.api,
+          contentLoader: widget.contentLoader,
+        ),
       ),
     );
   }
@@ -83,7 +92,8 @@ class _AppData {
 class _Bootstrap extends StatefulWidget {
   final AppThemeController theme;
   final ApiClient? api;
-  const _Bootstrap({required this.theme, this.api});
+  final Future<ContentRepository> Function()? contentLoader;
+  const _Bootstrap({required this.theme, this.api, this.contentLoader});
   @override
   State<_Bootstrap> createState() => _BootstrapState();
 }
@@ -91,83 +101,118 @@ class _Bootstrap extends StatefulWidget {
 class _BootstrapState extends State<_Bootstrap> {
   late final _api = widget.api ?? ApiClient();
   late Future<_AppData> _future;
+  int _generation = 0;
 
   @override
   void initState() {
     super.initState();
-    _future = _init();
+    _future = _init(++_generation);
   }
 
-  Future<_AppData> _init() async {
-    final account = await _api.currentAccount();
-    if (account == null) {
-      // Nunca hay ficha que mostrar sin sesión: se navega la pestaña entera
-      // al login del proveedor OIDC (ver capacidad `user-accounts`). El
-      // Future se deja sin resolver a propósito: la página está por
-      // cambiar por completo.
-      browser.redirectTo(_api.loginUri.toString());
-      return Completer<_AppData>().future;
-    }
+  Future<T> _never<T>() => Completer<T>().future;
 
-    final repo = await loadOfficialContent();
-    // Fusiona el contenido homebrew sobre el oficial (mismo esquema).
-    final homebrew = HomebrewStore(_api);
-    await homebrew.load();
-    repo.addAll(homebrew.toRepository());
+  bool _isCurrent(int generation) => mounted && generation == _generation;
 
-    // Una cuenta nueva arranca con la biblioteca vacía: sembrar un personaje
-    // de ejemplo le deja al jugador algo ajeno que borrar antes de empezar.
-    // `demoSagan()` sigue existiendo como fixture de las pruebas.
-    final controller = CharactersController(_api);
-    await controller.load();
+  void _checkCurrent(int generation) {
+    if (!_isCurrent(generation)) throw const _BootstrapCancelled();
+  }
 
-    // El favorito y el orden del roster viven acá (ver `AppSettings`), así que
-    // hacen falta antes de dibujar el dashboard. Un fallo al leerlos no puede
-    // dejar sin personajes a nadie: se cae a los valores por defecto.
-    AppSettings settings;
+  Future<_AppData> _init(int generation) async {
     try {
-      settings = await SettingsService(_api).load();
-    } catch (_) {
-      settings = AppSettings();
-    }
-    final settingsController = SettingsController(_api, settings);
-
-    // El tema se aplica acá, no en el dashboard: el control aparece también en
-    // la ficha y las dos vistas leen del mismo controlador. Se guarda sobre el
-    // **mismo** objeto de ajustes que usa el dashboard, así elegir un tema no
-    // pisa el favorito ni el orden manual del roster.
-    widget.theme.attach(AppThemeController.parse(settings.themeMode), (
-      mode,
-    ) async {
-      try {
-        await settingsController.update((value) => value.themeMode = mode.name);
-      } catch (_) {
-        if (mounted) {
-          showAppMessage(
-            context,
-            'El tema cambió, pero no se pudo guardar la preferencia.',
-            tone: AppMessageTone.error,
-          );
-        }
+      final account = await _api.currentAccount();
+      _checkCurrent(generation);
+      if (account == null) {
+        // Nunca hay ficha que mostrar sin sesión: se navega la pestaña entera
+        // al login del proveedor OIDC (ver capacidad `user-accounts`). El
+        // Future se deja sin resolver a propósito: la página está por
+        // cambiar por completo.
+        browser.redirectTo(_api.loginUri.toString());
+        return _never<_AppData>();
       }
-    });
 
-    final version = await currentAppVersion();
-    return _AppData(
-      repo,
-      controller,
-      homebrew,
-      account,
-      settings,
-      settingsController,
-      version,
-    );
+      final repo = await (widget.contentLoader ?? loadOfficialContent)();
+      _checkCurrent(generation);
+      // Fusiona el contenido homebrew sobre el oficial (mismo esquema).
+      final homebrew = HomebrewStore(_api);
+      await homebrew.load();
+      _checkCurrent(generation);
+      repo.addAll(homebrew.toRepository());
+
+      // Una cuenta nueva arranca con la biblioteca vacía: sembrar un personaje
+      // de ejemplo le deja al jugador algo ajeno que borrar antes de empezar.
+      // `demoSagan()` sigue existiendo como fixture de las pruebas.
+      final controller = CharactersController(_api);
+      await controller.load();
+      _checkCurrent(generation);
+
+      // El favorito y el orden del roster viven acá (ver `AppSettings`), así que
+      // hacen falta antes de dibujar el dashboard. Un fallo al leerlos no puede
+      // dejar sin personajes a nadie: se cae a los valores por defecto.
+      AppSettings settings;
+      try {
+        settings = await SettingsService(_api).load();
+        _checkCurrent(generation);
+      } catch (_) {
+        _checkCurrent(generation);
+        settings = AppSettings();
+      }
+      final settingsController = SettingsController(_api, settings);
+
+      // El tema se aplica acá, no en el dashboard: el control aparece también en
+      // la ficha y las dos vistas leen del mismo controlador. Se guarda sobre el
+      // **mismo** objeto de ajustes que usa el dashboard, así elegir un tema no
+      // pisa el favorito ni el orden manual del roster.
+      widget.theme.attach(AppThemeController.parse(settings.themeMode), (
+        mode,
+      ) async {
+        if (!_isCurrent(generation)) return;
+        try {
+          await settingsController.update(
+            (value) => value.themeMode = mode.name,
+          );
+        } catch (_) {
+          if (mounted && generation == _generation) {
+            showAppMessage(
+              context,
+              'El tema cambió, pero no se pudo guardar la preferencia.',
+              tone: AppMessageTone.error,
+            );
+          }
+        }
+      });
+
+      final version = await currentAppVersion();
+      _checkCurrent(generation);
+      return _AppData(
+        repo,
+        controller,
+        homebrew,
+        account,
+        settings,
+        settingsController,
+        version,
+      );
+    } on _BootstrapCancelled {
+      return _never<_AppData>();
+    } catch (_) {
+      if (!_isCurrent(generation)) return _never<_AppData>();
+      rethrow;
+    }
   }
 
   void _retry() {
+    _api.cancelPendingRequests();
+    final generation = ++_generation;
     setState(() {
-      _future = _init();
+      _future = _init(generation);
     });
+  }
+
+  @override
+  void dispose() {
+    _generation++;
+    _api.cancelPendingRequests(recreateClient: false);
+    super.dispose();
   }
 
   @override
@@ -175,6 +220,11 @@ class _BootstrapState extends State<_Bootstrap> {
     return FutureBuilder<_AppData>(
       future: _future,
       builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: AppBusyLabel('Cargando datos…')),
+          );
+        }
         if (snap.hasError) {
           return Scaffold(
             body: AppErrorView(
@@ -224,4 +274,8 @@ class _BootstrapState extends State<_Bootstrap> {
       },
     );
   }
+}
+
+class _BootstrapCancelled implements Exception {
+  const _BootstrapCancelled();
 }

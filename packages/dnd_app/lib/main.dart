@@ -65,6 +65,7 @@ class _AppData {
   final HomebrewStore homebrew;
   final AccountInfo account;
   final AppSettings settings;
+  final SettingsController settingsController;
   final String? appVersion;
   _AppData(
     this.repo,
@@ -72,6 +73,7 @@ class _AppData {
     this.homebrew,
     this.account,
     this.settings,
+    this.settingsController,
     this.appVersion,
   );
 }
@@ -128,6 +130,7 @@ class _BootstrapState extends State<_Bootstrap> {
     } catch (_) {
       settings = AppSettings();
     }
+    final settingsController = SettingsController(_api, settings);
 
     // El tema se aplica acá, no en el dashboard: el control aparece también en
     // la ficha y las dos vistas leen del mismo controlador. Se guarda sobre el
@@ -136,9 +139,8 @@ class _BootstrapState extends State<_Bootstrap> {
     widget.theme.attach(AppThemeController.parse(settings.themeMode), (
       mode,
     ) async {
-      settings.themeMode = mode.name;
       try {
-        await SettingsService(_api).save(settings);
+        await settingsController.update((value) => value.themeMode = mode.name);
       } catch (_) {
         if (mounted) {
           showAppMessage(
@@ -151,7 +153,15 @@ class _BootstrapState extends State<_Bootstrap> {
     });
 
     final version = await currentAppVersion();
-    return _AppData(repo, controller, homebrew, account, settings, version);
+    return _AppData(
+      repo,
+      controller,
+      homebrew,
+      account,
+      settings,
+      settingsController,
+      version,
+    );
   }
 
   void _retry() {
@@ -206,6 +216,7 @@ class _BootstrapState extends State<_Bootstrap> {
             homebrew: data.homebrew,
             account: data.account,
             settings: data.settings,
+            settingsController: data.settingsController,
             appVersion: data.appVersion,
             theme: widget.theme,
           ),

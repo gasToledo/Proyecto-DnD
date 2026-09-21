@@ -47,12 +47,14 @@ class PortraitScreen extends StatefulWidget {
   final Character character;
   final ContentRepository repo;
   final ApiClient api;
+  final SettingsController? settingsController;
   final void Function(Character updated) onUpdated;
   const PortraitScreen({
     super.key,
     required this.character,
     required this.repo,
     required this.api,
+    this.settingsController,
     required this.onUpdated,
   });
 
@@ -61,6 +63,9 @@ class PortraitScreen extends StatefulWidget {
 }
 
 class _PortraitScreenState extends State<PortraitScreen> {
+  late final SettingsController _settingsController =
+      widget.settingsController ??
+      SettingsController(widget.api, AppSettings());
   final _extraCtrl = TextEditingController();
   final _customStyleCtrl = TextEditingController();
 
@@ -119,7 +124,9 @@ class _PortraitScreenState extends State<PortraitScreen> {
       _loadError = null;
     });
     try {
-      final settings = await SettingsService(widget.api).load();
+      final settings = widget.settingsController == null
+          ? await _settingsController.load()
+          : _settingsController.settings;
       final providers = await widget.api.listPortraitProviders();
       if (!mounted) return;
       setState(() {
@@ -181,10 +188,9 @@ class _PortraitScreenState extends State<PortraitScreen> {
   Future<void> _selectProvider(String id) async {
     setState(() => _providerId = id);
     try {
-      final service = SettingsService(widget.api);
-      final settings = await service.load();
-      settings.imageProvider = id;
-      await service.save(settings);
+      await _settingsController.update((settings) {
+        settings.imageProvider = id;
+      });
     } catch (e) {
       if (!mounted) return;
       showAppMessage(
@@ -247,6 +253,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
         withData: true,
         dialogTitle: 'Elegir imagen de referencia',
       );
+      if (!mounted) return;
       final file = result?.files.singleOrNull;
       if (file?.bytes == null) return; // el usuario canceló el diálogo
       setState(() {
@@ -273,6 +280,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
         withData: true,
         dialogTitle: 'Elegir imagen de retrato',
       );
+      if (!mounted) return;
       final bytes = result?.files.singleOrNull?.bytes;
       if (bytes == null) return; // el usuario canceló el diálogo
       await _use(bytes);

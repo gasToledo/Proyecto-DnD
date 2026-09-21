@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import '../api/api_client.dart';
 import '../api/api_models.dart';
 import '../data/characters_controller.dart';
+import '../data/settings_service.dart';
 import '../levelup/level_up_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
@@ -53,12 +54,14 @@ class SheetScreen extends StatefulWidget {
   final Character character;
   final ContentRepository repo;
   final CharactersController controller;
+  final SettingsController? settingsController;
   final AppThemeController theme;
   const SheetScreen({
     super.key,
     required this.character,
     required this.repo,
     required this.controller,
+    this.settingsController,
     required this.theme,
   });
 
@@ -68,6 +71,7 @@ class SheetScreen extends StatefulWidget {
 
 class _SheetScreenState extends State<SheetScreen> {
   late Character _c = widget.character;
+  late final SettingsController _settingsController;
   _SheetTab _tab = _SheetTab.personaje;
 
   ContentRepository get repo => widget.repo;
@@ -182,6 +186,9 @@ class _SheetScreenState extends State<SheetScreen> {
   @override
   void initState() {
     super.initState();
+    _settingsController =
+        widget.settingsController ??
+        SettingsController(widget.controller.api, AppSettings());
     _pollTurn();
   }
 
@@ -309,6 +316,7 @@ class _SheetScreenState extends State<SheetScreen> {
           character: _c,
           repo: repo,
           api: ctrl.api,
+          settingsController: _settingsController,
           onUpdated: _replace,
         ),
       ),

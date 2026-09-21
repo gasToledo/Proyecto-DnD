@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../api/api_client.dart';
 
 /// Preferencias de la cuenta: proveedor de retratos, favorito, orden del
@@ -66,7 +68,77 @@ class SettingsService {
     final document = await api.loadSettingsDocument();
     return AppSettings.fromJson(document);
   }
+}
 
-  Future<void> save(AppSettings settings) =>
-      api.saveSettingsDocument(settings.toJson());
+/// Estado canónico de preferencias de una sesión y cola de persistencia.
+/// Todas las pantallas que editan ajustes comparten esta instancia para que
+/// dos escrituras no puedan viajar en paralelo con snapshots contradictorios.
+class SettingsController {
+  final ApiClient api;
+  AppSettings settings;
+
+  Map<String, dynamic>? _pendingSnapshot;
+  final List<Completer<void>> _pendingWaiters = [];
+  bool _draining = false;
+
+  SettingsController(this.api, this.settings);
+
+  Future<AppSettings> load() async {
+    final document = await api.loadSettingsDocument();
+    settings = AppSettings.fromJson(document);
+    return settings;
+  }
+
+  Future<void> update(void Function(AppSettings settings) mutate) {
+    mutate(settings);
+    return saveCurrent();
+  }
+
+  /// Persiste una copia profunda del documento actual y agrupa las mutaciones
+  /// que llegan mientras la petición anterior sigue en vuelo.
+  Future<void> saveCurrent() {
+    final completer = Completer<void>();
+    _pendingSnapshot = _snapshot(settings);
+    _pendingWaiters.add(completer);
+    _drain();
+    return completer.future;
+  }
+
+  Map<String, dynamic> _snapshot(AppSettings value) => {
+    ...value.toJson(),
+    'characterOrder': List<String>.of(value.characterOrder),
+  };
+
+  void _drain() {
+    if (_draining) return;
+    _draining = true;
+    _drainLoop();
+  }
+
+  Future<void> _drainLoop() async {
+    try {
+      while (_pendingSnapshot != null) {
+        final snapshot = _pendingSnapshot!;
+        _pendingSnapshot = null;
+        final waiters = List<Completer<void>>.of(_pendingWaiters);
+        _pendingWaiters.clear();
+        try {
+          await api.saveSettingsDocument(snapshot);
+          for (final waiter in waiters) {
+            if (!waiter.isCompleted) waiter.complete();
+          }
+        } catch (error, stackTrace) {
+          for (final waiter in waiters) {
+            if (!waiter.isCompleted) waiter.completeError(error, stackTrace);
+          }
+        }
+      }
+    } finally {
+      _draining = false;
+      // A mutation can be queued between the last loop condition and the
+      // cleanup above. Make sure it gets another drain without overlapping
+      // the previous one.
+      if (_pendingSnapshot != null) _drain();
+    }
+  }
 }

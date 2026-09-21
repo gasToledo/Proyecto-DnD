@@ -31,6 +31,7 @@ class FakeApiServer {
   int _generatedIdCounter = 0;
   int createCharacterCalls = 0;
   int upsertCharacterCalls = 0;
+  int deleteCharacterCalls = 0;
 
   /// Campañas que dirige la cuenta, y los vínculos con personajes.
   ///
@@ -157,6 +158,7 @@ class FakeApiServer {
       return _json({'status': 'ok'});
     }
     if (method == 'DELETE' && path.startsWith('/api/characters/')) {
+      deleteCharacterCalls++;
       final id = _segment(path, '/api/characters/');
       characters.remove(id);
       return _json({'status': 'ok'});

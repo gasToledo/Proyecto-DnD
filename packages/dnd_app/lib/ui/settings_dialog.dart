@@ -9,24 +9,22 @@ import '../theme/app_widgets.dart';
 /// `GET /api/portraits/providers`. Las credenciales quedan en el servidor.
 class SettingsDialog extends StatefulWidget {
   final ApiClient api;
+  final SettingsController? settingsController;
 
-  const SettingsDialog({super.key, required this.api});
+  const SettingsDialog({super.key, required this.api, this.settingsController});
 
   @override
   State<SettingsDialog> createState() => _SettingsDialogState();
 }
 
 class _SettingsDialogState extends State<SettingsDialog> {
-  late final _settings = SettingsService(widget.api);
+  late final SettingsController _settingsController =
+      widget.settingsController ??
+      SettingsController(widget.api, AppSettings());
 
   List<PortraitProviderInfo> _providers = [];
   String? _providerId;
 
-  /// Los ajustes tal como estaban al abrir el diálogo. Esta pantalla edita un
-  /// solo campo, pero el documento tiene más (favorito y orden del roster):
-  /// se guarda este objeto con el campo cambiado, nunca uno nuevo, o guardar
-  /// los ajustes borraría lo que esta pantalla ni muestra.
-  AppSettings? _loadedSettings;
   bool _loaded = false;
   bool _saving = false;
   String? _loadError;
@@ -43,12 +41,13 @@ class _SettingsDialogState extends State<SettingsDialog> {
       _loadError = null;
     });
     try {
-      final settings = await _settings.load();
+      final settings = widget.settingsController == null
+          ? await _settingsController.load()
+          : _settingsController.settings;
       final providers = await widget.api.listPortraitProviders();
       if (!mounted) return;
       setState(() {
         _providers = providers;
-        _loadedSettings = settings;
         _providerId = providers.any((p) => p.id == settings.imageProvider)
             ? settings.imageProvider
             : providers.firstOrNull?.id;
@@ -64,9 +63,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
     if (_saving || _providerId == null) return;
     setState(() => _saving = true);
     try {
-      final settings = _loadedSettings ?? AppSettings();
-      settings.imageProvider = _providerId!;
-      await _settings.save(settings);
+      await _settingsController.update((settings) {
+        settings.imageProvider = _providerId!;
+      });
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (error) {

@@ -79,6 +79,10 @@ class DashboardScreen extends StatefulWidget {
   /// ejercitan: entonces se arranca con los valores por defecto y no se
   /// persiste nada.
   final AppSettings? settings;
+
+  /// Coordinador compartido con el tema, la ficha y las pantallas de ajustes.
+  /// Las pruebas aisladas pueden omitirlo y el dashboard crea uno local.
+  final SettingsController? settingsController;
   final String? appVersion;
 
   /// Tema activo, compartido con la ficha para que el control muestre lo mismo
@@ -91,6 +95,7 @@ class DashboardScreen extends StatefulWidget {
     required this.homebrew,
     this.account,
     this.settings,
+    this.settingsController,
     this.appVersion,
     required this.theme,
   });
@@ -106,16 +111,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Object? _shownSaveError;
   String? _activeOperation;
 
-  /// Copia viva de los ajustes: se edita acá y se manda al servidor. Si no
-  /// vinieron (pruebas), se trabaja sobre un objeto suelto que no se persiste.
-  late final AppSettings _settings = widget.settings ?? AppSettings();
-  bool get _persistsSettings => widget.settings != null;
+  late final SettingsController _settingsController;
+  late final AppSettings _settings;
+  bool get _persistsSettings =>
+      widget.settings != null || widget.settingsController != null;
 
   void _updateState(VoidCallback update) => setState(update);
 
   @override
   void initState() {
     super.initState();
+    _settingsController =
+        widget.settingsController ??
+        SettingsController(
+          widget.controller.api,
+          widget.settings ?? AppSettings(),
+        );
+    _settings = _settingsController.settings;
     _sort = _SortMode.parse(_settings.sortMode);
     widget.controller.addListener(_handleControllerState);
   }
@@ -126,9 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   /// silencio.
   void _persistSettings() {
     if (!_persistsSettings) return;
-    SettingsService(widget.controller.api).save(_settings).catchError((
-      Object error,
-    ) {
+    _settingsController.saveCurrent().catchError((Object error) {
       if (mounted) {
         showAppMessage(
           context,

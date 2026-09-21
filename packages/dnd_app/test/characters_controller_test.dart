@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/api/api_exception.dart';
 import 'package:dnd_app/data/characters_controller.dart';
@@ -18,6 +20,67 @@ void main() {
     await Future.delayed(const Duration(milliseconds: 600));
     expect(server.characters.containsKey('sagan'), isTrue);
     expect(ctrl.saveState, CharacterSaveState.saved);
+  });
+
+  test(
+    'borrar una creación pendiente no borra una colisión existente',
+    () async {
+      final original = demoSagan();
+      final server = FakeApiServer()..characters['sagan'] = original;
+      final ctrl = CharactersController(ApiClient(client: server.client));
+      final incoming = original.copyWith(name: 'Otro Sagan');
+
+      ctrl.add(incoming);
+      await ctrl.remove(incoming);
+
+      expect(server.createCharacterCalls, 0);
+      expect(server.deleteCharacterCalls, 0);
+      expect(server.characters['sagan']!.name, original.name);
+      expect(ctrl.characters, isEmpty);
+    },
+  );
+
+  test(
+    'borrar durante una creación reasignada elimina el id efectivo',
+    () async {
+      final original = demoSagan();
+      final server = FakeApiServer()..characters['sagan'] = original;
+      final createStarted = Completer<void>();
+      final releaseCreate = Completer<void>();
+      server.beforeHandle = (request) async {
+        if (request.method == 'POST' && request.url.path == '/api/characters') {
+          createStarted.complete();
+          await releaseCreate.future;
+        }
+      };
+      final ctrl = CharactersController(ApiClient(client: server.client));
+      final incoming = original.copyWith(name: 'Otro Sagan');
+
+      ctrl.add(incoming);
+      await createStarted.future;
+      final removing = ctrl.remove(incoming);
+      releaseCreate.complete();
+      await removing;
+
+      expect(server.createCharacterCalls, 1);
+      expect(server.deleteCharacterCalls, 1);
+      expect(server.characters['sagan']!.name, original.name);
+      expect(server.characters.keys, isNot(contains('generated-0')));
+      expect(ctrl.characters, isEmpty);
+    },
+  );
+
+  test('borrar un personaje persistido elimina solo ese personaje', () async {
+    final original = demoSagan();
+    final server = FakeApiServer()..characters['sagan'] = original;
+    final ctrl = CharactersController(ApiClient(client: server.client));
+    ctrl.characters.add(original);
+
+    await ctrl.remove(original);
+
+    expect(server.deleteCharacterCalls, 1);
+    expect(server.characters, isEmpty);
+    expect(ctrl.characters, isEmpty);
   });
 
   test('ediciones rápidas se agrupan en un solo guardado (debounce)', () async {

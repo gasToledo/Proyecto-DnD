@@ -384,13 +384,17 @@ void main() {
       final ctrl = CharactersController(ApiClient(client: server.client))
         ..add(demoSagan());
       final settings = AppSettings(favoriteCharacterId: 'sagan');
-      final service = SettingsService(ApiClient(client: server.client));
+      final settingsController = SettingsController(
+        ApiClient(client: server.client),
+        settings,
+      );
       final theme = AppThemeController();
       // Mismo cableado que hace `main.dart` al terminar de cargar los ajustes:
       // se guarda sobre el objeto vivo, no sobre uno nuevo.
       theme.attach(
         ThemeMode.dark,
-        (mode) => service.save(settings..themeMode = mode.name),
+        (mode) =>
+            settingsController.update((value) => value.themeMode = mode.name),
       );
       addTearDown(theme.dispose);
 

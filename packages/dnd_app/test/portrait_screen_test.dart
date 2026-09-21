@@ -1,8 +1,12 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/demo/demo_characters.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/ui/portrait_screen.dart';
 import 'package:dnd_engine/dnd_engine.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -130,6 +134,61 @@ void main() {
     expect(find.text('Elegir imagen…'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'la referencia seleccionada queda disponible mientras sigue montada',
+    (tester) async {
+      await pumpScreen(tester, providers: [azure]);
+      FilePicker.platform = _FakeFilePicker(
+        Future.value(
+          FilePickerResult([
+            PlatformFile(
+              name: 'referencia.png',
+              size: 3,
+              bytes: Uint8List.fromList([1, 2, 3]),
+            ),
+          ]),
+        ),
+      );
+      addTearDown(
+        () => FilePicker.platform = _FakeFilePicker(Future.value(null)),
+      );
+
+      await tester.tap(find.text('Elegir imagen…'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('referencia.png'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'ignora la referencia si la pantalla se cierra durante el selector',
+    (tester) async {
+      await pumpScreen(tester, providers: [azure]);
+      final result = Completer<FilePickerResult?>();
+      FilePicker.platform = _FakeFilePicker(result.future);
+      addTearDown(
+        () => FilePicker.platform = _FakeFilePicker(Future.value(null)),
+      );
+
+      await tester.tap(find.text('Elegir imagen…'));
+      await tester.pump();
+      await tester.pumpWidget(const SizedBox());
+      result.complete(
+        FilePickerResult([
+          PlatformFile(
+            name: 'tardia.png',
+            size: 1,
+            bytes: Uint8List.fromList([7]),
+          ),
+        ]),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   // Guardar un retrato nuevo nunca borró los anteriores: `_use` los antepone en
   // `portraitPaths` y el almacén no tiene `delete`. Lo que faltaba era poder
@@ -315,4 +374,26 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+}
+
+class _FakeFilePicker extends FilePicker {
+  _FakeFilePicker(this._result);
+
+  final Future<FilePickerResult?> _result;
+
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    bool allowCompression = true,
+    int compressionQuality = 30,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+  }) => _result;
 }

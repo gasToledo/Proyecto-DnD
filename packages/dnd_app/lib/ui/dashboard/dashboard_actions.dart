@@ -25,6 +25,7 @@ extension _DashboardActions on _DashboardScreenState {
             character: c,
             repo: repo,
             controller: controller,
+            settingsController: _settingsController,
             theme: widget.theme,
           ),
         ),

@@ -15,7 +15,7 @@ class CharactersController extends ChangeNotifier {
   final ApiClient api;
   final List<Character> characters = [];
   final Map<String, Timer> _debouncers = {};
-  final Set<String> _pendingCreates = {};
+  final Set<String> _pendingCreateIds = {};
   final Map<String, String> _reassignedIds = {};
 
   /// Fecha de alta por id, tal como la informa el servidor. Vive acá y no en
@@ -92,7 +92,7 @@ class CharactersController extends ChangeNotifier {
   void add(Character c) {
     characters.add(c);
     _createdAt[c.id] = _nextLocalCreatedAt();
-    _pendingCreates.add(c.id);
+    _pendingCreateIds.add(c.id);
     _scheduleSave(c);
     notifyListeners();
   }
@@ -117,16 +117,55 @@ class CharactersController extends ChangeNotifier {
   }
 
   Future<void> remove(Character c) async {
-    _debouncers.remove(c.id)?.cancel();
-    final id = _effectiveId(c.id);
-    await (_saveQueues[id] ?? Future<void>.value());
+    final requestedId = c.id;
+    final effectiveBeforeWait = _effectiveId(requestedId);
+    _debouncers.remove(requestedId)?.cancel();
+    if (effectiveBeforeWait != requestedId) {
+      _debouncers.remove(effectiveBeforeWait)?.cancel();
+    }
+
+    final queued = _saveQueues[effectiveBeforeWait] ?? _saveQueues[requestedId];
+    if (queued == null && _pendingCreateIds.contains(requestedId)) {
+      _removeLocal(c, effectiveBeforeWait);
+      notifyListeners();
+      return;
+    }
+
+    await (queued ?? Future<void>.value());
+    final id = _effectiveId(requestedId);
+    // A failed create is caught by the save queue and leaves the requested id
+    // pending. There is no confirmed server record to delete in that case.
+    if (_pendingCreateIds.contains(requestedId)) {
+      _removeLocal(c, id);
+      notifyListeners();
+      return;
+    }
+
     await api.deleteCharacter(id);
-    characters.removeWhere((x) => x.id == id);
-    _createdAt.remove(id);
-    _pendingCreates
-      ..remove(c.id)
-      ..remove(id);
+    _removeLocal(c, id);
     notifyListeners();
+  }
+
+  /// Quita exactamente la entrada que originó la operación cuando es posible.
+  /// Buscar solo por id no alcanza: durante una colisión pueden convivir en
+  /// memoria la ficha existente y la creación local que todavía no recibió su
+  /// id reasignado.
+  void _removeLocal(Character requested, String effectiveId) {
+    final index = characters.indexWhere(
+      (candidate) => identical(candidate, requested),
+    );
+    if (index >= 0) {
+      characters.removeAt(index);
+    } else {
+      characters.removeWhere((candidate) => candidate.id == effectiveId);
+    }
+    _createdAt
+      ..remove(requested.id)
+      ..remove(effectiveId);
+    _pendingCreateIds
+      ..remove(requested.id)
+      ..remove(effectiveId);
+    _reassignedIds.remove(requested.id);
   }
 
   String _effectiveId(String id) => _reassignedIds[id] ?? id;
@@ -153,14 +192,19 @@ class CharactersController extends ChangeNotifier {
     queued = previous
         .then((_) async {
           final effectiveId = _effectiveId(queueId);
-          final latest = characters
-              .where((character) => character.id == effectiveId)
-              .firstOrNull;
+          final isNew = _pendingCreateIds.contains(queueId);
+          Character? latest;
+          for (final candidate in characters) {
+            if (identical(candidate, c)) {
+              latest = candidate;
+              break;
+            }
+            if (candidate.id == effectiveId) latest = candidate;
+          }
           if (latest == null) return;
-          final isNew = _pendingCreates.contains(queueId);
           if (isNew) {
             final stored = await api.createCharacter(latest);
-            _pendingCreates.remove(queueId);
+            _pendingCreateIds.remove(queueId);
             if (stored.id != queueId) _acceptReassignedId(queueId, stored);
           } else {
             await api.upsertCharacter(latest);

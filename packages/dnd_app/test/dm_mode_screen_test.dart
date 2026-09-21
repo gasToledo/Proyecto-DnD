@@ -1630,6 +1630,25 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // Antes «Guardar» se apagaba sin título: se veía que no se podía, pero no
+    // por qué. Ahora dice qué falta, igual que campaña y capítulo.
+    testWidgets('guardar una nota sin título explica qué falta', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedChapter);
+      await openCuaderno(tester);
+
+      await tester.tap(find.text('Escribir nota'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nota'), 'Algo');
+      await tester.tap(dialogAction('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Poné un título para guardarla.'), findsOneWidget);
+      expect(server.notes['tumba'] ?? const [], isEmpty);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('borrar una nota pide confirmación', (tester) async {
       final server = await pumpDmMode(
         tester,

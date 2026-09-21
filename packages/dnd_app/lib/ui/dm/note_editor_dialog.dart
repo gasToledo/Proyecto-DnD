@@ -49,23 +49,32 @@ class _NoteEditorDialogState extends State<_NoteEditorDialog> {
   );
   late String _chapterId = widget.current.chapterId;
 
-  @override
-  void initState() {
-    super.initState();
-    // Sin esto el diálogo no se reconstruye al tipear y «Guardar» se queda
-    // apagado para siempre: `TextField` con controlador no llama a `setState`
-    // por su cuenta.
-    _title.addListener(_onTitleChanged);
-  }
-
-  void _onTitleChanged() => setState(() {});
+  /// Mismo patrón que los editores de campaña y capítulo. Antes «Guardar» se
+  /// apagaba sin título: se veía que no se podía, pero no por qué, y un botón
+  /// gris al lado de un campo vacío no siempre se asocia con ese campo.
+  String? _titleError;
 
   @override
   void dispose() {
-    _title.removeListener(_onTitleChanged);
     _title.dispose();
     _body.dispose();
     super.dispose();
+  }
+
+  void _save() {
+    final title = _title.text.trim();
+    // Misma regla que hace cumplir el servidor: sin título no se guarda.
+    if (title.isEmpty) {
+      setState(() => _titleError = 'Poné un título para guardarla.');
+      return;
+    }
+    Navigator.of(context).pop(
+      widget.current.copyWith(
+        chapterId: _chapterId,
+        title: title,
+        body: _body.text.trim(),
+      ),
+    );
   }
 
   @override
@@ -98,12 +107,17 @@ class _NoteEditorDialogState extends State<_NoteEditorDialog> {
           TextField(
             controller: _title,
             autofocus: true,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Título',
               // El título es campo aparte y no la primera línea del texto
               // porque es lo que se ve con la nota plegada y al buscar.
               helperText: 'Es lo que se ve en el listado y al buscar.',
+              errorText: _titleError,
             ),
+            onChanged: (_) {
+              if (_titleError != null) setState(() => _titleError = null);
+            },
+            onSubmitted: (_) => _save(),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -123,20 +137,7 @@ class _NoteEditorDialogState extends State<_NoteEditorDialog> {
           keyHint: 'Esc',
           onPressed: () => Navigator.of(context).pop(),
         ),
-        DialogAction(
-          'Guardar',
-          primary: true,
-          // Misma regla que hace cumplir el servidor: sin título no se guarda.
-          onPressed: _title.text.trim().isEmpty
-              ? null
-              : () => Navigator.of(context).pop(
-                  widget.current.copyWith(
-                    chapterId: _chapterId,
-                    title: _title.text.trim(),
-                    body: _body.text.trim(),
-                  ),
-                ),
-        ),
+        DialogAction('Guardar', primary: true, onPressed: _save),
       ],
     );
   }

@@ -1,4 +1,5 @@
 import 'package:dnd_app/api/api_client.dart';
+import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/ui/pending_events_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +20,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.dark,
         home: PendingEventsGate(
           api: ApiClient(client: server.client),
           child: const Scaffold(body: Text('contenido')),
@@ -44,6 +46,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.dark,
         home: PendingEventsGate(
           api: api,
           child: const Scaffold(body: Text('contenido')),
@@ -60,6 +63,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.dark,
         home: PendingEventsGate(
           api: ApiClient(client: server.client),
           child: const Scaffold(body: Text('contenido')),
@@ -83,6 +87,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.dark,
         home: PendingEventsGate(
           api: ApiClient(client: server.client),
           child: const Scaffold(body: Text('contenido')),
@@ -106,6 +111,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.dark,
         home: Scaffold(body: Builder(builder: (context) => const Text('x'))),
       ),
     );

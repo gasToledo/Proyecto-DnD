@@ -466,7 +466,7 @@ En `lib/homebrew/forms/form_widgets.dart`, para los ocho formularios de contenid
 
 | Componente | Qué es | Regla |
 | --- | --- | --- |
-| `showAppMessage(…)` | `SnackBar` con tono `info` / `success` / `error` | El error dura **6 s**, el resto 3 s. Siempre `Semantics(liveRegion: true)` |
+| `showAppMessage(…)` | `SnackBar` con tono `info` / `success` / `error`, y «Deshacer» opcional con `onUndo` | El error dura **6 s**, con `onUndo` **8 s**, el resto 3 s. `onUndo` solo si se restaura entero con lo que hay en memoria. Siempre `Semantics(liveRegion: true)` |
 | `AppBusyLabel` | Spinner de 18 px + texto, como región viva | El texto es obligatorio: un spinner solo no dice qué está pasando |
 | `_SaveStatusIndicator` | Píldora de estado del guardado con `AnimatedSwitcher` de 180 ms | Ícono + texto + color, los tres |
 | `AppEmptyState` | Ícono 40 px `onSurfaceVariant` + mensaje centrado + acciones opcionales | El mensaje es región viva. Distinguir **«no hay nada»** de **«nada coincide con la búsqueda»**: son situaciones distintas y piden acciones distintas |

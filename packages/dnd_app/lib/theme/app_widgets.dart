@@ -24,7 +24,12 @@ void showAppMessage(
   final scheme = Theme.of(context).colorScheme;
   final (icon, color) = switch (tone) {
     AppMessageTone.info => (Icons.info_outline, scheme.primary),
-    AppMessageTone.success => (Icons.check_circle_outline, Colors.green),
+    // `verdant` y no `Colors.green`: es el verde de «la salida esperada»
+    // (§ color de las acciones), y cambia con el tema como el resto.
+    AppMessageTone.success => (
+      Icons.check_circle_outline,
+      context.palette.verdant,
+    ),
     AppMessageTone.error => (Icons.error_outline, scheme.error),
   };
   final messenger = ScaffoldMessenger.of(context);

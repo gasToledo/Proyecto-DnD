@@ -53,6 +53,92 @@ ARTISAN = [
 HOLY = ["amulet", "emblem", "reliquary"]
 ARCANE_FOCUS = ["crystal", "orb", "rod", "staff", "wand"]
 
+ALL_SKILLS = [
+    "acrobatics", "animal-handling", "arcana", "athletics", "deception",
+    "history", "insight", "intimidation", "investigation", "medicine",
+    "nature", "perception", "performance", "persuasion", "religion",
+    "sleight-of-hand", "stealth", "survival",
+]
+
+# PHB 2024, capítulo 3: requisitos de aptitud y competencias parciales al
+# entrar por multiclase. Artífice conserva la misma forma para el contenido de
+# Forge of the Artificer que ya vive en este pack.
+MULTICLASS_RULES = {
+    "barbarian": {
+        "abilityRequirements": ["strength"],
+        "armorProficiencies": ["shield"],
+        "weaponProficiencies": ["simple", "martial"],
+    },
+    "bard": {
+        "abilityRequirements": ["charisma"],
+        "armorProficiencies": ["light"],
+        "skillChoiceCount": 1,
+        "skillChoiceFrom": ALL_SKILLS,
+        "instrumentProficiencies": ["musical-instrument"],
+    },
+    "cleric": {
+        "abilityRequirements": ["wisdom"],
+        "armorProficiencies": ["light", "medium", "shield"],
+    },
+    "druid": {
+        "abilityRequirements": ["wisdom"],
+        "armorProficiencies": ["light", "medium", "shield"],
+    },
+    "fighter": {
+        "abilityRequirements": ["strength", "dexterity"],
+        "abilityRequirementMode": "any",
+        "armorProficiencies": ["light", "medium", "shield"],
+        "weaponProficiencies": ["simple", "martial"],
+    },
+    "monk": {
+        "abilityRequirements": ["dexterity", "wisdom"],
+        "weaponProficiencies": ["simple", "martial-light"],
+    },
+    "paladin": {
+        "abilityRequirements": ["strength", "charisma"],
+        "armorProficiencies": ["light", "medium", "shield"],
+        "weaponProficiencies": ["simple", "martial"],
+    },
+    "ranger": {
+        "abilityRequirements": ["dexterity", "wisdom"],
+        "armorProficiencies": ["light", "medium", "shield"],
+        "weaponProficiencies": ["simple", "martial"],
+    },
+    "rogue": {
+        "abilityRequirements": ["dexterity"],
+        "armorProficiencies": ["light"],
+        "weaponProficiencies": ["simple", "martial-finesse", "martial-light"],
+        "toolProficiencies": ["thieves-tools"],
+        "skillChoiceCount": 1,
+        "skillChoiceFrom": [
+            "acrobatics", "athletics", "deception", "insight", "intimidation",
+            "investigation", "perception", "persuasion", "sleight-of-hand", "stealth",
+        ],
+    },
+    "sorcerer": {
+        "abilityRequirements": ["charisma"],
+    },
+    "warlock": {
+        "abilityRequirements": ["charisma"],
+        "armorProficiencies": ["light"],
+        "weaponProficiencies": ["simple"],
+    },
+    "wizard": {
+        "abilityRequirements": ["intelligence"],
+    },
+    "artificer": {
+        "abilityRequirements": ["intelligence"],
+        "armorProficiencies": ["light", "medium", "shield"],
+        "weaponProficiencies": ["simple"],
+        "toolProficiencies": ["thieves-tools", "tinkers-tools"],
+        "skillChoiceCount": 1,
+        "skillChoiceFrom": [
+            "arcana", "history", "investigation", "medicine", "nature",
+            "perception", "sleight-of-hand",
+        ],
+    },
+}
+
 
 def slug(text: str) -> str:
     plain = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
@@ -171,6 +257,16 @@ PLAN_OPTIONS = [
 
 
 def main():
+    if sys.argv[1:] == ["--multiclass-only"]:
+        classes = json.loads((ASSETS / "classes.json").read_text(encoding="utf-8"))
+        for klass in classes:
+            klass["multiclass"] = MULTICLASS_RULES[klass["id"]]
+        (ASSETS / "classes.json").write_text(
+            json.dumps(classes, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(f"{len(classes)} bloques de multiclase actualizados.")
+        return
     if len(sys.argv) != 3:
         raise SystemExit("Indicá backgrounds.json y class-artificer.json.")
     structured_backgrounds = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))["background"]

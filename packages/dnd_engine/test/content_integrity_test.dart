@@ -46,6 +46,109 @@ void main() {
     repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
   });
 
+  test('las 13 clases declaran una matriz completa de multiclase', () {
+    const expected = {
+      'barbarian': (
+        abilities: ['strength'],
+        mode: 'all',
+        armor: ['shield'],
+        weapons: ['simple', 'martial'],
+      ),
+      'bard': (
+        abilities: ['charisma'],
+        mode: 'all',
+        armor: ['light'],
+        weapons: <String>[],
+      ),
+      'cleric': (
+        abilities: ['wisdom'],
+        mode: 'all',
+        armor: ['light', 'medium', 'shield'],
+        weapons: <String>[],
+      ),
+      'druid': (
+        abilities: ['wisdom'],
+        mode: 'all',
+        armor: ['light', 'medium', 'shield'],
+        weapons: <String>[],
+      ),
+      'fighter': (
+        abilities: ['strength', 'dexterity'],
+        mode: 'any',
+        armor: ['light', 'medium', 'shield'],
+        weapons: ['simple', 'martial'],
+      ),
+      'monk': (
+        abilities: ['dexterity', 'wisdom'],
+        mode: 'all',
+        armor: <String>[],
+        weapons: ['simple', 'martial-light'],
+      ),
+      'paladin': (
+        abilities: ['strength', 'charisma'],
+        mode: 'all',
+        armor: ['light', 'medium', 'shield'],
+        weapons: ['simple', 'martial'],
+      ),
+      'ranger': (
+        abilities: ['dexterity', 'wisdom'],
+        mode: 'all',
+        armor: ['light', 'medium', 'shield'],
+        weapons: ['simple', 'martial'],
+      ),
+      'rogue': (
+        abilities: ['dexterity'],
+        mode: 'all',
+        armor: ['light'],
+        weapons: ['simple', 'martial-finesse', 'martial-light'],
+      ),
+      'sorcerer': (
+        abilities: ['charisma'],
+        mode: 'all',
+        armor: <String>[],
+        weapons: <String>[],
+      ),
+      'warlock': (
+        abilities: ['charisma'],
+        mode: 'all',
+        armor: ['light'],
+        weapons: ['simple'],
+      ),
+      'wizard': (
+        abilities: ['intelligence'],
+        mode: 'all',
+        armor: <String>[],
+        weapons: <String>[],
+      ),
+      'artificer': (
+        abilities: ['intelligence'],
+        mode: 'all',
+        armor: ['light', 'medium', 'shield'],
+        weapons: ['simple'],
+      ),
+    };
+
+    expect(repo.classes, hasLength(expected.length));
+    for (final entry in expected.entries) {
+      final rules = repo.characterClass(entry.key)?.multiclass;
+      expect(rules, isNotNull, reason: '${entry.key} sin bloque');
+      expect(
+        rules!.abilityRequirements.map((a) => a.name),
+        entry.value.abilities,
+        reason: '${entry.key} requisitos',
+      );
+      expect(rules.abilityRequirementMode, entry.value.mode);
+      expect(rules.armorProficiencies, entry.value.armor);
+      expect(rules.weaponProficiencies, entry.value.weapons);
+    }
+    expect(repo.characterClass('bard')!.multiclass!.skillChoiceCount, 1);
+    expect(repo.characterClass('bard')!.multiclass!.instrumentProficiencies,
+        ['musical-instrument']);
+    expect(repo.characterClass('rogue')!.multiclass!.toolProficiencies,
+        ['thieves-tools']);
+    expect(repo.characterClass('artificer')!.source, ContentSource.foa2025);
+  });
+
   group('inventario del catálogo', () {
     // Un alta, una baja o un duplicado accidental se ve acá antes que en
     // ninguna otra prueba. Los números salen de la auditoría del catálogo.

@@ -294,8 +294,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  String _klassName(Character c) =>
-      repo.characterClass(c.classId)?.name ?? c.classId;
+  String _klassName(Character c) {
+    final ids = <String>[];
+    for (final id in c.classHistory) {
+      if (!ids.contains(id)) ids.add(id);
+    }
+    return ids
+        .map(
+          (id) => '${repo.characterClass(id)?.name ?? id} ${c.classLevel(id)}',
+        )
+        .join(' · ');
+  }
+
   String _raceName(Character c) => repo.race(c.raceId)?.name ?? c.raceId;
 
   /// Filtra por nombre/clase/especie y ordena según el criterio elegido.

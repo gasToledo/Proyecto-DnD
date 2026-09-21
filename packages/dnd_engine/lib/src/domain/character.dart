@@ -53,6 +53,10 @@ class TableConfig {
 class AsiChoice {
   final int level;
 
+  /// Clase cuyo nivel concedió esta Mejora. Null mantiene el formato legado y
+  /// significa la clase inicial.
+  final String? classId;
+
   /// Aumentos de característica (p.ej. {STR:2} o {STR:1, CON:1}).
   final Map<Ability, int> abilityIncreases;
 
@@ -66,18 +70,21 @@ class AsiChoice {
 
   const AsiChoice({
     required this.level,
+    this.classId,
     this.abilityIncreases = const {},
     this.featId,
   });
 
   Map<String, dynamic> toJson() => {
         'level': level,
+        if (classId != null) 'classId': classId,
         'abilityIncreases': _abilityMapToJson(abilityIncreases),
         'featId': featId,
       };
 
   factory AsiChoice.fromJson(Map<String, dynamic> j) => AsiChoice(
         level: j['level'] as int,
+        classId: j['classId'] as String?,
         abilityIncreases: _abilityMapFromJson(j['abilityIncreases']),
         featId: j['featId'] as String?,
       );
@@ -160,7 +167,10 @@ class CombatState {
   int tempHp;
   int deathSuccesses;
   int deathFailures;
-  int hitDiceUsed;
+
+  /// Dados de golpe gastados, agrupados por tamaño (`8` = d8, etc.). La
+  /// clave `0` solo se usa al leer un documento legado sin clase disponible.
+  final Map<int, int> hitDiceUsed;
   int exhaustion;
 
   /// Si el personaje tiene Inspiración Heroica ahora mismo.
@@ -182,6 +192,9 @@ class CombatState {
   /// Espacios de conjuro gastados por nivel de conjuro (nivel → cantidad usada).
   final Map<int, int> spellSlotsUsed;
 
+  /// Espacios de Magia de Pacto gastados por nivel de conjuro.
+  final Map<int, int> pactSlotsUsed;
+
   /// Conjuro en el que se está concentrando (nombre), o null.
   String? concentratingOn;
 
@@ -199,18 +212,21 @@ class CombatState {
     this.tempHp = 0,
     this.deathSuccesses = 0,
     this.deathFailures = 0,
-    this.hitDiceUsed = 0,
+    Object? hitDiceUsed = 0,
     this.exhaustion = 0,
     this.heroicInspiration = false,
     Set<String>? conditions,
     Map<String, int>? resourceUsage,
     Map<int, int>? spellSlotsUsed,
+    Map<int, int>? pactSlotsUsed,
     this.concentratingOn,
     List<CompanionInstance>? companions,
     this.wildShapeCreatureId,
-  })  : conditions = conditions ?? {},
+  })  : hitDiceUsed = _hitDiceMap(hitDiceUsed),
+        conditions = conditions ?? {},
         resourceUsage = resourceUsage ?? {},
         spellSlotsUsed = spellSlotsUsed ?? {},
+        pactSlotsUsed = pactSlotsUsed ?? {},
         companions = companions ?? [];
 
   Map<String, dynamic> toJson() => {
@@ -218,13 +234,18 @@ class CombatState {
         'tempHp': tempHp,
         'deathSuccesses': deathSuccesses,
         'deathFailures': deathFailures,
-        'hitDiceUsed': hitDiceUsed,
+        'hitDiceUsed': {
+          for (final e in hitDiceUsed.entries) '${e.key}': e.value,
+        },
         'exhaustion': exhaustion,
         'heroicInspiration': heroicInspiration,
         'conditions': conditions.toList(),
         'resourceUsage': resourceUsage,
         'spellSlotsUsed': {
           for (final e in spellSlotsUsed.entries) '${e.key}': e.value
+        },
+        'pactSlotsUsed': {
+          for (final e in pactSlotsUsed.entries) '${e.key}': e.value
         },
         'concentratingOn': concentratingOn,
         'companions': [for (final c in companions) c.toJson()],
@@ -236,7 +257,7 @@ class CombatState {
         tempHp: j['tempHp'] as int? ?? 0,
         deathSuccesses: j['deathSuccesses'] as int? ?? 0,
         deathFailures: j['deathFailures'] as int? ?? 0,
-        hitDiceUsed: j['hitDiceUsed'] as int? ?? 0,
+        hitDiceUsed: j['hitDiceUsed'],
         // Se normaliza al leer: un documento importado o tocado a mano puede
         // traer 9 o un negativo, y la ficha no tiene forma de mostrar eso.
         exhaustion: (j['exhaustion'] as int? ?? 0).clamp(0, maxExhaustionLevel),
@@ -253,12 +274,11 @@ class CombatState {
             .toSet(),
         resourceUsage: {
           for (final e in (j['resourceUsage'] as Map? ?? const {}).entries)
-            e.key as String: e.value as int,
+            if (e.key is String && e.value is int && (e.value as int) > 0)
+              e.key as String: e.value as int,
         },
-        spellSlotsUsed: {
-          for (final e in (j['spellSlotsUsed'] as Map? ?? const {}).entries)
-            int.parse(e.key as String): e.value as int,
-        },
+        spellSlotsUsed: _slotMap(j['spellSlotsUsed']),
+        pactSlotsUsed: _slotMap(j['pactSlotsUsed']),
         concentratingOn: j['concentratingOn'] as String?,
         companions: [
           for (final c in (j['companions'] as List? ?? const []))
@@ -492,7 +512,7 @@ const Object _unset = Object();
 /// Personaje con todas las **elecciones resueltas**. Es la fuente de verdad y
 /// también, serializado, el formato de exportación individual.
 class Character {
-  static const int currentSchemaVersion = 23;
+  static const int currentSchemaVersion = 24;
 
   final String id;
   String name;
@@ -504,6 +524,19 @@ class Character {
 
   /// Subclase elegida (id), o null si aún no se eligió (nivel < subclassLevel).
   final String? subclassId;
+
+  /// Clase elegida en cada nivel, en orden. La primera entrada es la clase
+  /// inicial; contar sus apariciones da el nivel de cada clase.
+  final List<String> classHistory;
+
+  /// Subclase elegida por clase. Las fichas monoclase antiguas se proyectan
+  /// acá desde [subclassId] al deserializarse.
+  final Map<String, String> subclassIds;
+
+  /// Clase cuya fórmula de Defensa sin Armadura está activa cuando hay más de
+  /// una alternativa disponible. Null conserva el comportamiento histórico
+  /// de elegir la primera fórmula aplicable.
+  final String? unarmoredDefenseClassId;
 
   /// Linaje de especie elegido (Linaje Élfico, Ascendencia Dracónica…).
   /// Null si la especie no exige uno o si todavía no se eligió.
@@ -630,6 +663,15 @@ class Character {
   /// Conjuros conocidos o preparados (ids de conjuro de nivel 1+).
   final List<String> spellIds;
 
+  /// Selecciones de conjuros por clase. Los campos planos anteriores se
+  /// conservan como alias de lectura para fichas monoclase.
+  final Map<String, List<String>> classCantripIds;
+  final Map<String, List<String>> classSpellIds;
+
+  /// Elecciones de clase por clase y grupo.
+  final Map<String, Map<String, List<String>>> classFeatureChoices;
+  final Map<String, Map<String, List<String>>> classSpellChoices;
+
   /// Dotes tomadas por elección: dote de origen de la especie (Humano
   /// "Versátil") y dotes generales de niveles ASI.
   final List<String> featIds;
@@ -725,12 +767,15 @@ class Character {
     required this.classId,
     required this.backgroundId,
     this.subclassId,
+    List<String>? classHistory,
+    Map<String, String>? subclassIds,
+    this.unarmoredDefenseClassId,
     this.lineageId,
     this.speciesSpellcastingAbility,
     this.featSpellcastingAbilities = const {},
     this.chosenSize,
     this.innateCantripChoices = const {},
-    this.level = 1,
+    int level = 1,
     required this.assignedScores,
     this.backgroundAbilityBonuses = const {},
     this.chosenSkills = const [],
@@ -745,6 +790,10 @@ class Character {
     this.weaponMasteryChoices = const [],
     this.cantripIds = const [],
     this.spellIds = const [],
+    Map<String, List<String>>? classCantripIds,
+    Map<String, List<String>>? classSpellIds,
+    Map<String, Map<String, List<String>>>? classFeatureChoices,
+    Map<String, Map<String, List<String>>>? classSpellChoices,
     this.featIds = const [],
     this.asiChoices = const [],
     this.hpPerLevel = const [],
@@ -765,13 +814,33 @@ class Character {
     this.tableConfig = const TableConfig(),
     bool normalizeLegacyEquipment = true,
     CombatState? combat,
-  })  : inventory = _normalizeInventory(
+  })  : classHistory = _normalizeClassHistory(classHistory, classId, level),
+        subclassIds = _normalizeSubclassIds(subclassIds, classId, subclassId),
+        classCantripIds = _normalizeScopedLists(classCantripIds),
+        classSpellIds = _normalizeScopedLists(classSpellIds),
+        classFeatureChoices = _normalizeNestedChoices(classFeatureChoices),
+        classSpellChoices = _normalizeNestedChoices(classSpellChoices),
+        level = classHistory == null || classHistory.isEmpty
+            ? level
+            : classHistory.length,
+        inventory = _normalizeInventory(
           inventory,
           normalizeLegacyEquipment ? equippedArmorId : null,
           normalizeLegacyEquipment && shieldEquipped,
           normalizeLegacyEquipment ? equippedWeaponIds : const [],
         ),
         combat = combat ?? CombatState();
+
+  /// Nivel total derivado de la historia. [level] se mantiene como alias de
+  /// compatibilidad hasta que todos los consumidores pasen a esta API.
+  int get totalLevel => classHistory.length;
+
+  /// Nivel alcanzado en [id].
+  int classLevel(String id) =>
+      classHistory.where((classId) => classId == id).length;
+
+  /// Subclase elegida para [id], si existe.
+  String? subclassForClass(String id) => subclassIds[id];
 
   Map<String, dynamic> toJson() => {
         'schemaVersion': currentSchemaVersion,
@@ -782,6 +851,9 @@ class Character {
         'classId': classId,
         'backgroundId': backgroundId,
         'subclassId': subclassId,
+        'classHistory': classHistory,
+        'subclassIds': subclassIds,
+        'unarmoredDefenseClassId': unarmoredDefenseClassId,
         'lineageId': lineageId,
         'speciesSpellcastingAbility': speciesSpellcastingAbility?.name,
         'featSpellcastingAbilities': {
@@ -805,6 +877,10 @@ class Character {
         'weaponMasteryChoices': weaponMasteryChoices,
         'cantripIds': cantripIds,
         'spellIds': spellIds,
+        'classCantripIds': classCantripIds,
+        'classSpellIds': classSpellIds,
+        'classFeatureChoices': classFeatureChoices,
+        'classSpellChoices': classSpellChoices,
         'featIds': featIds,
         'asiChoices': asiChoices.map((e) => e.toJson()).toList(),
         'hpPerLevel': hpPerLevel,
@@ -1048,6 +1124,25 @@ class Character {
     return idx == -1 ? normalized : normalized.substring(idx + 1);
   }
 
+  /// Dados de golpe de las clases que existían al introducir el esquema 24.
+  /// Se mantiene literal para que una ficha vieja se pueda migrar sin cargar
+  /// el catálogo de contenido desde el dominio.
+  static const Map<String, int> _legacyHitDieByClassId = {
+    'barbarian': 12,
+    'bard': 8,
+    'cleric': 8,
+    'druid': 8,
+    'fighter': 10,
+    'monk': 8,
+    'paladin': 10,
+    'ranger': 10,
+    'rogue': 8,
+    'sorcerer': 6,
+    'warlock': 8,
+    'wizard': 6,
+    'artificer': 8,
+  };
+
   /// Lleva una ficha histórica al esquema actual sin modificar el mapa de
   /// entrada. Cada paso se conserva explícito para que las próximas versiones
   /// puedan encadenarse sin saltos.
@@ -1261,6 +1356,91 @@ class Character {
           );
           version = 23;
           migrated['schemaVersion'] = version;
+        case 23:
+          final classId = migrated['classId'] as String? ?? 'fighter';
+          final level = migrated['level'] as int? ?? 1;
+          final history = migrated['classHistory'];
+          if (history is! List || history.whereType<String>().isEmpty) {
+            final count = level < 1 ? 1 : level;
+            migrated['classHistory'] = [
+              for (var i = 0; i < count; i++) classId,
+            ];
+          }
+
+          final rawSubclassIds = migrated['subclassIds'];
+          final subclassIds = rawSubclassIds is Map
+              ? Map<String, dynamic>.from(rawSubclassIds)
+              : <String, dynamic>{};
+          final legacySubclassId = migrated['subclassId'];
+          if (legacySubclassId is String && legacySubclassId.isNotEmpty) {
+            subclassIds.putIfAbsent(classId, () => legacySubclassId);
+          }
+          migrated['subclassIds'] = subclassIds;
+
+          final cantrips = migrated['cantripIds'];
+          final spells = migrated['spellIds'];
+          migrated['classCantripIds'] = {
+            classId: cantrips is List ? List<dynamic>.from(cantrips) : [],
+          };
+          migrated['classSpellIds'] = {
+            classId: spells is List ? List<dynamic>.from(spells) : [],
+          };
+          final featureChoices = migrated['featureChoices'];
+          final spellChoices = migrated['spellChoices'];
+          migrated['classFeatureChoices'] = {
+            classId: featureChoices is Map
+                ? {
+                    for (final entry in featureChoices.entries)
+                      entry.key: entry.value is List
+                          ? List<dynamic>.from(entry.value as List)
+                          : [],
+                  }
+                : <String, dynamic>{},
+          };
+          migrated['classSpellChoices'] = {
+            classId: spellChoices is Map
+                ? {
+                    for (final entry in spellChoices.entries)
+                      entry.key: entry.value is List
+                          ? List<dynamic>.from(entry.value as List)
+                          : [],
+                  }
+                : <String, dynamic>{},
+          };
+          final asiChoices = migrated['asiChoices'];
+          if (asiChoices is List) {
+            migrated['asiChoices'] = [
+              for (final choice in asiChoices)
+                if (choice is Map)
+                  {
+                    ...Map<String, dynamic>.from(choice),
+                    'classId': choice['classId'] ?? classId,
+                  },
+            ];
+          }
+
+          final rawCombat = migrated['combat'];
+          final combat = rawCombat is Map
+              ? Map<String, dynamic>.from(rawCombat)
+              : <String, dynamic>{};
+          final legacyHitDice = combat['hitDiceUsed'];
+          if (legacyHitDice is int) {
+            final die = _legacyHitDieByClassId[classId] ?? 8;
+            combat['hitDiceUsed'] = legacyHitDice > 0
+                ? {'$die': legacyHitDice}
+                : <String, dynamic>{};
+          }
+          final pactSlots = combat['pactSlotsUsed'];
+          final spellSlots = combat['spellSlotsUsed'];
+          if (classId == 'warlock' && pactSlots is! Map && spellSlots is Map) {
+            combat['pactSlotsUsed'] = Map<String, dynamic>.from(spellSlots);
+            combat['spellSlotsUsed'] = <String, dynamic>{};
+          } else {
+            combat.putIfAbsent('pactSlotsUsed', () => <String, dynamic>{});
+          }
+          migrated['combat'] = combat;
+          version = 24;
+          migrated['schemaVersion'] = version;
       }
     }
     return migrated;
@@ -1268,6 +1448,19 @@ class Character {
 
   factory Character.fromJson(Map<String, dynamic> source) {
     final j = migrateJson(source);
+    final rawHistory = _stringListOrNull(j['classHistory']);
+    final declaredClassId = j['classId'] as String?;
+    final history = rawHistory != null &&
+            declaredClassId != null &&
+            rawHistory.toSet().length == 1 &&
+            rawHistory.first != declaredClassId
+        ? [for (var i = 0; i < rawHistory.length; i++) declaredClassId]
+        : rawHistory;
+    final classId = declaredClassId ?? history?.first;
+    if (classId == null) {
+      throw const FormatException('La ficha no tiene clase inicial.');
+    }
+    final subclassIds = _stringMap(j['subclassIds']);
     return Character(
       id: j['id'] as String,
       name: j['name'] as String,
@@ -1276,9 +1469,12 @@ class Character {
         orElse: () => CharacterStatus.active,
       ),
       raceId: j['raceId'] as String,
-      classId: j['classId'] as String,
+      classId: classId,
       backgroundId: j['backgroundId'] as String,
-      subclassId: j['subclassId'] as String?,
+      subclassId: j['subclassId'] as String? ?? subclassIds[classId],
+      classHistory: history,
+      subclassIds: subclassIds,
+      unarmoredDefenseClassId: j['unarmoredDefenseClassId'] as String?,
       lineageId: j['lineageId'] as String?,
       speciesSpellcastingAbility:
           _abilityFromJson(j['speciesSpellcastingAbility']),
@@ -1323,6 +1519,10 @@ class Character {
           .toList(),
       spellIds:
           (j['spellIds'] as List? ?? const []).map((e) => e as String).toList(),
+      classCantripIds: _scopedLists(j['classCantripIds']),
+      classSpellIds: _scopedLists(j['classSpellIds']),
+      classFeatureChoices: _nestedChoiceMap(j['classFeatureChoices']),
+      classSpellChoices: _nestedChoiceMap(j['classSpellChoices']),
       featIds:
           (j['featIds'] as List? ?? const []).map((e) => e as String).toList(),
       asiChoices: (j['asiChoices'] as List? ?? const [])
@@ -1374,6 +1574,9 @@ class Character {
     String? name,
     CharacterStatus? status,
     Object? subclassId = _unset,
+    List<String>? classHistory,
+    Map<String, String>? subclassIds,
+    Object? unarmoredDefenseClassId = _unset,
     Object? lineageId = _unset,
     Object? speciesSpellcastingAbility = _unset,
     Map<String, Ability>? featSpellcastingAbilities,
@@ -1393,6 +1596,10 @@ class Character {
     Map<String, List<String>>? languageChoices,
     List<String>? cantripIds,
     List<String>? spellIds,
+    Map<String, List<String>>? classCantripIds,
+    Map<String, List<String>>? classSpellIds,
+    Map<String, Map<String, List<String>>>? classFeatureChoices,
+    Map<String, Map<String, List<String>>>? classSpellChoices,
     Object? equippedArmorId = _unset,
     bool? shieldEquipped,
     List<String>? equippedWeaponIds,
@@ -1409,6 +1616,11 @@ class Character {
     String? personalityTrait,
     CombatState? combat,
   }) {
+    final nextLevel = level ?? this.level;
+    final nextHistory = classHistory ??
+        (level == null || level == this.level
+            ? this.classHistory
+            : _resizeClassHistory(this.classHistory, nextLevel, this.classId));
     return Character(
       id: id,
       name: name ?? this.name,
@@ -1419,6 +1631,11 @@ class Character {
       subclassId: identical(subclassId, _unset)
           ? this.subclassId
           : subclassId as String?,
+      classHistory: nextHistory,
+      subclassIds: subclassIds ?? this.subclassIds,
+      unarmoredDefenseClassId: identical(unarmoredDefenseClassId, _unset)
+          ? this.unarmoredDefenseClassId
+          : unarmoredDefenseClassId as String?,
       lineageId:
           identical(lineageId, _unset) ? this.lineageId : lineageId as String?,
       speciesSpellcastingAbility: identical(speciesSpellcastingAbility, _unset)
@@ -1430,7 +1647,7 @@ class Character {
           ? this.chosenSize
           : chosenSize as String?,
       innateCantripChoices: innateCantripChoices ?? this.innateCantripChoices,
-      level: level ?? this.level,
+      level: nextLevel,
       assignedScores: assignedScores,
       backgroundAbilityBonuses: backgroundAbilityBonuses,
       chosenSkills: chosenSkills,
@@ -1445,6 +1662,10 @@ class Character {
       weaponMasteryChoices: weaponMasteryChoices,
       cantripIds: cantripIds ?? this.cantripIds,
       spellIds: spellIds ?? this.spellIds,
+      classCantripIds: classCantripIds ?? this.classCantripIds,
+      classSpellIds: classSpellIds ?? this.classSpellIds,
+      classFeatureChoices: classFeatureChoices ?? this.classFeatureChoices,
+      classSpellChoices: classSpellChoices ?? this.classSpellChoices,
       featIds: featIds ?? this.featIds,
       asiChoices: asiChoices ?? this.asiChoices,
       hpPerLevel: hpPerLevel ?? this.hpPerLevel,
@@ -1473,6 +1694,122 @@ class Character {
       combat: combat ?? this.combat,
     );
   }
+}
+
+List<String> _normalizeClassHistory(
+  List<String>? history,
+  String classId,
+  int level,
+) {
+  final values = history?.where((id) => id.isNotEmpty).toList() ?? const [];
+  if (values.isNotEmpty) return values;
+  final target = level < 1 ? 1 : level;
+  return [for (var i = 0; i < target; i++) classId];
+}
+
+Map<String, String> _normalizeSubclassIds(
+  Map<String, String>? values,
+  String classId,
+  String? legacySubclassId,
+) {
+  final result = <String, String>{
+    if (values != null) ...values,
+  };
+  if (legacySubclassId != null && legacySubclassId.isNotEmpty) {
+    result.putIfAbsent(classId, () => legacySubclassId);
+  }
+  return result;
+}
+
+List<String>? _stringListOrNull(Object? value) {
+  if (value is! List) return null;
+  final result = value.whereType<String>().toList();
+  return result.isEmpty ? null : result;
+}
+
+Map<String, String> _stringMap(Object? value) => {
+      if (value is Map)
+        for (final entry in value.entries)
+          if (entry.key is String && entry.value is String)
+            entry.key as String: entry.value as String,
+    };
+
+Map<String, List<String>> _normalizeScopedLists(
+  Map<String, List<String>>? values,
+) =>
+    {
+      if (values != null)
+        for (final entry in values.entries)
+          entry.key: List<String>.from(entry.value),
+    };
+
+Map<String, Map<String, List<String>>> _normalizeNestedChoices(
+  Map<String, Map<String, List<String>>>? values,
+) =>
+    {
+      if (values != null)
+        for (final entry in values.entries)
+          entry.key: {
+            for (final choice in entry.value.entries)
+              choice.key: List<String>.from(choice.value),
+          },
+    };
+
+Map<String, List<String>> _scopedLists(Object? value) => {
+      if (value is Map)
+        for (final entry in value.entries)
+          if (entry.key is String && entry.value is List)
+            entry.key as String:
+                (entry.value as List).whereType<String>().toList(),
+    };
+
+Map<String, Map<String, List<String>>> _nestedChoiceMap(Object? value) => {
+      if (value is Map)
+        for (final entry in value.entries)
+          if (entry.key is String && entry.value is Map)
+            entry.key as String: _choiceListMap(entry.value),
+    };
+
+Map<String, List<String>> _choiceListMap(Object? value) => {
+      if (value is Map)
+        for (final entry in value.entries)
+          if (entry.key is String && entry.value is List)
+            entry.key as String:
+                (entry.value as List).whereType<String>().toList(),
+    };
+
+Map<int, int> _hitDiceMap(Object? value) {
+  if (value is int) {
+    return value > 0 ? {0: value} : {};
+  }
+  if (value is! Map) return {};
+  return {
+    for (final entry in value.entries)
+      if (int.tryParse('${entry.key}') case final size?
+          when entry.value is int && size >= 0 && (entry.value as int) > 0)
+        size: entry.value as int,
+  };
+}
+
+Map<int, int> _slotMap(Object? value) => {
+      if (value is Map)
+        for (final entry in value.entries)
+          if (int.tryParse('${entry.key}') case final level?
+              when entry.value is int && level > 0)
+            level: (entry.value as int).clamp(0, 99),
+    };
+
+List<String> _resizeClassHistory(
+  List<String> history,
+  int level,
+  String fallbackClassId,
+) {
+  final target = level < 1 ? 1 : level;
+  if (history.length >= target) return history.take(target).toList();
+  return [
+    ...history,
+    for (var i = history.length; i < target; i++) fallbackClassId,
+  ];
 }
 
 List<InventoryEntry> _normalizeInventory(

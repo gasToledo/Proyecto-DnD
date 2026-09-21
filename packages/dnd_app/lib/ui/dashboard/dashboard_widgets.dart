@@ -280,7 +280,16 @@ class _CharacterCardState extends State<_CharacterCard> {
     final scheme = Theme.of(context).colorScheme;
     final muted = scheme.onSurfaceVariant;
     final klassObj = widget.repo.characterClass(c.classId);
-    final klass = klassObj?.name ?? c.classId;
+    final classIds = <String>[];
+    for (final id in c.classHistory) {
+      if (!classIds.contains(id)) classIds.add(id);
+    }
+    final klass = classIds
+        .map(
+          (id) =>
+              '${widget.repo.characterClass(id)?.name ?? id} ${c.classLevel(id)}',
+        )
+        .join(' · ');
     final accent = classAccent(klassObj, pal.gold);
     final race = widget.repo.race(c.raceId)?.name ?? c.raceId;
     final background = widget.repo.background(c.backgroundId)?.name;

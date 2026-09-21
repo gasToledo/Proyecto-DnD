@@ -570,6 +570,93 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('una subida secundaria conserva la historia y el dado de clase', (
+    tester,
+  ) async {
+    Character? saved;
+    final fighter = Character(
+      id: 't-multiclass',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      classHistory: const ['fighter'],
+      assignedScores: {
+        Ability.strength: 16,
+        Ability.dexterity: 12,
+        Ability.constitution: 14,
+        Ability.intelligence: 10,
+        Ability.wisdom: 10,
+        Ability.charisma: 14,
+      },
+      hpPerLevel: const [10],
+      featureChoices: const {
+        'fighting-style': ['fs-defense'],
+      },
+    );
+    await pumpLevelUp(tester, fighter, onDone: (c) => saved = c);
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Paladín').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('1° nivel de Paladín · dado d10'), findsOneWidget);
+    for (
+      var i = 0;
+      i < 8 && find.text('Confirmar nivel 2').evaluate().isEmpty;
+      i++
+    ) {
+      if (find.widgetWithText(InkWell, 'Defensa').evaluate().isNotEmpty) {
+        await tester.tap(find.widgetWithText(InkWell, 'Defensa'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Confirmar nivel 2'), findsOneWidget);
+    await tester.tap(find.text('Confirmar nivel 2'));
+    await tester.pumpAndSettle();
+
+    expect(saved, isNotNull);
+    expect(saved!.classHistory, ['fighter', 'paladin']);
+    expect(saved!.classLevel('fighter'), 1);
+    expect(saved!.classLevel('paladin'), 1);
+    expect(saved!.hpPerLevel.last, 6);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'el requisito de multiclase se muestra como aviso no bloqueante',
+    (tester) async {
+      final fighter = Character(
+        id: 't-multiclass-warning',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        classHistory: const ['fighter'],
+        assignedScores: {for (final ability in Ability.values) ability: 10},
+        hpPerLevel: const [10],
+        featureChoices: const {
+          'fighting-style': ['fs-defense'],
+        },
+      );
+      await pumpLevelUp(tester, fighter);
+
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Paladín').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('No cumplís el requisito de multiclase'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('un Paladín de 1 a 2 tiene que elegir su Estilo de Combate', (
     tester,
   ) async {

@@ -403,15 +403,14 @@ class InventoryOps {
     ContentRepository repo, {
     String? baseItemId,
   }) {
-    if (c.classId != 'artificer' ||
-        c.level < 2 ||
-        !c.magicItemChoices.contains(itemId)) return c;
+    final artificerLevel = c.classLevel('artificer');
+    if (artificerLevel < 2 || !c.magicItemChoices.contains(itemId)) return c;
     final item = repo.item(itemId);
     if (item == null) return c;
     final replicas = c.inventory.where(
       (e) => e.origin?.startsWith('artificer:replicate-magic-item:') == true,
     );
-    if (replicas.length >= artificerReplicasAtLevel(c.level) ||
+    if (replicas.length >= artificerReplicasAtLevel(artificerLevel) ||
         replicas.any((e) => e.itemId == itemId)) return c;
     if (!_validBase(item, baseItemId, repo)) return c;
     return add(
@@ -431,8 +430,8 @@ class InventoryOps {
     ContentRepository repo, {
     String? baseItemId,
   }) {
-    if (c.classId != 'artificer' || !c.magicItemChoices.contains(newItemId))
-      return c;
+    if (c.classLevel('artificer') == 0 ||
+        !c.magicItemChoices.contains(newItemId)) return c;
     final item = repo.item(newItemId);
     if (item == null || !_validBase(item, baseItemId, repo)) return c;
     return c.copyWith(inventory: [

@@ -341,7 +341,7 @@ extension _SheetCombatSection on _SheetScreenState {
                   label: const Text('Descanso largo'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: _c.combat.hitDiceUsed >= _c.level
+                  onPressed: _hitDiceUsed >= _c.level
                       ? null
                       : () {
                           final healed = CombatOps.spendHitDie(
@@ -354,7 +354,7 @@ extension _SheetCombatSection on _SheetScreenState {
                         },
                   icon: const Icon(Icons.casino, size: 18),
                   label: Text(
-                    'Dado de golpe (${_c.level - _c.combat.hitDiceUsed}/${_c.level})',
+                    'Dado de golpe (${_c.level - _hitDiceUsed}/${_c.level})',
                   ),
                 ),
               ],
@@ -371,9 +371,12 @@ extension _SheetCombatSection on _SheetScreenState {
     );
   }
 
+  int get _hitDiceUsed =>
+      _c.combat.hitDiceUsed.values.fold(0, (sum, used) => sum + used);
+
   Widget _resourceRow(CharacterResource r) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    final used = _c.combat.resourceUsage[r.id] ?? 0;
+    final used = _c.combat.resourceUsage[r.key] ?? 0;
     final hasInfo = r.description.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
@@ -425,12 +428,12 @@ extension _SheetCombatSection on _SheetScreenState {
             onSpend: used >= r.max
                 ? null
                 : () => _mutateCombat(
-                    () => _c.combat.resourceUsage[r.id] = used + 1,
+                    () => _c.combat.resourceUsage[r.key] = used + 1,
                   ),
             onRecover: used <= 0
                 ? null
                 : () => _mutateCombat(
-                    () => _c.combat.resourceUsage[r.id] = used - 1,
+                    () => _c.combat.resourceUsage[r.key] = used - 1,
                   ),
           ),
         ],
@@ -794,7 +797,7 @@ extension _SheetCombatSection on _SheetScreenState {
   }
 
   int _resourceLeft(CharacterResource r) =>
-      r.max - (_c.combat.resourceUsage[r.id] ?? 0);
+      r.max - (_c.combat.resourceUsage[r.key] ?? 0);
 
   /// El recurso de lanzamiento gratis del conjuro que invoca a [option], si el
   /// personaje lo tiene y le quedan usos. Null si no hay ninguno.
@@ -942,8 +945,8 @@ extension _SheetCombatSection on _SheetScreenState {
         CombatOps.spendSpellSlot(_c.combat, s.spellcasting!, level);
       }
       if (castsFree) {
-        _c.combat.resourceUsage[free!.id] =
-            (_c.combat.resourceUsage[free.id] ?? 0) + 1;
+        _c.combat.resourceUsage[free!.key] =
+            (_c.combat.resourceUsage[free.key] ?? 0) + 1;
       }
       CombatOps.summonCompanion(
         _c.combat,

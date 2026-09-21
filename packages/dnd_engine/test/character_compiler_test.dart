@@ -34,6 +34,25 @@ Character sagan({int level = 1, List<int>? hp}) => Character(
       equippedWeaponIds: ['longsword'],
     );
 
+Character multiclassCharacter({
+  required String classId,
+  required List<String> classHistory,
+  Map<Ability, int>? assignedScores,
+}) =>
+    Character(
+      id: 'multiclass',
+      name: 'Multiclase',
+      raceId: 'human',
+      classId: classId,
+      backgroundId: 'soldier',
+      classHistory: classHistory,
+      assignedScores: assignedScores ??
+          {
+            for (final ability in Ability.values) ability: 14,
+          },
+      hpPerLevel: [for (var i = 0; i < classHistory.length; i++) 8],
+    );
+
 void main() {
   late ContentRepository repo;
   late CharacterCompiler compiler;
@@ -41,6 +60,200 @@ void main() {
   setUpAll(() async {
     repo = await ContentRepository.loadFromDirectory('lib/assets/srd_2024');
     compiler = CharacterCompiler(repo);
+  });
+
+  test('compila rasgos y recursos por nivel de clase', () {
+    final c = sagan(
+      level: 7,
+      hp: const [10, 6, 6, 6, 6, 6, 6],
+    ).copyWith(
+      classHistory: const [
+        'fighter',
+        'fighter',
+        'fighter',
+        'fighter',
+        'fighter',
+        'wizard',
+        'wizard',
+      ],
+    );
+
+    final sheet = compiler.compile(c);
+
+    expect(sheet.level, 7);
+    expect(sheet.attacksPerAction, 2);
+    expect(
+      sheet.resources.map((resource) => resource.key),
+      containsAll(['fighter:second_wind', 'fighter:action_surge']),
+    );
+    expect(
+      sheet.savingThrowProficiencies,
+      containsAll([Ability.strength, Ability.constitution]),
+    );
+    expect(
+        sheet.savingThrowProficiencies, isNot(contains(Ability.intelligence)));
+  });
+
+  test('aplica la mejora de característica según el nivel de su clase', () {
+    final c = sagan(
+      level: 8,
+      hp: const [10, 6, 6, 6, 6, 6, 6, 6],
+    ).copyWith(
+      classHistory: const [
+        'fighter',
+        'fighter',
+        'fighter',
+        'fighter',
+        'wizard',
+        'wizard',
+        'wizard',
+        'wizard',
+      ],
+      asiChoices: const [
+        AsiChoice(
+          classId: 'wizard',
+          level: 4,
+          abilityIncreases: {Ability.intelligence: 2},
+        ),
+      ],
+    );
+
+    expect(compiler.compile(c).abilityScores[Ability.intelligence], 12);
+  });
+
+  test('separa recursos homónimos y no acumula Ataque Adicional', () {
+    final clericPaladin = multiclassCharacter(
+      classId: 'cleric',
+      classHistory: [
+        'cleric',
+        'cleric',
+        'cleric',
+        'paladin',
+        'paladin',
+        'paladin',
+      ],
+    );
+    final resources = compiler.compile(clericPaladin).resources;
+    expect(
+      resources.map((resource) => resource.key),
+      containsAll(['cleric:channel_divinity', 'paladin:channel_divinity']),
+    );
+
+    final fighterPaladin = multiclassCharacter(
+      classId: 'fighter',
+      classHistory: [
+        ...List.filled(5, 'fighter'),
+        ...List.filled(5, 'paladin'),
+      ],
+    );
+    final sheet = compiler.compile(fighterPaladin);
+    expect(sheet.attacksPerAction, 2);
+    expect(sheet.classLevels, {'fighter': 5, 'paladin': 5});
+  });
+
+  test('expone las dos defensas sin armadura y respeta la elegida', () {
+    final c = multiclassCharacter(
+      classId: 'barbarian',
+      classHistory: const ['barbarian', 'monk'],
+      assignedScores: {
+        Ability.strength: 12,
+        Ability.dexterity: 14,
+        Ability.constitution: 16,
+        Ability.intelligence: 10,
+        Ability.wisdom: 18,
+        Ability.charisma: 8,
+      },
+    ).copyWith(unarmoredDefenseClassId: 'monk');
+
+    final sheet = compiler.compile(c);
+    expect(sheet.unarmoredDefenseOptions, hasLength(2));
+    expect(sheet.selectedUnarmoredDefenseClassId, 'monk');
+    expect(sheet.armorClass, 16);
+  });
+
+  test('combina espacios normales y conserva los de pacto por separado', () {
+    final clericWizard = multiclassCharacter(
+      classId: 'cleric',
+      classHistory: const [
+        'cleric',
+        'cleric',
+        'cleric',
+        'wizard',
+        'wizard',
+      ],
+    );
+    final combined = compiler.compile(clericWizard);
+    expect(combined.spellcastingBlocks.map((b) => b.classId),
+        containsAll(['cleric', 'wizard']));
+    expect(combined.normalSpellSlotsByLevel, {1: 4, 2: 3, 3: 2});
+
+    final warlockWizard = multiclassCharacter(
+      classId: 'warlock',
+      classHistory: const [
+        'warlock',
+        'warlock',
+        'warlock',
+        'wizard',
+        'wizard',
+        'wizard',
+      ],
+    );
+    final pact = compiler.compile(warlockWizard);
+    expect(pact.normalSpellSlotsByLevel, {1: 4, 2: 2});
+    expect(pact.pactSlotsByLevel, {2: 2});
+  });
+
+  test('combina Ranger 4 / Sorcerer 3 sin mezclar sus fuentes', () {
+    final c = multiclassCharacter(
+      classId: 'ranger',
+      classHistory: const [
+        'ranger',
+        'ranger',
+        'ranger',
+        'ranger',
+        'sorcerer',
+        'sorcerer',
+        'sorcerer',
+      ],
+    );
+
+    final sheet = compiler.compile(c);
+    expect(sheet.normalSpellSlotsByLevel, {1: 4, 2: 3, 3: 2});
+    expect(
+      sheet.spellcastingBlocks
+          .map((block) => (block.classId, block.classLevel)),
+      containsAll([('ranger', 4), ('sorcerer', 3)]),
+    );
+    expect(
+      sheet.spellcastingBlocks.map((block) => block.spellcasting.ability),
+      containsAll([Ability.wisdom, Ability.charisma]),
+    );
+  });
+
+  test('mantiene elecciones de estilo separadas por clase', () {
+    final c = multiclassCharacter(
+      classId: 'fighter',
+      classHistory: const ['fighter', 'paladin', 'paladin'],
+    ).copyWith(
+      classFeatureChoices: const {
+        'fighter': {
+          'fighting-style': ['fs-defense']
+        },
+        'paladin': {
+          'fighting-style': ['fs-dueling']
+        },
+      },
+    );
+
+    final sheet = compiler.compile(c);
+    expect(
+      sheet.featureChoiceSlots.map((slot) => slot.groupId),
+      containsAll(['fighter:fighting-style', 'paladin:fighting-style']),
+    );
+    expect(
+      sheet.passives.map((passive) => passive.name),
+      containsAll(['Defensa', 'Duelo']),
+    );
   });
 
   group('Sagan nivel 1', () {

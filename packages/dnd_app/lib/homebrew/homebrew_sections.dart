@@ -1084,8 +1084,7 @@ extension _HomebrewSections on _HomebrewScreenState {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              '${repo.characterClass(character.classId)?.name ?? character.classId} '
-                              '${character.level}',
+                              _characterClassLine(character),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: pal.textMuted,
@@ -1135,6 +1134,19 @@ extension _HomebrewSections on _HomebrewScreenState {
         tone: AppMessageTone.success,
       );
     }
+  }
+
+  String _characterClassLine(Character character) {
+    final ids = <String>[];
+    for (final id in character.classHistory) {
+      if (!ids.contains(id)) ids.add(id);
+    }
+    return ids
+        .map(
+          (id) =>
+              '${repo.characterClass(id)?.name ?? id} ${character.classLevel(id)}',
+        )
+        .join(' · ');
   }
 }
 

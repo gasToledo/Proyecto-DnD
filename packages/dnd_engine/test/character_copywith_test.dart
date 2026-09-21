@@ -15,6 +15,31 @@ Character _base() => Character(
 
 void main() {
   group('Character.copyWith y equipo', () {
+    test('conserva historia y subclases de una ficha multiclase', () {
+      final c = _base().copyWith(
+        level: 3,
+        classHistory: const ['fighter', 'fighter', 'wizard'],
+        subclassIds: const {
+          'fighter': 'champion',
+          'wizard': 'evoker',
+        },
+      );
+      final restored = Character.fromJson(c.toJson());
+
+      expect(restored.totalLevel, 3);
+      expect(restored.classLevel('fighter'), 2);
+      expect(restored.classLevel('wizard'), 1);
+      expect(restored.subclassForClass('wizard'), 'evoker');
+    });
+
+    test('una ficha monoclase proyecta su nivel a la historia', () {
+      final c = _base();
+
+      expect(c.classHistory, ['fighter']);
+      expect(c.totalLevel, 1);
+      expect(c.classLevel('fighter'), 1);
+    });
+
     test('cambiar a otra armadura la reemplaza', () {
       final c = _base().copyWith(equippedArmorId: 'chain-mail');
       expect(c.equippedArmorId, 'chain-mail');

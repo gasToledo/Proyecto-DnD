@@ -22,7 +22,16 @@ String buildPortraitPrompt({
   bool includeWeapon = true,
 }) {
   final race = repo.race(character.raceId)?.name ?? '';
-  final klass = repo.characterClass(character.classId)?.name ?? '';
+  final classIds = <String>[];
+  for (final id in character.classHistory) {
+    if (!classIds.contains(id)) classIds.add(id);
+  }
+  final klass = classIds
+      .map(
+        (id) =>
+            '${repo.characterClass(id)?.name ?? id} ${character.classLevel(id)}',
+      )
+      .join(' · ');
   final armor = character.equippedArmorId == null
       ? null
       : repo.armorPiece(character.equippedArmorId!)?.name;

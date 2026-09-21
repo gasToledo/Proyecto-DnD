@@ -5,6 +5,46 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('migra v23 a v24 con historia, ámbitos y estado de combate', () {
+    final source = {
+      'schemaVersion': 23,
+      'id': 'v23',
+      'name': 'Multiclase legado',
+      'raceId': 'human',
+      'classId': 'warlock',
+      'backgroundId': 'sage',
+      'subclassId': 'fiend',
+      'level': 3,
+      'assignedScores': const <String, int>{},
+      'cantripIds': const ['eldritch-blast'],
+      'spellIds': const ['hex'],
+      'featureChoices': const {
+        'class:warlock:invocations': ['agonizing-blast'],
+      },
+      'combat': {
+        'hitDiceUsed': 2,
+        'spellSlotsUsed': {'1': 1},
+      },
+    };
+    final original = jsonEncode(source);
+
+    final migrated = Character.migrateJson(source);
+    final character = Character.fromJson(source);
+
+    expect(jsonEncode(source), original);
+    expect(migrated['schemaVersion'], 24);
+    expect(migrated['classHistory'], ['warlock', 'warlock', 'warlock']);
+    expect(migrated['subclassIds'], {'warlock': 'fiend'});
+    expect(migrated['classCantripIds'], {
+      'warlock': ['eldritch-blast'],
+    });
+    expect(migrated['combat']['hitDiceUsed'], {'8': 2});
+    expect(migrated['combat']['pactSlotsUsed'], {'1': 1});
+    expect(migrated['combat']['spellSlotsUsed'], isEmpty);
+    expect(character.totalLevel, 3);
+    expect(character.classLevel('warlock'), 3);
+  });
+
   test('migra secuencialmente una ficha v1 sin modificar el documento fuente',
       () async {
     final source = (jsonDecode(
@@ -1050,18 +1090,8 @@ void main() {
       );
     });
 
-    test('la versión del esquema no se movió', () {
-      // Si este número cambia por sumar un bool al estado de combate, algo se
-      // entendió al revés: lo que falta se defaultea al leer.
-      //
-      // Ni el 22 ni el 23 contradicen eso, y por el mismo motivo: los dos los
-      // trajo un campo de primer nivel que no se puede reconstruir al leer.
-      // El 22 fue `portraitPrompts`; el 23, el Diario (`background` y
-      // `diary`, que además se lleva puestas las viejas `notes`). Una versión
-      // vieja de la aplicación que abriera la ficha y la guardara de vuelta los
-      // perdería en silencio: subir la versión es lo que hace que la rechace en
-      // vez de pisarlos.
-      expect(Character.currentSchemaVersion, 23);
+    test('la multiclase usa el esquema 24', () {
+      expect(Character.currentSchemaVersion, 24);
     });
   });
 }

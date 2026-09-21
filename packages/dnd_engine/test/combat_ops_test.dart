@@ -4,6 +4,75 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('el estado de combate agrupa dados y separa Pacto', () {
+    final original = CombatState(
+      hitDiceUsed: const {8: 1, 10: 2},
+      resourceUsage: const {
+        'cleric:channel_divinity': 1,
+        'paladin:channel_divinity': 1,
+      },
+      spellSlotsUsed: const {1: 2},
+      pactSlotsUsed: const {1: 1},
+    );
+    final restored = CombatState.fromJson(original.toJson());
+
+    expect(restored.hitDiceUsed, {8: 1, 10: 2});
+    expect(
+        restored.resourceUsage.keys,
+        containsAll([
+          'cleric:channel_divinity',
+          'paladin:channel_divinity',
+        ]));
+    expect(restored.spellSlotsUsed, {1: 2});
+    expect(restored.pactSlotsUsed, {1: 1});
+    expect(
+      const CharacterResource(
+        classId: 'cleric',
+        id: 'channel_divinity',
+        name: 'Canalizar Divinidad',
+        max: 1,
+        recharge: RechargeOn.shortRest,
+      ).key,
+      'cleric:channel_divinity',
+    );
+  });
+
+  test('el estado de combate descarta contadores inválidos al leer', () {
+    final state = CombatState.fromJson({
+      'hitDiceUsed': {'8': -1, '10': 2, 'bad': 1},
+      'resourceUsage': {'negative': -1, 'valid': 2},
+      'spellSlotsUsed': {'bad': 1, '1': -2, '2': 4},
+      'pactSlotsUsed': {'1': 3},
+    });
+
+    expect(state.hitDiceUsed, {10: 2});
+    expect(state.resourceUsage, {'valid': 2});
+    expect(state.spellSlotsUsed, {1: 0, 2: 4});
+    expect(state.pactSlotsUsed, {1: 3});
+  });
+
+  test('los espacios de Pacto se gastan y recuperan aparte', () {
+    const pact = Spellcasting(
+      ability: Ability.charisma,
+      progression: CasterProgression.pact,
+      preparation: SpellPreparation.known,
+      spellList: 'warlock',
+      saveDc: 13,
+      attackBonus: 5,
+      cantripsKnown: 2,
+      preparedCount: 0,
+      slotsByLevel: {2: 2},
+    );
+    final c = CombatState(spellSlotsUsed: const {2: 1});
+
+    expect(CombatOps.spendSpellSlot(c, pact, 2), isTrue);
+    expect(c.pactSlotsUsed, {2: 1});
+    expect(c.spellSlotsUsed, {2: 1});
+    CombatOps.shortRest(c, const [], spellcasting: pact);
+    expect(c.pactSlotsUsed, isEmpty);
+    expect(c.spellSlotsUsed, {2: 1});
+  });
+
   group('Daño y curación', () {
     test('el daño consume primero PG temporales', () {
       final c = CombatState(currentHp: 12, tempHp: 5);
@@ -84,7 +153,8 @@ void main() {
       expect(c.currentHp, 20);
       expect(c.tempHp, 0);
       expect(c.exhaustion, 1);
-      expect(c.hitDiceUsed, 2); // recupera la mitad de 4
+      expect(c.hitDiceUsed.values.fold(0, (sum, used) => sum + used),
+          2); // recupera la mitad de 4
     });
 
     test('el descanso largo concede Inspiración Heroica si un rasgo la da', () {
@@ -145,7 +215,7 @@ void main() {
     final c = CombatState(currentHp: 5);
     final healed = CombatOps.spendHitDie(c, sheet, 1, dice: Dice(Random(1)));
     expect(healed, greaterThanOrEqualTo(3)); // mínimo 1 (tirada) + 2 (CON)
-    expect(c.hitDiceUsed, 1);
+    expect(c.hitDiceUsed, {10: 1});
     expect(c.currentHp, 5 + healed);
   });
 }

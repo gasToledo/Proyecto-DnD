@@ -67,23 +67,33 @@ class LevelUpScreen extends StatefulWidget {
 }
 
 class _LevelUpScreenState extends State<LevelUpScreen> {
-  late final CharacterClass? _klass = widget.repo.characterClass(
-    widget.character.classId,
-  );
-  late final int _newLevel = widget.character.level + 1;
-  late final int _hitDie = _klass?.hitDie ?? 10;
-  late final bool _isAsi = _klass?.isAsiLevel(_newLevel) ?? false;
+  String _levelUpClassId = '';
+
+  CharacterClass? get _klass => widget.repo.characterClass(_levelUpClassId);
+  int get _newLevel => widget.character.totalLevel + 1;
+  int get _newClassLevel => widget.character.classLevel(_levelUpClassId) + 1;
+  int get _hitDie => _klass?.hitDie ?? 10;
+  bool get _isAsi => _klass?.isAsiLevel(_newClassLevel) ?? false;
+  List<CharacterClass> get _classOptions =>
+      widget.repo.classes.values.toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
 
   /// Este nivel debe elegir subclase: se alcanza el nivel de subclase de la
   /// clase y aún no hay una elegida.
-  late final bool _needsSubclass =
+  bool get _needsSubclass =>
       _klass != null &&
-      widget.character.subclassId == null &&
-      _newLevel >= _klass.subclassLevel;
-  late final List<Subclass> _subclassOptions = _needsSubclass
-      ? widget.repo.subclassesForClass(widget.character.classId)
+      widget.character.subclassForClass(_levelUpClassId) == null &&
+      _newClassLevel >= _klass!.subclassLevel;
+  List<Subclass> get _subclassOptions => _needsSubclass
+      ? widget.repo.subclassesForClass(_levelUpClassId)
       : const [];
   String? _subclassId;
+
+  @override
+  void initState() {
+    super.initState();
+    _levelUpClassId = widget.character.classId;
+  }
 
   _HpMethod _hpMethod = _HpMethod.average;
   int? _rolledHp;
@@ -109,6 +119,31 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     if (_pendingChoices > 0) return false;
     if (_pendingSpellChoices > 0) return false;
     return true;
+  }
+
+  void _selectLevelUpClass(String classId) {
+    if (classId == _levelUpClassId) return;
+    setState(() {
+      _levelUpClassId = classId;
+      _subclassId = null;
+      _asiKind = _AsiKind.improve;
+      _abilityA = null;
+      _abilityB = null;
+      _featId = null;
+      _newCantrips = null;
+      _newSpells = null;
+      _newClassCantrips = null;
+      _newClassSpells = null;
+      _newFeatureChoices = null;
+      _newClassFeatureChoices = null;
+      _newProficiencyChoices = null;
+      _newSpellChoices = null;
+      _newClassSpellChoices = null;
+      _spellChoiceCache = null;
+      _proficiencyCache = null;
+      _slotCache = null;
+      _currentStep = 0;
+    });
   }
 
   /// La dote elegida en este nivel, si concede "+1 a una característica a tu
@@ -145,27 +180,67 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   // Conjuros re-elegidos en este nivel (null = sin cambios respecto al actual).
   List<String>? _newCantrips;
   List<String>? _newSpells;
+  Map<String, List<String>>? _newClassCantrips;
+  Map<String, List<String>>? _newClassSpells;
 
   /// Elecciones abiertas re-resueltas en este nivel (null = sin cambios).
   Map<String, List<String>>? _newFeatureChoices;
+  Map<String, Map<String, List<String>>>? _newClassFeatureChoices;
 
   Map<String, List<String>> get _effectiveChoices =>
       _newFeatureChoices ?? widget.character.featureChoices;
 
-  List<String> _choicesFor(String groupId) =>
-      _effectiveChoices[groupId] ?? const [];
+  Map<String, Map<String, List<String>>> get _effectiveClassFeatureChoices =>
+      _newClassFeatureChoices ?? widget.character.classFeatureChoices;
+
+  List<String> _choicesFor(String groupId) {
+    final separator = groupId.indexOf(':');
+    if (separator > 0) {
+      final classId = groupId.substring(0, separator);
+      final rawGroup = groupId.substring(separator + 1);
+      return _effectiveClassFeatureChoices[classId]?[rawGroup] ??
+          _effectiveChoices[groupId] ??
+          const [];
+    }
+    return _effectiveChoices[groupId] ?? const [];
+  }
 
   void _setChoices(String groupId, List<String> ids) {
     final next = {
       for (final e in _effectiveChoices.entries)
         e.key: List<String>.of(e.value),
     };
-    if (ids.isEmpty) {
-      next.remove(groupId);
-    } else {
-      next[groupId] = ids;
+    // Los grupos legacy de una ficha monoclase también contienen `:` (por
+    // ejemplo `class:wizard:signature-spells`), pero no son mapas anidados.
+    // Solo el prefijo que agrega el compilador para una fuente multiclase es
+    // un ámbito persistido: `wizard:class:wizard:...`.
+    final scopedGroup = groupId.startsWith('$_levelUpClassId:');
+    final separator = scopedGroup ? groupId.indexOf(':') : -1;
+    if (!scopedGroup || separator <= 0) {
+      if (ids.isEmpty) {
+        next.remove(groupId);
+      } else {
+        next[groupId] = ids;
+      }
+      setState(() => _newFeatureChoices = next);
+      return;
     }
-    setState(() => _newFeatureChoices = next);
+    final classId = groupId.substring(0, separator);
+    final rawGroup = groupId.substring(separator + 1);
+    final scoped = {
+      for (final entry in _effectiveClassFeatureChoices.entries)
+        entry.key: {
+          for (final choice in entry.value.entries)
+            choice.key: List<String>.of(choice.value),
+        },
+    };
+    final choices = scoped[classId] ??= {};
+    if (ids.isEmpty) {
+      choices.remove(rawGroup);
+    } else {
+      choices[rawGroup] = ids;
+    }
+    setState(() => _newClassFeatureChoices = scoped);
   }
 
   /// Competencias y Pericias resueltas en este nivel (null = sin cambios).
@@ -196,24 +271,58 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   /// `Character.spellChoices`, aparte de `spellIds`: no gastan cupo de
   /// preparados.
   Map<String, List<String>>? _newSpellChoices;
+  Map<String, Map<String, List<String>>>? _newClassSpellChoices;
 
   Map<String, List<String>> get _effectiveSpellChoices =>
       _newSpellChoices ?? widget.character.spellChoices;
 
-  List<String> _spellChoiceFor(String groupId) =>
-      _effectiveSpellChoices[groupId] ?? const [];
+  Map<String, Map<String, List<String>>> get _effectiveClassSpellChoices =>
+      _newClassSpellChoices ?? widget.character.classSpellChoices;
+
+  List<String> _spellChoiceFor(String groupId) {
+    final separator = groupId.indexOf(':');
+    if (separator > 0) {
+      final classId = groupId.substring(0, separator);
+      final rawGroup = groupId.substring(separator + 1);
+      return _effectiveClassSpellChoices[classId]?[rawGroup] ??
+          _effectiveSpellChoices[groupId] ??
+          const [];
+    }
+    return _effectiveSpellChoices[groupId] ?? const [];
+  }
 
   void _setSpellChoice(String groupId, List<String> ids) {
     final next = {
       for (final e in _effectiveSpellChoices.entries)
         e.key: List<String>.of(e.value),
     };
-    if (ids.isEmpty) {
-      next.remove(groupId);
-    } else {
-      next[groupId] = ids;
+    final scopedGroup = groupId.startsWith('$_levelUpClassId:');
+    final separator = scopedGroup ? groupId.indexOf(':') : -1;
+    if (!scopedGroup || separator <= 0) {
+      if (ids.isEmpty) {
+        next.remove(groupId);
+      } else {
+        next[groupId] = ids;
+      }
+      setState(() => _newSpellChoices = next);
+      return;
     }
-    setState(() => _newSpellChoices = next);
+    final classId = groupId.substring(0, separator);
+    final rawGroup = groupId.substring(separator + 1);
+    final scoped = {
+      for (final entry in _effectiveClassSpellChoices.entries)
+        entry.key: {
+          for (final choice in entry.value.entries)
+            choice.key: List<String>.of(choice.value),
+        },
+    };
+    final choices = scoped[classId] ??= {};
+    if (ids.isEmpty) {
+      choices.remove(rawGroup);
+    } else {
+      choices[rawGroup] = ids;
+    }
+    setState(() => _newClassSpellChoices = scoped);
   }
 
   List<SpellChoiceSlot>? _spellChoiceCache;
@@ -225,6 +334,8 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   List<SpellChoiceSlot> get _spellChoiceSlots {
     final sig = [
       _newLevel,
+      _levelUpClassId,
+      _newClassLevel,
       _subclassId,
       _asiKind.name,
       _featId,
@@ -233,6 +344,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _impMode.name,
       for (final e in _effectiveSpellChoices.entries)
         '${e.key}=${e.value.join(",")}',
+      for (final classEntry in _effectiveClassSpellChoices.entries)
+        for (final e in classEntry.value.entries)
+          '${classEntry.key}:${e.key}=${e.value.join(",")}',
     ].join('|');
     if (sig != _spellChoiceSig) {
       _spellChoiceCache = CharacterCompiler(
@@ -296,6 +410,8 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   get _proficiencyData {
     final sig = [
       _newLevel,
+      _levelUpClassId,
+      _newClassLevel,
       _subclassId,
       _asiKind.name,
       _featId,
@@ -354,6 +470,8 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   List<FeatureChoiceSlot> get _choiceSlots {
     final sig = [
       _newLevel,
+      _levelUpClassId,
+      _newClassLevel,
       _subclassId,
       _asiKind.name,
       _featId,
@@ -567,7 +685,11 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     if (_isAsi) {
       if (_asiKind == _AsiKind.improve) {
         asiChoices.add(
-          AsiChoice(level: _newLevel, abilityIncreases: _abilityIncreases),
+          AsiChoice(
+            classId: _levelUpClassId,
+            level: _newClassLevel,
+            abilityIncreases: _abilityIncreases,
+          ),
         );
       } else if (withFeat && _featId != null) {
         // La dote solo se agrega si ya se eligió: `_buildUpdated` corre en cada
@@ -577,7 +699,8 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
         // lleva dote y aumento a la vez.
         asiChoices.add(
           AsiChoice(
-            level: _newLevel,
+            classId: _levelUpClassId,
+            level: _newClassLevel,
             featId: _featId,
             abilityIncreases: _abilityIncreases,
           ),
@@ -586,31 +709,42 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       }
     }
 
+    final subclassIds = {...c.subclassIds};
+    if (_subclassId != null) subclassIds[_levelUpClassId] = _subclassId!;
     return c.copyWith(
       level: _newLevel,
+      classHistory: [...c.classHistory, _levelUpClassId],
       // Si se eligió subclase en esta subida se fija; si no, se conserva la
       // actual (pasar null solo ocurre por debajo del nivel de subclase).
-      subclassId: _subclassId ?? c.subclassId,
+      subclassId: _levelUpClassId == c.classId
+          ? _subclassId ?? c.subclassId
+          : c.subclassId,
+      subclassIds: subclassIds,
       hpPerLevel: [...c.hpPerLevel, _hpGain],
       asiChoices: asiChoices,
       featIds: featIds,
       cantripIds: _newCantrips,
       spellIds: _newSpells,
+      classCantripIds: _newClassCantrips,
+      classSpellIds: _newClassSpells,
       featureChoices: _newFeatureChoices,
+      classFeatureChoices: _newClassFeatureChoices,
       proficiencyChoices: _newProficiencyChoices,
       spellChoices: _newSpellChoices,
+      classSpellChoices: _newClassSpellChoices,
     );
   }
 
   /// Rasgos ganados exactamente en el nuevo nivel: los de clase más, si hay
   /// subclase (elegida ahora o antes), los de subclase.
   List<ClassFeature> _gainedFeatures() {
-    final feats = <ClassFeature>[...?_klass?.featuresAt(_newLevel)];
-    final subId = _subclassId ?? widget.character.subclassId;
+    final feats = <ClassFeature>[...?_klass?.featuresAt(_newClassLevel)];
+    final subId =
+        _subclassId ?? widget.character.subclassForClass(_levelUpClassId);
     if (subId != null) {
       final sub = widget.repo.subclass(subId);
-      if (sub != null && sub.classId == widget.character.classId) {
-        feats.addAll(sub.featuresAt(_newLevel));
+      if (sub != null && sub.classId == _levelUpClassId) {
+        feats.addAll(sub.featuresAt(_newClassLevel));
       }
     }
     return feats;

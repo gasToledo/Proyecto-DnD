@@ -432,6 +432,26 @@ void main() {
           warnings.map((w) => w.code).toSet().intersection(newCodes), isEmpty);
     });
 
+    test('advierte el requisito de aptitud de una segunda clase', () {
+      final c = Character(
+        id: 'multiclass-prerequisite',
+        name: 'Prueba',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        classHistory: const ['fighter', 'paladin'],
+        assignedScores: {
+          for (final ability in Ability.values) ability: 10,
+        },
+        hpPerLevel: const [10, 6],
+      );
+
+      expect(
+        CharacterValidator(repo).validate(c).map((w) => w.code),
+        contains('multiclass_prerequisite'),
+      );
+    });
+
     test('Bardo acepta cualquier habilidad válida cuando su lista está vacía',
         () {
       final json = sagan().toJson()

@@ -3,6 +3,12 @@
     "id": "fighter",
     "name": "Guerrero",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["strength", "dexterity"],
+      "abilityRequirementMode": "any",
+      "armorProficiencies": ["light", "medium", "shield"],
+      "weaponProficiencies": ["simple", "martial"]
+    },
     "accentColor": "#B0413E",
     "iconId": "shield",
     "hitDie": 10,
@@ -361,6 +367,11 @@
     "id": "barbarian",
     "name": "Bárbaro",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["strength"],
+      "armorProficiencies": ["shield"],
+      "weaponProficiencies": ["simple", "martial"]
+    },
     "accentColor": "#C0552B",
     "iconId": "rage",
     "hitDie": 12,
@@ -769,6 +780,17 @@
     "id": "rogue",
     "name": "Pícaro",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["dexterity"],
+      "armorProficiencies": ["light"],
+      "weaponProficiencies": ["simple", "martial-finesse", "martial-light"],
+      "toolProficiencies": ["thieves-tools"],
+      "skillChoiceCount": 1,
+      "skillChoiceFrom": [
+        "acrobatics", "athletics", "deception", "insight", "intimidation",
+        "investigation", "perception", "persuasion", "sleight-of-hand", "stealth"
+      ]
+    },
     "accentColor": "#7D6B99",
     "iconId": "dagger",
     "hitDie": 8,
@@ -1100,6 +1122,10 @@
     "id": "monk",
     "name": "Monje",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["dexterity", "wisdom"],
+      "weaponProficiencies": ["simple", "martial-light"]
+    },
     "accentColor": "#2E86AB",
     "iconId": "fist",
     "hitDie": 8,
@@ -1527,6 +1553,9 @@
     "id": "wizard",
     "name": "Mago",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["intelligence"]
+    },
     "accentColor": "#4A6FA5",
     "iconId": "spellbook",
     "hitDie": 6,
@@ -1890,6 +1919,10 @@
     "id": "cleric",
     "name": "Clérigo",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["wisdom"],
+      "armorProficiencies": ["light", "medium", "shield"]
+    },
     "accentColor": "#CBB26A",
     "iconId": "holy",
     "hitDie": 8,
@@ -2186,6 +2219,10 @@
     "id": "druid",
     "name": "Druida",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["wisdom"],
+      "armorProficiencies": ["light", "medium", "shield"]
+    },
     "accentColor": "#4C8B3F",
     "iconId": "leaf",
     "hitDie": 8,
@@ -2614,6 +2651,18 @@
     "id": "bard",
     "name": "Bardo",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["charisma"],
+      "armorProficiencies": ["light"],
+      "instrumentProficiencies": ["musical-instrument"],
+      "skillChoiceCount": 1,
+      "skillChoiceFrom": [
+        "acrobatics", "animal-handling", "arcana", "athletics", "deception",
+        "history", "insight", "intimidation", "investigation", "medicine",
+        "nature", "perception", "performance", "persuasion", "religion",
+        "sleight-of-hand", "stealth", "survival"
+      ]
+    },
     "accentColor": "#D98E48",
     "iconId": "music",
     "hitDie": 8,
@@ -2860,6 +2909,9 @@
     "id": "sorcerer",
     "name": "Hechicero",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["charisma"]
+    },
     "accentColor": "#C13B5A",
     "iconId": "sparkle",
     "hitDie": 6,
@@ -3073,6 +3125,11 @@
     "id": "warlock",
     "name": "Brujo",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["charisma"],
+      "armorProficiencies": ["light"],
+      "weaponProficiencies": ["simple"]
+    },
     "accentColor": "#7E57C2",
     "iconId": "eye",
     "hitDie": 8,
@@ -3428,6 +3485,11 @@
     "id": "paladin",
     "name": "Paladín",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["strength", "charisma"],
+      "armorProficiencies": ["light", "medium", "shield"],
+      "weaponProficiencies": ["simple", "martial"]
+    },
     "accentColor": "#C8A13A",
     "iconId": "oath",
     "hitDie": 10,
@@ -3755,6 +3817,11 @@
     "id": "ranger",
     "name": "Explorador",
     "source": "srd_2024",
+    "multiclass": {
+      "abilityRequirements": ["dexterity", "wisdom"],
+      "armorProficiencies": ["light", "medium", "shield"],
+      "weaponProficiencies": ["simple", "martial"]
+    },
     "accentColor": "#5B8C5A",
     "iconId": "bow",
     "hitDie": 10,
@@ -4089,6 +4156,17 @@
     "id": "artificer",
     "name": "Artífice",
     "source": "foa_2025",
+    "multiclass": {
+      "abilityRequirements": ["intelligence"],
+      "armorProficiencies": ["light", "medium", "shield"],
+      "weaponProficiencies": ["simple"],
+      "toolProficiencies": ["thieves-tools", "tinkers-tools"],
+      "skillChoiceCount": 1,
+      "skillChoiceFrom": [
+        "arcana", "history", "investigation", "medicine", "nature",
+        "perception", "sleight-of-hand"
+      ]
+    },
     "accentColor": "#B08D57",
     "iconId": "gear",
     "hitDie": 8,

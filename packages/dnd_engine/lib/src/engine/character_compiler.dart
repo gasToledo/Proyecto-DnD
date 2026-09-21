@@ -22,11 +22,14 @@ class CharacterCompiler {
   final ContentRepository repo;
   const CharacterCompiler(this.repo);
 
-  ItemChoiceSlot _itemChoiceSlot(ItemChoiceEffect effect, Character character) {
+  ItemChoiceSlot _itemChoiceSlot(
+    ItemChoiceEffect effect,
+    Character character,
+    int sourceLevel,
+  ) {
     final eligible = <String>{
       for (final option in effect.options)
-        if (option.minLevel <= character.level &&
-            repo.item(option.itemId) != null)
+        if (option.minLevel <= sourceLevel && repo.item(option.itemId) != null)
           option.itemId,
     };
 
@@ -50,13 +53,9 @@ class CharacterCompiler {
           final wondrous = description.startsWith('objeto maravilloso');
           return !cursed &&
               !variable &&
-              (character.level >= 2 &&
-                      item.rarity == 'common' &&
-                      !potionOrScroll ||
-                  character.level >= 10 &&
-                      item.rarity == 'uncommon' &&
-                      wondrous ||
-                  character.level >= 14 && item.rarity == 'rare' && wondrous);
+              (sourceLevel >= 2 && item.rarity == 'common' && !potionOrScroll ||
+                  sourceLevel >= 10 && item.rarity == 'uncommon' && wondrous ||
+                  sourceLevel >= 14 && item.rarity == 'rare' && wondrous);
         }),
         (item) => item.name,
       );
@@ -66,27 +65,42 @@ class CharacterCompiler {
     return ItemChoiceSlot(
       groupId: effect.groupId,
       name: effect.name,
-      count: effect.countAt(character.level),
-      maxActive: artificerReplicasAtLevel(character.level),
+      count: effect.countAt(sourceLevel),
+      maxActive: artificerReplicasAtLevel(sourceLevel),
       replaceable: effect.replaceable,
       optionItemIds: eligible.toList(),
       chosenItemIds: character.magicItemChoices
           .where(eligible.contains)
-          .take(effect.countAt(character.level))
+          .take(effect.countAt(sourceLevel))
           .toList(),
     );
   }
 
   ComputedSheet compile(Character c) {
     final race = repo.race(c.raceId);
-    final klass = repo.characterClass(c.classId);
+    final classLevels = <String, int>{};
+    for (final classId in c.classHistory) {
+      classLevels[classId] = (classLevels[classId] ?? 0) + 1;
+    }
+    if (classLevels.isEmpty) classLevels[c.classId] = c.level;
+    final initialClassId = c.classHistory.firstOrNull ?? c.classId;
+    final initialClass = repo.characterClass(initialClassId);
+    final multipleClasses = classLevels.length > 1;
+    final totalLevel = c.totalLevel;
+    final hitDiceBySize = <int, int>{};
+    for (final entry in classLevels.entries) {
+      final hitDie = repo.characterClass(entry.key)?.hitDie;
+      if (hitDie != null) {
+        hitDiceBySize[hitDie] = (hitDiceBySize[hitDie] ?? 0) + entry.value;
+      }
+    }
     final background = repo.background(c.backgroundId);
 
     final builder = SheetBuilder(
       baseScores: {
         for (final a in Ability.values) a: c.assignedScores[a] ?? 10,
       },
-      level: c.level,
+      level: totalLevel,
     );
     final proficiencySources =
         <({String id, String name, List<Effect> effects})>[];
@@ -97,10 +111,12 @@ class CharacterCompiler {
     // Pericia y elección de conjuros, que hacen `whereType<...>()`. Con el
     // envoltorio puesto, una de esas elecciones escalonada por nivel sería
     // invisible para ellas y el defecto entraría en verde.
-    List<Effect> flatten(List<Effect> effects) => [
+    List<Effect> flatten(List<Effect> effects, int sourceLevel) => [
           for (final e in effects)
             if (e is LeveledEffect)
-              ...(c.level >= e.minLevel ? flatten(e.effects) : const <Effect>[])
+              ...(sourceLevel >= e.minLevel
+                  ? flatten(e.effects, sourceLevel)
+                  : const <Effect>[])
             else
               e,
         ];
@@ -110,12 +126,16 @@ class CharacterCompiler {
       String name,
       List<Effect> effects, {
       Ability? spellAbilityOverride,
+      String? sourceClassId,
+      int? sourceLevel,
     }) {
-      final flat = flatten(effects);
+      final flat = flatten(effects, sourceLevel ?? totalLevel);
       builder.applyAll(
         flat,
         spellAbilityOverride: spellAbilityOverride,
         sourceName: name,
+        sourceClassId: sourceClassId,
+        sourceLevel: sourceLevel,
       );
       proficiencySources.add((id: id, name: name, effects: flat));
     }
@@ -132,6 +152,11 @@ class CharacterCompiler {
           builder.addAbilityBonus(a, amount, source: backgroundLabel),
     );
     for (final asi in c.asiChoices) {
+      final asiClassId = asi.classId ?? initialClassId;
+      final asiClass = repo.characterClass(asiClassId);
+      if (asiClass == null || !asiClass.asiLevels.contains(asi.level)) {
+        continue;
+      }
       asi.abilityIncreases.forEach(
         (a, amount) => builder.addAbilityBonus(a, amount,
             source: 'Mejora de nivel ${asi.level}'),
@@ -152,7 +177,7 @@ class CharacterCompiler {
     // por nivel: igual que las subclases, pueden crecer con el personaje.
     final lineage = c.lineageId == null ? null : repo.lineage(c.lineageId!);
     if (lineage != null && lineage.raceId == c.raceId) {
-      for (final f in lineage.featuresUpTo(c.level)) {
+      for (final f in lineage.featuresUpTo(totalLevel)) {
         applySource(
           'lineage:' +
               lineage.id +
@@ -165,31 +190,85 @@ class CharacterCompiler {
       }
     }
 
-    if (klass != null) {
-      for (final f in klass.featuresUpTo(c.level)) {
+    for (final entry in classLevels.entries) {
+      final classId = entry.key;
+      final classLevel = entry.value;
+      final classDefinition = repo.characterClass(classId);
+      if (classDefinition == null) continue;
+      final sourceClassId = multipleClasses ? classId : null;
+      for (final f in classDefinition.featuresUpTo(classLevel)) {
         applySource(
-          'class:' + klass.id + ':' + klass.features.indexOf(f).toString(),
+          'class:' +
+              classId +
+              ':' +
+              classDefinition.features.indexOf(f).toString(),
           f.name,
           f.effects,
+          sourceClassId: sourceClassId,
+          sourceLevel: classLevel,
         );
       }
-      builder.saveProficiencies.addAll(klass.savingThrows);
-      builder.armorProficiencies.addAll(klass.armorProficiencies);
-      builder.weaponProficiencies.addAll(klass.weaponProficiencies);
-    }
 
-    // Rasgos de subclase (si se eligió y pertenece a esta clase), por nivel.
-    final subclass = c.subclassId == null ? null : repo.subclass(c.subclassId!);
-    if (subclass != null && subclass.classId == c.classId) {
-      for (final f in subclass.featuresUpTo(c.level)) {
-        applySource(
-          'subclass:' +
-              subclass.id +
-              ':' +
-              subclass.features.indexOf(f).toString(),
-          f.name,
-          f.effects,
-        );
+      final subclassId = c.subclassForClass(classId) ??
+          (classId == c.classId ? c.subclassId : null);
+      final subclass = subclassId == null ? null : repo.subclass(subclassId);
+      if (subclass != null && subclass.classId == classId) {
+        for (final f in subclass.featuresUpTo(classLevel)) {
+          applySource(
+            'subclass:' +
+                subclass.id +
+                ':' +
+                subclass.features.indexOf(f).toString(),
+            f.name,
+            f.effects,
+            sourceClassId: sourceClassId,
+            sourceLevel: classLevel,
+          );
+        }
+      }
+
+      // Las salvaciones y competencias completas solo pertenecen a la clase
+      // inicial. Las clases posteriores usan el bloque parcial de multiclase.
+      if (classId == initialClassId) {
+        builder.saveProficiencies.addAll(classDefinition.savingThrows);
+        builder.armorProficiencies.addAll(classDefinition.armorProficiencies);
+        builder.weaponProficiencies.addAll(classDefinition.weaponProficiencies);
+      } else if (classDefinition.multiclass case final rules?) {
+        builder.armorProficiencies.addAll(rules.armorProficiencies);
+        builder.weaponProficiencies.addAll(rules.weaponProficiencies);
+        builder.toolProficiencies.addAll(rules.toolProficiencies);
+        if (rules.skillChoiceCount > 0 ||
+            rules.instrumentProficiencies.isNotEmpty) {
+          if (rules.skillChoiceCount > 0) {
+            proficiencySources.add((
+              id: 'multiclass:$classId:skills',
+              name: '${classDefinition.name} (multiclase)',
+              effects: <Effect>[
+                ProficiencyChoiceEffect(
+                  groupId: 'class:$classId:multiclass-skills',
+                  name: 'Habilidad de ${classDefinition.name}',
+                  count: rules.skillChoiceCount,
+                  skills: rules.skillChoiceFrom,
+                ),
+              ],
+            ));
+          }
+          if (rules.instrumentProficiencies.isNotEmpty) {
+            proficiencySources.add((
+              id: 'multiclass:$classId:instruments',
+              name: '${classDefinition.name} (multiclase)',
+              effects: <Effect>[
+                ProficiencyChoiceEffect(
+                  groupId: 'class:$classId:multiclass-instruments',
+                  name: 'Instrumento de ${classDefinition.name}',
+                  count: rules.instrumentProficiencies.length,
+                  includeSkills: false,
+                  tools: rules.instrumentProficiencies,
+                ),
+              ],
+            ));
+          }
+        }
       }
     }
     if (background != null) {
@@ -221,11 +300,25 @@ class CharacterCompiler {
 
     // Elecciones abiertas que el rasgo declara en línea (Orden Primordial,
     // Orden Divina): no son dotes, así que se resuelven contra las opciones del
-    // slot. Los slots de clase ya están cargados: `klass.featuresUpTo` corrió
-    // arriba.
+    // slot. Las clases ya se recorrieron arriba.
+    List<String> chosenFeatureChoices(String groupId) {
+      if (multipleClasses) {
+        final separator = groupId.indexOf(':');
+        if (separator > 0) {
+          final classId = groupId.substring(0, separator);
+          final rawGroup = groupId.substring(separator + 1);
+          return c.classFeatureChoices[classId]?[rawGroup] ??
+              c.classFeatureChoices[classId]?[groupId] ??
+              c.featureChoices[groupId] ??
+              const <String>[];
+        }
+      }
+      return c.featureChoices[groupId] ?? const <String>[];
+    }
+
     for (final slot in builder.featureChoiceSlots.values) {
       if (slot.options.isEmpty) continue;
-      final chosen = c.featureChoices[slot.groupId] ?? const <String>[];
+      final chosen = chosenFeatureChoices(slot.groupId);
       for (final option in slot.options
           .where((o) => chosen.contains(o.id))
           .take(slot.count)) {
@@ -252,6 +345,8 @@ class CharacterCompiler {
       // Las elecciones abiertas (Estilo de Combate, Invocaciones) son dotes:
       // sus efectos se aplican por el mismo camino que el resto.
       for (final chosen in c.featureChoices.values) ...chosen,
+      for (final choices in c.classFeatureChoices.values)
+        for (final chosen in choices.values) ...chosen,
     ];
     final appliedOnce = <String>{};
     final featSourceCounts = <String, int>{};
@@ -487,15 +582,15 @@ class CharacterCompiler {
     final mods = {
       for (final a in Ability.values) a: abilityModifier(scores[a]!)
     };
-    final profBonus = proficiencyBonusForLevel(c.level);
+    final profBonus = proficiencyBonusForLevel(totalLevel);
     final conMod = mods[Ability.constitution]!;
     final dexMod = mods[Ability.dexterity]!;
 
     final baseHp = c.hpPerLevel.fold<int>(0, (s, v) => s + v);
     final maxHp = baseHp +
-        conMod * c.level +
+        conMod * totalLevel +
         builder.bonusMaxHpFlat +
-        builder.bonusMaxHpPerLevel * c.level;
+        builder.bonusMaxHpPerLevel * totalLevel;
 
     final ac = _armorClass(c, builder, mods);
     final speed = _speed(c, builder);
@@ -529,15 +624,32 @@ class CharacterCompiler {
       }
     }
 
-    final spellcasting = _spellcasting(builder, c.level, mods, profBonus);
+    final spellcastingBlocks = _spellcastingBlocks(
+      builder,
+      classLevels,
+      mods,
+      profBonus,
+    );
+    final spellcasting = _combinedSpellcasting(
+      builder,
+      spellcastingBlocks,
+      totalLevel,
+      mods,
+      profBonus,
+    );
 
     // Elección de conjuros. Va acá y no antes ni después por dos razones que
     // apuntan en direcciones opuestas: necesita `spellcasting` para el techo de
     // `maxLevelFromSlots`, y tiene que correr **antes** de `_resolveInnate`
     // porque el lanzamiento gratis se resuelve empujando un GrantSpellEffect al
     // builder y dejando que aquél acuñe el recurso.
-    final spellChoiceSlots =
-        _resolveSpellChoices(c, builder, proficiencySources, spellcasting);
+    final spellChoiceSlots = _resolveSpellChoices(
+      c,
+      builder,
+      proficiencySources,
+      spellcasting,
+      spellcastingBlocks,
+    );
 
     final innate = _resolveInnate(c, builder, mods, profBonus);
 
@@ -568,10 +680,31 @@ class CharacterCompiler {
       for (final id in builder.alwaysPreparedSpellIds)
         if (repo.spell(id) != null) id,
     };
+    final knownClassSpells = <String>{
+      ...c.cantripIds,
+      ...c.spellIds,
+      for (final ids in c.classCantripIds.values) ...ids,
+      for (final ids in c.classSpellIds.values) ...ids,
+    };
+    final unarmoredDefenseOptions = [
+      for (final option in builder.unarmoredDefenseOptions)
+        ArmorClassFormula(
+          classId: option.classId,
+          ability: option.ability,
+          allowShield: option.allowShield,
+        ),
+    ];
+    final selectedUnarmoredDefenseClassId = unarmoredDefenseOptions
+            .where((option) => option.classId == c.unarmoredDefenseClassId)
+            .map((option) => option.classId)
+            .firstOrNull ??
+        unarmoredDefenseOptions.firstOrNull?.classId;
 
     return ComputedSheet(
-      level: c.level,
+      level: totalLevel,
       proficiencyBonus: profBonus,
+      classLevels: Map.unmodifiable(classLevels),
+      hitDiceBySize: Map.unmodifiable(hitDiceBySize),
       abilityScores: scores,
       abilityModifiers: mods,
       abilityBonuses: List.unmodifiable(builder.abilityBonusSources),
@@ -585,8 +718,10 @@ class CharacterCompiler {
       weaponProficiencies: builder.weaponProficiencies,
       toolProficiencies: builder.toolProficiencies,
       maxHp: maxHp,
-      hitDie: klass?.hitDie ?? 8,
+      hitDie: initialClass?.hitDie ?? 8,
       armorClass: ac,
+      unarmoredDefenseOptions: unarmoredDefenseOptions,
+      selectedUnarmoredDefenseClassId: selectedUnarmoredDefenseClassId,
       carriedWeight: InventoryOps.carriedWeight(c, repo),
       size: size,
       speed: speed,
@@ -599,12 +734,11 @@ class CharacterCompiler {
       attacks: attacks,
       passives: builder.passives,
       resources: [
-        ...builder.resolveResources(mods, c.level),
+        ...builder.resolveResources(mods, totalLevel),
         ...innate.resources
       ],
       companions: _resolveCompanions(c, builder, proficiencySources, {
-        ...c.cantripIds,
-        ...c.spellIds,
+        ...knownClassSpells,
         ...alwaysPrepared,
         // Un conjuro concedido por un rasgo también se sabe. Sin esto, el
         // Pacto de la Cadena —que regala Encontrar Familiar en vez de ponerlo
@@ -618,18 +752,19 @@ class CharacterCompiler {
           if (repo.spell(id) != null) id,
       },
       featureChoiceSlots: [
-        for (final e in builder.featureChoiceSlots.values)
+        for (final entry in builder.featureChoiceSlots.entries)
           FeatureChoiceSlot(
-            groupId: e.groupId,
-            name: e.name,
-            featCategory: e.featCategory,
-            count: e.count,
-            replaceable: e.replaceable,
-            options: e.options,
+            groupId: entry.key,
+            name: entry.value.name,
+            featCategory: entry.value.featCategory,
+            count: entry.value.count,
+            replaceable: entry.value.replaceable,
+            options: entry.value.options,
           ),
       ],
       itemChoiceSlots: [
-        for (final e in builder.itemChoiceSlots.values) _itemChoiceSlot(e, c),
+        for (final e in builder.itemChoiceSlots.values)
+          _itemChoiceSlot(e.effect, c, e.level),
       ],
       targetChoiceSlots: targetChoices.slots,
       proficiencyChoiceSlots: proficiencySlots,
@@ -639,6 +774,9 @@ class CharacterCompiler {
       languages: knownLanguages,
       languageChoiceSlots: languageChoiceSlots,
       spellcasting: spellcasting,
+      spellcastingBlocks: spellcastingBlocks,
+      normalSpellSlotsByLevel: spellcasting?.slotsByLevel ?? const {},
+      pactSlotsByLevel: _pactSlots(spellcastingBlocks),
     );
   }
 
@@ -814,13 +952,22 @@ class CharacterCompiler {
     SheetBuilder builder,
     List<({String id, String name, List<Effect> effects})> sources,
     Spellcasting? spellcasting,
+    List<SpellcastingBlock> spellcastingBlocks,
   ) {
     final slots = <SpellChoiceSlot>[];
-    final maxSlotLevel =
-        spellcasting?.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m) ??
-            0;
 
     for (final source in sources) {
+      final sourceClassId = _classIdFromSourceId(source.id);
+      final sourceCasting = sourceClassId == null
+          ? null
+          : spellcastingBlocks
+              .where((b) => b.classId == sourceClassId)
+              .firstOrNull;
+      final maxSlotLevel = sourceCasting?.spellcasting.slotsByLevel.keys
+              .fold<int>(0, (m, l) => l > m ? l : m) ??
+          spellcasting?.slotsByLevel.keys
+              .fold<int>(0, (m, l) => l > m ? l : m) ??
+          0;
       for (final effect in source.effects.whereType<SpellChoiceEffect>()) {
         final ceiling = effect.maxLevelFromSlots
             ? min(effect.maxLevel ?? maxSlotLevel, maxSlotLevel)
@@ -851,11 +998,15 @@ class CharacterCompiler {
         // Lanzador Ritual crece con el bonificador por competencia en vez de
         // declarar un grupo por tramo.
         final cupo = effect.countFromProficiency
-            ? proficiencyBonusForLevel(c.level)
+            ? proficiencyBonusForLevel(c.totalLevel)
             : effect.count;
 
         final chosen = <String>[];
-        for (final id in c.spellChoices[effect.groupId] ?? const <String>[]) {
+        final storedChoices = sourceClassId == null
+            ? c.spellChoices[effect.groupId]
+            : c.classSpellChoices[sourceClassId]?[effect.groupId] ??
+                c.spellChoices[effect.groupId];
+        for (final id in storedChoices ?? const <String>[]) {
           if (chosen.length >= cupo) break;
           if (options.contains(id) && !chosen.contains(id)) chosen.add(id);
         }
@@ -886,6 +1037,7 @@ class CharacterCompiler {
                   (featId == null
                       ? null
                       : c.featSpellcastingAbilities[featId]) ??
+                  sourceCasting?.spellcasting.ability ??
                   builder.spellcasting?.ability ??
                   Ability.intelligence,
               use: effect.freeCast!,
@@ -941,41 +1093,63 @@ class CharacterCompiler {
     return _InnateResult(spells, resources);
   }
 
-  /// Deriva el bloque de lanzamiento a partir del rasgo de lanzamiento activo.
-  /// Sin multiclase, el nivel de lanzador == nivel de personaje.
-  Spellcasting? _spellcasting(
-    SheetBuilder b,
-    int level,
+  /// Deriva los bloques de lanzamiento manteniendo el nivel y la lista de
+  /// cada clase. Si una subclase declara el bloque (p.ej. un tercio), su
+  /// declaración posterior reemplaza cualquier declaración anterior de esa
+  /// misma clase.
+  List<SpellcastingBlock> _spellcastingBlocks(
+    SheetBuilder builder,
+    Map<String, int> classLevels,
     Map<Ability, int> mods,
     int profBonus,
   ) {
-    final sc = b.spellcasting;
-    if (sc == null || sc.progression == CasterProgression.none) return null;
+    final byClass = <String, ({int level, SpellcastingEffect effect})>{};
+    for (final source in builder.spellcastingSources) {
+      final classId = source.classId ??
+          (classLevels.length == 1 ? classLevels.keys.single : null);
+      if (classId == null || !classLevels.containsKey(classId)) continue;
+      byClass[classId] = (level: source.level, effect: source.effect);
+    }
+    return [
+      for (final entry in byClass.entries)
+        SpellcastingBlock(
+          classId: entry.key,
+          classLevel: classLevels[entry.key]!,
+          spellcasting: _spellcastingFor(
+            entry.value.effect,
+            classLevels[entry.key]!,
+            mods,
+            profBonus,
+            totalLevel: classLevels.values.fold(0, (sum, value) => sum + value),
+            slotsLevel: classLevels[entry.key]!,
+          ),
+        ),
+    ];
+  }
+
+  Spellcasting _spellcastingFor(
+    SpellcastingEffect sc,
+    int classLevel,
+    Map<Ability, int> mods,
+    int profBonus, {
+    required int totalLevel,
+    required int slotsLevel,
+  }) {
     final abilityMod = mods[sc.ability]!;
-
-    // Conjuros preparados: columna fija por clase/progresión (2024), sin
-    // depender del modificador de característica (a diferencia de 2014).
     final prepared = sc.preparation == SpellPreparation.prepared
-        ? preparedSpellsFor(sc.progression, level, sc.spellList)
+        ? preparedSpellsFor(sc.progression, classLevel, sc.spellList)
         : 0;
-
-    // Trucos conocidos: base de la clase + escalado por nivel. Si el rasgo
-    // declara sus propios niveles de aumento (Artífice: 10 y 14), se usan esos;
-    // si no, se conserva el escalado por defecto de 2024: los lanzadores
-    // completos ganan +1 a niveles 4 y 10, los de un tercio solo a nivel 10, y
-    // las clases sin trucos (Paladín/Explorador) no ganan ninguno.
     final int cantripBonus;
     if (sc.cantripsKnown == 0) {
       cantripBonus = 0;
     } else if (sc.cantripIncreases != null) {
-      cantripBonus = sc.cantripIncreases!.where((lv) => level >= lv).length;
+      cantripBonus =
+          sc.cantripIncreases!.where((lv) => classLevel >= lv).length;
     } else if (sc.progression == CasterProgression.third) {
-      cantripBonus = level >= 10 ? 1 : 0;
+      cantripBonus = totalLevel >= 10 ? 1 : 0;
     } else {
-      cantripBonus = (level >= 4 ? 1 : 0) + (level >= 10 ? 1 : 0);
+      cantripBonus = (totalLevel >= 4 ? 1 : 0) + (totalLevel >= 10 ? 1 : 0);
     }
-    final cantrips = sc.cantripsKnown + cantripBonus;
-
     return Spellcasting(
       ability: sc.ability,
       progression: sc.progression,
@@ -983,10 +1157,65 @@ class CharacterCompiler {
       spellList: sc.spellList,
       saveDc: 8 + profBonus + abilityMod,
       attackBonus: profBonus + abilityMod,
-      cantripsKnown: cantrips,
+      cantripsKnown: sc.cantripsKnown + cantripBonus,
       preparedCount: prepared,
-      slotsByLevel: spellSlotsFor(sc.progression, level),
+      slotsByLevel: spellSlotsFor(sc.progression, slotsLevel),
     );
+  }
+
+  Spellcasting? _combinedSpellcasting(
+    SheetBuilder builder,
+    List<SpellcastingBlock> blocks,
+    int totalLevel,
+    Map<Ability, int> mods,
+    int profBonus,
+  ) {
+    if (blocks.isEmpty) return null;
+    final normal = blocks
+        .where((b) => b.spellcasting.progression != CasterProgression.pact)
+        .toList();
+    if (normal.isEmpty) return blocks.last.spellcasting;
+    final base = normal.last.spellcasting;
+    if (normal.length == 1) return base;
+    final combinedLevel = _combinedCasterLevel(normal);
+    return base.copyWith(
+      slotsByLevel: spellSlotsFor(CasterProgression.full, combinedLevel),
+    );
+  }
+
+  int _combinedCasterLevel(List<SpellcastingBlock> blocks) {
+    var level = 0;
+    for (final block in blocks) {
+      level += switch (block.spellcasting.progression) {
+        CasterProgression.full => block.classLevel,
+        CasterProgression.half => (block.classLevel + 1) ~/ 2,
+        CasterProgression.third => block.classLevel ~/ 3,
+        CasterProgression.none || CasterProgression.pact => 0,
+      };
+    }
+    return level.clamp(0, 20);
+  }
+
+  Map<int, int> _pactSlots(List<SpellcastingBlock> blocks) {
+    final slots = <int, int>{};
+    for (final block in blocks
+        .where((b) => b.spellcasting.progression == CasterProgression.pact)) {
+      for (final entry in block.spellcasting.slotsByLevel.entries) {
+        slots[entry.key] = (slots[entry.key] ?? 0) + entry.value;
+      }
+    }
+    return slots;
+  }
+
+  String? _classIdFromSourceId(String id) {
+    for (final prefix in const ['class:', 'subclass:']) {
+      if (id.startsWith(prefix)) {
+        final remainder = id.substring(prefix.length);
+        final separator = remainder.indexOf(':');
+        return separator < 0 ? remainder : remainder.substring(0, separator);
+      }
+    }
+    return null;
   }
 
   /// Velocidad final: base + bonos incondicionales (raza) + Movimiento sin
@@ -1045,12 +1274,18 @@ class CharacterCompiler {
     final shield = equipped.where((e) => e.armor?.isShield == true).firstOrNull;
     if (armor != null && !armor.isShield) {
       ac = armor.armorClassFor(dexMod);
-    } else if (b.unarmoredDefenseAbility != null) {
+    } else if (b.unarmoredDefenseOptions.isNotEmpty) {
       // Defensa sin Armadura (Bárbaro: +CON, Monje: +SAB), solo sin armadura.
       // El Monje la pierde si empuña un escudo; el Bárbaro la conserva.
-      final voidedByShield = shield != null && !b.unarmoredDefenseAllowShield;
+      final selected = c.unarmoredDefenseClassId == null
+          ? b.unarmoredDefenseOptions.first
+          : b.unarmoredDefenseOptions
+                  .where((o) => o.classId == c.unarmoredDefenseClassId)
+                  .firstOrNull ??
+              b.unarmoredDefenseOptions.first;
+      final voidedByShield = shield != null && !selected.allowShield;
       if (!voidedByShield) {
-        ac = 10 + dexMod + mods[b.unarmoredDefenseAbility!]!;
+        ac = 10 + dexMod + mods[selected.ability]!;
       }
     }
     if (shield != null) ac += shield.armor!.baseAc + shield.magicBonus;

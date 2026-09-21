@@ -1641,6 +1641,15 @@ class _MemberCard extends StatelessWidget {
     String? portraitKey,
     AppPalette pal,
   ) {
+    final classNames = <String>[];
+    for (final id in character.classHistory) {
+      if (classNames.contains(id)) continue;
+      final className = repo.characterClass(id)?.name ?? id;
+      final level = character.classLevel(id);
+      classNames.add('$className $level');
+    }
+    if (classNames.isEmpty && klass != null) classNames.add(klass.name);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1681,10 +1690,7 @@ class _MemberCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                [
-                  if (race != null) race.name,
-                  if (klass != null) klass.name,
-                ].join(' · '),
+                [if (race != null) race.name, ...classNames].join(' · '),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 12, color: pal.textMuted),

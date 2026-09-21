@@ -15,6 +15,9 @@ class PassiveTrait {
 
 /// Recurso consumible con su máximo y cómo se recarga.
 class CharacterResource {
+  /// Clase que concede el recurso. Null mantiene la clave histórica para
+  /// recursos de especie, trasfondo o dotes.
+  final String? classId;
   final String id;
   final String name;
   final int max;
@@ -22,6 +25,7 @@ class CharacterResource {
   final int shortRestRecovery;
   final String description;
   const CharacterResource({
+    this.classId,
     required this.id,
     required this.name,
     required this.max,
@@ -30,7 +34,10 @@ class CharacterResource {
     this.description = '',
   });
 
+  String get key => classId == null ? id : '$classId:$id';
+
   Map<String, dynamic> toJson() => {
+        if (classId != null) 'classId': classId,
         'id': id,
         'name': name,
         'max': max,
@@ -635,6 +642,34 @@ class Spellcasting {
       };
 }
 
+/// Fuente de lanzamiento de conjuros de una clase dentro de una ficha
+/// multiclase. Los espacios normales se combinan en [ComputedSheet], pero la
+/// lista, la aptitud y la preparación permanecen en este bloque.
+class SpellcastingBlock {
+  final String classId;
+  final int classLevel;
+  final Spellcasting spellcasting;
+
+  const SpellcastingBlock({
+    required this.classId,
+    required this.classLevel,
+    required this.spellcasting,
+  });
+}
+
+/// Una fórmula alternativa de CA sin armadura concedida por una clase.
+class ArmorClassFormula {
+  final String? classId;
+  final Ability ability;
+  final bool allowShield;
+
+  const ArmorClassFormula({
+    this.classId,
+    required this.ability,
+    required this.allowShield,
+  });
+}
+
 /// Un bonus a una característica junto con **de dónde salió**.
 ///
 /// El total por sí solo no se puede explicar en la mesa: cuando el DM pregunta
@@ -679,6 +714,8 @@ const Object _unset = Object();
 class ComputedSheet {
   final int level;
   final int proficiencyBonus;
+  final Map<String, int> classLevels;
+  final Map<int, int> hitDiceBySize;
   final Map<Ability, int> abilityScores;
   final Map<Ability, int> abilityModifiers;
 
@@ -734,6 +771,8 @@ class ComputedSheet {
   final int maxHp;
   final int hitDie;
   final int armorClass;
+  final List<ArmorClassFormula> unarmoredDefenseOptions;
+  final String? selectedUnarmoredDefenseClassId;
 
   /// Peso total de la mochila en libras, monedas incluidas.
   ///
@@ -828,9 +867,17 @@ class ComputedSheet {
   /// Bloque de lanzamiento de conjuros, o null si el personaje no lanza.
   final Spellcasting? spellcasting;
 
+  /// Fuentes de lanzamiento por clase. [spellcasting] se conserva como alias
+  /// para consumidores monoclase y expone los espacios normales combinados.
+  final List<SpellcastingBlock> spellcastingBlocks;
+  final Map<int, int> normalSpellSlotsByLevel;
+  final Map<int, int> pactSlotsByLevel;
+
   const ComputedSheet({
     required this.level,
     required this.proficiencyBonus,
+    this.classLevels = const {},
+    this.hitDiceBySize = const {},
     required this.abilityScores,
     required this.abilityModifiers,
     this.abilityBonuses = const [],
@@ -847,6 +894,8 @@ class ComputedSheet {
     required this.maxHp,
     required this.hitDie,
     required this.armorClass,
+    this.unarmoredDefenseOptions = const [],
+    this.selectedUnarmoredDefenseClassId,
     this.carriedWeight = 0,
     this.size = 'Mediano',
     required this.speed,
@@ -873,6 +922,9 @@ class ComputedSheet {
     this.languages = const {},
     this.languageChoiceSlots = const [],
     this.spellcasting,
+    this.spellcastingBlocks = const [],
+    this.normalSpellSlotsByLevel = const {},
+    this.pactSlotsByLevel = const {},
   });
 
   /// Copia con los campos indicados reemplazados.
@@ -889,6 +941,8 @@ class ComputedSheet {
   ComputedSheet copyWith({
     int? level,
     int? proficiencyBonus,
+    Map<String, int>? classLevels,
+    Map<int, int>? hitDiceBySize,
     Map<Ability, int>? abilityScores,
     Map<Ability, int>? abilityModifiers,
     List<AbilityBonus>? abilityBonuses,
@@ -905,6 +959,8 @@ class ComputedSheet {
     int? maxHp,
     int? hitDie,
     int? armorClass,
+    List<ArmorClassFormula>? unarmoredDefenseOptions,
+    Object? selectedUnarmoredDefenseClassId = _unset,
     double? carriedWeight,
     String? size,
     int? speed,
@@ -931,10 +987,15 @@ class ComputedSheet {
     Set<String>? languages,
     List<LanguageChoiceSlot>? languageChoiceSlots,
     Object? spellcasting = _unset,
+    List<SpellcastingBlock>? spellcastingBlocks,
+    Map<int, int>? normalSpellSlotsByLevel,
+    Map<int, int>? pactSlotsByLevel,
   }) =>
       ComputedSheet(
         level: level ?? this.level,
         proficiencyBonus: proficiencyBonus ?? this.proficiencyBonus,
+        classLevels: classLevels ?? this.classLevels,
+        hitDiceBySize: hitDiceBySize ?? this.hitDiceBySize,
         abilityScores: abilityScores ?? this.abilityScores,
         abilityModifiers: abilityModifiers ?? this.abilityModifiers,
         abilityBonuses: abilityBonuses ?? this.abilityBonuses,
@@ -953,6 +1014,12 @@ class ComputedSheet {
         maxHp: maxHp ?? this.maxHp,
         hitDie: hitDie ?? this.hitDie,
         armorClass: armorClass ?? this.armorClass,
+        unarmoredDefenseOptions:
+            unarmoredDefenseOptions ?? this.unarmoredDefenseOptions,
+        selectedUnarmoredDefenseClassId:
+            identical(selectedUnarmoredDefenseClassId, _unset)
+                ? this.selectedUnarmoredDefenseClassId
+                : selectedUnarmoredDefenseClassId as String?,
         carriedWeight: carriedWeight ?? this.carriedWeight,
         size: size ?? this.size,
         speed: speed ?? this.speed,
@@ -987,6 +1054,10 @@ class ComputedSheet {
         spellcasting: identical(spellcasting, _unset)
             ? this.spellcasting
             : spellcasting as Spellcasting?,
+        spellcastingBlocks: spellcastingBlocks ?? this.spellcastingBlocks,
+        normalSpellSlotsByLevel:
+            normalSpellSlotsByLevel ?? this.normalSpellSlotsByLevel,
+        pactSlotsByLevel: pactSlotsByLevel ?? this.pactSlotsByLevel,
       );
 
   /// Cuánto peso podés llevar: Fuerza × 15 libras (capítulo 1, "Carrying

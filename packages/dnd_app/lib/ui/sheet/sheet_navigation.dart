@@ -1,6 +1,18 @@
 part of '../sheet_screen.dart';
 
 extension _SheetNavigation on _SheetScreenState {
+  String _classSummary() {
+    final ids = <String>[];
+    for (final id in _c.classHistory) {
+      if (!ids.contains(id)) ids.add(id);
+    }
+    return ids
+        .map(
+          (id) => '${repo.characterClass(id)?.name ?? id} ${_c.classLevel(id)}',
+        )
+        .join(' · ');
+  }
+
   // -------------------------------------------------------------- Sidebar
 
   Widget _sidebar(BuildContext context, {bool inDrawer = false}) {
@@ -91,7 +103,7 @@ extension _SheetNavigation on _SheetScreenState {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${klassObj?.name ?? _c.classId} nivel ${_c.level}',
+                      '${_classSummary()} · nivel ${_c.totalLevel}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 11.5, color: pal.textMuted),
@@ -146,14 +158,8 @@ extension _SheetNavigation on _SheetScreenState {
 
   Widget _sheetBody() {
     final s = sheet;
-    final klassObj = repo.characterClass(_c.classId);
     final race = repo.race(_c.raceId)?.name ?? _c.raceId;
-    final sub = _c.subclassId == null
-        ? null
-        : repo.subclass(_c.subclassId!)?.name;
-    final klassLine = sub == null
-        ? (klassObj?.name ?? _c.classId)
-        : '${klassObj?.name ?? _c.classId} ($sub)';
+    final klassLine = _classSummary();
     final bg = repo.background(_c.backgroundId)?.name ?? '';
     final subtitle = [race, klassLine, if (bg.isNotEmpty) bg].join(' · ');
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;

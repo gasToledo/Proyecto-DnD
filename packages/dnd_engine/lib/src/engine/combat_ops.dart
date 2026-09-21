@@ -69,14 +69,14 @@ class CombatOps {
   }) {
     for (final r in resources) {
       if (r.recharge == RechargeOn.shortRest) {
-        c.resourceUsage[r.id] = 0;
+        c.resourceUsage[r.key] = 0;
       } else if (r.shortRestRecovery > 0) {
-        final used = c.resourceUsage[r.id] ?? 0;
-        c.resourceUsage[r.id] = max(0, used - r.shortRestRecovery);
+        final used = c.resourceUsage[r.key] ?? 0;
+        c.resourceUsage[r.key] = max(0, used - r.shortRestRecovery);
       }
     }
     if (spellcasting?.progression == CasterProgression.pact) {
-      c.spellSlotsUsed.clear();
+      c.pactSlotsUsed.clear();
     }
   }
 
@@ -109,11 +109,12 @@ class CombatOps {
     // Se gana, no se acumula: nunca hay más de una, así que quien ya la tenía
     // la desperdicia. Por eso es una asignación y no un contador.
     if (grantsHeroicInspiration) c.heroicInspiration = true;
-    c.hitDiceUsed = max(0, c.hitDiceUsed - max(1, hitDiceMax ~/ 2));
+    _recoverHitDice(c, max(1, hitDiceMax ~/ 2));
     for (final r in resources) {
-      c.resourceUsage[r.id] = 0;
+      c.resourceUsage[r.key] = 0;
     }
     c.spellSlotsUsed.clear();
+    c.pactSlotsUsed.clear();
     c.wildShapeCreatureId = null;
     // Por la misma vía que el botón de terminar: el descanso corta la
     // concentración, y con ella se van los espíritus invocados.
@@ -131,23 +132,34 @@ class CombatOps {
   /// quedan espacios disponibles de ese nivel.
   static bool spendSpellSlot(CombatState c, Spellcasting sc, int slotLevel) {
     final available = sc.slotsByLevel[slotLevel] ?? 0;
-    final used = c.spellSlotsUsed[slotLevel] ?? 0;
+    final usedMap = sc.progression == CasterProgression.pact
+        ? c.pactSlotsUsed
+        : c.spellSlotsUsed;
+    final used = usedMap[slotLevel] ?? 0;
     if (used >= available) return false;
-    c.spellSlotsUsed[slotLevel] = used + 1;
+    usedMap[slotLevel] = used + 1;
     return true;
   }
 
   /// Recupera manualmente un espacio de conjuro del [slotLevel] indicado.
-  static void recoverSpellSlot(CombatState c, int slotLevel) {
-    final used = c.spellSlotsUsed[slotLevel] ?? 0;
-    if (used > 0) c.spellSlotsUsed[slotLevel] = used - 1;
+  static void recoverSpellSlot(
+    CombatState c,
+    int slotLevel, {
+    bool pact = false,
+  }) {
+    final usedMap = pact ? c.pactSlotsUsed : c.spellSlotsUsed;
+    final used = usedMap[slotLevel] ?? 0;
+    if (used > 0) usedMap[slotLevel] = used - 1;
   }
 
   /// Espacios de conjuro disponibles (no gastados) del [slotLevel] indicado.
   static int spellSlotsRemaining(
       CombatState c, Spellcasting sc, int slotLevel) {
     final available = sc.slotsByLevel[slotLevel] ?? 0;
-    return max(0, available - (c.spellSlotsUsed[slotLevel] ?? 0));
+    final used = sc.progression == CasterProgression.pact
+        ? c.pactSlotsUsed[slotLevel] ?? 0
+        : c.spellSlotsUsed[slotLevel] ?? 0;
+    return max(0, available - used);
   }
 
   /// Inicia (o reemplaza) la concentración en un conjuro. Reemplazarla rompe la
@@ -178,13 +190,40 @@ class CombatOps {
     int hitDiceMax, {
     Dice? dice,
   }) {
-    if (c.hitDiceUsed >= hitDiceMax) return 0;
+    _moveLegacyHitDiceTo(c, sheet.hitDie);
+    if (_totalHitDiceUsed(c) >= hitDiceMax) return 0;
     final roll = (dice ?? Dice()).rollHitDie(sheet.hitDie);
     final conMod = sheet.abilityModifiers[Ability.constitution] ?? 0;
     final heal = max(0, roll + conMod);
-    c.hitDiceUsed += 1;
+    c.hitDiceUsed[sheet.hitDie] = (c.hitDiceUsed[sheet.hitDie] ?? 0) + 1;
     applyHealing(c, sheet.maxHp, heal);
     return heal;
+  }
+
+  static int _totalHitDiceUsed(CombatState c) =>
+      c.hitDiceUsed.values.fold(0, (sum, used) => sum + used);
+
+  static void _moveLegacyHitDiceTo(CombatState c, int dieSize) {
+    final legacy = c.hitDiceUsed.remove(0);
+    if (legacy == null || legacy <= 0) return;
+    c.hitDiceUsed[dieSize] = (c.hitDiceUsed[dieSize] ?? 0) + legacy;
+  }
+
+  static void _recoverHitDice(CombatState c, int amount) {
+    var remaining = amount;
+    final sizes = c.hitDiceUsed.keys.toList()..sort();
+    for (final size in sizes) {
+      if (remaining == 0) break;
+      final used = c.hitDiceUsed[size] ?? 0;
+      final recovered = min(used, remaining);
+      final next = used - recovered;
+      if (next == 0) {
+        c.hitDiceUsed.remove(size);
+      } else {
+        c.hitDiceUsed[size] = next;
+      }
+      remaining -= recovered;
+    }
   }
 
   // ------------------------------------------------------------ Compañeros

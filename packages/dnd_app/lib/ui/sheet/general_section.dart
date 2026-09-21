@@ -75,6 +75,7 @@ extension _SheetGeneralSection on _SheetScreenState {
           [
             _identityCard(),
             _abilitiesCard(s),
+            if (s.unarmoredDefenseOptions.length > 1) _unarmoredDefenseCard(s),
             _proficienciesCard(s),
             _sensesCard(s),
             _languagesCard(s),
@@ -866,6 +867,39 @@ extension _SheetGeneralSection on _SheetScreenState {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _unarmoredDefenseCard(ComputedSheet s) {
+    final options = s.unarmoredDefenseOptions;
+    final selected = s.selectedUnarmoredDefenseClassId;
+    return sheetCard(
+      icon: Icons.shield_outlined,
+      title: 'Defensa sin armadura',
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: DropdownButtonFormField<String>(
+          initialValue: selected,
+          decoration: const InputDecoration(
+            labelText: 'Fórmula de CA',
+            border: OutlineInputBorder(),
+          ),
+          items: [
+            for (final option in options)
+              DropdownMenuItem(
+                value: option.classId,
+                child: Text(
+                  '${repo.characterClass(option.classId ?? '')?.name ?? option.classId} · ${option.ability.label}${option.allowShield ? ' · escudo' : ''}',
+                ),
+              ),
+          ],
+          onChanged: (classId) {
+            if (classId != null) {
+              _replace(_c.copyWith(unarmoredDefenseClassId: classId));
+            }
+          },
+        ),
       ),
     );
   }

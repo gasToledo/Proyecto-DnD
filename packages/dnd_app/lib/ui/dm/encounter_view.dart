@@ -1331,8 +1331,16 @@ class _CombatantRow extends StatelessWidget {
     if (m == null) return '';
     final c = m.character;
     final race = repo.race(c.raceId)?.name ?? c.raceId;
-    final klass = repo.characterClass(c.classId)?.name ?? c.classId;
-    return '$race · $klass nv ${c.level}';
+    final classIds = <String>[];
+    for (final id in c.classHistory) {
+      if (!classIds.contains(id)) classIds.add(id);
+    }
+    final klass = classIds
+        .map(
+          (id) => '${repo.characterClass(id)?.name ?? id} ${c.classLevel(id)}',
+        )
+        .join(' · ');
+    return '$race · $klass · nv ${c.totalLevel}';
   }
 
   /// Lo que el DM necesita de un monstruo sin abrir nada: con qué pega.

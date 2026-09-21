@@ -10,6 +10,7 @@ class SpellEditScreen extends StatefulWidget {
   final Character character;
   final ContentRepository repo;
   final Spellcasting spellcasting;
+  final String? classId;
   final void Function(List<String> cantrips, List<String> spells) onSave;
 
   const SpellEditScreen({
@@ -17,6 +18,7 @@ class SpellEditScreen extends StatefulWidget {
     required this.character,
     required this.repo,
     required this.spellcasting,
+    this.classId,
     required this.onSave,
   });
 
@@ -42,10 +44,16 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
   // Una ficha guardada antes de que la selección los excluyera puede traerlos
   // elegidos: se podan al abrir para devolver el cupo desperdiciado, en vez de
   // quedar atrapados en la selección sin chip que los saque.
-  late final Set<String> _cantrips = {...widget.character.cantripIds}
-    ..removeAll(_grantedSpellIds);
-  late final Set<String> _spells = {...widget.character.spellIds}
-    ..removeAll(_grantedSpellIds);
+  late final Set<String> _cantrips = {
+    ...(widget.classId == null
+        ? widget.character.cantripIds
+        : widget.character.classCantripIds[widget.classId] ?? const []),
+  }..removeAll(_grantedSpellIds);
+  late final Set<String> _spells = {
+    ...(widget.classId == null
+        ? widget.character.spellIds
+        : widget.character.classSpellIds[widget.classId] ?? const []),
+  }..removeAll(_grantedSpellIds);
 
   Spellcasting get _sc => widget.spellcasting;
   bool get _prepared => _sc.preparation == SpellPreparation.prepared;
@@ -88,7 +96,13 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Editar conjuros')),
+      appBar: AppBar(
+        title: Text(
+          widget.classId == null
+              ? 'Editar conjuros'
+              : 'Editar conjuros · ${widget.classId}',
+        ),
+      ),
       body: PageBody(
         children: [
           if (_sc.cantripsKnown > 0) ...[

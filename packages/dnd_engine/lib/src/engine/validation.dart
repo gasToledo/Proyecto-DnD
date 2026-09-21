@@ -116,6 +116,32 @@ class CharacterValidator {
 
     // Se compila para chequear valores derivados (maestrías, competencia).
     final sheet = CharacterCompiler(repo).compile(c);
+    final classIds = <String>[];
+    for (final id in c.classHistory.isEmpty ? [c.classId] : c.classHistory) {
+      if (!classIds.contains(id)) classIds.add(id);
+    }
+    final initialClassId = classIds.first;
+    for (final classId in classIds) {
+      final classDefinition = repo.characterClass(classId);
+      if (classDefinition == null) {
+        if (classId != c.classId) {
+          w.add(ValidationWarning(
+            'missing_class',
+            'Clase "$classId" no encontrada.',
+          ));
+        }
+        continue;
+      }
+      final multiclass = classDefinition.multiclass;
+      if (multiclass != null &&
+          !multiclass.meetsAbilityRequirements(sheet.abilityScores)) {
+        w.add(ValidationWarning(
+          'multiclass_prerequisite',
+          'Para tomar niveles de ${classDefinition.name} necesitás cumplir '
+              'sus requisitos de multiclase (${multiclass.requirementLabel}).',
+        ));
+      }
+    }
 
     // El techo normal es 20, pero un don épico lo sube a 30 y lo dice en su
     // propio efecto, así que el número sale del contenido y no de acá.
@@ -258,46 +284,57 @@ class CharacterValidator {
 
       _validateProficiencyChoices(c, sheet, w);
 
-      for (final level in klass.asiLevels) {
-        if (level > c.level) continue;
-        final hasChoice = c.asiChoices.any((a) => a.level == level);
-        if (!hasChoice) {
-          w.add(ValidationWarning(
-            'asi_pending',
-            'Nivel $level: falta elegir mejora de característica o dote.',
-            WarningSeverity.info,
-          ));
+      for (final classId in classIds) {
+        final classDefinition = repo.characterClass(classId);
+        if (classDefinition == null) continue;
+        final classLevel = c.classLevel(classId);
+        for (final level in classDefinition.asiLevels) {
+          if (level > classLevel) continue;
+          final hasChoice = c.asiChoices.any(
+            (a) => (a.classId ?? initialClassId) == classId && a.level == level,
+          );
+          if (!hasChoice) {
+            w.add(ValidationWarning(
+              'asi_pending',
+              'Nivel $level: falta elegir mejora de característica o dote '
+                  'de ${classDefinition.name}.',
+              WarningSeverity.info,
+            ));
+          }
+        }
+
+        final subId = c.subclassForClass(classId);
+        if (subId == null) {
+          if (classLevel >= classDefinition.subclassLevel) {
+            w.add(ValidationWarning(
+              'subclass_pending',
+              'Nivel ${classDefinition.subclassLevel}: falta elegir '
+                  'subclase de ${classDefinition.name}.',
+              WarningSeverity.info,
+            ));
+          }
+        } else {
+          final sub = repo.subclass(subId);
+          if (sub == null) {
+            w.add(ValidationWarning(
+                'subclass_missing', 'Subclase "$subId" no encontrada.'));
+          } else if (sub.classId != classId) {
+            w.add(ValidationWarning(
+              'subclass_wrong_class',
+              'La subclase ${sub.name} no pertenece a ${classDefinition.name}.',
+            ));
+          }
         }
       }
       for (final asi in c.asiChoices) {
-        if (!klass.asiLevels.contains(asi.level)) {
+        final classId = asi.classId ?? initialClassId;
+        final classDefinition = repo.characterClass(classId);
+        if (classDefinition == null ||
+            !classDefinition.asiLevels.contains(asi.level)) {
           w.add(ValidationWarning(
             'asi_invalid_level',
-            'Nivel ${asi.level} no es un nivel de Mejora de Característica de ${klass.name}.',
-          ));
-        }
-      }
-
-      // Subclase: obligatoria a partir del subclassLevel; debe existir y
-      // pertenecer a la clase.
-      final subId = c.subclassId;
-      if (subId == null) {
-        if (c.level >= klass.subclassLevel) {
-          w.add(ValidationWarning(
-            'subclass_pending',
-            'Nivel ${klass.subclassLevel}: falta elegir subclase de ${klass.name}.',
-            WarningSeverity.info,
-          ));
-        }
-      } else {
-        final sub = repo.subclass(subId);
-        if (sub == null) {
-          w.add(ValidationWarning(
-              'subclass_missing', 'Subclase "$subId" no encontrada.'));
-        } else if (sub.classId != c.classId) {
-          w.add(ValidationWarning(
-            'subclass_wrong_class',
-            'La subclase ${sub.name} no pertenece a ${klass.name}.',
+            'Nivel ${asi.level} no es un nivel de Mejora de Característica '
+                'de ${classDefinition?.name ?? classId}.',
           ));
         }
       }
@@ -318,6 +355,8 @@ class CharacterValidator {
       repo.background(c.backgroundId)?.originFeatId,
       ...c.featIds,
       for (final chosen in c.featureChoices.values) ...chosen,
+      for (final choices in c.classFeatureChoices.values)
+        for (final chosen in choices.values) ...chosen,
     ].whereType<String>().toList();
     final held = heldList.toSet();
 
@@ -390,8 +429,20 @@ class CharacterValidator {
       Character c, ComputedSheet sheet, List<ValidationWarning> w) {
     final slots = {for (final s in sheet.featureChoiceSlots) s.groupId: s};
 
+    List<String> stored(String groupId) {
+      final separator = groupId.indexOf(':');
+      if (separator > 0) {
+        final classId = groupId.substring(0, separator);
+        final rawGroup = groupId.substring(separator + 1);
+        return c.classFeatureChoices[classId]?[rawGroup] ??
+            c.featureChoices[groupId] ??
+            const [];
+      }
+      return c.featureChoices[groupId] ?? const [];
+    }
+
     for (final slot in sheet.featureChoiceSlots) {
-      final chosen = c.featureChoices[slot.groupId] ?? const <String>[];
+      final chosen = stored(slot.groupId);
       if (chosen.length < slot.count) {
         w.add(ValidationWarning(
           'feature_choice_pending',
@@ -432,6 +483,18 @@ class CharacterValidator {
         WarningSeverity.info,
       ));
     }
+    for (final classEntry in c.classFeatureChoices.entries) {
+      for (final groupId in classEntry.value.keys) {
+        final scopedId = '${classEntry.key}:$groupId';
+        if ((classEntry.value[groupId] ?? const []).isEmpty) continue;
+        if (slots.containsKey(scopedId)) continue;
+        w.add(ValidationWarning(
+          'feature_choice_orphan',
+          'Tenés elecciones guardadas de "$scopedId", un rasgo que ya no tenés.',
+          WarningSeverity.info,
+        ));
+      }
+    }
   }
 
   /// Chequeos de la elección de conjuros (Conjuros Característicos,
@@ -444,11 +507,23 @@ class CharacterValidator {
       Character c, ComputedSheet sheet, List<ValidationWarning> w) {
     final slots = {for (final s in sheet.spellChoiceSlots) s.groupId: s};
 
+    List<String> stored(String groupId) {
+      final separator = groupId.indexOf(':');
+      if (separator > 0) {
+        final classId = groupId.substring(0, separator);
+        final rawGroup = groupId.substring(separator + 1);
+        return c.classSpellChoices[classId]?[rawGroup] ??
+            c.spellChoices[groupId] ??
+            const [];
+      }
+      return c.spellChoices[groupId] ?? const [];
+    }
+
     for (final slot in sheet.spellChoiceSlots) {
       // Se lee lo guardado y no `slot.chosen`, que el compilador ya podó: si
       // se mirara el cupo, `spell_choice_invalid` no dispararía nunca. Mismo
       // criterio que `feature_choice_invalid`.
-      final stored = c.spellChoices[slot.groupId] ?? const <String>[];
+      final storedIds = stored(slot.groupId);
 
       if (slot.chosen.length < slot.count) {
         w.add(ValidationWarning(
@@ -456,14 +531,14 @@ class CharacterValidator {
           '${slot.name}: elegiste ${slot.chosen.length} de ${slot.count}.',
           WarningSeverity.info,
         ));
-      } else if (stored.length > slot.count) {
+      } else if (storedIds.length > slot.count) {
         w.add(ValidationWarning(
           'too_many_spell_choices',
-          '${slot.name}: elegiste ${stored.length} pero tenés ${slot.count} espacios.',
+          '${slot.name}: elegiste ${storedIds.length} pero tenés ${slot.count} espacios.',
         ));
       }
 
-      for (final id in stored) {
+      for (final id in storedIds) {
         if (!slot.options.contains(id)) {
           w.add(ValidationWarning(
             'spell_choice_invalid',
@@ -481,6 +556,18 @@ class CharacterValidator {
         'Tenés conjuros elegidos de "$groupId", un rasgo que ya no tenés.',
         WarningSeverity.info,
       ));
+    }
+    for (final classEntry in c.classSpellChoices.entries) {
+      for (final groupId in classEntry.value.keys) {
+        final scopedId = '${classEntry.key}:$groupId';
+        if ((classEntry.value[groupId] ?? const []).isEmpty) continue;
+        if (slots.containsKey(scopedId)) continue;
+        w.add(ValidationWarning(
+          'spell_choice_orphan',
+          'Tenés conjuros elegidos de "$scopedId", un rasgo que ya no tenés.',
+          WarningSeverity.info,
+        ));
+      }
     }
   }
 
@@ -639,23 +726,6 @@ class CharacterValidator {
   /// Chequeos no bloqueantes sobre trucos y conjuros elegidos.
   void _validateSpells(
       Character c, ComputedSheet sheet, List<ValidationWarning> w) {
-    final sc = sheet.spellcasting;
-    if (sc == null) {
-      if (c.cantripIds.isNotEmpty || c.spellIds.isNotEmpty) {
-        w.add(ValidationWarning(
-          'spells_without_caster',
-          'Hay conjuros elegidos pero esta clase no lanza conjuros.',
-        ));
-      }
-      return;
-    }
-
-    final list = repo
-        .spellsForList(sc.spellList, extraSpellIds: sheet.spellListAdditionIds)
-        .map((s) => s.id)
-        .toSet();
-    final maxSlotLevel =
-        sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
     // Un rasgo que concede un conjuro ya lo da "siempre preparado": volver a
     // elegirlo desde la clase no suma nada y gasta un cupo. Vale tanto para el
     // conjuro innato (que además trae un uso gratis) como para el siempre
@@ -665,61 +735,97 @@ class CharacterValidator {
       ...sheet.alwaysPreparedSpellIds,
     };
 
-    if (c.cantripIds.length > sc.cantripsKnown) {
-      w.add(ValidationWarning(
-        'too_many_cantrips',
-        'Elegiste ${c.cantripIds.length} trucos pero conocés ${sc.cantripsKnown}.',
-      ));
-    }
-    for (final id in c.cantripIds) {
-      final sp = repo.spell(id);
-      if (sp == null) {
-        w.add(ValidationWarning('spell_missing', 'Truco "$id" no encontrado.'));
-      } else if (!sp.isCantrip) {
+    final blocks = sheet.spellcastingBlocks;
+    if (blocks.isEmpty) {
+      final hasSpells = c.cantripIds.isNotEmpty ||
+          c.spellIds.isNotEmpty ||
+          c.classCantripIds.values.any((ids) => ids.isNotEmpty) ||
+          c.classSpellIds.values.any((ids) => ids.isNotEmpty);
+      if (hasSpells) {
         w.add(ValidationWarning(
-            'cantrip_not_level_0', '${sp.name} no es un truco.'));
-      } else if (!list.contains(id)) {
-        w.add(ValidationWarning('cantrip_wrong_list',
-            '${sp.name} no está en la lista de ${sc.spellList}.'));
-      } else if (grantedSpellIds.contains(id)) {
-        w.add(ValidationWarning('cantrip_already_granted',
-            '${sp.name} ya lo tenés por otro rasgo: elegirlo de clase ocupa un cupo de más.'));
+          'spells_without_caster',
+          'Hay conjuros elegidos pero esta clase no lanza conjuros.',
+        ));
       }
+      return;
     }
 
-    if (sc.preparation == SpellPreparation.prepared &&
-        c.spellIds.length > sc.preparedCount) {
-      w.add(ValidationWarning(
-        'too_many_prepared',
-        'Preparaste ${c.spellIds.length} conjuros pero podés preparar ${sc.preparedCount}.',
-      ));
-    }
-    for (final id in c.spellIds) {
-      final sp = repo.spell(id);
-      if (sp == null) {
-        w.add(
-            ValidationWarning('spell_missing', 'Conjuro "$id" no encontrado.'));
-        continue;
-      }
-      if (sp.isCantrip) {
-        w.add(ValidationWarning('spell_is_cantrip',
-            '${sp.name} es un truco; va en la lista de trucos.'));
-        continue;
-      }
-      if (!list.contains(id)) {
-        w.add(ValidationWarning('spell_wrong_list',
-            '${sp.name} no está en la lista de ${sc.spellList}.'));
-      }
-      if (grantedSpellIds.contains(id)) {
-        w.add(ValidationWarning('spell_already_granted',
-            '${sp.name} ya lo tenés siempre preparado por otro rasgo: prepararlo ocupa un cupo de más.'));
-      }
-      if (maxSlotLevel > 0 && sp.level > maxSlotLevel) {
+    for (final block in blocks) {
+      final sc = block.spellcasting;
+      final cantripIds = c.classCantripIds.isEmpty
+          ? (block.classId == c.classId ? c.cantripIds : const <String>[])
+          : c.classCantripIds[block.classId] ?? const <String>[];
+      final spellIds = c.classSpellIds.isEmpty
+          ? (block.classId == c.classId ? c.spellIds : const <String>[])
+          : c.classSpellIds[block.classId] ?? const <String>[];
+      final list = repo
+          .spellsForList(sc.spellList,
+              extraSpellIds: sheet.spellListAdditionIds)
+          .map((s) => s.id)
+          .toSet();
+      final maxSlotLevel =
+          sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
+
+      if (cantripIds.length > sc.cantripsKnown) {
         w.add(ValidationWarning(
-          'spell_level_too_high',
-          '${sp.name} (nivel ${sp.level}) supera tu mayor espacio (nivel $maxSlotLevel).',
-          WarningSeverity.info,
+          'too_many_cantrips',
+          'Elegiste ${cantripIds.length} trucos para ${sc.spellList} pero '
+              'conocés ${sc.cantripsKnown}.',
         ));
+      }
+      for (final id in cantripIds) {
+        final sp = repo.spell(id);
+        if (sp == null) {
+          w.add(
+              ValidationWarning('spell_missing', 'Truco "$id" no encontrado.'));
+        } else if (!sp.isCantrip) {
+          w.add(ValidationWarning(
+              'cantrip_not_level_0', '${sp.name} no es un truco.'));
+        } else if (!list.contains(id)) {
+          w.add(ValidationWarning('cantrip_wrong_list',
+              '${sp.name} no está en la lista de ${sc.spellList}.'));
+        } else if (grantedSpellIds.contains(id)) {
+          w.add(ValidationWarning('cantrip_already_granted',
+              '${sp.name} ya lo tenés por otro rasgo: elegirlo de clase ocupa un cupo de más.'));
+        }
+      }
+
+      if (sc.preparation == SpellPreparation.prepared &&
+          spellIds.length > sc.preparedCount) {
+        w.add(ValidationWarning(
+          'too_many_prepared',
+          'Preparaste ${spellIds.length} conjuros de ${sc.spellList} pero '
+              'podés preparar ${sc.preparedCount}.',
+        ));
+      }
+      for (final id in spellIds) {
+        final sp = repo.spell(id);
+        if (sp == null) {
+          w.add(ValidationWarning(
+              'spell_missing', 'Conjuro "$id" no encontrado.'));
+          continue;
+        }
+        if (sp.isCantrip) {
+          w.add(ValidationWarning('spell_is_cantrip',
+              '${sp.name} es un truco; va en la lista de trucos.'));
+          continue;
+        }
+        if (!list.contains(id)) {
+          w.add(ValidationWarning('spell_wrong_list',
+              '${sp.name} no está en la lista de ${sc.spellList}.'));
+        }
+        if (grantedSpellIds.contains(id)) {
+          w.add(ValidationWarning('spell_already_granted',
+              '${sp.name} ya lo tenés siempre preparado por otro rasgo: prepararlo ocupa un cupo de más.'));
+        }
+        if (maxSlotLevel > 0 && sp.level > maxSlotLevel) {
+          w.add(ValidationWarning(
+            'spell_level_too_high',
+            '${sp.name} (nivel ${sp.level}) supera tu mayor espacio '
+                '(nivel $maxSlotLevel).',
+            WarningSeverity.info,
+          ));
+        }
       }
     }
   }
@@ -734,6 +840,8 @@ class CharacterValidator {
         // prerrequisito entre opciones (una invocación que exige otra) funcione
         // sin que la validación sepa de qué grupo se trata.
         for (final chosen in c.featureChoices.values) ...chosen,
+        for (final choices in c.classFeatureChoices.values)
+          for (final chosen in choices.values) ...chosen,
       ].whereType<String>().toSet();
 
   /// Descripción del primer prerrequisito de [feat] que [c] no cumple, o null
@@ -798,13 +906,18 @@ class CharacterValidator {
     }
     final reqFeature = prereq.requiredClassFeature;
     if (reqFeature != null) {
-      final has = repo.characterClass(c.classId)?.features.any((feature) =>
-              feature.level <= c.level && feature.name == reqFeature) ??
-          false;
+      final has = sheet.classLevels.entries.any((entry) {
+        final classDefinition = repo.characterClass(entry.key);
+        return classDefinition?.features.any(
+              (feature) =>
+                  feature.level <= entry.value && feature.name == reqFeature,
+            ) ??
+            false;
+      });
       if (!has) return 'el rasgo de clase "$reqFeature"';
     }
     final reqClass = prereq.requiredClassId;
-    if (reqClass != null && c.classId != reqClass) {
+    if (reqClass != null && !sheet.classLevels.containsKey(reqClass)) {
       return 'ser ${repo.characterClass(reqClass)?.name ?? reqClass}';
     }
     if (prereq.minLevel != null && c.level < prereq.minLevel!) {

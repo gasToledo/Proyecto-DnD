@@ -212,7 +212,17 @@ class _MemberSheetScreenState extends State<MemberSheetScreen> {
               Text(
                 [
                   if (race != null) race.name,
-                  if (klass != null) klass.name,
+                  if (character.classHistory.isNotEmpty)
+                    character.classHistory
+                        .toSet()
+                        .map(
+                          (id) =>
+                              '${widget.repo.characterClass(id)?.name ?? id} '
+                              '${character.classLevel(id)}',
+                        )
+                        .join(' · ')
+                  else if (klass != null)
+                    klass.name,
                   'Nivel ${character.level}',
                 ].join(' · '),
                 textAlign: TextAlign.center,

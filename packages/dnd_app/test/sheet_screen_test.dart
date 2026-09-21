@@ -227,6 +227,57 @@ void main() {
     }
   });
 
+  testWidgets('la ficha muestra niveles por clase y fuentes de lanzamiento', (
+    tester,
+  ) async {
+    final character = Character(
+      id: 'multiclase-sheet',
+      name: 'Multiclase',
+      raceId: 'human',
+      classId: 'cleric',
+      backgroundId: 'sage',
+      classHistory: const ['cleric', 'cleric', 'cleric', 'wizard', 'wizard'],
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [8, 5, 5, 4, 4],
+    );
+    await pumpSheet(tester, character, size: const Size(900, 4000));
+
+    expect(
+      find.textContaining(
+        '${repo.characterClass('cleric')!.name} 3 · '
+        '${repo.characterClass('wizard')!.name} 2',
+      ),
+      findsWidgets,
+    );
+
+    await tester.tap(find.text('Combate'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('FUENTES DE LANZAMIENTO'), findsOneWidget);
+    expect(find.text(repo.characterClass('cleric')!.name), findsWidgets);
+    expect(find.text(repo.characterClass('wizard')!.name), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('la ficha permite elegir entre dos defensas sin armadura', (
+    tester,
+  ) async {
+    final character = Character(
+      id: 'defensas-sheet',
+      name: 'Defensas',
+      raceId: 'human',
+      classId: 'barbarian',
+      backgroundId: 'soldier',
+      classHistory: const ['barbarian', 'monk'],
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [12, 5],
+    );
+    await pumpSheet(tester, character, size: const Size(900, 4000));
+
+    expect(find.text('Defensa sin armadura'), findsOneWidget);
+    expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   group('Inventario', () {
     Character mochilera() => Character(
       id: 'mochilera',

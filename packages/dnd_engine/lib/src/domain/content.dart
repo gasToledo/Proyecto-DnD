@@ -148,6 +148,82 @@ List<ClassFeature> featuresUpToLevel(List<ClassFeature> all, int level) {
   return [for (final (_, f) in selected) f];
 }
 
+/// Competencias y requisitos que una clase concede al entrar por multiclase.
+/// Es distinto de las competencias iniciales completas de [CharacterClass].
+class MulticlassRules {
+  final List<Ability> abilityRequirements;
+  final String abilityRequirementMode;
+  final List<String> armorProficiencies;
+  final List<String> weaponProficiencies;
+  final List<String> toolProficiencies;
+  final List<String> instrumentProficiencies;
+  final int skillChoiceCount;
+  final List<String> skillChoiceFrom;
+
+  const MulticlassRules({
+    this.abilityRequirements = const [],
+    this.abilityRequirementMode = 'all',
+    this.armorProficiencies = const [],
+    this.weaponProficiencies = const [],
+    this.toolProficiencies = const [],
+    this.instrumentProficiencies = const [],
+    this.skillChoiceCount = 0,
+    this.skillChoiceFrom = const [],
+  });
+
+  bool meetsAbilityRequirements(Map<Ability, int> scores) {
+    final met = abilityRequirements
+        .where((ability) => (scores[ability] ?? 0) >= 13)
+        .length;
+    return abilityRequirementMode == 'any'
+        ? met > 0
+        : met == abilityRequirements.length;
+  }
+
+  String get requirementLabel => abilityRequirements.isEmpty
+      ? 'sin requisito declarado'
+      : abilityRequirements.map((ability) => '${ability.label} 13+').join(
+            abilityRequirementMode == 'any' ? ' o ' : ' y ',
+          );
+
+  Map<String, dynamic> toJson() => {
+        'abilityRequirements': [
+          for (final ability in abilityRequirements) ability.name,
+        ],
+        'abilityRequirementMode': abilityRequirementMode,
+        'armorProficiencies': armorProficiencies,
+        'weaponProficiencies': weaponProficiencies,
+        'toolProficiencies': toolProficiencies,
+        'instrumentProficiencies': instrumentProficiencies,
+        'skillChoiceCount': skillChoiceCount,
+        'skillChoiceFrom': skillChoiceFrom,
+      };
+
+  factory MulticlassRules.fromJson(Map<String, dynamic> j) => MulticlassRules(
+        abilityRequirements: (j['abilityRequirements'] as List? ?? const [])
+            .map((e) => Ability.fromKey(e as String))
+            .toList(),
+        abilityRequirementMode: j['abilityRequirementMode'] as String? ?? 'all',
+        armorProficiencies: (j['armorProficiencies'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        weaponProficiencies: (j['weaponProficiencies'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        toolProficiencies: (j['toolProficiencies'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+        instrumentProficiencies:
+            (j['instrumentProficiencies'] as List? ?? const [])
+                .map((e) => e as String)
+                .toList(),
+        skillChoiceCount: j['skillChoiceCount'] as int? ?? 0,
+        skillChoiceFrom: (j['skillChoiceFrom'] as List? ?? const [])
+            .map((e) => e as String)
+            .toList(),
+      );
+}
+
 class CharacterClass {
   final String id;
   final String name;
@@ -175,6 +251,7 @@ class CharacterClass {
 
   final List<ClassFeature> features;
   final List<StartingEquipmentOption> startingEquipment;
+  final MulticlassRules? multiclass;
 
   const CharacterClass({
     required this.id,
@@ -192,6 +269,7 @@ class CharacterClass {
     this.iconId,
     this.features = const [],
     this.startingEquipment = const [],
+    this.multiclass,
   });
 
   /// Rasgos activos hasta [level] inclusive, en orden de nivel.
@@ -234,6 +312,10 @@ class CharacterClass {
             .map((e) => StartingEquipmentOption.fromJson(
                 (e as Map).cast<String, dynamic>()))
             .toList(),
+        multiclass: (j['multiclass'] as Map?) == null
+            ? null
+            : MulticlassRules.fromJson(
+                (j['multiclass'] as Map).cast<String, dynamic>()),
       );
 }
 
@@ -758,6 +840,8 @@ class Weapon {
         id,
         category,
         '$category-${isRanged ? 'ranged' : 'melee'}',
+        for (final property in const ['light', 'finesse'])
+          if (properties.contains(property)) '$category-$property',
       };
 
   /// Si [proficiencies] —las de una ficha compilada o las de una clase—

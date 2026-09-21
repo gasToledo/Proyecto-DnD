@@ -98,6 +98,60 @@ extension _LevelUpSections on _LevelUpScreenState {
     _LevelUpStepKind.review => _buildReviewStep(),
   };
 
+  Widget _buildClassChoicePicker() {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final before = _sheetBefore;
+    final selected = widget.repo.characterClass(_levelUpClassId);
+    final invalid =
+        selected != null &&
+        selected.id != widget.character.classId &&
+        selected.multiclass != null &&
+        !selected.multiclass!.meetsAbilityRequirements(before.abilityScores);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('Clase del nivel'),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          key: ValueKey(_levelUpClassId),
+          initialValue: _levelUpClassId,
+          decoration: const InputDecoration(
+            labelText: '¿En qué clase avanzás?',
+            helperText:
+                'Podés continuar con tu clase actual o comenzar una nueva.',
+          ),
+          items: [
+            for (final klass in _classOptions)
+              DropdownMenuItem(value: klass.id, child: Text(klass.name)),
+          ],
+          onChanged: (id) {
+            if (id != null) _selectLevelUpClass(id);
+          },
+        ),
+        if (selected != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            '$_newClassLevel° nivel de ${selected.name} · dado d${selected.hitDie}',
+            style: TextStyle(color: muted, fontSize: 12.5),
+          ),
+        ],
+        if (invalid)
+          Padding(
+            padding: const EdgeInsets.only(top: 7),
+            child: Text(
+              'No cumplís el requisito de multiclase: '
+              '${selected.multiclass!.requirementLabel}. La mesa puede autorizarlo.',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12.5,
+              ),
+            ),
+          ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
   Widget _buildOverviewStep() {
     final features = _gainedFeatures();
     final choices = <Widget>[
@@ -219,6 +273,7 @@ extension _LevelUpSections on _LevelUpScreenState {
               'cualquier elección antes de terminar.',
         ),
         const SizedBox(height: 28),
+        _buildClassChoicePicker(),
         const Eyebrow('Cambios automáticos'),
         _responsiveCards(automatic),
         if (choices.isNotEmpty) ...[
@@ -543,11 +598,11 @@ extension _LevelUpSections on _LevelUpScreenState {
     final after = _updatedSheet;
     final diff = diffSheets(before, after);
     final beforeResources = {
-      for (final resource in before.resources) resource.id: resource,
+      for (final resource in before.resources) resource.key: resource,
     };
     final resourceRows = <Widget>[];
     for (final resource in after.resources) {
-      final previous = beforeResources[resource.id];
+      final previous = beforeResources[resource.key];
       if (previous?.max == resource.max) continue;
       resourceRows.add(
         _ReviewRow(
@@ -781,7 +836,10 @@ extension _LevelUpSections on _LevelUpScreenState {
   /// espacios y cupos al nuevo nivel, marca los niveles de espacio recién
   /// abiertos y permite preparar/aprender conjuros sin salir de la subida.
   Widget _buildSpellSection() {
-    final after = _updatedSheet.spellcasting;
+    final targetBlock = _updatedSheet.spellcastingBlocks
+        .where((block) => block.classId == _levelUpClassId)
+        .firstOrNull;
+    final after = targetBlock?.spellcasting ?? _updatedSheet.spellcasting;
     if (after == null) return const SizedBox.shrink();
     final before = _sheetBefore.spellcasting;
     final beforeLevels = before?.slotsByLevel.keys.toSet() ?? const <int>{};
@@ -819,7 +877,7 @@ extension _LevelUpSections on _LevelUpScreenState {
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
-          onPressed: () => _openSpellPrep(after),
+          onPressed: () => _openSpellPrep(after, classId: targetBlock?.classId),
           icon: Icon(prepared ? Icons.check : Icons.auto_stories, size: 18),
           label: Text(prepared ? 'Conjuros actualizados' : 'Preparar conjuros'),
         ),
@@ -827,16 +885,38 @@ extension _LevelUpSections on _LevelUpScreenState {
     );
   }
 
-  void _openSpellPrep(Spellcasting sc) {
+  void _openSpellPrep(Spellcasting sc, {String? classId}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => SpellEditScreen(
           character: _buildUpdated(),
           repo: widget.repo,
           spellcasting: sc,
+          classId: classId,
           onSave: (cantrips, spells) => _updateState(() {
-            _newCantrips = cantrips;
-            _newSpells = spells;
+            if (classId == null) {
+              _newCantrips = cantrips;
+              _newSpells = spells;
+              return;
+            }
+            _newClassCantrips = {
+              for (final entry in widget.character.classCantripIds.entries)
+                entry.key: List<String>.of(entry.value),
+              for (final entry
+                  in _newClassCantrips?.entries ??
+                      const <MapEntry<String, List<String>>>[])
+                entry.key: List<String>.of(entry.value),
+              classId: cantrips,
+            };
+            _newClassSpells = {
+              for (final entry in widget.character.classSpellIds.entries)
+                entry.key: List<String>.of(entry.value),
+              for (final entry
+                  in _newClassSpells?.entries ??
+                      const <MapEntry<String, List<String>>>[])
+                entry.key: List<String>.of(entry.value),
+              classId: spells,
+            };
           }),
         ),
       ),

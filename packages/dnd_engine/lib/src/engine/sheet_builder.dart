@@ -82,7 +82,17 @@ class SheetBuilder {
   final List<({AbilityScoreBonusFromFeatChoiceEffect effect, String source})>
       abilityBonusesFromFeatChoice = [];
 
-  final Map<String, ResourceEffect> _resources = {};
+  final Map<({String? classId, String id}),
+      ({ResourceEffect effect, int level})> _resources = {};
+
+  /// Fuentes de lanzamiento conservadas por clase para que el compilador no
+  /// pierda el bloque anterior cuando aplica otro Spellcasting.
+  final List<({String? classId, int level, SpellcastingEffect effect})>
+      spellcastingSources = [];
+
+  /// Fórmulas alternativas de CA sin armadura, en orden de contenido.
+  final List<({String? classId, Ability ability, bool allowShield})>
+      unarmoredDefenseOptions = [];
 
   /// Compañeros concedidos, por id de opción. **Gana el último**, que por el
   /// orden de `featuresUpTo` es el del nivel más alto: es la misma convención
@@ -107,7 +117,8 @@ class SheetBuilder {
   /// mayor [FeatureChoiceEffect.count], porque el contenido declara el
   /// acumulado a cada nivel y no el incremento.
   final Map<String, FeatureChoiceEffect> featureChoiceSlots = {};
-  final Map<String, ItemChoiceEffect> itemChoiceSlots = {};
+  final Map<String, ({ItemChoiceEffect effect, int level})> itemChoiceSlots =
+      {};
 
   /// Elecciones de ejemplares concretos a los que pueden apuntar reglas. La
   /// resolución contra inventario queda en el compilador.
@@ -141,13 +152,16 @@ class SheetBuilder {
   /// y los modificadores finales solo se conocen después de aplicar todos los
   /// efectos de bonus a características.
   List<CharacterResource> resolveResources(Map<Ability, int> mods, int level) {
-    return _resources.values.map((e) {
+    return _resources.entries.map((entry) {
+      final e = entry.value.effect;
+      final sourceLevel = entry.value.level;
       final max = e.maxFromProficiency
-          ? proficiencyBonusForLevel(level) * e.proficiencyMultiplier
+          ? proficiencyBonusForLevel(sourceLevel) * e.proficiencyMultiplier
           : e.maxFromAbility != null
               ? [e.max, mods[e.maxFromAbility]!].reduce((a, b) => a > b ? a : b)
-              : (e.maxPerLevel ? level + e.max : e.max);
+              : (e.maxPerLevel ? sourceLevel + e.max : e.max);
       return CharacterResource(
+        classId: entry.key.classId,
         id: e.id,
         name: e.name,
         max: max,
@@ -203,6 +217,8 @@ class SheetBuilder {
     Effect e, {
     Ability? spellAbilityOverride,
     String sourceName = '',
+    String? sourceClassId,
+    int? sourceLevel,
   }) {
     switch (e) {
       case AbilityScoreBonusEffect(:final ability, :final amount):
@@ -292,11 +308,13 @@ class SheetBuilder {
         // `applySource` para que las pasadas que leen la lista de efectos de
         // cada fuente vean el contenido y no el envoltorio. Esto es la red para
         // quien use SheetBuilder directo, que es público.
-        if (level >= minLevel) {
+        if ((sourceLevel ?? level) >= minLevel) {
           applyAll(
             effects,
             spellAbilityOverride: spellAbilityOverride,
             sourceName: sourceName,
+            sourceClassId: sourceClassId,
+            sourceLevel: sourceLevel,
           );
         }
       case HeroicInspirationOnLongRestEffect():
@@ -306,17 +324,25 @@ class SheetBuilder {
       case WeaponRuleEffect():
         weaponRules.add(e);
       case TargetChoiceEffect(:final groupId, :final count):
-        final prev = targetChoiceSlots[groupId];
+        final scopedId =
+            sourceClassId == null ? groupId : '$sourceClassId:$groupId';
+        final prev = targetChoiceSlots[scopedId];
         if (prev == null || count > prev.count) {
-          targetChoiceSlots[groupId] = e;
+          targetChoiceSlots[scopedId] = e;
         }
       case FeatureChoiceEffect(:final groupId, :final count):
-        final prev = featureChoiceSlots[groupId];
+        final scopedId =
+            sourceClassId == null ? groupId : '$sourceClassId:$groupId';
+        final prev = featureChoiceSlots[scopedId];
         if (prev == null || count > prev.count) {
-          featureChoiceSlots[groupId] = e;
+          featureChoiceSlots[scopedId] = e;
         }
       case ItemChoiceEffect(:final groupId):
-        itemChoiceSlots[groupId] = e;
+        itemChoiceSlots[
+            sourceClassId == null ? groupId : '$sourceClassId:$groupId'] = (
+          effect: e,
+          level: sourceLevel ?? level,
+        );
       case WeaponMasterySlotsEffect(:final count):
         if (count > weaponMasterySlots) weaponMasterySlots = count;
       case ExtraAttackEffect(:final extra):
@@ -328,6 +354,9 @@ class SheetBuilder {
       case ArmorClassBonusEffect(:final amount):
         acBonus += amount;
       case UnarmoredDefenseEffect(:final ability, :final allowShield):
+        unarmoredDefenseOptions.add(
+          (classId: sourceClassId, ability: ability, allowShield: allowShield),
+        );
         unarmoredDefenseAbility = ability;
         unarmoredDefenseAllowShield = allowShield;
       case UnarmoredMovementEffect(
@@ -339,12 +368,20 @@ class SheetBuilder {
         unarmoredMovementAllowShield = allowShield;
         unarmoredMovementHeavyOnly = heavyArmorOnly;
       case SpellcastingEffect():
-        // El último rasgo de lanzamiento gana (una clase por ahora).
+        spellcastingSources.add((
+          classId: sourceClassId,
+          level: sourceLevel ?? level,
+          effect: e,
+        ));
+        // El último rasgo de lanzamiento queda como alias monoclase.
         spellcasting = e;
       case ResourceEffect(:final id):
         // El máximo puede depender de un modificador de característica que
         // todavía no está disponible acá; se resuelve en [resolveResources].
-        _resources[id] = e;
+        _resources[(classId: sourceClassId, id: id)] = (
+          effect: e,
+          level: sourceLevel ?? level,
+        );
       case CompanionEffect(:final id):
         companions[id] = e;
       case WildShapeFormsEffect():
@@ -358,12 +395,16 @@ class SheetBuilder {
     Iterable<Effect> effects, {
     Ability? spellAbilityOverride,
     String sourceName = '',
+    String? sourceClassId,
+    int? sourceLevel,
   }) {
     for (final effect in effects) {
       applyEffect(
         effect,
         spellAbilityOverride: spellAbilityOverride,
         sourceName: sourceName,
+        sourceClassId: sourceClassId,
+        sourceLevel: sourceLevel,
       );
     }
   }

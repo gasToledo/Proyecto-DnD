@@ -8,13 +8,21 @@ extension _SheetSpellsSection on _SheetScreenState {
     final combat = _c.combat;
     final pal = context.palette;
 
+    final cantripIds = <String>{
+      ..._c.cantripIds,
+      for (final ids in _c.classCantripIds.values) ...ids,
+    };
+    final spellIds = <String>{
+      ..._c.spellIds,
+      for (final ids in _c.classSpellIds.values) ...ids,
+    };
     final cantrips = sc == null
         ? <Spell>[]
-        : (_c.cantripIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
+        : (cantripIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
             ..sort((a, b) => compareContentNames(a.name, b.name)));
     final spells = sc == null
         ? <Spell>[]
-        : (_c.spellIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
+        : (spellIds.map((id) => repo.spell(id)).whereType<Spell>().toList()
             ..sort(
               (a, b) => a.level != b.level
                   ? a.level.compareTo(b.level)
@@ -35,13 +43,15 @@ extension _SheetSpellsSection on _SheetScreenState {
                 : compareContentNames(a.name, b.name),
           );
 
-    final slotLevels = sc?.slotsByLevel.keys.toList() ?? <int>[];
+    final slotLevels = sc != null && sc.progression != CasterProgression.pact
+        ? sc.slotsByLevel.keys.toList()
+        : <int>[];
     slotLevels.sort();
 
     return sheetCard(
       icon: Icons.auto_stories,
       title: 'Conjuros',
-      trailing: sc == null
+      trailing: sc == null || sheetArg.spellcastingBlocks.length > 1
           ? null
           : TextButton.icon(
               onPressed: () => _openSpellEditor(sc),
@@ -93,13 +103,42 @@ extension _SheetSpellsSection on _SheetScreenState {
               Text(
                 [
                   sc.preparation == SpellPreparation.prepared
-                      ? 'Preparados: ${_c.spellIds.length} / ${sc.preparedCount}'
-                      : 'Conocidos: ${_c.spellIds.length}',
+                      ? 'Preparados: ${spellIds.length} / ${sc.preparedCount}'
+                      : 'Conocidos: ${spellIds.length}',
                   if (sc.cantripsKnown > 0)
                     'Trucos: ${cantrips.length} / ${sc.cantripsKnown}',
                 ].join(' · '),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
+              if (sheetArg.spellcastingBlocks.length > 1) ...[
+                const SizedBox(height: 12),
+                const Eyebrow('Fuentes de lanzamiento'),
+                DenseRows(
+                  children: [
+                    for (final block in sheetArg.spellcastingBlocks)
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          repo.characterClass(block.classId)?.name ??
+                              block.classId,
+                        ),
+                        subtitle: Text(
+                          '${block.classLevel}° nivel · '
+                          '${block.spellcasting.ability.label} · '
+                          '${block.spellcasting.preparation == SpellPreparation.prepared ? 'preparados' : 'conocidos'}',
+                        ),
+                        trailing: TextButton(
+                          onPressed: () => _openSpellEditor(
+                            block.spellcasting,
+                            classId: block.classId,
+                          ),
+                          child: const Text('Editar'),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
             ],
 
             if ([
@@ -190,6 +229,19 @@ extension _SheetSpellsSection on _SheetScreenState {
               const Eyebrow('Espacios de conjuro'),
               DenseRows(
                 children: [for (final lv in slotLevels) _slotRow(sc!, lv)],
+              ),
+            ],
+
+            for (final block in sheetArg.spellcastingBlocks.where(
+              (b) => b.spellcasting.progression == CasterProgression.pact,
+            )) ...[
+              const SizedBox(height: 20),
+              const Eyebrow('Espacios de Pacto'),
+              DenseRows(
+                children: [
+                  for (final lv in block.spellcasting.slotsByLevel.keys)
+                    _slotRow(block.spellcasting, lv, pact: true),
+                ],
               ),
             ],
 
@@ -448,25 +500,48 @@ extension _SheetSpellsSection on _SheetScreenState {
     return '${names.sublist(0, names.length - 1).join(", ")} o ${names.last}';
   }
 
-  void _openSpellEditor(Spellcasting sc) {
+  void _openSpellEditor(Spellcasting sc, {String? classId}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => SpellEditScreen(
           character: _c,
           repo: repo,
           spellcasting: sc,
-          onSave: (cantrips, spells) =>
-              _replace(_c.copyWith(cantripIds: cantrips, spellIds: spells)),
+          classId: classId,
+          onSave: (cantrips, spells) {
+            if (classId == null) {
+              _replace(_c.copyWith(cantripIds: cantrips, spellIds: spells));
+              return;
+            }
+            final classCantrips = {
+              for (final entry in _c.classCantripIds.entries)
+                entry.key: List<String>.of(entry.value),
+              classId: cantrips,
+            };
+            final classSpells = {
+              for (final entry in _c.classSpellIds.entries)
+                entry.key: List<String>.of(entry.value),
+              classId: spells,
+            };
+            _replace(
+              _c.copyWith(
+                classCantripIds: classCantrips,
+                classSpellIds: classSpells,
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _slotRow(Spellcasting sc, int level) {
+  Widget _slotRow(Spellcasting sc, int level, {bool pact = false}) {
     final pal = context.palette;
     final combat = _c.combat;
     final max = sc.slotsByLevel[level] ?? 0;
-    final used = combat.spellSlotsUsed[level] ?? 0;
+    final used = pact
+        ? combat.pactSlotsUsed[level] ?? 0
+        : combat.spellSlotsUsed[level] ?? 0;
     final remaining = CombatOps.spellSlotsRemaining(combat, sc, level);
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
@@ -503,7 +578,7 @@ extension _SheetSpellsSection on _SheetScreenState {
             onRecover: used <= 0
                 ? null
                 : () => _mutateCombat(
-                    () => CombatOps.recoverSpellSlot(combat, level),
+                    () => CombatOps.recoverSpellSlot(combat, level, pact: pact),
                   ),
           ),
         ],

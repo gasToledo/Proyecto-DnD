@@ -127,7 +127,7 @@ class _BootstrapState extends State<_Bootstrap> {
         // Future se deja sin resolver a propósito: la página está por
         // cambiar por completo.
         browser.redirectTo(_api.loginUri.toString());
-        return _never<_AppData>();
+        return await _never<_AppData>();
       }
 
       final repo = await (widget.contentLoader ?? loadOfficialContent)();

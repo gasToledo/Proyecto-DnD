@@ -1,219 +1,152 @@
-# Milantus, asistente de aventuras
+<p align="center">
+  <img src="docs/assets/readme/milantus-banner.png" alt="Milantus — Asistente de aventuras" width="100%">
+</p>
 
-Aplicación web para crear y llevar personajes de **D&D 5.ª edición con las
-reglas de 2024**. Entrás con tu cuenta y encontrás tus fichas donde las
-dejaste, desde cualquier navegador.
+<p align="center">
+  <strong>Tus personajes. Tu mesa. La próxima aventura.</strong><br>
+  Creá personajes, combiná clases y dirigí campañas de D&D con las reglas de 2024, desde tu navegador.
+</p>
 
-## Descripción
+<p align="center">
+  <a href="https://github.com/gasToledo/Proyecto-DnD/actions/workflows/ci.yml"><img src="https://github.com/gasToledo/Proyecto-DnD/actions/workflows/ci.yml/badge.svg?branch=main" alt="Estado de CI"></a>
+  &nbsp; · &nbsp; Flutter Web &nbsp; · &nbsp; En español &nbsp; · &nbsp; Autoalojado
+</p>
 
-Milantus hace las cuentas por vos. Vos elegís especie, clase, trasfondo, dotes
-y equipo, y el motor resuelve modificadores, competencias, clase de armadura,
-puntos de golpe, espacios de conjuro y ataques cada vez que algo cambia. Si
-una elección no cierra con las reglas, la validación te avisa y te deja
-seguir igual: en la mesa la última palabra la tiene el DM, no el programa.
+<p align="center">
+  <a href="#en-la-mesa">Funcionalidades</a> ·
+  <a href="docs/README.md">Documentación</a> ·
+  <a href="CHANGELOG.md">Novedades</a>
+</p>
 
-Las fichas viven en el servidor. Podés armar el personaje en la compu del
-escritorio y abrirlo desde el teléfono cuando llega el jueves de partida, con
-los puntos de golpe donde los dejaste la sesión pasada. Cada cuenta ve
-únicamente lo suyo, salvo lo que elija compartir con la mesa que juega.
+---
 
-El contenido oficial que trae cargado sale del SRD 5.2.1, ampliado con
-opciones del PHB 2024 y de *Forge of the Artificer*. Todo pasa por la misma
-maquinaria, así que una dote que te inventás funciona igual que una del
-manual.
+## La aventura sigue donde la dejaste
 
-## Funcionalidades
+Milantus reúne fichas de personaje, herramientas para dirigir y contenido
+propio en una misma aplicación web. Entrás con tu cuenta y recuperás tus
+personajes, sus recursos y tus campañas desde cualquier navegador.
 
-### Crear un personaje
+El motor resuelve modificadores, competencias, armadura, ataques y magia a
+partir de tus elecciones. Si una elección no cumple los requisitos, te avisa
+y te deja continuar: **la última palabra la tiene tu mesa**.
 
-Son ocho pasos, y cada uno muestra solo lo que aplica a lo que venís
-eligiendo. El catálogo: 13 clases con 53 subclases, 15 especies con 28
-linajes, 33 trasfondos, 189 filas de dotes y opciones equivalentes, 38 armas,
-13 armaduras y 392 conjuros.
+![Ficha de Sagan: características, habilidades y rasgos en Milantus](docs/assets/readme/ficha-personaje.png)
 
-Las puntuaciones salen de compra por puntos, de una tirada de 4d6 o del
-arreglo estándar, y el paso de equipo ya viene con lo que te dan la clase y el
-trasfondo descontado, así que no tenés que ir tachando a mano.
+*Interfaz de Milantus con datos de demostración.*
 
-### Subir de nivel
+## En la mesa
 
-Otro recorrido guiado: resumen de lo que cambia, puntos de golpe, subclase
-cuando toca, mejora de característica o dote, rasgos nuevos y conjuros. Al
-final te muestra todo lo que se modificó antes de confirmar, para que no te
-enteres a mitad de un combate.
+| Para tus personajes | Para dirigir la mesa | Para crear contenido |
+| --- | --- | --- |
+| Creación guiada y subida de nivel | Campañas, capítulos y cuaderno | Armas, armaduras y dotes |
+| Multiclase y subclases por clase | Personajes compartidos por sus jugadores | Especies y trasfondos |
+| Combate, conjuros y recursos | Bestiario y orden de iniciativa | Conjuros y criaturas |
+| Inventario, retratos y respaldos | Registro de combates y avisos de recompensas | Opciones integradas con el catálogo |
 
-### Llevar la ficha en la mesa
+### Tu personaje, de la primera tirada al próximo nivel
 
-La ficha se divide en Personaje, Combate, Inventario, Campaña y Notas. Desde
-Combate aplicás daño y curación, sumás puntos de golpe temporales, tirás
-salvaciones de muerte, marcás condiciones y concentración, gastás espacios de
-conjuro y recursos de clase, y tomás descansos cortos o largos.
+Elegí especie, trasfondo, clase, dotes y equipo con un asistente que muestra
+las opciones de cada paso. Definí tus características por compra de puntos,
+arreglo estándar o tiradas de 4d6.
 
-Nada de recalcular. Habilidades y salvaciones aparecen con su modificador y su
-marca de competencia, y cada arma con su ataque, su daño y la maestría que le
-corresponda.
+Al subir de nivel, seguí con tu clase o sumá otra. Milantus combina rasgos y
+competencias, calcula los espacios de conjuro y mantiene separados los de
+Magia de Pacto. Antes de confirmar, revisás el resumen de los cambios.
 
-### Ordenar tu roster
+Durante la partida llevás daño, curación, condiciones, concentración,
+salvaciones de muerte y descansos desde la ficha. Podés cargar un retrato o
+generarlo con los proveedores de IA disponibles en tu servidor.
 
-El dashboard tiene buscador por nombre o clase, y orden por nombre, nivel,
-clase, más recientes o manual. Para el orden manual, mantené pulsada una
-tarjeta y arrastrala sobre otra: queda en esa posición y no se mueve más.
+### Detrás de la pantalla del DM
 
-Un personaje puede marcarse como favorito desde el menú de la tarjeta. Va
-siempre primero, con una estrella junto al nombre y el borde dorado, ordenes
-como ordenes el resto.
+Con la misma cuenta, pasás de tus personajes a tus campañas. Organizá
+capítulos, prepará encuentros con el bestiario y llevá turnos, rondas y puntos
+de golpe de los monstruos. El cuaderno reúne tus notas y los combates cerrados.
 
-### Retratos
+Los jugadores comparten sus personajes mediante un código temporal. Ves la
+ficha actualizada y cada jugador conserva el control de la suya. Al cerrar
+un capítulo, podés anunciar nivel, oro y objetos para que cada participante
+los incorpore a su personaje.
 
-Podés subir una imagen tuya o generarla con IA desde la ficha. Pollinations
-funciona sin configurar nada. Si quien administra el servidor cargó las claves
-de Azure AI Foundry, también aparecen Flux y gpt-image-2. Las claves nunca
-llegan al navegador.
+| Tus personajes | Tus campañas |
+| --- | --- |
+| [![Panel de personajes con sus clases, nivel y puntos de golpe](docs/assets/readme/personajes.png)](docs/assets/readme/personajes.png) | [![Modo DM con capítulos en marcha, próximos y completados](docs/assets/readme/modo-dm.png)](docs/assets/readme/modo-dm.png) |
 
-### Contenido propio
+*Paneles con datos de demostración. Abrí cada imagen para verla en detalle.*
 
-Desde la sección Homebrew creás armas, armaduras, dotes, especies, trasfondos,
-conjuros y criaturas propias, que quedan en tu cuenta y aparecen mezcladas con
-el contenido oficial en el asistente, en la subida de nivel y en la ficha.
+### Tus reglas también tienen lugar
 
-Las criaturas van además al bestiario del Modo DM, listas para sumarse a un
-combate. Cada una decide con un interruptor si puede aparecer también en la
-construcción de un personaje —hoy, entre las formas de Forma Salvaje—; nace
-apagado, porque un monstruo inventado para la mesa no es una forma que el
-druida de la partida deba poder tomar.
+El contenido homebrew queda en tu cuenta y aparece junto al catálogo en los
+asistentes y las fichas. Usa el mismo motor de efectos que el contenido
+incluido. Las criaturas propias también están disponibles en el bestiario;
+vos decidís cuáles pueden utilizarse como formas de personaje.
 
-### Modo DM
+<details>
+<summary><strong>También te acompaña entre sesiones</strong></summary>
 
-El botón **Modo DM**, junto a tu cuenta en el panel lateral, abre el otro
-sombrero de la misma cuenta: en vez de tus personajes, tus campañas. No hace
-falta una segunda cuenta para dirigir, ni deja de existir la primera: entrás
-cuando dirigís y volvés atrás cuando terminaste.
+- **Personajes organizados:** búsqueda, criterios de orden, orden manual y un favorito
+  destacado al principio de la lista.
+- **La campaña desde tu ficha:** compañeros de mesa, combates registrados y
+  capítulos completados, con sus recompensas anunciadas.
+- **Respaldo y traslado:** exportación de personajes o un ZIP con fichas,
+  retratos, homebrew y preferencias, sin credenciales. Al importar se
+  conservan las fichas existentes; los identificadores repetidos se reasignan.
+- **Continuidad de tus datos:** los formatos de personaje, homebrew y ajustes
+  están versionados para migrar los documentos anteriores al abrirlos.
 
-Para que un jugador entre a tu mesa, él abre su personaje, toca **Compartir** y
-te pasa el código que aparece. Vos lo pegás en **Sumar personaje** dentro de la
-campaña y desde ahí ves su ficha con los puntos de golpe y la clase de armadura
-al día — no es una copia, es la ficha real, así que lo que él cambie lo ves vos.
-Lo que no podés es editarla: el personaje sigue siendo suyo.
+</details>
 
-El código sirve una sola vez y vence a las 24 horas. El vínculo se corta desde
-los dos lados —vos con **Echar personaje**, él dejando de compartir— y ninguna
-de las dos cosas toca la ficha. Cada vez que algo de esto pasa, a la otra parte
-le llega el aviso la próxima vez que abre la aplicación.
+## Dentro del proyecto
 
-La pestaña **Capítulos** divide la campaña en tramos: cada uno con su nombre y
-un objetivo breve, y pasando de **Próximamente** a **En marcha** y a
-**Completado**.
-Solo podés tener uno en marcha a la vez. Al cerrar uno, a cada jugador de la
-mesa le llega el aviso — y si marcaste que ese capítulo sube de nivel, el aviso
-se lo dice. Subir de nivel lo sigue haciendo cada jugador desde su ficha: la
-aplicación no se lo aplica a nadie. El objetivo que escribís en un capítulo es
-solo tuyo, los jugadores no lo ven.
+| Paquete | Responsabilidad |
+| --- | --- |
+| [`dnd_app`](packages/dnd_app) | Cliente Flutter Web: fichas, asistentes y Modo DM. |
+| [`dnd_engine`](packages/dnd_engine) | Motor en Dart: reglas, modelos y catálogo dirigido por datos. |
+| [`dnd_server`](packages/dnd_server) | API con Shelf y PostgreSQL: sesiones, persistencia y permisos. |
 
-Al cerrar un capítulo también podés declarar qué se lleva la mesa: oro por
-personaje y objetos por nombre. Se los anuncia el aviso y cada jugador lo anota
-en su ficha — igual que con el nivel, la aplicación no le escribe la ficha a
-nadie.
+El cliente y el servidor comparten el motor. Los cálculos de reglas viven en
+`dnd_engine`; la interfaz presenta sus resultados. **Web es la plataforma
+mantenida del cliente.**
 
-El **Cuaderno de campaña** guarda qué pasó en cada capítulo. Conviven dos clases
-de entrada y se distinguen sin ningún cartel: las notas que escribís vos, que se
-editan y se borran, y los combates ya cerrados, que los anota la aplicación y no
-se corrigen.
+<details>
+<summary><strong>Desarrollo local y verificaciones</strong></summary>
 
-El **Bestiario** —fuera de las campañas, porque el catálogo no es de ninguna
-mesa— trae las 367 criaturas del SRD 5.2.1, con su perfil completo: salvaciones,
-habilidades, sentidos, rasgos, acciones adicionales, reacciones y legendarias.
-Es solo de consulta, con buscador y filtro por tipo.
+Necesitás Dart y Flutter en el `PATH`, con las versiones compatibles que
+declaran los `pubspec.yaml`. Ejecutá los comandos desde cada paquete:
 
-Dentro de una campaña, la pestaña **Combate** lleva el orden de iniciativa de
-tu mesa: sumás a tus jugadores con la iniciativa que tiraron y monstruos del
-bestiario, que tiran la suya sola (cada copia la suya, nunca la misma para
-todo un grupo). Avanzás turno y ronda, y sos vos quien lleva los puntos de
-golpe de los monstruos — los de tus jugadores los ve en vivo, pero se los
-siguen anotando ellos en su propia ficha, para que sigan atentos a la mesa.
-El jugador al que le toca recibe un aviso discreto en su ficha un turno antes,
-sin enterarse de nada más: ni el orden, ni contra qué está peleando.
+| Directorio | Dependencias | Análisis y pruebas |
+| --- | --- | --- |
+| `packages/dnd_engine` | `dart pub get` | `dart analyze` y `dart test` |
+| `packages/dnd_server` | `dart pub get` | `dart analyze` y `dart test` |
+| `packages/dnd_app` | `flutter pub get` | `dart analyze` y `flutter test` |
 
-### La campaña, del lado del jugador
+Desde `packages/dnd_app`, generá el cliente con `flutter build web --release`.
+Desde la raíz, instalá el hook de formato con
+`git config core.hooksPath .githooks`. CI verifica formato, análisis y pruebas.
 
-La pestaña **Campaña** de la ficha es la vuelta del vínculo. Ahí el jugador ve
-en qué mesa está y quiénes más juegan, las batallas que se pelearon —agrupadas
-por capítulo, con cuántas rondas duraron y cuántos enemigos cayeron— y los
-capítulos ya cerrados con lo que repartió cada uno.
+Las convenciones de trabajo están en [CLAUDE.md](CLAUDE.md) y la identidad
+visual en la [guía de diseño web](docs/desarrollo/diseno-web.md).
 
-Lo que no ve: el capítulo en marcha, ni el objetivo que el DM escribió en
-ninguno. De lo que están jugando ahora se entera en la mesa, que es donde
-corresponde.
+</details>
 
-### Respaldos y traspaso
+## El camino recorrido
 
-Exportás un personaje suelto, o un ZIP completo con todas las fichas, los
-retratos, el homebrew y las preferencias. No incluye ninguna credencial.
+La versión **0.11.0** incorpora multiclase: elección de clase al subir de nivel,
+subclases por clase y magia organizada por fuente.
 
-Al importar, un id que ya exista en la cuenta se reasigna a uno libre en vez
-de pisar lo que había. Importar el mismo respaldo dos veces crea copias con
-ids distintos; no sobrescribe los personajes existentes.
+Consultá el [changelog](CHANGELOG.md) para conocer los cambios de cada versión
+y el [índice de documentación](docs/README.md) para profundizar en arquitectura,
+contenido y operaciones.
 
-### Tu cuenta
-
-El pie del panel lateral muestra con qué cuenta estás entrando, útil cuando
-compartís el navegador o tenés más de una. El botón de cerrar sesión termina
-también la sesión del proveedor de identidad. La próxima vez te pide
-credenciales de verdad.
-
-La sesión viaja en una cookie que el JavaScript de la página no puede leer, y
-la identidad la maneja Zitadel autoalojado. Los formatos de personaje,
-homebrew y ajustes están versionados: una ficha vieja se migra sola al abrirla
-y una de una versión futura se rechaza sin tocarla.
-
-## Cambios a futuro
-
-Cada personaje usa una sola clase por ahora. Multiclase es lo próximo grande,
-y la arquitectura dirigida por efectos ya está pensada para soportarla sin
-rehacer la ficha.
-
-Del Modo DM queda una sola pieza del diseño original sin construir: las
-plantillas de campaña, para arrancar una mesa nueva con los capítulos y la
-premisa de otra ya armada.
-
-Después de eso: la foto de perfil de la cuenta en el panel lateral (hoy se
-guarda pero no se dibuja) y poder marcar varios favoritos en vez de uno.
-
-## Puesta en marcha
-
-El stack completo se levanta con `docker compose up -d --build` a partir de
-`docker-compose.yml` y `.env.example`. El procedimiento paso a paso, incluido
-el registro manual de la aplicación en Zitadel, está en
-[Despliegue autoalojado](docs/operaciones/despliegue.md),
-junto con respaldo, restauración y las comprobaciones de seguridad previas a
-publicar un dominio.
-
-Para tocar el código hacen falta Dart y Flutter en el `PATH`. Cada paquete se
-prueba por separado, con `dart test` en `packages/dnd_engine` y
-`packages/dnd_server`, o `flutter test` en `packages/dnd_app`. Conviene además
-instalar el hook que formatea los archivos preparados, porque CI verifica el
-formato antes que nada y un commit sin formatear falla sin llegar a decir nada
-útil sobre el código:
-
-```sh
-git config core.hooksPath .githooks
-```
-
-El cliente mantenido es web y `main` es el único tronco activo. Los cambios se
-validan localmente, se commitean y pushean directamente a `main`, y después se
-siguen CI y, cuando el cambio toca rutas desplegables, CD hasta comprobarlos en
-la web desplegada. La dirección visual y los componentes permitidos están en
-la [Guía de diseño web](docs/desarrollo/diseno-web.md). El
-[índice de documentación](docs/README.md) reúne arquitectura, contenido,
-operaciones y auditorías.
-
-## Reglas y licencia
+## Reglas y atribuciones
 
 Esta obra incluye material procedente del documento de referencia del sistema
 5.2.1 ("SRD 5.2.1") de Wizards of the Coast LLC, disponible en
-<https://www.dndbeyond.com/srd>. La licencia sobre el SRD 5.2.1 se concede de
+[D&D Beyond](https://www.dndbeyond.com/srd). La licencia sobre el SRD 5.2.1 se concede de
 acuerdo con la licencia internacional de atribución/reconocimiento 4.0 de
 Creative Commons, disponible en
-<https://creativecommons.org/licenses/by/4.0/legalcode>.
+[su texto legal](https://creativecommons.org/licenses/by/4.0/legalcode).
 
-El catálogo ampliado puede contener opciones del PHB 2024 que no forman parte
-del SRD. Se identifican por separado y no se presentan como contenido CC.
+El catálogo incluye además opciones del PHB 2024 y de *Forge of the Artificer*.
+El contenido que no forma parte del SRD se identifica por separado y no se
+presenta como contenido cubierto por esa licencia Creative Commons.

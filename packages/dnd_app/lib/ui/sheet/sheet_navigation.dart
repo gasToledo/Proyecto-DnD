@@ -1,16 +1,29 @@
 part of '../sheet_screen.dart';
 
 extension _SheetNavigation on _SheetScreenState {
-  String _classSummary() {
-    final ids = <String>[];
-    for (final id in _c.classHistory) {
-      if (!ids.contains(id)) ids.add(id);
-    }
-    return ids
-        .map(
-          (id) => '${repo.characterClass(id)?.name ?? id} ${_c.classLevel(id)}',
-        )
-        .join(' · ');
+  // `toSet` conserva el orden de inserción: la clase inicial va primero.
+  String _classSummary() => _c.classHistory
+      .toSet()
+      .map(
+        (id) => '${repo.characterClass(id)?.name ?? id} ${_c.classLevel(id)}',
+      )
+      .join(' · ');
+
+  /// Pill de una clase, con la subclase o cuándo se elige. Si ya tocaba y no
+  /// se eligió no dice nada: eso lo avisa la validación, no la cabecera.
+  Widget _classPill(String id) {
+    final klass = repo.characterClass(id);
+    final level = _c.classLevel(id);
+    return GoldPill(
+      '${klass?.name ?? id} $level',
+      highlighted: false,
+      detail: switch (_c.subclassForClass(id)) {
+        final sub? => repo.subclass(sub)?.name ?? sub,
+        null when klass != null && level < klass.subclassLevel =>
+          'subclase en nivel ${klass.subclassLevel}',
+        null => null,
+      },
+    );
   }
 
   // -------------------------------------------------------------- Sidebar
@@ -159,9 +172,8 @@ extension _SheetNavigation on _SheetScreenState {
   Widget _sheetBody() {
     final s = sheet;
     final race = repo.race(_c.raceId)?.name ?? _c.raceId;
-    final klassLine = _classSummary();
     final bg = repo.background(_c.backgroundId)?.name ?? '';
-    final subtitle = [race, klassLine, if (bg.isNotEmpty) bg].join(' · ');
+    final subtitle = [race, if (bg.isNotEmpty) bg].join(' · ');
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
 
     return ListView(
@@ -202,10 +214,21 @@ extension _SheetNavigation on _SheetScreenState {
                       ),
                     ),
                     Text(subtitle, style: TextStyle(color: muted)),
-                    GoldPill('Nivel ${_c.level}'),
                   ],
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Renglón propio y no pegado al nombre: con la multiclase la
+          // composición de clases es parte del personaje, y en línea con el
+          // subtítulo se perdía como un dato más entre puntos medios.
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              GoldPill('Nivel ${_c.level}'),
+              for (final id in _c.classHistory.toSet()) _classPill(id),
             ],
           ),
           const SizedBox(height: 16),

@@ -1638,7 +1638,13 @@ class GoldPill extends StatelessWidget {
   /// En `false` usa un tono neutro en vez del dorado, para información
   /// secundaria que no debe competir con el contenido principal.
   final bool highlighted;
-  const GoldPill(this.text, {super.key, this.highlighted = true});
+
+  /// Aclaración que sigue a [text] en tono apagado («Guerrero 2» +
+  /// «Campeón»). Con detalle, [text] sube a negrita y, en la pill neutra, al
+  /// color del texto: si no, los dos quedan iguales y no se lee cuál es el
+  /// dato y cuál la nota.
+  final String? detail;
+  const GoldPill(this.text, {super.key, this.highlighted = true, this.detail});
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
@@ -1649,8 +1655,25 @@ class GoldPill extends StatelessWidget {
         border: Border.all(color: p.hairline),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        text,
+      child: Text.rich(
+        TextSpan(
+          text: text,
+          style: detail == null
+              ? null
+              : TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: highlighted
+                      ? null
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
+          children: [
+            if (detail case final d?)
+              TextSpan(
+                text: '  $d',
+                style: TextStyle(color: p.textMuted),
+              ),
+          ],
+        ),
         // Una pill es de una línea por definición: un trasfondo largo se
         // recorta en vez de desbordar la tarjeta que la contiene.
         maxLines: 1,

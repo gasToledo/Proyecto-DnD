@@ -250,6 +250,23 @@ void main() {
       findsWidgets,
     );
 
+    // La cabecera lleva una pill por clase, en el orden de la historia. Mago 2
+    // todavía no tiene subclase y lo dice; Clérigo 3 ya debería tenerla y no
+    // inventa nada: eso lo avisa la validación.
+    final wizard = repo.characterClass('wizard')!;
+    final pills = tester
+        .widgetList<GoldPill>(find.byType(GoldPill))
+        .where((p) => !p.highlighted)
+        .map((p) => (p.text, p.detail))
+        .toList();
+    expect(
+      pills,
+      containsAllInOrder([
+        ('${repo.characterClass('cleric')!.name} 3', null),
+        ('${wizard.name} 2', 'subclase en nivel ${wizard.subclassLevel}'),
+      ]),
+    );
+
     await tester.tap(find.text('Combate'));
     await tester.pumpAndSettle();
     expect(find.textContaining('FUENTES DE LANZAMIENTO'), findsOneWidget);

@@ -1641,13 +1641,10 @@ class _MemberCard extends StatelessWidget {
     String? portraitKey,
     AppPalette pal,
   ) {
-    final classNames = <String>[];
-    for (final id in character.classHistory) {
-      if (classNames.contains(id)) continue;
+    final classNames = character.classHistory.toSet().map((id) {
       final className = repo.characterClass(id)?.name ?? id;
-      final level = character.classLevel(id);
-      classNames.add('$className $level');
-    }
+      return '$className ${character.classLevel(id)}';
+    }).toList();
     if (classNames.isEmpty && klass != null) classNames.add(klass.name);
 
     return Row(

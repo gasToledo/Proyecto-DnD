@@ -634,12 +634,10 @@ class _PortraitScreenState extends State<PortraitScreen> {
     final klass = widget.repo.characterClass(c.classId);
     final accent = classAccent(klass, pal.gold);
     final race = widget.repo.race(c.raceId)?.name ?? c.raceId;
-    final classNames = <String>[];
-    for (final id in c.classHistory) {
-      if (classNames.contains(id)) continue;
+    final classNames = c.classHistory.toSet().map((id) {
       final className = widget.repo.characterClass(id)?.name ?? id;
-      classNames.add('$className ${c.classLevel(id)}');
-    }
+      return '$className ${c.classLevel(id)}';
+    }).toList();
     if (classNames.isEmpty) classNames.add(klass?.name ?? c.classId);
     final background = widget.repo.background(c.backgroundId)?.name;
     final existing = c.portraitPaths.firstOrNull;

@@ -420,6 +420,29 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('el aviso de quitar un arma desaparece solo', (tester) async {
+      final controller = await pumpSheet(
+        tester,
+        mochilera().copyWith(
+          inventory: const [
+            InventoryEntry(entryId: 'entry-0-longsword', itemId: 'longsword'),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      await tapItemAction(tester, 'longsword', 'Quitar');
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(saved(controller).inventory, isEmpty);
+
+      await tester.pump(const Duration(seconds: 8));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SnackBar), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('cargar monedas suma a la carga: 50 hacen una libra', (
       tester,
     ) async {

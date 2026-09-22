@@ -37,6 +37,9 @@ void showAppMessage(
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
+        // Flutter hace persistente por defecto cualquier SnackBar con acción;
+        // estos avisos tienen «Deshacer», pero también deben vencer solos.
+        persist: false,
         duration:
             duration ??
             (onUndo != null

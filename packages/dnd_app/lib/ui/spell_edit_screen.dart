@@ -36,9 +36,21 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
     widget.repo,
   ).compile(widget.character);
 
+  late final Set<String> _sourceAlwaysPreparedSpellIds = {
+    if (widget.classId == null) ..._sheet.alwaysPreparedSpellIds,
+    if (widget.classId != null) ...{
+      ..._sheet.alwaysPreparedSpellIds.difference(
+        _sheet.alwaysPreparedSpellIdsByClass.values
+            .expand((ids) => ids)
+            .toSet(),
+      ),
+      ...?_sheet.alwaysPreparedSpellIdsByClass[widget.classId],
+    },
+  };
+
   late final Set<String> _grantedSpellIds = {
     for (final s in _sheet.innateSpells) s.spellId,
-    ..._sheet.alwaysPreparedSpellIds,
+    ..._sourceAlwaysPreparedSpellIds,
   };
 
   // Una ficha guardada antes de que la selección los excluyera puede traerlos

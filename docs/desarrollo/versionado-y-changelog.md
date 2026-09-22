@@ -41,6 +41,16 @@ preparar una versión:
 6. Ejecutar las validaciones afectadas y revisar que el changelog esté incluido
    en el mismo commit.
 
+### Cambios grandes
+
+Una change se considera grande cuando agrega una capacidad visible, modifica un
+contrato o esquema persistido, cruza engine, cliente o servidor, cambia varios
+flujos de usuario, o corrige un problema con impacto transversal. Estos cambios
+MUST aumentar la versión antes del commit y mover sus notas desde `[Unreleased]`
+al encabezado fechado de la nueva versión en el mismo commit. Si el tamaño no es
+claro, se trata como grande; las correcciones acotadas pueden permanecer en
+`[Unreleased]`.
+
 No se inventa historial para versiones anteriores que no tengan una fuente
 confiable. En ese caso, se empieza desde la próxima versión.
 

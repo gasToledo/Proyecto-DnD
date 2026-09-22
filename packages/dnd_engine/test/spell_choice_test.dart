@@ -131,7 +131,185 @@ Map<String, dynamic> _feature({
       ],
     };
 
+ContentRepository _multiclassRepo() => ContentRepository.fromJsonPacks(
+      races: [
+        {'id': 'r', 'name': 'Raza', 'source': 'homebrew'},
+      ],
+      classes: [
+        {
+          'id': 'wizard',
+          'name': 'Mago',
+          'source': 'homebrew',
+          'hitDie': 6,
+          'features': [
+            {
+              'level': 1,
+              'name': 'Magia de Mago',
+              'effects': [
+                {
+                  'type': 'spellcasting',
+                  'ability': 'intelligence',
+                  'progression': 'full',
+                  'preparation': 'prepared',
+                  'spellList': 'wizard',
+                  'cantripsKnown': 2,
+                },
+                {
+                  'type': 'spellChoice',
+                  'groupId': 'class:wizard:choice',
+                  'count': 1,
+                  'fromClasses': ['wizard'],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          'id': 'bard',
+          'name': 'Bardo',
+          'source': 'homebrew',
+          'hitDie': 8,
+          'features': [
+            {
+              'level': 1,
+              'name': 'Magia de Bardo',
+              'effects': [
+                {
+                  'type': 'spellcasting',
+                  'ability': 'charisma',
+                  'progression': 'full',
+                  'preparation': 'prepared',
+                  'spellList': 'bard',
+                  'cantripsKnown': 2,
+                },
+                {
+                  'type': 'spellChoice',
+                  'groupId': 'class:bard:choice',
+                  'count': 1,
+                  'fromClasses': ['bard'],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      backgrounds: [
+        {'id': 'b', 'name': 'Trasfondo', 'source': 'homebrew'},
+      ],
+      spells: [
+        for (final s in [
+          ('wizard-choice', 'Mago elegido', 'wizard'),
+          ('bard-choice', 'Bardo elegido', 'bard'),
+        ])
+          {
+            'id': s.$1,
+            'name': s.$2,
+            'source': 'homebrew',
+            'level': 1,
+            'school': 'Evocación',
+            'range': 'Toque',
+            'components': 'V',
+            'duration': 'Instantánea',
+            'description': '',
+            'classes': [s.$3],
+          },
+      ],
+    );
+
+Character _multiclassCharacter({
+  Map<String, Map<String, List<String>>> choices = const {
+    'wizard': {
+      'class:wizard:choice': ['wizard-choice'],
+    },
+    'bard': {
+      'class:bard:choice': ['bard-choice'],
+    },
+  },
+}) =>
+    Character(
+      id: 'multiclass',
+      name: 'Multiclase',
+      raceId: 'r',
+      classId: 'wizard',
+      backgroundId: 'b',
+      classHistory: const ['wizard', 'bard'],
+      assignedScores: {for (final a in Ability.values) a: 14},
+      hpPerLevel: const [6, 8],
+      classSpellChoices: choices,
+    );
+
 void main() {
+  group('Multiclase', () {
+    test('cada clase lee, reemplaza y conserva su propio grupo', () {
+      final repo = _multiclassRepo();
+      final compiler = CharacterCompiler(repo);
+      final original = compiler.compile(_multiclassCharacter());
+
+      expect(
+        original.spellChoiceSlots.map((slot) => slot.groupId),
+        containsAll([
+          'wizard:class:wizard:choice',
+          'bard:class:bard:choice',
+        ]),
+      );
+      expect(
+        original.spellChoiceSlots
+            .firstWhere((slot) => slot.groupId == 'wizard:class:wizard:choice')
+            .chosen,
+        ['wizard-choice'],
+      );
+
+      final replaced = compiler.compile(
+        _multiclassCharacter(
+          choices: {
+            'wizard': {
+              'class:wizard:choice': ['bard-choice'],
+            },
+            'bard': {
+              'class:bard:choice': ['bard-choice'],
+            },
+          },
+        ),
+      );
+      expect(
+        replaced.spellChoiceSlots
+            .firstWhere((slot) => slot.groupId == 'wizard:class:wizard:choice')
+            .chosen,
+        isEmpty,
+        reason: 'el reemplazo inválido no debe cruzar la lista de clase',
+      );
+      expect(
+        replaced.spellChoiceSlots
+            .firstWhere((slot) => slot.groupId == 'bard:class:bard:choice')
+            .chosen,
+        ['bard-choice'],
+      );
+      expect(
+        replaced.alwaysPreparedSpellIdsByClass['wizard'] ?? const {},
+        isEmpty,
+      );
+      expect(
+        replaced.alwaysPreparedSpellIdsByClass['bard'],
+        {'bard-choice'},
+      );
+    });
+
+    test('la validación usa el mismo ámbito que los slots', () {
+      final repo = _multiclassRepo();
+      final warnings = CharacterValidator(repo).validate(
+        _multiclassCharacter(),
+      );
+      expect(
+        warnings.map((warning) => warning.code),
+        isNot(contains('spell_choice_pending')),
+      );
+      expect(
+        warnings.map((warning) => warning.code),
+        isNot(contains('spell_choice_invalid')),
+      );
+    });
+  });
+
   group('Filtros del pozo', () {
     test('sin filtros ofrece todo el catálogo', () {
       final repo = _repo(classFeatures: [_feature()]);

@@ -1241,6 +1241,96 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'editar una clase conserva el conjuro siempre preparado por otra',
+    (tester) async {
+      final personaje = Character(
+        id: 't-multiclass-spells',
+        name: 'Multiclase',
+        raceId: 'human',
+        classId: 'wizard',
+        backgroundId: 'sage',
+        classHistory: const [
+          'wizard',
+          'wizard',
+          'wizard',
+          'wizard',
+          'wizard',
+          'druid',
+          'druid',
+          'druid',
+          'druid',
+          'druid',
+        ],
+        subclassIds: const {'druid': 'circle-land'},
+        classFeatureChoices: const {
+          'druid': {
+            'circle-land:terrain': ['druid-land-arid'],
+          },
+        },
+        assignedScores: {for (final ability in Ability.values) ability: 14},
+        hpPerLevel: const [6, 6, 6, 6, 6, 8, 8, 8, 8, 8],
+        classSpellIds: const {
+          'wizard': ['fireball'],
+        },
+      );
+      final sheet = CharacterCompiler(repo).compile(personaje);
+      final wizardCasting = sheet.spellcastingBlocks.firstWhere(
+        (block) => block.classId == 'wizard',
+      );
+
+      expect(
+        sheet.alwaysPreparedSpellIdsByClass['druid'],
+        contains('fireball'),
+      );
+      expect(
+        sheet.alwaysPreparedSpellIdsByClass['wizard'] ?? const {},
+        isNot(contains('fireball')),
+      );
+      expect(
+        sheet.alwaysPreparedSpellIds.difference(
+          sheet.alwaysPreparedSpellIdsByClass.values
+              .expand((ids) => ids)
+              .toSet(),
+        ),
+        isNot(contains('fireball')),
+      );
+      expect(wizardCasting.classLevel, 5);
+      expect(
+        wizardCasting.spellcasting.slotsByLevel,
+        containsPair(3, isPositive),
+      );
+      expect(
+        repo
+            .spellsForList(wizardCasting.spellcasting.spellList)
+            .map((spell) => spell.id),
+        contains('fireball'),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: SpellEditScreen(
+            character: personaje,
+            repo: repo,
+            spellcasting: wizardCasting.spellcasting,
+            classId: 'wizard',
+            onSave: (_, _) {},
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final fireball = repo.spell('fireball')!;
+      final fireballLabel = '${fireball.name} (Nv ${fireball.level})';
+      await tester.scrollUntilVisible(find.text(fireballLabel), 500);
+      final chip = find.widgetWithText(FilterChip, fireballLabel);
+      expect(chip, findsOneWidget);
+      expect(tester.widget<FilterChip>(chip).selected, isTrue);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   /// Avanza tocando "Continuar" hasta que aparezca [target], con tope: un paso
   /// que bloquea haría girar el bucle para siempre y el fallo saldría como un
   /// timeout sin decir dónde se trabó.
@@ -1259,6 +1349,91 @@ void main() {
         .join(' | ');
     fail('no se llegó a "$target": algún paso previo está bloqueando.\n$visto');
   }
+
+  testWidgets('subir una clase secundaria conserva sus elecciones de conjuros', (
+    tester,
+  ) async {
+    Character? saved;
+    final personaje = Character(
+      id: 't-multiclass-levelup-spells',
+      name: 'Multiclase',
+      raceId: 'human',
+      classId: 'fighter',
+      backgroundId: 'soldier',
+      classHistory: const ['fighter', 'bard', 'bard', 'bard', 'bard', 'bard'],
+      subclassIds: const {'bard': 'college-lore'},
+      assignedScores: {for (final ability in Ability.values) ability: 14},
+      hpPerLevel: const [10, 8, 8, 8, 8, 8],
+      classFeatureChoices: const {
+        'fighter': {
+          'fighting-style': ['fs-defense'],
+        },
+      },
+      chosenSkills: const ['perception', 'stealth', 'performance'],
+      proficiencyChoices: const {
+        'class:bard:expertise-2': ['perception', 'stealth'],
+      },
+      classSpellChoices: const {
+        'bard': {
+          'subclass:college-lore:magical-discoveries': ['fireball', 'fly'],
+        },
+      },
+    );
+    await pumpLevelUp(
+      tester,
+      personaje,
+      onDone: (character) => saved = character,
+    );
+
+    final initialSlots = CharacterCompiler(
+      repo,
+    ).compile(personaje).spellChoiceSlots;
+    expect(
+      initialSlots.where(
+        (slot) => slot.groupId.contains('magical-discoveries'),
+      ),
+      isEmpty,
+    );
+    final preview = CharacterCompiler(repo).compile(
+      personaje.copyWith(
+        level: 7,
+        classHistory: [...personaje.classHistory, 'bard'],
+      ),
+    );
+    expect(
+      preview.spellChoiceSlots
+          .firstWhere((slot) => slot.groupId.contains('magical-discoveries'))
+          .chosen,
+      containsAll(['fireball', 'fly']),
+    );
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bardo').last);
+    await tester.pumpAndSettle();
+
+    await advanceUntil(tester, 'Conjuros que quedan siempre preparados');
+    for (final id in ['fireball', 'fly']) {
+      final spell = repo.spell(id)!;
+      final label = '${spell.name} (Nv ${spell.level})';
+      final chip = find.widgetWithText(FilterChip, label);
+      await tester.ensureVisible(chip);
+      expect(tester.widget<FilterChip>(chip).selected, isTrue, reason: id);
+    }
+    expect(find.textContaining('Te faltan'), findsNothing);
+
+    await advanceUntil(tester, 'Confirmar nivel 7');
+    await tester.tap(find.text('Confirmar nivel 7'));
+    await tester.pumpAndSettle();
+
+    expect(saved, isNotNull);
+    expect(
+      saved!
+          .classSpellChoices['bard']!['subclass:college-lore:magical-discoveries'],
+      containsAll(['fireball', 'fly']),
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   /// Un Mago de 19 ya tiene resueltos los dos cupos de Maestría sobre Conjuros
   /// (nivel 18), así que lo único pendiente al subir a 20 son los Característicos.

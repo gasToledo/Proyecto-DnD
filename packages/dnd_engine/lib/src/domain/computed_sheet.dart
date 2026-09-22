@@ -815,6 +815,11 @@ class ComputedSheet {
   /// el nombre lo resuelve quien tenga el catálogo.
   final Set<String> alwaysPreparedSpellIds;
 
+  /// Concesiones siempre preparadas agrupadas por clase de origen. No se
+  /// persiste: permite que un editor de una fuente no quite concesiones de
+  /// otra clase.
+  final Map<String, Set<String>> alwaysPreparedSpellIdsByClass;
+
   /// Conjuros que un rasgo **suma a la lista** de la que el personaje elige
   /// (los Conjuros de la Marca de las dotes de marca dracónica).
   ///
@@ -911,6 +916,7 @@ class ComputedSheet {
     this.companions = const [],
     this.innateSpells = const [],
     this.alwaysPreparedSpellIds = const {},
+    this.alwaysPreparedSpellIdsByClass = const {},
     this.spellListAdditionIds = const {},
     this.featureChoiceSlots = const [],
     this.itemChoiceSlots = const [],
@@ -976,6 +982,7 @@ class ComputedSheet {
     List<CompanionOption>? companions,
     List<InnateSpell>? innateSpells,
     Set<String>? alwaysPreparedSpellIds,
+    Map<String, Set<String>>? alwaysPreparedSpellIdsByClass,
     Set<String>? spellListAdditionIds,
     List<FeatureChoiceSlot>? featureChoiceSlots,
     List<ItemChoiceSlot>? itemChoiceSlots,
@@ -1038,6 +1045,8 @@ class ComputedSheet {
         innateSpells: innateSpells ?? this.innateSpells,
         alwaysPreparedSpellIds:
             alwaysPreparedSpellIds ?? this.alwaysPreparedSpellIds,
+        alwaysPreparedSpellIdsByClass:
+            alwaysPreparedSpellIdsByClass ?? this.alwaysPreparedSpellIdsByClass,
         spellListAdditionIds: spellListAdditionIds ?? this.spellListAdditionIds,
         featureChoiceSlots: featureChoiceSlots ?? this.featureChoiceSlots,
         itemChoiceSlots: itemChoiceSlots ?? this.itemChoiceSlots,

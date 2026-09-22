@@ -319,6 +319,9 @@ class CharacterCompiler {
     for (final slot in builder.featureChoiceSlots.values) {
       if (slot.options.isEmpty) continue;
       final chosen = chosenFeatureChoices(slot.groupId);
+      final sourceClassId = multipleClasses
+          ? _classIdFromScopedGroupId(slot.groupId, classLevels)
+          : null;
       for (final option in slot.options
           .where((o) => chosen.contains(o.id))
           .take(slot.count)) {
@@ -328,6 +331,7 @@ class CharacterCompiler {
           // salió, y así es como se lee en el desglose de la ficha.
           slot.name + ': ' + option.name,
           option.effects,
+          sourceClassId: sourceClassId,
         );
       }
     }
@@ -350,6 +354,17 @@ class CharacterCompiler {
     ];
     final appliedOnce = <String>{};
     final featSourceCounts = <String, int>{};
+    String? featSourceClassId(String id) {
+      if (!multipleClasses) return null;
+      return c.classFeatureChoices.entries
+          .where(
+            (entry) =>
+                entry.value.values.any((choices) => choices.contains(id)),
+          )
+          .map((entry) => entry.key)
+          .firstOrNull;
+    }
+
     for (final id in featIds) {
       if (id == null) continue;
       final feat = repo.feat(id);
@@ -369,6 +384,7 @@ class CharacterCompiler {
         // Iniciado en la Magia deja elegir INT, SAB o CAR al tomar la dote.
         // Sin elección, manda la que declare el contenido.
         spellAbilityOverride: c.featSpellcastingAbilities[feat.id],
+        sourceClassId: featSourceClassId(feat.id),
       );
     }
 
@@ -649,6 +665,7 @@ class CharacterCompiler {
       proficiencySources,
       spellcasting,
       spellcastingBlocks,
+      multipleClasses,
     );
 
     final innate = _resolveInnate(c, builder, mods, profBonus);
@@ -680,6 +697,13 @@ class CharacterCompiler {
       for (final id in builder.alwaysPreparedSpellIds)
         if (repo.spell(id) != null) id,
     };
+    final Map<String, Set<String>> alwaysPreparedByClass = Map.unmodifiable({
+      for (final entry in builder.alwaysPreparedSpellIdsByClass.entries)
+        entry.key: Set.unmodifiable({
+          for (final id in entry.value)
+            if (repo.spell(id) != null) id,
+        }),
+    });
     final knownClassSpells = <String>{
       ...c.cantripIds,
       ...c.spellIds,
@@ -747,6 +771,7 @@ class CharacterCompiler {
       }),
       innateSpells: innate.spells,
       alwaysPreparedSpellIds: alwaysPrepared,
+      alwaysPreparedSpellIdsByClass: alwaysPreparedByClass,
       spellListAdditionIds: {
         for (final id in builder.spellListAdditionIds)
           if (repo.spell(id) != null) id,
@@ -953,11 +978,13 @@ class CharacterCompiler {
     List<({String id, String name, List<Effect> effects})> sources,
     Spellcasting? spellcasting,
     List<SpellcastingBlock> spellcastingBlocks,
+    bool multipleClasses,
   ) {
     final slots = <SpellChoiceSlot>[];
 
     for (final source in sources) {
-      final sourceClassId = _classIdFromSourceId(source.id);
+      final sourceClassId =
+          multipleClasses ? _classIdFromSourceId(source.id) : null;
       final sourceCasting = sourceClassId == null
           ? null
           : spellcastingBlocks
@@ -1012,7 +1039,9 @@ class CharacterCompiler {
         }
 
         slots.add(SpellChoiceSlot(
-          groupId: effect.groupId,
+          groupId: sourceClassId == null
+              ? effect.groupId
+              : '$sourceClassId:${effect.groupId}',
           name: effect.name.isEmpty ? source.name : effect.name,
           count: cupo,
           options: options,
@@ -1020,7 +1049,9 @@ class CharacterCompiler {
           replaceable: effect.replaceable,
         ));
 
-        builder.alwaysPreparedSpellIds.addAll(chosen);
+        for (final id in chosen) {
+          builder.addAlwaysPreparedSpell(id, sourceClassId: sourceClassId);
+        }
 
         // El lanzamiento gratis se declara como conjuro innato: así
         // `_resolveInnate` acuña el recurso que lleva la cuenta de los usos sin
@@ -1208,14 +1239,26 @@ class CharacterCompiler {
   }
 
   String? _classIdFromSourceId(String id) {
-    for (final prefix in const ['class:', 'subclass:']) {
-      if (id.startsWith(prefix)) {
-        final remainder = id.substring(prefix.length);
-        final separator = remainder.indexOf(':');
-        return separator < 0 ? remainder : remainder.substring(0, separator);
-      }
+    if (id.startsWith('class:')) {
+      final remainder = id.substring('class:'.length);
+      final separator = remainder.indexOf(':');
+      return separator < 0 ? remainder : remainder.substring(0, separator);
+    }
+    if (id.startsWith('subclass:')) {
+      final remainder = id.substring('subclass:'.length);
+      final separator = remainder.indexOf(':');
+      final subclassId =
+          separator < 0 ? remainder : remainder.substring(0, separator);
+      return repo.subclass(subclassId)?.classId;
     }
     return null;
+  }
+
+  String? _classIdFromScopedGroupId(String id, Map<String, int> classLevels) {
+    final separator = id.indexOf(':');
+    if (separator <= 0) return null;
+    final classId = id.substring(0, separator);
+    return classLevels.containsKey(classId) ? classId : null;
   }
 
   /// Velocidad final: base + bonos incondicionales (raza) + Movimiento sin

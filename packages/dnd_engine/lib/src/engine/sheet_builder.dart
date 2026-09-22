@@ -71,6 +71,18 @@ class SheetBuilder {
   /// nombre y nivel necesita el repositorio, que vive en el compilador.
   final Set<String> alwaysPreparedSpellIds = {};
 
+  /// Las mismas concesiones, separadas por clase cuando el efecto proviene de
+  /// una fuente de una clase multiclase. La colección global de arriba sigue
+  /// siendo el contrato para la ficha completa.
+  final Map<String, Set<String>> alwaysPreparedSpellIdsByClass = {};
+
+  void addAlwaysPreparedSpell(String spellId, {String? sourceClassId}) {
+    alwaysPreparedSpellIds.add(spellId);
+    if (sourceClassId != null) {
+      (alwaysPreparedSpellIdsByClass[sourceClassId] ??= {}).add(spellId);
+    }
+  }
+
   /// Conjuros que un rasgo suma a la lista elegible (Conjuros de la Marca).
   final Set<String> spellListAdditionIds = {};
 
@@ -288,7 +300,7 @@ class SheetBuilder {
                 ),
         );
       case AlwaysPreparedSpellEffect(:final spellId):
-        alwaysPreparedSpellIds.add(spellId);
+        addAlwaysPreparedSpell(spellId, sourceClassId: sourceClassId);
       case SpellListAdditionEffect(:final spellId):
         spellListAdditionIds.add(spellId);
       case ProficiencyChoiceEffect():

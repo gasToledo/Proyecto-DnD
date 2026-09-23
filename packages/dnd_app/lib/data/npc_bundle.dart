@@ -4,6 +4,9 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 
+import 'backup_bundle.dart';
+import 'homebrew_store.dart';
+
 /// Un retrato que viaja en el archivo: de quién es (`npc` o `character`), la
 /// clave que tiene en esta cuenta y sus bytes.
 typedef NpcBundlePortrait = ({String owner, String key, Uint8List bytes});
@@ -115,6 +118,120 @@ class NpcBundleCodec {
     );
   }
 
+  /// Rearma el archivo de un personaje exportado desde «Mis personajes»
+  /// (`dnd_bundle`) como el de un PNJ con ficha: el personaje retirado de un
+  /// jugador vuelve a la mesa en manos del DM. Cualquier otro archivo vuelve
+  /// tal cual, y [preview] decide si es un PNJ.
+  ///
+  /// Se convierte acá y no en el servidor porque el servidor ya sabe importar
+  /// un PNJ con ficha, retratos y homebrew: una segunda ruta de importación
+  /// sería una segunda puerta que validar. Al revés no hay camino: un PNJ
+  /// nunca se traspasa a un jugador.
+  ///
+  /// El trasfondo y las entradas del Diario pasan al PNJ, porque la ficha de
+  /// un PNJ no muestra el Diario. Las imágenes del Diario no viajan: una nota
+  /// de PNJ es solo texto.
+  static Uint8List adoptCharacterExport(Uint8List bytes) {
+    final Archive archive;
+    try {
+      archive = ZipDecoder().decodeBytes(bytes);
+    } catch (_) {
+      return bytes;
+    }
+    Object? json(String name) {
+      final content = archive.findFile(name)?.readBytes();
+      return content == null ? null : jsonDecode(utf8.decode(content));
+    }
+
+    final manifest = json('manifest.json');
+    if (manifest is! Map || manifest['type'] != BackupBundleCodec.type) {
+      return bytes;
+    }
+    final version = manifest['formatVersion'];
+    if (version is int && version > BackupBundleCodec.formatVersion) {
+      throw UnsupportedDataVersionException(
+        dataType: 'respaldo',
+        found: version,
+        supported: BackupBundleCodec.formatVersion,
+      );
+    }
+    final entries = manifest['characters'] as List? ?? const [];
+    if (entries.length != 1) {
+      throw FormatException(
+        entries.isEmpty
+            ? 'El archivo no trae ningún personaje.'
+            : 'El respaldo trae ${entries.length} personajes: exportá desde '
+                  '«Mis personajes» solo el que quieras sumar como PNJ.',
+      );
+    }
+    final entry = entries.single as Map;
+    final original = Character.fromJson(
+      (json(entry['file'] as String) as Map).cast<String, dynamic>(),
+    );
+
+    // El respaldo nombra cada retrato por su posición en `portraitPaths`
+    // (`portraits/<id>/<i>.png`); uno que no se pudo leer al exportar falta,
+    // y por eso se busca por número y no por orden.
+    final portraits = <NpcBundlePortrait>[];
+    for (final file in (entry['portraits'] as List? ?? const [])) {
+      final index = RegExp(r'/(\d+)\.png$').firstMatch('$file')?.group(1);
+      final content = archive.findFile('$file')?.readBytes();
+      final i = index == null ? null : int.parse(index);
+      if (content == null || i == null || i >= original.portraitPaths.length) {
+        continue;
+      }
+      portraits.add((
+        owner: 'character',
+        key: original.portraitPaths[i],
+        bytes: content,
+      ));
+    }
+
+    final homebrewFile = manifest['homebrewFile'];
+    final allHomebrew = homebrewFile is String ? json(homebrewFile) : null;
+    final homebrew = allHomebrew is Map
+        ? homebrewUsedBy(original, {
+            for (final e in allHomebrew.entries)
+              '${e.key}': [
+                for (final doc in (e.value as List? ?? const []))
+                  if (doc is Map) doc.cast<String, dynamic>(),
+              ],
+          })
+        : const <String, List<Map<String, dynamic>>>{};
+
+    final npc = Npc(
+      id: 'importado',
+      name: original.name,
+      sheetKind: NpcSheetKind.character,
+      background: original.background,
+      notes: [
+        for (final e in original.diary)
+          if (e.kind != DiaryEntryKind.image &&
+              [e.title, e.body].any((t) => t.trim().isNotEmpty))
+            NpcNote(
+              id: 'nota-${e.entryId}',
+              date: e.createdAt ?? DateTime.now(),
+              text: [
+                e.title,
+                e.body,
+              ].where((t) => t.trim().isNotEmpty).join('\n'),
+            ),
+      ],
+    );
+    // Vaciados en la ficha para que no quede una copia que nadie ve.
+    final sheet = Character.fromJson(
+      original.toJson()
+        ..['background'] = ''
+        ..['diary'] = const [],
+    );
+    return encode(
+      npc: npc,
+      sheet: sheet,
+      homebrew: homebrew,
+      portraits: portraits,
+    );
+  }
+
   static String _extensionOf(Uint8List bytes) {
     if (bytes.length > 3 && bytes[0] == 0xFF && bytes[1] == 0xD8) return 'jpg';
     if (bytes.length > 11 &&
@@ -157,3 +274,17 @@ List<String> missingOfficialContent(
       'trasfondo «${sheet.backgroundId}»',
   ];
 }
+
+/// El homebrew que usa la ficha: sin él, del otro lado no abriría.
+Map<String, List<Map<String, dynamic>>> homebrewUsedBy(
+  Character sheet,
+  Map<String, List<Map<String, dynamic>>> all,
+) => {
+  for (final entry in all.entries)
+    if ([
+          for (final doc in entry.value)
+            if (charactersUsing('${doc['id']}', [sheet]).isNotEmpty) doc,
+        ]
+        case final used when used.isNotEmpty)
+      entry.key: used,
+};

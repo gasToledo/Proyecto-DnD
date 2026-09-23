@@ -139,7 +139,8 @@ class _NpcLibraryViewState extends State<NpcLibraryView> {
                   icon: Icons.groups_2_outlined,
                   message:
                       'Tu biblioteca de PNJ está vacía. Creá el primero o '
-                      'importá uno que te haya pasado otro DM.',
+                      'importá uno: el de otro DM, o un personaje que '
+                      'exportó un jugador.',
                   actions: [
                     FilledButton.icon(
                       onPressed: _create,

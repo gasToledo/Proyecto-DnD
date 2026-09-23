@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import '../../../api/api_client.dart';
 import '../../../api/api_exception.dart';
 import '../../../api/api_models.dart';
-import '../../../data/homebrew_store.dart';
 import '../../../data/npc_bundle.dart';
 import '../../../theme/app_theme.dart';
 import '../../../theme/app_widgets.dart';
@@ -25,20 +24,6 @@ Npc npcForExport(Npc npc, NpcExportOptions options) => npc.copyWith(
   tags: options.tags ? npc.tags : const [],
   notes: options.notes ? npc.notes : const [],
 );
-
-/// El homebrew que usa la ficha: sin él, del otro lado no abriría.
-Map<String, List<Map<String, dynamic>>> homebrewUsedBy(
-  Character sheet,
-  Map<String, List<Map<String, dynamic>>> all,
-) => {
-  for (final entry in all.entries)
-    if ([
-          for (final doc in entry.value)
-            if (charactersUsing('${doc['id']}', [sheet]).isNotEmpty) doc,
-        ]
-        case final used when used.isNotEmpty)
-      entry.key: used,
-};
 
 Future<void> exportNpcFlow(
   BuildContext context, {
@@ -192,12 +177,15 @@ Future<bool> importNpcFlow(
     type: FileType.custom,
     allowedExtensions: const ['zip'],
     withData: true,
-    dialogTitle: 'Elegir el archivo del PNJ',
+    dialogTitle: 'Elegir el archivo del PNJ o del personaje',
   );
-  final bytes = picked?.files.singleOrNull?.bytes;
-  if (bytes == null || !context.mounted) return false;
+  final raw = picked?.files.singleOrNull?.bytes;
+  if (raw == null || !context.mounted) return false;
+  final Uint8List bytes;
   final NpcBundlePreview preview;
   try {
+    // Un personaje exportado desde «Mis personajes» entra como PNJ con ficha.
+    bytes = NpcBundleCodec.adoptCharacterExport(raw);
     preview = NpcBundleCodec.preview(bytes);
   } on FormatException catch (e) {
     showAppMessage(context, e.message, tone: AppMessageTone.error);

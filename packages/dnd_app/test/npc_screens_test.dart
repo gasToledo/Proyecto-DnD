@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/api/api_models.dart';
+import 'package:dnd_app/data/backup_bundle.dart';
 import 'package:dnd_app/data/npc_bundle.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
@@ -689,6 +690,79 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // El personaje retirado de un jugador vuelve como PNJ con ficha: el
+    // archivo de «Mis personajes» se rearma como el de un PNJ y entra por la
+    // misma importación, sin una segunda ruta en el servidor.
+    test('un personaje exportado se rearma como PNJ con ficha', () async {
+      final png = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 1, 2, 3]);
+      final exported = await BackupBundleCodec.encode(
+        scope: BackupScope.character,
+        characters: [
+          Character(
+            id: 'pj-vadrik',
+            name: 'Vadrik',
+            raceId: 'human',
+            classId: 'fighter',
+            backgroundId: 'soldier',
+            assignedScores: const {},
+            background: 'Desertor del ejército.',
+            portraitPaths: const ['ajeno/1.png', 'ajeno/2.png'],
+            diary: [
+              DiaryEntry(entryId: 'e1', title: 'Deudas', body: 'Al herrero.'),
+              DiaryEntry(
+                entryId: 'e2',
+                kind: DiaryEntryKind.image,
+                imageKey: 'ajeno/mapa.png',
+              ),
+            ],
+          ),
+        ],
+        // El primer retrato no se pudo leer al exportar: el segundo tiene que
+        // seguir atado a su propia clave, no correrse un lugar.
+        readPortrait: (key) async => key == 'ajeno/2.png' ? png : null,
+      );
+
+      final bytes = NpcBundleCodec.adoptCharacterExport(exported);
+      final preview = NpcBundleCodec.preview(bytes);
+      expect(preview.npc.name, 'Vadrik');
+      expect(preview.npc.sheetKind, NpcSheetKind.character);
+      expect(preview.npc.background, 'Desertor del ejército.');
+      expect(preview.npc.notes.map((n) => n.text), ['Deudas\nAl herrero.']);
+      expect(preview.sheet!.background, isEmpty);
+      expect(preview.sheet!.diary, isEmpty);
+      final portraits = manifestOf(bytes)['portraits'] as List;
+      expect(portraits.map((p) => (p as Map)['key']), ['ajeno/2.png']);
+      expect(portraits.map((p) => (p as Map)['owner']), ['character']);
+    });
+
+    test('un respaldo con varios personajes pide exportar uno solo', () async {
+      Character pj(String id) => Character(
+        id: id,
+        name: id,
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        assignedScores: const {},
+      );
+      final backup = await BackupBundleCodec.encode(
+        scope: BackupScope.full,
+        characters: [pj('a'), pj('b')],
+        readPortrait: (_) async => null,
+      );
+      expect(
+        () => NpcBundleCodec.adoptCharacterExport(backup),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            contains('2 personajes'),
+          ),
+        ),
+      );
+      // Un archivo de PNJ pasa tal cual.
+      final npcFile = NpcBundleCodec.encode(npc: full);
+      expect(NpcBundleCodec.adoptCharacterExport(npcFile), same(npcFile));
+    });
     testWidgets('importar con campaña la suma a esa campaña', (tester) async {
       bigView(tester);
       final server = FakeApiServer()

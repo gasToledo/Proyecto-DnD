@@ -43,6 +43,9 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   nombre, sin ningún otro dato.
 - Exportar un PNJ a un `.zip` e importarlo en otra cuenta como copia propia,
   con su ficha, su homebrew y sus retratos; las campañas nunca viajan.
+- Importar como PNJ el personaje que un jugador exportó desde «Mis
+  personajes»: entra como PNJ con ficha, y su trasfondo y su Diario pasan al
+  PNJ.
 - Bandos en el combate: aliado, enemigo o neutral para PNJ y monstruos, con
   cambio de bando a mitad de combate y conteos «en pie» por bando.
 - «Convertir en PNJ» desde la fila de un monstruo, conservando su lugar, sus

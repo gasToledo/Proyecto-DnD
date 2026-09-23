@@ -420,6 +420,13 @@ además de `campaign_members`, y todo este documento existe para que haya una
 sola. El archivo nunca lleva en qué campañas estaba ni su estado en cada una;
 las notas viajan solo si quien exporta las marca.
 
+El personaje que un jugador exportó desde «Mis personajes» (`dnd_bundle` con
+un solo personaje) también entra como PNJ con ficha: el cliente lo rearma como
+`dnd_npc` (`NpcBundleCodec.adoptCharacterExport`) y usa la misma ruta de
+importación, así que el servidor no suma una segunda puerta. Es el mismo
+criterio que el resto: el jugador entrega un archivo, nadie lee su cuenta. Al
+revés no hay camino — un PNJ nunca se traspasa a un jugador.
+
 ## Qué probar al tocar esto
 
 Las pruebas negativas de `packages/dnd_server/test/app_test.dart`, grupo

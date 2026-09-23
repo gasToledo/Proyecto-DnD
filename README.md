@@ -131,8 +131,9 @@ visual en la [guía de diseño web](docs/desarrollo/diseno-web.md).
 
 ## El camino recorrido
 
-La versión **0.11.0** incorpora multiclase: elección de clase al subir de nivel,
-subclases por clase y magia organizada por fuente.
+La versión **0.12.0** incorpora PNJ al Modo DM, con biblioteca propia, estado
+por campaña y bandos en combate, y un Bestiario para armar encuentros: filtro
+por valor de desafío y suma al combate desde el perfil.
 
 Consultá el [changelog](CHANGELOG.md) para conocer los cambios de cada versión
 y el [índice de documentación](docs/README.md) para profundizar en arquitectura,

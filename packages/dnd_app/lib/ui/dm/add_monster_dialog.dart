@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../api/api_models.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
+import 'bestiary_view.dart';
 import 'npcs/npc_shared.dart';
 
 /// Lo que se eligió sumar al combate.
@@ -215,10 +216,10 @@ class _AddCombatantDialogState extends State<_AddCombatantDialog> {
   );
 
   Widget _bestiarySearch(BuildContext context) {
-    final results = widget.repo.creaturesSorted
-        .where((c) => c.name.toLowerCase().contains(_query.toLowerCase()))
-        .take(30)
-        .toList();
+    // La misma búsqueda que el Bestiario, sin tope: la lista es perezosa, y
+    // cortar en 30 escondía criaturas sin decirlo. Los filtros de VD y el
+    // orden se quedan en el Bestiario; acá se busca algo que ya se sabe cuál es.
+    final results = filterCreatures(widget.repo.creaturesSorted, query: _query);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -234,8 +235,12 @@ class _AddCombatantDialogState extends State<_AddCombatantDialog> {
                   itemBuilder: (context, i) {
                     final creature = results[i];
                     return ListTile(
+                      key: ValueKey('add-bestiary-${creature.id}'),
                       title: Text(creature.name),
                       subtitle: Text(creature.kind),
+                      trailing: creature.cr == null
+                          ? null
+                          : Text('VD ${challengeRatingLabel(creature.cr!)}'),
                       onTap: () => setState(() => _creature = creature),
                     );
                   },
@@ -245,78 +250,17 @@ class _AddCombatantDialogState extends State<_AddCombatantDialog> {
     );
   }
 
-  Widget _quantity(BuildContext context, Creature creature) {
-    final pal = context.palette;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                creature.name,
-                style: const TextStyle(fontFamily: 'Georgia', fontSize: 18),
-              ),
-            ),
-            TextButton(
-              onPressed: () => setState(() => _creature = null),
-              child: const Text('Cambiar'),
-            ),
-          ],
-        ),
-        Text(creature.kind, style: TextStyle(color: pal.textMuted)),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              tooltip: 'Una copia menos',
-              onPressed: _count > 1 ? () => setState(() => _count--) : null,
-              icon: const Icon(Icons.remove_circle_outline),
-            ),
-            SizedBox(
-              width: 40,
-              child: Text(
-                '$_count',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20),
-              ),
-            ),
-            IconButton(
-              tooltip: 'Una copia más',
-              onPressed: () => setState(() => _count++),
-              icon: const Icon(Icons.add_circle_outline),
-            ),
-          ],
-        ),
-        // Solo se ofrece si el perfil trae los dados. Los que no los traen son
-        // los compañeros de clase y las invocaciones, cuyos PG salen de una
-        // fórmula y no de una tirada.
-        if (DiceFormula.tryParse(creature.hitDice ?? '') case final formula?)
-          CheckboxListTile(
-            value: _rollHp,
-            onChanged: (v) => setState(() => _rollHp = v ?? false),
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: const Text('Tirar los PG de cada uno'),
-            subtitle: Text(
-              _rollHp
-                  ? 'Cada copia tira $formula por su cuenta.'
-                  : 'Todas arrancan con ${creature.hp}, el promedio del libro.',
-              style: TextStyle(fontSize: 12, color: pal.textMuted),
-            ),
-          ),
-        const SizedBox(height: 8),
-        const Eyebrow('¿De qué lado pelea?'),
-        SideSelector(
-          label: 'Bando',
-          side: _monsterSide,
-          onChanged: (side) => setState(() => _monsterSide = side),
-        ),
-      ],
-    );
-  }
+  Widget _quantity(BuildContext context, Creature creature) => _MonsterQuantity(
+    creature: creature,
+    count: _count,
+    rollHp: _rollHp,
+    side: _monsterSide,
+    onMore: () => setState(() => _count++),
+    onLess: () => setState(() => _count--),
+    onRollHp: (v) => setState(() => _rollHp = v),
+    onSide: (v) => setState(() => _monsterSide = v),
+    onChange: () => setState(() => _creature = null),
+  );
 
   Widget _npcSearch(BuildContext context) {
     final pal = context.palette;
@@ -477,6 +421,179 @@ class _AddCombatantDialogState extends State<_AddCombatantDialog> {
                     'enemigo la sesión que viene. Un neutral tiene turno y puede '
                     'tomar partido durante el combate.',
           style: TextStyle(fontSize: 12, color: pal.textMuted),
+        ),
+      ],
+    );
+  }
+}
+
+/// Cantidad, PG y bando de un monstruo que se va a sumar.
+///
+/// Es la misma pieza en los dos lugares desde donde se suma —la solapa
+/// Bestiario de «Sumar al combate» y el perfil del Bestiario— para que las
+/// reglas de `dm-combat-sides` (enemigo por defecto, tirar PG solo si hay
+/// dados) no puedan quedar cumplidas en uno y olvidadas en el otro.
+///
+/// Sin estado propio: lo lleva cada diálogo, que es quien arma la elección.
+class _MonsterQuantity extends StatelessWidget {
+  final Creature creature;
+  final int count;
+  final bool rollHp;
+  final CombatantSide side;
+  // Incrementos y no un valor absoluto: dos toques antes de redibujar tienen
+  // que sumar dos, y un valor calculado con el `count` viejo sumaría uno.
+  final VoidCallback onMore;
+  final VoidCallback onLess;
+  final ValueChanged<bool> onRollHp;
+  final ValueChanged<CombatantSide> onSide;
+
+  /// Volver a elegir criatura. Null donde la criatura ya viene dada.
+  final VoidCallback? onChange;
+
+  const _MonsterQuantity({
+    required this.creature,
+    required this.count,
+    required this.rollHp,
+    required this.side,
+    required this.onMore,
+    required this.onLess,
+    required this.onRollHp,
+    required this.onSide,
+    this.onChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pal = context.palette;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                creature.name,
+                style: const TextStyle(fontFamily: 'Georgia', fontSize: 18),
+              ),
+            ),
+            if (onChange != null)
+              TextButton(onPressed: onChange, child: const Text('Cambiar')),
+          ],
+        ),
+        Text(creature.kind, style: TextStyle(color: pal.textMuted)),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              tooltip: 'Una copia menos',
+              onPressed: count > 1 ? onLess : null,
+              icon: const Icon(Icons.remove_circle_outline),
+            ),
+            SizedBox(
+              width: 40,
+              child: Text(
+                '$count',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 20),
+              ),
+            ),
+            IconButton(
+              tooltip: 'Una copia más',
+              onPressed: onMore,
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
+        ),
+        // Solo se ofrece si el perfil trae los dados. Los que no los traen son
+        // los compañeros de clase y las invocaciones, cuyos PG salen de una
+        // fórmula y no de una tirada.
+        if (DiceFormula.tryParse(creature.hitDice ?? '') case final formula?)
+          CheckboxListTile(
+            value: rollHp,
+            onChanged: (v) => onRollHp(v ?? false),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('Tirar los PG de cada uno'),
+            subtitle: Text(
+              rollHp
+                  ? 'Cada copia tira $formula por su cuenta.'
+                  : 'Todas arrancan con ${creature.hp}, el promedio del libro.',
+              style: TextStyle(fontSize: 12, color: pal.textMuted),
+            ),
+          ),
+        const SizedBox(height: 8),
+        const Eyebrow('¿De qué lado pelea?'),
+        SideSelector(label: 'Bando', side: side, onChanged: onSide),
+      ],
+    );
+  }
+}
+
+/// Sumar [creature] al combate de [campaignName], con la criatura ya elegida.
+///
+/// Es la puerta del perfil del Bestiario: sin solapas ni buscador, porque la
+/// criatura es la que se está mirando, y sin PNJ, que no son del catálogo.
+Future<AddMonsterChoice?> showAddMonsterDialog(
+  BuildContext context, {
+  required Creature creature,
+  required String campaignName,
+}) {
+  return showDialog<AddMonsterChoice>(
+    context: context,
+    builder: (_) =>
+        _AddMonsterDialog(creature: creature, campaignName: campaignName),
+  );
+}
+
+class _AddMonsterDialog extends StatefulWidget {
+  final Creature creature;
+  final String campaignName;
+
+  const _AddMonsterDialog({required this.creature, required this.campaignName});
+
+  @override
+  State<_AddMonsterDialog> createState() => _AddMonsterDialogState();
+}
+
+class _AddMonsterDialogState extends State<_AddMonsterDialog> {
+  int _count = 1;
+  bool _rollHp = false;
+  CombatantSide _side = CombatantSide.enemy;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppDialog(
+      title: 'Sumar al combate de ${widget.campaignName}',
+      width: 440,
+      content: _MonsterQuantity(
+        creature: widget.creature,
+        count: _count,
+        rollHp: _rollHp,
+        side: _side,
+        onMore: () => setState(() => _count++),
+        onLess: () => setState(() => _count--),
+        onRollHp: (v) => setState(() => _rollHp = v),
+        onSide: (v) => setState(() => _side = v),
+      ),
+      actions: [
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        DialogAction(
+          'Sumar',
+          primary: true,
+          onPressed: () => Navigator.of(context).pop(
+            AddMonsterChoice(
+              creature: widget.creature,
+              count: _count,
+              rollHp: _rollHp && widget.creature.hitDice != null,
+              side: _side,
+            ),
+          ),
         ),
       ],
     );

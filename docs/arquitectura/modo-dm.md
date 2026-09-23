@@ -304,6 +304,30 @@ de arriba— y no un campito por fila: un ataque hace el mismo daño al goblin q
 le pega que al que tiene al lado, y antes había que tipearlo tantas veces como
 enemigos hubiera.
 
+### Sumar monstruos: dos puertas, una regla
+
+Un monstruo entra al combate desde dos lugares: el diálogo «Sumar al combate»
+de Combate y el perfil del Bestiario, que suma al combate de la campaña
+seleccionada **sin salir del Bestiario**. Armar un encuentro son varias
+criaturas distintas, y cada ida y vuelta a Combate perdía la búsqueda y los
+filtros.
+
+Las dos puertas construyen las copias con `withMonsters`
+(`packages/dnd_engine/lib/src/engine/encounter_monsters.dart`): numeración sobre
+lo ya guardado, PG promedio o tirados por copia, iniciativa solo si el combate
+ya arrancó, y bando. Es una extensión en `engine/` y no un método de
+`Encounter` porque tira dados, y `domain/` no depende de `engine/`.
+
+Las dos también encolan sus escrituras: el diálogo se cierra antes de que el
+servidor conteste, y dos sumas seguidas leerían el mismo combate. Combate
+calcula sobre lo que dejó su escritura anterior; el Bestiario, que no tiene el
+combate en memoria, lo lee (`GET`) recién cuando le toca el turno en la fila.
+Entre dos pestañas abiertas sigue ganando la última escritura, igual que antes.
+
+El buscador de criaturas también es uno solo (`filterCreatures`, en
+`bestiary_view.dart`): sin acentos ni mayúsculas en los dos lugares, y con el
+rango de VD y el orden solo en el Bestiario.
+
 ## La vuelta del vínculo: la campaña vista por el jugador
 
 Hasta acá el vínculo era de una sola vía. El jugador compartía su ficha, el DM

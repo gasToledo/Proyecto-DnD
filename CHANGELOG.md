@@ -29,7 +29,7 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 - El supuesto de que una ficha solo puede tener una clase en los cálculos de
   nivel, rasgos, recursos, conjuros y dados de golpe.
 
-## [Unreleased]
+## [0.12.0+1] - 2026-09-23
 
 ### Nuevo
 
@@ -51,8 +51,17 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 - «Convertir en PNJ» desde la fila de un monstruo, conservando su lugar, sus
   PG, su bando y sus efectos.
 - Al terminar y guardar un combate se puede marcar qué PNJ caídos murieron.
+- El Bestiario filtra por rango de valor de desafío («VD desde» / «VD
+  hasta») y ordena por nombre o por VD.
+- «Sumar al combate de <campaña>» desde el perfil del Bestiario: suma las
+  copias al combate de la campaña seleccionada sin salir del Bestiario ni
+  perder la búsqueda y los filtros.
 
 ### Modificado
+
+- El buscador de «Sumar al combate» encuentra criaturas sin importar acentos
+  ni mayúsculas, muestra el VD de cada una y ya no corta la lista en 30
+  resultados.
 
 - «Sumar monstruo» pasa a ser «Sumar al combate», con solapas de PNJ y
   Bestiario; un PNJ no entra sin que el DM le elija bando.
@@ -65,6 +74,20 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 - `Encounter` y `EncounterLog` pasan al esquema 2; los combates y registros
   anteriores se leen con los jugadores como aliados y los monstruos como
   enemigos.
+
+### Eliminado
+
+- Sin cambios.
+
+## [Unreleased]
+
+### Nuevo
+
+- Sin cambios.
+
+### Modificado
+
+- Sin cambios.
 
 ### Eliminado
 

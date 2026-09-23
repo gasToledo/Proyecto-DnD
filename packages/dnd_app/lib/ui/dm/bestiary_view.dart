@@ -1,10 +1,13 @@
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
+import '../../api/api_client.dart';
+import '../../api/api_exception.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
+import 'add_monster_dialog.dart';
 
-/// El bestiario: buscar un monstruo y leer su perfil.
+/// El bestiario: buscar un monstruo, leer su perfil y sumarlo al combate.
 ///
 /// A diferencia de `ChaptersView` y `EncounterView`, esta sí tiene estado
 /// propio, y por el mismo motivo por el que aquellas no lo tienen: sus datos
@@ -16,12 +19,23 @@ import '../../theme/app_widgets.dart';
 /// sincrónica de contenido ya parseado. Un `AppBusyLabel` o un `AppErrorView`
 /// serían código muerto para una condición que no puede pasar.
 ///
-/// Es **solo de consulta**. Sumar un monstruo al combate se hace desde Combate,
-/// que ya tiene su propio buscador y sabe a qué encuentro sumarlo.
+/// Sumar al combate se hace **sin salir de acá**: armar un encuentro son
+/// varias criaturas distintas, y cada ida y vuelta a Combate perdería la
+/// búsqueda y los filtros. La regla de cómo entran las copias es la misma que
+/// usa Combate (`withMonsters`, en el engine).
 class BestiaryView extends StatefulWidget {
   final ContentRepository repo;
+  final ApiClient api;
 
-  const BestiaryView({super.key, required this.repo});
+  /// La campaña a cuyo combate se suma, o null si el DM no tiene ninguna.
+  final Campaign? campaign;
+
+  const BestiaryView({
+    super.key,
+    required this.repo,
+    required this.api,
+    required this.campaign,
+  });
 
   @override
   State<BestiaryView> createState() => _BestiaryViewState();
@@ -35,11 +49,114 @@ const double _splitWidth = 760;
 
 const _todos = '__todos__';
 
+/// Las criaturas de [all] que coinciden con los filtros, en el orden pedido.
+///
+/// Es la única regla de búsqueda de criaturas del Modo DM: la usan el
+/// Bestiario y la solapa Bestiario de «Sumar al combate». Cuando eran dos, el
+/// buscador del combate no plegaba acentos y «aguila» no encontraba «Águila».
+///
+/// Un rango de VD con cualquiera de los dos extremos deja afuera a las
+/// criaturas sin VD: quien pide «de 1 a 3» no está buscando al compañero de
+/// un conjuro, que no tiene desafío.
+///
+/// [all] tiene que venir ordenado por nombre, como `creaturesSorted`: el orden
+/// por nombre es el de entrada.
+List<Creature> filterCreatures(
+  Iterable<Creature> all, {
+  String query = '',
+  String? typeId,
+  num? minCr,
+  num? maxCr,
+  bool sortByCr = false,
+}) {
+  final needle = foldForSearch(query.trim());
+  final ranged = minCr != null || maxCr != null;
+  bool inRange(num? cr) =>
+      !ranged ||
+      (cr != null &&
+          (minCr == null || cr >= minCr) &&
+          (maxCr == null || cr <= maxCr));
+  final results = [
+    for (final c in all)
+      if ((typeId == null || c.creatureType?.id == typeId) &&
+          (needle.isEmpty || foldForSearch(c.name).contains(needle)) &&
+          inRange(c.cr))
+        c,
+  ];
+  if (sortByCr) {
+    // `sort` no es estable: el desempate por nombre va explícito.
+    results.sort((a, b) {
+      final ca = a.cr, cb = b.cr;
+      if (ca != cb) {
+        if (ca == null) return 1;
+        if (cb == null) return -1;
+        return ca.compareTo(cb);
+      }
+      return compareContentNames(a.name, b.name);
+    });
+  }
+  return results;
+}
+
 class _BestiaryViewState extends State<BestiaryView> {
   final _searchController = TextEditingController();
   String _query = '';
   String _type = _todos;
+  num? _minCr;
+  num? _maxCr;
+  bool _sortByCr = false;
   Creature? _selected;
+
+  /// Las sumas al combate, una detrás de otra. El diálogo se cierra antes de
+  /// que el servidor responda, y dos sumas seguidas leerían el mismo combate:
+  /// la segunda pisaría a la primera. Es el mismo arreglo que en Combate.
+  Future<void> _writes = Future.value();
+  int _idCounter = 0;
+
+  String _newId(String prefix) =>
+      '$prefix-${DateTime.now().microsecondsSinceEpoch}-${_idCounter++}';
+
+  Future<void> _addToCombat(Creature creature) async {
+    final campaign = widget.campaign;
+    if (campaign == null) return;
+    final choice = await showAddMonsterDialog(
+      context,
+      creature: creature,
+      campaignName: campaign.name,
+    );
+    if (choice == null || !mounted) return;
+    _writes = _writes.then((_) async {
+      try {
+        // Se lee recién ahora, dentro de la fila: la numeración tiene que
+        // continuar la del combate guardado, incluida la tanda anterior.
+        final current = await widget.api.getEncounter(campaign.id);
+        final next = (current ?? Encounter(id: _newId('encounter')))
+            .withMonsters(
+              choice.creature,
+              choice.count,
+              newId: () => _newId('c'),
+              side: choice.side,
+              rollHp: choice.rollHp,
+            );
+        await widget.api.saveEncounter(campaign.id, next);
+        if (!mounted) return;
+        final what = choice.count == 1
+            ? choice.creature.name
+            : '${choice.count} × ${choice.creature.name}';
+        showAppMessage(
+          context,
+          'Sumaste $what al combate de ${campaign.name}.',
+        );
+      } catch (error) {
+        if (!mounted) return;
+        showAppMessage(
+          context,
+          error is ApiException ? error.message : '$error',
+          tone: AppMessageTone.error,
+        );
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -52,15 +169,37 @@ class _BestiaryViewState extends State<BestiaryView> {
   /// significan nada sueltas.
   List<Creature> get _all => widget.repo.creaturesSorted;
 
-  List<Creature> get _results {
-    final needle = foldForSearch(_query.trim());
-    return [
-      for (final c in _all)
-        if ((_type == _todos || c.creatureType?.id == _type) &&
-            (needle.isEmpty || foldForSearch(c.name).contains(needle)))
-          c,
-    ];
+  List<Creature> get _results => filterCreatures(
+    _all,
+    query: _query,
+    typeId: _type == _todos ? null : _type,
+    minCr: _minCr,
+    maxCr: _maxCr,
+    sortByCr: _sortByCr,
+  );
+
+  void _clearFilters() {
+    _searchController.clear();
+    setState(() {
+      _query = '';
+      _type = _todos;
+      _minCr = null;
+      _maxCr = null;
+    });
   }
+
+  // Un rango invertido no se muestra como lista vacía: el extremo que no se
+  // tocó se corre hasta el que sí. Quien pide «desde 5» teniendo «hasta 2» no
+  // quiere cero resultados, quiere que el otro extremo lo acompañe.
+  void _setMinCr(num? v) => setState(() {
+    _minCr = v;
+    if (v != null && _maxCr != null && _maxCr! < v) _maxCr = v;
+  });
+
+  void _setMaxCr(num? v) => setState(() {
+    _maxCr = v;
+    if (v != null && _minCr != null && _minCr! > v) _minCr = v;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +243,13 @@ class _BestiaryViewState extends State<BestiaryView> {
     // filtro no ofrece un tipo vacío ni se olvida de uno nuevo.
     final types = <CreatureType>{for (final c in _all) ?c.creatureType}.toList()
       ..sort((a, b) => compareContentNames(a.label, b.label));
+    // Igual con los VD: los que existen en lo cargado, homebrew incluido.
+    final crs = <num>{for (final c in _all) ?c.cr}.toList()..sort();
+    List<DropdownMenuItem<num?>> crItems() => [
+      const DropdownMenuItem(value: null, child: Text('Cualquiera')),
+      for (final cr in crs)
+        DropdownMenuItem(value: cr, child: Text(challengeRatingLabel(cr))),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -134,6 +280,10 @@ class _BestiaryViewState extends State<BestiaryView> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
+                // `initialValue` se lee una sola vez: la clave reconstruye el
+                // campo cuando «Limpiar filtros» cambia el valor desde afuera,
+                // que si no seguiría mostrando el tipo viejo.
+                key: ValueKey('bestiary-type-$_type'),
                 initialValue: _type,
                 isDense: true,
                 // Sin esto el desplegable se mide por su ítem más ancho y se
@@ -153,14 +303,70 @@ class _BestiaryViewState extends State<BestiaryView> {
                 ],
                 onChanged: (v) => setState(() => _type = v ?? _todos),
               ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<num?>(
+                      key: ValueKey('bestiary-min-cr-$_minCr'),
+                      initialValue: _minCr,
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        labelText: 'VD desde',
+                      ),
+                      items: crItems(),
+                      onChanged: _setMinCr,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: DropdownButtonFormField<num?>(
+                      key: ValueKey('bestiary-max-cr-$_maxCr'),
+                      initialValue: _maxCr,
+                      isDense: true,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        labelText: 'VD hasta',
+                      ),
+                      items: crItems(),
+                      onChanged: _setMaxCr,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            results.length == 1 ? '1 criatura' : '${results.length} criaturas',
-            style: TextStyle(fontSize: 12, color: pal.textMuted),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  results.length == 1
+                      ? '1 criatura'
+                      : '${results.length} criaturas',
+                  style: TextStyle(fontSize: 12, color: pal.textMuted),
+                ),
+              ),
+              // El orden no es un filtro: «Limpiar filtros» no lo toca.
+              SegmentedButton<bool>(
+                showSelectedIcon: false,
+                style: const ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                segments: const [
+                  ButtonSegment(value: false, label: Text('Nombre')),
+                  ButtonSegment(value: true, label: Text('VD')),
+                ],
+                selected: {_sortByCr},
+                onSelectionChanged: (s) => setState(() => _sortByCr = s.single),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 8),
@@ -171,13 +377,7 @@ class _BestiaryViewState extends State<BestiaryView> {
                   message: 'Ninguna criatura coincide con lo que buscaste.',
                   actions: [
                     OutlinedButton(
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          _query = '';
-                          _type = _todos;
-                        });
-                      },
+                      onPressed: _clearFilters,
                       child: const Text('Limpiar filtros'),
                     ),
                   ],
@@ -244,13 +444,27 @@ class _BestiaryViewState extends State<BestiaryView> {
         const SizedBox(height: 6),
         Text(c.kind, style: TextStyle(fontSize: 13, color: pal.textMuted)),
         const SizedBox(height: 8),
-        // El bestiario es de consulta y eso lo decía solo un comentario del
-        // código: quien abría un perfil para usar la criatura no tenía cómo
-        // saber que se suma desde otra pantalla.
-        Text(
-          'Para usarla en una batalla, andá a Combate y tocá «Sumar al combate».',
-          style: TextStyle(fontSize: 12.5, color: pal.textMuted),
-        ),
+        // La campaña va escrita en el botón: el combate es de una campaña y el
+        // Bestiario no, así que decir a cuál se suma es lo que evita sumar a
+        // la equivocada.
+        if (widget.campaign case final campaign?)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.icon(
+              onPressed: () => _addToCombat(c),
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(
+                'Sumar al combate de ${campaign.name}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          )
+        else
+          Text(
+            'Para sumarla a un combate, primero creá una campaña.',
+            style: TextStyle(fontSize: 12.5, color: pal.textMuted),
+          ),
         const SizedBox(height: 16),
 
         ...creatureProfileBody(context, widget.repo, c),

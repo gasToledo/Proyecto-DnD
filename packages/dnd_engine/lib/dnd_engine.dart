@@ -31,6 +31,7 @@ export 'src/engine/sheet_builder.dart';
 export 'src/engine/character_compiler.dart';
 export 'src/engine/validation.dart';
 export 'src/engine/dice.dart';
+export 'src/engine/encounter_monsters.dart';
 export 'src/engine/initiative.dart';
 export 'src/engine/combat_ops.dart';
 export 'src/engine/inventory_ops.dart';

@@ -778,6 +778,35 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    // El buscador del diálogo comparaba con `toLowerCase().contains` y cortaba
+    // en 30. Ahora usa la regla del Bestiario y muestra el VD, que es lo que
+    // se mira para elegir entre dos criaturas parecidas.
+    testWidgets('el buscador del combate ignora acentos y muestra el VD', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Sumar al combate'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'aguila');
+      await tester.pumpAndSettle();
+
+      final eagle = repo.creature('eagle')!;
+      final tile = find.byKey(const ValueKey('add-bestiary-eagle'));
+      expect(tile, findsOneWidget);
+      expect(
+        find.descendant(
+          of: tile,
+          matching: find.text('VD ${challengeRatingLabel(eagle.cr!)}'),
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     /// Suma [count] copias de un monstruo desde el diálogo, opcionalmente
     /// tirándoles los PG.
     Future<void> addMonsters(
@@ -2017,9 +2046,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    // Que el bestiario es de consulta y se suma desde Combate lo decía solo un
-    // comentario del código.
-    testWidgets('el perfil dice dónde se suma la criatura al combate', (
+    // El combate es de una campaña y el Bestiario no: el botón dice a cuál se
+    // suma, para que no se sume a la equivocada.
+    testWidgets('el perfil dice a qué combate se suma la criatura', (
       tester,
     ) async {
       await pumpDmMode(tester, seed: seedTable);
@@ -2030,7 +2059,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('bestiary-bone-devil')));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Sumar al combate'), findsOneWidget);
+      expect(find.text('Sumar al combate de La Tumba'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -2054,6 +2083,351 @@ void main() {
         findsNothing,
       );
       expect(find.text(repo.creaturesSorted.first.name), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    /// Elige [opcion] en el desplegable rotulado [rotulo]. El menú abierto
+    /// repite el texto del valor elegido, por eso se toca el último.
+    Future<void> elegir(
+      WidgetTester tester,
+      String rotulo,
+      String opcion,
+    ) async {
+      await tester.tap(find.widgetWithText(InputDecorator, rotulo));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(opcion).last);
+      await tester.pumpAndSettle();
+    }
+
+    String conteo(Iterable<Creature> criaturas) =>
+        criaturas.length == 1 ? '1 criatura' : '${criaturas.length} criaturas';
+
+    bool entre(Creature c, num min, num max) =>
+        c.cr != null && c.cr! >= min && c.cr! <= max;
+
+    testWidgets('filtra por rango de VD', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      await elegir(tester, 'VD desde', '1');
+      await elegir(tester, 'VD hasta', '3');
+
+      expect(
+        find.text(conteo(repo.creaturesSorted.where((c) => entre(c, 1, 3)))),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('el rango de VD se combina con el tipo', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      final bestia = repo.creature('eagle')!.creatureType!;
+      await elegir(tester, 'Tipo', bestia.label);
+      await elegir(tester, 'VD desde', '1/4');
+      await elegir(tester, 'VD hasta', '1/2');
+
+      final esperadas = repo.creaturesSorted.where(
+        (c) => c.creatureType?.id == bestia.id && entre(c, 0.25, 0.5),
+      );
+      expect(esperadas, isNotEmpty);
+      expect(find.text(conteo(esperadas)), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un rango invertido corre el otro extremo', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      await elegir(tester, 'VD hasta', '2');
+      await elegir(tester, 'VD desde', '5');
+
+      // En vez de una lista vacía, «hasta» acompaña a «desde».
+      expect(
+        find.text(conteo(repo.creaturesSorted.where((c) => entre(c, 5, 5)))),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('limpiar filtros vacía también el rango de VD', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      // Ningún goblin es de VD 0; el valor va arriba del menú, que es lo que
+      // se puede tocar sin scrollear.
+      expect(repo.creature('goblin-warrior')!.cr, greaterThan(0));
+      await elegir(tester, 'VD hasta', '0');
+      await buscar(tester, 'goblin');
+      expect(
+        find.text('Ninguna criatura coincide con lo que buscaste.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Limpiar filtros'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(conteo(repo.creaturesSorted)), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ordena por VD', (tester) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+
+      final porVd = [...repo.creaturesSorted.where((c) => c.cr != null)]
+        ..sort((a, b) {
+          final byCr = a.cr!.compareTo(b.cr!);
+          return byCr != 0 ? byCr : compareContentNames(a.name, b.name);
+        });
+      final primera = porVd.first;
+      // Por nombre, la primera de VD más bajo no encabeza la lista.
+      expect(primera, isNot(repo.creaturesSorted.first));
+
+      await tester.tap(find.text('VD').last);
+      await tester.pumpAndSettle();
+
+      final filas = tester.widgetList<ListTile>(
+        find.byWidgetPredicate(
+          (w) =>
+              w is ListTile &&
+              w.key is ValueKey<String> &&
+              (w.key! as ValueKey<String>).value.startsWith('bestiary-'),
+        ),
+      );
+      expect(filas.first.key, ValueKey('bestiary-${primera.id}'));
+      expect(tester.takeException(), isNull);
+    });
+
+    /// Abre el perfil de [id] buscándolo por su nombre del catálogo.
+    Future<Creature> abrirPerfil(WidgetTester tester, String id) async {
+      final criatura = repo.creature(id)!;
+      await buscar(tester, criatura.name);
+      await tester.tap(find.byKey(ValueKey('bestiary-$id')));
+      await tester.pumpAndSettle();
+      return criatura;
+    }
+
+    /// Suma [copias] desde el perfil abierto, con el bando por defecto.
+    Future<void> sumarDesdePerfil(WidgetTester tester, int copias) async {
+      await tester.tap(find.text('Sumar al combate de La Tumba'));
+      await tester.pumpAndSettle();
+      for (var i = 1; i < copias; i++) {
+        await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+      }
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('sumar desde el perfil guarda y deja el bestiario igual', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+      await elegir(tester, 'VD desde', '1/4');
+      final goblin = await abrirPerfil(tester, 'goblin-warrior');
+
+      await tester.tap(find.text('Sumar al combate de La Tumba'));
+      await tester.pumpAndSettle();
+      // El mismo paso que en Combate: dados en el perfil, tirar se ofrece.
+      expect(find.text('Tirar los PG de cada uno'), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+      await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+      await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+
+      final encounter = server.encounters['tumba']!;
+      expect(encounter.isPreparing, isTrue);
+      expect(encounter.combatants.map((c) => c.name), [
+        goblin.name,
+        '${goblin.name} 2',
+        '${goblin.name} 3',
+        '${goblin.name} 4',
+      ]);
+      // En preparación nadie tiene iniciativa, y un monstruo arranca enemigo.
+      expect(encounter.combatants.map((c) => c.initiative), everyElement(0));
+      expect(
+        encounter.combatants.map((c) => c.side),
+        everyElement(CombatantSide.enemy),
+      );
+      expect(
+        find.text('Sumaste 4 × ${goblin.name} al combate de La Tumba.'),
+        findsOneWidget,
+      );
+
+      // Sigue en el bestiario: el filtro, la búsqueda y el perfil abierto.
+      final filtradas = repo.creaturesSorted.where(
+        (c) =>
+            c.cr != null &&
+            c.cr! >= 0.25 &&
+            foldForSearch(c.name).contains(foldForSearch(goblin.name)),
+      );
+      expect(find.text(conteo(filtradas)), findsOneWidget);
+      expect(find.text('Sumar al combate de La Tumba'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('sin dados en el perfil no se ofrece tirar los PG', (
+      tester,
+    ) async {
+      await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+      final sinDados = repo.creaturesSorted.firstWhere(
+        (c) => c.hitDice == null,
+      );
+      await abrirPerfil(tester, sinDados.id);
+
+      await tester.tap(find.text('Sumar al combate de La Tumba'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Tirar los PG de cada uno'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('la numeración sigue la del combate guardado', (tester) async {
+      final goblin = repo.creature('goblin-warrior')!;
+      var n = 0;
+      final server = await pumpDmMode(
+        tester,
+        seed: (server) {
+          seedTable(server);
+          server.encounters['tumba'] = const Encounter(
+            id: 'e',
+          ).withMonsters(goblin, 2, newId: () => 'viejo-${n++}');
+        },
+      );
+      await openBestiario(tester);
+      await abrirPerfil(tester, goblin.id);
+
+      await sumarDesdePerfil(tester, 2);
+
+      expect(
+        server.encounters['tumba']!.combatants.map((c) => c.name).skip(2),
+        ['${goblin.name} 3', '${goblin.name} 4'],
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    // El diálogo se cierra antes de que el servidor conteste. Sin la fila, la
+    // segunda tanda leería el combate sin la primera y la pisaría.
+    testWidgets('dos tandas seguidas no se pisan', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      server.beforeHandle = (request) async {
+        if (request.method == 'PUT' &&
+            request.url.path.endsWith('/encounter')) {
+          await Future<void>.delayed(const Duration(seconds: 10));
+        }
+      };
+      await openBestiario(tester);
+      final goblin = await abrirPerfil(tester, 'goblin-warrior');
+
+      await sumarDesdePerfil(tester, 2);
+      await sumarDesdePerfil(tester, 2);
+      await tester.pump(const Duration(seconds: 30));
+      await tester.pumpAndSettle();
+
+      expect(server.encounters['tumba']!.combatants.map((c) => c.name), [
+        goblin.name,
+        '${goblin.name} 2',
+        '${goblin.name} 3',
+        '${goblin.name} 4',
+      ]);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('en un combate en curso cada copia tira su iniciativa', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(
+        tester,
+        seed: (server) {
+          seedTable(server);
+          server.encounters['tumba'] = const Encounter(
+            id: 'e',
+            stage: EncounterStage.running,
+          );
+        },
+      );
+      await openBestiario(tester);
+      final lobo = await abrirPerfil(tester, 'wolf');
+
+      await sumarDesdePerfil(tester, 2);
+
+      final mod = lobo.initiativeModifier;
+      final combatants = server.encounters['tumba']!.combatants;
+      expect(combatants, hasLength(2));
+      for (final c in combatants) {
+        expect(c.initiative, inInclusiveRange(1 + mod, 20 + mod));
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('cancelar no toca el combate', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await openBestiario(tester);
+      await abrirPerfil(tester, 'ogre');
+
+      await tester.tap(find.text('Sumar al combate de La Tumba'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
+
+      expect(server.encounters['tumba'], isNull);
+      expect(find.textContaining('Sumaste'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('sin campañas el perfil explica que hace falta una', (
+      tester,
+    ) async {
+      await pumpDmMode(tester);
+      await openBestiario(tester);
+      await abrirPerfil(tester, 'ogre');
+
+      expect(find.textContaining('Sumar al combate'), findsNothing);
+      expect(
+        find.text('Para sumarla a un combate, primero creá una campaña.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('un error al guardar lo dice y no pierde el bestiario', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      server.beforeHandle = (request) async {
+        if (request.method == 'PUT' &&
+            request.url.path.endsWith('/encounter')) {
+          throw Exception('se cayó la conexión');
+        }
+      };
+      await openBestiario(tester);
+      await elegir(tester, 'VD desde', '1/4');
+      final goblin = await abrirPerfil(tester, 'goblin-warrior');
+      final antes = find.text(
+        conteo(
+          repo.creaturesSorted.where(
+            (c) =>
+                c.cr != null &&
+                c.cr! >= 0.25 &&
+                foldForSearch(c.name).contains(foldForSearch(goblin.name)),
+          ),
+        ),
+      );
+      expect(antes, findsOneWidget);
+
+      await sumarDesdePerfil(tester, 1);
+
+      expect(server.encounters['tumba'], isNull);
+      expect(find.textContaining('Sumaste'), findsNothing);
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(antes, findsOneWidget);
+      expect(find.text('Sumar al combate de La Tumba'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

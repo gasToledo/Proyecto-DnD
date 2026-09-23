@@ -515,7 +515,18 @@ class _DmModeScreenState extends State<DmModeScreen> {
         ),
       );
     }
-    if (section == null) return BestiaryView(repo: widget.repo);
+    // Escucha las campañas para que el botón de sumar aparezca cuando terminan
+    // de cargar, o cambie de nombre si el DM elige otra.
+    if (section == null) {
+      return ListenableBuilder(
+        listenable: _campaigns,
+        builder: (context, _) => BestiaryView(
+          repo: widget.repo,
+          api: widget.api,
+          campaign: _effectiveSelection,
+        ),
+      );
+    }
     if (_loadError != null) {
       return AppErrorView(
         message: 'No se pudieron cargar tus campañas.',
@@ -1256,54 +1267,26 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     );
   }
 
-  /// Tira una iniciativa independiente por copia (nunca la misma para todo el
-  /// grupo) y numera los repetidos: "Goblin", "Goblin 2", "Goblin 3".
+  /// Suma las copias con la regla del engine ([EncounterMonsters.withMonsters]),
+  /// la misma que usa el perfil del Bestiario.
   ///
-  /// Con [rollHp], los PG también salen por copia: seis goblins que tiran
-  /// `2d6` entran con seis vidas distintas. Sin él, todas arrancan con el
-  /// promedio del libro, que es lo que corresponde para un jefe.
+  /// La cuenta va adentro de la fila y no al tocar: la numeración parte de la
+  /// mesa ya guardada, y dos tandas seguidas no pueden repetir «Goblin 2».
   void _addMonsters(
     Creature creature,
     int count, {
     bool rollHp = false,
     CombatantSide side = CombatantSide.enemy,
   }) {
-    final resolved = creature.resolve(const CreatureVars({}));
-    final formula = rollHp
-        ? DiceFormula.tryParse(creature.hitDice ?? '')
-        : null;
-    final dice = Dice();
-
-    // La numeración cuenta sobre la mesa ya guardada, no sobre la que se veía
-    // al tocar: dos tandas seguidas no pueden repetir «Goblin 2».
-    _saveEncounter((current) {
-      var encounter = current ?? Encounter(id: _newId('encounter'));
-      final already = encounter.combatants
-          .where((c) => c.creatureId == creature.id)
-          .length;
-      for (var i = 0; i < count; i++) {
-        final n = already + i + 1;
-        final hp = formula?.roll(dice) ?? resolved.maxHp;
-        encounter = encounter.withCombatant(
-          Combatant(
-            id: _newId('c'),
-            kind: CombatantKind.monster,
-            name: n == 1 ? creature.name : '${creature.name} $n',
-            // Si el combate ya arrancó, el que entra tarde tira en el acto.
-            // Si todavía se está armando, la tirada es de todos juntos al
-            // empezar, así que acá entra sin iniciativa.
-            initiative: encounter.isPreparing ? 0 : rollInitiative(creature),
-            creatureId: creature.id,
-            currentHp: hp,
-            // El máximo es el tirado y no el del libro: si no, un goblin que
-            // sacó 5 se vería «5 / 7» y la barra arrancaría a media asta.
-            maxHp: hp,
-            side: side,
-          ),
-        );
-      }
-      return encounter;
-    });
+    _saveEncounter(
+      (current) => (current ?? Encounter(id: _newId('encounter'))).withMonsters(
+        creature,
+        count,
+        newId: () => _newId('c'),
+        side: side,
+        rollHp: rollHp,
+      ),
+    );
   }
 
   /// Suma un PNJ con sus PG máximos de siempre: el daño de un combate

@@ -97,7 +97,7 @@ cálculo que no está ahí, el cálculo va al engine con su test, no al widget.
 
 ### `schemaVersion` es solo para documentos de usuario
 
-`Character`, `Campaign`, `Chapter`, `Note`, `Encounter` y `EncounterLog` llevan
+`Character`, `Campaign`, `Chapter`, `Note`, `Encounter`, `EncounterLog` y `Npc` llevan
 `currentSchemaVersion` + `migrateJson`: se guardan en la base y hay que poder
 migrarlos. El contrato es siempre el mismo — no mutar la entrada, y **rechazar
 una versión futura** en vez de guardarla de vuelta perdiendo campos.
@@ -129,10 +129,12 @@ alguien lo canjeó. Todo esto está explicado en
 `docs/arquitectura/modo-dm.md`, que es
 lectura obligatoria antes de tocar rutas de campaña.
 
-**La única excepción viva**, y hay que conocerla: `_listPlayerCampaignsHandler`
-(la campaña vista por el jugador) le pasa a cuatro repositorios un `dmUserId`
-que no es de quien pide. Es correcto porque salió de una fila ya autorizada por
-`listSharesForCharacter`, pero invierte el supuesto del contrato.
+Hay una excepción al supuesto, y hay que conocerla: cuando un handler necesita
+leer o avisarle a la otra cuenta (canje de código, corte del vínculo, retrato de
+un miembro, aviso al DM cuando se borra un personaje), le pasa al repositorio un
+`userId` que no es de quien pide. Es correcto **solo** porque ese id salió de una
+fila de `campaign_members` que una consulta anterior ya autorizó; nunca de la
+petición.
 
 ### El DM no escribe la ficha de otra cuenta
 

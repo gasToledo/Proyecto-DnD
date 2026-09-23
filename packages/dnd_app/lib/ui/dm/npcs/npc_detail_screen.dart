@@ -132,13 +132,34 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
     await _save(apply(value.trim()));
   }
 
-  Future<void> _rename(Npc npc) => _editText(
-    title: 'Editar nombre',
-    label: 'Nombre del PNJ',
-    current: npc.name,
-    allowEmpty: false,
-    apply: (value) => npc.copyWith(name: value),
-  );
+  /// El nombre se edita solo acá y, si tiene ficha de personaje, se le copia:
+  /// la biblioteca busca por el del PNJ y la ficha muestra el suyo, y dos
+  /// lápices terminaban en dos nombres distintos para el mismo personaje.
+  Future<void> _rename(NpcEntry entry) async {
+    final value = await showTextPromptDialog(
+      context,
+      title: 'Editar nombre',
+      label: 'Nombre del PNJ',
+      current: entry.npc.name,
+      allowEmpty: false,
+      textCapitalization: TextCapitalization.words,
+    );
+    if (value == null || !mounted) return;
+    final name = value.trim();
+    try {
+      await widget.api.updateNpc(entry.npc.copyWith(name: name));
+      final sheet = entry.sheet;
+      if (sheet != null) {
+        await widget.api.upsertCharacter(sheet.copyWith(name: name));
+      }
+    } catch (error) {
+      _report(error);
+    }
+    // Se relee entero y no se parchea el estado: la ficha que abre «Abrir
+    // ficha completa» tiene que ser la renombrada, o su autoguardado
+    // devolvería el nombre viejo.
+    if (mounted) await _load();
+  }
 
   Future<void> _addTag(Npc npc) async {
     var known = widget.knownTags;
@@ -373,7 +394,8 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
     final entry = _entry;
     return Scaffold(
       appBar: AppBar(
-        title: Text(entry?.npc.name ?? 'PNJ'),
+        // Sin el nombre: ya encabeza la pantalla, más grande y con su lápiz.
+        title: const Text('PNJ'),
         actions: [
           if (entry != null) ...[
             IconButton(
@@ -387,11 +409,6 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
                   ),
                 ),
               ),
-            ),
-            IconButton(
-              tooltip: 'Retrato',
-              icon: const Icon(Icons.face_retouching_natural),
-              onPressed: () => _openPortrait(entry),
             ),
             PopupMenuButton<_NpcMenuAction>(
               tooltip: 'Más acciones',
@@ -521,10 +538,41 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Medallion(
-            portraitKey: npcPortraitKey(npc, entry.sheet),
-            fallback: npc.name.characters.first,
-            size: 76,
+          // La única puerta al retrato, también para un PNJ con ficha: la
+          // ficha completa ya no ofrece la suya. El ícono sobre el aro es lo
+          // que avisa que el medallón se toca.
+          Tooltip(
+            message: 'Retrato',
+            child: InkWell(
+              onTap: () => _openPortrait(entry),
+              customBorder: const CircleBorder(),
+              child: Stack(
+                children: [
+                  Medallion(
+                    portraitKey: npcPortraitKey(npc, entry.sheet),
+                    fallback: npc.name.characters.first,
+                    size: 76,
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: pal.hairline),
+                      ),
+                      child: Icon(
+                        Icons.photo_camera_outlined,
+                        size: 14,
+                        color: pal.textMuted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(width: 18),
           Expanded(
@@ -545,7 +593,7 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
                     IconButton(
                       tooltip: 'Editar nombre',
                       icon: const Icon(Icons.edit_outlined, size: 18),
-                      onPressed: () => _rename(npc),
+                      onPressed: () => _rename(entry),
                     ),
                   ],
                 ),
@@ -804,18 +852,21 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
           title: 'Ficha',
           child: sheet == null
               ? _prose(context, '', 'No se pudo leer su ficha.')
+              // Especie, clase y nivel ya están en la pill bajo el nombre; acá
+              // solo va lo que se hace con la ficha.
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      npcTypeLine(npc, sheet, widget.repo),
-                      style: TextStyle(color: pal.textMuted),
-                    ),
-                    const SizedBox(height: 10),
                     FilledButton.icon(
                       onPressed: () => _openSheet(sheet),
                       icon: const Icon(Icons.open_in_new),
                       label: const Text('Abrir ficha completa'),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Nombre, retrato, trasfondo y notas se editan acá; la '
+                      'ficha completa es para estadísticas, equipo y niveles.',
+                      style: TextStyle(fontSize: 11.5, color: pal.textMuted),
                     ),
                   ],
                 ),

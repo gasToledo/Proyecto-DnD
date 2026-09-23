@@ -201,10 +201,14 @@ class _SheetScreenState extends State<SheetScreen> {
     if (!widget.npcMode) _pollTurn();
   }
 
-  /// Las pestañas que se ofrecen. Un PNJ no tiene campañas «de jugador».
+  /// Las pestañas que se ofrecen. Un PNJ no tiene campañas «de jugador», y su
+  /// trasfondo y sus notas viven en la pantalla del PNJ: un Diario acá sería
+  /// un segundo lugar donde escribir lo mismo.
   List<_SheetTab> get _visibleTabs => [
     for (final tab in _SheetTab.values)
-      if (!(widget.npcMode && tab == _SheetTab.campana)) tab,
+      if (!(widget.npcMode &&
+          (tab == _SheetTab.campana || tab == _SheetTab.diario)))
+        tab,
   ];
 
   @override

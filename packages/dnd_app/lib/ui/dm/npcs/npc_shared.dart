@@ -210,19 +210,23 @@ Future<NpcEntry?> createNpcFlow(
   if (choice.kind == NpcSheetKind.character) {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) =>
-            CreationWizard(repo: repo, onCreate: (created) => sheet = created),
+        builder: (_) => CreationWizard(
+          repo: repo,
+          initialName: choice.name,
+          onCreate: (created) => sheet = created,
+        ),
       ),
     );
     if (sheet == null || !context.mounted) return null;
-    // El nombre del PNJ manda: es con el que el DM lo va a buscar.
-    sheet = Character.fromJson(sheet!.toJson()..['name'] = choice.name);
   }
 
+  // El creador arranca con el nombre del diálogo, así que el que sale de ahí
+  // es el último que eligió el DM: si lo retocó en Detalles, vale el retoque.
+  final name = sheet?.name ?? choice.name;
   final base = choice.base;
   final npc = Npc(
     id: 'nuevo',
-    name: choice.name,
+    name: name,
     sheetKind: choice.kind,
     block: choice.kind == NpcSheetKind.block
         ? (base == null

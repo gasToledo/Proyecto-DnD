@@ -137,12 +137,15 @@ extension _SheetNavigation on _SheetScreenState {
             onTap: () => run(() => _selectTab(tab)),
           ),
         const Spacer(),
-        appNavItem(
-          context,
-          icon: Icons.face_retouching_natural,
-          label: 'Retrato',
-          onTap: () => run(_openPortrait),
-        ),
+        // El retrato de un PNJ se cambia desde su medallón, en la pantalla del
+        // PNJ: una sola puerta, y no dos que llevan al mismo taller.
+        if (!widget.npcMode)
+          appNavItem(
+            context,
+            icon: Icons.face_retouching_natural,
+            label: 'Retrato',
+            onTap: () => run(_openPortrait),
+          ),
         appNavItem(
           context,
           icon: Icons.arrow_upward,
@@ -190,8 +193,11 @@ extension _SheetNavigation on _SheetScreenState {
                   crossAxisAlignment: WrapCrossAlignment.end,
                   spacing: 12,
                   children: [
+                    // El nombre de un PNJ se edita en su pantalla, que lo
+                    // copia a la ficha: si se editara acá, la biblioteca
+                    // mostraría uno y la ficha otro.
                     InkWell(
-                      onTap: _editName,
+                      onTap: widget.npcMode ? null : _editName,
                       borderRadius: BorderRadius.circular(6),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -209,8 +215,10 @@ extension _SheetNavigation on _SheetScreenState {
                                 ).textTheme.headlineSmall,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Icon(Icons.edit_outlined, size: 16, color: muted),
+                            if (!widget.npcMode) ...[
+                              const SizedBox(width: 6),
+                              Icon(Icons.edit_outlined, size: 16, color: muted),
+                            ],
                           ],
                         ),
                       ),

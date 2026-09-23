@@ -38,7 +38,16 @@ const _kWideBreakpoint = 900.0;
 class CreationWizard extends StatefulWidget {
   final ContentRepository repo;
   final void Function(Character) onCreate;
-  const CreationWizard({super.key, required this.repo, required this.onCreate});
+
+  /// El nombre con el que arranca el paso Detalles. Un PNJ ya se nombró en el
+  /// diálogo que lo crea: pedirlo de nuevo en blanco sería preguntar dos veces.
+  final String initialName;
+  const CreationWizard({
+    super.key,
+    required this.repo,
+    required this.onCreate,
+    this.initialName = '',
+  });
 
   @override
   State<CreationWizard> createState() => _CreationWizardState();
@@ -57,7 +66,7 @@ class _CreationWizardState extends State<CreationWizard> {
   @override
   void initState() {
     super.initState();
-    d = CreationDraft(widget.repo);
+    d = CreationDraft(widget.repo)..name = widget.initialName;
   }
 
   void _next() {

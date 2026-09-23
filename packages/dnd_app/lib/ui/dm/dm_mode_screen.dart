@@ -816,7 +816,9 @@ class _CampaignDetailState extends State<_CampaignDetail> {
       repo: widget.repo,
       campaignId: widget.campaign.id,
     );
-    if (created != null && mounted) await _loadNpcs();
+    // Igual que desde la biblioteca, se abre recién creado: el diálogo solo
+    // pidió nombre y tipo, y lo que sigue (retrato, trasfondo) se hace ahí.
+    if (created != null && mounted) await _openNpc(created.npc.id);
   }
 
   Future<void> _openNpc(String npcId) async {

@@ -410,6 +410,27 @@ void main() {
       );
     }
 
+    // Si el nombre del PNJ y el de su ficha se editaran por separado, la
+    // biblioteca mostraría uno y la ficha otro.
+    testWidgets('renombrar un PNJ con ficha renombra también la ficha', (
+      tester,
+    ) async {
+      final server = await pumpDetail(tester, 'vadrik', seedCharacterNpc);
+
+      await tester.tap(find.byTooltip('Editar nombre'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        inDialog(find.byType(TextField)),
+        'Vadrik el Gris',
+      );
+      await tester.tap(dialogAction('Guardar'));
+      await tester.pumpAndSettle();
+
+      expect(server.npcs['vadrik']!.name, 'Vadrik el Gris');
+      expect(server.characters['ficha-vadrik']!.name, 'Vadrik el Gris');
+      expect(tester.takeException(), isNull);
+    });
+
     // La ficha de un PNJ es la del jugador sin lo que supone un jugador: no se
     // comparte ni tiene una campaña que mirar desde adentro.
     testWidgets('la ficha completa de un PNJ no se comparte y sube de nivel', (
@@ -423,6 +444,11 @@ void main() {
       expect(find.text('Volver al PNJ'), findsWidgets);
       expect(find.text('Compartir'), findsNothing);
       expect(find.text('Campaña'), findsNothing);
+      // Nombre, retrato, trasfondo y notas tienen una sola casa: la pantalla
+      // del PNJ. La ficha no ofrece una segunda.
+      expect(find.text('Diario'), findsNothing);
+      expect(find.text('Retrato'), findsNothing);
+      expect(find.byIcon(Icons.edit_outlined), findsNothing);
 
       await tester.tap(find.text('Subir nivel'));
       await tester.pumpAndSettle();

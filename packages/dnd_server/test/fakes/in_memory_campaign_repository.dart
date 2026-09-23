@@ -134,12 +134,29 @@ class InMemoryCampaignRepository implements CampaignRepository {
   }
 
   @override
-  Future<String> createShareCode({
+  Future<String?> createShareCode({
     required String ownerUserId,
     required String characterId,
     Duration ttl = PostgresCampaignRepository.defaultShareTtl,
   }) async {
     _codes.removeWhere((_, c) => !c.expiresAt.isAfter(DateTime.now().toUtc()));
+    // Como el `INSERT … SELECT … WHERE kind = 'player'` real: la ficha de un
+    // PNJ no es un personaje jugador y no recibe código.
+    if (await _characters.find(ownerUserId, characterId) == null) return null;
+    return plantShareCode(
+      ownerUserId: ownerUserId,
+      characterId: characterId,
+      ttl: ttl,
+    );
+  }
+
+  /// Guarda un código **sin validar** a quién apunta, como una fila escrita a
+  /// mano en la base. Existe para probar la segunda defensa del canje.
+  String plantShareCode({
+    required String ownerUserId,
+    required String characterId,
+    Duration ttl = PostgresCampaignRepository.defaultShareTtl,
+  }) {
     final code = generateShareCode();
     _codes[hashShareCode(code)] = _StoredShareCode(
       ownerUserId: ownerUserId,
@@ -166,6 +183,12 @@ class InMemoryCampaignRepository implements CampaignRepository {
     // código no se quema. El doble tiene que respetarlo o la prueba mentiría.
     if (_byDm[dmUserId]?[campaignId] == null) return null;
     _codes.remove(hash);
+    // El `JOIN characters … kind = 'player'` del canje real: el código se
+    // consume igual, pero la ficha de un PNJ no se sienta a la mesa.
+    if (await _characters.find(stored.ownerUserId, stored.characterId) ==
+        null) {
+      return null;
+    }
 
     final existing = _links
         .where(

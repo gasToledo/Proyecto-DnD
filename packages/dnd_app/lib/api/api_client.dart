@@ -548,10 +548,125 @@ class ApiClient {
   /// Con [discard] no queda registro: es para el combate que se abrió por
   /// error o se armó mal, que no tiene por qué figurar en la campaña como si
   /// se hubiera jugado.
-  Future<void> endEncounter(String campaignId, {bool discard = false}) => _send(
+  ///
+  /// [deadNpcIds] son los PNJ que el DM marcó como muertos al terminar. El
+  /// servidor los aplica en la misma transacción que el cierre, y solo si el
+  /// combate se archiva: descartar no mata a nadie.
+  Future<void> endEncounter(
+    String campaignId, {
+    bool discard = false,
+    List<String> deadNpcIds = const [],
+  }) => _send(
     'DELETE',
     '/api/campaigns/${Uri.encodeComponent(campaignId)}/encounter'
         '${discard ? '?discard=true' : ''}',
+    jsonBody: !discard && deadNpcIds.isNotEmpty
+        ? {'deadNpcIds': deadNpcIds}
+        : null,
+  );
+
+  // --- PNJ del Modo DM --------------------------------------------------
+
+  Future<List<NpcEntry>> listNpcs() async {
+    final response = await _send('GET', '/api/npcs');
+    return [
+      for (final json in _json(response)['npcs'] as List)
+        NpcEntry.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
+  /// `null` si no existe o es de otra cuenta: los dos casos responden igual.
+  Future<NpcEntry?> getNpc(String id) async {
+    try {
+      final response = await _send(
+        'GET',
+        '/api/npcs/${Uri.encodeComponent(id)}',
+      );
+      return NpcEntry.fromJson(_json(response));
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
+  /// Crea un PNJ. El id lo asigna el servidor: el que traiga [npc] se ignora.
+  /// Un PNJ con ficha de personaje necesita [sheet].
+  Future<NpcEntry> createNpc(Npc npc, {Character? sheet}) async {
+    final response = await _send(
+      'POST',
+      '/api/npcs',
+      jsonBody: {'npc': npc.toJson(), 'character': ?sheet?.toJson()},
+    );
+    return NpcEntry.fromJson(_json(response));
+  }
+
+  Future<Npc> updateNpc(Npc npc) async {
+    final response = await _send(
+      'PUT',
+      '/api/npcs/${Uri.encodeComponent(npc.id)}',
+      jsonBody: {'npc': npc.toJson()},
+    );
+    return Npc.fromJson(
+      (_json(response)['npc'] as Map).cast<String, dynamic>(),
+    );
+  }
+
+  Future<void> deleteNpc(String id) =>
+      _send('DELETE', '/api/npcs/${Uri.encodeComponent(id)}');
+
+  Future<String> saveNpcPortrait({
+    required String npcId,
+    required Uint8List bytes,
+  }) async {
+    final response = await _send(
+      'POST',
+      '/api/npcs/${Uri.encodeComponent(npcId)}/portraits',
+      jsonBody: {'bytes': base64Encode(bytes)},
+    );
+    return _json(response)['key'] as String;
+  }
+
+  Future<NpcEntry> importNpc(Uint8List zipBytes, {String? campaignId}) async {
+    final response = await _send(
+      'POST',
+      '/api/npcs/import',
+      jsonBody: {'bytes': base64Encode(zipBytes), 'campaignId': ?campaignId},
+    );
+    return NpcEntry.fromJson(_json(response));
+  }
+
+  Future<List<CampaignNpcEntry>> listCampaignNpcs(String campaignId) async {
+    final response = await _send(
+      'GET',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}/npcs',
+    );
+    return [
+      for (final json in _json(response)['npcs'] as List)
+        CampaignNpcEntry.fromJson((json as Map).cast<String, dynamic>()),
+    ];
+  }
+
+  /// Suma un PNJ a una campaña o le cambia el estado. Sin [status], un vínculo
+  /// nuevo nace vivo y uno existente queda como estaba. Devuelve el estado que
+  /// quedó.
+  Future<NpcStatus> linkCampaignNpc(
+    String campaignId,
+    String npcId, {
+    NpcStatus? status,
+  }) async {
+    final response = await _send(
+      'PUT',
+      '/api/campaigns/${Uri.encodeComponent(campaignId)}'
+          '/npcs/${Uri.encodeComponent(npcId)}',
+      jsonBody: {'status': ?status?.toJson()},
+    );
+    return NpcStatus.fromJson(_json(response)['status'] as String?);
+  }
+
+  Future<void> unlinkCampaignNpc(String campaignId, String npcId) => _send(
+    'DELETE',
+    '/api/campaigns/${Uri.encodeComponent(campaignId)}'
+        '/npcs/${Uri.encodeComponent(npcId)}',
   );
 
   /// El turno de un personaje propio, para el cartel de la ficha. Nunca

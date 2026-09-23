@@ -67,6 +67,21 @@ class FakeApiServer {
   /// Códigos emitidos y todavía sin canjear, por el id del personaje.
   final Map<String, String> shareCodes = {};
 
+  /// La biblioteca de PNJ del DM, por id.
+  final Map<String, Npc> npcs = {};
+
+  /// Ids de las fichas de PNJ guardadas en [characters]. Como la columna
+  /// `kind = 'npc'` del servidor: ninguna ruta de personajes las ve.
+  final Set<String> npcSheets = {};
+
+  /// En qué campañas está cada PNJ y cómo está en cada una.
+  final Map<({String campaignId, String npcId}), NpcStatus> campaignNpcs = {};
+
+  /// Los PNJ que el DM marcó como muertos al terminar cada combate, tal como
+  /// llegaron.
+  final List<({String campaignId, List<String> deadNpcIds})> endedWithDead = [];
+  int _npcCounter = 0;
+
   /// Avisos pendientes, con la forma que devuelve `GET /api/events`. La prueba
   /// los siembra directamente.
   final List<Map<String, dynamic>> events = [];
@@ -122,19 +137,23 @@ class FakeApiServer {
       return _json({'status': 'ok', 'logoutUrl': logoutUrl});
     }
 
+    final npcResponse = _handleNpcs(request, method, path);
+    if (npcResponse != null) return npcResponse;
+
     if (method == 'GET' && path == '/api/characters') {
       return _json({
         'characters': [
           for (final c in characters.values)
-            {
-              'character': c.toJson(),
-              // Un milisegundo por personaje, en orden de alta: alcanza para
-              // que el orden por antigüedad sea determinista en una prueba.
-              'createdAt':
-                  (createdAt[c.id] ?? DateTime.fromMillisecondsSinceEpoch(0))
-                      .toUtc()
-                      .toIso8601String(),
-            },
+            if (!npcSheets.contains(c.id))
+              {
+                'character': c.toJson(),
+                // Un milisegundo por personaje, en orden de alta: alcanza para
+                // que el orden por antigüedad sea determinista en una prueba.
+                'createdAt':
+                    (createdAt[c.id] ?? DateTime.fromMillisecondsSinceEpoch(0))
+                        .toUtc()
+                        .toIso8601String(),
+              },
         ],
       });
     }
@@ -160,7 +179,8 @@ class FakeApiServer {
     if (method == 'DELETE' && path.startsWith('/api/characters/')) {
       deleteCharacterCalls++;
       final id = _segment(path, '/api/characters/');
-      characters.remove(id);
+      // Como el servidor: la ficha de un PNJ no se borra por esta ruta.
+      if (!npcSheets.contains(id)) characters.remove(id);
       return _json({'status': 'ok'});
     }
 
@@ -331,6 +351,7 @@ class FakeApiServer {
       final id = _segment(path, '/api/campaigns/');
       campaigns.remove(id);
       campaignMembers.removeWhere((_, m) => m.campaignId == id);
+      campaignNpcs.removeWhere((key, _) => key.campaignId == id);
       encounters.remove(id);
       chapters.remove(id);
       notes.remove(id);
@@ -397,7 +418,8 @@ class FakeApiServer {
         path.startsWith('/api/characters/') &&
         path.endsWith('/share')) {
       final characterId = path.split('/')[3];
-      if (!characters.containsKey(characterId)) {
+      if (!characters.containsKey(characterId) ||
+          npcSheets.contains(characterId)) {
         return _json({'error': 'Personaje no encontrado.'}, 404);
       }
       final code = 'CODE-${(_shareCounter++).toString().padLeft(4, '0')}';
@@ -464,11 +486,13 @@ class FakeApiServer {
                       if (c.state == ChapterState.completed)
                         c.toJson()..remove('summary'),
                   ],
+                  // La misma poda que el servidor: ningún nombre de PNJ, ni
+                  // aliados ni neutrales, llega a la ficha del jugador.
                   'battles': [
                     for (final log
                         in encounterLogs[entry.value.campaignId] ??
                             const <EncounterLog>[])
-                      log.toJson(),
+                      log.playerView().toJson(),
                   ],
                 },
         ],
@@ -632,10 +656,28 @@ class FakeApiServer {
       // diferencia entre los dos caminos y hay que reproducirla acá para que
       // una prueba del cuaderno pueda verla.
       if (!discarded && closing != null) {
+        final body = request.body.isEmpty ? const {} : _body(request);
+        final dead = [
+          for (final raw in (body['deadNpcIds'] as List? ?? const []))
+            if (raw is String) raw,
+        ];
+        endedWithDead.add((campaignId: id, deadNpcIds: dead));
+        final inEncounter = {
+          for (final c in closing.combatants)
+            if (c.kind == CombatantKind.npc && c.npcId != null) c.npcId!,
+        };
+        for (final npcId in dead) {
+          final key = (campaignId: id, npcId: npcId);
+          if (inEncounter.contains(npcId) && campaignNpcs.containsKey(key)) {
+            campaignNpcs[key] = NpcStatus.dead;
+          }
+        }
         final monsters = <String, List<Combatant>>{};
         for (final c in closing.combatants) {
           if (c.kind != CombatantKind.monster) continue;
-          monsters.putIfAbsent(c.creatureId ?? c.name, () => []).add(c);
+          monsters
+              .putIfAbsent('${c.creatureId ?? c.name}|${c.side.name}', () => [])
+              .add(c);
         }
         encounterLogs
             .putIfAbsent(id, () => [])
@@ -657,7 +699,21 @@ class FakeApiServer {
                       ),
                       count: group.length,
                       defeated: group.where((c) => c.currentHp <= 0).length,
+                      side: group.first.side,
                     ),
+                  for (final c in closing.combatants)
+                    if (c.kind == CombatantKind.npc)
+                      EncounterLogMonsters(
+                        name: c.name,
+                        defeated: c.isDown ? 1 : 0,
+                        side: c.side,
+                        npc: true,
+                        publicName: switch (npcs[c.npcId]) {
+                          final npc? when npc.sheetKind == NpcSheetKind.block =>
+                            npc.baseCreatureName,
+                          _ => null,
+                        },
+                      ),
                 ],
               ),
             );
@@ -700,6 +756,171 @@ class FakeApiServer {
 
     return null;
   }
+
+  /// Rutas de PNJ. Van **antes** que las de campañas: las genéricas de
+  /// `/api/campaigns/<id>` tomarían un `PUT …/npcs/<id>` como si fuera editar
+  /// la campaña.
+  http.Response? _handleNpcs(http.Request request, String method, String path) {
+    Map<String, dynamic> entryJson(Npc npc) => {
+      'npc': npc.toJson(),
+      'campaigns': [
+        for (final e in campaignNpcs.entries)
+          if (e.key.npcId == npc.id && campaigns[e.key.campaignId] != null)
+            {
+              'campaignId': e.key.campaignId,
+              'campaignName': campaigns[e.key.campaignId]!.name,
+              'status': e.value.toJson(),
+            },
+      ],
+      if (npc.characterId case final sheetId?)
+        if (characters[sheetId] case final sheet?) 'character': sheet.toJson(),
+    };
+
+    if (method == 'GET' && path == '/api/npcs') {
+      final all = npcs.values.toList()
+        ..sort((a, b) => a.name.compareTo(b.name));
+      return _json({
+        'npcs': [for (final npc in all) entryJson(npc)],
+      });
+    }
+
+    if (method == 'POST' && path == '/api/npcs') {
+      final body = _body(request);
+      final requested = Npc.fromJson(
+        (body['npc'] as Map).cast<String, dynamic>(),
+      );
+      if (requested.name.trim().isEmpty) {
+        return _json({'error': 'El PNJ necesita un nombre.'}, 400);
+      }
+      final id = 'npc-${_npcCounter++}';
+      String? sheetId;
+      if (requested.sheetKind == NpcSheetKind.character) {
+        final sheet = _characterFrom(body['character']);
+        sheetId = 'npc-ficha-$id';
+        characters[sheetId] = Character.fromJson(
+          sheet.toJson()..['id'] = sheetId,
+        );
+        npcSheets.add(sheetId);
+      }
+      final json = requested.toJson()..['id'] = id;
+      if (sheetId != null) json['characterId'] = sheetId;
+      final npc = Npc.fromJson(json);
+      npcs[id] = npc;
+      return _json(entryJson(npc));
+    }
+
+    if (method == 'POST' && path == '/api/npcs/import') {
+      importNpcCalls.add(_body(request));
+      final npc = importNpcResult;
+      if (npc == null) {
+        return _json({'error': 'El ZIP no es un PNJ exportado.'}, 400);
+      }
+      final id = 'npc-${_npcCounter++}';
+      final stored = Npc.fromJson(npc.toJson()..['id'] = id);
+      npcs[id] = stored;
+      final campaignId = _body(request)['campaignId'] as String?;
+      if (campaignId != null) {
+        campaignNpcs[(campaignId: campaignId, npcId: id)] = NpcStatus.alive;
+      }
+      return _json(entryJson(stored));
+    }
+
+    if (path.startsWith('/api/npcs/')) {
+      final rest = _segment(path, '/api/npcs/').split('/');
+      final id = rest.first;
+      final npc = npcs[id];
+      if (npc == null) return _json({'error': 'PNJ no encontrado.'}, 404);
+
+      if (rest.length == 2 && rest[1] == 'portraits' && method == 'POST') {
+        if (npc.sheetKind == NpcSheetKind.character) {
+          return _json({'error': 'PNJ no encontrado.'}, 404);
+        }
+        final bytes = base64Decode(_body(request)['bytes'] as String);
+        final key = '$id/${portraits.length}.png';
+        portraits[key] = bytes;
+        return _json({'key': key});
+      }
+      if (method == 'GET') return _json(entryJson(npc));
+      if (method == 'PUT') {
+        final requested = Npc.fromJson(
+          (_body(request)['npc'] as Map).cast<String, dynamic>(),
+        );
+        if (requested.sheetKind != npc.sheetKind) {
+          return _json({'error': 'El tipo de un PNJ no se cambia.'}, 400);
+        }
+        final json = requested.toJson()..remove('characterId');
+        if (npc.characterId != null) json['characterId'] = npc.characterId;
+        final updated = Npc.fromJson(json);
+        npcs[id] = updated;
+        return _json({'npc': updated.toJson()});
+      }
+      if (method == 'DELETE') {
+        npcs.remove(id);
+        campaignNpcs.removeWhere((key, _) => key.npcId == id);
+        if (npc.characterId case final sheetId?) {
+          characters.remove(sheetId);
+          npcSheets.remove(sheetId);
+        }
+        portraits.removeWhere((key, _) => key.startsWith('$id/'));
+        return _json({'status': 'ok'});
+      }
+    }
+
+    final campaignNpc = RegExp(
+      r'^/api/campaigns/([^/]+)/npcs(?:/([^/]+))?$',
+    ).firstMatch(path);
+    if (campaignNpc != null) {
+      final campaignId = Uri.decodeComponent(campaignNpc.group(1)!);
+      final npcId = campaignNpc.group(2) == null
+          ? null
+          : Uri.decodeComponent(campaignNpc.group(2)!);
+      if (!campaigns.containsKey(campaignId)) {
+        return _json({'error': 'Campaña no encontrada.'}, 404);
+      }
+      if (npcId == null && method == 'GET') {
+        final linked = [
+          for (final e in campaignNpcs.entries)
+            if (e.key.campaignId == campaignId && npcs[e.key.npcId] != null)
+              (npc: npcs[e.key.npcId]!, status: e.value),
+        ]..sort((a, b) => a.npc.name.compareTo(b.npc.name));
+        return _json({
+          'npcs': [
+            for (final l in linked)
+              {
+                'npc': l.npc.toJson(),
+                'status': l.status.toJson(),
+                if (l.npc.characterId case final sheetId?)
+                  if (characters[sheetId] case final sheet?)
+                    'character': sheet.toJson(),
+              },
+          ],
+        });
+      }
+      if (npcId != null && method == 'PUT') {
+        if (!npcs.containsKey(npcId)) {
+          return _json({'error': 'PNJ o campaña no encontrados.'}, 404);
+        }
+        final body = request.body.isEmpty ? const {} : _body(request);
+        final key = (campaignId: campaignId, npcId: npcId);
+        final requested = body['status'] == null
+            ? null
+            : NpcStatus.fromJson(body['status'] as String);
+        final status = requested ?? campaignNpcs[key] ?? NpcStatus.alive;
+        campaignNpcs[key] = status;
+        return _json({'status': status.toJson()});
+      }
+      if (npcId != null && method == 'DELETE') {
+        campaignNpcs.remove((campaignId: campaignId, npcId: npcId));
+        return _json({'status': 'ok'});
+      }
+    }
+    return null;
+  }
+
+  /// Lo que devuelve la importación de un PNJ en el doble: la prueba lo siembra
+  /// en vez de armar un ZIP, que ya prueba el servidor por su cuenta.
+  Npc? importNpcResult;
+  final List<Map<String, dynamic>> importNpcCalls = [];
 
   Character _characterFrom(Object? json) =>
       Character.fromJson((json as Map).cast<String, dynamic>());

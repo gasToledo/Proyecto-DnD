@@ -248,7 +248,7 @@ class _BestiaryViewState extends State<BestiaryView> {
         // código: quien abría un perfil para usar la criatura no tenía cómo
         // saber que se suma desde otra pantalla.
         Text(
-          'Para usarla en una batalla, andá a Combate y tocá «Sumar monstruo».',
+          'Para usarla en una batalla, andá a Combate y tocá «Sumar al combate».',
           style: TextStyle(fontSize: 12.5, color: pal.textMuted),
         ),
         const SizedBox(height: 16),

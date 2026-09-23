@@ -51,6 +51,96 @@ void main() {
     );
   });
 
+  group('buildNpcPortraitPrompt', () {
+    late ContentRepository repo;
+    setUpAll(() async {
+      repo = await ContentRepository.loadFromDirectory(
+        '../dnd_engine/lib/assets/srd_2024',
+      );
+    });
+
+    // Los tres textos que no pueden salir de la app, cargados a propósito.
+    const secretos = ['TRASFONDO-SECRETO', 'NOTA-SECRETA', 'HABLA-SECRETA'];
+
+    Npc conSecretos(NpcSheetKind kind, {Creature? block}) => Npc(
+      id: 'npc-1',
+      name: 'Capitana Ilse Varn',
+      sheetKind: kind,
+      block: block,
+      baseCreatureId: block?.id,
+      baseCreatureName: block?.name,
+      background: secretos[0],
+      notes: [NpcNote(id: 'n', date: DateTime.utc(2026), text: secretos[1])],
+      speech: secretos[2],
+      appearance: 'cicatriz sobre la ceja',
+    );
+
+    test('con bloque usa la criatura de origen y la apariencia', () {
+      final knight = repo.creature('knight')!;
+      final npc = conSecretos(NpcSheetKind.block, block: knight);
+      final prompt = buildNpcPortraitPrompt(
+        npc: npc,
+        repo: repo,
+        style: 'Óleo clásico',
+        extraText: npc.appearance,
+      );
+      expect(prompt, contains(knight.name));
+      expect(prompt, contains(knight.kind.split(',').first.trim()));
+      expect(prompt, contains('cicatriz sobre la ceja'));
+    });
+
+    test('sin estadísticas no completa nada solo', () {
+      final prompt = buildNpcPortraitPrompt(
+        npc: conSecretos(NpcSheetKind.none),
+        repo: repo,
+        style: '',
+        extraText: '',
+      );
+      expect(
+        prompt,
+        'Retrato de personaje de fantasía (D&D). '
+        'Encuadre tipo busto/retrato, fondo simple.',
+      );
+    });
+
+    test('con ficha de personaje se completa igual que un personaje', () {
+      final sheet = demoSagan();
+      final prompt = buildNpcPortraitPrompt(
+        npc: conSecretos(NpcSheetKind.character),
+        sheet: sheet,
+        repo: repo,
+        style: 'Óleo clásico',
+        extraText: '',
+      );
+      expect(
+        prompt,
+        buildPortraitPrompt(
+          character: sheet,
+          repo: repo,
+          style: 'Óleo clásico',
+          extraText: '',
+        ),
+      );
+    });
+
+    test('nunca manda trasfondo, notas ni «cómo habla»', () {
+      final knight = repo.creature('knight')!;
+      for (final kind in NpcSheetKind.values) {
+        final npc = conSecretos(kind, block: knight);
+        final prompt = buildNpcPortraitPrompt(
+          npc: npc,
+          sheet: kind == NpcSheetKind.character ? demoSagan() : null,
+          repo: repo,
+          style: 'Acuarela',
+          extraText: npc.appearance,
+        );
+        for (final secreto in secretos) {
+          expect(prompt, isNot(contains(secreto)), reason: '$kind');
+        }
+      }
+    });
+  });
+
   // Los retratos llegan a 768 o 1024 px de lado y el medallón del roster mide
   // menos de 100. Reducir eso al dibujar sale dentado con `FilterQuality.low` y
   // lavado con `medium`: hay que recibirlo cerca del tamaño final, no filtrar

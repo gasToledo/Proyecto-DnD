@@ -35,6 +35,30 @@ class InMemoryEncounterRepository implements EncounterRepository {
 
   String _key(String dmUserId, String campaignId) => '$dmUserId|$campaignId';
 
+  Object snapshot() => (byCampaign: Map.of(_byCampaign), logs: List.of(logs));
+
+  void restore(Object raw) {
+    final s =
+        raw
+            as ({
+              Map<String, Encounter> byCampaign,
+              List<
+                ({
+                  String dmUserId,
+                  String campaignId,
+                  Map<String, dynamic> document,
+                })
+              >
+              logs,
+            });
+    _byCampaign
+      ..clear()
+      ..addAll(s.byCampaign);
+    logs
+      ..clear()
+      ..addAll(s.logs);
+  }
+
   @override
   Future<Encounter?> find(String dmUserId, String campaignId) async =>
       _byCampaign[_key(dmUserId, campaignId)];

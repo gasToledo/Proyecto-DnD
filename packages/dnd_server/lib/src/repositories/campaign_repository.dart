@@ -102,8 +102,10 @@ abstract class CampaignRepository {
   Future<void> delete(String dmUserId, String id);
 
   /// Emite un código de un solo uso para compartir [characterId]. Devuelve el
-  /// código en claro, que es lo único que el servidor no vuelve a ver.
-  Future<String> createShareCode({
+  /// código en claro, que es lo único que el servidor no vuelve a ver, o
+  /// `null` si [characterId] no es un personaje jugador de [ownerUserId]: la
+  /// ficha de un PNJ no se comparte, ni pidiéndolo su propio dueño.
+  Future<String?> createShareCode({
     required String ownerUserId,
     required String characterId,
     Duration ttl,
@@ -256,7 +258,7 @@ class PostgresCampaignRepository implements CampaignRepository {
   }
 
   @override
-  Future<String> createShareCode({
+  Future<String?> createShareCode({
     required String ownerUserId,
     required String characterId,
     Duration ttl = defaultShareTtl,
@@ -267,12 +269,19 @@ class PostgresCampaignRepository implements CampaignRepository {
       Sql.named('DELETE FROM character_share_codes WHERE expires_at <= now()'),
     );
 
+    // `SELECT … WHERE kind = 'player'` y no `VALUES`: la clave foránea hacia
+    // `characters` solo garantiza que la fila exista, y la ficha de un PNJ
+    // también es una fila. Sin fila de jugador no se inserta nada y no hay
+    // código.
     final code = generateShareCode();
-    await _session.execute(
+    final result = await _session.execute(
       Sql.named('''
         INSERT INTO character_share_codes
           (code_hash, owner_user_id, character_id, expires_at)
-        VALUES (@codeHash, @ownerUserId, @characterId, @expiresAt)
+        SELECT @codeHash, user_id, id, @expiresAt
+        FROM characters
+        WHERE user_id = @ownerUserId AND id = @characterId AND kind = 'player'
+        RETURNING code_hash
       '''),
       parameters: {
         'codeHash': TypedValue(Type.text, hashShareCode(code)),
@@ -284,7 +293,7 @@ class PostgresCampaignRepository implements CampaignRepository {
         ),
       },
     );
-    return code;
+    return result.isEmpty ? null : code;
   }
 
   /// Consumir el código y crear el vínculo es **una sola sentencia**, así que
@@ -309,7 +318,16 @@ class PostgresCampaignRepository implements CampaignRepository {
         )
         INSERT INTO campaign_members
           (dm_user_id, campaign_id, owner_user_id, character_id)
-        SELECT @dmUserId, @campaignId, owner_user_id, character_id FROM claimed
+        SELECT @dmUserId, @campaignId, claimed.owner_user_id,
+               claimed.character_id
+        FROM claimed
+        -- Segunda defensa después de la emisión: aunque existiera un código
+        -- para la ficha de un PNJ, el canje no la sienta a la mesa como
+        -- jugador. El código igual se consume, como cualquiera que no vale.
+        JOIN characters c
+          ON c.user_id = claimed.owner_user_id
+         AND c.id = claimed.character_id
+         AND c.kind = 'player'
         ON CONFLICT (dm_user_id, campaign_id, owner_user_id, character_id)
         DO UPDATE SET linked_at = now()
         RETURNING id, owner_user_id, character_id

@@ -43,20 +43,42 @@ const _fallbackSwatch = (Color(0xFFA08A5E), Color(0xFF2D2618));
 /// admite), y guarda la elegida. La generación y las claves de proveedor
 /// viven en el servidor: este cliente nunca ve
 /// una key, solo la lista de proveedores ya configurados.
+///
+/// Sirve a dos dueños distintos: un personaje (su ficha lleva los retratos) o
+/// un PNJ sin ficha de personaje (los lleva el documento del PNJ, ver
+/// [PortraitScreen.forNpc]). El taller es el mismo; cambia de dónde sale la
+/// descripción automática y a quién se le guarda el retrato. Un PNJ con ficha
+/// de personaje usa el constructor de siempre, con su ficha.
 class PortraitScreen extends StatefulWidget {
-  final Character character;
+  final Character? character;
+  final Npc? npc;
   final ContentRepository repo;
   final ApiClient api;
   final SettingsController? settingsController;
-  final void Function(Character updated) onUpdated;
+  final void Function(Character updated)? onUpdated;
+  final void Function(Npc updated)? onNpcUpdated;
   const PortraitScreen({
     super.key,
-    required this.character,
+    required Character this.character,
     required this.repo,
     required this.api,
     this.settingsController,
-    required this.onUpdated,
-  });
+    required void Function(Character updated) this.onUpdated,
+  }) : npc = null,
+       onNpcUpdated = null;
+
+  /// El taller para un PNJ sin ficha de personaje. El campo de detalles pasa a
+  /// llamarse «Apariencia» y se guarda en el PNJ: para el tabernero es lo único
+  /// que describe cómo se ve, porque no hay especie ni clase de la que partir.
+  const PortraitScreen.forNpc({
+    super.key,
+    required Npc this.npc,
+    required this.repo,
+    required this.api,
+    this.settingsController,
+    required void Function(Npc updated) this.onNpcUpdated,
+  }) : character = null,
+       onUpdated = null;
 
   @override
   State<PortraitScreen> createState() => _PortraitScreenState();
@@ -66,7 +88,71 @@ class _PortraitScreenState extends State<PortraitScreen> {
   late final SettingsController _settingsController =
       widget.settingsController ??
       SettingsController(widget.api, AppSettings());
-  final _extraCtrl = TextEditingController();
+
+  /// En un PNJ arranca con su apariencia guardada: es lo que el DM ya escribió
+  /// sobre cómo se ve, y volver a tipearlo en cada intento sería de más.
+  late final _extraCtrl = TextEditingController(
+    text: widget.npc?.appearance ?? '',
+  );
+
+  // --- De quién son los retratos -------------------------------------------
+
+  String get _ownerName => widget.character?.name ?? widget.npc!.name;
+
+  List<String> get _paths =>
+      widget.character?.portraitPaths ?? widget.npc!.portraitPaths;
+
+  Map<String, String> get _prompts =>
+      widget.character?.portraitPrompts ?? widget.npc!.portraitPrompts;
+
+  Future<String> _saveBytes(Uint8List bytes) {
+    final character = widget.character;
+    return character != null
+        ? widget.api.savePortrait(characterId: character.id, bytes: bytes)
+        : widget.api.saveNpcPortrait(npcId: widget.npc!.id, bytes: bytes);
+  }
+
+  /// Entrega la lista de retratos nueva a quien corresponda. En un PNJ se
+  /// guarda también la apariencia que quedó escrita.
+  void _apply(List<String> paths, Map<String, String> prompts) {
+    final character = widget.character;
+    if (character != null) {
+      widget.onUpdated!(
+        character.copyWith(portraitPaths: paths, portraitPrompts: prompts),
+      );
+    } else {
+      widget.onNpcUpdated!(
+        widget.npc!.copyWith(
+          portraitPaths: paths,
+          portraitPrompts: prompts,
+          appearance: _extraCtrl.text.trim(),
+        ),
+      );
+    }
+  }
+
+  String _promptWith(String extraText) {
+    final includeWeapon = _providerId != 'azure';
+    final character = widget.character;
+    return character != null
+        ? buildPortraitPrompt(
+            character: character,
+            repo: widget.repo,
+            style: _effectiveStyle,
+            extraText: extraText,
+            // El filtro de contenido de Azure rechaza retratos con arma
+            // explícita.
+            includeWeapon: includeWeapon,
+          )
+        : buildNpcPortraitPrompt(
+            npc: widget.npc!,
+            repo: widget.repo,
+            style: _effectiveStyle,
+            extraText: extraText,
+            includeWeapon: includeWeapon,
+          );
+  }
+
   final _customStyleCtrl = TextEditingController();
 
   List<PortraitProviderInfo> _providers = [];
@@ -157,24 +243,11 @@ class _PortraitScreenState extends State<PortraitScreen> {
 
   String get _effectiveStyle => _customStyle ? _customStyleCtrl.text : _style;
 
-  String get _prompt => buildPortraitPrompt(
-    character: widget.character,
-    repo: widget.repo,
-    style: _effectiveStyle,
-    extraText: _extraCtrl.text,
-    // El filtro de contenido de Azure rechaza retratos con arma explícita.
-    includeWeapon: _providerId != 'azure',
-  );
+  String get _prompt => _promptWith(_extraCtrl.text);
 
   /// El prompt sin lo que escribió el jugador, para poder pintar su aporte
   /// aparte y que se vea qué suma él y qué sale solo de la ficha.
-  String get _basePrompt => buildPortraitPrompt(
-    character: widget.character,
-    repo: widget.repo,
-    style: _effectiveStyle,
-    extraText: '',
-    includeWeapon: _providerId != 'azure',
-  );
+  String get _basePrompt => _promptWith('');
 
   /// Elige el proveedor y lo deja fijado como predeterminado. Antes esto lo
   /// hacía el diálogo de ajustes; al sacarlo de esta pantalla, la elección se
@@ -296,20 +369,13 @@ class _PortraitScreenState extends State<PortraitScreen> {
     setState(() => _saving = true);
     final String key;
     try {
-      key = await widget.api.savePortrait(
-        characterId: widget.character.id,
-        bytes: bytes,
-      );
+      key = await _saveBytes(bytes);
     } catch (e) {
       if (mounted) setState(() => _saving = false);
       _fail('No se pudo guardar el retrato: $e');
       return;
     }
-    final updated = widget.character.copyWith(
-      portraitPaths: [key, ...widget.character.portraitPaths],
-      portraitPrompts: {...widget.character.portraitPrompts, key: ?prompt},
-    );
-    widget.onUpdated(updated);
+    _apply([key, ..._paths], {..._prompts, key: ?prompt});
     if (!mounted) return;
     setState(() => _saving = false);
     showAppMessage(context, 'Retrato guardado.', tone: AppMessageTone.success);
@@ -323,12 +389,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
   /// Se mueve y no se antepone una copia: la lista es el historial, y repetir
   /// una clave haría que el mismo retrato apareciera dos veces en la tira.
   void _restore(String key) {
-    final paths = widget.character.portraitPaths;
-    widget.onUpdated(
-      widget.character.copyWith(
-        portraitPaths: [key, ...paths.where((p) => p != key)],
-      ),
-    );
+    _apply([key, ..._paths.where((p) => p != key)], _prompts);
     showAppMessage(
       context,
       'Retrato restaurado.',
@@ -378,15 +439,10 @@ class _PortraitScreenState extends State<PortraitScreen> {
       _fail('No se pudo borrar el retrato: $e');
       return;
     }
-    widget.onUpdated(
-      widget.character.copyWith(
-        portraitPaths: [
-          for (final existing in widget.character.portraitPaths)
-            if (existing != key) existing,
-        ],
-        portraitPrompts: {...widget.character.portraitPrompts}..remove(key),
-      ),
-    );
+    _apply([
+      for (final existing in _paths)
+        if (existing != key) existing,
+    ], {..._prompts}..remove(key));
     if (!mounted) return;
     setState(() => _saving = false);
     showAppMessage(context, 'Retrato borrado.', tone: AppMessageTone.success);
@@ -398,7 +454,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
   /// recién generado, que todavía no es de nadie.
   String? get _shownSavedKey {
     if (_preview != null) return null;
-    return _previewKey ?? widget.character.portraitPaths.firstOrNull;
+    return _previewKey ?? _paths.firstOrNull;
   }
 
   /// Lo que se puede hacer con el retrato guardado del lienzo: volver a él si
@@ -406,7 +462,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
   List<Widget> _savedPortraitActions() {
     final key = _shownSavedKey;
     if (key == null) return const [];
-    final prompt = widget.character.portraitPrompts[key];
+    final prompt = _prompts[key];
     return [
       if (_previewKey == key) ...[
         const SizedBox(height: 12),
@@ -438,7 +494,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
   /// que un toque de más no cambie el retrato ni cierre la pantalla.
   Widget _historyStrip() {
     final pal = context.palette;
-    final paths = widget.character.portraitPaths;
+    final paths = _paths;
     // Miniatura del servidor y no el original: la celda mide 57 px, y bajar un
     // retrato de 1024 para eso es justo lo que `PortraitImage.provider` evita.
     final width = PortraitImage.thumbnailWidthFor(
@@ -609,7 +665,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
           ],
           // Aparece con uno solo: aunque no haya adónde volver, sí hay qué
           // borrar y un prompt que leer.
-          if (widget.character.portraitPaths.isNotEmpty) ...[
+          if (_paths.isNotEmpty) ...[
             const SizedBox(height: 16),
             const Eyebrow('Retratos guardados'),
             const SizedBox(height: 8),
@@ -631,16 +687,30 @@ class _PortraitScreenState extends State<PortraitScreen> {
   Widget _hero() {
     final pal = context.palette;
     final c = widget.character;
-    final klass = widget.repo.characterClass(c.classId);
+    final klass = c == null ? null : widget.repo.characterClass(c.classId);
     final accent = classAccent(klass, pal.gold);
-    final race = widget.repo.race(c.raceId)?.name ?? c.raceId;
-    final classNames = c.classHistory.toSet().map((id) {
-      final className = widget.repo.characterClass(id)?.name ?? id;
-      return '$className ${c.classLevel(id)}';
-    }).toList();
-    if (classNames.isEmpty) classNames.add(klass?.name ?? c.classId);
-    final background = widget.repo.background(c.backgroundId)?.name;
-    final existing = c.portraitPaths.firstOrNull;
+    // La línea bajo el nombre: especie, clases y trasfondo para un personaje;
+    // de qué partió para un PNJ.
+    final List<String> subtitle;
+    if (c != null) {
+      final classNames = c.classHistory.toSet().map((id) {
+        final className = widget.repo.characterClass(id)?.name ?? id;
+        return '$className ${c.classLevel(id)}';
+      }).toList();
+      if (classNames.isEmpty) classNames.add(klass?.name ?? c.classId);
+      subtitle = [
+        widget.repo.race(c.raceId)?.name ?? c.raceId,
+        ...classNames,
+        ?widget.repo.background(c.backgroundId)?.name,
+      ];
+    } else {
+      final npc = widget.npc!;
+      subtitle = [
+        'PNJ',
+        npc.baseCreatureName ?? npc.block?.name ?? npc.sheetKind.label,
+      ];
+    }
+    final existing = _paths.firstOrNull;
     final previewed = _preview;
 
     final Widget layer;
@@ -715,7 +785,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      c.name,
+                      _ownerName,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -729,11 +799,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      [
-                        race,
-                        ...classNames,
-                        ?background,
-                      ].join(' · ').toUpperCase(),
+                      subtitle.join(' · ').toUpperCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -1070,7 +1136,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
           // Rótulo además del ejemplo: el placeholder se borra con la primera
           // letra, y a mitad de escribir el campo quedaba sin decir para qué
           // era, a la vista y para un lector de pantalla.
-          labelText: 'Detalles adicionales',
+          labelText: widget.npc == null ? 'Detalles adicionales' : 'Apariencia',
           hintText: 'Color de pelo, cicatrices, actitud…',
           filled: true,
           fillColor: context.palette.plaque,

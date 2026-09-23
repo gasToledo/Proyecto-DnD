@@ -56,6 +56,14 @@ class SheetScreen extends StatefulWidget {
   final CharactersController controller;
   final SettingsController? settingsController;
   final AppThemeController theme;
+
+  /// La ficha es de un PNJ del DM, no de un personaje jugador.
+  ///
+  /// Se edita, se sube de nivel y se guarda igual, pero no tiene nada de lo
+  /// que conecta una ficha con otra cuenta: ni «Compartir», ni la pestaña de
+  /// campañas del jugador, ni el aviso de turno. El servidor ya las rechaza
+  /// para una ficha de PNJ; acá ni se ofrecen.
+  final bool npcMode;
   const SheetScreen({
     super.key,
     required this.character,
@@ -63,6 +71,7 @@ class SheetScreen extends StatefulWidget {
     required this.controller,
     this.settingsController,
     required this.theme,
+    this.npcMode = false,
   });
 
   @override
@@ -189,8 +198,14 @@ class _SheetScreenState extends State<SheetScreen> {
     _settingsController =
         widget.settingsController ??
         SettingsController(widget.controller.api, AppSettings());
-    _pollTurn();
+    if (!widget.npcMode) _pollTurn();
   }
+
+  /// Las pestañas que se ofrecen. Un PNJ no tiene campañas «de jugador».
+  List<_SheetTab> get _visibleTabs => [
+    for (final tab in _SheetTab.values)
+      if (!(widget.npcMode && tab == _SheetTab.campana)) tab,
+  ];
 
   @override
   void dispose() {

@@ -72,7 +72,7 @@ extension _SheetNavigation on _SheetScreenState {
         appNavItem(
           context,
           icon: Icons.arrow_back,
-          label: 'Mis personajes',
+          label: widget.npcMode ? 'Volver al PNJ' : 'Mis personajes',
           onTap: () => run(() => Navigator.of(context).pop()),
         ),
         const SizedBox(height: 14),
@@ -128,7 +128,7 @@ extension _SheetNavigation on _SheetScreenState {
           ),
         ),
         const SizedBox(height: 18),
-        for (final tab in _SheetTab.values)
+        for (final tab in _visibleTabs)
           appNavItem(
             context,
             icon: tab.icon,
@@ -150,13 +150,15 @@ extension _SheetNavigation on _SheetScreenState {
           onTap: () => run(_openLevelUp),
         ),
         // Va en el panel y no en el AppBar porque el AppBar solo existe en
-        // ventana angosta: acá se ve en los dos layouts.
-        appNavItem(
-          context,
-          icon: Icons.ios_share,
-          label: 'Compartir',
-          onTap: () => run(_shareCharacter),
-        ),
+        // ventana angosta: acá se ve en los dos layouts. La ficha de un PNJ no
+        // se comparte: no hay jugador del otro lado.
+        if (!widget.npcMode)
+          appNavItem(
+            context,
+            icon: Icons.ios_share,
+            label: 'Compartir',
+            onTap: () => run(_shareCharacter),
+          ),
         const SizedBox(height: 8),
         // La ficha guarda sola, sin botón: sin este cartel no hay forma de
         // saber si lo que se acaba de tipear llegó al servidor.

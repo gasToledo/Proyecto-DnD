@@ -17,6 +17,7 @@ import 'fakes/fake_portrait_provider.dart';
 import 'fakes/in_memory_campaign_repository.dart';
 import 'fakes/in_memory_chapter_repository.dart';
 import 'fakes/in_memory_note_repository.dart';
+import 'fakes/in_memory_npc_repository.dart';
 import 'fakes/in_memory_character_repository.dart';
 import 'fakes/in_memory_encounter_repository.dart';
 import 'fakes/in_memory_event_repository.dart';
@@ -64,6 +65,7 @@ void main() {
   late InMemoryNoteRepository notes;
   late InMemoryEncounterRepository encounters;
   late InMemoryEventRepository events;
+  late InMemoryNpcRepository npcs;
   late InMemoryRepositoryTransactionRunner transactions;
   late InMemoryHomebrewRepository homebrewRepo;
   late InMemorySettingsRepository settingsRepo;
@@ -86,13 +88,17 @@ void main() {
       ..playerChaptersFor = chapters.listFor
       ..playerBattlesFor = encounters.logsFor;
     events = InMemoryEventRepository();
+    npcs = InMemoryNpcRepository(campaigns, characters);
+    homebrewRepo = InMemoryHomebrewRepository();
     transactions = InMemoryRepositoryTransactionRunner(
       characters: characters,
       campaigns: campaigns,
       chapters: chapters,
       events: events,
+      npcs: npcs,
+      encounters: encounters,
+      homebrew: homebrewRepo,
     );
-    homebrewRepo = InMemoryHomebrewRepository();
     importHomebrew = ({required userId, required content}) async {
       var count = 0;
       for (final category in content.entries) {
@@ -121,6 +127,7 @@ void main() {
       notes: notes,
       encounters: encounters,
       events: events,
+      npcs: npcs,
       transactions: transactions,
       homebrew: homebrewRepo,
       settings: settingsRepo,
@@ -799,6 +806,7 @@ void main() {
           notes: notes,
           encounters: encounters,
           events: events,
+          npcs: npcs,
           transactions: transactions,
           homebrew: homebrewRepo,
           settings: settingsRepo,
@@ -849,6 +857,7 @@ void main() {
           notes: notes,
           encounters: encounters,
           events: events,
+          npcs: npcs,
           transactions: transactions,
           homebrew: homebrewRepo,
           settings: settingsRepo,
@@ -930,6 +939,7 @@ void main() {
         notes: notes,
         encounters: encounters,
         events: events,
+        npcs: npcs,
         transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -999,6 +1009,7 @@ void main() {
         notes: notes,
         encounters: encounters,
         events: events,
+        npcs: npcs,
         transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -1068,6 +1079,7 @@ void main() {
         notes: notes,
         encounters: encounters,
         events: events,
+        npcs: npcs,
         transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -1821,6 +1833,7 @@ void main() {
         notes: notes,
         encounters: encounters,
         events: events,
+        npcs: npcs,
         transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,
@@ -1849,6 +1862,7 @@ void main() {
         notes: notes,
         encounters: encounters,
         events: events,
+        npcs: npcs,
         transactions: transactions,
         homebrew: homebrewRepo,
         settings: settingsRepo,

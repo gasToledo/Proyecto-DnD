@@ -4,6 +4,22 @@ class InMemoryHomebrewRepository implements HomebrewRepository {
   final Map<String, Map<String, Map<String, Map<String, dynamic>>>> _byUser =
       {};
 
+  Object snapshot() => {
+    for (final user in _byUser.entries)
+      user.key: {
+        for (final category in user.value.entries)
+          category.key: Map.of(category.value),
+      },
+  };
+
+  void restore(Object raw) {
+    _byUser
+      ..clear()
+      ..addAll(
+        raw as Map<String, Map<String, Map<String, Map<String, dynamic>>>>,
+      );
+  }
+
   @override
   Future<void> upsert(
     String userId,

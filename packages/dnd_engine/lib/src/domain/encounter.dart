@@ -1,11 +1,12 @@
 import 'data_version.dart';
 
-/// Quién es este combatiente: un jugador vinculado o un monstruo que sumó el
-/// DM. Decide qué campos importan (`memberId` vs. `creatureId`/PG) y cómo se
-/// pinta en la mesa del DM.
+/// Quién es este combatiente: un jugador vinculado, un monstruo que sumó el DM
+/// o un PNJ de su biblioteca. Decide qué campos importan (`memberId`,
+/// `creatureId` o `npcId`) y cómo se pinta en la mesa del DM.
 enum CombatantKind {
   player('Jugador'),
-  monster('Monstruo');
+  monster('Monstruo'),
+  npc('PNJ');
 
   const CombatantKind(this.label);
 
@@ -25,6 +26,37 @@ enum CombatantKind {
   }
 }
 
+/// De qué lado pelea un combatiente.
+///
+/// Es aparte de [CombatantKind] porque son dos preguntas distintas: un lobo
+/// invocado es un monstruo aliado, y el villano del trasfondo es un PNJ que
+/// hoy es enemigo y mañana quizás no. Los jugadores son siempre aliados.
+enum CombatantSide {
+  ally('Aliado'),
+  enemy('Enemigo'),
+  neutral('Neutral');
+
+  const CombatantSide(this.label);
+
+  final String label;
+
+  String toJson() => name;
+
+  /// Null si falta o es desconocido: quien lee decide el valor por defecto,
+  /// que depende de [CombatantKind] (ver `Combatant.fromJson`).
+  static CombatantSide? fromJson(String? v) {
+    for (final s in CombatantSide.values) {
+      if (s.name == v) return s;
+    }
+    return null;
+  }
+
+  /// El bando con el que se lee un combatiente que no declara ninguno: los
+  /// combates anteriores a los bandos solo tenían jugadores contra monstruos.
+  static CombatantSide defaultFor(CombatantKind kind) =>
+      kind == CombatantKind.player ? ally : enemy;
+}
+
 /// Un puesto en el orden de iniciativa.
 ///
 /// Para un jugador, [memberId] es el vínculo (`campaign_members.id`) y no el
@@ -32,6 +64,8 @@ enum CombatantKind {
 /// campaña, y es lo que la consulta de turno del jugador puede resolver sin
 /// ambigüedad. Para un monstruo, [creatureId] es el id del catálogo y
 /// [currentHp]/[maxHp] son el único estado que el DM escribe en toda la fase.
+/// Para un PNJ, [npcId] apunta a su biblioteca y sus PG son **del combate**:
+/// dañarlo acá no toca su bloque ni su ficha.
 class Combatant {
   final String id;
   final CombatantKind kind;
@@ -39,8 +73,12 @@ class Combatant {
   final int initiative;
   final String? memberId;
   final String? creatureId;
+  final String? npcId;
   final int currentHp;
   final int maxHp;
+
+  /// De qué lado pelea. Ver [CombatantSide].
+  final CombatantSide side;
 
   /// Qué le está pasando: «Envenenado», «marcado por el pícaro»,
   /// «concentrando en Bendición».
@@ -54,6 +92,12 @@ class Combatant {
   /// pasa a su personaje porque se lo dijeron en la mesa.
   final List<String> tags;
 
+  /// Sin [side] explícito, un jugador es aliado y cualquier otro enemigo.
+  ///
+  /// Dos bandos no se eligen, se pida lo que se pida: un jugador es aliado
+  /// siempre, y un PNJ sin estadísticas es neutral siempre (ver
+  /// [isStatless]). Forzarlo acá y no en la pantalla hace que ningún camino
+  /// —un diálogo nuevo, un documento viejo— pueda saltearse la regla.
   const Combatant({
     required this.id,
     required this.kind,
@@ -61,29 +105,53 @@ class Combatant {
     required this.initiative,
     this.memberId,
     this.creatureId,
+    this.npcId,
     this.currentHp = 0,
     this.maxHp = 0,
     this.tags = const [],
-  });
+    CombatantSide? side,
+  }) : side = kind == CombatantKind.player
+            ? CombatantSide.ally
+            : kind == CombatantKind.npc && maxHp == 0
+                ? CombatantSide.neutral
+                : side ?? CombatantSide.enemy;
 
-  /// Un monstruo a 0 PG está inconsciente o muerto: no le toca actuar y su
-  /// turno se salta solo (ver `Encounter.next`). Nunca es cierto para un
-  /// jugador — sus PG no se llevan acá, así que [maxHp] siempre da 0 y la
-  /// condición no puede dispararse por accidente.
+  /// Un monstruo o un PNJ a 0 PG está inconsciente o muerto: no le toca actuar
+  /// y su turno se salta solo (ver `Encounter.next`). Nunca es cierto para un
+  /// jugador —sus PG no se llevan acá— ni para un PNJ sin estadísticas: sin
+  /// máximo, la condición no puede dispararse por accidente.
   bool get isDown =>
-      kind == CombatantKind.monster && maxHp > 0 && currentHp <= 0;
+      kind != CombatantKind.player && maxHp > 0 && currentHp <= 0;
 
-  Combatant copyWith({int? currentHp, List<String>? tags, int? initiative}) =>
+  /// Un PNJ sin estadísticas no tiene PG que perder, así que su bando queda
+  /// fijo en neutral: como aliado contaría siempre «en pie» sin poder caer.
+  bool get isStatless => kind == CombatantKind.npc && maxHp == 0;
+
+  /// Si el DM puede cambiarle el bando. Nunca a un jugador ni a un PNJ sin
+  /// estadísticas.
+  bool get canChangeSide => kind != CombatantKind.player && !isStatless;
+
+  Combatant copyWith({
+    int? currentHp,
+    List<String>? tags,
+    int? initiative,
+    CombatantSide? side,
+    CombatantKind? kind,
+    String? name,
+    String? npcId,
+  }) =>
       Combatant(
         id: id,
-        kind: kind,
-        name: name,
+        kind: kind ?? this.kind,
+        name: name ?? this.name,
         initiative: initiative ?? this.initiative,
         memberId: memberId,
         creatureId: creatureId,
+        npcId: npcId ?? this.npcId,
         currentHp: currentHp ?? this.currentHp,
         maxHp: maxHp,
         tags: tags ?? this.tags,
+        side: side ?? this.side,
       );
 
   Map<String, dynamic> toJson() => {
@@ -91,8 +159,10 @@ class Combatant {
         'kind': kind.toJson(),
         'name': name,
         'initiative': initiative,
+        'side': side.toJson(),
         if (memberId != null) 'memberId': memberId,
         if (creatureId != null) 'creatureId': creatureId,
+        if (npcId != null) 'npcId': npcId,
         if (maxHp != 0) 'currentHp': currentHp,
         if (maxHp != 0) 'maxHp': maxHp,
         if (tags.isNotEmpty) 'tags': tags,
@@ -105,8 +175,10 @@ class Combatant {
         initiative: j['initiative'] as int? ?? 0,
         memberId: j['memberId'] as String?,
         creatureId: j['creatureId'] as String?,
+        npcId: j['npcId'] as String?,
         currentHp: j['currentHp'] as int? ?? 0,
         maxHp: j['maxHp'] as int? ?? 0,
+        side: CombatantSide.fromJson(j['side'] as String?),
         // Se descarta lo que no sea texto en vez de romper el combate entero:
         // un tag mal formado no vale perder el orden de iniciativa a mitad de
         // una ronda.
@@ -196,7 +268,9 @@ enum EncounterStage {
 class Encounter {
   /// Versión del formato de este documento. Mismo contrato que
   /// `Character.currentSchemaVersion` y `Campaign.currentSchemaVersion`.
-  static const int currentSchemaVersion = 1;
+  ///
+  /// La 2 suma el bando de cada combatiente (ver [migrateJson]).
+  static const int currentSchemaVersion = 2;
 
   final String id;
   final int round;
@@ -300,20 +374,20 @@ class Encounter {
   /// **Mientras se arma la mesa el orden es otro**: todavía nadie tiró
   /// iniciativa, así que ordenar por ella dejaría a todos empatados en cero y
   /// la lista saltaría sola en cuanto se tirara. En [EncounterStage.preparing]
-  /// van los jugadores primero y los monstruos después, cada bando en el orden
-  /// en que se cargó — así el «Goblin 2» aparece pegado al «Goblin».
+  /// van los jugadores primero y el resto después —monstruos y PNJ juntos—,
+  /// cada grupo en el orden en que se cargó: así el «Goblin 2» aparece pegado
+  /// al «Goblin».
   Encounter withCombatant(Combatant combatant) {
     final currentId = isPreparing || combatants.isEmpty ? null : current?.id;
+    int group(Combatant c) => c.kind == CombatantKind.player ? 0 : 1;
     final withIndex = [
       for (final (i, c) in combatants.indexed)
         if (c.id != combatant.id) (index: i, combatant: c),
       (index: combatants.length, combatant: combatant),
     ]..sort((a, b) {
         if (isPreparing) {
-          final bySide = a.combatant.kind.index.compareTo(
-            b.combatant.kind.index,
-          );
-          return bySide != 0 ? bySide : a.index.compareTo(b.index);
+          final byGroup = group(a.combatant).compareTo(group(b.combatant));
+          return byGroup != 0 ? byGroup : a.index.compareTo(b.index);
         }
         final byInitiative =
             b.combatant.initiative.compareTo(a.combatant.initiative);
@@ -448,6 +522,42 @@ class Encounter {
         stage: stage,
       );
 
+  /// Cambia el bando de un combatiente, a mitad de combate si hace falta: el
+  /// aliado que traiciona, el neutral que toma partido.
+  ///
+  /// No hace nada con quien no puede cambiarlo (ver
+  /// [Combatant.canChangeSide]) ni con un id que no está.
+  Encounter withSide(String combatantId, CombatantSide side) => Encounter(
+        id: id,
+        round: round,
+        turnIndex: turnIndex,
+        combatants: [
+          for (final c in combatants)
+            if (c.id == combatantId && c.canChangeSide)
+              c.copyWith(side: side)
+            else
+              c,
+        ],
+        stage: stage,
+      );
+
+  /// Reemplaza a un combatiente **en su mismo lugar**, sin reordenar.
+  ///
+  /// Existe para convertir un monstruo en PNJ: [withCombatant] lo sacaría y lo
+  /// volvería a meter, y en un empate de iniciativa lo mandaría detrás de los
+  /// que tenían la misma — el goblin que el grupo acaba de bautizar no debería
+  /// perder su turno por eso.
+  Encounter withReplaced(Combatant combatant) => Encounter(
+        id: id,
+        round: round,
+        turnIndex: turnIndex,
+        combatants: [
+          for (final c in combatants)
+            if (c.id == combatant.id) combatant else c,
+        ],
+        stage: stage,
+      );
+
   /// El turno de un jugador puntual, identificado por su [memberId] en esta
   /// campaña. Es la proyección que el servidor le sirve al jugador — nunca
   /// el encuentro entero.
@@ -501,6 +611,10 @@ class Encounter {
   /// Mismo contrato que `Campaign.migrateJson`: no muta la entrada, y
   /// rechaza una versión futura en vez de guardarla de vuelta sin los campos
   /// que esta versión del servidor no entiende.
+  ///
+  /// **1 → 2**: completa el bando de cada combatiente. Antes de los bandos un
+  /// combate era jugadores contra monstruos, así que eso es lo que se escribe;
+  /// un combate abierto durante la actualización se retoma igual que estaba.
   static Map<String, dynamic> migrateJson(Map<String, dynamic> source) {
     final version = schemaVersionOf(source);
     if (version > currentSchemaVersion) {
@@ -510,6 +624,21 @@ class Encounter {
         supported: currentSchemaVersion,
       );
     }
-    return Map<String, dynamic>.from(source);
+    final j = Map<String, dynamic>.from(source);
+    if (version < 2) {
+      j['combatants'] = [
+        for (final c in (source['combatants'] as List? ?? const []))
+          if (c is Map)
+            {
+              ...c.cast<String, dynamic>(),
+              'side': (c['side'] as String?) ??
+                  CombatantSide.defaultFor(
+                    CombatantKind.fromJson(c['kind'] as String?),
+                  ).toJson(),
+            },
+      ];
+      j['schemaVersion'] = 2;
+    }
+    return j;
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:dnd_engine/dnd_engine.dart';
@@ -593,6 +594,151 @@ void main() {
       final source = <String, dynamic>{'id': 'x', 'round': 2};
       Encounter.migrateJson(source);
       expect(source, {'id': 'x', 'round': 2});
+    });
+
+    // Un combate abierto mientras se actualiza el servidor: tiene que
+    // retomarse con el mismo turno y ronda, y con los bandos que implicaba
+    // la versión 1 (jugadores contra monstruos).
+    test('un combate v1 en curso se retoma con bandos, turno y ronda', () {
+      final v1 = <String, dynamic>{
+        'schemaVersion': 1,
+        'id': 'x',
+        'round': 3,
+        'turnIndex': 1,
+        'stage': 'running',
+        'combatants': [
+          {'id': 'p', 'kind': 'player', 'name': 'Sagan', 'initiative': 15},
+          {
+            'id': 'g',
+            'kind': 'monster',
+            'name': 'Goblin',
+            'initiative': 12,
+            'creatureId': 'goblin',
+            'currentHp': 4,
+            'maxHp': 7,
+          },
+        ],
+      };
+      final copy = jsonDecode(jsonEncode(v1));
+
+      final e = Encounter.fromJson(v1);
+
+      expect(v1, copy);
+      expect(e.round, 3);
+      expect(e.current!.id, 'g');
+      expect(e.combatants.first.side, CombatantSide.ally);
+      expect(e.combatants.last.side, CombatantSide.enemy);
+      expect(e.combatants.last.currentHp, 4);
+      expect(e.toJson()['schemaVersion'], 2);
+    });
+  });
+
+  group('Encounter — bandos', () {
+    const ilse = Combatant(
+      id: 'i',
+      kind: CombatantKind.npc,
+      name: 'Ilse',
+      initiative: 18,
+      npcId: 'npc-1',
+      currentHp: 52,
+      maxHp: 52,
+      side: CombatantSide.ally,
+    );
+    const toblen = Combatant(
+      id: 't',
+      kind: CombatantKind.npc,
+      name: 'Toblen',
+      initiative: 13,
+      npcId: 'npc-2',
+      side: CombatantSide.ally,
+    );
+
+    test('un jugador es aliado aunque se pida otro bando', () {
+      const p = Combatant(
+        id: 'p',
+        kind: CombatantKind.player,
+        name: 'Sagan',
+        initiative: 10,
+        side: CombatantSide.enemy,
+      );
+      expect(p.side, CombatantSide.ally);
+      expect(p.canChangeSide, isFalse);
+    });
+
+    test('un monstruo sin bando explícito es enemigo', () {
+      const g = Combatant(
+        id: 'g',
+        kind: CombatantKind.monster,
+        name: 'Goblin',
+        initiative: 10,
+      );
+      expect(g.side, CombatantSide.enemy);
+    });
+
+    test('un PNJ sin estadísticas queda neutral y no cambia de bando', () {
+      expect(toblen.side, CombatantSide.neutral);
+      expect(toblen.isStatless, isTrue);
+      expect(toblen.canChangeSide, isFalse);
+      expect(toblen.isDown, isFalse);
+
+      final e = const Encounter(id: 'x', combatants: [toblen])
+          .withSide('t', CombatantSide.enemy);
+      expect(e.combatants.single.side, CombatantSide.neutral);
+    });
+
+    test('un PNJ con PG cae a 0 como un monstruo', () {
+      expect(ilse.copyWith(currentHp: 0).isDown, isTrue);
+    });
+
+    test('withSide cambia el bando a mitad de combate', () {
+      final e = const Encounter(
+        id: 'x',
+        combatants: [ilse],
+        stage: EncounterStage.running,
+      ).withSide('i', CombatantSide.enemy);
+      expect(e.combatants.single.side, CombatantSide.enemy);
+    });
+
+    test('el bando y el PNJ sobreviven el round-trip', () {
+      final r = Combatant.fromJson(ilse.toJson());
+      expect(r.kind, CombatantKind.npc);
+      expect(r.npcId, 'npc-1');
+      expect(r.side, CombatantSide.ally);
+    });
+
+    test('withReplaced conserva el lugar en un empate de iniciativa', () {
+      const g1 = Combatant(
+        id: 'g1',
+        kind: CombatantKind.monster,
+        name: 'Goblin 1',
+        initiative: 12,
+        creatureId: 'goblin',
+        currentHp: 4,
+        maxHp: 10,
+      );
+      const g2 = Combatant(
+        id: 'g2',
+        kind: CombatantKind.monster,
+        name: 'Goblin 2',
+        initiative: 12,
+        creatureId: 'goblin',
+        currentHp: 10,
+        maxHp: 10,
+      );
+      final e = const Encounter(
+        id: 'x',
+        combatants: [g1, g2],
+        stage: EncounterStage.running,
+      );
+
+      final converted = e.withReplaced(
+        g1.copyWith(kind: CombatantKind.npc, name: 'Pipo', npcId: 'npc-9'),
+      );
+
+      expect(converted.combatants.map((c) => c.id), ['g1', 'g2']);
+      expect(converted.combatants.first.name, 'Pipo');
+      expect(converted.combatants.first.currentHp, 4);
+      expect(converted.combatants.first.side, CombatantSide.enemy);
     });
   });
 

@@ -227,9 +227,14 @@ class _NotebookViewState extends State<NotebookView> {
   }
 }
 
-String _logTitle(EncounterLog log) => log.monsters.isEmpty
+/// El título nombra solo a los enemigos: «contra» un aliado no se pelea.
+String _logTitle(EncounterLog log) => log.enemies.isEmpty
     ? 'Combate'
-    : 'Combate contra ${log.monsters.map((m) => m.name).join(', ')}';
+    : 'Combate contra ${log.enemies.map((m) => m.name).join(', ')}';
+
+String _logNames(List<EncounterLogMonsters> group, String joiner) => [
+  for (final m in group) m.count == 1 ? m.name : '${m.count} ${m.name}',
+].join(joiner);
 
 /// Un capítulo del cuaderno: plegado muestra un resumen, abierto muestra sus
 /// entradas.
@@ -520,13 +525,20 @@ enum _NoteAction { edit, delete }
 
 /// Qué dice un combate cerrado. Deliberadamente grueso: el servidor nunca sabe
 /// quién hizo cuánto daño, porque cada jugador anota sus propios PG.
+///
+/// Aliados y neutrales van en líneas propias, después de la pelea: es el
+/// cuaderno del DM y le sirve saber que Mirra estuvo del lado de la mesa, pero
+/// no cuentan en «cayeron N de M», que es de los enemigos.
 String _logBody(EncounterLog log) {
   final who = log.players.isEmpty ? 'La mesa' : log.players.join(', ');
-  if (log.monsters.isEmpty) return '$who peleó sin enemigos cargados.';
-  final against = [
-    for (final m in log.monsters)
-      m.count == 1 ? m.name : '${m.count} ${m.name}',
-  ].join(' y ');
+  final extra = [
+    if (log.allies.isNotEmpty) 'Aliados: ${_logNames(log.allies, ', ')}.',
+    if (log.neutrals.isNotEmpty) 'Neutrales: ${_logNames(log.neutrals, ', ')}.',
+  ];
+  if (log.enemies.isEmpty) {
+    return ['$who peleó sin enemigos cargados.', ...extra].join('\n');
+  }
+  final against = _logNames(log.enemies, ' y ');
   // El sujeto va siempre explícito: "cayeron todos" a secas, al lado de
   // "Sagan, Lyra contra 3 Goblins", se puede leer como que cayó el grupo.
   final fell = log.totalDefeated == 0
@@ -534,5 +546,5 @@ String _logBody(EncounterLog log) {
       : log.totalDefeated == log.totalMonsters
       ? 'Cayeron todos los enemigos.'
       : 'Cayeron ${log.totalDefeated} de ${log.totalMonsters} enemigos.';
-  return '$who contra $against. $fell';
+  return ['$who contra $against. $fell', ...extra].join('\n');
 }

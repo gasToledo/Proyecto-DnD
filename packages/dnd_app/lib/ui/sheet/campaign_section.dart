@@ -220,9 +220,17 @@ extension _CampaignSection on _SheetScreenState {
     );
   }
 
+  /// Un PNJ sin criatura de base llega sin nombre (ver
+  /// `EncounterLog.playerView`): el jugador no tiene por qué saber cómo se
+  /// llamaba, así que se lee «un enemigo».
   String _battleTitle(EncounterLog log) => log.monsters.isEmpty
       ? 'Una pelea'
-      : 'Contra ${_joinNames([for (final m in log.monsters) m.count == 1 ? m.name : '${m.count} ${m.name}'])}';
+      : 'Contra ${_joinNames([for (final m in log.monsters) switch ((m.name.isEmpty, m.count == 1)) {
+            (true, true) => 'un enemigo',
+            (true, false) => '${m.count} enemigos',
+            (false, true) => m.name,
+            (false, false) => '${m.count} ${m.name}',
+          }])}';
 
   String _defeatedLabel(EncounterLog log) {
     final total = log.totalMonsters;

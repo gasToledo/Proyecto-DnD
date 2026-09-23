@@ -13,7 +13,9 @@ import '../../theme/app_widgets.dart';
 ///
 /// **A los monstruos les llega el número ya tirado** (d20 + su modificador,
 /// una tirada por copia) y el DM lo puede corregir; a los jugadores les llega
-/// en blanco, porque el número lo cantan ellos desde la mesa. Todos los
+/// en blanco, porque el número lo cantan ellos desde la mesa. Los PNJ van con
+/// los monstruos pero también en blanco: su iniciativa se carga a mano, como
+/// la de un personaje, aunque tengan bloque. Todos los
 /// valores son el **final** —dado más modificador—, que es lo que se dice en
 /// voz alta.
 ///
@@ -76,7 +78,7 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
     ];
     final monsters = [
       for (final c in widget.combatants)
-        if (c.kind == CombatantKind.monster) c,
+        if (c.kind != CombatantKind.player) c,
     ];
 
     return AppDialog(
@@ -97,9 +99,9 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
                 _side(context, 'La mesa', players, vacio: 'Nadie de la mesa.'),
                 _side(
                   context,
-                  'Los monstruos',
+                  'Monstruos y PNJ',
                   monsters,
-                  vacio: 'Ningún monstruo.',
+                  vacio: 'Ningún monstruo ni PNJ.',
                 ),
               ];
               return wide

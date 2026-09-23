@@ -7,11 +7,13 @@ import '../../api/api_client.dart';
 import '../../api/api_exception.dart';
 import '../../api/api_models.dart';
 import '../../data/campaigns_controller.dart';
+import '../../data/settings_service.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
 import '../pending_events_gate.dart';
 import '../portrait_image.dart';
+import 'add_monster_dialog.dart';
 import 'bestiary_view.dart';
 import 'campaign_editor_dialog.dart';
 import 'chapter_editor_dialog.dart';
@@ -20,6 +22,11 @@ import 'encounter_view.dart';
 import 'member_sheet_screen.dart';
 import 'note_editor_dialog.dart';
 import 'notebook_view.dart';
+import 'npcs/campaign_npcs_view.dart';
+import 'npcs/npc_detail_screen.dart';
+import 'npcs/npc_library_view.dart';
+import 'npcs/npc_shared.dart';
+import 'npcs/npc_transfer.dart';
 import 'roll_initiative_dialog.dart';
 
 /// El otro sombrero de la misma cuenta.
@@ -32,7 +39,18 @@ class DmModeScreen extends StatefulWidget {
   final ApiClient api;
   final ContentRepository repo;
 
-  const DmModeScreen({super.key, required this.api, required this.repo});
+  /// Para abrir la ficha completa de un PNJ con ficha de personaje, que usa la
+  /// misma pantalla que un jugador. Sin ellos se usan unos locales.
+  final AppThemeController? theme;
+  final SettingsController? settingsController;
+
+  const DmModeScreen({
+    super.key,
+    required this.api,
+    required this.repo,
+    this.theme,
+    this.settingsController,
+  });
 
   @override
   State<DmModeScreen> createState() => _DmModeScreenState();
@@ -55,8 +73,27 @@ class _DmModeScreenState extends State<DmModeScreen> {
   /// De regalo, las cuatro asignaciones de `_section = mesa` que ya existían
   /// (elegir campaña, crearla, borrarla) salen del Bestiario solas.
   _CampaignSection? _section = _CampaignSection.mesa;
+
+  /// Con [_section] en `null`, si lo abierto es la biblioteca de PNJ en vez
+  /// del Bestiario. Las dos son globales —ni el catálogo ni los PNJ son de una
+  /// mesa— y comparten el mismo «ninguna sección de campaña».
+  bool _npcLibrary = false;
   String? _notebookChapterId;
   Object? _loadError;
+
+  /// Abre la ficha de un PNJ y vuelve cuando el DM sale de ella.
+  Future<void> _openNpc(String npcId) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => NpcDetailScreen(
+        api: widget.api,
+        repo: widget.repo,
+        npcId: npcId,
+        campaigns: _campaigns.campaigns,
+        theme: widget.theme,
+        settingsController: widget.settingsController,
+      ),
+    ),
+  );
 
   Campaign? get _effectiveSelection =>
       _campaigns.campaigns
@@ -273,8 +310,21 @@ class _DmModeScreenState extends State<DmModeScreen> {
                       context,
                       icon: Icons.pets_outlined,
                       label: 'Bestiario',
-                      active: _section == null,
+                      active: _section == null && !_npcLibrary,
                       onTap: () => _selectSection(null, inDrawer: inDrawer),
+                    ),
+                    // Pegado al Bestiario y por lo mismo: un PNJ es de la
+                    // cuenta, no de una mesa, y puede estar en varias.
+                    appNavItem(
+                      context,
+                      icon: Icons.groups_2_outlined,
+                      label: 'PNJ',
+                      active: _section == null && _npcLibrary,
+                      onTap: () => _selectSection(
+                        null,
+                        inDrawer: inDrawer,
+                        npcLibrary: true,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     if (active.isNotEmpty) ...[
@@ -355,6 +405,16 @@ class _DmModeScreenState extends State<DmModeScreen> {
                       ),
                       appNavItem(
                         context,
+                        icon: Icons.groups_2_outlined,
+                        label: 'PNJ',
+                        active: _section == _CampaignSection.pnj,
+                        onTap: () => _selectSection(
+                          _CampaignSection.pnj,
+                          inDrawer: inDrawer,
+                        ),
+                      ),
+                      appNavItem(
+                        context,
                         icon: Icons.local_fire_department_outlined,
                         label: 'Combate',
                         active: _section == _CampaignSection.combate,
@@ -413,9 +473,14 @@ class _DmModeScreenState extends State<DmModeScreen> {
     );
   }
 
-  void _selectSection(_CampaignSection? section, {required bool inDrawer}) {
+  void _selectSection(
+    _CampaignSection? section, {
+    required bool inDrawer,
+    bool npcLibrary = false,
+  }) {
     setState(() {
       _section = section;
+      _npcLibrary = section == null && npcLibrary;
       _notebookChapterId = null;
     });
     if (inDrawer) Navigator.of(context).pop();
@@ -433,6 +498,23 @@ class _DmModeScreenState extends State<DmModeScreen> {
     // tiene que abrirse también cuando no hay ninguna (donde esto devolvería
     // el estado de bienvenida) y cuando el servidor no contestó.
     final section = _section;
+    if (section == null && _npcLibrary) {
+      return ListenableBuilder(
+        listenable: _campaigns,
+        builder: (context, _) => NpcLibraryView(
+          api: widget.api,
+          repo: widget.repo,
+          campaigns: _campaigns.campaigns,
+          onOpen: (entry) => _openNpc(entry.npc.id),
+          onImport: () => importNpcFlow(
+            context,
+            api: widget.api,
+            repo: widget.repo,
+            campaigns: _campaigns.campaigns,
+          ),
+        ),
+      );
+    }
     if (section == null) return BestiaryView(repo: widget.repo);
     if (_loadError != null) {
       return AppErrorView(
@@ -473,6 +555,7 @@ class _DmModeScreenState extends State<DmModeScreen> {
           onEdit: () => _editCampaign(campaign),
           onDelete: () => _deleteCampaign(campaign),
           onOpenNotebook: _openNotebook,
+          onOpenNpc: _openNpc,
         );
       },
     );
@@ -636,6 +719,7 @@ class _CampaignDetail extends StatefulWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final void Function(String chapterId) onOpenNotebook;
+  final Future<void> Function(String npcId) onOpenNpc;
 
   const _CampaignDetail({
     super.key,
@@ -647,13 +731,14 @@ class _CampaignDetail extends StatefulWidget {
     required this.onEdit,
     required this.onDelete,
     required this.onOpenNotebook,
+    required this.onOpenNpc,
   });
 
   @override
   State<_CampaignDetail> createState() => _CampaignDetailState();
 }
 
-enum _CampaignSection { mesa, capitulos, cuaderno, combate }
+enum _CampaignSection { mesa, capitulos, cuaderno, pnj, combate }
 
 enum _CampaignMenuAction { edit, delete }
 
@@ -674,6 +759,11 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   bool _encounterLoading = true;
   Object? _encounterError;
 
+  /// Los PNJ de la campaña con su estado en ella. Los lee la sección PNJ y
+  /// también el combate, que necesita saber con qué pelea cada uno.
+  List<CampaignNpcEntry>? _npcs;
+  Object? _npcsError;
+
   /// Sondea los PG de los jugadores mientras haya combate abierto — no según
   /// qué sección esté mirando el DM, porque el vínculo es referencia viva y
   /// el jugador puede anotarse el daño con la pestaña de Mesa al frente.
@@ -693,6 +783,73 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     _loadChapters();
     _loadNotebook();
     _loadEncounter();
+    _loadNpcs();
+  }
+
+  // --- PNJ ----------------------------------------------------------------
+
+  Future<void> _loadNpcs() async {
+    if (_npcsError != null) setState(() => _npcsError = null);
+    try {
+      final npcs = await widget.api.listCampaignNpcs(widget.campaign.id);
+      if (mounted) setState(() => _npcs = npcs);
+    } catch (error) {
+      if (mounted) setState(() => _npcsError = error);
+    }
+  }
+
+  Future<void> _npcAction(Future<void> Function() action) async {
+    try {
+      await action();
+    } on ApiException catch (e) {
+      if (mounted) {
+        showAppMessage(context, e.message, tone: AppMessageTone.error);
+      }
+    }
+    if (mounted) await _loadNpcs();
+  }
+
+  Future<void> _createNpc() async {
+    final created = await createNpcFlow(
+      context,
+      api: widget.api,
+      repo: widget.repo,
+      campaignId: widget.campaign.id,
+    );
+    if (created != null && mounted) await _loadNpcs();
+  }
+
+  Future<void> _openNpc(String npcId) async {
+    await widget.onOpenNpc(npcId);
+    if (mounted) await _loadNpcs();
+  }
+
+  /// Suma a esta campaña PNJ que ya están en la biblioteca.
+  Future<void> _bringNpcsFromLibrary() async {
+    final List<NpcEntry> library;
+    try {
+      library = await widget.api.listNpcs();
+    } on ApiException catch (e) {
+      if (mounted) {
+        showAppMessage(context, e.message, tone: AppMessageTone.error);
+      }
+      return;
+    }
+    if (!mounted) return;
+    final options = [
+      for (final entry in library)
+        if (!entry.isIn(widget.campaign.id)) entry,
+    ];
+    final picked = await showDialog<Set<String>>(
+      context: context,
+      builder: (_) => _PickNpcsDialog(options: options, repo: widget.repo),
+    );
+    if (picked == null || picked.isEmpty || !mounted) return;
+    await _npcAction(() async {
+      for (final id in picked) {
+        await widget.api.linkCampaignNpc(widget.campaign.id, id);
+      }
+    });
   }
 
   @override
@@ -1103,7 +1260,12 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   /// Con [rollHp], los PG también salen por copia: seis goblins que tiran
   /// `2d6` entran con seis vidas distintas. Sin él, todas arrancan con el
   /// promedio del libro, que es lo que corresponde para un jefe.
-  void _addMonsters(Creature creature, int count, {bool rollHp = false}) {
+  void _addMonsters(
+    Creature creature,
+    int count, {
+    bool rollHp = false,
+    CombatantSide side = CombatantSide.enemy,
+  }) {
     final resolved = creature.resolve(const CreatureVars({}));
     final formula = rollHp
         ? DiceFormula.tryParse(creature.hitDice ?? '')
@@ -1134,11 +1296,117 @@ class _CampaignDetailState extends State<_CampaignDetail> {
             // El máximo es el tirado y no el del libro: si no, un goblin que
             // sacó 5 se vería «5 / 7» y la barra arrancaría a media asta.
             maxHp: hp,
+            side: side,
           ),
         );
       }
       return encounter;
     });
+  }
+
+  /// Suma un PNJ con sus PG máximos de siempre: el daño de un combate
+  /// anterior no quedó en ningún lado, a propósito — los PG del combate son
+  /// del combate.
+  ///
+  /// Si venía de la biblioteca, o estaba muerto y el DM marcó que volvió,
+  /// primero se escribe la campaña. Si eso falla, no entra: un PNJ en la mesa
+  /// que no figura en la campaña quedaría sin estado que marcar al cerrar.
+  Future<void> _addNpc(AddNpcChoice choice, int initiative) async {
+    if (choice.fromLibrary || choice.revive) {
+      try {
+        await widget.api.linkCampaignNpc(
+          widget.campaign.id,
+          choice.npc.id,
+          status: choice.revive ? NpcStatus.alive : null,
+        );
+      } catch (error) {
+        _reportEncounterError(error);
+        return;
+      }
+      if (mounted) unawaited(_loadNpcs());
+    }
+    final hp = npcMaxHp(choice.npc, choice.sheet, widget.repo);
+    await _saveEncounter((current) {
+      final encounter = current ?? Encounter(id: _newId('encounter'));
+      // Una sola vez por combate, contra la mesa ya guardada: dos toques
+      // seguidos no pueden sumarlo dos veces.
+      if (encounter.combatants.any((c) => c.npcId == choice.npc.id)) {
+        return null;
+      }
+      return encounter.withCombatant(
+        Combatant(
+          id: _newId('c'),
+          kind: CombatantKind.npc,
+          name: choice.npc.name,
+          initiative: initiative,
+          npcId: choice.npc.id,
+          currentHp: hp,
+          maxHp: hp,
+          side: choice.side,
+        ),
+      );
+    });
+  }
+
+  void _setCombatantSide(String combatantId, CombatantSide side) =>
+      _saveEncounter((current) => current?.withSide(combatantId, side));
+
+  /// Crea un PNJ con una copia del bloque de la criatura y pone al
+  /// combatiente en su lugar, con sus PG, su bando y sus efectos: el goblin
+  /// perdonado no vuelve a empezar la pelea.
+  Future<void> _convertToNpc(String combatantId, String name) async {
+    final combatant = _encounter?.combatants
+        .where((c) => c.id == combatantId)
+        .firstOrNull;
+    final creature = combatant?.creatureId == null
+        ? null
+        : widget.repo.creature(combatant!.creatureId!);
+    if (combatant == null || creature == null) {
+      showAppMessage(
+        context,
+        'No hay perfil de esa criatura para copiar.',
+        tone: AppMessageTone.error,
+      );
+      return;
+    }
+    final NpcEntry created;
+    try {
+      created = await widget.api.createNpc(
+        Npc(
+          id: 'nuevo',
+          name: name,
+          sheetKind: NpcSheetKind.block,
+          block: Creature.fromJson(creature.toJson()),
+          baseCreatureId: creature.id,
+          baseCreatureName: creature.name,
+        ),
+      );
+      await widget.api.linkCampaignNpc(widget.campaign.id, created.npc.id);
+    } catch (error) {
+      _reportEncounterError(error);
+      return;
+    }
+    if (mounted) unawaited(_loadNpcs());
+    await _saveEncounter((current) {
+      final now = current?.combatants
+          .where((c) => c.id == combatantId)
+          .firstOrNull;
+      if (now == null) return null;
+      return current!.withReplaced(
+        now.copyWith(
+          kind: CombatantKind.npc,
+          name: name,
+          npcId: created.npc.id,
+        ),
+      );
+    });
+    if (mounted) {
+      showAppMessage(
+        context,
+        '$name ya es un PNJ de tu biblioteca y de esta campaña.',
+        tone: AppMessageTone.success,
+      );
+    }
   }
 
   /// Tira la iniciativa de toda la mesa y arranca la ronda 1.
@@ -1202,10 +1470,18 @@ class _CampaignDetailState extends State<_CampaignDetail> {
 
   /// Va por la misma fila que los guardados: un golpe todavía sin guardar que
   /// llegara al servidor después de cerrar volvería a crear el combate.
-  Future<void> _closeEncounter({bool discard = false}) {
+  Future<void> _closeEncounter({
+    bool discard = false,
+    Set<String> deadNpcIds = const {},
+  }) {
     return _enqueueEncounterWrite(() async {
       try {
-        await widget.api.endEncounter(widget.campaign.id, discard: discard);
+        await widget.api.endEncounter(
+          widget.campaign.id,
+          discard: discard,
+          deadNpcIds: deadNpcIds.toList(),
+        );
+        if (deadNpcIds.isNotEmpty && mounted) unawaited(_loadNpcs());
         if (!mounted) {
           // Igual que al guardar: lo que quede en la fila tiene que ver que el
           // combate ya no está, o volvería a crearlo.
@@ -1388,15 +1664,41 @@ class _CampaignDetailState extends State<_CampaignDetail> {
               onEditNote: _editNote,
               onDeleteNote: _deleteNote,
             ),
+            _CampaignSection.pnj => CampaignNpcsView(
+              npcs: _npcs,
+              error: _npcsError,
+              repo: widget.repo,
+              onRetry: _loadNpcs,
+              onBringFromLibrary: _bringNpcsFromLibrary,
+              onStatus: (entry, status) => _npcAction(
+                () => widget.api.linkCampaignNpc(
+                  widget.campaign.id,
+                  entry.npc.id,
+                  status: status,
+                ),
+              ),
+              onUnlink: (entry) => _npcAction(
+                () => widget.api.unlinkCampaignNpc(
+                  widget.campaign.id,
+                  entry.npc.id,
+                ),
+              ),
+              onOpen: (entry) => _openNpc(entry.npc.id),
+            ),
             _CampaignSection.combate => EncounterView(
               repo: widget.repo,
               encounter: _encounter,
               loading: _encounterLoading,
               error: _encounterError,
               members: _members ?? const [],
+              npcs: _npcs ?? const [],
+              loadNpcLibrary: widget.api.listNpcs,
               onRetry: _loadEncounter,
               onAddPlayer: _addPlayerToEncounter,
               onAddMonster: _addMonsters,
+              onAddNpc: _addNpc,
+              onSetSide: _setCombatantSide,
+              onConvertToNpc: _convertToNpc,
               onAdjustHp: _adjustCombatantHp,
               onRemoveCombatant: _removeCombatant,
               onSetTags: _setCombatantTags,
@@ -1432,6 +1734,11 @@ class _CampaignDetailState extends State<_CampaignDetail> {
             : _createNote,
         icon: const Icon(Icons.add),
         label: const Text('Escribir nota'),
+      ),
+      _CampaignSection.pnj => FilledButton.icon(
+        onPressed: _createNpc,
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo PNJ'),
       ),
       _CampaignSection.combate when _encounter == null => FilledButton.icon(
         // Sin haber podido leer el combate no se sabe si hay uno en curso, y
@@ -1772,6 +2079,96 @@ class _MemberCard extends StatelessWidget {
             ),
           ],
           icon: const Icon(Icons.more_vert),
+        ),
+      ],
+    );
+  }
+}
+
+/// Elige PNJ de la biblioteca que todavía no están en la campaña.
+class _PickNpcsDialog extends StatefulWidget {
+  final List<NpcEntry> options;
+  final ContentRepository repo;
+
+  const _PickNpcsDialog({required this.options, required this.repo});
+
+  @override
+  State<_PickNpcsDialog> createState() => _PickNpcsDialogState();
+}
+
+class _PickNpcsDialogState extends State<_PickNpcsDialog> {
+  final Set<String> _picked = {};
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _search.text.trim().toLowerCase();
+    final visible = [
+      for (final e in widget.options)
+        if (e.npc.name.toLowerCase().contains(query)) e,
+    ];
+    return AppDialog(
+      title: 'Traer de la biblioteca',
+      scrollable: false,
+      content: widget.options.isEmpty
+          ? const Text(
+              'Todos tus PNJ ya están en esta campaña, o todavía no creaste '
+              'ninguno.',
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _search,
+                  decoration: const InputDecoration(
+                    labelText: 'Buscar PNJ',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 300,
+                  child: ListView(
+                    children: [
+                      for (final entry in visible)
+                        CheckboxListTile(
+                          value: _picked.contains(entry.npc.id),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Text(entry.npc.name),
+                          subtitle: Text(
+                            npcTypeLine(entry.npc, entry.sheet, widget.repo),
+                          ),
+                          onChanged: (on) => setState(
+                            () => on == true
+                                ? _picked.add(entry.npc.id)
+                                : _picked.remove(entry.npc.id),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+      actions: [
+        DialogAction(
+          'Cancelar',
+          keyHint: 'Esc',
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        DialogAction(
+          _picked.length <= 1 ? 'Sumar' : 'Sumar ${_picked.length}',
+          primary: true,
+          onPressed: _picked.isEmpty
+              ? null
+              : () => Navigator.of(context).pop(_picked),
         ),
       ],
     );

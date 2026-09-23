@@ -315,4 +315,66 @@ CREATE INDEX notes_chapter_idx
 ALTER TABLE encounter_logs ADD COLUMN chapter_id TEXT;
 ''',
   ),
+  Migration(
+    id: '0010_npcs',
+    sql: '''
+-- La ficha de un PNJ con ficha de personaje es una fila más de `characters`:
+-- así el guardado, el compilador, la subida de nivel y los retratos funcionan
+-- sin aprender nada nuevo. Lo que la separa de un personaje jugador es esta
+-- columna, y **cada consulta de las rutas de jugador filtra por ella dentro
+-- del `WHERE`**: listado, borrado, emisión de códigos y canje. Sin el filtro,
+-- el villano del DM aparecería en «Mis personajes» o podría entrar a una mesa
+-- como si fuera un jugador.
+ALTER TABLE characters
+  ADD COLUMN kind TEXT NOT NULL DEFAULT 'player'
+  CHECK (kind IN ('player', 'npc'));
+
+-- La biblioteca de PNJ del DM. Tabla de un solo dueño, como `notes`: ningún
+-- jugador lee de acá, por ninguna ruta.
+--
+-- `character_id` apunta a la ficha de los PNJ que la tienen. En cascada: si la
+-- ficha se va (solo puede irse borrando el PNJ, porque la ruta de personajes
+-- no alcanza a las de tipo `npc`), el PNJ no queda apuntando a nada.
+CREATE TABLE npcs (
+  dm_user_id UUID NOT NULL REFERENCES accounts (id) ON DELETE CASCADE,
+  id TEXT NOT NULL,
+  document JSONB NOT NULL,
+  name TEXT NOT NULL GENERATED ALWAYS AS (document ->> 'name') STORED,
+  character_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (dm_user_id, id),
+  FOREIGN KEY (dm_user_id, character_id)
+    REFERENCES characters (user_id, id) ON DELETE CASCADE
+);
+
+CREATE INDEX npcs_dm_user_id_name_idx ON npcs (dm_user_id, name);
+
+-- En qué campañas está cada PNJ y cómo está en cada una. El estado es del
+-- vínculo y no del PNJ: el mismo puede estar muerto en una mesa y vivo en
+-- otra. Es columna y no JSON porque es lo único que guarda y se cuenta.
+--
+-- Las dos claves foráneas comparten `dm_user_id`, así que un vínculo entre el
+-- PNJ de una cuenta y la campaña de otra **no se puede escribir**, ni siquiera
+-- con una consulta mal armada. Borrar la campaña se lleva sus vínculos, no sus
+-- PNJ; borrar el PNJ se lleva los suyos.
+CREATE TABLE campaign_npcs (
+  dm_user_id UUID NOT NULL,
+  campaign_id TEXT NOT NULL,
+  npc_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'alive'
+    CHECK (status IN ('alive', 'dead', 'unknown')),
+  linked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (dm_user_id, campaign_id, npc_id),
+  FOREIGN KEY (dm_user_id, campaign_id)
+    REFERENCES campaigns (dm_user_id, id) ON DELETE CASCADE,
+  FOREIGN KEY (dm_user_id, npc_id)
+    REFERENCES npcs (dm_user_id, id) ON DELETE CASCADE
+);
+
+-- Para «¿en qué campañas está este PNJ?», que es lo que pregunta la
+-- biblioteca. La clave primaria arranca por campaña y no sirve para eso.
+CREATE INDEX campaign_npcs_npc_idx ON campaign_npcs (dm_user_id, npc_id);
+''',
+  ),
 ];

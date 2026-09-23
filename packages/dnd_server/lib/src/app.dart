@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dnd_engine/dnd_engine.dart';
@@ -13,6 +14,7 @@ import 'auth/session_store.dart';
 import 'import/backup_bundle.dart';
 import 'import/homebrew_content.dart';
 import 'import/import_service.dart';
+import 'import/npc_bundle.dart';
 import 'portraits/portrait_blob_store.dart';
 import 'repositories/campaign_repository.dart';
 import 'repositories/chapter_repository.dart';
@@ -20,10 +22,14 @@ import 'repositories/character_repository.dart';
 import 'repositories/encounter_repository.dart';
 import 'repositories/event_repository.dart';
 import 'repositories/homebrew_repository.dart';
+import 'repositories/id_allocation.dart';
 import 'repositories/note_repository.dart';
+import 'repositories/npc_repository.dart';
 import 'repositories/repository_transaction_runner.dart';
 import 'repositories/settings_repository.dart';
 import 'util/safe_path.dart';
+
+part 'app_npcs.dart';
 
 /// Ejecuta la importación ya decodificada para [userId]. Se recibe como
 /// función (no como `Pool` concreto) por la misma razón que [AuthDependencies]:
@@ -93,6 +99,7 @@ Handler buildHandler({
   required NoteRepository notes,
   required EncounterRepository encounters,
   required EventRepository events,
+  required NpcRepository npcs,
   required RepositoryTransactionRunner transactions,
   required HomebrewRepository homebrew,
   required SettingsRepository settings,
@@ -261,7 +268,55 @@ Handler buildHandler({
       '/api/campaigns/<id>/encounter',
       authenticated(
         (request) =>
-            _endEncounterHandler(request, campaigns, chapters, encounters),
+            _endEncounterHandler(request, campaigns, encounters, transactions),
+      ),
+    )
+    ..get(
+      '/api/campaigns/<id>/npcs',
+      authenticated(
+        (request) => _listCampaignNpcsHandler(request, campaigns, npcs),
+      ),
+    )
+    ..put(
+      '/api/campaigns/<id>/npcs/<npcId>',
+      authenticated((request) => _linkCampaignNpcHandler(request, npcs)),
+    )
+    ..delete(
+      '/api/campaigns/<id>/npcs/<npcId>',
+      authenticated((request) => _unlinkCampaignNpcHandler(request, npcs)),
+    )
+    ..get(
+      '/api/npcs',
+      authenticated((request) => _listNpcsHandler(request, npcs)),
+    )
+    ..post(
+      '/api/npcs',
+      authenticated((request) => _createNpcHandler(request, transactions)),
+    )
+    ..post(
+      '/api/npcs/import',
+      authenticated(
+        (request) => _importNpcHandler(request, transactions, portraits),
+      ),
+    )
+    ..get(
+      '/api/npcs/<id>',
+      authenticated((request) => _getNpcHandler(request, npcs)),
+    )
+    ..put(
+      '/api/npcs/<id>',
+      authenticated((request) => _updateNpcHandler(request, npcs)),
+    )
+    ..delete(
+      '/api/npcs/<id>',
+      authenticated(
+        (request) => _deleteNpcHandler(request, transactions, portraits),
+      ),
+    )
+    ..post(
+      '/api/npcs/<id>/portraits',
+      authenticated(
+        (request) => _createNpcPortraitHandler(request, npcs, portraits),
       ),
     )
     ..get(
@@ -582,7 +637,7 @@ Future<Response> _deleteCharacterHandler(
     request.params['id']!,
     label: 'id de personaje',
   );
-  await transactions.run<void>((repositories) async {
+  final deleted = await transactions.run<bool>((repositories) async {
     final character = await repositories.characters.find(request.userId, id);
     final shares = character == null
         ? const <CharacterShare>[]
@@ -591,7 +646,7 @@ Future<Response> _deleteCharacterHandler(
             characterId: id,
           );
 
-    await repositories.characters.delete(request.userId, id);
+    final deleted = await repositories.characters.delete(request.userId, id);
 
     for (final share in shares) {
       await repositories.events.append(
@@ -600,7 +655,13 @@ Future<Response> _deleteCharacterHandler(
         {'characterName': character!.name, 'campaignName': share.campaignName},
       );
     }
+    return deleted;
   });
+
+  // Sin ficha borrada no se toca ningún retrato. No es solo prolijidad: el id
+  // podría ser el de la ficha de un PNJ, que esta ruta no alcanza, y sus
+  // retratos viven con esa misma clave.
+  if (!deleted) return _jsonOk({'status': 'ok'});
 
   // Los retratos viven en disco y no entran en la transacción, así que se
   // borran con la ficha ya borrada: si esto falla quedan archivos huérfanos,
@@ -837,6 +898,7 @@ Future<Response> _shareCharacterHandler(
     ownerUserId: request.userId,
     characterId: id,
   );
+  if (code == null) return _notFound('Personaje no encontrado.');
   return _jsonOk({
     'code': code,
     'expiresAt': DateTime.now()
@@ -933,7 +995,12 @@ Future<Response> _listPlayerCampaignsHandler(
             if (chapter.state == ChapterState.completed)
               _playerChapterJson(chapter),
         ],
-        'battles': [for (final log in projection.battles) log.toJson()],
+        // `playerView` y no `toJson`: el registro del DM nombra a sus PNJ y
+        // marca aliados y neutrales, y nada de eso puede llegar a la ficha
+        // de un jugador. La misma función poda en el doble de pruebas.
+        'battles': [
+          for (final log in projection.battles) log.playerView().toJson(),
+        ],
       },
   ];
   return _jsonOk({'campaigns': payload});
@@ -1436,11 +1503,16 @@ Future<Response> _saveEncounterHandler(
 /// campaña como si se hubiera jugado. Cualquier otro valor (o ninguno) archiva,
 /// que es lo que corresponde por defecto: perder lo jugado tiene que ser una
 /// decisión explícita, nunca lo que pasa si el parámetro viene mal escrito.
+///
+/// Al archivar, el cuerpo puede traer `deadNpcIds`: los PNJ que el DM marcó
+/// como muertos. Se aplican **en la misma transacción** que el cierre, y solo
+/// a los que estaban en este combate y en esta campaña — un id de otro lado se
+/// ignora. Descartar no aplica nada: si el combate no se jugó, nadie murió.
 Future<Response> _endEncounterHandler(
   Request request,
   CampaignRepository campaigns,
-  ChapterRepository chapters,
   EncounterRepository encounters,
+  RepositoryTransactionRunner transactions,
 ) async {
   final campaignId = requireSafePathSegment(
     request.params['id']!,
@@ -1455,29 +1527,61 @@ Future<Response> _endEncounterHandler(
     return _jsonOk({'status': 'ok'});
   }
 
-  final encounter = await encounters.find(request.userId, campaignId);
-  if (encounter != null) {
+  final body = await _readOptionalJsonBody(request);
+  final requestedDead = {
+    for (final id in (body['deadNpcIds'] as List? ?? const []))
+      if (id is String) id,
+  };
+
+  await transactions.run<void>((repositories) async {
+    final encounter = await repositories.encounters.find(
+      request.userId,
+      campaignId,
+    );
+    if (encounter == null) return;
     // El capítulo lo resuelve el servidor y no lo manda el cliente: el DM
     // cierra un combate, no elige dónde archivarlo.
-    final active = (await chapters.listFor(
+    final active = (await repositories.chapters.listFor(
       request.userId,
       campaignId,
     )).where((c) => c.state == ChapterState.active).firstOrNull;
-    await encounters.close(
+
+    final npcIds = {
+      for (final c in encounter.combatants)
+        if (c.kind == CombatantKind.npc && c.npcId != null) c.npcId!,
+    };
+    final npcs = <String, Npc?>{
+      for (final id in npcIds)
+        id: (await repositories.npcs.find(request.userId, id))?.npc,
+    };
+    await repositories.npcs.markDead(
       request.userId,
       campaignId,
-      _buildEncounterLog(encounter),
+      requestedDead.intersection(npcIds),
+    );
+    await repositories.encounters.close(
+      request.userId,
+      campaignId,
+      _buildEncounterLog(encounter, npcs),
       chapterId: active?.id,
     );
-  }
+  });
   return _jsonOk({'status': 'ok'});
 }
 
 /// El log de un combate cerrado: solo lo que pasó del lado del DM (quiénes
-/// pelearon, contra qué, cuántas rondas, qué monstruos cayeron). No puede
-/// registrar quién hizo qué daño porque el servidor nunca se entera de eso —
-/// cada jugador anota sus propios PG en su ficha, no el DM en el tracker.
-Map<String, dynamic> _buildEncounterLog(Encounter encounter) {
+/// pelearon, contra qué, de qué lado, cuántas rondas, quiénes cayeron). No
+/// puede registrar quién hizo qué daño porque el servidor nunca se entera de
+/// eso — cada jugador anota sus propios PG en su ficha, no el DM en el tracker.
+///
+/// Cada PNJ va aparte y con su `publicName` resuelto **ahora**, leyendo su
+/// documento: la criatura de la que partió su bloque, que es lo único que el
+/// jugador llega a ver en su lugar. Resolverlo al cerrar hace que borrar el PNJ
+/// después no cambie lo que dice un combate que ya se jugó.
+Map<String, dynamic> _buildEncounterLog(
+  Encounter encounter,
+  Map<String, Npc?> npcs,
+) {
   final players = [
     for (final c in encounter.combatants)
       if (c.kind == CombatantKind.player) c.name,
@@ -1485,8 +1589,15 @@ Map<String, dynamic> _buildEncounterLog(Encounter encounter) {
   final monsterGroups = <String, List<Combatant>>{};
   for (final c in encounter.combatants) {
     if (c.kind != CombatantKind.monster) continue;
-    monsterGroups.putIfAbsent(c.creatureId ?? c.name, () => []).add(c);
+    monsterGroups
+        .putIfAbsent('${c.creatureId ?? c.name}|${c.side.name}', () => [])
+        .add(c);
   }
+  String? publicNameOf(Combatant c) {
+    final npc = npcs[c.npcId];
+    return npc?.sheetKind == NpcSheetKind.block ? npc!.baseCreatureName : null;
+  }
+
   return EncounterLog(
     rounds: encounter.round,
     players: players,
@@ -1498,7 +1609,17 @@ Map<String, dynamic> _buildEncounterLog(Encounter encounter) {
           name: group.first.name.replaceFirst(RegExp(r'\s+\d+$'), ''),
           count: group.length,
           defeated: group.where((c) => c.currentHp <= 0).length,
+          side: group.first.side,
         ),
+      for (final c in encounter.combatants)
+        if (c.kind == CombatantKind.npc)
+          EncounterLogMonsters(
+            name: c.name,
+            defeated: c.isDown ? 1 : 0,
+            side: c.side,
+            npc: true,
+            publicName: publicNameOf(c),
+          ),
     ],
   ).toJson();
 }

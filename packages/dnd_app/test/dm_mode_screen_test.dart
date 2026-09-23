@@ -753,7 +753,7 @@ void main() {
       await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sumar monstruo'));
+      await tester.tap(find.text('Sumar al combate'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'goblin');
       await tester.pumpAndSettle();
@@ -787,7 +787,7 @@ void main() {
       int count = 1,
       bool rollHp = false,
     }) async {
-      await tester.tap(find.text('Sumar monstruo'));
+      await tester.tap(find.text('Sumar al combate'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), search);
       await tester.pumpAndSettle();
@@ -866,7 +866,7 @@ void main() {
       await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sumar monstruo'));
+      await tester.tap(find.text('Sumar al combate'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'defensor');
       await tester.pumpAndSettle();
@@ -1082,7 +1082,7 @@ void main() {
       await openCombate(tester);
       await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sumar monstruo'));
+      await tester.tap(find.text('Sumar al combate'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'goblin');
       await tester.pumpAndSettle();
@@ -1156,7 +1156,7 @@ void main() {
         await tester.tap(find.text('Sumar a la mesa'));
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Sumar monstruo'));
+        await tester.tap(find.text('Sumar al combate'));
         await tester.pumpAndSettle();
         await tester.enterText(find.byType(TextField), 'goblin');
         await tester.pumpAndSettle();
@@ -1197,7 +1197,7 @@ void main() {
       await openCombate(tester);
       await tester.tap(find.text('Armar combate'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Sumar monstruo'));
+      await tester.tap(find.text('Sumar al combate'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'goblin');
       await tester.pumpAndSettle();
@@ -1533,7 +1533,7 @@ void main() {
       await tester.tap(find.text('Sumar a la mesa'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Sumar monstruo'));
+      await tester.tap(find.text('Sumar al combate'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'goblin');
       await tester.pumpAndSettle();
@@ -2030,7 +2030,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('bestiary-bone-devil')));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Sumar monstruo'), findsOneWidget);
+      expect(find.textContaining('Sumar al combate'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

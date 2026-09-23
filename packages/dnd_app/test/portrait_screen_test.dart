@@ -101,6 +101,44 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // Un PNJ sin ficha no tiene especie ni clase de dónde describirse: el campo
+  // libre pasa a ser su apariencia, y arranca con la que ya tiene guardada.
+  testWidgets('el retrato de un PNJ parte de su apariencia', (tester) async {
+    tester.view.physicalSize = const Size(1000, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final server = FakeApiServer()..providers = [pollinations];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: PortraitScreen.forNpc(
+          npc: Npc(
+            id: 'bruno',
+            name: 'Bruno',
+            sheetKind: NpcSheetKind.none,
+            appearance: 'tabernero calvo, delantal manchado',
+          ),
+          repo: repo,
+          api: ApiClient(client: server.client),
+          onNpcUpdated: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final campo = find.widgetWithText(TextField, 'Apariencia');
+    expect(campo, findsOneWidget);
+    expect(
+      tester.widget<TextField>(campo).controller!.text,
+      'tabernero calvo, delantal manchado',
+    );
+    expect(
+      find.widgetWithText(TextField, 'Detalles adicionales'),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   // El rótulo vivía solo en el placeholder, que se borra con la primera letra:
   // a mitad de escribir, el campo quedaba sin decir para qué era.
   testWidgets('el campo de detalles conserva su rótulo al escribir', (

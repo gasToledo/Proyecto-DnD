@@ -22,6 +22,7 @@ export 'src/domain/character.dart';
 export 'src/domain/campaign.dart';
 export 'src/domain/chapter.dart';
 export 'src/domain/note.dart';
+export 'src/domain/npc.dart';
 export 'src/domain/encounter.dart';
 export 'src/domain/encounter_log.dart';
 export 'src/domain/computed_sheet.dart';

@@ -238,3 +238,70 @@ class PlayerCampaign {
     ];
   }
 }
+
+/// En qué campaña está un PNJ de la biblioteca y cómo está en ella.
+class NpcCampaignLink {
+  final String campaignId;
+  final String campaignName;
+  final NpcStatus status;
+
+  const NpcCampaignLink({
+    required this.campaignId,
+    required this.campaignName,
+    required this.status,
+  });
+
+  factory NpcCampaignLink.fromJson(Map<String, dynamic> json) =>
+      NpcCampaignLink(
+        campaignId: json['campaignId'] as String,
+        campaignName: json['campaignName'] as String? ?? '',
+        status: NpcStatus.fromJson(json['status'] as String?),
+      );
+}
+
+/// Un PNJ de la biblioteca con lo que la pantalla necesita al lado: sus
+/// campañas y, si la tiene, su ficha de personaje.
+class NpcEntry {
+  final Npc npc;
+  final List<NpcCampaignLink> campaigns;
+  final Character? sheet;
+
+  const NpcEntry({required this.npc, this.campaigns = const [], this.sheet});
+
+  factory NpcEntry.fromJson(Map<String, dynamic> json) => NpcEntry(
+    npc: Npc.fromJson((json['npc'] as Map).cast<String, dynamic>()),
+    campaigns: [
+      for (final c in (json['campaigns'] as List? ?? const []))
+        NpcCampaignLink.fromJson((c as Map).cast<String, dynamic>()),
+    ],
+    sheet: json['character'] is Map
+        ? Character.fromJson((json['character'] as Map).cast<String, dynamic>())
+        : null,
+  );
+
+  bool isIn(String campaignId) =>
+      campaigns.any((c) => c.campaignId == campaignId);
+
+  NpcStatus? statusIn(String campaignId) =>
+      campaigns.where((c) => c.campaignId == campaignId).firstOrNull?.status;
+}
+
+/// Un PNJ visto desde una campaña: con su estado **en esa** campaña.
+class CampaignNpcEntry {
+  final Npc npc;
+  final NpcStatus status;
+  final Character? sheet;
+
+  const CampaignNpcEntry({required this.npc, required this.status, this.sheet});
+
+  factory CampaignNpcEntry.fromJson(Map<String, dynamic> json) =>
+      CampaignNpcEntry(
+        npc: Npc.fromJson((json['npc'] as Map).cast<String, dynamic>()),
+        status: NpcStatus.fromJson(json['status'] as String?),
+        sheet: json['character'] is Map
+            ? Character.fromJson(
+                (json['character'] as Map).cast<String, dynamic>(),
+              )
+            : null,
+      );
+}

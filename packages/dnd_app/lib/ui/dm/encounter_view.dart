@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import 'add_monster_dialog.dart';
 import 'combatant_tags_dialog.dart';
+import 'npcs/npc_shared.dart';
 
 /// Cómo termina un combate: archivado en el registro de la campaña, o
 /// descartado sin dejar rastro.
@@ -54,9 +55,32 @@ class EncounterView extends StatefulWidget {
   /// y para ofrecer sumarlos a la iniciativa.
   final List<CampaignMember> members;
 
+  /// Los PNJ de la campaña con su estado. El diálogo de sumar los ofrece, y
+  /// el turno de un PNJ muestra de acá lo que el DM necesita para jugarlo:
+  /// cómo habla y su trasfondo.
+  final List<CampaignNpcEntry> npcs;
+
+  /// La biblioteca entera, que se pide recién al abrir el diálogo de sumar:
+  /// es lo único que la necesita.
+  final Future<List<NpcEntry>> Function() loadNpcLibrary;
+
   final VoidCallback onRetry;
   final void Function(String memberId, String name, int initiative) onAddPlayer;
-  final void Function(Creature creature, int count, {bool rollHp}) onAddMonster;
+  final void Function(
+    Creature creature,
+    int count, {
+    bool rollHp,
+    CombatantSide side,
+  })
+  onAddMonster;
+
+  /// [initiative] es 0 mientras se arma la mesa; con el combate andando es lo
+  /// que el DM cargó a mano, igual que la de un jugador que llega tarde.
+  final void Function(AddNpcChoice choice, int initiative) onAddNpc;
+  final void Function(String combatantId, CombatantSide side) onSetSide;
+
+  /// Convierte a un monstruo de la mesa en un PNJ llamado [name].
+  final void Function(String combatantId, String name) onConvertToNpc;
 
   /// [delta] es lo que cambia: negativo es daño, positivo es cura. El
   /// clampeo a `0..maxHp` lo hace `Encounter.withHp`, no esta pantalla.
@@ -67,8 +91,8 @@ class EncounterView extends StatefulWidget {
   final void Function(String combatantId, List<String> tags) onSetTags;
 
   /// Termina el combate. Con `discard: true` no queda registro — ver
-  /// [_confirmClose].
-  final void Function({bool discard}) onCloseEncounter;
+  /// [_confirmClose]. [deadNpcIds] son los PNJ que el DM marcó muertos.
+  final void Function({bool discard, Set<String> deadNpcIds}) onCloseEncounter;
 
   const EncounterView({
     super.key,
@@ -77,9 +101,14 @@ class EncounterView extends StatefulWidget {
     required this.loading,
     required this.error,
     required this.members,
+    required this.npcs,
+    required this.loadNpcLibrary,
     required this.onRetry,
     required this.onAddPlayer,
     required this.onAddMonster,
+    required this.onAddNpc,
+    required this.onSetSide,
+    required this.onConvertToNpc,
     required this.onAdjustHp,
     required this.onRemoveCombatant,
     required this.onSetTags,
@@ -342,18 +371,29 @@ class _EncounterViewState extends State<EncounterView> {
         side(
           Icons.shield_outlined,
           pal.verdant,
-          standing.playersUp,
-          standing.players,
-          'La mesa',
+          standing.alliesUp,
+          standing.allies,
+          'Aliados',
         ),
         const SizedBox(width: 12),
         side(
           Icons.pets,
           pal.crimson,
-          standing.monstersUp,
-          standing.monsters,
+          standing.enemiesUp,
+          standing.enemies,
           'Enemigos',
         ),
+        // Aparte y sin «en pie»: un neutral no gana ni pierde la pelea, y
+        // sumarlo a un bando haría mentir al aviso de bando vencido.
+        if (standing.neutrals > 0) ...[
+          const SizedBox(width: 12),
+          Text(
+            standing.neutrals == 1
+                ? '1 neutral'
+                : '${standing.neutrals} neutrales',
+            style: TextStyle(fontSize: 12, color: pal.textMuted),
+          ),
+        ],
       ],
     );
   }
@@ -412,18 +452,9 @@ class _EncounterViewState extends State<EncounterView> {
       runSpacing: 8,
       children: [
         OutlinedButton.icon(
-          onPressed: () async {
-            final picked = await showAddMonsterDialog(context, widget.repo);
-            if (picked != null) {
-              widget.onAddMonster(
-                picked.creature,
-                picked.count,
-                rollHp: picked.rollHp,
-              );
-            }
-          },
+          onPressed: () => _add(context),
           icon: const Icon(Icons.add),
-          label: const Text('Sumar monstruo'),
+          label: const Text('Sumar al combate'),
         ),
         // Icono + texto y sin carmesí: un banderín rojo suelto se leía como
         // "rendirse". Terminar el combate es el final normal de un encuentro,
@@ -436,6 +467,45 @@ class _EncounterViewState extends State<EncounterView> {
         ),
       ],
     );
+  }
+
+  Future<void> _add(BuildContext context) async {
+    final encounter = widget.encounter;
+    if (encounter == null) return;
+    final picked = await showAddCombatantDialog(
+      context,
+      repo: widget.repo,
+      campaignNpcs: widget.npcs,
+      npcIdsInEncounter: {for (final c in encounter.combatants) ?c.npcId},
+      loadLibrary: widget.loadNpcLibrary,
+    );
+    if (picked == null || !context.mounted) return;
+    switch (picked) {
+      case AddMonsterChoice(:final creature, :final count, :final rollHp):
+        widget.onAddMonster(creature, count, rollHp: rollHp, side: picked.side);
+      case AddNpcChoice():
+        // Con el combate andando, la iniciativa del PNJ se dice en voz alta
+        // como la de un jugador: la tirada automática es solo del bestiario.
+        var initiative = 0;
+        if (!encounter.isPreparing) {
+          final value = await showTextPromptDialog(
+            context,
+            title: 'Iniciativa de ${picked.npc.name}',
+            label: 'Lo que sacó',
+            keyboardType: TextInputType.number,
+          );
+          final parsed = value == null ? null : int.tryParse(value.trim());
+          if (parsed == null) return;
+          initiative = parsed;
+        }
+        widget.onAddNpc(picked, initiative);
+    }
+  }
+
+  CampaignNpcEntry? _npcEntry(Combatant combatant) {
+    final id = combatant.npcId;
+    if (id == null) return null;
+    return widget.npcs.where((e) => e.npc.id == id).firstOrNull;
   }
 
   Widget _ledger(
@@ -474,6 +544,7 @@ class _EncounterViewState extends State<EncounterView> {
                   : widget.members
                         .where((m) => m.memberId == combatant.memberId)
                         .firstOrNull,
+              npc: _npcEntry(combatant),
               repo: widget.repo,
               preparing: current.isPreparing,
               columns: columns,
@@ -481,6 +552,8 @@ class _EncounterViewState extends State<EncounterView> {
               onAdjustHp: (delta) => widget.onAdjustHp(combatant.id, delta),
               onRemove: () => widget.onRemoveCombatant(combatant.id),
               onSetTags: (tags) => widget.onSetTags(combatant.id, tags),
+              onSetSide: (side) => widget.onSetSide(combatant.id, side),
+              onConvertToNpc: () => _convertToNpc(context, combatant),
             ),
           ],
         ],
@@ -536,13 +609,20 @@ class _EncounterViewState extends State<EncounterView> {
   /// Devuelve null cuando le toca a un jugador (su ficha no es del DM) o
   /// cuando el combatiente es homebrew borrado del catálogo desde que entró a
   /// la mesa: en los dos casos no hay perfil que mostrar y la solapa lo dice.
+  ///
+  /// Un PNJ con bloque propio usa **su** bloque, que es una copia y no la
+  /// criatura del catálogo: el DM puede haberlo retocado.
   Creature? _currentCreature(Encounter current) {
     final combatant = current.current;
-    if (combatant == null || combatant.kind != CombatantKind.monster) {
-      return null;
-    }
-    final id = combatant.creatureId;
-    return id == null ? null : widget.repo.creature(id);
+    if (combatant == null) return null;
+    return switch (combatant.kind) {
+      CombatantKind.npc => _npcEntry(combatant)?.npc.block,
+      CombatantKind.player => null,
+      CombatantKind.monster => switch (combatant.creatureId) {
+        final id? => widget.repo.creature(id),
+        null => null,
+      },
+    };
   }
 
   Widget _panel(BuildContext context, Encounter current) {
@@ -659,12 +739,16 @@ class _EncounterViewState extends State<EncounterView> {
     );
   }
 
-  /// El perfil del monstruo que tiene el turno, con la misma anatomía que el
+  /// El perfil del que tiene el turno, con la misma anatomía que el
   /// Bestiario — es literalmente el mismo widget, ver [creatureProfileBody].
   ///
   /// Arriba del perfil van iniciativa, PG y CA, que **no** son del catálogo
   /// sino de esta mesa: los PG bajan a golpes y el máximo del libro dejaría de
   /// ser cierto en el primer ataque.
+  ///
+  /// El turno de un PNJ suma lo que hace falta para **jugarlo** y no está en
+  /// ningún bloque: cómo habla, su trasfondo a un toque, y el bando, que un
+  /// neutral puede cambiar justo en su turno.
   Widget _turnPanel(BuildContext context, Encounter current) {
     final pal = context.palette;
     final combatant = current.current;
@@ -676,7 +760,10 @@ class _EncounterViewState extends State<EncounterView> {
       );
     }
     final creature = _currentCreature(current);
-    if (creature == null) {
+    final npc = _npcEntry(combatant);
+    final isNpc = combatant.kind == CombatantKind.npc;
+    if (combatant.kind == CombatantKind.player ||
+        (!isNpc && creature == null)) {
       return AppEmptyState(
         icon: Icons.person_outline,
         message: combatant.kind == CombatantKind.player
@@ -686,6 +773,13 @@ class _EncounterViewState extends State<EncounterView> {
         actions: const [],
       );
     }
+
+    final ac = isNpc
+        ? (npc == null ? null : npcArmorClass(npc.npc, npc.sheet, widget.repo))
+        : creature?.ac;
+    final subtitle = isNpc
+        ? (npc == null ? 'PNJ' : npcTypeLine(npc.npc, npc.sheet, widget.repo))
+        : creature!.kind;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,17 +800,44 @@ class _EncounterViewState extends State<EncounterView> {
           runSpacing: 6,
           children: [
             Text(
-              creature.name,
+              // Del monstruo, el nombre del libro: «Goblin 3» es un rótulo de
+              // la mesa y el perfil de abajo es el del goblin.
+              isNpc ? combatant.name : creature!.name,
               style: const TextStyle(fontFamily: 'Georgia', fontSize: 19),
             ),
-            SourceBadge(creature.source),
+            if (!isNpc) SourceBadge(creature!.source),
           ],
         ),
         const SizedBox(height: 5),
-        Text(
-          creature.kind,
-          style: TextStyle(fontSize: 12, color: pal.textMuted),
-        ),
+        Text(subtitle, style: TextStyle(fontSize: 12, color: pal.textMuted)),
+        const SizedBox(height: 12),
+        if (combatant.canChangeSide)
+          SideSelector(
+            side: combatant.side,
+            label: 'Bando de ${combatant.name}',
+            onChanged: (side) => widget.onSetSide(combatant.id, side),
+          )
+        else
+          Text(
+            'Neutral · sin estadísticas',
+            style: TextStyle(fontSize: 12, color: pal.textMuted),
+          ),
+        if (npc != null && npc.npc.speech.trim().isNotEmpty) ...[
+          const SizedBox(height: 14),
+          const Eyebrow('Cómo habla'),
+          Text(
+            npc.npc.speech,
+            style: const TextStyle(fontStyle: FontStyle.italic, height: 1.4),
+          ),
+        ],
+        if (npc != null && npc.npc.background.trim().isNotEmpty) ...[
+          const SizedBox(height: 6),
+          TextButton.icon(
+            onPressed: () => _showBackground(context, npc.npc),
+            icon: const Icon(Icons.menu_book_outlined, size: 18),
+            label: const Text('Trasfondo'),
+          ),
+        ],
         const SizedBox(height: 12),
         // `IntrinsicHeight` y no `crossAxisAlignment: stretch`: la tira vive
         // adentro de una lista que crece, así que estirar al alto disponible
@@ -732,36 +853,73 @@ class _EncounterViewState extends State<EncounterView> {
                 value: '${combatant.initiative}',
                 semantics: 'Iniciativa: ${combatant.initiative}',
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: StatPlaque(
-                  dense: true,
-                  label: 'Puntos de golpe',
-                  value: '${combatant.currentHp}/${combatant.maxHp}',
-                  valueColor: pal.crimson,
-                  footer: combatant.maxHp <= 0
-                      ? null
-                      : ThinBar(
-                          ratio: combatant.currentHp / combatant.maxHp,
-                          color: pal.crimson,
-                          track: Theme.of(context).colorScheme.surface,
-                        ),
+              if (combatant.maxHp > 0) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: StatPlaque(
+                    dense: true,
+                    label: 'Puntos de golpe',
+                    value: '${combatant.currentHp}/${combatant.maxHp}',
+                    valueColor: pal.crimson,
+                    footer: ThinBar(
+                      ratio: combatant.currentHp / combatant.maxHp,
+                      color: pal.crimson,
+                      track: Theme.of(context).colorScheme.surface,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              StatPlaque(
-                dense: true,
-                label: 'CA',
-                value: creature.ac,
-                semantics: 'Clase de armadura: ${creature.ac}',
-              ),
+              ],
+              if (ac != null && ac.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                StatPlaque(
+                  dense: true,
+                  label: 'CA',
+                  value: ac,
+                  semantics: 'Clase de armadura: $ac',
+                ),
+              ],
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        ...creatureProfileBody(context, widget.repo, creature, dense: true),
+        if (creature != null) ...[
+          const SizedBox(height: 16),
+          ...creatureProfileBody(context, widget.repo, creature, dense: true),
+        ],
       ],
     );
+  }
+
+  /// El trasfondo en un diálogo y no desplegado en la columna: suele ser
+  /// largo, y la columna del turno se lee de un vistazo entre dos jugadores.
+  Future<void> _showBackground(BuildContext context, Npc npc) {
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AppDialog(
+        title: 'Trasfondo de ${npc.name}',
+        content: Text(npc.background, style: const TextStyle(height: 1.45)),
+        actions: [
+          DialogAction(
+            'Cerrar',
+            keyHint: 'Esc',
+            primary: true,
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _convertToNpc(BuildContext context, Combatant combatant) async {
+    final name = await showTextPromptDialog(
+      context,
+      title: 'Convertir en PNJ',
+      label: 'Nombre del PNJ',
+      current: combatant.name,
+      textCapitalization: TextCapitalization.words,
+    );
+    final trimmed = name?.trim() ?? '';
+    if (trimmed.isEmpty) return;
+    widget.onConvertToNpc(combatant.id, trimmed);
   }
 
   /// Todos los efectos anotados de la mesa, juntos.
@@ -831,17 +989,13 @@ class _EncounterViewState extends State<EncounterView> {
   /// Vive acá y no en [Encounter] porque hace falta cruzar dos: los PG de los
   /// monstruos, que sí están en el encuentro, y los de los jugadores, que
   /// viven en su ficha real y llegan por [EncounterView.members].
+  ///
+  /// Los bandos mandan, no el tipo: un lobo aliado cuenta con la mesa y un
+  /// PNJ que traiciona pasa a contar con los enemigos. Los neutrales se
+  /// cuentan aparte y no entran a ningún «en pie».
   _Standing _standing(Encounter current) {
-    final players = [
-      for (final c in current.combatants)
-        if (c.kind == CombatantKind.player) c,
-    ];
-    final monsters = [
-      for (final c in current.combatants)
-        if (c.kind == CombatantKind.monster) c,
-    ];
-
-    bool playerIsDown(Combatant combatant) {
+    bool isDown(Combatant combatant) {
+      if (combatant.kind != CombatantKind.player) return combatant.isDown;
       final member = widget.members
           .where((m) => m.memberId == combatant.memberId)
           .firstOrNull;
@@ -851,11 +1005,19 @@ class _EncounterViewState extends State<EncounterView> {
       return member.character.combat.currentHp <= 0;
     }
 
+    List<Combatant> of(CombatantSide side) => [
+      for (final c in current.combatants)
+        if (c.side == side) c,
+    ];
+    final allies = of(CombatantSide.ally);
+    final enemies = of(CombatantSide.enemy);
+
     return _Standing(
-      players: players.length,
-      playersUp: players.where((c) => !playerIsDown(c)).length,
-      monsters: monsters.length,
-      monstersUp: monsters.where((c) => !c.isDown).length,
+      allies: allies.length,
+      alliesUp: allies.where((c) => !isDown(c)).length,
+      enemies: enemies.length,
+      enemiesUp: enemies.where((c) => !isDown(c)).length,
+      neutrals: of(CombatantSide.neutral).length,
     );
   }
 
@@ -870,14 +1032,14 @@ class _EncounterViewState extends State<EncounterView> {
     if (current.isPreparing) return null;
 
     final standing = _standing(current);
-    final monstersWiped = standing.monsters > 0 && standing.monstersUp == 0;
-    final playersWiped = standing.players > 0 && standing.playersUp == 0;
-    if (!monstersWiped && !playersWiped) return null;
+    final enemiesWiped = standing.enemies > 0 && standing.enemiesUp == 0;
+    final alliesWiped = standing.allies > 0 && standing.alliesUp == 0;
+    if (!enemiesWiped && !alliesWiped) return null;
 
-    final message = switch ((monstersWiped, playersWiped)) {
+    final message = switch ((enemiesWiped, alliesWiped)) {
       (true, true) => 'No queda nadie en pie.',
       (true, false) => 'No queda ningún enemigo en pie.',
-      _ => 'No queda ningún personaje en pie.',
+      _ => 'No queda ningún aliado en pie.',
     };
 
     final pal = context.palette;
@@ -991,45 +1153,88 @@ class _EncounterViewState extends State<EncounterView> {
   /// propósito: en esta app "Cancelar" ya significa "cerrar este diálogo" en
   /// todos lados, y usar la misma palabra para una acción irreversible sería
   /// pedir un clic equivocado.
+  ///
+  /// Los PNJ que quedaron a 0 PG se listan para marcar cuáles murieron, y
+  /// **ninguno viene marcado**: caer no es morir, y un villano que el DM
+  /// quería de vuelta no puede quedar muerto por no destildar una casilla. Lo
+  /// marcado solo se aplica al guardar; descartar es como si nunca hubiera
+  /// pasado.
   Future<void> _confirmClose(BuildContext context) async {
     final pal = context.palette;
+    final fallen = [
+      for (final c in widget.encounter?.combatants ?? const <Combatant>[])
+        if (c.kind == CombatantKind.npc && c.npcId != null && c.isDown) c,
+    ];
+    final dead = <String>{};
     final choice = await showDialog<_CloseKind>(
       context: context,
-      builder: (ctx) => AppDialog(
-        icon: Icons.warning_amber_rounded,
-        iconColor: pal.crimson,
-        title: 'Terminar combate',
-        // El carmesí queda para el camino irreversible y nada más. Terminar
-        // guardando conserva el registro, así que va en verde heráldico: es la
-        // salida esperada del combate, no una pérdida.
-        content: const Text(
-          'Se borra el orden de turnos en los dos casos. Si lo terminás queda '
-          'un registro liviano de lo que pasó (sin PG ni daños: eso lo lleva '
-          'cada jugador en su ficha). Si lo descartás no queda nada, como si '
-          'nunca hubiera empezado.',
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AppDialog(
+          icon: Icons.warning_amber_rounded,
+          iconColor: pal.crimson,
+          title: 'Terminar combate',
+          // El carmesí queda para el camino irreversible y nada más. Terminar
+          // guardando conserva el registro, así que va en verde heráldico: es
+          // la salida esperada del combate, no una pérdida.
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Se borra el orden de turnos en los dos casos. Si lo terminás '
+                'queda un registro liviano de lo que pasó (sin PG ni daños: eso '
+                'lo lleva cada jugador en su ficha). Si lo descartás no queda '
+                'nada, como si nunca hubiera empezado.',
+              ),
+              if (fallen.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Eyebrow('¿Alguno murió?'),
+                Text(
+                  'Quedaron a 0 PG. Los que marques pasan a muertos en esta '
+                  'campaña al terminar y guardar.',
+                  style: TextStyle(fontSize: 12, color: pal.textMuted),
+                ),
+                for (final c in fallen)
+                  CheckboxListTile(
+                    value: dead.contains(c.npcId),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: Text(c.name),
+                    subtitle: Text(c.side.label),
+                    onChanged: (v) => setDialogState(() {
+                      v == true ? dead.add(c.npcId!) : dead.remove(c.npcId);
+                    }),
+                  ),
+              ],
+            ],
+          ),
+          actions: [
+            DialogAction(
+              'Cancelar',
+              keyHint: 'Esc',
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+            DialogAction(
+              'Descartar sin guardar',
+              color: pal.crimson,
+              onPressed: () => Navigator.of(ctx).pop(_CloseKind.discard),
+            ),
+            DialogAction(
+              'Terminar y guardar',
+              primary: true,
+              color: pal.verdant,
+              onPressed: () => Navigator.of(ctx).pop(_CloseKind.save),
+            ),
+          ],
         ),
-        actions: [
-          DialogAction(
-            'Cancelar',
-            keyHint: 'Esc',
-            onPressed: () => Navigator.of(ctx).pop(),
-          ),
-          DialogAction(
-            'Descartar sin guardar',
-            color: pal.crimson,
-            onPressed: () => Navigator.of(ctx).pop(_CloseKind.discard),
-          ),
-          DialogAction(
-            'Terminar y guardar',
-            primary: true,
-            color: pal.verdant,
-            onPressed: () => Navigator.of(ctx).pop(_CloseKind.save),
-          ),
-        ],
       ),
     );
     if (choice == null) return;
-    widget.onCloseEncounter(discard: choice == _CloseKind.discard);
+    final discard = choice == _CloseKind.discard;
+    widget.onCloseEncounter(
+      discard: discard,
+      deadNpcIds: discard ? const {} : dead,
+    );
   }
 
   // --- Piezas chicas --------------------------------------------------------
@@ -1063,16 +1268,18 @@ class _EncounterViewState extends State<EncounterView> {
 
 /// Cuántos quedan en pie de cada lado. Ver `_EncounterViewState._standing`.
 class _Standing {
-  final int players;
-  final int playersUp;
-  final int monsters;
-  final int monstersUp;
+  final int allies;
+  final int alliesUp;
+  final int enemies;
+  final int enemiesUp;
+  final int neutrals;
 
   const _Standing({
-    required this.players,
-    required this.playersUp,
-    required this.monsters,
-    required this.monstersUp,
+    required this.allies,
+    required this.alliesUp,
+    required this.enemies,
+    required this.enemiesUp,
+    required this.neutrals,
   });
 }
 
@@ -1083,6 +1290,9 @@ class _CombatantRow extends StatelessWidget {
   final bool active;
   final bool acted;
   final CampaignMember? member;
+
+  /// El PNJ de la fila, si es uno y sigue en la campaña.
+  final CampaignNpcEntry? npc;
   final ContentRepository repo;
 
   /// Mientras se arma la mesa no hay iniciativa que mostrar.
@@ -1098,12 +1308,15 @@ class _CombatantRow extends StatelessWidget {
   final void Function(int delta) onAdjustHp;
   final VoidCallback onRemove;
   final void Function(List<String> tags) onSetTags;
+  final ValueChanged<CombatantSide> onSetSide;
+  final VoidCallback onConvertToNpc;
 
   const _CombatantRow({
     required this.combatant,
     required this.active,
     required this.acted,
     required this.member,
+    required this.npc,
     required this.repo,
     required this.preparing,
     required this.columns,
@@ -1111,6 +1324,8 @@ class _CombatantRow extends StatelessWidget {
     required this.onAdjustHp,
     required this.onRemove,
     required this.onSetTags,
+    required this.onSetSide,
+    required this.onConvertToNpc,
   });
 
   bool get _isPlayer => combatant.kind == CombatantKind.player;
@@ -1273,10 +1488,13 @@ class _CombatantRow extends StatelessWidget {
     final creature = combatant.creatureId == null
         ? null
         : repo.creature(combatant.creatureId!);
+    final npcEntry = npc;
     final meta = combatant.isDown
         ? 'Caído · se salta su turno'
         : _isPlayer
         ? _playerMeta()
+        : npcEntry != null
+        ? npcTypeLine(npcEntry.npc, npcEntry.sheet, repo)
         : _monsterMeta(creature);
 
     return Column(
@@ -1286,7 +1504,13 @@ class _CombatantRow extends StatelessWidget {
         Row(
           children: [
             if (!_isPlayer) ...[
-              Icon(Icons.pets, size: 14, color: pal.textMuted),
+              Icon(
+                combatant.kind == CombatantKind.npc
+                    ? Icons.person_outline
+                    : Icons.pets,
+                size: 14,
+                color: pal.textMuted,
+              ),
               const SizedBox(width: 7),
             ],
             Flexible(
@@ -1303,6 +1527,7 @@ class _CombatantRow extends StatelessWidget {
                 ),
               ),
             ),
+            if (!_isPlayer) ...[const SizedBox(width: 8), _sidePill(context)],
           ],
         ),
         if (meta.isNotEmpty) ...[
@@ -1320,6 +1545,54 @@ class _CombatantRow extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+
+  /// El bando como pill con texto, y el menú de la fila colgado de ella.
+  ///
+  /// Los jugadores no la llevan: son siempre aliados y una pill repetida en
+  /// cada uno sería ruido. En el resto el texto dice el bando aunque no se
+  /// distingan los colores. Tocarla cambia el bando —en cualquier momento, no
+  /// solo en el turno de ese combatiente— y, en un monstruo, ofrece
+  /// convertirlo en PNJ: es el mismo gesto de «este no es un goblin más».
+  Widget _sidePill(BuildContext context) {
+    final pal = context.palette;
+    final color = combatantSideColor(combatant.side, pal);
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        combatant.side.label,
+        style: TextStyle(fontSize: 11, color: color),
+      ),
+    );
+    if (!combatant.canChangeSide) {
+      return Tooltip(message: 'Sin estadísticas: neutral fijo', child: pill);
+    }
+    final isMonster = combatant.kind == CombatantKind.monster;
+    return PopupMenuButton<Object>(
+      tooltip: 'Bando de ${combatant.name}',
+      onSelected: (value) =>
+          value is CombatantSide ? onSetSide(value) : onConvertToNpc(),
+      itemBuilder: (context) => [
+        for (final side in CombatantSide.values)
+          CheckedPopupMenuItem<Object>(
+            value: side,
+            checked: side == combatant.side,
+            child: Text(side.label),
+          ),
+        if (isMonster) ...[
+          const PopupMenuDivider(),
+          const PopupMenuItem<Object>(
+            value: 'convertir',
+            child: Text('Convertir en PNJ…'),
+          ),
+        ],
+      ],
+      child: pill,
     );
   }
 
@@ -1390,7 +1663,12 @@ class _CombatantRow extends StatelessWidget {
     final creature = combatant.creatureId == null
         ? null
         : repo.creature(combatant.creatureId!);
-    final ac = _isPlayer ? _playerSheet?.armorClass.toString() : creature?.ac;
+    final npcEntry = npc;
+    final ac = _isPlayer
+        ? _playerSheet?.armorClass.toString()
+        : npcEntry != null
+        ? npcArmorClass(npcEntry.npc, npcEntry.sheet, repo)
+        : creature?.ac;
     if (ac == null || ac.isEmpty) return const SizedBox.shrink();
     return Semantics(
       label: 'Clase de armadura: $ac',
@@ -1458,7 +1736,9 @@ class _CombatantRow extends StatelessWidget {
                 style: TextStyle(fontSize: 11, color: pal.textMuted),
               ),
             )
-          else ...[
+          // Sin PG no hay nada que bajar ni subir: el tabernero tiene turno,
+          // pero no barra de vida.
+          else if (!combatant.isStatless) ...[
             IconButton(
               tooltip: 'Dañar',
               visualDensity: VisualDensity.compact,

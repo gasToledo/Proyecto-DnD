@@ -64,7 +64,12 @@ extension _DashboardActions on _DashboardScreenState {
       MaterialPageRoute(
         builder: (_) => PendingEventsGate(
           api: controller.api,
-          child: DmModeScreen(api: controller.api, repo: repo),
+          child: DmModeScreen(
+            api: controller.api,
+            repo: repo,
+            theme: widget.theme,
+            settingsController: _settingsController,
+          ),
         ),
       ),
     );

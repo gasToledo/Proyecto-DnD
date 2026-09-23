@@ -356,6 +356,70 @@ Dos decisiones de contenido que se ven raras si no se explican:
 La pestaña es de **solo lectura sin excepciones**. No escribe la ficha ni la
 campaña: lo que el capítulo repartió ya llegó como aviso y lo anota el jugador.
 
+## PNJ
+
+Los PNJ son del **DM**, no de una mesa: viven en una biblioteca de la cuenta y
+se vinculan a las campañas donde aparecen. La migración `0010_npcs` agrega dos
+tablas y una columna:
+
+| Tabla | Para qué |
+|---|---|
+| `npcs` | El documento `Npc` (`packages/dnd_engine/lib/src/domain/npc.dart`): nombre, cómo habla, apariencia, trasfondo, notas, tags, retratos y, según el tipo, un bloque propio o el id de su ficha. |
+| `campaign_npcs` | El vínculo con una campaña y el estado **en esa** campaña: vivo, muerto o desconocido. El mismo villano puede estar muerto en una mesa y vivo en otra. |
+| `characters.kind` | `player` o `npc`. La ficha de un PNJ «personaje jugable» es una fila de `characters` como cualquier otra, para reusar el compilador y la pantalla de ficha enteros. |
+
+Quitar un PNJ de una campaña (`DELETE .../campaigns/<id>/npcs/<npcId>`) borra
+solo el vínculo. Borrarlo de la biblioteca (`DELETE /api/npcs/<id>`) se lleva
+los vínculos, su ficha y sus retratos por cascada. Son dos verbos distintos a
+propósito: el primero es de todos los días y el segundo no se deshace.
+
+### `characters.kind` y sus filtros
+
+Que la ficha de un PNJ viva en `characters` tiene un precio: cada consulta que
+antes suponía «toda fila es de un jugador» ahora tiene que decirlo. Filtran
+`kind = 'player'`, en el `WHERE` como el resto de la autorización:
+
+- `find`, `listForUser` y `exists` — un PNJ no aparece en «Mis personajes» ni
+  en el respaldo, y su ficha no se abre por la ruta de personajes;
+- `delete` — borrar por `/api/characters/<id>` con el id de una ficha de PNJ
+  responde igual que un personaje inexistente y no toca ni la ficha ni sus
+  retratos;
+- `createShareCode` (`INSERT … SELECT … WHERE kind = 'player'`) y el canje —
+  **la ficha de un PNJ nunca se comparte**. Si se pudiera, un jugador tendría
+  por `campaign_members` una puerta a la biblioteca del DM.
+
+Guardar sigue yendo por `upsert`, que solo actualiza el documento: la ficha de
+un PNJ que se sube de nivel sigue siendo de un PNJ.
+
+### Bandos, y lo que el jugador ve de las batallas
+
+Cada combatiente tiene un bando (`CombatantSide`: aliado, enemigo, neutral).
+Los jugadores son siempre aliados; un PNJ sin estadísticas es siempre neutral,
+porque sin PG no puede ganar ni perder. `Encounter` y `EncounterLog` pasaron a
+la versión 2 de esquema: la migración pone a los jugadores de aliados y a los
+monstruos de enemigos, que es lo que eran.
+
+El registro del combate guarda el nombre propio de cada PNJ y su bando, porque
+el Cuaderno es del DM. Al jugador le llega otra cosa: `EncounterLog.playerView()`
+deja **solo a los enemigos**, y un PNJ se nombra por su criatura de base
+(«Bandido») o por nada, que la pantalla lee como «un enemigo». Un aliado con
+nombre propio que el grupo todavía no conoce no puede filtrarse por el
+historial de batallas. La poda está en el engine para que el servidor y
+`FakeApiServer` no puedan implementarla distinto.
+
+Terminar y guardar un combate acepta `deadNpcIds`: el servidor marca muertos,
+en la misma transacción que cierra el combate, solo a los que además estaban
+en ese combate — un id de otro PNJ de la cuenta no se toca por esta vía.
+
+### Por qué exportar es un archivo
+
+Pasarle un PNJ a otro DM **no** crea ninguna fila compartida: es un `.zip`
+(`dnd_npc`, manifiesto `npc-bundle.json`) que el otro importa como copia
+propia. Una biblioteca compartida entre cuentas sería una segunda puerta
+además de `campaign_members`, y todo este documento existe para que haya una
+sola. El archivo nunca lleva en qué campañas estaba ni su estado en cada una;
+las notas viajan solo si quien exporta las marca.
+
 ## Qué probar al tocar esto
 
 Las pruebas negativas de `packages/dnd_server/test/app_test.dart`, grupo
@@ -402,5 +466,14 @@ El subgrupo `combate`, dentro del mismo archivo, agrega:
 - un jugador sin vínculo obtiene `none`, nunca un error que revele que el
   combate existe;
 - un jugador no puede preguntar por el turno de un personaje ajeno.
+
+`packages/dnd_server/test/npc_routes_test.dart` agrega las de PNJ:
+
+- un PNJ ajeno responde como uno inexistente al leerlo, editarlo o borrarlo;
+- la ficha de un PNJ no se lista, no se comparte y no se borra por la ruta de
+  personajes;
+- la batalla que ve el jugador no nombra a ningún PNJ, ni siquiera a los
+  aliados, y nombra a los enemigos por su criatura;
+- `deadNpcIds` ignora los PNJ que no estaban en ese combate.
 
 Ninguna se puede relajar para hacer pasar otra cosa.

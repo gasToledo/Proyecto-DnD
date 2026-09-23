@@ -18,6 +18,7 @@ import 'package:dnd_server/src/repositories/character_repository.dart';
 import 'package:dnd_server/src/repositories/encounter_repository.dart';
 import 'package:dnd_server/src/repositories/event_repository.dart';
 import 'package:dnd_server/src/repositories/homebrew_repository.dart';
+import 'package:dnd_server/src/repositories/npc_repository.dart';
 import 'package:dnd_server/src/repositories/repository_transaction_runner.dart';
 import 'package:dnd_server/src/repositories/settings_repository.dart';
 import 'package:dnd_server/src/web/cache_headers.dart';
@@ -83,6 +84,7 @@ Future<void> main() async {
       notes: PostgresNoteRepository(pool),
       encounters: PostgresEncounterRepository(pool),
       events: PostgresEventRepository(pool),
+      npcs: PostgresNpcRepository(pool),
       transactions: PostgresRepositoryTransactionRunner(pool),
       homebrew: PostgresHomebrewRepository(pool),
       settings: PostgresSettingsRepository(pool),

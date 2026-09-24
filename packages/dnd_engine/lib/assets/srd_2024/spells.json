@@ -95,7 +95,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Realizas un ataque con arma imbuida de energía radiante, usando tu característica de conjuro para el ataque y el daño.",
+    "description": "Realizás un ataque con arma imbuida de energía radiante, usando tu característica de conjuro para el ataque y el daño.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -167,7 +167,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Creas hasta cuatro luces flotantes que puedes mover con tu movimiento. Concentración.",
+    "description": "Creás hasta cuatro luces flotantes que podés mover con tu movimiento. Concentración.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -225,7 +225,7 @@
     "duration": "1 asalto",
     "concentration": false,
     "ritual": false,
-    "description": "Susurras un mensaje a una criatura a distancia que solo ella oye y puede responder en un susurro.",
+    "description": "Susurrás un mensaje a una criatura a distancia que solo ella oye y puede responder en un susurro.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -246,7 +246,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Tocas a una criatura con 0 PG y la estabilizas. También afecta a muertos vivientes con salvación.",
+    "description": "Tocás a una criatura con 0 PG y la estabilizás. También afecta a muertos vivientes con salvación.",
     "classes": [
       "cleric",
       "druid",
@@ -265,7 +265,7 @@
     "duration": "1 minuto",
     "concentration": false,
     "ritual": false,
-    "description": "Imbuyes un bastón o maza: usa tu característica de conjuro para atacar y su daño pasa a 1d8 de fuerza.",
+    "description": "Imbuís un bastón o maza: usa tu característica de conjuro para atacar y su daño pasa a 1d8 de fuerza.",
     "classes": [
       "druid"
     ]
@@ -352,7 +352,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Reparas una rotura o rasgadura de un objeto (una cadena, dos mitades de una llave, una capa desgarrada).",
+    "description": "Reparás una rotura o rasgadura de un objeto (una cadena, dos mitades de una llave, una capa desgarrada).",
     "classes": [
       "wizard",
       "sorcerer",
@@ -392,7 +392,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Lanzas un vaho tóxico; el objetivo hace salvación de CON o recibe 1d12 de veneno. Escala por nivel.",
+    "description": "Lanzás un vaho tóxico; el objetivo hace salvación de CON o recibe 1d12 de veneno. Escala por nivel.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -413,7 +413,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Arrojas una burbuja ácida; hasta dos criaturas cercanas hacen salvación de DES o reciben 1d6 de ácido. Escala por nivel.",
+    "description": "Arrojás una burbuja ácida; hasta dos criaturas cercanas hacen salvación de DES o reciben 1d6 de ácido. Escala por nivel.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -432,7 +432,7 @@
     "duration": "1 minuto",
     "concentration": false,
     "ritual": false,
-    "description": "Manifiestas un signo menor de poder sobrenatural: voz atronadora, llamas parpadeantes, temblores leves, etc.",
+    "description": "Manifestás un signo menor de poder sobrenatural: voz atronadora, llamas parpadeantes, temblores leves, etc.",
     "classes": [
       "cleric"
     ]
@@ -468,7 +468,7 @@
     "duration": "24 horas",
     "concentration": false,
     "ritual": false,
-    "description": "Creas 10 bayas; cada una restaura 1 PG y alimenta a una criatura por un día. Duran 24 horas.",
+    "description": "Creás 10 bayas; cada una restaura 1 PG y alimenta a una criatura por un día. Duran 24 horas.",
     "classes": [
       "druid",
       "ranger"
@@ -523,7 +523,7 @@
     "duration": "1 hora",
     "concentration": false,
     "ritual": true,
-    "description": "Entiendes el sentido literal de cualquier idioma hablado que oigas o texto que toques durante 1 hora.",
+    "description": "Entendés el sentido literal de cualquier idioma hablado que oigas o texto que toques durante 1 hora.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -574,7 +574,7 @@
       "warlock",
       "artificer"
     ],
-    "description": "Percibes la presencia de magia en 30 pies y su escuela. Ritual."
+    "description": "Percibís la presencia de magia en 30 pies y su escuela. Ritual."
   },
   {
     "id": "disguise-self",
@@ -588,7 +588,7 @@
     "duration": "1 hora",
     "concentration": false,
     "ritual": false,
-    "description": "Cambias tu apariencia (ropa, rasgos, altura aparente) hasta 1 hora. El engaño se descubre con contacto o inspección atenta.",
+    "description": "Cambiás tu apariencia (ropa, rasgos, altura aparente) hasta 1 hora. El engaño se descubre con contacto o inspección atenta.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -608,7 +608,7 @@
     "duration": "1 hora",
     "concentration": false,
     "ritual": false,
-    "description": "Un humanoide que veas hace salvación de SAB o queda hechizado por ti, tratándote como conocido amistoso, hasta 1 hora.",
+    "description": "Un humanoide que veas hace salvación de SAB o queda hechizado por vos, tratándote como conocido amistoso, hasta 1 hora.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -649,7 +649,7 @@
       "wizard",
       "sorcerer"
     ],
-    "description": "Como reacción, +5 a la CA hasta tu próximo turno y anulas Proyectil Mágico."
+    "description": "Como reacción, +5 a la CA hasta tu próximo turno y anulás Proyectil Mágico."
   },
   {
     "id": "shield-of-faith",
@@ -699,7 +699,7 @@
     "duration": "1 minuto",
     "concentration": false,
     "ritual": false,
-    "description": "Cubres un cuadrado de 10 pies de grasa resbalosa; quien esté o entre hace salvación de DES o cae derribado.",
+    "description": "Cubrís un cuadrado de 10 pies de grasa resbalosa; quien esté o entre hace salvación de DES o cae derribado.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -718,7 +718,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": true,
-    "description": "Aprendes las propiedades mágicas de un objeto que tocas y si porta una maldición conocida.",
+    "description": "Aprendés las propiedades mágicas de un objeto que tocás y si porta una maldición conocida.",
     "classes": [
       "wizard",
       "bard",
@@ -787,7 +787,7 @@
     "duration": "1 hora",
     "concentration": true,
     "ritual": false,
-    "description": "Creas una esfera de niebla de 20 pies que bloquea la visión (zona muy oscura). Concentración.",
+    "description": "Creás una esfera de niebla de 20 pies que bloquea la visión (zona muy oscura). Concentración.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -917,7 +917,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Como acción adicional inicial y en turnos siguientes, puedes Correr; ganas gran movilidad durante la concentración.",
+    "description": "Como acción adicional inicial y en turnos siguientes, podés Correr; ganás gran movilidad durante la concentración.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -997,7 +997,7 @@
     "classes": [
       "cleric"
     ],
-    "description": "Arma espectral que ataca por 1d8 + mod. de lanzamiento de daño de fuerza; la mueves como acción adicional."
+    "description": "Arma espectral que ataca por 1d8 + mod. de lanzamiento de daño de fuerza; la movés como acción adicional."
   },
   {
     "id": "aid",
@@ -1033,7 +1033,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Calientas al rojo un objeto metálico; quien lo porte recibe 2d8 de fuego y puede soltarlo. Concentración. Escala.",
+    "description": "Calentás al rojo un objeto metálico; quien lo porte recibe 2d8 de fuego y puede soltarlo. Concentración. Escala.",
     "classes": [
       "druid",
       "bard",
@@ -1070,7 +1070,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Tu silueta se vuelve borrosa; los ataques contra ti tienen desventaja (salvo que el atacante no dependa de la vista). Concentración.",
+    "description": "Tu silueta se vuelve borrosa; los ataques contra vos tienen desventaja (salvo que el atacante no dependa de la vista). Concentración.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -1089,7 +1089,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Una esfera de fuego que mueves cada turno; inflige 2d6 de fuego a quien toque. Concentración. Escala.",
+    "description": "Una esfera de fuego que movés cada turno; inflige 2d6 de fuego a quien toque. Concentración. Escala.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -1187,7 +1187,7 @@
     "duration": "1 hora",
     "concentration": true,
     "ritual": false,
-    "description": "Tú y tus aliados cercanos ganáis +10 a Sigilo y no dejáis rastro. Concentración.",
+    "description": "Vos y tus aliados cercanos ganan +10 a Sigilo y no dejan rastro. Concentración.",
     "classes": [
       "druid",
       "ranger"
@@ -1208,7 +1208,7 @@
       "sorcerer",
       "warlock"
     ],
-    "description": "Te teletransportas hasta 30 pies a un espacio libre que puedas ver."
+    "description": "Te teletransportás hasta 30 pies a un espacio libre que puedas ver."
   },
   {
     "id": "prayer-of-healing",
@@ -1276,7 +1276,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Un haz de luz plateada de 5 pies que reubicas cada turno; 2d10 radiante a quien entre o empiece dentro. Concentración. Escala.",
+    "description": "Un haz de luz plateada de 5 pies que reubicás cada turno; 2d10 radiante a quien entre o empiece dentro. Concentración. Escala.",
     "classes": [
       "druid"
     ]
@@ -1394,7 +1394,7 @@
     "duration": "1 hora",
     "concentration": false,
     "ritual": false,
-    "description": "Durante 1 hora ves criaturas y objetos invisibles y percibes el plano Etéreo.",
+    "description": "Durante 1 hora ves criaturas y objetos invisibles y percibís el plano Etéreo.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -1435,7 +1435,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Reanimas un esqueleto o zombi bajo tu control; puedes reafirmar y ampliar el control cada 24 h.",
+    "description": "Reanimás un esqueleto o zombi bajo tu control; podés reafirmar y ampliar el control cada 24 h.",
     "classes": [
       "wizard",
       "cleric"
@@ -1472,7 +1472,7 @@
       "sorcerer",
       "warlock"
     ],
-    "description": "Como reacción, interrumpes el lanzamiento de un conjuro de otra criatura (con salvación si es de nivel alto)."
+    "description": "Como reacción, interrumpís el lanzamiento de un conjuro de otra criatura (con salvación si es de nivel alto)."
   },
   {
     "id": "conjure-animals",
@@ -1543,7 +1543,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Creas una ilusión con imagen, sonido, olor y temperatura que puedes mover y modificar. Concentración.",
+    "description": "Creás una ilusión con imagen, sonido, olor y temperatura que podés mover y modificar. Concentración.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -1563,7 +1563,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Maldices a una criatura (salvación de SAB) con un efecto debilitante a elección. Concentración.",
+    "description": "Maldecís a una criatura (salvación de SAB) con un efecto debilitante a elección. Concentración.",
     "classes": [
       "wizard",
       "cleric",
@@ -1759,7 +1759,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Terminas todas las maldiciones sobre una criatura u objeto que toques.",
+    "description": "Terminás todas las maldiciones sobre una criatura u objeto que toques.",
     "classes": [
       "wizard",
       "cleric",
@@ -1856,7 +1856,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Ataque de conjuro cuerpo a cuerpo por 3d6 necrótico; recuperas la mitad en PG. Concentración. Escala.",
+    "description": "Ataque de conjuro cuerpo a cuerpo por 3d6 necrótico; recuperás la mitad en PG. Concentración. Escala.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2031,7 +2031,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Drenas la fuerza vital de una criatura: 8d8 necrótico (salvación de CON para mitad); devastador contra plantas. Escala.",
+    "description": "Drenás la fuerza vital de una criatura: 8d8 necrótico (salvación de CON para mitad); devastador contra plantas. Escala.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2051,7 +2051,7 @@
     "duration": "1 hora",
     "concentration": true,
     "ritual": false,
-    "description": "Transformas a una criatura en una bestia (salvación de SAB si es no dispuesta); usa las estadísticas de la bestia. Concentración.",
+    "description": "Transformás a una criatura en una bestia (salvación de SAB si es no dispuesta); usa las estadísticas de la bestia. Concentración.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2071,7 +2071,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Levantas un muro de llamas; 5d8 de fuego a quien lo cruce o termine cerca del lado ardiente. Concentración. Escala.",
+    "description": "Levantás un muro de llamas; 5d8 de fuego a quien lo cruce o termine cerca del lado ardiente. Concentración. Escala.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2129,7 +2129,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Te teletransportas hasta 500 pies a un lugar que imagines, pudiendo llevar a una criatura contigo.",
+    "description": "Te teletransportás hasta 500 pies a un lugar que imagines, pudiendo llevar a una criatura contigo.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2168,7 +2168,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Cobras vida hasta diez objetos que atacan a tu orden. Concentración. Escala.",
+    "description": "Das vida a hasta diez objetos que atacan a tu orden. Concentración. Escala.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2262,7 +2262,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Observas y oyes a una criatura a cualquier distancia mediante un sensor invisible (salvación de SAB). Concentración.",
+    "description": "Observás y oís a una criatura a cualquier distancia mediante un sensor invisible (salvación de SAB). Concentración.",
     "classes": [
       "wizard",
       "cleric",
@@ -2303,7 +2303,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Devuelves la vida a una criatura muerta hace menos de 10 días, con penalizadores temporales que se desvanecen.",
+    "description": "Devolvés la vida a una criatura muerta hace menos de 10 días, con penalizadores temporales que se desvanecen.",
     "classes": [
       "cleric",
       "paladin",
@@ -2322,7 +2322,7 @@
     "duration": "30 días",
     "concentration": false,
     "ritual": false,
-    "description": "Impones una orden a una criatura por 30 días; si la desobedece sufre daño psíquico. Salvación de SAB.",
+    "description": "Imponés una orden a una criatura por 30 días; si la desobedece sufre daño psíquico. Salvación de SAB.",
     "classes": [
       "wizard",
       "cleric",
@@ -2360,7 +2360,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Creas un muro de piedra que puede sellar pasos o formar puentes; se vuelve permanente si te concentras 10 minutos.",
+    "description": "Creás un muro de piedra que puede sellar pasos o formar puentes; se vuelve permanente si te concentrás 10 minutos.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2417,7 +2417,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Quitas un nivel de agotamiento, o un efecto que reduce característica/PG máximo, o rompe un encanto o petrificación.",
+    "description": "Quitás un nivel de agotamiento, o un efecto que reduce característica/PG máximo, o rompe un encanto o petrificación.",
     "classes": [
       "cleric",
       "druid",
@@ -2439,7 +2439,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Mueves criaturas u objetos con la mente (prueba enfrentada); manipulas a distancia. Concentración.",
+    "description": "Movés criaturas u objetos con la mente (prueba enfrentada); manipulás a distancia. Concentración.",
     "classes": [
       "wizard",
       "sorcerer"
@@ -2493,7 +2493,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Infliges 14d6 necrótico (salvación de CON para mitad); reduce el PG máximo del objetivo hasta que sane.",
+    "description": "Infligís 14d6 necrótico (salvación de CON para mitad); reduce el PG máximo del objetivo hasta que sane.",
     "classes": [
       "cleric"
     ]
@@ -2546,7 +2546,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Cada turno miras a una criatura (salvación de SAB) y la dejas dormida, asustada o enferma. Concentración.",
+    "description": "Cada turno mirás a una criatura (salvación de SAB) y la dejás dormida, asustada o enferma. Concentración.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2604,7 +2604,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Restauras 70 PG a una criatura y le quitas ceguera, sordera y enfermedades. Escala.",
+    "description": "Restaurás 70 PG a una criatura y le quitás ceguera, sordera y enfermedades. Escala.",
     "classes": [
       "cleric",
       "druid"
@@ -2680,7 +2680,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Transportas a un grupo (o destierras a un enemigo) a otro plano de existencia.",
+    "description": "Transportás a un grupo (o desterrás a un enemigo) a otro plano de existencia.",
     "classes": [
       "wizard",
       "cleric",
@@ -2720,7 +2720,7 @@
     "duration": "8 horas",
     "concentration": false,
     "ritual": false,
-    "description": "Entras al plano Etéreo fronterizo, pudiendo moverte a través de la materia. Escala para llevar a otros.",
+    "description": "Entrás al plano Etéreo fronterizo, pudiendo moverte a través de la materia. Escala para llevar a otros.",
     "classes": [
       "wizard",
       "cleric",
@@ -2798,7 +2798,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Devuelves la vida a una criatura muerta hasta hace un siglo, sin penalizadores por muerte.",
+    "description": "Devolvés la vida a una criatura muerta hasta hace un siglo, sin penalizadores por muerte.",
     "classes": [
       "cleric",
       "bard"
@@ -2835,7 +2835,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Te transportas junto con aliados a un destino conocido; la precisión depende de tu familiaridad con el lugar.",
+    "description": "Te transportás junto con aliados a un destino conocido; la precisión depende de tu familiaridad con el lugar.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -2931,7 +2931,7 @@
     "duration": "24 horas",
     "concentration": false,
     "ritual": false,
-    "description": "Transformas a varios aliados en bestias grandes durante 24 horas.",
+    "description": "Transformás a varios aliados en bestias grandes durante 24 horas.",
     "classes": [
       "druid"
     ]
@@ -3025,7 +3025,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Sacudes el suelo en 100 pies: derribas criaturas, abres grietas y colapsas estructuras. Concentración.",
+    "description": "Sacudís el suelo en 100 pies: derribás criaturas, abrís grietas y colapsás estructuras. Concentración.",
     "classes": [
       "cleric",
       "druid",
@@ -3062,7 +3062,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Detienes el tiempo para todos menos tú, ganando 1d4+1 turnos de acción libre (se rompe si afectas a otros).",
+    "description": "Detenés el tiempo para todos menos vos, ganando 1d4+1 turnos de acción libre (se rompe si afectás a otros).",
     "classes": [
       "wizard",
       "sorcerer"
@@ -3080,7 +3080,7 @@
     "duration": "Hasta disipar",
     "concentration": false,
     "ritual": false,
-    "description": "Aprisionas a una criatura (salvación de SAB) de forma casi permanente: sepultada, en éxtasis, encadenada u otra.",
+    "description": "Aprisionás a una criatura (salvación de SAB) de forma casi permanente: sepultada, en éxtasis, encadenada u otra.",
     "classes": [
       "wizard",
       "warlock"
@@ -3134,7 +3134,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Pronuncias una palabra de poder; si el objetivo tiene 100 PG o menos, muere al instante.",
+    "description": "Pronunciás una palabra de poder; si el objetivo tiene 100 PG o menos, muere al instante.",
     "classes": [
       "wizard",
       "sorcerer",
@@ -3172,7 +3172,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Abres un portal a otro plano y puedes atraer o enviar a una criatura específica a través de él. Concentración.",
+    "description": "Abrís un portal a otro plano y podés atraer o enviar a una criatura específica a través de él. Concentración.",
     "classes": [
       "wizard",
       "cleric",
@@ -3212,7 +3212,7 @@
     "duration": "Hasta disipar",
     "concentration": false,
     "ritual": false,
-    "description": "Tú y tus compañeros proyectáis vuestra forma astral para viajar por los planos exteriores.",
+    "description": "Vos y tus compañeros proyectan su forma astral para viajar por los planos exteriores.",
     "classes": [
       "wizard",
       "cleric",
@@ -3231,7 +3231,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Devuelves la vida a una criatura muerta hasta hace 200 años, restaurando el cuerpo por completo.",
+    "description": "Devolvés la vida a una criatura muerta hasta hace 200 años, restaurando el cuerpo por completo.",
     "classes": [
       "cleric",
       "druid"
@@ -3249,7 +3249,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Distribuyes hasta 700 PG de curación entre criaturas a la vista y les quitas condiciones.",
+    "description": "Distribuís hasta 700 PG de curación entre criaturas a la vista y les quitás condiciones.",
     "classes": [
       "cleric"
     ]
@@ -3335,7 +3335,7 @@
     "source": "srd_2024",
     "level": 1,
     "school": "Evocación",
-    "castingTime": "Reacción, que realizas al recibir daño de una criatura que ves",
+    "castingTime": "Reacción, que realizás al recibir daño de una criatura que ves",
     "range": "60 pies",
     "components": "V, S",
     "duration": "Instantánea",
@@ -4279,7 +4279,7 @@
     "duration": "Hasta disipar",
     "concentration": false,
     "ritual": false,
-    "description": "Una puerta u objeto tocado queda cerrado mágicamente hasta que termine el conjuro; solo vos y quienes designes podéis abrirlo.",
+    "description": "Una puerta u objeto tocado queda cerrado mágicamente hasta que termine el conjuro; solo vos y quienes designes pueden abrirlo.",
     "classes": [
       "wizard",
       "artificer"
@@ -4371,7 +4371,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Percibís pensamientos cercanos, leés la mente de un objetivo con salvación de Sabiduría, o localizáis criaturas pensantes que no veis.",
+    "description": "Percibís pensamientos cercanos, leés la mente de un objetivo con salvación de Sabiduría, o localizás criaturas pensantes que no ves.",
     "classes": [
       "bard",
       "sorcerer",
@@ -5091,7 +5091,7 @@
     "duration": "8 horas",
     "concentration": false,
     "ritual": true,
-    "description": "Vos y tu equipo os fundís con una superficie de piedra hasta que termine el conjuro; no dejás rastro detectable sin magia.",
+    "description": "Vos y tu equipo se funden con una superficie de piedra hasta que termine el conjuro; no dejás rastro detectable sin magia.",
     "classes": [
       "cleric",
       "druid",
@@ -5223,7 +5223,7 @@
     "duration": "1 minuto",
     "concentration": true,
     "ritual": false,
-    "description": "Emanación de 30 pies: vos y tus aliados dentro causáis 1d4 radiante extra al acertar con arma o ataque sin armas.",
+    "description": "Emanación de 30 pies: vos y tus aliados dentro causan 1d4 radiante extra al acertar con arma o ataque sin armas.",
     "classes": [
       "paladin"
     ]
@@ -5331,7 +5331,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Emanación de 30 pies: vos y tus aliados dentro tenéis resistencia al veneno y ventaja en salvaciones contra varios estados adversos.",
+    "description": "Emanación de 30 pies: vos y tus aliados dentro tienen resistencia al veneno y ventaja en salvaciones contra varios estados adversos.",
     "classes": [
       "cleric",
       "paladin"
@@ -5349,7 +5349,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Emanación de 30 pies: vos y tus aliados dentro tenéis resistencia al daño necrótico y no pueden reducirse los PG máximos; cura 1 PG a quien empiece su turno ahí con 0 PG.",
+    "description": "Emanación de 30 pies: vos y tus aliados dentro tienen resistencia al daño necrótico y no pueden reducirse los PG máximos; cura 1 PG a quien empiece su turno ahí con 0 PG.",
     "classes": [
       "cleric",
       "paladin"
@@ -5845,7 +5845,7 @@
     "duration": "24 horas",
     "concentration": false,
     "ritual": false,
-    "description": "Obligás a un celestial, elemental, feérico o infernal a serviros: salvación de Carisma o queda a tu servicio hasta que termine el conjuro.",
+    "description": "Obligás a un celestial, elemental, feérico o infernal a servirte: salvación de Carisma o queda a tu servicio hasta que termine el conjuro.",
     "classes": [
       "bard",
       "warlock",
@@ -5917,7 +5917,7 @@
     "duration": "10 minutos",
     "concentration": true,
     "ritual": false,
-    "description": "Emanación de 30 pies: vos y tus aliados dentro tenéis ventaja en salvaciones contra magia, y no sufrís daño si superáis una que reduzca el daño a la mitad.",
+    "description": "Emanación de 30 pies: vos y tus aliados dentro tienen ventaja en salvaciones contra magia, y no sufren daño si superan una que reduzca el daño a la mitad.",
     "classes": [
       "cleric",
       "wizard",
@@ -6532,7 +6532,7 @@
     "duration": "1 dia",
     "concentration": true,
     "ritual": false,
-    "description": "Percibís el camino físico más corto hacia un lugar conocido dentro del mismo plano, y sabés si os desviáis de él.",
+    "description": "Percibís el camino físico más corto hacia un lugar conocido dentro del mismo plano, y sabés si te desviás de él.",
     "classes": [
       "bard",
       "cleric",
@@ -6712,7 +6712,7 @@
     "duration": "Instantánea",
     "concentration": false,
     "ritual": false,
-    "description": "Vos y hasta cinco criaturas voluntarias os teletransportáis al instante a un santuario preparado con anterioridad.",
+    "description": "Vos y hasta cinco criaturas voluntarias se teletransportan al instante a un santuario preparado con anterioridad.",
     "classes": [
       "cleric"
     ]
@@ -7155,7 +7155,7 @@
     "duration": "1 hora",
     "concentration": true,
     "ritual": false,
-    "description": "Asumís la forma de otra criatura con valor de desafío igual o menor al vuestro; podés cambiar de forma otra vez con una acción de magia mientras dure.",
+    "description": "Asumís la forma de otra criatura con valor de desafío igual o menor al tuyo; podés cambiar de forma otra vez con una acción de magia mientras dure.",
     "classes": [
       "druid",
       "wizard"

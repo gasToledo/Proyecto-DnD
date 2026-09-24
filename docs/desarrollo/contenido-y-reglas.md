@@ -80,6 +80,9 @@ Las herramientas viven en `packages/dnd_engine/tool/`:
 - `generate_items.dart` completa peso y precio de armas y armaduras.
 - `generate_magic_items.py` genera el catálogo base de objetos mágicos.
 - `apply_magic_item_charges.dart` aplica las cargas a los catálogos mágicos.
+- `apply_voseo.dart` pasa a voseo la prosa de todos los catálogos salvo el
+  bestiario. Se corre después de cualquier generador: el SRD en español está
+  en tuteo.
 
 No se edita a mano un archivo generado. Si una extracción necesita una
 excepción, se documenta en el generador y se cubre con una prueba.

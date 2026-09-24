@@ -170,8 +170,11 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   dos líneas (los «Heredero de Casa…» de Eberron se cortaban); el Draconato
   muestra su Ataque de Aliento y su visión en la oscuridad.
 - Subida de nivel: la subclase elegida muestra los rasgos que da en ese nivel.
-- Los textos de las subclases pasan a voseo: quedaban «puedes», «ganas» y
-  plurales de vosotros («tenéis», «podéis») mezclados con el resto.
+- Todo el catálogo pasa a voseo: subclases, clases, dotes, especies, conjuros
+  y objetos mágicos tenían «puedes», «ganas» y plurales de vosotros
+  («tenéis», «podéis») mezclados con el resto, y los objetos mágicos del SRD
+  estaban enteros en tuteo. `tool/apply_voseo.dart` lo vuelve a aplicar
+  después de regenerar, y un test falla si vuelve el tuteo.
 - Creación de personaje: con escudo ya no se ofrece empuñar a dos manos, y la
   mano secundaria solo aparece con dos armas; las elecciones de objeto dicen
   si son de la clase o del trasfondo; «Coste en puntos» avisa los puntos sin

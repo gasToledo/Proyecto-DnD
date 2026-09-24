@@ -70,7 +70,7 @@ void main() {
       final d = traitOf('halfling', 'Agilidad Mediana');
       expect(d, isNotNull);
       expect(d, contains('tamaño mayor que el tuyo'));
-      expect(d, contains('no puedes detenerte'));
+      expect(d, contains('no podés detenerte'));
     });
   });
 

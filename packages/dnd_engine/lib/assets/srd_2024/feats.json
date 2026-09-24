@@ -361,7 +361,7 @@
       {
         "type": "passiveTrait",
         "name": "Atacante Salvaje",
-        "description": "Una vez por turno, al impactar con un arma, puedes volver a tirar el daño y quedarte con el mejor resultado."
+        "description": "Una vez por turno, al impactar con un arma, podés volver a tirar el daño y quedarte con el mejor resultado."
       }
     ]
   },
@@ -405,7 +405,7 @@
       {
         "type": "passiveTrait",
         "name": "Alerta",
-        "description": "Sumas tu bonif. de competencia a la iniciativa. Puedes intercambiar tu iniciativa con la de un aliado consentidor."
+        "description": "Sumás tu bonif. de competencia a la iniciativa. Podés intercambiar tu iniciativa con la de un aliado consentidor."
       }
     ]
   },
@@ -418,7 +418,7 @@
       {
         "type": "passiveTrait",
         "name": "Afortunado",
-        "description": "Tienes puntos de suerte iguales a tu bonif. de competencia. Puedes gastarlos para obtener ventaja en una tirada de d20 o imponer desventaja en un ataque contra ti."
+        "description": "Tenés puntos de suerte iguales a tu bonif. de competencia. Podés gastarlos para obtener ventaja en una tirada de d20 o imponer desventaja en un ataque contra vos."
       }
     ]
   },
@@ -439,7 +439,7 @@
       {
         "type": "passiveTrait",
         "name": "Fabricante",
-        "description": "Ganas competencia con tres herramientas de artesano a tu elección, obtienes 20% de descuento al comprar objetos no mágicos y puedes fabricar más rápido durante un descanso."
+        "description": "Ganás competencia con tres herramientas de artesano a tu elección, obtenés 20% de descuento al comprar objetos no mágicos y podés fabricar más rápido durante un descanso."
       }
     ]
   },
@@ -465,7 +465,7 @@
       {
         "type": "passiveTrait",
         "name": "Músico",
-        "description": "Ganas competencia con tres instrumentos musicales. Tras un descanso, puedes tocar para otorgar Inspiración Heroica a aliados (hasta tu bonif. de competencia)."
+        "description": "Ganás competencia con tres instrumentos musicales. Tras un descanso, podés tocar para otorgar Inspiración Heroica a aliados (hasta tu bonif. de competencia)."
       }
     ]
   },
@@ -606,7 +606,7 @@
       {
         "type": "passiveTrait",
         "name": "Resiliente (Sabiduría)",
-        "description": "Ganas competencia en salvaciones de Sabiduría."
+        "description": "Ganás competencia en salvaciones de Sabiduría."
       }
     ],
     "prerequisite": {
@@ -628,7 +628,7 @@
       {
         "type": "passiveTrait",
         "name": "Actor",
-        "description": "Ventaja en Engaño y Actuación al hacerte pasar por otro; puedes imitar voces y sonidos."
+        "description": "Ventaja en Engaño y Actuación al hacerte pasar por otro; podés imitar voces y sonidos."
       }
     ],
     "prerequisite": {
@@ -751,7 +751,7 @@
       {
         "type": "passiveTrait",
         "name": "Triturador",
-        "description": "Al dañar con contundente puedes empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo."
+        "description": "Al dañar con contundente podés empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo."
       }
     ],
     "prerequisite": {
@@ -773,7 +773,7 @@
       {
         "type": "passiveTrait",
         "name": "Triturador",
-        "description": "Al dañar con contundente puedes empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo."
+        "description": "Al dañar con contundente podés empujar 5 pies; un crítico contundente da ventaja a los ataques contra el objetivo."
       }
     ],
     "prerequisite": {
@@ -820,7 +820,7 @@
       {
         "type": "passiveTrait",
         "name": "Duelista Defensivo",
-        "description": "Con un arma sutil, como reacción sumas tu bono de competencia a la CA contra un ataque cuerpo a cuerpo."
+        "description": "Con un arma sutil, como reacción sumás tu bono de competencia a la CA contra un ataque cuerpo a cuerpo."
       }
     ],
     "prerequisite": {
@@ -887,7 +887,7 @@
     "repeatable": true,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
+      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elegí un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -900,7 +900,7 @@
     "repeatable": true,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
+      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elegí un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -913,7 +913,7 @@
     "repeatable": true,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elige un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
+      { "type": "passiveTrait", "name": "Versado en un Elemento", "description": "Elegí un tipo de daño (ácido, frío, fuego, relámpago o trueno): tus conjuros lo ignoran como resistencia y tratan los 1 en los dados como 2." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -932,7 +932,7 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por lo Feérico",
-        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
+        "description": "Aprendés Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -954,7 +954,7 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por lo Feérico",
-        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
+        "description": "Aprendés Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -976,7 +976,7 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por lo Feérico",
-        "description": "Aprendes Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
+        "description": "Aprendés Paso Brumoso y un conjuro de adivinación o encantamiento de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -1072,7 +1072,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Líder Inspirador", "description": "Tras un descanso, una arenga da PG temporales a ti y a aliados cercanos. (+1 a SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Líder Inspirador", "description": "Tras un descanso, una arenga da PG temporales a vos y a aliados cercanos. (+1 a SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "wisdom": 13, "charisma": 13 } }
   },
@@ -1085,7 +1085,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Líder Inspirador", "description": "Tras un descanso, una arenga da PG temporales a ti y a aliados cercanos. (+1 a SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Líder Inspirador", "description": "Tras un descanso, una arenga da PG temporales a vos y a aliados cercanos. (+1 a SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "wisdom": 13, "charisma": 13 } }
   },
@@ -1250,7 +1250,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
-      { "type": "passiveTrait", "name": "Maestro en Armaduras Medias", "description": "Con armadura media no tienes desventaja en Sigilo y sumas hasta +3 de DES a la CA. (+1 a FUE o DES)" }
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Medias", "description": "Con armadura media no tenés desventaja en Sigilo y sumás hasta +3 de DES a la CA. (+1 a FUE o DES)" }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "medium" }
   },
@@ -1263,7 +1263,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
-      { "type": "passiveTrait", "name": "Maestro en Armaduras Medias", "description": "Con armadura media no tienes desventaja en Sigilo y sumas hasta +3 de DES a la CA. (+1 a FUE o DES)" }
+      { "type": "passiveTrait", "name": "Maestro en Armaduras Medias", "description": "Con armadura media no tenés desventaja en Sigilo y sumás hasta +3 de DES a la CA. (+1 a FUE o DES)" }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "medium" }
   },
@@ -1304,7 +1304,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
-      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)" }
+      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; podés desviar ataques hacia vos y proteger a tu montura. (+1 a FUE, DES o SAB)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1317,7 +1317,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
-      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)" }
+      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; podés desviar ataques hacia vos y proteger a tu montura. (+1 a FUE, DES o SAB)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1330,7 +1330,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; puedes desviar ataques hacia ti y proteger a tu montura. (+1 a FUE, DES o SAB)" }
+      { "type": "passiveTrait", "name": "Combatiente Montado", "description": "Ventaja al atacar a criaturas menores que tu montura; podés desviar ataques hacia vos y proteger a tu montura. (+1 a FUE, DES o SAB)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1377,7 +1377,7 @@
       {
         "type": "passiveTrait",
         "name": "Perforador",
-        "description": "Una vez por turno puedes volver a tirar un dado de daño perforante; en un crítico perforante sumas un dado extra."
+        "description": "Una vez por turno podés volver a tirar un dado de daño perforante; en un crítico perforante sumás un dado extra."
       }
     ],
     "prerequisite": {
@@ -1399,7 +1399,7 @@
       {
         "type": "passiveTrait",
         "name": "Perforador",
-        "description": "Una vez por turno puedes volver a tirar un dado de daño perforante; en un crítico perforante sumas un dado extra."
+        "description": "Una vez por turno podés volver a tirar un dado de daño perforante; en un crítico perforante sumás un dado extra."
       }
     ],
     "prerequisite": {
@@ -1443,7 +1443,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
-      { "type": "passiveTrait", "name": "Maestro en Armas de Asta", "description": "Con un arma de asta ganas un ataque adicional con el extremo romo y provocas ataques de oportunidad cuando los enemigos entran en tu alcance." }
+      { "type": "passiveTrait", "name": "Maestro en Armas de Asta", "description": "Con un arma de asta ganás un ataque adicional con el extremo romo y provocás ataques de oportunidad cuando los enemigos entran en tu alcance." }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
@@ -1456,7 +1456,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
-      { "type": "passiveTrait", "name": "Maestro en Armas de Asta", "description": "Con un arma de asta ganas un ataque adicional con el extremo romo y provocas ataques de oportunidad cuando los enemigos entran en tu alcance." }
+      { "type": "passiveTrait", "name": "Maestro en Armas de Asta", "description": "Con un arma de asta ganás un ataque adicional con el extremo romo y provocás ataques de oportunidad cuando los enemigos entran en tu alcance." }
     ],
     "prerequisite": { "minLevel": 4, "anyAbilityScores": { "strength": 13, "dexterity": 13 } }
   },
@@ -1480,7 +1480,7 @@
       {
         "type": "passiveTrait",
         "name": "Resiliente (Constitución)",
-        "description": "Ganas competencia en salvaciones de Constitución (clave para mantener concentración)."
+        "description": "Ganás competencia en salvaciones de Constitución (clave para mantener concentración)."
       }
     ],
     "prerequisite": {
@@ -1507,7 +1507,7 @@
       {
         "type": "passiveTrait",
         "name": "Resiliente (Destreza)",
-        "description": "Ganas competencia en salvaciones de Destreza."
+        "description": "Ganás competencia en salvaciones de Destreza."
       }
     ],
     "prerequisite": {
@@ -1597,7 +1597,7 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por la Sombra",
-        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
+        "description": "Aprendés Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -1619,7 +1619,7 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por la Sombra",
-        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
+        "description": "Aprendés Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -1641,7 +1641,7 @@
       {
         "type": "passiveTrait",
         "name": "Tocado por la Sombra",
-        "description": "Aprendes Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
+        "description": "Aprendés Invisibilidad y un conjuro de ilusión o nigromancia de nivel 1, lanzables gratis una vez por descanso largo."
       }
     ],
     "prerequisite": {
@@ -1680,7 +1680,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
-      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganás competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1693,7 +1693,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
-      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganás competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1706,7 +1706,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "constitution", "amount": 1 },
-      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganás competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1719,7 +1719,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganás competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1732,7 +1732,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganás competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1745,7 +1745,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganas competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
+      { "type": "passiveTrait", "name": "Experto en Habilidades", "description": "Ganás competencia en una habilidad y competencia experta (doble bono) en otra en la que ya seas competente." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1789,7 +1789,7 @@
       {
         "type": "passiveTrait",
         "name": "Tajador",
-        "description": "Al dañar con cortante reduces la velocidad del objetivo; en un crítico cortante le impones desventaja a sus ataques."
+        "description": "Al dañar con cortante reducís la velocidad del objetivo; en un crítico cortante le imponés desventaja a sus ataques."
       }
     ],
     "prerequisite": {
@@ -1811,7 +1811,7 @@
       {
         "type": "passiveTrait",
         "name": "Tajador",
-        "description": "Al dañar con cortante reduces la velocidad del objetivo; en un crítico cortante le impones desventaja a sus ataques."
+        "description": "Al dañar con cortante reducís la velocidad del objetivo; en un crítico cortante le imponés desventaja a sus ataques."
       }
     ],
     "prerequisite": {
@@ -1894,7 +1894,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendés Mano de Mago (invisible) y podés empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1907,7 +1907,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendés Mano de Mago (invisible) y podés empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1920,7 +1920,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendes Mano de Mago (invisible) y puedes empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Telequinético", "description": "Aprendés Mano de Mago (invisible) y podés empujar a criaturas 5 pies con la mente como acción adicional. (+1 a INT, SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1933,7 +1933,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Telepático", "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Telepático", "description": "Ganás telepatía a corta distancia y podés lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1946,7 +1946,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Telepático", "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Telepático", "description": "Ganás telepatía a corta distancia y podés lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1959,7 +1959,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Telepático", "description": "Ganas telepatía a corta distancia y puedes lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
+      { "type": "passiveTrait", "name": "Telepático", "description": "Ganás telepatía a corta distancia y podés lanzar Detectar Pensamientos sin gastar espacios. (+1 a INT, SAB o CAR)" }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -1972,7 +1972,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "intelligence", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad." }
+      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzás conjuros con las manos ocupadas y podés lanzar uno como ataque de oportunidad." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -1985,7 +1985,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "wisdom", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad." }
+      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzás conjuros con las manos ocupadas y podés lanzar uno como ataque de oportunidad." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -1998,7 +1998,7 @@
     "repeatable": false,
     "effects": [
       { "type": "abilityScoreBonus", "ability": "charisma", "amount": 1 },
-      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzas conjuros con las manos ocupadas y puedes lanzar uno como ataque de oportunidad." }
+      { "type": "passiveTrait", "name": "Lanzador en Combate", "description": "Ventaja en salvaciones de concentración; lanzás conjuros con las manos ocupadas y podés lanzar uno como ataque de oportunidad." }
     ],
     "prerequisite": { "minLevel": 4, "requiredProficiency": "spellcasting" }
   },
@@ -2057,7 +2057,7 @@
     "effects": [
       { "type": "abilityScoreBonus", "ability": "strength", "amount": 1 },
       { "type": "passiveTrait", "name": "Mejora de Característica", "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20." },
-      { "type": "passiveTrait", "name": "Propiedad de Maestría", "description": "Puedes usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Puedes cambiar el tipo de arma tras un descanso largo." }
+      { "type": "passiveTrait", "name": "Propiedad de Maestría", "description": "Podés usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Podés cambiar el tipo de arma tras un descanso largo." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -2071,7 +2071,7 @@
     "effects": [
       { "type": "abilityScoreBonus", "ability": "dexterity", "amount": 1 },
       { "type": "passiveTrait", "name": "Mejora de Característica", "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 20." },
-      { "type": "passiveTrait", "name": "Propiedad de Maestría", "description": "Puedes usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Puedes cambiar el tipo de arma tras un descanso largo." }
+      { "type": "passiveTrait", "name": "Propiedad de Maestría", "description": "Podés usar la propiedad de maestría de un tipo de arma sencilla o marcial con la que seas competente. Podés cambiar el tipo de arma tras un descanso largo." }
     ],
     "prerequisite": { "minLevel": 4 }
   },
@@ -2085,7 +2085,7 @@
       {
         "type": "passiveTrait",
         "name": "Lucha a Ciegas",
-        "description": "Tienes visión ciega hasta 10 pies."
+        "description": "Tenés visión ciega hasta 10 pies."
       }
     ],
     "prerequisite": {
@@ -2102,7 +2102,7 @@
       {
         "type": "passiveTrait",
         "name": "Intercepción",
-        "description": "Como reacción, cuando una criatura visible acierta a otra criatura a 5 pies de ti, reduces el daño en 1d10 más tu bonificador por competencia. Debes llevar un escudo o empuñar un arma sencilla o marcial."
+        "description": "Como reacción, cuando una criatura visible acierta a otra criatura a 5 pies de vos, reducís el daño en 1d10 más tu bonificador por competencia. Debés llevar un escudo o empuñar un arma sencilla o marcial."
       }
     ],
     "prerequisite": {
@@ -2119,7 +2119,7 @@
       {
         "type": "passiveTrait",
         "name": "Protección",
-        "description": "Con un escudo, puedes usar una reacción para imponer desventaja a un ataque contra otra criatura a 5 pies de ti y a los demás ataques contra ella hasta tu siguiente turno mientras permanezca a tu lado."
+        "description": "Con un escudo, podés usar una reacción para imponer desventaja a un ataque contra otra criatura a 5 pies de vos y a los demás ataques contra ella hasta tu siguiente turno mientras permanezca a tu lado."
       }
     ],
     "prerequisite": {
@@ -2136,7 +2136,7 @@
       {
         "type": "passiveTrait",
         "name": "Combate con Armas Arrojadizas",
-        "description": "Cuando aciertas con un ataque a distancia usando un arma arrojadiza, sumas +2 a la tirada de daño."
+        "description": "Cuando acertás con un ataque a distancia usando un arma arrojadiza, sumás +2 a la tirada de daño."
       }
     ],
     "prerequisite": {
@@ -2156,7 +2156,7 @@
       {
         "type": "passiveTrait",
         "name": "Combate con Dos Armas",
-        "description": "Cuando haces el ataque extra de la propiedad Ligera, puedes sumar tu modificador por característica al daño si no lo sumabas ya."
+        "description": "Cuando hacés el ataque extra de la propiedad Ligera, podés sumar tu modificador por característica al daño si no lo sumabas ya."
       }
     ],
     "prerequisite": {
@@ -2173,7 +2173,7 @@
       {
         "type": "passiveTrait",
         "name": "Combate sin Armas",
-        "description": "Tus ataques sin armas causan 1d6 más Fuerza, o 1d8 si no empuñas armas ni llevas escudo. Al inicio de tu turno puedes causar 1d4 de daño contundente a una criatura agarrada por ti."
+        "description": "Tus ataques sin armas causan 1d6 más Fuerza, o 1d8 si no empuñás armas ni llevás escudo. Al inicio de tu turno podés causar 1d4 de daño contundente a una criatura agarrada por vos."
       }
     ],
     "prerequisite": {
@@ -2322,7 +2322,7 @@
       {
         "type": "passiveTrait",
         "name": "Salud Fortalecida",
-        "description": "Tus puntos de golpe máximos aumentan en 40. Una vez por turno, cuando recuperas puntos de golpe, recuperas además tu modificador por Constitución."
+        "description": "Tus puntos de golpe máximos aumentan en 40. Una vez por turno, cuando recuperás puntos de golpe, recuperás además tu modificador por Constitución."
       }
     ],
     "prerequisite": {
@@ -2359,7 +2359,7 @@
       {
         "type": "passiveTrait",
         "name": "Don de la Habilidad",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Ganas competencia en todas las habilidades y pericia en una habilidad en la que no la tuvieras."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Ganás competencia en todas las habilidades y pericia en una habilidad en la que no la tuvieras."
       }
     ],
     "prerequisite": {
@@ -2377,7 +2377,7 @@
       {
         "type": "passiveTrait",
         "name": "Precisión sin Igual",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Cuando fallas una tirada de ataque, puedes convertirla en un impacto; vuelves a poder hacerlo al inicio de tu siguiente turno."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Cuando fallás una tirada de ataque, podés convertirla en un impacto; volvés a poder hacerlo al inicio de tu siguiente turno."
       }
     ],
     "prerequisite": {
@@ -2395,7 +2395,7 @@
       {
         "type": "passiveTrait",
         "name": "Don de la Recuperación",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Una vez por descanso largo, al caer a 0 PG quedas con 1 y recuperas la mitad de tus PG máximos. También tienes una reserva diaria de 10d10 que puedes gastar como acción adicional para curarte."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Una vez por descanso largo, al caer a 0 PG quedás con 1 y recuperás la mitad de tus PG máximos. También tenés una reserva diaria de 10d10 que podés gastar como acción adicional para curarte."
       }
     ],
     "prerequisite": {
@@ -2413,7 +2413,7 @@
       {
         "type": "passiveTrait",
         "name": "Resistencias a Energías",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Elige dos resistencias entre ácido, frío, fuego, necrótico, psíquico, radiante, relámpago, trueno y veneno; puedes cambiarlas tras un descanso largo. Cuando recibes uno de esos daños, puedes redirigir energía con tu reacción."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Elegí dos resistencias entre ácido, frío, fuego, necrótico, psíquico, radiante, relámpago, trueno y veneno; podés cambiarlas tras un descanso largo. Cuando recibís uno de esos daños, podés redirigir energía con tu reacción."
       }
     ],
     "prerequisite": {
@@ -2435,7 +2435,7 @@
       {
         "type": "passiveTrait",
         "name": "Don de la Velocidad",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tu velocidad aumenta en 30 pies y, como acción adicional, puedes Destrabarte y finalizar el estado Agarrado sobre ti."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tu velocidad aumenta en 30 pies y, como acción adicional, podés Destrabarte y finalizar el estado Agarrado sobre vos."
       }
     ],
     "prerequisite": {
@@ -2453,7 +2453,7 @@
       {
         "type": "passiveTrait",
         "name": "Visión Verdadera",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tienes visión verdadera hasta 60 pies."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tenés visión verdadera hasta 60 pies."
       }
     ],
     "prerequisite": {
@@ -2471,7 +2471,7 @@
       {
         "type": "passiveTrait",
         "name": "Ataque Imparable",
-        "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 30. Tu daño contundente, cortante y perforante ignora resistencia. Al sacar 20 en una tirada de ataque, infliges daño adicional igual a la puntuación aumentada."
+        "description": "Aumenta Fuerza o Destreza en 1, hasta un máximo de 30. Tu daño contundente, cortante y perforante ignora resistencia. Al sacar 20 en una tirada de ataque, infligís daño adicional igual a la puntuación aumentada."
       }
     ],
     "prerequisite": {
@@ -2489,7 +2489,7 @@
       {
         "type": "passiveTrait",
         "name": "Mejorar el Destino",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tras el éxito o fallo de una prueba con d20 de una criatura a 60 pies, puedes sumar o restar 2d4. Recuperas el uso al tirar iniciativa o finalizar un descanso corto o largo."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Tras el éxito o fallo de una prueba con d20 de una criatura a 60 pies, podés sumar o restar 2d4. Recuperás el uso al tirar iniciativa o finalizar un descanso corto o largo."
       }
     ],
     "prerequisite": {
@@ -2507,7 +2507,7 @@
       {
         "type": "passiveTrait",
         "name": "Espíritu de la Noche",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. En luz tenue u oscuridad, puedes volverte Invisible como acción adicional hasta que actúes y tienes resistencia a todo daño salvo psíquico y radiante."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. En luz tenue u oscuridad, podés volverte Invisible como acción adicional hasta que actúes y tenés resistencia a todo daño salvo psíquico y radiante."
       }
     ],
     "prerequisite": {
@@ -2525,7 +2525,7 @@
       {
         "type": "passiveTrait",
         "name": "Lanzamiento Gratuito",
-        "description": "Aumenta Inteligencia, Sabiduría o Carisma en 1, hasta un máximo de 30. Al lanzar un conjuro con un espacio de nivel 1 a 4, tira 1d4; si coincide con el nivel del espacio, no lo gastas."
+        "description": "Aumenta Inteligencia, Sabiduría o Carisma en 1, hasta un máximo de 30. Al lanzar un conjuro con un espacio de nivel 1 a 4, tirá 1d4; si coincide con el nivel del espacio, no lo gastás."
       }
     ],
     "prerequisite": {
@@ -2544,7 +2544,7 @@
       {
         "type": "passiveTrait",
         "name": "Pasos Desplazadores",
-        "description": "Aumenta una característica en 1, hasta un máximo de 30. Inmediatamente después de realizar la acción de Atacar o Magia, puedes teletransportarte hasta 30 pies a un espacio desocupado que veas."
+        "description": "Aumenta una característica en 1, hasta un máximo de 30. Inmediatamente después de realizar la acción de Atacar o Magia, podés teletransportarte hasta 30 pies a un espacio desocupado que veas."
       }
     ],
     "prerequisite": {

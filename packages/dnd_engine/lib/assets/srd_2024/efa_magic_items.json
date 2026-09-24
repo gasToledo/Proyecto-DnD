@@ -6,7 +6,7 @@
     "category": "magic",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "description": "Mientras llevas estas botas, como acción adicional puedes teletransportarte hasta 15 pies a un espacio desocupado que puedas ver y que hayas ocupado durante el turno actual.",
+    "description": "Mientras llevás estas botas, como acción adicional podés teletransportarte hasta 15 pies a un espacio desocupado que puedas ver y que hayas ocupado durante el turno actual.",
     "costCp": 40000
   },
   {
@@ -18,7 +18,7 @@
     "requiresAttunement": true,
     "magicBonus": 1,
     "baseItemKind": "weapon",
-    "description": "El arma concede +1 a sus tiradas de ataque y daño. Puede emitir luz brillante a 30 pies y tenue otros 30. Tiene 4 cargas: como reacción tras recibir un impacto, puedes gastar 1 para forzar una salvación de Constitución CD 15; si falla, el atacante queda cegado hasta el final de su siguiente turno. Recupera 1d4 cargas al amanecer.",
+    "description": "El arma concede +1 a sus tiradas de ataque y daño. Puede emitir luz brillante a 30 pies y tenue otros 30. Tiene 4 cargas: como reacción tras recibir un impacto, podés gastar 1 para forzar una salvación de Constitución CD 15; si falla, el atacante queda cegado hasta el final de su siguiente turno. Recupera 1d4 cargas al amanecer.",
     "costCp": 400000,
     "maxCharges": 4,
     "rechargeAmount": "1d4"
@@ -29,7 +29,7 @@
     "source": "foa_2025",
     "category": "magic",
     "rarity": "uncommon",
-    "description": "Mientras llevas este yelmo, tienes ventaja en las tiradas de iniciativa.",
+    "description": "Mientras llevás este yelmo, tenés ventaja en las tiradas de iniciativa.",
     "costCp": 40000
   },
   {
@@ -39,7 +39,7 @@
     "category": "magic",
     "rarity": "common",
     "requiresAttunement": true,
-    "description": "Como acción de magia, la herramienta se transforma en las herramientas de artesano que elijas. Tienes competencia con la forma adoptada mientras la utilizas.",
+    "description": "Como acción de magia, la herramienta se transforma en las herramientas de artesano que elijas. Tenés competencia con la forma adoptada mientras la utilizás.",
     "costCp": 10000
   },
   {
@@ -49,7 +49,7 @@
     "category": "magic",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "description": "Tiene 4 cargas. Cuando fallas una salvación de Constitución para mantener concentración, puedes usar tu reacción y gastar 1 carga para tener éxito en su lugar. Recupera 1d4 cargas al amanecer.",
+    "description": "Tiene 4 cargas. Cuando fallás una salvación de Constitución para mantener concentración, podés usar tu reacción y gastar 1 carga para tener éxito en su lugar. Recupera 1d4 cargas al amanecer.",
     "costCp": 40000,
     "maxCharges": 4,
     "rechargeAmount": "1d4"
@@ -88,7 +88,7 @@
     "eligibleBaseItemIds": [
       "shield"
     ],
-    "description": "Concede +1 a la CA mientras lo empuñas. Tiene 4 cargas: cuando una criatura Grande o menor a 5 pies te impacta con un ataque cuerpo a cuerpo, puedes gastar 1 carga como reacción para empujarla hasta 15 pies. Recupera 1d4 cargas al amanecer.",
+    "description": "Concede +1 a la CA mientras lo empuñás. Tiene 4 cargas: cuando una criatura Grande o menor a 5 pies te impacta con un ataque cuerpo a cuerpo, podés gastar 1 carga como reacción para empujarla hasta 15 pies. Recupera 1d4 cargas al amanecer.",
     "costCp": 40000,
     "maxCharges": 4,
     "rechargeAmount": "1d4"
@@ -120,7 +120,7 @@
     "category": "magic",
     "rarity": "uncommon",
     "requiresAttunement": true,
-    "description": "Requiere sintonización por un lanzador de conjuros. Como acción adicional recuperas un espacio de conjuro gastado de nivel 3 o menor. No puede volver a usarse hasta el siguiente amanecer.",
+    "description": "Requiere sintonización por un lanzador de conjuros. Como acción adicional recuperás un espacio de conjuro gastado de nivel 3 o menor. No puede volver a usarse hasta el siguiente amanecer.",
     "costCp": 40000
   }
 ]

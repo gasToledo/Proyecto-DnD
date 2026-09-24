@@ -621,6 +621,28 @@ void main() {
     }
   });
 
+  test('la prosa del catálogo está en voseo', () {
+    // El SRD en español está en tuteo; `tool/apply_voseo.dart` lo pasa a vos
+    // después de generar. Solo formas que no pueden ser otra cosa: «ganas» o
+    // «lanzas» también son sustantivos. El `\n` de antes no cuenta como letra:
+    // es un salto de línea escrito en el JSON.
+    final tuteo = RegExp(
+      r'(?<!(?<!\\)[\p{L}-])(puedes|tienes|debes|obtienes|recibes|sabes|eres|'
+      r'conoces|aprendes|tú|ti|podéis|tenéis|estéis)(?![\p{L}-])',
+      caseSensitive: false,
+      unicode: true,
+    );
+    for (final archivo in Directory('lib/assets/srd_2024')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.json'))) {
+      final hallados = [
+        for (final m in tuteo.allMatches(archivo.readAsStringSync())) m[0],
+      ];
+      expect(hallados, isEmpty, reason: archivo.path);
+    }
+  });
+
   test('un conjuro con concentración no puede ser instantáneo', () {
     for (final s in repo.spells.values.where((s) => s.concentration)) {
       expect(s.duration, isNot('Instantánea'),

@@ -113,6 +113,19 @@ String _centimetros(String cm) {
   return '$inches ${inches == 1 ? 'pulgada' : 'pulgadas'}';
 }
 
+/// El peso que el propio texto declara («La bolsa pesa 5 libras»), en libras.
+/// El SRD no le da peso a los demás objetos mágicos, y sin fuente quedan en 0
+/// en vez de inventarles uno. Se lee después de convertir a libras.
+double? _weightFromText(String text) {
+  final m = RegExp(
+    r'(?:\b[Pp]esa(?: siempre)?|peso total de|sin pesar nunca más de|'
+    r'[Pp]iedra de) (\d+|media) (libras?|onzas?)',
+  ).firstMatch(text);
+  if (m == null) return null;
+  final amount = m[1] == 'media' ? 0.5 : double.parse(m[1]!);
+  return m[2]!.startsWith('onza') ? amount / 16 : amount;
+}
+
 /// Tablas que el PDF dibuja en la página de otro objeto: en orden de lectura
 /// quedan en medio de un texto ajeno. Van del título a su última fila, y se
 /// mudan al final del objeto que las cita.
@@ -305,6 +318,10 @@ Future<void> main() async {
     if (item['description'] != text) {
       changed++;
       item['description'] = text;
+    }
+    if (_weightFromText(text) case final w?) {
+      // Entero cuando lo es, como el resto del catálogo («5», no «5.0»).
+      item['weight'] = w == w.roundToDouble() ? w.toInt() : w;
     }
   }
   stdout.writeln('$changed de ${items.length} descripciones cambian');

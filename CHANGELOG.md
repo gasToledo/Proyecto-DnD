@@ -186,6 +186,9 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   los pesos a libras y onzas (0,5 kg = 1 libra, 30 g = 1 onza), que es la
   unidad de la barra de carga. Los viajes pasan a millas (1,5 km = 1 milla) y
   los volúmenes a pies cúbicos.
+- Los objetos mágicos cuyo texto dice cuánto pesan suman ese peso a la carga
+  (la Bolsa de contención y el morral, 5 libras; el espejo atrapavidas, 50).
+  Pesaban todos 0; los que el SRD no pesa siguen en 0.
 - Creación de personaje: con escudo ya no se ofrece empuñar a dos manos, y la
   mano secundaria solo aparece con dos armas; las elecciones de objeto dicen
   si son de la clase o del trasfondo; «Coste en puntos» avisa los puntos sin

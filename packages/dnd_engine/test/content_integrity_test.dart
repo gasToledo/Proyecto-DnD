@@ -627,6 +627,23 @@ void main() {
     }
   });
 
+  test('un objeto mágico pesa lo que dice su texto', () {
+    // Todos pesaban 0: la Bolsa de contención no sumaba a la barra de carga
+    // aunque su descripción dijera cuánto pesa. El peso sale del texto en
+    // `extract_magic_item_text.dart`; acá se cruzan los dos.
+    final casos = {
+      'bolsa-de-contencion': ('pesa 5 libras', 5.0),
+      'espejo-atrapavidas': ('pesa 50 libras', 50.0),
+      'bolsa-de-judias': ('pesa media libra', 0.5),
+      'canica-de-fuerza': ('pesa 1 onza', 1 / 16),
+    };
+    casos.forEach((id, esperado) {
+      final item = repo.item(id)!;
+      expect(item.description, contains(esperado.$1), reason: id);
+      expect(item.weight, esperado.$2, reason: id);
+    });
+  });
+
   test('ninguna palabra quedó partida por el renglón del PDF', () {
     // «pue-\ndes»: el rastro de leer el PDF renglón por renglón sin unir.
     // `extract_magic_item_text.dart` las une; esto atrapa a un generador que

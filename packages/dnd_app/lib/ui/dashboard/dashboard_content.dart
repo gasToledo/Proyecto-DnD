@@ -25,7 +25,8 @@ extension _DashboardContent on _DashboardScreenState {
                       icon: Icons.shield_outlined,
                       message:
                           'Todavía no hay personajes en esta cuenta.\n'
-                          'Creá el primero, o traé los que ya tenías.',
+                          'Creá el primero, traé los que ya tenías, o '
+                          'mirá cómo es una ficha con uno de ejemplo.',
                       actions: [
                         FilledButton.icon(
                           onPressed: _openWizard,
@@ -36,6 +37,11 @@ extension _DashboardContent on _DashboardScreenState {
                           onPressed: _import,
                           icon: const Icon(Icons.download, size: 20),
                           label: const Text('Importar respaldo'),
+                        ),
+                        TextButton.icon(
+                          onPressed: _tryExample,
+                          icon: const Icon(Icons.visibility_outlined, size: 20),
+                          label: const Text('Probar con uno de ejemplo'),
                         ),
                       ],
                     )

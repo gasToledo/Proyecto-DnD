@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../api/api_models.dart';
 import '../creation/creation_wizard.dart';
 import '../data/characters_controller.dart';
+import '../demo/demo_characters.dart';
 import '../data/homebrew_store.dart';
 import '../data/settings_service.dart';
 import '../data/transfer_service.dart';

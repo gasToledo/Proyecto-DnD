@@ -1,7 +1,9 @@
 import 'package:dnd_engine/dnd_engine.dart';
 
 /// Sagan "The Red" — Humano, Guerrero, Soldado (reglas 2024).
-/// Personaje de referencia usado por las pruebas del cliente.
+/// Personaje de referencia usado por las pruebas del cliente, y el ejemplo que
+/// el dashboard vacío ofrece probar: cambiarlo cambia lo primero que ve alguien
+/// que recién llega, no solo los tests.
 Character demoSagan() => Character(
   id: 'sagan',
   name: 'Sagan "The Red"',

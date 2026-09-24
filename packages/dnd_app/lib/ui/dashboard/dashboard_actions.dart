@@ -13,6 +13,21 @@ extension _DashboardActions on _DashboardScreenState {
     );
   }
 
+  /// Suma a Sagan a la cuenta y abre su ficha. Recorrer una ficha armada
+  /// enseña más que un tour, y sin pasar por los ocho pasos del wizard antes
+  /// de saber qué hay del otro lado.
+  ///
+  /// Es un personaje de verdad, que se guarda y se borra como cualquiera: una
+  /// ficha de muestra que no guardara lo tocado enseñaría a desconfiar de la
+  /// que sí. Solo se ofrece con la cuenta vacía, así que el id fijo no choca
+  /// en la lista; si choca en el servidor, el controlador ya acepta el id
+  /// reasignado.
+  void _tryExample() {
+    final c = demoSagan();
+    controller.add(c);
+    _openSheet(c);
+  }
+
   void _openSheet(Character c) {
     Navigator.of(context).push(
       MaterialPageRoute(

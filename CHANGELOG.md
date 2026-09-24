@@ -83,7 +83,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Nuevo
 
-- Sin cambios.
+- Una cuenta sin personajes ofrece probar con uno de ejemplo: lo suma como
+  personaje propio y abre su ficha, para recorrerla antes de crear el primero.
 
 ### Modificado
 

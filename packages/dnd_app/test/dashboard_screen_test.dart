@@ -9,6 +9,7 @@ import 'package:dnd_app/homebrew/homebrew_screen.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/class_visuals.dart';
 import 'package:dnd_app/ui/dashboard_screen.dart';
+import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -463,6 +464,31 @@ void main() {
     // Un estado vacío sin salida deja al usuario mirando un ícono.
     expect(find.text('Crear personaje'), findsWidgets);
     expect(find.text('Importar respaldo'), findsOneWidget);
+    expect(find.text('Probar con uno de ejemplo'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // El ejemplo es un personaje de verdad: lo que se toca en su ficha se
+  // guarda como en cualquier otra, y queda en la cuenta al volver.
+  testWidgets('el ejemplo abre su ficha y queda guardado en la cuenta', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final server = FakeApiServer();
+    final ctrl = CharactersController(ApiClient(client: server.client));
+    await tester.pumpWidget(harness(ctrl, server));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Probar con uno de ejemplo'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final example = demoSagan();
+    expect(find.byType(SheetScreen), findsOneWidget);
+    expect(find.text(example.name), findsWidgets);
+    expect(server.characters.values.map((c) => c.name), [example.name]);
     expect(tester.takeException(), isNull);
   });
 

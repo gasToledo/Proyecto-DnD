@@ -98,6 +98,35 @@ void main() {
     transport.release();
   });
 
+  // Con la sesión confirmada, homebrew, personajes y ajustes se piden juntos:
+  // en serie sumaban ~240 ms de red en producción. Si uno vuelve a esperar al
+  // otro, los personajes no llegan a pedirse mientras el homebrew no contesta.
+  testWidgets('con sesión, las cargas del arranque salen juntas', (
+    tester,
+  ) async {
+    final server = FakeApiServer();
+    final transport = _BootstrapClient(server, blockedPath: '/api/homebrew');
+    final api = ApiClient(
+      client: transport,
+      requestTimeout: const Duration(seconds: 5),
+    );
+
+    await tester.pumpWidget(
+      DndApp(api: api, contentLoader: () async => ContentRepository()),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(transport.requested, contains('/api/homebrew'));
+    expect(transport.requested, contains('/api/characters'));
+    expect(transport.requested, contains('/api/settings'));
+    expect(find.byType(DashboardScreen), findsNothing);
+
+    transport.release();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(DashboardScreen), findsOneWidget);
+  });
+
   testWidgets('desmontar durante el arranque invalida la respuesta tardía', (
     tester,
   ) async {
@@ -125,6 +154,7 @@ class _BootstrapClient extends http.BaseClient {
   final FakeApiServer server;
   String? blockedPath;
   final _release = Completer<void>();
+  final requested = <String>[];
 
   void release() {
     if (!_release.isCompleted) _release.complete();
@@ -132,6 +162,7 @@ class _BootstrapClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    requested.add(request.url.path);
     if (request.url.path == blockedPath) await _release.future;
     final response = await server.client.send(request);
     return response;

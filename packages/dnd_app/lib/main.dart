@@ -130,32 +130,34 @@ class _BootstrapState extends State<_Bootstrap> {
         return await _never<_AppData>();
       }
 
-      final repo = await (widget.contentLoader ?? loadOfficialContent)();
-      _checkCurrent(generation);
-      // Fusiona el contenido homebrew sobre el oficial (mismo esquema).
+      // Las cinco cargas dependen solo de tener sesión, no una de otra, así que
+      // se piden juntas: en serie, las cuatro cortas sumaban ~240 ms de red
+      // después del contenido, que es la más lenta. Los personajes no
+      // necesitan el SRD para cargarse (se compilan recién en el dashboard) y
+      // el homebrew se fusiona al final. `Future.wait` y no `.wait` sobre un
+      // record: el error original es el que muestra «Ver detalles», y ninguno
+      // queda sin atender mientras se espera a otro.
       final homebrew = HomebrewStore(_api);
-      await homebrew.load();
-      _checkCurrent(generation);
-      repo.addAll(homebrew.toRepository());
-
       // Una cuenta nueva arranca con la biblioteca vacía: sembrar un personaje
       // de ejemplo le deja al jugador algo ajeno que borrar antes de empezar.
       // `demoSagan()` sigue existiendo como fixture de las pruebas.
       final controller = CharactersController(_api);
-      await controller.load();
+      final content = (widget.contentLoader ?? loadOfficialContent)();
+      final settingsLoad = _loadSettings();
+      final versionLoad = currentAppVersion();
+      await Future.wait([
+        content,
+        homebrew.load(),
+        controller.load(),
+        settingsLoad,
+        versionLoad,
+      ]);
       _checkCurrent(generation);
 
-      // El favorito y el orden del roster viven acá (ver `AppSettings`), así que
-      // hacen falta antes de dibujar el dashboard. Un fallo al leerlos no puede
-      // dejar sin personajes a nadie: se cae a los valores por defecto.
-      AppSettings settings;
-      try {
-        settings = await SettingsService(_api).load();
-        _checkCurrent(generation);
-      } catch (_) {
-        _checkCurrent(generation);
-        settings = AppSettings();
-      }
+      // Fusiona el contenido homebrew sobre el oficial (mismo esquema).
+      final repo = await content;
+      repo.addAll(homebrew.toRepository());
+      final settings = await settingsLoad;
       final settingsController = SettingsController(_api, settings);
 
       // El tema se aplica acá, no en el dashboard: el control aparece también en
@@ -181,8 +183,7 @@ class _BootstrapState extends State<_Bootstrap> {
         }
       });
 
-      final version = await currentAppVersion();
-      _checkCurrent(generation);
+      final version = await versionLoad;
       return _AppData(
         repo,
         controller,
@@ -197,6 +198,18 @@ class _BootstrapState extends State<_Bootstrap> {
     } catch (_) {
       if (!_isCurrent(generation)) return _never<_AppData>();
       rethrow;
+    }
+  }
+
+  /// El favorito y el orden del roster viven acá (ver `AppSettings`), así que
+  /// hacen falta antes de dibujar el dashboard. Un fallo al leerlos no puede
+  /// dejar sin personajes a nadie: se cae a los valores por defecto, y por eso
+  /// el error se atiende acá adentro y no tumba a las otras cargas.
+  Future<AppSettings> _loadSettings() async {
+    try {
+      return await SettingsService(_api).load();
+    } catch (_) {
+      return AppSettings();
     }
   }
 

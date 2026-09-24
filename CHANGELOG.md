@@ -104,6 +104,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   vista.
 - El contenido del SRD se descarga en paralelo al abrir la aplicación, y no
   archivo por archivo: la biblioteca aparece medio segundo antes.
+- Al abrir la aplicación, el homebrew, los personajes, los ajustes y la
+  versión se piden a la vez que el contenido y no uno detrás del otro.
 
 ### Eliminado
 

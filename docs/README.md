@@ -8,8 +8,6 @@ trabajar en el repositorio. Los detalles viven acá, una sola vez.
 
 - [Modo DM](arquitectura/modo-dm.md): vínculo entre cuentas, autorización,
   campañas, capítulos, combate y PNJ.
-- [Multiclase](arquitectura/multiclase.md): propuesta de diseño, sin
-  implementar; modelo, migración y fases.
 - [dnd_engine](../packages/dnd_engine/README.md): motor de reglas, modelos y
   catálogo dirigido por datos.
 

@@ -151,6 +151,9 @@ sealed class Effect {
               .toList(),
           spellcastingFocus: json['spellcastingFocus'] as bool? ?? false,
           extraAttacks: json['extraAttacks'] as int? ?? 0,
+          attackBonus: json['attackBonus'] as int? ?? 0,
+          damageBonus: json['damageBonus'] as int? ?? 0,
+          aloneInOneHand: json['aloneInOneHand'] as bool? ?? false,
         ),
       'featureChoice' => FeatureChoiceEffect(
           groupId: json['groupId'] as String,
@@ -1140,6 +1143,14 @@ class WeaponRuleEffect extends Effect {
   /// acumulan entre fuentes: al resolver gana el mayor.
   final int extraAttacks;
 
+  /// Bonos fijos al ataque y al daño: Tiro con Arco, Duelo.
+  final int attackBonus;
+  final int damageBonus;
+
+  /// Solo cuando el arma se empuña en una mano y no hay otra arma equipada,
+  /// que es la condición de Duelo. El escudo no es un arma y no cuenta.
+  final bool aloneInOneHand;
+
   const WeaponRuleEffect({
     this.targetGroupId,
     this.filter = const WeaponFilter(),
@@ -1148,6 +1159,9 @@ class WeaponRuleEffect extends Effect {
     this.damageTypeOptions = const [],
     this.spellcastingFocus = false,
     this.extraAttacks = 0,
+    this.attackBonus = 0,
+    this.damageBonus = 0,
+    this.aloneInOneHand = false,
   });
 
   @override
@@ -1162,6 +1176,9 @@ class WeaponRuleEffect extends Effect {
           'damageTypeOptions': damageTypeOptions,
         if (spellcastingFocus) 'spellcastingFocus': true,
         if (extraAttacks != 0) 'extraAttacks': extraAttacks,
+        if (attackBonus != 0) 'attackBonus': attackBonus,
+        if (damageBonus != 0) 'damageBonus': damageBonus,
+        if (aloneInOneHand) 'aloneInOneHand': true,
       };
 }
 

@@ -893,30 +893,18 @@ extension _LevelUpSections on _LevelUpScreenState {
           repo: widget.repo,
           spellcasting: sc,
           classId: classId,
+          // La misma regla que la ficha (ver `Character.withClassSpells`),
+          // sobre la ficha tal como va quedando en esta subida.
           onSave: (cantrips, spells) => _updateState(() {
-            if (classId == null) {
-              _newCantrips = cantrips;
-              _newSpells = spells;
-              return;
-            }
-            _newClassCantrips = {
-              for (final entry in widget.character.classCantripIds.entries)
-                entry.key: List<String>.of(entry.value),
-              for (final entry
-                  in _newClassCantrips?.entries ??
-                      const <MapEntry<String, List<String>>>[])
-                entry.key: List<String>.of(entry.value),
-              classId: cantrips,
-            };
-            _newClassSpells = {
-              for (final entry in widget.character.classSpellIds.entries)
-                entry.key: List<String>.of(entry.value),
-              for (final entry
-                  in _newClassSpells?.entries ??
-                      const <MapEntry<String, List<String>>>[])
-                entry.key: List<String>.of(entry.value),
-              classId: spells,
-            };
+            final updated = _buildUpdated().withClassSpells(
+              classId ?? widget.character.classId,
+              cantrips: cantrips,
+              spells: spells,
+            );
+            _newCantrips = updated.cantripIds;
+            _newSpells = updated.spellIds;
+            _newClassCantrips = updated.classCantripIds;
+            _newClassSpells = updated.classSpellIds;
           }),
         ),
       ),

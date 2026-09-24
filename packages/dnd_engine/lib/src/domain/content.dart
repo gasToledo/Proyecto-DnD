@@ -610,8 +610,8 @@ class FeatPrerequisite {
 
   /// Clase que hay que tener para poder elegir esta opción. Existe por los dos
   /// estilos de combate que en XPHB no son dotes abiertas sino una alternativa
-  /// concreta de una clase: Blessed Warrior es solo del Paladín y Druidic
-  /// Warrior solo del Explorador. Es singular a propósito: no hay ninguna
+  /// concreta de una clase: Guerrero Bendito es solo del Paladín y Guerrero
+  /// Druídico solo del Explorador. Es singular a propósito: no hay ninguna
   /// opción 2024 elegible por dos clases y no por las demás.
   final String? requiredClassId;
 

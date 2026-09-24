@@ -128,6 +128,32 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 - Sin cambios.
 
+## [0.13.1+1] - 2026-09-24
+
+### Nuevo
+
+- Sin cambios.
+
+### Modificado
+
+- Los estilos de combate Duelo y Tiro con Arco suman en la ficha: +2 al daño
+  con un arma cuerpo a cuerpo a una mano y sin otra arma, y +2 al ataque con
+  armas a distancia. Antes eran solo texto.
+- Al subir de nivel, el editor de conjuros muestra los preparados en la
+  creación (abría en «0 de N»), y cambiarlos desde la ficha o la subida
+  reemplaza de verdad los anteriores en vez de sumarse a ellos.
+- El editor de conjuros nombra la clase («Paladín») y no su identificador.
+- Los estilos «Guerrero Bendito» y «Guerrero Druídico» aparecían en inglés.
+- Creación de personaje: el pie de faltantes ya no deja un punto antes de
+  «(y N cosas más)».
+- `dnd_engine`: `WeaponRuleEffect` admite bonos fijos al ataque y al daño con
+  la condición de empuñar el arma sola en una mano, y `Character` resuelve los
+  conjuros por clase con `spellIdsFor`, `cantripIdsFor` y `withClassSpells`.
+
+### Eliminado
+
+- Sin cambios.
+
 ## [Unreleased]
 
 ### Nuevo
@@ -136,8 +162,7 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Modificado
 
-- Creación de personaje: el pie de faltantes ya no deja un punto antes de
-  «(y N cosas más)».
+- Sin cambios.
 
 ### Eliminado
 

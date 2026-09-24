@@ -508,28 +508,16 @@ extension _SheetSpellsSection on _SheetScreenState {
           repo: repo,
           spellcasting: sc,
           classId: classId,
-          onSave: (cantrips, spells) {
-            if (classId == null) {
-              _replace(_c.copyWith(cantripIds: cantrips, spellIds: spells));
-              return;
-            }
-            final classCantrips = {
-              for (final entry in _c.classCantripIds.entries)
-                entry.key: List<String>.of(entry.value),
-              classId: cantrips,
-            };
-            final classSpells = {
-              for (final entry in _c.classSpellIds.entries)
-                entry.key: List<String>.of(entry.value),
-              classId: spells,
-            };
-            _replace(
-              _c.copyWith(
-                classCantripIds: classCantrips,
-                classSpellIds: classSpells,
-              ),
-            );
-          },
+          // Siempre por clase, también sin [classId]: escribir en las listas
+          // planas de una ficha que ya subió de nivel tocaba una lista que el
+          // compilador sumaba a la del mapa, y lo quitado seguía preparado.
+          onSave: (cantrips, spells) => _replace(
+            _c.withClassSpells(
+              classId ?? _c.classId,
+              cantrips: cantrips,
+              spells: spells,
+            ),
+          ),
         ),
       ),
     );

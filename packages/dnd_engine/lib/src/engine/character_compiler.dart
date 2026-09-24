@@ -615,6 +615,14 @@ class CharacterCompiler {
     final attacksPerAction = 1 + builder.maxExtraAttack;
     final targetChoices = _resolveTargetChoices(c, builder);
 
+    // Cuántas armas se empuñan, por unidad: «ninguna otra arma» de Duelo.
+    var wieldedWeapons = 0;
+    for (final entry in c.inventory.where((e) => e.equipped)) {
+      if (InventoryOps.resolve(entry, repo).weapon != null) {
+        wieldedWeapons += entry.quantity;
+      }
+    }
+
     final attacks = <Attack>[];
     for (final entry in c.inventory.where((e) => e.equipped)) {
       final resolved = InventoryOps.resolve(entry, repo);
@@ -632,6 +640,7 @@ class CharacterCompiler {
           sourceEntryId: entry.entryId,
           name: resolved.name,
           isMagic: resolved.item?.isMagic == true || w.magicBonus != 0,
+          wieldedAlone: wieldedWeapons == 1,
           activeTargetGroups: {
             for (final target in targetChoices.entryIdsByGroup.entries)
               if (target.value.contains(entry.entryId)) target.key,
@@ -1415,7 +1424,8 @@ class CharacterCompiler {
       String? sourceEntryId,
       String? name,
       bool isMagic = false,
-      Set<String> activeTargetGroups = const {}}) {
+      Set<String> activeTargetGroups = const {},
+      bool wieldedAlone = false}) {
     final normalAbilities = <Ability>[];
     if (w.isRanged) {
       normalAbilities.add(Ability.dexterity);
@@ -1431,6 +1441,10 @@ class CharacterCompiler {
       damageTypeOptions: [w.damageType],
       extraAttacks: b.maxExtraAttack,
     );
+    final twoHanded = c.weaponTwoHanded[w.id] ?? false;
+    // Una mano: ni empuñada a dos manos ni un arma que las exige.
+    final aloneInOneHand =
+        wieldedAlone && !twoHanded && !w.properties.contains('two-handed');
     for (final rule in b.weaponRules) {
       final targetGroupId = rule.targetGroupId;
       if (targetGroupId != null &&
@@ -1438,6 +1452,7 @@ class CharacterCompiler {
         continue;
       }
       if (!_weaponMatches(rule.filter, w, isMagic: isMagic)) continue;
+      if (rule.aloneInOneHand && !aloneInOneHand) continue;
       context.apply(rule);
     }
 
@@ -1449,10 +1464,12 @@ class CharacterCompiler {
     final proficient = context.proficient;
     // El bono mágico suma al ataque y al daño. Vive en el arma y no como
     // efecto porque ningún efecto sabe decir "solo esta arma".
-    final attackBonus =
-        abilityMod + (proficient ? profBonus : 0) + w.magicBonus + magicBonus;
+    final attackBonus = abilityMod +
+        (proficient ? profBonus : 0) +
+        w.magicBonus +
+        magicBonus +
+        context.attackBonus;
 
-    final twoHanded = c.weaponTwoHanded[w.id] ?? false;
     final dice = (twoHanded && w.versatileDice != null)
         ? w.versatileDice!
         : w.damageDice;
@@ -1488,7 +1505,8 @@ class CharacterCompiler {
       attackBonus: attackBonus,
       proficient: proficient,
       abilityUsed: abilityUsed,
-      damage: _damageString(dice, damageMod + w.magicBonus + magicBonus),
+      damage: _damageString(
+          dice, damageMod + w.magicBonus + magicBonus + context.damageBonus),
       damageType: w.damageType,
       damageTypeOptions: List.unmodifiable(context.damageTypeOptions),
       spellcastingFocus: context.spellcastingFocus,
@@ -1532,6 +1550,8 @@ class _WeaponAttackContext {
   final List<String> damageTypeOptions;
   bool spellcastingFocus = false;
   int extraAttacks;
+  int attackBonus = 0;
+  int damageBonus = 0;
 
   _WeaponAttackContext({
     required this.proficient,
@@ -1551,6 +1571,8 @@ class _WeaponAttackContext {
     }
     spellcastingFocus = spellcastingFocus || rule.spellcastingFocus;
     extraAttacks = max(extraAttacks, rule.extraAttacks);
+    attackBonus += rule.attackBonus;
+    damageBonus += rule.damageBonus;
   }
 }
 

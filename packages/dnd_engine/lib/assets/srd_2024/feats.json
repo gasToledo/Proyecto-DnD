@@ -495,6 +495,7 @@
     "source": "phb_2024",
     "category": "fighting-style",
     "effects": [
+      {"type": "weaponRule", "filter": {"melee": true}, "damageBonus": 2, "aloneInOneHand": true},
       {
         "type": "passiveTrait",
         "name": "Duelo",
@@ -511,6 +512,7 @@
     "source": "srd_2024",
     "category": "fighting-style",
     "effects": [
+      {"type": "weaponRule", "filter": {"melee": false}, "attackBonus": 2},
       {
         "type": "passiveTrait",
         "name": "Arquería",
@@ -2180,7 +2182,7 @@
   },
   {
     "id": "fs-blessed-warrior",
-    "name": "Blessed Warrior",
+    "name": "Guerrero Bendito",
     "source": "srd_2024",
     "category": "fighting-style",
     "repeatable": false,
@@ -2197,7 +2199,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Blessed Warrior",
+        "name": "Guerrero Bendito",
         "description": "Aprendés dos trucos de la lista de Clérigo a tu elección. Carisma es tu característica de lanzamiento para ellos. Cada vez que subas un nivel de Paladín podés sustituir uno de esos trucos por otro truco de Clérigo. En lugar de una dote de Estilo de Combate, el Paladín puede tomar esta opción."
       }
     ],
@@ -2208,7 +2210,7 @@
   },
   {
     "id": "fs-druidic-warrior",
-    "name": "Druidic Warrior",
+    "name": "Guerrero Druídico",
     "source": "srd_2024",
     "category": "fighting-style",
     "repeatable": false,
@@ -2225,7 +2227,7 @@
       },
       {
         "type": "passiveTrait",
-        "name": "Druidic Warrior",
+        "name": "Guerrero Druídico",
         "description": "Aprendés dos trucos de la lista de Druida a tu elección. Sabiduría es tu característica de lanzamiento para ellos. Cada vez que subas un nivel de Explorador podés sustituir uno de esos trucos por otro truco de Druida. En lugar de una dote de Estilo de Combate, el Explorador puede tomar esta opción."
       }
     ],

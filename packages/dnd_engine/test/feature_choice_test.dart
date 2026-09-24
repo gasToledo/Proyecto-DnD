@@ -526,12 +526,12 @@ void main() {
         repo,
       ).compile(guerrero()).featureChoiceSlots.single;
 
-      // 10 dotes del capítulo 5 + Blessed Warrior y Druidic Warrior, que son
+      // 10 dotes del capítulo 5 + Guerrero Bendito y Guerrero Druídico, que son
       // de una sola clase y por eso el Guerrero no las ve.
       expect(repo.featsByCategory(slot.featCategory), hasLength(12));
     });
 
-    test('el Guerrero no ve Blessed Warrior ni Druidic Warrior', () {
+    test('el Guerrero no ve Guerrero Bendito ni Guerrero Druídico', () {
       final fighter = guerrero();
       final sheet = CharacterCompiler(repo).compile(fighter);
       final validator = CharacterValidator(repo);
@@ -583,7 +583,7 @@ void main() {
       }
     });
 
-    test('un Paladín nivel 2 puede tomar los diez estilos y Blessed Warrior',
+    test('un Paladín nivel 2 puede tomar los diez estilos y Guerrero Bendito',
         () {
       final paladin = Character(
         id: 'paladin',
@@ -607,7 +607,7 @@ void main() {
       }
       expect(elegibles, hasLength(11));
       expect(elegibles, contains('fs-blessed-warrior'));
-      // Druidic Warrior es del Explorador, no del Paladín.
+      // Guerrero Druídico es del Explorador, no del Paladín.
       expect(elegibles, isNot(contains('fs-druidic-warrior')));
     });
 

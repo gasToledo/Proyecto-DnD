@@ -752,12 +752,8 @@ class CharacterValidator {
 
     for (final block in blocks) {
       final sc = block.spellcasting;
-      final cantripIds = c.classCantripIds.isEmpty
-          ? (block.classId == c.classId ? c.cantripIds : const <String>[])
-          : c.classCantripIds[block.classId] ?? const <String>[];
-      final spellIds = c.classSpellIds.isEmpty
-          ? (block.classId == c.classId ? c.spellIds : const <String>[])
-          : c.classSpellIds[block.classId] ?? const <String>[];
+      final cantripIds = c.cantripIdsFor(block.classId);
+      final spellIds = c.spellIdsFor(block.classId);
       final list = repo
           .spellsForList(sc.spellList,
               extraSpellIds: sheet.spellListAdditionIds)

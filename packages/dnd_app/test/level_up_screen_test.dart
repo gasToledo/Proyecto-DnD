@@ -1584,4 +1584,51 @@ void main() {
     expect(find.text('Conjuros a elección'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
+
+  // El asistente guarda los conjuros de una ficha monoclase en las listas
+  // planas, y la subida de nivel abre el editor por clase: leía solo el mapa y
+  // mostraba «0 de 3» con los de la creación todavía preparados. El título,
+  // además, decía el id de la clase.
+  testWidgets('el editor por clase ve los conjuros elegidos al crear', (
+    tester,
+  ) async {
+    final paladin = repo.characterClass('paladin')!;
+    final elegidos = [repo.spell('bless')!, repo.spell('cure-wounds')!];
+    final personaje = Character(
+      id: 't-paladin',
+      name: 'Prueba',
+      raceId: 'human',
+      classId: paladin.id,
+      backgroundId: 'farmer',
+      level: 2,
+      assignedScores: {for (final a in Ability.values) a: 12},
+      hpPerLevel: const [10, 6],
+      spellIds: [for (final s in elegidos) s.id],
+    );
+    final sc = CharacterCompiler(repo).compile(personaje).spellcasting!;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: SpellEditScreen(
+          character: personaje,
+          repo: repo,
+          spellcasting: sc,
+          classId: paladin.id,
+          onSave: (_, _) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Editar conjuros · ${paladin.name}'), findsOneWidget);
+    for (final s in elegidos) {
+      final chip = find.ancestor(
+        of: find.textContaining(s.name),
+        matching: find.byType(FilterChip),
+      );
+      expect(tester.widget<FilterChip>(chip).selected, isTrue, reason: s.name);
+    }
+    expect(tester.takeException(), isNull);
+  });
 }

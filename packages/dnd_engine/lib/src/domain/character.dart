@@ -1568,6 +1568,49 @@ class Character {
     );
   }
 
+  /// Trucos elegidos para [forClass]. Una ficha monoclase hecha por el
+  /// asistente los guarda en [cantripIds] y el mapa por clase queda vacío hasta
+  /// la primera edición por clase: leer solo el mapa mostraba «0 de N» en la
+  /// primera subida de nivel, con los de la creación todavía preparados.
+  List<String> cantripIdsFor(String forClass) => classCantripIds.isEmpty
+      ? (forClass == classId ? cantripIds : const [])
+      : classCantripIds[forClass] ?? const [];
+
+  /// Conjuros elegidos para [forClass], con la misma regla que
+  /// [cantripIdsFor].
+  List<String> spellIdsFor(String forClass) => classSpellIds.isEmpty
+      ? (forClass == classId ? spellIds : const [])
+      : classSpellIds[forClass] ?? const [];
+
+  /// Copia con los trucos y conjuros de [forClass] reemplazados.
+  ///
+  /// Pasa las listas planas al mapa por clase y las vacía. Si quedaran, el
+  /// compilador las sumaría a las nuevas: un conjuro reemplazado en la subida
+  /// de nivel seguiría preparado, y editar después desde la ficha tocaría una
+  /// lista que ya no manda.
+  Character withClassSpells(
+    String forClass, {
+    required List<String> cantrips,
+    required List<String> spells,
+  }) {
+    Map<String, List<String>> scoped(
+      Map<String, List<String>> current,
+      List<String> flat,
+      List<String> value,
+    ) =>
+        {
+          if (current.isEmpty && flat.isNotEmpty) classId: List.of(flat),
+          for (final e in current.entries) e.key: List.of(e.value),
+          forClass: List.of(value),
+        };
+    return copyWith(
+      cantripIds: const [],
+      spellIds: const [],
+      classCantripIds: scoped(classCantripIds, cantripIds, cantrips),
+      classSpellIds: scoped(classSpellIds, spellIds, spells),
+    );
+  }
+
   /// Copia con overrides. Preserva el [CombatState] por referencia salvo que se
   /// pase uno nuevo. Útil para editar equipo/nivel sin perder estado de partida.
   Character copyWith({

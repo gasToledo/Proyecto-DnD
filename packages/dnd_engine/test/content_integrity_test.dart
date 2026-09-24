@@ -166,7 +166,7 @@ void main() {
       expect(repo.races, hasLength(15));
       expect(repo.lineages, hasLength(28));
       expect(repo.backgrounds, hasLength(33));
-      // 187 dotes canónicas + Blessed Warrior y Druidic Warrior, que son
+      // 187 dotes canónicas + Guerrero Bendito y Guerrero Druídico, que son
       // opciones de clase "en lugar de una dote de Estilo de Combate".
       expect(repo.feats, hasLength(189));
       expect(repo.weapons, hasLength(38));
@@ -754,7 +754,7 @@ void main() {
               (f.source == ContentSource.phb2024 ||
                   f.source == ContentSource.srd2024) &&
               featCategories.contains(f.category) &&
-              // Blessed Warrior y Druidic Warrior no son dotes del capítulo 5:
+              // Guerrero Bendito y Guerrero Druídico no son dotes del capítulo 5:
               // son la alternativa de clase "en lugar de una dote de Estilo de
               // Combate", y por eso son las únicas con `requiredClassId`.
               f.prerequisite?.requiredClassId == null,
@@ -930,7 +930,7 @@ void main() {
     }
   });
 
-  test('Blessed Warrior y Druidic Warrior son de una sola clase', () {
+  test('Guerrero Bendito y Guerrero Druídico son de una sola clase', () {
     const esperado = {
       'fs-blessed-warrior': ('paladin', 'cleric'),
       'fs-druidic-warrior': ('ranger', 'druid'),

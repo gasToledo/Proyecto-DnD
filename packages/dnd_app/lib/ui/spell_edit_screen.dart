@@ -56,16 +56,16 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
   // Una ficha guardada antes de que la selección los excluyera puede traerlos
   // elegidos: se podan al abrir para devolver el cupo desperdiciado, en vez de
   // quedar atrapados en la selección sin chip que los saque.
+  /// La clase cuyos conjuros se editan. Sin [SpellEditScreen.classId] es la
+  /// principal: una ficha monoclase también los lee por clase, porque después
+  /// de una subida de nivel ya no viven en las listas planas.
+  String get _classId => widget.classId ?? widget.character.classId;
+
   late final Set<String> _cantrips = {
-    ...(widget.classId == null
-        ? widget.character.cantripIds
-        : widget.character.classCantripIds[widget.classId] ?? const []),
+    ...widget.character.cantripIdsFor(_classId),
   }..removeAll(_grantedSpellIds);
-  late final Set<String> _spells = {
-    ...(widget.classId == null
-        ? widget.character.spellIds
-        : widget.character.classSpellIds[widget.classId] ?? const []),
-  }..removeAll(_grantedSpellIds);
+  late final Set<String> _spells = {...widget.character.spellIdsFor(_classId)}
+    ..removeAll(_grantedSpellIds);
 
   Spellcasting get _sc => widget.spellcasting;
   bool get _prepared => _sc.preparation == SpellPreparation.prepared;
@@ -112,7 +112,7 @@ class _SpellEditScreenState extends State<SpellEditScreen> {
         title: Text(
           widget.classId == null
               ? 'Editar conjuros'
-              : 'Editar conjuros · ${widget.classId}',
+              : 'Editar conjuros · ${widget.repo.characterClass(_classId)?.name ?? _classId}',
         ),
       ),
       body: PageBody(

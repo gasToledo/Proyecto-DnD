@@ -597,16 +597,19 @@ void main() {
     }
   });
 
-  test('ningún catálogo mide en metros, centímetros ni kilos', () {
+  test('ningún catálogo usa unidades métricas', () {
     // El SRD en español mide en metros y el catálogo en pies: una frase en
     // metros queda al lado de alcances en pies. Se busca en el texto crudo
     // porque la prosa vive en campos distintos según el tipo de contenido, y
     // porque es lo que atrapa a un generador que se olvidó de convertir.
     // Sin `\b`: en Dart solo conoce letras ASCII, y «5 más» pasaría por medida.
-    // Los centímetros también: el catálogo usa pies y pulgadas. Y los pesos
-    // van en libras, que es la unidad de la barra de carga.
-    final metros =
-        RegExp(r'\d+(,\d+)? (c?m|k?g)(?![\p{L}\p{N}_])', unicode: true);
+    // Los centímetros también: el catálogo usa pies y pulgadas. Los pesos van
+    // en libras, que es la unidad de la barra de carga; los viajes en millas y
+    // los volúmenes en pies cúbicos.
+    final metros = RegExp(
+      r'\d+(,\d+)? (c?m|km|k?g|m3)(?![\p{L}\p{N}_])',
+      unicode: true,
+    );
     final archivos = Directory('lib/assets/srd_2024')
         .listSync()
         .whereType<File>()

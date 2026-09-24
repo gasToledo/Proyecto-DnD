@@ -71,6 +71,9 @@ const _medidasEspeciales = <(String, String)>[
   // La cuenta de fuerza: ¾ de pulgada en el manual, que el PDF redondeó.
   ('2 cm de diámetro', '3/4 de pulgada de diámetro'),
   ('1d3 × 30 cm', '1d3 pies'),
+  // Volúmenes, con los valores del manual en inglés: el PDF redondea.
+  ('0,03 m3', '1 pie cúbico'),
+  ('2 m3', '64 pies cúbicos'),
   // Pesos que no dan una cantidad entera de la unidad general.
   ('250 g', 'media libra'),
   ('30 g + 1d6 × 30 g', '1 onza + 1d6 onzas'),
@@ -82,6 +85,14 @@ const _medidasEspeciales = <(String, String)>[
 String _libras(String kg) {
   final pounds = (double.parse(kg.replaceAll(',', '.')) * 2).round();
   return '$pounds ${pounds == 1 ? 'libra' : 'libras'}';
+}
+
+/// Distancias de viaje con la escala del libro: 1,5 km son una milla, la misma
+/// unidad que usa el resto del catálogo para lo que no se mide en pies.
+String _millas(String km, {required bool perHour}) {
+  final miles = (double.parse(km.replaceAll(',', '.')) / 1.5).round();
+  return '$miles ${miles == 1 ? 'milla' : 'millas'}'
+      '${perHour ? ' por hora' : ''}';
 }
 
 String _onzas(String g) {
@@ -180,6 +191,10 @@ String _unidades(String text) {
   text = text.replaceAllMapped(
     RegExp(r'(\d+(?:,\d+)?) cm(?![\p{L}\p{N}_])', unicode: true),
     (m) => _centimetros(m[1]!),
+  );
+  text = text.replaceAllMapped(
+    RegExp(r'(\d+(?:,\d+)?) km(/h)?(?![\p{L}\p{N}_])', unicode: true),
+    (m) => _millas(m[1]!, perHour: m[2] != null),
   );
   text = text.replaceAllMapped(
     RegExp(r'(\d+(?:,\d+)?) kg(?![\p{L}\p{N}_])', unicode: true),

@@ -180,7 +180,9 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   oración ni texto de un objeto en otro, y se leen por párrafos. Vuelven las
   frases que se cortaban (el Anillo de calidez, la Baraja misteriosa entera) y
   los nombres en cursiva que faltaban. Los centímetros pasan a pies y
-  pulgadas, con la escala del manual (30 cm = 1 pie, 2,5 cm = 1 pulgada).
+  pulgadas, con la escala del manual (30 cm = 1 pie, 2,5 cm = 1 pulgada), y
+  los pesos a libras y onzas (0,5 kg = 1 libra, 30 g = 1 onza), que es la
+  unidad de la barra de carga.
 - Creación de personaje: con escudo ya no se ofrece empuñar a dos manos, y la
   mano secundaria solo aparece con dos armas; las elecciones de objeto dicen
   si son de la clase o del trasfondo; «Coste en puntos» avisa los puntos sin

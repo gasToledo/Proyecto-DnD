@@ -71,7 +71,23 @@ const _medidasEspeciales = <(String, String)>[
   // La cuenta de fuerza: ¾ de pulgada en el manual, que el PDF redondeó.
   ('2 cm de diámetro', '3/4 de pulgada de diámetro'),
   ('1d3 × 30 cm', '1d3 pies'),
+  // Pesos que no dan una cantidad entera de la unidad general.
+  ('250 g', 'media libra'),
+  ('30 g + 1d6 × 30 g', '1 onza + 1d6 onzas'),
 ];
+
+/// Pesos con la escala del libro: 0,5 kg son una libra y 30 g una onza. La
+/// ficha cuenta la carga en libras, y una descripción en kilos obligaba a
+/// convertir para compararla con la barra de carga.
+String _libras(String kg) {
+  final pounds = (double.parse(kg.replaceAll(',', '.')) * 2).round();
+  return '$pounds ${pounds == 1 ? 'libra' : 'libras'}';
+}
+
+String _onzas(String g) {
+  final ounces = (int.parse(g) / 30).round();
+  return '$ounces ${ounces == 1 ? 'onza' : 'onzas'}';
+}
 
 /// Centímetros con la escala del libro: 30 cm son un pie y 2,5 cm una
 /// pulgada. Un múltiplo de 30 va en pies («60 cm» → «2 pies»), el resto en
@@ -157,13 +173,21 @@ String _reflow(List<String> lines) {
   return out.toString();
 }
 
-String _feetify(String text) {
+String _unidades(String text) {
   for (final (antes, despues) in _medidasEspeciales) {
     text = text.replaceAll(antes, despues);
   }
   text = text.replaceAllMapped(
     RegExp(r'(\d+(?:,\d+)?) cm(?![\p{L}\p{N}_])', unicode: true),
     (m) => _centimetros(m[1]!),
+  );
+  text = text.replaceAllMapped(
+    RegExp(r'(\d+(?:,\d+)?) kg(?![\p{L}\p{N}_])', unicode: true),
+    (m) => _libras(m[1]!),
+  );
+  text = text.replaceAllMapped(
+    RegExp(r'(\d+) g(?![\p{L}\p{N}_])', unicode: true),
+    (m) => _onzas(m[1]!),
   );
   text = text.replaceAllMapped(
     RegExp(r'(\d+(?:,\d+)?)/(\d+(?:,\d+)?) m(?![\p{L}\p{N}_])', unicode: true),
@@ -258,7 +282,7 @@ Future<void> main() async {
       body++;
     }
     final heading = _heading(item['name'] as String);
-    final text = _feetify([
+    final text = _unidades([
       lines.sublist(start, body).join(' '),
       if (body < end)
         _reflow([...lines.sublist(body, end), ...?mudadas[heading]]),

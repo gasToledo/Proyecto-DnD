@@ -933,7 +933,29 @@ extension _SheetInventorySection on _SheetScreenState {
                 runSpacing: 4,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text(info.name),
+                  // El nombre abre el texto del objeto, igual que un recurso
+                  // en Combate: sin esto, qué hace una Bolsa de contención no
+                  // se podía leer en ningún lado de la app.
+                  if (info.description.isEmpty)
+                    Text(info.name)
+                  else
+                    InkWell(
+                      onTap: () => _showInfoDialog(info.name, info.description),
+                      borderRadius: BorderRadius.circular(6),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(child: Text(info.name)),
+                          const SizedBox(width: 5),
+                          Icon(
+                            Icons.info_outline,
+                            size: 14,
+                            semanticLabel: 'Ver qué hace',
+                            color: context.palette.textMuted,
+                          ),
+                        ],
+                      ),
+                    ),
                   if (e.attuned && info.attunable)
                     const GoldPill('Sintonizado'),
                   if (info.replica)
@@ -1576,6 +1598,7 @@ extension _SheetInventorySection on _SheetScreenState {
       attunable: item?.requiresAttunement ?? false,
       magic: (item?.isMagic ?? false) || replica,
       replica: replica,
+      description: item?.description ?? '',
       maxCharges: item?.maxCharges,
       rangeHint: weapon?.rangeLabel,
       twoHandedHint: weapon == null || !weapon.requiresTwoHands()
@@ -1601,6 +1624,10 @@ class _ItemInfo {
   final bool magic;
   final bool replica;
 
+  /// Texto del catálogo: qué hace un objeto mágico, qué trae un paquete. Vacío
+  /// en armas, armaduras y equipo común, que no tienen.
+  final String description;
+
   /// Alcance del arma, ya formateado por el motor. null en todo lo que no
   /// se dispara ni se arroja, que es casi toda la mochila.
   final int? maxCharges;
@@ -1618,6 +1645,7 @@ class _ItemInfo {
     required this.attunable,
     required this.magic,
     required this.replica,
+    this.description = '',
     required this.maxCharges,
     required this.rangeHint,
     required this.twoHandedHint,

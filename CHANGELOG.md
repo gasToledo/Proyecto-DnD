@@ -163,6 +163,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   Draconato es el primero: «CD 12 de DES · 1d10».
 - En un teléfono, «Subir nivel» está en la barra de la ficha, sin abrir el
   menú.
+- En el inventario, el nombre de un objeto mágico o de un paquete abre su
+  descripción. Hasta ahora qué hacía un objeto no se podía leer en la app.
 
 ### Modificado
 

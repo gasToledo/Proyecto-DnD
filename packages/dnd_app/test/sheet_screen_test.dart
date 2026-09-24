@@ -491,6 +491,40 @@ void main() {
       expect(find.text('2 / 150 lb'), findsOneWidget);
     });
 
+    // Hasta acá qué hacía un objeto mágico no se leía en ningún lado.
+    testWidgets('el nombre de un objeto abre su descripción', (tester) async {
+      final bolsa = repo.item('bolsa-de-contencion')!;
+      await pumpSheet(
+        tester,
+        mochilera().copyWith(
+          inventory: const [
+            InventoryEntry(entryId: 'b1', itemId: 'bolsa-de-contencion'),
+            InventoryEntry(entryId: 'l1', itemId: 'longsword'),
+          ],
+        ),
+      );
+      await tester.tap(find.text('Inventario'));
+      await tester.pumpAndSettle();
+
+      final nombre = find.text(bolsa.name);
+      await tester.ensureVisible(nombre);
+      await tester.tap(nombre);
+      await tester.pumpAndSettle();
+      expect(find.text(bolsa.description), findsOneWidget);
+      await tester.tap(find.text('Cerrar'));
+      await tester.pumpAndSettle();
+
+      // Un arma no tiene texto de catálogo: su nombre no promete nada.
+      expect(
+        find.ancestor(
+          of: find.text(repo.weapon('longsword')!.name),
+          matching: find.byType(InkWell),
+        ),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('gastar una carga se anota en el ejemplar', (tester) async {
       final varita = repo.item('varita-de-bolas-de-fuego')!;
       final controller = await pumpSheet(

@@ -131,10 +131,10 @@ visual en la [guía de diseño web](docs/desarrollo/diseno-web.md).
 
 ## El camino recorrido
 
-La versión **0.13.0** pule la llegada de alguien nuevo: un personaje de
-ejemplo para recorrer la ficha, una creación de personaje que en el teléfono
-lleva hasta cada elección y sugiere el reparto de puntuaciones de la clase,
-textos unificados con el SRD en castellano y un arranque que tarda la mitad.
+La versión **0.14.0** suma el Códice, para leer cualquier especie, clase,
+dote, conjuro, objeto o criatura sin tener que crear un personaje, y deja el
+catálogo entero en voseo, con los objetos mágicos vueltos a extraer del SRD:
+completos, en pies y libras, y legibles desde el inventario.
 
 Consultá el [changelog](CHANGELOG.md) para conocer los cambios de cada versión
 y el [índice de documentación](docs/README.md) para profundizar en arquitectura,

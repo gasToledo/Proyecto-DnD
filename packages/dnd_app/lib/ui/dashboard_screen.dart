@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_models.dart';
+import '../codex/codex_screen.dart';
 import '../creation/creation_wizard.dart';
 import '../data/characters_controller.dart';
 import '../demo/demo_characters.dart';

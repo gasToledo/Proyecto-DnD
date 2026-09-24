@@ -59,6 +59,14 @@ extension _DashboardActions on _DashboardScreenState {
     );
   }
 
+  /// Abre el Códice. Es de solo lectura: no cambia ninguna ficha, así que al
+  /// volver no hay nada que recalcular, a diferencia de Homebrew.
+  void _openCodex() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => CodexScreen(repo: repo)));
+  }
+
   Future<void> _openHomebrew() async {
     await Navigator.of(context).push(
       MaterialPageRoute(

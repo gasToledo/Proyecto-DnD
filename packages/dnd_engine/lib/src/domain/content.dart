@@ -1247,3 +1247,37 @@ String formatCost(int cp) {
   }
   return '$cp ${coinLabels['cp']}';
 }
+
+/// Nombre de cada rareza (`Item.rarity`), de la más común a la más rara: el
+/// orden de las claves es el que usan los filtros.
+const itemRarityLabels = {
+  'common': 'Común',
+  'uncommon': 'Infrecuente',
+  'rare': 'Raro',
+  'very-rare': 'Muy raro',
+  'legendary': 'Legendario',
+  'artifact': 'Artefacto',
+};
+
+/// Nombre de cada categoría de dote (`Feat.category`). Incluye las que no se
+/// eligen como dote —invocaciones, terrenos del druida—: el catálogo las guarda
+/// como dotes y el Códice las muestra igual.
+const featCategoryLabels = {
+  'origin': 'De origen',
+  'general': 'General',
+  'fighting-style': 'Estilo de combate',
+  'epic-boon': 'Don épico',
+  'dragonmark': 'Marca dracónica',
+  'warlock-invocation': 'Invocación sobrenatural',
+  'druid-land': 'Terreno del Círculo de la Tierra',
+};
+
+/// Nombre de cada familia de objeto común (`Item.category`).
+const itemCategoryLabels = {
+  'gear': 'Equipo',
+  'tool': 'Herramienta',
+  'ammunition': 'Munición',
+  'focus': 'Canalizador',
+  'pack': 'Paquete',
+  'container': 'Contenedor',
+};

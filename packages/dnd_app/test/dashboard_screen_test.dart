@@ -92,6 +92,15 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('el Códice se abre desde el panel lateral', (tester) async {
+    await pumpDashboard(tester, const Size(1400, 900));
+
+    await tester.tap(find.text('Códice'));
+    await tester.pumpAndSettle();
+    expect(find.text('Buscar en todo el Códice'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   /// Monta el dashboard con una cuenta dada, para las pruebas del pie.
   Future<FakeApiServer> pumpWithAccount(
     WidgetTester tester,

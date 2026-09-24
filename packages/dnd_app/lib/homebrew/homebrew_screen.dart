@@ -68,15 +68,7 @@ const _itemCategories = {
 /// y no como null porque el desplegable no acepta una opción nula.
 const _mundane = 'mundane';
 
-const _itemRarities = {
-  _mundane: 'Mundano',
-  'common': 'Común',
-  'uncommon': 'Infrecuente',
-  'rare': 'Raro',
-  'very-rare': 'Muy raro',
-  'legendary': 'Legendario',
-  'artifact': 'Artefacto',
-};
+const _itemRarities = {_mundane: 'Mundano', ...itemRarityLabels};
 
 const _featCategories = {
   'origin': 'De origen',

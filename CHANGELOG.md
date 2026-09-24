@@ -154,10 +154,15 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 - Sin cambios.
 
-## [Unreleased]
+## [0.14.0+1] - 2026-09-24
 
 ### Nuevo
 
+- El Códice: todo el contenido del juego para leer sin crear un personaje
+  ni editar nada. Se abre desde el panel lateral; tiene búsqueda en todo el
+  catálogo, una lista con filtro por categoría (nivel de conjuro, rareza,
+  categoría de dote) y el detalle de cada entrada. Las criaturas usan el
+  Bestiario y el perfil del Modo DM, sin nada de combate.
 - Un recurso puede declarar la CD que impone y el daño que causa por tramo de
   nivel; la ficha los muestra ya calculados. El Ataque de Aliento del
   Draconato es el primero: «CD 12 de DES · 1d10».
@@ -201,6 +206,20 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   el resultado; el paso de conjuros dice cuántos hay preparados y avisa los
   cupos libres; y se corrigieron textos (sin género para el personaje, sin
   «compilar», voseo en Arma Sagrada, «También ganás»).
+
+### Eliminado
+
+- Sin cambios.
+
+## [Unreleased]
+
+### Nuevo
+
+- Sin cambios.
+
+### Modificado
+
+- Sin cambios.
 
 ### Eliminado
 

@@ -74,6 +74,12 @@ extension _DashboardNavigation on _DashboardScreenState {
           ),
           appNavItem(
             context,
+            icon: Icons.menu_book_outlined,
+            label: 'Códice',
+            onTap: () => run(_openCodex),
+          ),
+          appNavItem(
+            context,
             icon: Icons.auto_fix_high,
             label: 'Homebrew',
             onTap: () => run(_openHomebrew),

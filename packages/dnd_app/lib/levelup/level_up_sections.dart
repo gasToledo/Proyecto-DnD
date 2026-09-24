@@ -843,6 +843,27 @@ extension _LevelUpSections on _LevelUpScreenState {
                               style: TextStyle(fontSize: 13, color: muted),
                             ),
                           ],
+                          // Solo en la elegida: con todas abiertas, la lista de
+                          // ocho subclases se vuelve un manual. Cambiar de
+                          // opción es gratis, así que tocar es mirar.
+                          if (_subclassId == s.id)
+                            for (final f in s.featuresUpTo(_newClassLevel)) ...[
+                              const SizedBox(height: 8),
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: '${f.name}. ',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    TextSpan(text: f.description),
+                                  ],
+                                ),
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ],
                         ],
                       ),
                     ),

@@ -180,8 +180,25 @@ class SheetBuilder {
         recharge: e.recharge,
         shortRestRecovery: e.shortRestRecovery,
         description: e.description,
+        saveDc: e.saveDcAbility == null
+            ? null
+            : 8 + proficiencyBonusForLevel(level) + mods[e.saveDcAbility]!,
+        saveAbility: e.saveAbility,
+        // Tramos por nivel de personaje, no de la fuente: el Aliento escala
+        // con el nivel total, como los trucos.
+        damage: _tierFor(e.damageByLevel, level),
       );
     }).toList();
+  }
+
+  /// El valor del mayor tramo alcanzado, o null si no se alcanzó ninguno.
+  static String? _tierFor(Map<int, String> tiers, int level) {
+    String? out;
+    var best = 0;
+    for (final MapEntry(:key, :value) in tiers.entries) {
+      if (key <= level && key >= best) (best, out) = (key, value);
+    }
+    return out;
   }
 
   /// Resuelve los bonificadores a habilidades contra los modificadores ya

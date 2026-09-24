@@ -456,4 +456,23 @@ void main() {
     }
     expect(tester.takeException(), isNull);
   });
+
+  // El Draconato tiene un rasgo pasivo (el vuelo de nivel 5), y la lista solo
+  // lee los pasivos cuando hay alguno: el Aliento, que era un recurso, y la
+  // visión en la oscuridad no aparecían en el paso.
+  testWidgets('el Draconato muestra su Aliento y su visión en la oscuridad', (
+    tester,
+  ) async {
+    await pumpAt(tester, const Size(1500, 1400));
+    final draconato = repo.race('dragonborn')!;
+    final vision = draconato.effects.whereType<DarkvisionEffect>().single;
+
+    await tapOption(tester, draconato.name);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ataque de Aliento'), findsOneWidget);
+    expect(find.text('VISIÓN EN LA OSCURIDAD  '), findsOneWidget);
+    expect(find.text('${vision.range} pies'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -203,6 +203,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'en un teléfono, Subir nivel está en la barra sin abrir el menú',
+    (tester) async {
+      final character = demoSagan();
+      await pumpSheet(tester, character, size: const Size(360, 1400));
+
+      await tester.tap(find.byTooltip('Subir nivel'));
+      await tester.pumpAndSettle();
+      expect(find.text('Subir a nivel ${character.level + 1}'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('el encabezado de datos solo aparece en Personaje y Combate', (
     tester,
   ) async {
@@ -1037,6 +1050,17 @@ void main() {
     // Y el tipo de daño del arma, que compartía el mismo defecto.
     expect(find.textContaining('Cortante'), findsWidgets);
     expect(find.textContaining('Slashing'), findsNothing);
+    // El Aliento lleva la CD y el daño que se dicen en la mesa, no solo usos.
+    final aliento = CharacterCompiler(
+      repo,
+    ).compile(dragonborn).resources.firstWhere((r) => r.id == 'breath_weapon');
+    expect(
+      find.text(
+        'CD ${aliento.saveDc} de ${aliento.saveAbility!.abbr} · '
+        '${aliento.damage}',
+      ),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 

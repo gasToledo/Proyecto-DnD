@@ -79,6 +79,45 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // Se elegía la subclase leyendo una línea de sabor: lo que daba de verdad
+  // recién se veía en el resumen, después de decidir.
+  testWidgets('la subclase elegida muestra los rasgos que da en este nivel', (
+    tester,
+  ) async {
+    final l3 = fighterL3();
+    final nivel2 = Character(
+      id: l3.id,
+      name: l3.name,
+      raceId: l3.raceId,
+      classId: l3.classId,
+      backgroundId: l3.backgroundId,
+      level: 2,
+      assignedScores: l3.assignedScores,
+      hpPerLevel: const [10, 6],
+      featureChoices: l3.featureChoices,
+    );
+    final campeon = repo.subclass('champion')!;
+    final rasgo = campeon.featuresUpTo(3).first;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.dark,
+        home: LevelUpScreen(character: nivel2, repo: repo, onDone: (_) {}),
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 5 && find.text(campeon.name).evaluate().isEmpty; i++) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+
+    expect(find.textContaining(rasgo.description), findsNothing);
+    await tester.ensureVisible(find.text(campeon.name));
+    await tester.tap(find.text(campeon.name));
+    await tester.pumpAndSettle();
+    expect(find.textContaining(rasgo.description), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('la subida de nivel cabe en una ventana compacta', (
     tester,
   ) async {

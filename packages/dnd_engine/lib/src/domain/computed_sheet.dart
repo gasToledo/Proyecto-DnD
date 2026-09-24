@@ -24,6 +24,15 @@ class CharacterResource {
   final RechargeOn recharge;
   final int shortRestRecovery;
   final String description;
+
+  /// CD ya calculada del uso y la salvación que la enfrenta, o null si el
+  /// recurso no pide salvación.
+  final int? saveDc;
+  final Ability? saveAbility;
+
+  /// Dados de daño del tramo de nivel actual, o null si no causa daño.
+  final String? damage;
+
   const CharacterResource({
     this.classId,
     required this.id,
@@ -32,6 +41,9 @@ class CharacterResource {
     required this.recharge,
     this.shortRestRecovery = 0,
     this.description = '',
+    this.saveDc,
+    this.saveAbility,
+    this.damage,
   });
 
   String get key => classId == null ? id : '$classId:$id';
@@ -44,6 +56,9 @@ class CharacterResource {
         'recharge': recharge.name,
         'shortRestRecovery': shortRestRecovery,
         'description': description,
+        if (saveDc != null) 'saveDc': saveDc,
+        if (saveAbility != null) 'saveAbility': saveAbility!.name,
+        if (damage != null) 'damage': damage,
       };
 }
 

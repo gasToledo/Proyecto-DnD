@@ -196,13 +196,21 @@
         "range": 60
       },
       {
+        "type": "passiveTrait",
+        "name": "Ataque de Aliento",
+        "description": "Al llevar a cabo la acción de Atacar podés sustituir un ataque por una exhalación en cono de 15 pies o línea de 30 pies y 5 pies de ancho (salvación de DES, CD 8 + mod. CON + bonif. por competencia). Causa 1d10 del tipo de daño de tu linaje dracónico si se falla la salvación, o la mitad si se supera; sube a 2d10 en nivel 5, 3d10 en 11 y 4d10 en 17."
+      },
+      {
         "type": "resource",
         "id": "breath_weapon",
         "name": "Ataque de Aliento",
         "max": 0,
         "maxFromProficiency": true,
         "recharge": "long",
-        "description": "Al llevar a cabo la acción de Atacar podés sustituir un ataque por una exhalación en cono de 15 pies o línea de 30 pies y 5 pies de ancho (salvación de DES, CD 8 + mod. CON + bonif. por competencia). Causa 1d10 del tipo de daño de tu linaje dracónico si se falla la salvación, o la mitad si se supera; sube a 2d10 en nivel 5, 3d10 en 11 y 4d10 en 17."
+        "saveDcAbility": "constitution",
+        "saveAbility": "dexterity",
+        "damageByLevel": {"1": "1d10", "5": "2d10", "11": "3d10", "17": "4d10"},
+        "description": "Usos de Ataque de Aliento."
       },
       {
         "type": "passiveTrait",

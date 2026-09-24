@@ -414,6 +414,24 @@ extension _SheetCombatSection on _SheetScreenState {
                         ],
                       ],
                     ),
+                    // Lo que se dice en la mesa al usarlo: sin esto, el
+                    // Aliento eran usos sueltos y la CD había que calcularla.
+                    if (r.saveDc != null || r.damage != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        [
+                          if (r.saveDc case final dc?)
+                            'CD $dc'
+                                '${r.saveAbility == null ? '' : ' de ${r.saveAbility!.abbr}'}',
+                          ?r.damage,
+                        ].join(' · '),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: muted,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 5),
                     UsagePips(
                       max: r.max,

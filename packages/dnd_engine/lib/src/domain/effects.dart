@@ -102,6 +102,16 @@ sealed class Effect {
               : null,
           maxFromProficiency: json['maxFromProficiency'] as bool? ?? false,
           proficiencyMultiplier: json['proficiencyMultiplier'] as int? ?? 1,
+          saveDcAbility: json['saveDcAbility'] != null
+              ? Ability.fromKey(json['saveDcAbility'] as String)
+              : null,
+          saveAbility: json['saveAbility'] != null
+              ? Ability.fromKey(json['saveAbility'] as String)
+              : null,
+          damageByLevel: {
+            for (final e in (json['damageByLevel'] as Map? ?? const {}).entries)
+              int.parse(e.key as String): e.value as String,
+          },
         ),
       'companion' => CompanionEffect(
           id: json['id'] as String,
@@ -1353,6 +1363,19 @@ class ResourceEffect extends Effect {
   /// [maxFromProficiency] es true.
   final int proficiencyMultiplier;
 
+  /// Característica de la CD que impone el uso (8 + mod. + competencia), o
+  /// null si no pide salvación. Existe por el Ataque de Aliento: la prosa ya
+  /// decía la fórmula, pero la ficha mostraba solo los usos y el jugador
+  /// tenía que hacer la cuenta en la mesa.
+  final Ability? saveDcAbility;
+
+  /// Salvación que hace el objetivo contra [saveDcAbility].
+  final Ability? saveAbility;
+
+  /// Dados de daño por tramo de nivel de personaje: gana el mayor tramo
+  /// alcanzado. Vacío si el uso no causa daño.
+  final Map<int, String> damageByLevel;
+
   const ResourceEffect({
     required this.id,
     required this.name,
@@ -1364,6 +1387,9 @@ class ResourceEffect extends Effect {
     this.maxFromAbility,
     this.maxFromProficiency = false,
     this.proficiencyMultiplier = 1,
+    this.saveDcAbility,
+    this.saveAbility,
+    this.damageByLevel = const {},
   });
   @override
   Map<String, dynamic> toJson() => {
@@ -1379,6 +1405,12 @@ class ResourceEffect extends Effect {
         if (maxFromProficiency) 'maxFromProficiency': true,
         if (proficiencyMultiplier != 1)
           'proficiencyMultiplier': proficiencyMultiplier,
+        if (saveDcAbility != null) 'saveDcAbility': saveDcAbility!.name,
+        if (saveAbility != null) 'saveAbility': saveAbility!.name,
+        if (damageByLevel.isNotEmpty)
+          'damageByLevel': {
+            for (final e in damageByLevel.entries) '${e.key}': e.value,
+          },
       };
 }
 

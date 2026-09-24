@@ -158,10 +158,18 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Nuevo
 
-- Sin cambios.
+- Un recurso puede declarar la CD que impone y el daño que causa por tramo de
+  nivel; la ficha los muestra ya calculados. El Ataque de Aliento del
+  Draconato es el primero: «CD 12 de DES · 1d10».
+- En un teléfono, «Subir nivel» está en la barra de la ficha, sin abrir el
+  menú.
 
 ### Modificado
 
+- Creación de personaje: los nombres de especie, clase y trasfondo usan hasta
+  dos líneas (los «Heredero de Casa…» de Eberron se cortaban); el Draconato
+  muestra su Ataque de Aliento y su visión en la oscuridad.
+- Subida de nivel: la subclase elegida muestra los rasgos que da en ese nivel.
 - Creación de personaje: con escudo ya no se ofrece empuñar a dos manos, y la
   mano secundaria solo aparece con dos armas; las elecciones de objeto dicen
   si son de la clase o del trasfondo; «Coste en puntos» avisa los puntos sin

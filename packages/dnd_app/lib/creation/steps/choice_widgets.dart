@@ -15,7 +15,7 @@ class _ChoiceCard extends StatelessWidget {
   final VoidCallback onTap;
 
   /// Procedencia de la opción. Se muestra debajo del subtítulo: el título ya usa
-  /// una sola línea con ellipsis en 228 px y un badge en línea lo comprimiría.
+  /// hasta dos líneas con ellipsis en 228 px y un badge en línea lo comprimiría.
   final ContentSource? source;
   const _ChoiceCard({
     required this.icon,
@@ -72,7 +72,9 @@ class _ChoiceCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        maxLines: 1,
+                        // Dos líneas: los trece «Heredero de Casa…» de Eberron
+                        // solo se distinguen por la última palabra.
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontFamily: 'Georgia',

@@ -392,6 +392,13 @@ class _SheetScreenState extends State<SheetScreen> {
             // En angosto el panel vive adentro del Drawer, o sea cerrado: el
             // estado del guardado tiene que estar acá o no se ve nunca.
             actions: [
+              // También queda en el Drawer, pero ahí es la acción más
+              // importante de la ficha escondida detrás de un menú.
+              IconButton(
+                tooltip: 'Subir nivel',
+                icon: const Icon(Icons.arrow_upward),
+                onPressed: _openLevelUp,
+              ),
               Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Center(

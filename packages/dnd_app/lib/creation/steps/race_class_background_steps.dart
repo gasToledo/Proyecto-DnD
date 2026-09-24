@@ -52,6 +52,10 @@ class _RaceStep extends StatelessWidget {
                           : draft.chosenSize ?? 'a elegir',
                     ),
                     ('Velocidad', '${race.speed} pies'),
+                    // Es un número, no prosa: ningún rasgo pasivo la cuenta,
+                    // y la lista de rasgos solo lee los pasivos.
+                    for (final dv in race.effects.whereType<DarkvisionEffect>())
+                      ('Visión en la oscuridad', '${dv.range} pies'),
                     if (race.skillChoiceCount > 0)
                       ('Habilidades', '${race.skillChoiceCount} a elegir'),
                   ],

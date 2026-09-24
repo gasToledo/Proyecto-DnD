@@ -97,6 +97,39 @@ void main() {
     }
   });
 
+  test('el Ataque de Aliento trae su CD y su daño ya calculados', () {
+    Character draconato(int level, int con) => Character(
+          id: 'x',
+          name: 'P',
+          raceId: 'dragonborn',
+          classId: 'fighter',
+          backgroundId: 'soldier',
+          lineageId: 'dragonborn-red',
+          level: level,
+          assignedScores: {
+            for (final a in Ability.values)
+              a: a == Ability.constitution ? con : 12,
+          },
+          hpPerLevel: List.filled(level, 10),
+        );
+    CharacterResource aliento(Character c) => CharacterCompiler(repo)
+        .compile(c)
+        .resources
+        .firstWhere((r) => r.id == 'breath_weapon');
+
+    // Nivel 1, CON 14: 8 + 2 (competencia) + 2 (mod.).
+    final n1 = aliento(draconato(1, 14));
+    expect(n1.saveDc, 12);
+    expect(n1.saveAbility, Ability.dexterity);
+    expect(n1.damage, '1d10');
+    // Nivel 5, CON 16: 8 + 3 + 3, y el daño sube de tramo.
+    final n5 = aliento(draconato(5, 16));
+    expect(n5.saveDc, 14);
+    expect(n5.damage, '2d10');
+    expect(aliento(draconato(11, 16)).damage, '3d10');
+    expect(aliento(draconato(17, 16)).damage, '4d10');
+  });
+
   test('sin elegir linaje, el Goliat recibe un aviso y no se rompe', () {
     final sinLinaje = Character(
       id: 'x',

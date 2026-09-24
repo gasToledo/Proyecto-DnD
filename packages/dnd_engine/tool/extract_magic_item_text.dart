@@ -68,7 +68,23 @@ const _medidasEspeciales = <(String, String)>[
   ),
   ('1,2 m de altura y 60 cm de ancho', '4 pies de altura y 2 pies de ancho'),
   ('9 m de largo y 30 cm de ancho', '30 pies de largo y 1 pie de ancho'),
+  // La cuenta de fuerza: ¾ de pulgada en el manual, que el PDF redondeó.
+  ('2 cm de diámetro', '3/4 de pulgada de diámetro'),
+  ('1d3 × 30 cm', '1d3 pies'),
 ];
+
+/// Centímetros con la escala del libro: 30 cm son un pie y 2,5 cm una
+/// pulgada. Un múltiplo de 30 va en pies («60 cm» → «2 pies»), el resto en
+/// pulgadas («15 cm» → «6 pulgadas»).
+String _centimetros(String cm) {
+  final value = double.parse(cm.replaceAll(',', '.'));
+  if (value % 30 == 0) {
+    final feet = value ~/ 30;
+    return '$feet ${feet == 1 ? 'pie' : 'pies'}';
+  }
+  final inches = (value / 2.5).round();
+  return '$inches ${inches == 1 ? 'pulgada' : 'pulgadas'}';
+}
 
 /// Tablas que el PDF dibuja en la página de otro objeto: en orden de lectura
 /// quedan en medio de un texto ajeno. Van del título a su última fila, y se
@@ -145,6 +161,10 @@ String _feetify(String text) {
   for (final (antes, despues) in _medidasEspeciales) {
     text = text.replaceAll(antes, despues);
   }
+  text = text.replaceAllMapped(
+    RegExp(r'(\d+(?:,\d+)?) cm(?![\p{L}\p{N}_])', unicode: true),
+    (m) => _centimetros(m[1]!),
+  );
   text = text.replaceAllMapped(
     RegExp(r'(\d+(?:,\d+)?)/(\d+(?:,\d+)?) m(?![\p{L}\p{N}_])', unicode: true),
     (m) => '${metersToFeet(m[1]!)}/${metersToFeet(m[2]!)} pies',

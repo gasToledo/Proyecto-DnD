@@ -116,7 +116,7 @@ class _RaceFormState extends State<RaceForm> with _GuidedForm {
     final race = _race();
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return _FormScaffold(
-      title: 'Raza / Especie',
+      title: 'Especie',
       onSave: _save,
       onInvalid: openAllSections,
       panel: guidePanel(

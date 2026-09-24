@@ -228,7 +228,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _loadError = '$e';
+        _loadError = failureMessage('No se pudo cargar la configuración', e);
         _loading = false;
       });
     }
@@ -308,7 +308,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
             : 'No se pudo generar: ${e.message}',
       );
     } catch (e) {
-      _fail('No se pudo generar: $e');
+      _fail(failureMessage('No se pudo generar', e));
     } finally {
       if (mounted) setState(() => _generating = false);
     }
@@ -334,7 +334,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
         _referenceName = file.name;
       });
     } catch (e) {
-      _fail('No se pudo elegir la imagen de referencia: $e');
+      _fail(failureMessage('No se pudo elegir la imagen de referencia', e));
     }
   }
 
@@ -358,7 +358,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
       if (bytes == null) return; // el usuario canceló el diálogo
       await _use(bytes);
     } catch (e) {
-      _fail('No se pudo importar la imagen: $e');
+      _fail(failureMessage('No se pudo importar la imagen', e));
     } finally {
       if (mounted) setState(() => _importing = false);
     }
@@ -372,7 +372,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
       key = await _saveBytes(bytes);
     } catch (e) {
       if (mounted) setState(() => _saving = false);
-      _fail('No se pudo guardar el retrato: $e');
+      _fail(failureMessage('No se pudo guardar el retrato', e));
       return;
     }
     _apply([key, ..._paths], {..._prompts, key: ?prompt});
@@ -436,7 +436,7 @@ class _PortraitScreenState extends State<PortraitScreen> {
       await widget.api.deletePortrait(key);
     } catch (e) {
       if (mounted) setState(() => _saving = false);
-      _fail('No se pudo borrar el retrato: $e');
+      _fail(failureMessage('No se pudo borrar el retrato', e));
       return;
     }
     _apply([

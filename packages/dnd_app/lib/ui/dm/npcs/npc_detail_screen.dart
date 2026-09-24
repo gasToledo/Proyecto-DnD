@@ -82,11 +82,11 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
     }
   }
 
-  void _report(Object error) {
+  void _report(Object error, [String what = 'No se pudo guardar el cambio']) {
     if (!mounted) return;
     showAppMessage(
       context,
-      error is ApiException ? error.message : '$error',
+      failureMessage(what, error),
       tone: AppMessageTone.error,
     );
   }
@@ -355,7 +355,7 @@ class _NpcDetailScreenState extends State<NpcDetailScreen> {
       );
       Navigator.of(context).pop();
     } catch (error) {
-      _report(error);
+      _report(error, 'No se pudo borrar el PNJ');
     }
   }
 

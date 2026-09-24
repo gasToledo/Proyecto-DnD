@@ -1214,7 +1214,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     if (!mounted) return;
     showAppMessage(
       context,
-      error is ApiException ? error.message : '$error',
+      failureMessage('No se pudo guardar el combate', error),
       tone: AppMessageTone.error,
     );
   }

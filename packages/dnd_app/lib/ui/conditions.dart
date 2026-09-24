@@ -39,7 +39,7 @@ const conditions = <String, ConditionInfo>{
   ),
   'grappled': ConditionInfo(
     'Agarrado',
-    'Tu velocidad se vuelve 0 y no podés beneficiarte de ningún bonus a la '
+    'Tu velocidad se vuelve 0 y no podés beneficiarte de ningún bonificador a la '
         'velocidad. La condición termina si quien te agarra queda incapacitado.',
   ),
   'incapacitated': ConditionInfo(

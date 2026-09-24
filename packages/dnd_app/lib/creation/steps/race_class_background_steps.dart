@@ -230,7 +230,7 @@ class _ClassStep extends StatelessWidget {
                       ],
                       if (slots > 0) ...[
                         const SizedBox(height: 18),
-                        Eyebrow('Maestría de armas (elige $slots)'),
+                        Eyebrow('Maestría de armas (elegí $slots)'),
                         // Faltaba la mitad de adelante: la lista dice de qué
                         // armas se puede elegir, pero no qué se gana al
                         // elegirlas. El nombre de cada maestría lo trae el

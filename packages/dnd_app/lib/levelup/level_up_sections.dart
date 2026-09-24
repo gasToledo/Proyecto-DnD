@@ -636,7 +636,7 @@ extension _LevelUpSections on _LevelUpScreenState {
       if (diff.proficiencyBonusChanged)
         _ReviewRow(
           icon: Icons.verified,
-          label: 'Bonificador de competencia',
+          label: 'Bonificador por competencia',
           note: 'Se aplica a todas las competencias relevantes',
           before: '+${diff.proficiencyBonusFrom}',
           after: '+${diff.proficiencyBonusTo}',
@@ -1156,7 +1156,7 @@ extension _LevelUpSections on _LevelUpScreenState {
               child: feats.isEmpty
                   ? Center(
                       child: Text(
-                        'Ninguna dote coincide con “$_featQuery”.',
+                        'Ninguna dote coincide con «$_featQuery».',
                         style: TextStyle(color: context.palette.textMuted),
                       ),
                     )

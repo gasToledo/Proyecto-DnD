@@ -106,7 +106,7 @@ enum _Category {
   armor('Armaduras', Icons.shield_outlined, 'Agregar armadura'),
   items('Objetos', Icons.inventory_2_outlined, 'Agregar objeto'),
   feats('Dotes', Icons.military_tech, 'Agregar dote'),
-  races('Razas', Icons.diversity_3, 'Agregar raza'),
+  races('Especies', Icons.diversity_3, 'Agregar especie'),
   backgrounds('Trasfondos', Icons.history_edu, 'Agregar trasfondo'),
   spells('Conjuros', Icons.auto_stories, 'Agregar conjuro'),
   creatures('Criaturas', Icons.pets_outlined, 'Agregar criatura');
@@ -225,7 +225,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       if (mounted) {
         showAppMessage(
           context,
-          'No se pudo guardar el contenido homebrew: $e',
+          failureMessage('No se pudo guardar el contenido homebrew', e),
           tone: AppMessageTone.error,
         );
       }
@@ -248,7 +248,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
     );
     showAppMessage(
       context,
-      'Homebrew exportado ($total entrada(s)).',
+      'Homebrew exportado (${total == 1 ? '1 entrada' : '$total entradas'}).',
       tone: AppMessageTone.success,
       duration: const Duration(seconds: 4),
     );
@@ -259,7 +259,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       type: FileType.custom,
       allowedExtensions: ['json'],
       withData: true,
-      dialogTitle: 'Elegí un pack homebrew (.json)',
+      dialogTitle: 'Elegí un archivo de homebrew (.json)',
     );
     final file = picked?.files.singleOrNull;
     if (file?.bytes == null || !mounted) return;
@@ -279,8 +279,8 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
             iconColor: context.palette.crimson,
             title: 'Sobrescribir homebrew',
             content: Text(
-              '$collisions entrada(s) del pack comparten id con '
-              'contenido que ya tenés. Al importar se reemplazarán. '
+              '${collisions == 1 ? '1 entrada del archivo comparte' : '$collisions entradas del archivo comparten'} '
+              'id con contenido que ya tenés. Al importar se reemplazarán. '
               '¿Continuar?',
             ),
             actions: [
@@ -315,7 +315,7 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
       if (mounted) {
         showAppMessage(
           context,
-          'No se pudo importar el homebrew: $e',
+          failureMessage('No se pudo importar el homebrew', e),
           tone: AppMessageTone.error,
         );
       }

@@ -87,7 +87,12 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Modificado
 
-- Sin cambios.
+- Los avisos de error ya no muestran el nombre técnico de la excepción: dicen
+  qué no se pudo hacer y, cuando lo hay, el motivo en castellano.
+- Textos unificados según un glosario: «especie» en lugar de «raza»
+  (incluido el primer paso de creación), «bonificador» en lugar de «bonus»,
+  «Borrar» en todas las acciones de borrado y «archivo» en lugar de «pack» al
+  importar homebrew. Los conteos ya no usan plurales entre paréntesis.
 
 ### Eliminado
 

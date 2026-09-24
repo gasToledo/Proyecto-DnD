@@ -1756,7 +1756,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
             const SizedBox(height: 10),
             Expanded(
               child: matches.isEmpty
-                  ? const Center(child: Text('Sin resultados.'))
+                  ? const Center(child: Text('Sin coincidencias.'))
                   : ListView.separated(
                       itemCount: matches.length,
                       separatorBuilder: (_, _) =>

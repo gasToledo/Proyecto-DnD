@@ -145,7 +145,7 @@ class HomebrewStore {
         final id = json['id'];
         if (id is! String || id.trim().isEmpty) {
           throw const FormatException(
-            'Un arma, armadura u objeto del pack no tiene un id válido.',
+            'Un arma, armadura u objeto del archivo no tiene un id válido.',
           );
         }
         final previousKind = incomingKinds[id];

@@ -229,7 +229,7 @@ class _AddCombatantDialogState extends State<_AddCombatantDialog> {
         SizedBox(
           height: 280,
           child: results.isEmpty
-              ? const Center(child: Text('Sin resultados.'))
+              ? const Center(child: Text('Sin coincidencias.'))
               : ListView.builder(
                   itemCount: results.length,
                   itemBuilder: (context, i) {

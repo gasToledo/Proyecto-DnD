@@ -76,12 +76,12 @@ class TransferService {
       final version = data['formatVersion'];
       if (version is! int || version < 1) {
         throw const FormatException(
-          'La versión de la exportación Homebrew debe ser un entero positivo.',
+          'La versión de la exportación de homebrew debe ser un entero positivo.',
         );
       }
       if (version > formatVersion) {
         throw UnsupportedDataVersionException(
-          dataType: 'exportación Homebrew',
+          dataType: 'exportación de homebrew',
           found: version,
           supported: formatVersion,
         );
@@ -104,7 +104,7 @@ class TransferService {
       };
     }
     throw const FormatException(
-      'El archivo no es un pack de contenido homebrew válido.',
+      'El archivo no es una exportación de homebrew válida.',
     );
   }
 }

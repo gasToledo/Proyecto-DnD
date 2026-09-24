@@ -7,7 +7,9 @@ trabajar en el repositorio. Los detalles viven acá, una sola vez.
 ## Arquitectura
 
 - [Modo DM](arquitectura/modo-dm.md): vínculo entre cuentas, autorización,
-  campañas, capítulos y combate.
+  campañas, capítulos, combate y PNJ.
+- [Multiclase](arquitectura/multiclase.md): propuesta de diseño, sin
+  implementar; modelo, migración y fases.
 - [dnd_engine](../packages/dnd_engine/README.md): motor de reglas, modelos y
   catálogo dirigido por datos.
 
@@ -17,6 +19,8 @@ trabajar en el repositorio. Los detalles viven acá, una sola vez.
   precedencia, estructura del catálogo, generadores y verificaciones.
 - [Diseño web](desarrollo/diseno-web.md): lenguaje visual, componentes,
   responsividad y accesibilidad.
+- [Textos de la interfaz](desarrollo/textos.md): voz, glosario de términos,
+  etiquetas de acciones y mensajes de error.
 - [Versionado y changelog](desarrollo/versionado-y-changelog.md): versión
   visible, flujo de releases y formato obligatorio de cambios.
 

@@ -28,7 +28,7 @@ const manualScoreMax = 30;
 /// Pasos del wizard de creación, en orden. Fijos (ya no dependen de si la clase
 /// lanza conjuros: los conjuros viven dentro de [equipo]).
 enum CreationStep {
-  raza('Raza'),
+  raza('Especie'),
   clase('Clase'),
   trasfondo('Trasfondo'),
   puntuaciones('Puntuaciones'),

@@ -193,7 +193,7 @@ extension _SheetDiarySection on _SheetScreenState {
         dialogTitle: 'Elegir un archivo .md',
       );
     } catch (e) {
-      if (mounted) _snack('No se pudo abrir el archivo: $e');
+      if (mounted) _snack(failureMessage('No se pudo abrir el archivo', e));
       return;
     }
     final bytes = picked?.files.singleOrNull?.bytes;
@@ -877,7 +877,11 @@ class _DiaryEntryDialogState extends State<_DiaryEntryDialog> {
       );
       if (mounted) setState(() => _imageKey = key);
     } catch (e) {
-      if (mounted) setState(() => _error = 'No se pudo subir la imagen: $e');
+      if (mounted) {
+        setState(
+          () => _error = failureMessage('No se pudo subir la imagen', e),
+        );
+      }
     } finally {
       if (mounted) setState(() => _subiendo = false);
     }

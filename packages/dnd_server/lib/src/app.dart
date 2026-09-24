@@ -422,7 +422,7 @@ Future<Response> _callbackHandler(
   } catch (error) {
     return Response(
       401,
-      body: jsonEncode({'error': 'No se pudo completar el login.'}),
+      body: jsonEncode({'error': 'No se pudo iniciar sesión.'}),
       headers: {'content-type': 'application/json'},
     );
   }

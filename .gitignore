@@ -64,3 +64,10 @@ cloudflared/creds.json
 # `lib/main.dart`— no se puede ignorar acá, porque `main.dart` ya está
 # trackeado y esta lista solo alcanza a lo que git todavía no sigue.
 packages/dnd_app/test/main_dev.dart
+
+# Borradores de documentación que todavía no son guía vigente (ver
+# `docs/README.md`). Solo alcanza a lo que git todavía no sigue: si alguno se
+# promueve a guía, se saca de acá y se agrega con `git add -f` o se borra la línea.
+docs/arquitectura/multiclase.md
+docs/desarrollo/identidad/
+docs/desarrollo/plan-ayudas-ux.md

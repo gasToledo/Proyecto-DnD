@@ -98,17 +98,17 @@ class _EffectEditorState extends State<EffectEditor> {
 /// primero lo que toca los números de la ficha, después lo que concede
 /// competencias, después la magia y por último lo narrativo.
 enum _EffectKind {
-  abilityBonus('Bonus a característica'),
+  abilityBonus('Bonificador a característica'),
   setAbilityScore('Fijar una característica'),
   hpPerLevel('PG máx por nivel'),
   hpFlat('PG máx, una vez'),
-  acBonus('Bonus a CA'),
-  speedBonus('Bonus de velocidad'),
+  acBonus('Bonificador a la CA'),
+  speedBonus('Bonificador de velocidad'),
   setSpeed('Fijar la velocidad'),
   darkvision('Visión en la oscuridad'),
   skillProf('Competencia en habilidad'),
   saveProf('Competencia en salvación'),
-  saveBonus('Bonus a las salvaciones'),
+  saveBonus('Bonificador a las salvaciones'),
   weaponProf('Competencia con armas'),
   armorProf('Competencia con armadura'),
   toolProf('Competencia con herramienta'),

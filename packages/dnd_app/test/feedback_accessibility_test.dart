@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:dnd_app/api/api_client.dart';
+import 'package:dnd_app/api/api_exception.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
 import 'package:dnd_app/ui/settings_dialog.dart';
@@ -406,5 +407,29 @@ void main() {
 
     await tester.tap(find.text('Reintentar'));
     expect(retried, 1);
+  });
+
+  // Un aviso de error interpolaba la excepción tal cual, y quien importaba un
+  // archivo roto leía «FormatException: …» en inglés.
+  test('un aviso de error no muestra el nombre de la excepción', () {
+    expect(
+      failureMessage(
+        'No se pudo importar',
+        const FormatException('El archivo no es válido.'),
+      ),
+      'No se pudo importar: El archivo no es válido.',
+    );
+    expect(
+      failureMessage(
+        'No se pudo guardar',
+        const ApiException(404, 'Campaña no encontrada.'),
+      ),
+      'No se pudo guardar: Campaña no encontrada.',
+    );
+    // Un bug no tiene un motivo que le sirva a quien juega.
+    expect(
+      failureMessage('No se pudo guardar', StateError('Bad state: x')),
+      'No se pudo guardar.',
+    );
   });
 }

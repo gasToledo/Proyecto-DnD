@@ -2,10 +2,29 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../api/api_exception.dart';
 import '../ui/portrait_image.dart';
 import 'app_theme.dart';
 
 enum AppMessageTone { info, success, error }
+
+/// «No se pudo …» más el motivo, cuando el error trae uno escrito para quien
+/// juega.
+///
+/// Interpolar la excepción tal cual filtra jerga: `FormatException` antepone
+/// su nombre en inglés, y un `StateError` o un `TypeError` son bugs cuyo texto
+/// no le sirve a nadie en la mesa. Por eso solo aportan motivo las excepciones
+/// que ya traen un mensaje en castellano; el resto queda en la frase sola. El
+/// detalle crudo, cuando hace falta, va en «Ver detalles» de [AppErrorView].
+String failureMessage(String what, Object error) {
+  final reason = switch (error) {
+    ApiException(:final message) => message,
+    FormatException(:final message) => message,
+    UnsupportedDataVersionException() => '$error',
+    _ => '',
+  };
+  return reason.isEmpty ? '$what.' : '$what: $reason';
+}
 
 /// [onUndo] agrega el botón «Deshacer» y le da más tiempo al cartel: el que
 /// borró sin querer tarda en darse cuenta, y tres segundos no alcanzan para

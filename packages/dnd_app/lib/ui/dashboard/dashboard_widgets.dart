@@ -526,7 +526,7 @@ class _CharacterCardState extends State<_CharacterCard> {
                                   ),
                                   const PopupMenuItem(
                                     value: 'delete',
-                                    child: Text('Eliminar'),
+                                    child: Text('Borrar'),
                                   ),
                                 ],
                               ),

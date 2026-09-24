@@ -218,4 +218,5 @@ acá contenido de esas guías: enlazalo para que exista una sola fuente vigente.
 - `docs/arquitectura/modo-dm.md` — seguridad y contratos del Modo DM.
 - `docs/desarrollo/contenido-y-reglas.md` — fuentes, catálogo y validación.
 - `docs/desarrollo/diseno-web.md` — sistema visual y componentes.
+- `docs/desarrollo/textos.md` — glosario y convenciones de los textos visibles.
 - `docs/operaciones/despliegue.md` — runbook del stack.

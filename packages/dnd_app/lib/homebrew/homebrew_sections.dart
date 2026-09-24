@@ -83,7 +83,7 @@ extension _HomebrewSections on _HomebrewScreenState {
           appNavItem(
             context,
             icon: Icons.download,
-            label: 'Importar pack',
+            label: 'Importar archivo',
             onTap: () => run(_importHomebrew),
           ),
           appNavItem(
@@ -389,7 +389,7 @@ extension _HomebrewSections on _HomebrewScreenState {
                     OutlinedButton.icon(
                       onPressed: _importHomebrew,
                       icon: const Icon(Icons.download, size: 20),
-                      label: const Text('Importar un pack'),
+                      label: const Text('Importar un archivo'),
                     ),
                   ],
                 ),
@@ -581,7 +581,7 @@ extension _HomebrewSections on _HomebrewScreenState {
                   onPressed: onDuplicate,
                 ),
                 IconButton(
-                  tooltip: 'Eliminar $title',
+                  tooltip: 'Borrar $title',
                   icon: const Icon(Icons.delete_outline),
                   onPressed: onDelete,
                 ),
@@ -1041,7 +1041,7 @@ extension _HomebrewSections on _HomebrewScreenState {
       builder: (ctx) => AppDialog(
         icon: Icons.warning_amber_rounded,
         iconColor: pal.crimson,
-        title: '¿Eliminar $kind «$name»?',
+        title: '¿Borrar $kind «$name»?',
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1115,7 +1115,7 @@ extension _HomebrewSections on _HomebrewScreenState {
             onPressed: () => Navigator.pop(ctx, false),
           ),
           DialogAction(
-            'Eliminar',
+            'Borrar',
             primary: true,
             color: pal.crimson,
             onPressed: () => Navigator.pop(ctx, true),
@@ -1128,11 +1128,7 @@ extension _HomebrewSections on _HomebrewScreenState {
     fromRepo();
     _refresh();
     if (mounted) {
-      showAppMessage(
-        context,
-        '$name se eliminó.',
-        tone: AppMessageTone.success,
-      );
+      showAppMessage(context, '$name se borró.', tone: AppMessageTone.success);
     }
   }
 

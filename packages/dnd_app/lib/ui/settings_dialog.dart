@@ -55,7 +55,12 @@ class _SettingsDialogState extends State<SettingsDialog> {
       });
     } catch (error) {
       if (!mounted) return;
-      setState(() => _loadError = '$error');
+      setState(
+        () => _loadError = failureMessage(
+          'No se pudo cargar la configuración',
+          error,
+        ),
+      );
     }
   }
 
@@ -72,7 +77,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
       if (!mounted) return;
       showAppMessage(
         context,
-        'No se pudieron guardar los ajustes: $error',
+        failureMessage('No se pudieron guardar los ajustes', error),
         tone: AppMessageTone.error,
       );
       setState(() => _saving = false);
@@ -116,7 +121,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        'No se pudo cargar la configuración: $_loadError',
+        _loadError!,
         style: TextStyle(color: Theme.of(context).colorScheme.error),
       ),
       const SizedBox(height: 12),

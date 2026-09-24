@@ -45,7 +45,7 @@ void main() {
       'Armaduras': 'Agregar armadura',
       'Objetos': 'Agregar objeto',
       'Dotes': 'Agregar dote',
-      'Razas': 'Agregar raza',
+      'Especies': 'Agregar especie',
       'Trasfondos': 'Agregar trasfondo',
       'Conjuros': 'Agregar conjuro',
       'Criaturas': 'Agregar criatura',
@@ -140,7 +140,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tu taller está vacío'), findsOneWidget);
-    expect(find.text('Importar un pack'), findsOneWidget);
+    expect(find.text('Importar un archivo'), findsOneWidget);
     // Prometía que todo aparecía en la creación y en las fichas, con una
     // criatura de ejemplo; las criaturas van al Modo DM.
     expect(
@@ -303,7 +303,7 @@ void main() {
     await tester.tap(find.text('Armas').first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Eliminar Hoz de guerra'));
+    await tester.tap(find.byTooltip('Borrar Hoz de guerra'));
     await tester.pumpAndSettle();
 
     expect(find.text('Lo usa 1 ficha:'), findsOneWidget);
@@ -322,7 +322,7 @@ void main() {
     await tester.tap(find.text('Armas').first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Eliminar Hoz de guerra'));
+    await tester.tap(find.byTooltip('Borrar Hoz de guerra'));
     await tester.pumpAndSettle();
 
     expect(find.text('Ninguna de tus fichas lo está usando.'), findsOneWidget);
@@ -1044,11 +1044,11 @@ void main() {
     await tester.tap(find.text('Armas').first);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Eliminar Hoz de guerra'));
+    await tester.tap(find.byTooltip('Borrar Hoz de guerra'));
     await tester.pumpAndSettle();
 
     // Sin deshacer y a un toque de distancia, borrar no puede ser inmediato.
-    expect(find.text('¿Eliminar el arma «Hoz de guerra»?'), findsOneWidget);
+    expect(find.text('¿Borrar el arma «Hoz de guerra»?'), findsOneWidget);
     await tester.tap(find.text('Cancelar'));
     await tester.pumpAndSettle();
 

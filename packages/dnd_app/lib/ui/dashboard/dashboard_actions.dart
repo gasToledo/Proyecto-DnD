@@ -132,7 +132,7 @@ extension _DashboardActions on _DashboardScreenState {
       builder: (ctx) => AppDialog(
         icon: Icons.warning_amber_rounded,
         iconColor: context.palette.crimson,
-        title: '¿Eliminar a ${c.name}?',
+        title: '¿Borrar a ${c.name}?',
         content: const Text('Esta acción no se puede deshacer.'),
         actions: [
           DialogAction(
@@ -141,7 +141,7 @@ extension _DashboardActions on _DashboardScreenState {
             onPressed: () => Navigator.pop(ctx, false),
           ),
           DialogAction(
-            'Eliminar',
+            'Borrar',
             primary: true,
             color: context.palette.crimson,
             onPressed: () => Navigator.pop(ctx, true),
@@ -166,7 +166,7 @@ extension _DashboardActions on _DashboardScreenState {
       if (mounted) {
         showAppMessage(
           context,
-          'No se pudo exportar el personaje: $e',
+          failureMessage('No se pudo exportar el personaje', e),
           tone: AppMessageTone.error,
         );
       }
@@ -194,7 +194,7 @@ extension _DashboardActions on _DashboardScreenState {
       if (mounted) {
         showAppMessage(
           context,
-          'No se pudo crear el respaldo: $e',
+          failureMessage('No se pudo crear el respaldo', e),
           tone: AppMessageTone.error,
         );
       }
@@ -256,17 +256,17 @@ extension _DashboardActions on _DashboardScreenState {
       if (!mounted) return;
       showAppMessage(
         context,
-        // «imagen(es)» y no «retrato(s)»: la cuenta incluye las imágenes del
+        // «imágenes» y no «retratos»: la cuenta incluye las imágenes del
         // Diario, que van al mismo almacén sin ser retratos.
-        'Importados ${summary.charactersImported} personaje(s) y '
-        '${summary.portraitsImported} imagen(es).',
+        'Importados ${summary.charactersImported == 1 ? '1 personaje' : '${summary.charactersImported} personajes'} y '
+        '${summary.portraitsImported == 1 ? '1 imagen' : '${summary.portraitsImported} imágenes'}.',
         tone: AppMessageTone.success,
       );
     } catch (e) {
       if (mounted) {
         showAppMessage(
           context,
-          'Error al importar: $e',
+          failureMessage('No se pudo importar', e),
           tone: AppMessageTone.error,
         );
       }

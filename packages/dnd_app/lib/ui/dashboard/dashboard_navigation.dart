@@ -205,7 +205,7 @@ extension _DashboardNavigation on _DashboardScreenState {
       if (mounted) {
         showAppMessage(
           context,
-          'No se pudo cerrar la sesión: $e',
+          failureMessage('No se pudo cerrar la sesión', e),
           tone: AppMessageTone.error,
         );
       }

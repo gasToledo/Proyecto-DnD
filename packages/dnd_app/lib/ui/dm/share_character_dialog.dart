@@ -129,7 +129,7 @@ class _ShareCharacterDialogState extends State<_ShareCharacterDialog> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Generá un código y pasáselo a tu DM. Él lo pega en su campaña y '
+            'Generá un código y pasáselo a tu DM. Lo pega en su campaña y '
             've tu ficha; nunca puede editarla.',
             style: TextStyle(fontSize: 13, color: pal.textMuted),
           ),

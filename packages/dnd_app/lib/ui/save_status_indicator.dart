@@ -40,7 +40,7 @@ class SaveStatusIndicator extends StatelessWidget {
       CharacterSaveState.saving => (Icons.sync, 'Guardando…', pal.gold),
       CharacterSaveState.error => (
         Icons.error_outline,
-        'Error al guardar',
+        'No se guardó',
         scheme.error,
       ),
       CharacterSaveState.saved => (

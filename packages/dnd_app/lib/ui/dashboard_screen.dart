@@ -142,7 +142,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (mounted) {
         showAppMessage(
           context,
-          'No se pudo guardar el orden del roster: $error',
+          failureMessage(
+            'No se pudo guardar el orden de tus personajes',
+            error,
+          ),
           tone: AppMessageTone.error,
         );
       }
@@ -260,7 +263,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       } else {
         showAppMessage(
           context,
-          'No se pudieron guardar los últimos cambios: $error',
+          failureMessage('No se pudieron guardar los últimos cambios', error),
           tone: AppMessageTone.error,
         );
       }

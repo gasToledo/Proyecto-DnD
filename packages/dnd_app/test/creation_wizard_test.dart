@@ -38,7 +38,7 @@ void main() {
     });
   });
 
-  testWidgets('el wizard abre en Raza con el stepper de 8 pasos', (
+  testWidgets('el wizard abre en Especie con el stepper de 8 pasos', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1280, 900);
@@ -55,10 +55,11 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Crear personaje'), findsOneWidget);
-    // Los 8 rótulos del stepper.
+    // Los 8 pasos del stepper. Por su etiqueta y no por el texto: el título
+    // del paso abierto repite el nombre del primero («ESPECIE»).
     for (final s in CreationStep.values) {
       expect(
-        find.text(s.label.toUpperCase()),
+        find.bySemanticsLabel(RegExp('^${s.label}, paso ${s.index + 1} de 8')),
         findsOneWidget,
         reason: 'falta el paso ${s.label}',
       );
@@ -85,7 +86,10 @@ void main() {
 
     expect(find.text('Crear personaje'), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsWidgets);
-    expect(find.text(CreationStep.raza.label.toUpperCase()), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp('^Especie, paso 1 de 8')),
+      findsOneWidget,
+    );
     expect(find.text(CreationStep.resumen.label.toUpperCase()), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -114,7 +118,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    // Raza: los linajes son chips con procedencia, el caso más largo.
+    // Especie: los linajes son chips con procedencia, el caso más largo.
     await tapOption(tester, 'Humano');
     await pickSize(tester);
     await next();
@@ -149,7 +153,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Raza -> Clase (Guerrero es la clase por defecto y pide 3 maestrías).
+    // Especie -> Clase (Guerrero es la clase por defecto y pide 3 maestrías).
     await tapOption(tester, 'Humano');
     await pickSize(tester);
     await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));

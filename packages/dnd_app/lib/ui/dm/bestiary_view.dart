@@ -2,7 +2,6 @@ import 'package:dnd_engine/dnd_engine.dart';
 import 'package:flutter/material.dart';
 
 import '../../api/api_client.dart';
-import '../../api/api_exception.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import 'add_monster_dialog.dart';
@@ -151,7 +150,7 @@ class _BestiaryViewState extends State<BestiaryView> {
         if (!mounted) return;
         showAppMessage(
           context,
-          error is ApiException ? error.message : '$error',
+          failureMessage('No se pudo sumar al combate', error),
           tone: AppMessageTone.error,
         );
       }

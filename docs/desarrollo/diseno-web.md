@@ -158,7 +158,7 @@ mismo casi-negro que va sobre el oro.
 | `onSurface` | `#EFE7DA` | `#2A2118` | Texto principal |
 | `onSurfaceVariant` | `#A2937E` | `#6E5F49` | Texto secundario |
 | `primary` | = `gold` | = `gold` | Acento del sistema |
-| `onPrimary` | `#201A10` | `#201A10` | Texto sobre `primary` (ver [nota de accesibilidad](#11-accesibilidad)) |
+| `onPrimary` | `#201A10` | `#FFFFFF` | Texto sobre `primary`; se invierte con el tema, como lo que va sobre carmesí (ver [nota de accesibilidad](#11-accesibilidad)) |
 | `secondary` | = `crimson` | = `crimson` | |
 | `error` | = `crimson` | = `crimson` | El error usa el carmesí de la paleta, no un rojo ajeno |
 | `outline` | = `hairline` | = `hairline` | |
@@ -604,6 +604,7 @@ Ratios calculados sobre los tokens reales. **Verde** = AA para texto normal
 | --- | --- | --- |
 | `onSurface` sobre `surface` | 14.76 | ✅ |
 | `onCrimson` sobre `crimson` | 6.47 | ✅ |
+| `onPrimary` sobre `gold` | 5.05 | ✅ |
 | `crimson` sobre `surface` | 6.04 | ✅ |
 | `onSurfaceVariant` sobre `surface` | 5.78 | ✅ |
 | `textMuted` sobre `surface` | 5.72 | ✅ |
@@ -612,7 +613,6 @@ Ratios calculados sobre los tokens reales. **Verde** = AA para texto normal
 | `gold` sobre `surface` | 4.71 | ✅ |
 | `textMuted` sobre `plaque` | 4.68 | ✅ |
 | `gold` sobre `plaque` | 3.85 | ⚠️ solo texto grande |
-| `onPrimary` sobre `gold` | 3.42 | ❌ texto de botón relleno |
 
 Los tokens que llevan texto se retocaron para llegar a AA **contra los dos
 fondos** sobre los que se dibujan. Una versión anterior de esta guía documentaba
@@ -623,12 +623,12 @@ está en los comentarios de `AppPalette`.
 
 1. **`gold` sobre `plaque` en tema claro solo vale a 24 px o más.** Por eso la
    `StatPlaque` normal pasa y la variante `dense` (16 px) no.
-2. **`onPrimary` sobre `gold` en tema claro es la única combinación de la
-   aplicación por debajo de AA**, y afecta al texto de todo `FilledButton`. Es
-   deuda abierta, no una licencia para sumar más usos.
-3. **Sobre `crimson` en tema oscuro no va blanco.** El carmesí se aclaró para
-   que los PG llegaran a AA, y con eso el blanco dejó de contrastar: `onError` y
-   `onSecondary` son el mismo casi-negro que va sobre el oro.
+2. **Lo que va sobre un acento se invierte con el tema.** En el oscuro, oro y
+   carmesí son claros y llevan casi-negro encima; en el claro son oscuros y
+   llevan blanco. Con el casi-negro en los dos temas, el texto de todo
+   `FilledButton` quedaba en 3.42 en el claro. `onPrimary`, `onSecondary` y
+   `onError` salen del mismo valor en `AppTheme`, y la prueba de contraste
+   cubre los dos acentos en los dos temas.
 4. Los objetivos táctiles siguen los mínimos de Material (48 px); los
    `IconButton` no se achican por debajo de eso.
 
@@ -662,16 +662,14 @@ Cosas ciertas hoy, documentadas para que no se re-descubran:
 1. **Georgia no se empaqueta.** En sistemas sin la fuente, toda la capa display
    cae al serif genérico y la métrica cambia. Empaquetarla tiene costo de
    licencia y de peso; la alternativa sería una serif libre servida como asset.
-2. **`onPrimary` sobre `gold` claro (3.42)** deja el texto de los
-   `FilledButton` por debajo de AA en tema claro. Es la última combinación de
-   la paleta que no llega.
-3. **La escala de espaciado no es sistemática.** Conviven 2, 3, 5, 6, 7, 11 y
+2. **La escala de espaciado no es sistemática.** Conviven 2, 3, 5, 6, 7, 11 y
    13 con la escala canónica.
 
-Dos deudas que esta lista traía y **ya están saldadas**, anotadas para que no se
-vuelvan a abrir: la marca vieja "Fichas / D&D 5e" del wizard de creación (hoy no
-queda ninguna aparición de "Fichas" en `lib/`) y el `orientation:
-portrait-primary` del `manifest.json`, que hoy es `any`.
+Tres deudas que esta lista traía y **ya están saldadas**, anotadas para que no
+se vuelvan a abrir: la marca vieja "Fichas / D&D 5e" del wizard de creación (hoy
+no queda ninguna aparición de "Fichas" en `lib/`), el `orientation:
+portrait-primary` del `manifest.json`, que hoy es `any`, y `onPrimary` sobre el
+oro del tema claro (3.42), que con blanco llega a 5.05.
 
 ---
 
@@ -715,7 +713,7 @@ exactamente con los del código Dart.
       "hairline": "#D9C9A8",
       "goldSoft": "#EEE1BF",
       "textMuted": "#6E6047",
-      "onPrimary": "#201A10"
+      "onPrimary": "#FFFFFF"
     },
     "classAccent": {
       "fighter": "#B0413E", "barbarian": "#C0552B", "rogue": "#7D6B99",
@@ -781,6 +779,7 @@ producto.
   --on-surface: #2A2118; --on-surface-variant: #6E5F49;
   --gold: #8A6A1E; --crimson: #A6392E; --plaque: #EBE0C9;
   --hairline: #D9C9A8; --gold-soft: #EEE1BF; --text-muted: #6E6047;
+  --on-primary: #FFFFFF;
 }
 
 .card { background: var(--surface); border: var(--border-hairline);

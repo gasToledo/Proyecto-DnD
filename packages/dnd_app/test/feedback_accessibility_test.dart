@@ -78,6 +78,18 @@ void main() {
         );
       }
     });
+
+    // El texto de todo `FilledButton` y del paso activo del wizard va sobre el
+    // oro. En el tema claro se quedaba en 3.4:1 con el casi-negro del oscuro.
+    test('lo que va sobre oro se lee en los dos temas', () {
+      for (final theme in [AppTheme.dark, AppTheme.light]) {
+        expect(
+          _contrast(theme.colorScheme.onPrimary, theme.colorScheme.primary),
+          greaterThanOrEqualTo(4.5),
+          reason: '${theme.brightness.name}: onPrimary sobre el oro',
+        );
+      }
+    });
   });
   testWidgets('los avisos se anuncian como región viva', (tester) async {
     await tester.pumpWidget(

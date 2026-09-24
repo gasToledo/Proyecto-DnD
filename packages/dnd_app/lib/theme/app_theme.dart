@@ -166,18 +166,20 @@ class AppTheme {
     required Color onSurfaceVariant,
     required AppPalette palette,
   }) {
-    // El carmesí del tema oscuro es claro (hace falta para que los PG lleguen a
-    // AA sobre la tarjeta): encima de él el blanco ya no contrasta, así que lo
-    // que va sobre carmesí es el mismo casi-negro que va sobre el oro.
-    final onCrimson = brightness == Brightness.dark
+    // Lo que va encima de un acento (oro o carmesí) se invierte con el tema.
+    // En el oscuro los dos acentos son claros —el carmesí, para que los PG
+    // lleguen a AA sobre la tarjeta— y el blanco ya no contrasta. En el claro
+    // son oscuros, y el casi-negro sobre el oro se quedaba en 3.4:1: el texto
+    // de todos los `FilledButton` por debajo de AA. Con blanco llega a 5:1.
+    final onAccent = brightness == Brightness.dark
         ? const Color(0xFF201A10)
         : Colors.white;
     final scheme = ColorScheme(
       brightness: brightness,
       primary: palette.gold,
-      onPrimary: const Color(0xFF201A10),
+      onPrimary: onAccent,
       secondary: palette.crimson,
-      onSecondary: onCrimson,
+      onSecondary: onAccent,
       // Sin estos dos, `secondaryContainer` cae en `secondary` —el carmesí— y
       // todo lo seleccionable de Material 3 (chips, sobre todo) se pinta del
       // único color que en esta aplicación significa peligro. Lo elegido va en
@@ -185,7 +187,7 @@ class AppTheme {
       secondaryContainer: palette.goldSoft,
       onSecondaryContainer: palette.gold,
       error: palette.crimson,
-      onError: onCrimson,
+      onError: onAccent,
       surface: surface,
       onSurface: onSurface,
       onSurfaceVariant: onSurfaceVariant,

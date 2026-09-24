@@ -94,6 +94,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   (incluido el primer paso de creación), «bonificador» en lugar de «bonus»,
   «Borrar» en todas las acciones de borrado y «archivo» en lugar de «pack» al
   importar homebrew. Los conteos ya no usan plurales entre paréntesis.
+- En el tema claro, el texto de los botones dorados pasa a blanco y llega al
+  contraste mínimo de accesibilidad (antes quedaba por debajo).
 
 ### Eliminado
 

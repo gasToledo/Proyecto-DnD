@@ -143,8 +143,7 @@ void main() {
     await tester.tap(find.text('Historia').first);
     await tester.pumpAndSettle();
     expect(find.text('2 / 2 elegidas'), findsOneWidget);
-    await tester.tap(find.text('Medicina').first);
-    await tester.pumpAndSettle();
+    await tapCard(tester, find.text('Medicina').first);
     expect(find.text('2 / 2 elegidas'), findsOneWidget);
 
     // --- Dote de origen. Iniciado en la Magia se ofrece acá desde que pasó de
@@ -183,6 +182,10 @@ void main() {
     expect(find.text('0/1'), findsOneWidget);
     await tapCard(tester, find.text('Habilidoso'));
     expect(find.text('0/4'), findsOneWidget);
+    // Dos selectores apilados: cada uno dice de qué origen es y cuántas pide,
+    // o los juegos del Soldado parecen repetidos en la lista de Habilidoso.
+    expect(find.text('Soldado: elegí 1'), findsOneWidget);
+    expect(find.text('Habilidoso: elegí 3'), findsOneWidget);
 
     // Ofrece herramientas además de habilidades, que es lo que la distingue de
     // las competencias de clase y especie...
@@ -225,8 +228,7 @@ void main() {
     // --- Y al revés: elegida por la dote, bloqueada en la clase.
     await tapDote('Medicina');
     expect(find.text('1/4'), findsOneWidget);
-    await tester.tap(find.text('Medicina').first);
-    await tester.pumpAndSettle();
+    await tapCard(tester, find.text('Medicina').first);
     expect(find.text('1 / 2 elegidas'), findsOneWidget);
 
     expect(tester.takeException(), isNull);

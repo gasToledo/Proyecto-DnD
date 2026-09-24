@@ -1317,7 +1317,7 @@
       {
         "level": 3,
         "name": "Canalizar Divinidad: Arma Sagrada",
-        "description": "Imbuyes un arma con energía sagrada: durante 10 minutos sumas tu Carisma a las tiradas de ataque con ella y emite luz.",
+        "description": "Imbuís un arma con energía sagrada: durante 10 minutos sumás tu Carisma a las tiradas de ataque con ella y emite luz.",
         "effects": [
           { "type": "passiveTrait", "name": "Arma Sagrada", "description": "Suma tu mod. de Carisma al ataque con un arma imbuida durante 10 minutos." }
         ]

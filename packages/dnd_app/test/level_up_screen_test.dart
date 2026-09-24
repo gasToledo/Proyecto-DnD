@@ -671,6 +671,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tus elecciones de este nivel'), findsOneWidget);
+    // El total de pasos no cambia al resolver: el paso de Elecciones se
+    // borraba del recorrido y «3 de 6» pasaba a «3 de 5».
+    final total = RegExp(r'Paso 3 de (\d+)')
+        .firstMatch(
+          tester.widget<Text>(find.textContaining('Paso 3 de').first).data!,
+        )!
+        .group(1);
     // Bloquea hasta elegir, y dice por qué.
     expect(find.text('Te falta una elección para continuar.'), findsOneWidget);
 
@@ -706,14 +713,23 @@ void main() {
     await tester.tap(chip);
     await tester.pumpAndSettle();
     expect(find.text('Te falta una elección para continuar.'), findsNothing);
+    expect(find.textContaining('Paso 3 de $total'), findsWidgets);
+
+    // El paso de conjuros dice cuántos hay preparados y avisa el cupo libre.
+    var sawPrepared = false;
 
     while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+      if (find.textContaining('Preparados:').evaluate().isNotEmpty) {
+        sawPrepared = true;
+        expect(find.textContaining('cupos libres'), findsOneWidget);
+      }
       await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
     }
     await tester.tap(find.text('Confirmar nivel 2'));
     await tester.pumpAndSettle();
 
+    expect(sawPrepared, isTrue);
     expect(saved?.featureChoices['fighting-style'], ['fs-defense']);
     expect(tester.takeException(), isNull);
   });

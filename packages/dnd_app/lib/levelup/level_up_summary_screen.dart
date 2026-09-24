@@ -181,7 +181,9 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
                 ],
                 if (featPassives.isNotEmpty) ...[
                   const SizedBox(height: 22),
-                  const Eyebrow('De tu dote'),
+                  // No todo lo de acá es una dote: también caen opciones de un
+                  // rasgo, como Arma Sagrada de Canalizar Divinidad.
+                  const Eyebrow('También ganás'),
                   DenseRows(
                     children: [
                       for (final p in featPassives)

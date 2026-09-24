@@ -216,6 +216,9 @@ void main() {
     expect(find.text('Cómo las empuñás'), findsNothing);
 
     await tapWeapon('Daga');
+    // Con una sola arma no hay mano secundaria que elegir, ni texto sobre ella.
+    expect(find.byKey(const ValueKey('off-hand-dagger')), findsNothing);
+    expect(find.text('Cómo las empuñás'), findsNothing);
     await tapWeapon('Bastón');
 
     // La daga es Ligera, el bastón es versátil: cada una ofrece lo suyo.

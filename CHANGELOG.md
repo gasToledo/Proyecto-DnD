@@ -162,7 +162,18 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Modificado
 
-- Sin cambios.
+- Creación de personaje: con escudo ya no se ofrece empuñar a dos manos, y la
+  mano secundaria solo aparece con dos armas; las elecciones de objeto dicen
+  si son de la clase o del trasfondo; «Coste en puntos» avisa los puntos sin
+  gastar; con más de una elección de competencias, cada lista dice de qué
+  origen es; las características muestran su nombre completo y su ayuda ya no
+  tapa el valor.
+- Subida de nivel: el total de pasos no cambia al resolver una elección; los
+  puntos de golpe y las elecciones de rasgos figuran como decisiones y no
+  como cambios automáticos; antes de tirar no se muestra un total que parece
+  el resultado; el paso de conjuros dice cuántos hay preparados y avisa los
+  cupos libres; y se corrigieron textos (sin género para el personaje, sin
+  «compilar», voseo en Arma Sagrada, «También ganás»).
 
 ### Eliminado
 

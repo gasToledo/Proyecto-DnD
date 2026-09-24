@@ -455,6 +455,16 @@ class _AptitudesStep extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             for (final slot in slots) ...[
+              // Con más de un origen, cada selector dice el suyo: apilados sin
+              // rótulo parecían una sola lista con los juegos repetidos, y no
+              // se sabía qué elección contaba para cuál.
+              if (slots.length > 1) ...[
+                Text(
+                  '${slot.featName}: elegí ${slot.count}',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 6),
+              ],
               _ProficiencyChoicePicker(
                 slot: slot,
                 chosen: draft.proficiencyChoices[slot.groupId]!,

@@ -66,7 +66,11 @@ void main() {
     // --- Una tarjeta por característica y el pool sin tocar.
     expect(find.text('Valores sin asignar'), findsOneWidget);
     for (final a in Ability.values) {
-      expect(find.text(a.abbr), findsOneWidget, reason: 'falta ${a.abbr}');
+      expect(
+        find.text('${a.abbr}  ${a.label}', findRichText: true),
+        findsOneWidget,
+        reason: 'falta ${a.abbr}',
+      );
     }
     expect(find.byType(DropdownButtonFormField<int>), findsNWidgets(6));
     // Array estándar: 6 valores del pool sin asignar todavía.

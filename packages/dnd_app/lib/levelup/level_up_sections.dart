@@ -155,6 +155,28 @@ extension _LevelUpSections on _LevelUpScreenState {
   Widget _buildOverviewStep() {
     final features = _gainedFeatures();
     final choices = <Widget>[
+      // Promedio o tirada es una decisión, y el Estilo de Combate también:
+      // listados entre los cambios automáticos, el jugador no esperaba que se
+      // le preguntara nada.
+      _LevelUpCard(
+        icon: Icons.favorite,
+        title: 'Puntos de golpe',
+        body:
+            'Elegís el promedio o tirás tu d$_hitDie; la Constitución se suma '
+            'sola.',
+        tag: 'ELEGÍS VOS',
+      ),
+      if (_choiceSlots.isNotEmpty)
+        _LevelUpCard(
+          icon: Icons.style,
+          title: _choiceSlots.length == 1
+              ? _choiceSlots.single.name
+              : 'Elecciones de rasgos',
+          body: _choiceSlots.length == 1
+              ? 'Un rasgo de este nivel te deja elegir entre varias opciones.'
+              : _choiceSlots.map((s) => s.name).join(' · '),
+          tag: 'ELEGÍS VOS',
+        ),
       if (_needsSubclass)
         const _LevelUpCard(
           icon: Icons.shield,
@@ -178,21 +200,17 @@ extension _LevelUpSections on _LevelUpScreenState {
         ),
     ];
     final automatic = <Widget>[
-      _LevelUpCard(
-        icon: Icons.favorite,
-        title: 'Puntos de golpe',
-        body:
-            'Sumás el resultado de tu dado d$_hitDie y tu modificador de '
-            'Constitución.',
-        tag: 'AUTOMÁTICO',
-      ),
       if (features.isNotEmpty)
         _LevelUpCard(
           icon: Icons.workspace_premium,
           title: features.length == 1
               ? features.single.name
               : '${features.length} rasgos de clase',
-          body: features.map((feature) => feature.name).join(' · '),
+          // Con un solo rasgo, el cuerpo repetía el título («Canalizar
+          // Divinidad / Canalizar Divinidad»): va su primera oración.
+          body: features.length == 1
+              ? features.single.description.split('. ').first
+              : features.map((feature) => feature.name).join(' · '),
           tag: 'AUTOMÁTICO',
         ),
     ];
@@ -242,7 +260,8 @@ extension _LevelUpSections on _LevelUpScreenState {
               ),
               const SizedBox(height: 20),
               Text(
-                '${widget.character.name} está listo para crecer',
+                // Sin «listo»: el personaje no tiene por qué ser varón.
+                '${widget.character.name} sube a nivel $_newLevel',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontFamily: 'Georgia', fontSize: 28),
               ),
@@ -274,13 +293,13 @@ extension _LevelUpSections on _LevelUpScreenState {
         ),
         const SizedBox(height: 28),
         _buildClassChoicePicker(),
-        const Eyebrow('Cambios automáticos'),
-        _responsiveCards(automatic),
-        if (choices.isNotEmpty) ...[
+        if (automatic.isNotEmpty) ...[
+          const Eyebrow('Cambios automáticos'),
+          _responsiveCards(automatic),
           const SizedBox(height: 24),
-          const Eyebrow('Decisiones de esta subida'),
-          _responsiveCards(choices),
         ],
+        const Eyebrow('Decisiones de esta subida'),
+        _responsiveCards(choices),
       ],
     );
   }
@@ -312,11 +331,12 @@ extension _LevelUpSections on _LevelUpScreenState {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _LevelUpIntro(
-          eyebrow: 'Paso automático',
+          // Promedio o tirada es una decisión: «automático» decía lo contrario.
+          eyebrow: 'Elegís vos',
           title: 'Más puntos de golpe',
           body:
               'Elegí el promedio seguro o tirá tu dado de golpe d$_hitDie. '
-              'La Constitución se aplica automáticamente al compilar la ficha.',
+              'La Constitución se suma sola.',
         ),
         const SizedBox(height: 22),
         LayoutBuilder(
@@ -366,7 +386,11 @@ extension _LevelUpSections on _LevelUpScreenState {
                   : '${['+$_hpGain del dado', '${firmado(conMod)} de Constitución', if (resto != 0) '${firmado(resto)} de tus rasgos'].join(' · ')} = ${firmado(delta)} PG.'
                         '${_isAsi ? ' Si subís Constitución más adelante, se recalcula.' : ''}',
               trailing: Text(
-                '${before.maxHp} → ${after.maxHp}',
+                // Sin tirar, la cifra de la derecha era solo la Constitución y
+                // se leía como el resultado.
+                sinTirar
+                    ? '${before.maxHp} → ?'
+                    : '${before.maxHp} → ${after.maxHp}',
                 style: TextStyle(
                   fontFamily: 'Georgia',
                   fontSize: 22,
@@ -849,6 +873,22 @@ extension _LevelUpSections on _LevelUpScreenState {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final prepared = _newCantrips != null || _newSpells != null;
 
+    // Lo que ya está preparado, a la vista: al volver del editor no se veía
+    // qué había quedado, y un cupo libre pasaba sin que nadie lo notara. Los
+    // concedidos por rasgos no ocupan cupo y no se cuentan.
+    final updated = _buildUpdated();
+    final granted = {
+      ..._updatedSheet.alwaysPreparedSpellIds,
+      for (final s in _updatedSheet.innateSpells) s.spellId,
+    };
+    final chosen = [
+      for (final id in updated.spellIdsFor(
+        targetBlock?.classId ?? updated.classId,
+      ))
+        if (!granted.contains(id)) ?widget.repo.spell(id),
+    ];
+    final free = after.preparedCount - chosen.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -875,6 +915,26 @@ extension _LevelUpSections on _LevelUpScreenState {
           ].join(' · '),
           style: TextStyle(color: muted, fontSize: 13),
         ),
+        if (after.preparedCount > 0) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Preparados: ${chosen.length} de ${after.preparedCount}',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          if (chosen.isNotEmpty)
+            Text(
+              chosen.map((s) => s.name).join(' · '),
+              style: TextStyle(color: muted, fontSize: 13),
+            ),
+          if (free > 0)
+            Text(
+              free == 1
+                  ? 'Te queda 1 cupo libre: podés preparar un conjuro más.'
+                  : 'Te quedan $free cupos libres: podés preparar $free '
+                        'conjuros más.',
+              style: TextStyle(color: context.palette.gold, fontSize: 13),
+            ),
+        ],
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: () => _openSpellPrep(after, classId: targetBlock?.classId),

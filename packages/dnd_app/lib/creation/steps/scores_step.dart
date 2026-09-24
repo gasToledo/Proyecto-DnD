@@ -329,6 +329,26 @@ class _PointBuyBar extends StatelessWidget {
                 ),
             ],
           ),
+          // Todas arrancan en 8 y el paso ya deja avanzar: sin esto se podía
+          // seguir con los 27 puntos sin tocar. Avisa y no bloquea, porque
+          // guardarse puntos es cosa de la mesa.
+          if (remaining > 0 && draft.pointsSpent > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              remaining == 1
+                  ? 'Te queda 1 punto sin gastar: si seguís, se pierde.'
+                  : 'Te quedan $remaining puntos sin gastar: si seguís, se '
+                        'pierden.',
+              style: TextStyle(fontSize: 12, color: pal.crimson),
+            ),
+          ] else if (remaining == pointBuyBudget) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Todas empiezan en $pointBuyMin: subí las que más te importan con '
+              '«+».',
+              style: TextStyle(fontSize: 12, color: pal.crimson),
+            ),
+          ],
           const SizedBox(height: 8),
           Text(
             'Cada característica va de $pointBuyMin a $pointBuyMax. Los últimos '
@@ -467,17 +487,38 @@ class _ScoreCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
+              // El tooltip va solo sobre el rótulo y se abre hacia arriba:
+              // envolviendo el `Expanded` ocupaba la fila entera y, abierto
+              // hacia abajo, tapaba el valor que se estaba eligiendo. El nombre
+              // completo va a la vista: «FUE» a secas no lo dice.
               Expanded(
-                child: Tooltip(
-                  message: '${ability.label}\n${ability.description}',
-                  waitDuration: const Duration(milliseconds: 400),
-                  child: Text(
-                    ability.abbr,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
-                      color: scheme.onSurfaceVariant,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Tooltip(
+                    message: ability.description,
+                    preferBelow: false,
+                    waitDuration: const Duration(milliseconds: 400),
+                    child: Text.rich(
+                      TextSpan(
+                        text: ability.abbr,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: '  ${ability.label}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              letterSpacing: 0,
+                              color: pal.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

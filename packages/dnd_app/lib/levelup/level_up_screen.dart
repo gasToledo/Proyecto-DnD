@@ -143,6 +143,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _proficiencyCache = null;
       _slotCache = null;
       _currentStep = 0;
+      _shownSteps.clear();
     });
   }
 
@@ -457,10 +458,17 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   bool get _hasProficiencyChoices => _pendingProficiency > 0;
 
   /// Si todo lo que falta elegir es Pericia. Decide el rótulo y el texto del
-  /// paso: un cupo ya resuelto no debería cambiarle el nombre.
-  bool get _pendingAreAllExpertise => _proficiencySlots
-      .where((s) => _proficiencyFor(s.groupId).length < s.count)
-      .every((s) => s.expertise);
+  /// paso: un cupo ya resuelto no debería cambiarle el nombre. Con todo
+  /// resuelto se mira lo que había: el paso ahora queda en el recorrido, y sin
+  /// pendientes `every` daba verdadero y lo rebautizaba «Pericia».
+  bool get _pendingAreAllExpertise {
+    final pending = _proficiencySlots.where(
+      (s) => _proficiencyFor(s.groupId).length < s.count,
+    );
+    return (pending.isEmpty ? _proficiencySlots : pending).every(
+      (s) => s.expertise,
+    );
+  }
 
   List<FeatureChoiceSlot>? _slotCache;
   String? _slotSig;
@@ -503,7 +511,23 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
 
   void _updateState(VoidCallback update) => setState(update);
 
+  /// Pasos que ya aparecieron en esta subida. Elecciones, Competencias y
+  /// Conjuros a elección dependen de lo que falta, y al resolverlos se
+  /// borraban del recorrido: «Paso 4 de 6» pasaba a «4 de 5» a mitad de
+  /// camino, y volver a revisarlos ya no era posible. Solo se reinician si
+  /// cambia la clase que sube.
+  final _shownSteps = <_LevelUpStepKind>{};
+
   List<_LevelUpStep> get _steps {
+    final steps = _computeSteps();
+    _shownSteps.addAll(steps.map((s) => s.kind));
+    return steps;
+  }
+
+  bool _keeps(_LevelUpStepKind kind, bool needed) =>
+      needed || _shownSteps.contains(kind);
+
+  List<_LevelUpStep> _computeSteps() {
     return [
       const _LevelUpStep(
         _LevelUpStepKind.overview,
@@ -523,13 +547,13 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           'Mejora o dote',
           Icons.trending_up,
         ),
-      if (_hasFeatureChoices)
+      if (_keeps(_LevelUpStepKind.featureChoices, _hasFeatureChoices))
         const _LevelUpStep(
           _LevelUpStepKind.featureChoices,
           'Elecciones',
           Icons.style,
         ),
-      if (_hasProficiencyChoices)
+      if (_keeps(_LevelUpStepKind.proficiencies, _hasProficiencyChoices))
         _LevelUpStep(
           _LevelUpStepKind.proficiencies,
           // El rótulo sigue a lo que falta, no a lo que hay: si lo único
@@ -544,7 +568,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
           'Rasgos',
           Icons.workspace_premium,
         ),
-      if (_hasSpellChoices)
+      if (_keeps(_LevelUpStepKind.spellChoices, _hasSpellChoices))
         const _LevelUpStep(
           _LevelUpStepKind.spellChoices,
           'Conjuros a elección',

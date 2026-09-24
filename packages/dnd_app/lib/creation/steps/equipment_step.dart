@@ -83,7 +83,13 @@ class _StartingEquipmentSection extends StatelessWidget {
                 grant.chooseFromItemIds.contains(draft.equipmentChoices[key])
                 ? draft.equipmentChoices[key]
                 : null,
-            decoration: const InputDecoration(labelText: 'Elegí un objeto'),
+            // Dos desplegables iguales no decían cuál era de la clase y cuál
+            // del trasfondo.
+            decoration: InputDecoration(
+              labelText: key.startsWith('class:')
+                  ? 'Elegí un objeto del equipo de clase'
+                  : 'Elegí un objeto del equipo de trasfondo',
+            ),
             items: [
               for (final id in grant.chooseFromItemIds)
                 DropdownMenuItem(
@@ -167,7 +173,8 @@ class _StartingEquipmentSection extends StatelessWidget {
       if (grant.isChoice)
         grant.chooseFromItemIds.length <= 3
             ? grant.chooseFromItemIds.map(_itemName).join(' o ')
-            : '${grant.chooseCount} a elegir',
+            // «1 a elegir» no decía entre qué: se nombran las dos primeras.
+            : '${grant.chooseFromItemIds.take(2).map(_itemName).join(', ')} u otro',
       for (final coin in grant.coins.entries)
         '${coin.value} ${coinLabels[coin.key] ?? coin.key}',
     ],
@@ -208,6 +215,9 @@ class _ReceivedEquipmentSection extends StatelessWidget {
                 onSelected: (on) {
                   if (item.isShield) {
                     draft.shieldEquipped = on;
+                    // Con escudo no hay mano libre: una versátil marcada a dos
+                    // manos seguiría calculándose con el dado mayor.
+                    if (on) draft.weaponTwoHanded.clear();
                   } else {
                     draft.equippedArmorId = on ? item.id : null;
                   }
@@ -253,10 +263,15 @@ class _WeaponGripSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Secundaria solo con dos armas en las manos, y A dos manos solo sin
+    // escudo: con una espada y un escudo se ofrecían las dos cosas, y el texto
+    // hablaba de un ataque con la otra mano que no había.
+    final dual = draft.weaponIds.length >= 2;
+    final shield = draft.shieldEquipped;
     final grips = [
       for (final id in draft.weaponIds)
         if (draft.repo.weapon(id) case final w?)
-          if (w.isLight || w.versatileDice != null) w,
+          if ((dual && w.isLight) || (!shield && w.versatileDice != null)) w,
     ];
     if (grips.isEmpty) return const SizedBox.shrink();
 
@@ -265,17 +280,18 @@ class _WeaponGripSection extends StatelessWidget {
       children: [
         const SizedBox(height: 16),
         Text('Cómo las empuñás', style: Theme.of(context).textTheme.titleSmall),
-        Text(
-          'El ataque de mano secundaria es una acción adicional y no suma tu '
-          'modificador al daño, salvo con el estilo Combate con Dos Armas.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        if (dual)
+          Text(
+            'El ataque de mano secundaria es una acción adicional y no suma tu '
+            'modificador al daño, salvo con el estilo Combate con Dos Armas.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         const SizedBox(height: 6),
         for (final w in grips)
           Row(
             children: [
               Expanded(child: Text(w.name)),
-              if (w.isLight)
+              if (dual && w.isLight)
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
                   child: FilterChip(
@@ -291,7 +307,7 @@ class _WeaponGripSection extends StatelessWidget {
                     },
                   ),
                 ),
-              if (w.versatileDice != null)
+              if (!shield && w.versatileDice != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
                   child: FilterChip(

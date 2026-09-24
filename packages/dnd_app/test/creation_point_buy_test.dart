@@ -69,6 +69,7 @@ void main() {
     expect(find.text('27 de 27'), findsOneWidget);
     expect(find.widgetWithIcon(IconButton, Icons.add), findsNWidgets(6));
     expect(find.text('subir cuesta 1 · gastados 0'), findsNWidgets(6));
+    expect(find.textContaining('Todas empiezan en'), findsOneWidget);
 
     // A diferencia del array estándar, acá no hay nada "sin asignar": el
     // reparto de partida es legal aunque desperdicie el presupuesto.
@@ -85,6 +86,11 @@ void main() {
       await tester.pumpAndSettle();
     }
     expect(find.text('22 de 27'), findsOneWidget);
+    // Avanzar con puntos sin gastar se permite, pero se avisa que se pierden.
+    expect(
+      find.textContaining('Te quedan 22 puntos sin gastar'),
+      findsOneWidget,
+    );
     // El próximo escalón ya no cuesta 1: es la parte no lineal de la tabla.
     expect(find.text('subir cuesta 2 · gastados 5'), findsOneWidget);
 
@@ -109,6 +115,7 @@ void main() {
     }
     expect(find.text('0 de 27'), findsOneWidget);
     expect(find.text('Presupuesto completo.'), findsOneWidget);
+    expect(find.textContaining('sin gastar'), findsNothing);
     for (var ability = 3; ability < 6; ability++) {
       expect(tester.widget<IconButton>(raiseAt(ability)).onPressed, isNull);
     }
@@ -118,6 +125,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('27 de 27'), findsOneWidget);
     expect(find.text('subir cuesta 1 · gastados 0'), findsNWidgets(6));
+    expect(find.textContaining('Todas empiezan en'), findsOneWidget);
 
     // --- Volver al array estándar deja de mostrar el presupuesto.
     await tester.tap(find.text('Conjunto estándar'));

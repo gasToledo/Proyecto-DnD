@@ -621,6 +621,22 @@ void main() {
     }
   });
 
+  test('ninguna palabra quedó partida por el renglón del PDF', () {
+    // «pue-\ndes»: el rastro de leer el PDF renglón por renglón sin unir.
+    // `extract_magic_item_text.dart` las une; esto atrapa a un generador que
+    // vuelva a escribir la descripción cruda.
+    final partida = RegExp(r'\p{L}-\\n\p{L}', unicode: true);
+    for (final archivo in Directory('lib/assets/srd_2024')
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.json'))) {
+      final hallados = [
+        for (final m in partida.allMatches(archivo.readAsStringSync())) m[0],
+      ];
+      expect(hallados, isEmpty, reason: archivo.path);
+    }
+  });
+
   test('la prosa del catálogo está en voseo', () {
     // El SRD en español está en tuteo; `tool/apply_voseo.dart` lo pasa a vos
     // después de generar. Solo formas que no pueden ser otra cosa: «ganas» o

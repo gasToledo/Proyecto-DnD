@@ -175,6 +175,11 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   («tenéis», «podéis») mezclados con el resto, y los objetos mágicos del SRD
   estaban enteros en tuteo. `tool/apply_voseo.dart` lo vuelve a aplicar
   después de regenerar, y un test falla si vuelve el tuteo.
+- Las descripciones de los objetos mágicos se vuelven a extraer del PDF: ya
+  no hay palabras partidas («pue-des»), títulos metidos en medio de una
+  oración ni texto de un objeto en otro, y se leen por párrafos. Vuelven las
+  frases que se cortaban (el Anillo de calidez, la Baraja misteriosa entera) y
+  los nombres en cursiva que faltaban.
 - Creación de personaje: con escudo ya no se ofrece empuñar a dos manos, y la
   mano secundaria solo aparece con dos armas; las elecciones de objeto dicen
   si son de la clase o del trasfondo; «Coste en puntos» avisa los puntos sin

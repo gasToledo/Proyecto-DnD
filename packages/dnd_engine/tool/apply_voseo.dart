@@ -35,7 +35,7 @@ const _palabras = <String, String>{
   'obtenéis': 'obtienen', 'hacéis': 'hacen', 'recuperáis': 'recuperan',
   'ganáis': 'ganan', 'superéis': 'superen', 'acertáis': 'aciertan',
   'tendréis': 'tendrán', 'sumáis': 'suman', 'causáis': 'causan',
-  'dejáis': 'dejan', 'seáis': 'sean', 'hagáis': 'hagan',
+  'dejáis': 'dejan', 'seáis': 'sean', 'hagáis': 'hagan', 'muráis': 'mueran',
   // pronombres
   'tú': 'vos', 'ti': 'vos',
   // presente de tú → vos
@@ -44,7 +44,9 @@ const _palabras = <String, String>{
   'adoptas': 'adoptás', 'afectas': 'afectás', 'agarras': 'agarrás',
   'agitas': 'agitás', 'alejas': 'alejás', 'anulas': 'anulás',
   'aplicas': 'aplicás', 'aprendes': 'aprendés', 'aprisionas': 'aprisionás',
-  'arrojas': 'arrojás', 'aterrizas': 'aterrizás', 'aumentas': 'aumentás',
+  'arrojas': 'arrojás', 'aterrizas': 'aterrizás', 'atraviesas': 'atravesás',
+  'aumentas': 'aumentás', 'balanceas': 'balanceás', 'controlas': 'controlás',
+  'embrazas': 'embrazás', 'logras': 'lográs', 'meditas': 'meditás',
   'añades': 'añadís', 'bajas': 'bajás', 'bebes': 'bebés',
   'beneficias': 'beneficiás', 'caes': 'caés', 'calientas': 'calentás',
   'cambias': 'cambiás', 'canalizas': 'canalizás', 'cancelas': 'cancelás',
@@ -117,15 +119,13 @@ const _frases = <(String, String)>[
   ('podéis comunicaros', 'pueden comunicarse'),
   ('Para entenderos', 'Para entenderse'),
   ('evitáis o reducís', 'evitan o reducen'),
-  (r'os\ndesplazáis', r'se\ndesplazan'),
-  // El OCR partió «sostienes» en dos.
-  ('Si todavía s ostienes', 'Si todavía sostenés'),
+  ('os desplazáis', 'se desplazan'),
   ('La criatura y tú os podréis', 'La criatura y vos se podrán'),
   (
     'la pesadilla y tú os transportaréis',
     'la pesadilla y vos se transportarán'
   ),
-  // El texto del PDF está cortado ahí; «os» es «a vos y a lo que llevás».
+  // «os» es «a vos y a lo que llevás»; el resto de la frase ya nombra a los dos.
   ('°C o menos no os', '°C o menos no te'),
   ('proyectáis vuestra forma astral', 'proyectan su forma astral'),
   ('os fundís', 'se funden'),
@@ -143,7 +143,7 @@ const _frases = <(String, String)>[
   // Imperativos en minúscula, reconocibles por lo que los rodea.
   (', tira ', ', tirá '),
   (', haz', ', hacé'),
-  ('(consulta', '(consultá'),
+  ('(consulta ', '(consultá '),
   ('consulta el destino', 'consultá el destino'),
   ('consúltalas', 'consultalas'),
   ('(usa tu', '(usá tu'),

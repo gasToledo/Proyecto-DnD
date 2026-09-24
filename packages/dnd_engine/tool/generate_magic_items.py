@@ -6,6 +6,11 @@ Uso:
 La revisión de la fuente estructurada complementaria queda documentada en la
 auditoría. Este generador usa el PDF normativo para nombres y texto españoles;
 no necesita red y escribe solo activos derivados versionables.
+
+La descripción que escribe acá no es la final: su lectura por columnas mezcla
+texto de objetos distintos. Después hay que correr, en este orden,
+`dart tool/extract_magic_item_text.dart`, `dart tool/apply_magic_item_charges.dart`
+y `dart tool/apply_voseo.dart`.
 """
 
 from __future__ import annotations

@@ -74,16 +74,34 @@ class _CreationWizardState extends State<CreationWizard> {
       unawaited(_finish());
       return;
     }
-    setState(() => _step = _steps[_step.index + 1]);
+    _show(_steps[_step.index + 1]);
   }
 
-  void _back() {
-    setState(() => _step = _steps[_step.index - 1]);
-  }
+  void _back() => _show(_steps[_step.index - 1]);
 
   void _goTo(CreationStep s) {
     if (!d.canGoTo(s)) return;
+    _show(s);
+  }
+
+  /// El paso activo del stepper, para traerlo a la vista.
+  final _activeStepKey = GlobalKey();
+
+  /// Cambia de paso y trae su marca a la vista en el stepper angosto, que
+  /// muestra cinco de los ocho: desde Equipo en adelante el paso activo quedaba
+  /// fuera de pantalla y no había ningún «estás acá».
+  void _show(CreationStep s) {
     setState(() => _step = s);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final active = _activeStepKey.currentContext;
+      if (active == null || !active.mounted) return;
+      Scrollable.ensureVisible(
+        active,
+        alignment: .5,
+        duration: active.motion(const Duration(milliseconds: 200)),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   Future<void> _finish() async {
@@ -177,6 +195,10 @@ class _CreationWizardState extends State<CreationWizard> {
                     builder: (context, viewport) => _StepViewport(
                       height: viewport.maxHeight,
                       child: SingleChildScrollView(
+                        // Un scroll por paso: con uno solo, el paso siguiente
+                        // abría a la altura donde había quedado el anterior
+                        // (Clase caía en las maestrías, Puntuaciones en CAR).
+                        key: ValueKey(_step),
                         padding: EdgeInsets.fromLTRB(
                           wide ? 40 : 20,
                           14,
@@ -366,6 +388,7 @@ class _CreationWizardState extends State<CreationWizard> {
           : pal.textMuted;
       children.add(
         Semantics(
+          key: active ? _activeStepKey : null,
           selected: active,
           button: true,
           enabled: reachable,

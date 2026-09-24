@@ -113,6 +113,10 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   («Conjunto estándar», «Coste en puntos»), los modificadores dejan de verse
   en carmesí, el resumen incluye las habilidades que da el trasfondo y el
   pie dice qué falta sin cortarse.
+- Creación de personaje en el teléfono: cada paso arranca arriba, el stepper
+  sigue al paso activo, y elegir especie, clase o trasfondo baja hasta su
+  detalle, donde están el linaje, el aumento de características y las
+  maestrías. Al terminar se abre la ficha del personaje nuevo.
 
 ### Eliminado
 

@@ -163,10 +163,15 @@ class _SplitSelect extends StatelessWidget {
   /// Qué decir en el panel vacío mientras no haya selección.
   final String emptyHint;
 
+  /// Id de la opción elegida. En angosto, cuando cambia, el paso baja hasta
+  /// el detalle.
+  final String? selection;
+
   const _SplitSelect({
     required this.options,
     required this.detail,
     required this.emptyHint,
+    required this.selection,
   });
 
   @override
@@ -178,7 +183,17 @@ class _SplitSelect extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _ChoiceGrid(children: options),
-              if (detail != null) ...[const SizedBox(height: 18), detail!],
+              // Siempre en el árbol, vacío hasta que haya algo elegido: si se
+              // montara con el detalle, la primera elección no sería un cambio.
+              _RevealOnSelection(
+                selection: selection,
+                child: detail == null
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 18),
+                        child: detail,
+                      ),
+              ),
             ],
           );
         }
@@ -196,6 +211,41 @@ class _SplitSelect extends StatelessWidget {
       },
     );
   }
+}
+
+/// Baja hasta el detalle cuando cambia la opción elegida.
+///
+/// En angosto el detalle queda debajo de toda la grilla: al elegir Elfo, el
+/// pie pedía un linaje que no estaba a la vista, y lo mismo el +2/+1 del
+/// trasfondo o las maestrías del Guerrero, que viven en el detalle. Se baja
+/// hasta el comienzo del detalle y no hasta la elección, para que se lea en
+/// orden. Montar el paso con algo ya elegido (al volver atrás) no desplaza.
+class _RevealOnSelection extends StatefulWidget {
+  final String? selection;
+  final Widget child;
+  const _RevealOnSelection({required this.selection, required this.child});
+
+  @override
+  State<_RevealOnSelection> createState() => _RevealOnSelectionState();
+}
+
+class _RevealOnSelectionState extends State<_RevealOnSelection> {
+  @override
+  void didUpdateWidget(_RevealOnSelection old) {
+    super.didUpdateWidget(old);
+    if (widget.selection == null || widget.selection == old.selection) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Scrollable.ensureVisible(
+        context,
+        duration: context.motion(const Duration(milliseconds: 250)),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Llave de la columna de opciones del modo dividido (especie, clase,

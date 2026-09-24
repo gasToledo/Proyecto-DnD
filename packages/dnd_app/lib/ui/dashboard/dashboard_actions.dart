@@ -5,12 +5,23 @@ extension _DashboardActions on _DashboardScreenState {
   // Acciones
   // --------------------------------------------------------------------------
 
+  /// Al terminar se abre la ficha del personaje nuevo: volver al dashboard sin
+  /// más, después de ocho pasos, no confirmaba nada ni llevaba a ningún lado,
+  /// y lo siguiente que cualquiera quiere es ver lo que armó.
   Future<void> _openWizard() async {
+    Character? created;
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => CreationWizard(repo: repo, onCreate: controller.add),
+        builder: (_) => CreationWizard(
+          repo: repo,
+          onCreate: (c) {
+            controller.add(c);
+            created = c;
+          },
+        ),
       ),
     );
+    if (created case final c? when mounted) _openSheet(c);
   }
 
   /// Suma a Sagan a la cuenta y abre su ficha. Recorrer una ficha armada

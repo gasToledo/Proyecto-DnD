@@ -16,6 +16,7 @@ class _RaceStep extends StatelessWidget {
         const SizedBox(height: 10),
         _SplitSelect(
           emptyHint: 'Elegí una especie para ver su detalle.',
+          selection: draft.raceId,
           options: [
             for (final r in draft.repo.racesSorted)
               _ChoiceCard(
@@ -175,6 +176,7 @@ class _ClassStep extends StatelessWidget {
         const SizedBox(height: 10),
         _SplitSelect(
           emptyHint: 'Elegí una clase para ver su detalle.',
+          selection: draft.classId,
           options: [
             for (final c in repo.classesSorted)
               _ChoiceCard(
@@ -278,6 +280,7 @@ class _BackgroundStep extends StatelessWidget {
         const SizedBox(height: 10),
         _SplitSelect(
           emptyHint: 'Elegí un trasfondo para ver su detalle.',
+          selection: draft.backgroundId,
           options: [
             for (final b in repo.backgroundsSorted)
               _ChoiceCard(

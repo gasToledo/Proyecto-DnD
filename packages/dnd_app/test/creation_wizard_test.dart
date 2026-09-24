@@ -69,6 +69,49 @@ void main() {
     expect(tester.widget<FilledButton>(next).onPressed, isNull);
   });
 
+  // En un teléfono el detalle queda debajo de toda la grilla: al elegir, el pie
+  // pedía cosas que no estaban a la vista. Y con un solo scroll para todos los
+  // pasos, el siguiente abría a la altura donde había quedado el anterior.
+  testWidgets(
+    'en angosto, elegir baja al detalle y el paso siguiente arranca arriba',
+    (tester) async {
+      tester.view.physicalSize = const Size(480, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: CreationWizard(repo: repo, onCreate: (_) {}),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      ScrollPosition body(CreationStep step) => tester
+          .state<ScrollableState>(
+            find
+                .descendant(
+                  of: find.byKey(ValueKey(step)),
+                  matching: find.byType(Scrollable),
+                )
+                .first,
+          )
+          .position;
+
+      final dwarf = find.text(repo.races['dwarf']!.name).first;
+      await tester.ensureVisible(dwarf);
+      await tester.pumpAndSettle();
+      final before = body(CreationStep.raza).pixels;
+      await tester.tap(dwarf);
+      await tester.pumpAndSettle();
+      expect(body(CreationStep.raza).pixels, greaterThan(before));
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
+      await tester.pumpAndSettle();
+      expect(body(CreationStep.clase).pixels, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('el stepper sigue usable en una ventana compacta', (
     tester,
   ) async {

@@ -5,33 +5,56 @@ import 'package:flutter/services.dart' show rootBundle;
 
 const _base = 'packages/dnd_engine/assets/srd_2024';
 
-Future<List<Map<String, dynamic>>> _load(String file) async {
-  final raw = await rootBundle.loadString('$_base/$file');
-  return (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
-}
+const _packs = [
+  'races',
+  'classes',
+  'subclasses',
+  'lineages',
+  'backgrounds',
+  'feats',
+  'weapons',
+  'armor',
+  'items',
+  'magic_items',
+  'efa_magic_items',
+  'spells',
+  'creatures',
+];
 
 /// Carga el pack SRD 2024 empaquetado como asset.
+///
+/// Los archivos se piden todos juntos y no de a uno: en producción cada
+/// pedido cruza Cloudflare y el túnel hasta el servidor, y en serie eran
+/// catorce viajes de ida y vuelta sumados antes de ver la biblioteca.
+/// `Future.wait` y no un `await` suelto por archivo: si uno falla mientras se
+/// espera a otro, su error quedaría sin nadie que lo atienda.
 Future<ContentRepository> loadOfficialContent() async {
-  final manifest = jsonDecode(
-    await rootBundle.loadString('$_base/manifest.json'),
+  final raw = await Future.wait([
+    for (final name in ['manifest', ..._packs])
+      rootBundle.loadString('$_base/$name.json'),
+  ]);
+  ContentPackManifest.fromJson(
+    (jsonDecode(raw.first) as Map).cast<String, dynamic>(),
   );
-  ContentPackManifest.fromJson((manifest as Map).cast<String, dynamic>());
-  final items = [
-    ...await _load('items.json'),
-    ...await _load('magic_items.json'),
-    ...await _load('efa_magic_items.json'),
-  ];
+  final pack = {
+    for (final (i, name) in _packs.indexed)
+      name: (jsonDecode(raw[i + 1]) as List).cast<Map<String, dynamic>>(),
+  };
   return ContentRepository.fromJsonPacks(
-    races: await _load('races.json'),
-    classes: await _load('classes.json'),
-    subclasses: await _load('subclasses.json'),
-    lineages: await _load('lineages.json'),
-    backgrounds: await _load('backgrounds.json'),
-    feats: await _load('feats.json'),
-    weapons: await _load('weapons.json'),
-    armor: await _load('armor.json'),
-    items: items,
-    spells: await _load('spells.json'),
-    creatures: await _load('creatures.json'),
+    races: pack['races']!,
+    classes: pack['classes']!,
+    subclasses: pack['subclasses']!,
+    lineages: pack['lineages']!,
+    backgrounds: pack['backgrounds']!,
+    feats: pack['feats']!,
+    weapons: pack['weapons']!,
+    armor: pack['armor']!,
+    items: [
+      ...pack['items']!,
+      ...pack['magic_items']!,
+      ...pack['efa_magic_items']!,
+    ],
+    spells: pack['spells']!,
+    creatures: pack['creatures']!,
   );
 }

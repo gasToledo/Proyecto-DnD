@@ -102,6 +102,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 - En el combate del DM, la marca de turno pasa de una fila a la siguiente sin
   saltar, y la planilla se desplaza para que la fila del turno quede a la
   vista.
+- El contenido del SRD se descarga en paralelo al abrir la aplicación, y no
+  archivo por archivo: la biblioteca aparece unos 0,7 s antes.
 
 ### Eliminado
 

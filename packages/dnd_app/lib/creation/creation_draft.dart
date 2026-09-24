@@ -32,7 +32,7 @@ enum CreationStep {
   clase('Clase'),
   trasfondo('Trasfondo'),
   puntuaciones('Puntuaciones'),
-  aptitudes('Aptitudes'),
+  aptitudes('Competencias'),
   equipo('Equipo'),
   detalles('Detalles'),
   resumen('Resumen');

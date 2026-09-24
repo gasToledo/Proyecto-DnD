@@ -182,7 +182,11 @@ class _ReceivedEquipmentSection extends StatelessWidget {
               ),
           ],
         ),
-        if (armor.isEmpty && weapons.isEmpty)
+        // Solo con algo recibido: antes de elegir un paquete no hay «paquete
+        // elegido», y el aviso aparecía igual.
+        if (armor.isEmpty &&
+            weapons.isEmpty &&
+            draft.receivedItemIds.isNotEmpty)
           Text(
             'El paquete elegido no trae equipo para vestir o empuñar.',
             style: Theme.of(context).textTheme.bodySmall,
@@ -349,13 +353,21 @@ class _SpellChoicesSection extends StatelessWidget {
           Builder(
             builder: (context) {
               final selected = {...?draft.spellChoices[slot.groupId]};
+              final spells = [
+                for (final id in slot.options) ?draft.repo.spell(id),
+              ];
+              // La etiqueta de nivel solo distingue algo si el cupo mezcla
+              // trucos con conjuros; en uno de puros trucos, «(truco)» en cada
+              // chip repetía el título.
+              final mixed =
+                  spells.any((s) => s.isCantrip) &&
+                  spells.any((s) => !s.isCantrip);
               return CappedChipSelect(
                 options: {
-                  for (final id in slot.options)
-                    if (draft.repo.spell(id) case final s?)
-                      id: s.isCantrip
-                          ? '${s.name} (truco)'
-                          : '${s.name} (Nv ${s.level})',
+                  for (final s in spells)
+                    s.id: s.isCantrip
+                        ? (mixed ? '${s.name} (truco)' : s.name)
+                        : '${s.name} (Nv ${s.level})',
                 },
                 selected: selected,
                 max: slot.count,
@@ -452,8 +464,14 @@ class _SpellsSection extends StatelessWidget {
           if (grantedCantripNames.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
-              'Ya tenés ${grantedCantripNames.join(', ')} por un rasgo de tu '
-              'especie: no ocupa un cupo de truco de clase.',
+              // Sin nombrar el origen: los concedidos vienen mezclados de la
+              // especie, la dote del trasfondo u otros rasgos, y decir
+              // «tu especie» atribuía a la especie los de la dote.
+              grantedCantripNames.length == 1
+                  ? 'Ya tenés ${grantedCantripNames.single} por otro rasgo: '
+                        'no ocupa un cupo de truco de clase.'
+                  : 'Ya tenés ${grantedCantripNames.join(', ')} por otros '
+                        'rasgos: no ocupan cupos de truco de clase.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],

@@ -474,8 +474,16 @@ class _CreationWizardState extends State<CreationWizard> {
                       ),
               const SizedBox(width: 12),
               Expanded(
+                // El primero y cuántos quedan, no la lista entera: en un
+                // teléfono la lista se cortaba con «…» justo en lo que había
+                // que leer. Se resuelven de a uno, y el paso los muestra todos.
                 child: Text(
-                  blocked ? 'Falta: ${pending.join('  ·  ')}' : '',
+                  !blocked
+                      ? ''
+                      : pending.length == 1
+                      ? 'Falta: ${pending.single}'
+                      : 'Falta: ${pending.first} (y ${pending.length - 1} '
+                            '${pending.length == 2 ? 'cosa' : 'cosas'} más)',
                   textAlign: TextAlign.end,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

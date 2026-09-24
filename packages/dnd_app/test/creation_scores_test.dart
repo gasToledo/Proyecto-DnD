@@ -103,7 +103,7 @@ void main() {
       expect(find.text('¿Qué método conviene?'), findsOneWidget);
       expect(find.textContaining('Escribí la puntuación base'), findsOneWidget);
 
-      await tester.tap(find.text('Array estándar'));
+      await tester.tap(find.text('Conjunto estándar'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Escribí la puntuación base'), findsNothing);
 

@@ -21,10 +21,10 @@ class _ScoresStep extends StatelessWidget {
           title: '¿Qué método conviene?',
           message:
               'Los cuatro generan las seis puntuaciones del personaje, con '
-              'distinto grado de azar. Array estándar reparte valores fijos y '
-              'equilibrados: es el camino corto. Tirar 4d6 los sortea. Compra '
-              'de puntos te deja armarlos con un presupuesto. Escribir a mano '
-              'sirve si ya los tenés decididos.',
+              'distinto grado de azar. El conjunto estándar reparte valores '
+              'fijos y equilibrados: es el camino corto. Tirar 4d6 los '
+              'sortea. El coste en puntos te deja armarlos con un '
+              'presupuesto. Escribir a mano sirve si ya los tenés decididos.',
         ),
         const SizedBox(height: 14),
         Wrap(
@@ -33,7 +33,7 @@ class _ScoresStep extends StatelessWidget {
           children: [
             _MethodTab(
               icon: Icons.view_list,
-              label: 'Array estándar',
+              label: 'Conjunto estándar',
               selected: draft.scoreMethod == ScoreMethod.standardArray,
               onTap: () {
                 draft.applyScoreMethod(ScoreMethod.standardArray);
@@ -51,7 +51,7 @@ class _ScoresStep extends StatelessWidget {
             ),
             _MethodTab(
               icon: Icons.calculate,
-              label: 'Compra de puntos',
+              label: 'Coste en puntos',
               selected: draft.scoreMethod == ScoreMethod.pointBuy,
               onTap: () {
                 draft.applyScoreMethod(ScoreMethod.pointBuy);
@@ -564,7 +564,7 @@ class _ScoreCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: assigned == null ? pal.textMuted : pal.crimson,
+              color: assigned == null ? pal.textMuted : null,
             ),
           ),
         ],

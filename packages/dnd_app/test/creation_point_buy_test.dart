@@ -52,7 +52,7 @@ void main() {
     await tester.pumpAndSettle();
     await next();
 
-    await tester.tap(find.text('Compra de puntos'));
+    await tester.tap(find.text('Coste en puntos'));
     await tester.pumpAndSettle();
   }
 
@@ -120,7 +120,7 @@ void main() {
     expect(find.text('subir cuesta 1 · gastados 0'), findsNWidgets(6));
 
     // --- Volver al array estándar deja de mostrar el presupuesto.
-    await tester.tap(find.text('Array estándar'));
+    await tester.tap(find.text('Conjunto estándar'));
     await tester.pumpAndSettle();
     expect(find.text('27 de 27'), findsNothing);
     expect(find.text('Valores sin asignar'), findsOneWidget);

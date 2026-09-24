@@ -18,7 +18,10 @@ class _SummaryStep extends StatelessWidget {
     final species = lineage == null ? race : '$race ($lineage)';
     final klass = draft.klass?.name ?? '—';
     final bg = draft.background?.name ?? '—';
-    final skills = [...draft.classSkills, ...draft.raceSkills];
+    // De la ficha compilada y no de lo elegido en el paso: el trasfondo da las
+    // suyas sin elección, y armar la lista a mano las dejaba afuera.
+    final skills = [...s.skillProficiencies]
+      ..sort((a, b) => Skill.labelFor(a).compareTo(Skill.labelFor(b)));
 
     final equipment = <String>[
       for (final entry in character.inventory)
@@ -146,10 +149,12 @@ class _SummaryStep extends StatelessWidget {
                                   const SizedBox(height: 2),
                                   Text(
                                     _signedMod(s.abilityModifiers[a]!),
-                                    style: TextStyle(
+                                    // Sin carmesí: es el color del daño, y un
+                                    // +3 no es una advertencia. Igual que en
+                                    // la placa de la ficha.
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
-                                      color: pal.crimson,
                                     ),
                                   ),
                                 ],
@@ -199,7 +204,7 @@ class _SummaryStep extends StatelessWidget {
                     ),
                     if (skills.isNotEmpty) ...[
                       const SizedBox(height: 22),
-                      const _SummaryLabel('Competencias'),
+                      const _SummaryLabel('Habilidades'),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,

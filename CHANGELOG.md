@@ -106,6 +106,13 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   archivo por archivo: la biblioteca aparece medio segundo antes.
 - Al abrir la aplicación, el homebrew, los personajes, los ajustes y la
   versión se piden a la vez que el contenido y no uno detrás del otro.
+- Las características se abrevian como en el SRD en castellano (FUE, DES,
+  CON, INT, SAB, CAR) y las distancias dicen «pies» en todas partes.
+- Creación de personaje: el paso «Aptitudes» pasa a llamarse
+  «Competencias», los métodos de puntuación usan los nombres del SRD
+  («Conjunto estándar», «Coste en puntos»), los modificadores dejan de verse
+  en carmesí, el resumen incluye las habilidades que da el trasfondo y el
+  pie dice qué falta sin cortarse.
 
 ### Eliminado
 

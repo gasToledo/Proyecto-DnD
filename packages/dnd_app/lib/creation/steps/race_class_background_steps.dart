@@ -50,7 +50,7 @@ class _RaceStep extends StatelessWidget {
                           ? race.size
                           : draft.chosenSize ?? 'a elegir',
                     ),
-                    ('Velocidad', '${race.speed} ft'),
+                    ('Velocidad', '${race.speed} pies'),
                     if (race.skillChoiceCount > 0)
                       ('Habilidades', '${race.skillChoiceCount} a elegir'),
                   ],
@@ -358,7 +358,7 @@ class _BackgroundStep extends StatelessWidget {
                         ]),
                         const SizedBox(height: 18),
                       ],
-                      const Eyebrow('Aumento de característica (2024)'),
+                      const Eyebrow('Aumento de característica'),
                       const SizedBox(height: 8),
                       SegmentedButton<AbilitySpreadMode>(
                         segments: const [

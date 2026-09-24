@@ -775,7 +775,7 @@ void main() {
     // también los concede una elección abierta.
     expect(find.text('CONJUROS DE RASGOS'), findsOneWidget);
     expect(find.text('Prestidigitación'), findsOneWidget);
-    expect(find.textContaining('WIS'), findsOneWidget);
+    expect(find.textContaining(Ability.wisdom.abbr), findsOneWidget);
     expect(find.text('ESPACIOS DE CONJURO'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -925,7 +925,7 @@ void main() {
     await pumpSheet(tester, artificer);
 
     expect(find.text('Armadura ligera'), findsOneWidget);
-    expect(find.text('STR'), findsWidgets);
+    expect(find.text(Ability.strength.abbr), findsWidgets);
 
     // La cabecera de Competencias queda por debajo del pliegue: hay que
     // traerla a la vista antes de tocarla o el toque no le llega.
@@ -942,7 +942,7 @@ void main() {
     // El título sigue, que es de lo que se trata: se pliega, no se esconde.
     expect(find.text('Competencias'), findsOneWidget);
     // Y plegar una no toca a las demás.
-    expect(find.text('STR'), findsWidgets);
+    expect(find.text(Ability.strength.abbr), findsWidgets);
 
     await toggleCompetencias();
 

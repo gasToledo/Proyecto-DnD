@@ -331,7 +331,7 @@ class _AptitudesStep extends StatelessWidget {
         const SizedBox(height: 22),
         if (klass != null) ...[
           _SectionHeader(
-            title: 'Competencias de clase',
+            title: 'Habilidades de clase',
             counterIcon: Icons.task_alt,
             counter:
                 '${draft.classSkills.length} / ${klass.skillChoiceCount} elegidas',
@@ -365,7 +365,7 @@ class _AptitudesStep extends StatelessWidget {
         if (race != null && race.skillChoiceCount > 0) ...[
           const SizedBox(height: 26),
           _SectionHeader(
-            title: 'Competencias de especie',
+            title: 'Habilidades de especie',
             counterIcon: Icons.task_alt,
             counter:
                 '${draft.raceSkills.length} / ${race.skillChoiceCount} elegidas',

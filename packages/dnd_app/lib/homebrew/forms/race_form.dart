@@ -71,7 +71,7 @@ class _RaceFormState extends State<RaceForm> with _GuidedForm {
     },
     'speed' => _explained(
       'Velocidad',
-      '${_speed.text.trim()} ft',
+      '${_speed.text.trim()} pies',
       raceSpeedRule,
     ),
     'skillCount' => _explained(
@@ -138,7 +138,7 @@ class _RaceFormState extends State<RaceForm> with _GuidedForm {
                       'Tamaño',
                       race.sizeOptions.isEmpty ? race.size : 'a elegir',
                     ),
-                    ('Velocidad', '${race.speed} ft'),
+                    ('Velocidad', '${race.speed} pies'),
                     if (race.skillChoiceCount > 0)
                       ('Habilidades', '${race.skillChoiceCount} a elegir'),
                   ], wide: false),

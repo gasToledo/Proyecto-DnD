@@ -81,9 +81,9 @@ class _LevelUpSummaryScreenState extends State<LevelUpSummaryScreen>
       if (diff.weaponMasterySlotsGained > 0)
         _StatChip('Maestrías', '+${diff.weaponMasterySlotsGained}'),
       if (diff.speedGained != 0)
-        _StatChip('Velocidad', '${_signed(diff.speedGained)} ft'),
+        _StatChip('Velocidad', '${_signed(diff.speedGained)} pies'),
       if (diff.newDarkvision != null)
-        _StatChip('Visión osc.', '${diff.newDarkvision} ft'),
+        _StatChip('Visión osc.', '${diff.newDarkvision} pies'),
     ];
 
     return Scaffold(

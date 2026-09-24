@@ -7,14 +7,28 @@ enum Ability {
   wisdom,
   charisma;
 
-  /// Abreviatura de 3 letras usada en la ficha (STR, DEX, ...).
-  String get abbr => switch (this) {
+  /// Código de 3 letras en inglés (STR, DEX, ...) para los **datos**: claves
+  /// JSON de las criaturas y variables de sus fórmulas. No se muestra: ver
+  /// [abbr]. Están separados porque los documentos guardados y el catálogo
+  /// ya usan estos códigos, y traducirlos rompería su lectura.
+  String get code => switch (this) {
         Ability.strength => 'STR',
         Ability.dexterity => 'DEX',
         Ability.constitution => 'CON',
         Ability.intelligence => 'INT',
         Ability.wisdom => 'WIS',
         Ability.charisma => 'CHA',
+      };
+
+  /// Abreviatura de 3 letras para la interfaz, la del SRD en castellano
+  /// (FUE, DES, ...).
+  String get abbr => switch (this) {
+        Ability.strength => 'FUE',
+        Ability.dexterity => 'DES',
+        Ability.constitution => 'CON',
+        Ability.intelligence => 'INT',
+        Ability.wisdom => 'SAB',
+        Ability.charisma => 'CAR',
       };
 
   /// Nombre en español de la característica (para la UI).
@@ -44,11 +58,11 @@ enum Ability {
       };
 
   /// Resuelve una característica desde su nombre de enum ("strength") o su
-  /// abreviatura ("STR"), sin distinguir mayúsculas.
+  /// código ("STR"), sin distinguir mayúsculas.
   static Ability fromKey(String key) {
     final k = key.trim().toLowerCase();
     return Ability.values.firstWhere(
-      (a) => a.name == k || a.abbr.toLowerCase() == k,
+      (a) => a.name == k || a.code.toLowerCase() == k,
       orElse: () => throw ArgumentError('Característica desconocida: "$key"'),
     );
   }

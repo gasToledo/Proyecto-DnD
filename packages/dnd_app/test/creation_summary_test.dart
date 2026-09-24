@@ -53,7 +53,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    // Raza / Clase / Trasfondo
+    // Especie / Clase / Trasfondo
     await tapOption(tester, 'Elfo');
     final nextButton = find.widgetWithText(FilledButton, 'Siguiente');
     expect(tester.widget<FilledButton>(nextButton).onPressed, isNull);
@@ -88,7 +88,7 @@ void main() {
     }
     await next();
 
-    // Aptitudes: 2 de clase y 1 de especie.
+    // Competencias: 2 de clase y 1 de especie.
     await tapText('Arcanos');
     await tapText('Historia');
     await tester.tap(find.text('Supervivencia').last);
@@ -142,7 +142,10 @@ void main() {
     // "Puntuaciones" y "Equipo" también son rótulos del stepper: se asienta
     // sobre los bloques que solo existen en el resumen.
     expect(find.text('EN COMBATE'), findsOneWidget);
-    expect(find.text('COMPETENCIAS'), findsOneWidget);
+    expect(find.text('HABILIDADES'), findsOneWidget);
+    // Atletismo la da el trasfondo sin elección: el resumen armaba la lista
+    // solo con lo elegido y la dejaba afuera.
+    expect(find.text(Skill.athletics.label), findsOneWidget);
     expect(find.text('DOTES'), findsOneWidget);
     expect(find.text('CONJUROS'), findsWidgets);
     expect(find.text('Prestidigitación'), findsOneWidget);

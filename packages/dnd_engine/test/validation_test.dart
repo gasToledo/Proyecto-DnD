@@ -273,7 +273,7 @@ void main() {
         c,
         sheetOf(repo, c),
       );
-      expect(motivo, 'STR 13');
+      expect(motivo, 'FUE 13');
     });
 
     test('unmetFeatPrerequisite devuelve null cuando se cumple', () {

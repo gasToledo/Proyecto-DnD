@@ -134,7 +134,7 @@ class CreatureVars {
       CreatureVars({
         'level': level,
         'PB': proficiencyBonus,
-        for (final a in Ability.values) a.abbr: abilityModifiers[a] ?? 0,
+        for (final a in Ability.values) a.code: abilityModifiers[a] ?? 0,
         'SPELLATK': spellAttackBonus,
         'SPELLDC': spellSaveDc,
         'spellLevel': spellLevel,
@@ -737,12 +737,12 @@ class Creature {
         'speed': speed,
         'abilityScores': {
           for (final e in abilityScores.entries)
-            e.key.abbr.toLowerCase(): e.value,
+            e.key.code.toLowerCase(): e.value,
         },
         if (savingThrows.isNotEmpty)
           'savingThrows': {
             for (final e in savingThrows.entries)
-              e.key.abbr.toLowerCase(): e.value,
+              e.key.code.toLowerCase(): e.value,
           },
         if (skills.isNotEmpty)
           'skills': {for (final e in skills.entries) e.key.id: e.value},

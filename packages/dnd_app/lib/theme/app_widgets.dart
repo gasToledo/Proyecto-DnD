@@ -1837,9 +1837,9 @@ String? describeEffect(Effect e, ContentRepository repo) => switch (e) {
     'Resistencia: ${DamageType.labelFor(damageType)}',
   ImmunityEffect(:final damageType) =>
     'Inmunidad: ${DamageType.labelFor(damageType)}',
-  DarkvisionEffect(:final range) => 'Visión en la oscuridad: $range ft',
-  SpeedBonusEffect(:final feet) => 'Velocidad +$feet ft',
-  SetSpeedEffect(:final feet) => 'Velocidad = $feet ft',
+  DarkvisionEffect(:final range) => 'Visión en la oscuridad: $range pies',
+  SpeedBonusEffect(:final feet) => 'Velocidad +$feet pies',
+  SetSpeedEffect(:final feet) => 'Velocidad = $feet pies',
   ArmorClassBonusEffect(:final amount) => 'CA +$amount',
   BonusMaxHpPerLevelEffect(:final perLevel) => 'PG máx +$perLevel por nivel',
   BonusMaxHpFlatEffect(:final amount) => 'PG máx +$amount',

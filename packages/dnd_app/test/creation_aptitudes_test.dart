@@ -127,7 +127,7 @@ void main() {
 
     // --- Los nombres son los del catálogo, no ids en inglés, y lo que ya da el
     // trasfondo aparece bloqueado.
-    expect(find.text('Competencias de clase'.toUpperCase()), findsOneWidget);
+    expect(find.text('Habilidades de clase'.toUpperCase()), findsOneWidget);
     expect(find.text('Juego de Manos'), findsOneWidget);
     expect(find.text('sleight-of-hand'), findsNothing);
     expect(find.text('Atletismo'), findsWidgets);

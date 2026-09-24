@@ -681,7 +681,7 @@ extension _HomebrewSections on _HomebrewScreenState {
           r.name,
           pills: [r.size],
           stats: [
-            ('Velocidad', '${r.speed} ft'),
+            ('Velocidad', '${r.speed} pies'),
             ('Rasgos', '${r.effects.length}'),
           ],
           onEdit: () => _editRace(r),

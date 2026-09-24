@@ -40,6 +40,10 @@ cosas distintas, gana el catálogo.
 | homebrew | contenido casero | En minúscula dentro de una frase. |
 | archivo (al importar o exportar) | pack | Es lo que la persona ve en su disco. |
 | iniciar sesión | login | |
+| FUE, DES, CON, INT, SAB, CAR | STR, DEX, WIS, CHA | `Ability.abbr`. Los códigos en inglés quedan en `Ability.code`, solo para datos. |
+| pies | ft | |
+| conjunto estándar, coste en puntos | array estándar, compra de puntos | Los métodos de puntuación, como los nombra el SRD. |
+| habilidades (lo que se elige en creación) | competencias de clase | Se gana *competencia* en una *habilidad*. |
 | el orden de tus personajes | roster | |
 
 Los nombres de reglas que vienen del catálogo («Ataque Adicional», «Acción

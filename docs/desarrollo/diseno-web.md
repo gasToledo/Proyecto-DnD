@@ -431,7 +431,8 @@ compartida: **antes de crear un widget visual nuevo, buscar acá**.
 | `ShieldBadge` | La CA dentro de la silueta de escudo, borde dorado de 1.5 px | Escala con `height / 52`; **solo para CA**, y solo donde la CA es el tema (Defensa, Inventario) |
 | `Medallion` | Círculo con aro dorado: retrato, emblema o inicial | Ver [Retratos](#9-retratos-y-medallones) |
 | `ClassMedallion` | `Medallion` que resuelve solo el emblema y el acento de la clase | `class_visuals.dart` |
-| `ThinBar` | Barra de progreso de 5 px con radio 3 | Para PG dentro de una placa |
+| `ThinBar` | Barra de PG que recorre el tramo al cambiar; 5 px por defecto, `height: 8` en la tarjeta de la ficha | Radio de la mitad del alto |
+| `ChangeFlash` | Fondo que destella detrás de un número al cambiar: carmesí si bajó, verde si subió | Para PG; se dibuja por fuera del hijo y no lo mueve |
 | `UsagePips` | Tira de íconos para usos restantes: llenos en `gold`, gastados en `textMuted` | Recursos de clase, espacios de conjuro |
 | `GoldPill` | Cápsula dorada suave; `highlighted: false` la vuelve neutra | Radio 20 |
 | `SourceBadge` | `GoldPill` con la procedencia del contenido | Solo el SRD 5.2.1 va resaltado |
@@ -544,13 +545,22 @@ error).
 
 ## 10. Movimiento
 
-Poco y corto. Todo lo que anima está acá:
+Poco y corto, y solo para marcar un cambio de estado. Las principales:
 
 | Animación | Duración | Curva |
 | --- | --- | --- |
 | Hover de tarjeta (traslación + sombra + borde) | 120 ms | default de `AnimatedContainer` |
 | Cambio de estado de guardado | 180 ms | `AnimatedSwitcher` |
 | Arrastre de tarjeta | — | `opacity: 0.85` en el feedback, `0.3` en el hueco |
+| Barra de PG (`ThinBar`, dashboard, ficha y combate) | 220 ms | `easeOut` |
+| Destello de un cambio de PG (`ChangeFlash`): carmesí si bajó, verde si subió | 600 ms | aparece de golpe y se apaga con `easeIn` |
+| Marca de turno en la planilla del combate | 180 ms | `AnimatedContainer` + `AnimatedOpacity` |
+| Desplazamiento hasta la fila del turno, solo si estaba fuera de vista | 200 ms | `easeOut` |
+
+Toda duración pasa por `context.motion(...)`, que devuelve cero cuando el
+sistema pide menos movimiento. Lo animado nunca lleva información que no esté
+ya en su valor final: el número de PG cambia en el primer cuadro y el destello
+solo dice para qué lado fue.
 
 **No hay animaciones de entrada de página, ni de listas, ni parallax, ni
 transiciones personalizadas de ruta.** Una herramienta que se abre cincuenta

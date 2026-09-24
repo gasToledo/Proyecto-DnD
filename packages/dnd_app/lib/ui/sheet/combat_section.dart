@@ -49,13 +49,16 @@ extension _SheetCombatSection on _SheetScreenState {
               spacing: 8,
               runSpacing: 4,
               children: [
-                Text(
-                  '${combat.currentHp}',
-                  style: TextStyle(
-                    fontFamily: 'Georgia',
-                    fontSize: 40,
-                    height: 1,
-                    color: pal.crimson,
+                ChangeFlash(
+                  value: combat.currentHp,
+                  child: Text(
+                    '${combat.currentHp}',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 40,
+                      height: 1,
+                      color: pal.crimson,
+                    ),
                   ),
                 ),
                 Text(
@@ -70,14 +73,14 @@ extension _SheetCombatSection on _SheetScreenState {
               ],
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: ratio.clamp(0, 1),
-                minHeight: 8,
-                backgroundColor: pal.plaque,
-                valueColor: AlwaysStoppedAnimation(pal.crimson),
-              ),
+            // La misma barra que la tarjeta del dashboard, que recorre el
+            // tramo: esta saltaba, y justo en la ficha es donde se aplica
+            // el daño.
+            ThinBar(
+              ratio: ratio,
+              color: pal.crimson,
+              track: pal.plaque,
+              height: 8,
             ),
             const SizedBox(height: 14),
             _hpControls(s),

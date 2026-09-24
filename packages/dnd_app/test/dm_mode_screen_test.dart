@@ -1273,6 +1273,59 @@ void main() {
       );
     }
 
+    // Con una docena larga de combatientes, «Siguiente turno» dejaba la marca
+    // fuera de pantalla y el DM tenía que ir a buscar a quién le tocaba. Se
+    // prueban los dos sentidos: bajar hasta el último y, al empezar la ronda
+    // siguiente, volver a subir hasta el primero.
+    testWidgets('el turno nuevo queda a la vista en una planilla larga', (
+      tester,
+    ) async {
+      final goblin = combateConGoblin().combatants.single;
+      final combate = Encounter(
+        id: 'en-curso',
+        stage: EncounterStage.running,
+        turnIndex: 18,
+        combatants: [
+          for (var i = 1; i <= 20; i++)
+            Combatant(
+              id: 'g$i',
+              kind: CombatantKind.monster,
+              name: 'Goblin $i',
+              initiative: 40 - i,
+              creatureId: goblin.creatureId,
+              currentHp: goblin.maxHp,
+              maxHp: goblin.maxHp,
+            ),
+        ],
+      );
+      await pumpDmMode(
+        tester,
+        size: const Size(1400, 700),
+        seed: (s) {
+          seedTable(s);
+          s.encounters['tumba'] = combate;
+        },
+      );
+      await openCombate(tester);
+
+      bool visible(String name) {
+        final rect = tester.getRect(find.text(name));
+        return rect.top >= 0 && rect.bottom <= 700;
+      }
+
+      expect(visible('Goblin 20'), isFalse, reason: 'la planilla no es larga');
+
+      await tester.tap(find.text('Siguiente turno'));
+      await tester.pumpAndSettle();
+      expect(visible('Goblin 20'), isTrue);
+      expect(visible('Goblin 1'), isFalse);
+
+      await tester.tap(find.text('Siguiente turno'));
+      await tester.pumpAndSettle();
+      expect(visible('Goblin 1'), isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
     // Cada golpe sale del combate que dejó guardado el anterior. Con el
     // servidor lento, los dos partían del mismo estado y el segundo pisaba al
     // primero: el goblin recibía un solo golpe.

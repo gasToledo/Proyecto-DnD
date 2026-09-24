@@ -533,6 +533,10 @@ class _EncounterViewState extends State<EncounterView> {
           for (final (i, combatant) in current.combatants.indexed) ...[
             if (i > 0) Divider(height: 1, color: pal.hairline),
             _CombatantRow(
+              // Por combatiente y no por posición: la fila guarda el destello
+              // de PG y la marca de turno, y al ordenar por iniciativa o sacar
+              // a alguien no pueden pasarse al vecino.
+              key: ValueKey(combatant.id),
               combatant: combatant,
               active: !current.isPreparing && combatant.id == currentId,
               // Los que ya jugaron esta ronda se atenúan: siguen siendo
@@ -1285,6 +1289,49 @@ class _Standing {
 
 /// Una fila de la planilla: un jugador (solo lectura, PG en vivo) o un
 /// monstruo (con el único control de escritura de toda la fase).
+/// Desplaza la planilla lo justo para que la fila que acaba de tomar el turno
+/// quede a la vista.
+///
+/// Con una docena de combatientes en una laptop, «Siguiente turno» podía
+/// dejar la marca fuera de pantalla, y el DM tenía que ir a buscar a quién le
+/// tocaba. Solo se mueve si la fila estaba afuera: pedir las dos políticas es
+/// seguro porque la que no hace falta no desplaza nada, y así el paso de la
+/// última fila a la primera también sube.
+class _RevealWhenActive extends StatefulWidget {
+  final bool active;
+  final Widget child;
+  const _RevealWhenActive({required this.active, required this.child});
+
+  @override
+  State<_RevealWhenActive> createState() => _RevealWhenActiveState();
+}
+
+class _RevealWhenActiveState extends State<_RevealWhenActive> {
+  @override
+  void didUpdateWidget(_RevealWhenActive old) {
+    super.didUpdateWidget(old);
+    if (!widget.active || old.active) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final duration = context.motion(const Duration(milliseconds: 200));
+      for (final policy in const [
+        ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      ]) {
+        Scrollable.ensureVisible(
+          context,
+          duration: duration,
+          curve: Curves.easeOut,
+          alignmentPolicy: policy,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class _CombatantRow extends StatelessWidget {
   final Combatant combatant;
   final bool active;
@@ -1312,6 +1359,7 @@ class _CombatantRow extends StatelessWidget {
   final VoidCallback onConvertToNpc;
 
   const _CombatantRow({
+    super.key,
     required this.combatant,
     required this.active,
     required this.acted,
@@ -1365,7 +1413,12 @@ class _CombatantRow extends StatelessWidget {
     final pal = context.palette;
     final hp = _hp();
 
-    final row = Container(
+    // El turno pasa de una fila a la siguiente con la misma duración que el
+    // cambio de estado del guardado: sin eso, en una planilla larga la marca
+    // salta y el ojo tiene que volver a buscarla.
+    final switchDuration = context.motion(const Duration(milliseconds: 180));
+    final row = AnimatedContainer(
+      duration: switchDuration,
       // El turno se marca con una barra al filo de la fila y con la palabra
       // TURNO bajo la iniciativa: en una planilla, un borde entero alrededor
       // de una fila rompe la grilla que la hace legible.
@@ -1384,7 +1437,14 @@ class _CombatantRow extends StatelessWidget {
           : _stackedLayout(context, hp),
     );
 
-    return acted ? Opacity(opacity: .62, child: row) : row;
+    return _RevealWhenActive(
+      active: active,
+      child: AnimatedOpacity(
+        duration: switchDuration,
+        opacity: acted ? .62 : 1,
+        child: row,
+      ),
+    );
   }
 
   Widget _columnsLayout(BuildContext context, (int, int)? hp) {
@@ -1644,13 +1704,16 @@ class _CombatantRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          '$current/$max',
-          style: TextStyle(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-            color: pal.crimson,
-            fontFeatures: const [FontFeature.tabularFigures()],
+        ChangeFlash(
+          value: current,
+          child: Text(
+            '$current/$max',
+            style: TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w700,
+              color: pal.crimson,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
         const SizedBox(height: 5),

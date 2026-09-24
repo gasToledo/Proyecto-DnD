@@ -96,6 +96,12 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   importar homebrew. Los conteos ya no usan plurales entre paréntesis.
 - En el tema claro, el texto de los botones dorados pasa a blanco y llega al
   contraste mínimo de accesibilidad (antes quedaba por debajo).
+- Un cambio de PG, en la ficha o en el combate del DM, se marca con un destello
+  carmesí si bajó y verde si subió, y la barra de la ficha recorre el tramo en
+  vez de saltar.
+- En el combate del DM, la marca de turno pasa de una fila a la siguiente sin
+  saltar, y la planilla se desplaza para que la fila del turno quede a la
+  vista.
 
 ### Eliminado
 

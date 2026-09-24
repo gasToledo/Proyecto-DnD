@@ -421,6 +421,40 @@ void main() {
     expect(retried, 1);
   });
 
+  // El destello dice para qué lado fue el cambio de PG; con movimiento
+  // reducido no aparece, y el número nuevo alcanza para leerlo.
+  testWidgets('el destello de PG marca si bajó o subió', (tester) async {
+    Future<Color?> flashAfter(int from, int to, {bool reduced = false}) async {
+      Widget build(int value) => MaterialApp(
+        theme: AppTheme.dark,
+        home: MediaQuery(
+          data: MediaQueryData(disableAnimations: reduced),
+          child: Scaffold(
+            body: Center(
+              child: ChangeFlash(value: value, child: Text('$value')),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpWidget(build(from));
+      await tester.pumpWidget(build(to));
+      await tester.pump(const Duration(milliseconds: 50));
+      final box = tester.widget<DecoratedBox>(
+        find.descendant(
+          of: find.byType(ChangeFlash),
+          matching: find.byType(DecoratedBox),
+        ),
+      );
+      final color = (box.decoration as BoxDecoration).color;
+      await tester.pumpAndSettle();
+      return color == null || color.a == 0 ? null : color.withAlpha(255);
+    }
+
+    expect(await flashAfter(12, 7), AppPalette.dark.crimson);
+    expect(await flashAfter(7, 12), AppPalette.dark.verdant);
+    expect(await flashAfter(12, 7, reduced: true), isNull);
+  });
+
   // Un aviso de error interpolaba la excepción tal cual, y quien importaba un
   // archivo roto leía «FormatException: …» en inglés.
   test('un aviso de error no muestra el nombre de la excepción', () {

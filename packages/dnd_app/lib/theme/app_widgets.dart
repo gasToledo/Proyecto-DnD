@@ -1137,20 +1137,22 @@ class StatTile extends StatelessWidget {
   }
 }
 
-/// Barra fina (para PG dentro de una placa).
+/// Barra de PG: fina dentro de una placa, más alta en la tarjeta de la ficha.
 class ThinBar extends StatelessWidget {
   final double ratio;
   final Color color;
   final Color track;
+  final double height;
   const ThinBar({
     super.key,
     required this.ratio,
     required this.color,
     required this.track,
+    this.height = 5,
   });
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(3),
+    borderRadius: BorderRadius.circular(height / 2),
     // La barra recorre el tramo en vez de saltar: al aplicar daño o curación,
     // ver de dónde a dónde fue es lo que hace legible el golpe. El número de
     // al lado ya está en su valor final desde el primer cuadro, así que la
@@ -1162,11 +1164,84 @@ class ThinBar extends StatelessWidget {
       curve: Curves.easeOut,
       builder: (context, value, _) => LinearProgressIndicator(
         value: value,
-        minHeight: 5,
+        minHeight: height,
         backgroundColor: track,
         valueColor: AlwaysStoppedAnimation(color),
       ),
     ),
+  );
+}
+
+/// Marca que [value] cambió con un fondo que aparece y se apaga: carmesí si
+/// bajó, verde si subió.
+///
+/// El número ya muestra el valor nuevo desde el primer cuadro; lo que la
+/// barra de PG no alcanza a decir, cuando el cambio es chico, es para qué
+/// lado fue. En la mesa se toca la ficha de reojo, y un «−3» que no se nota
+/// se vuelve a tocar. El fondo se dibuja por fuera del hijo para no mover el
+/// número, y con movimiento reducido no aparece: el cambio igual se lee.
+class ChangeFlash extends StatefulWidget {
+  final int value;
+  final Widget child;
+  const ChangeFlash({super.key, required this.value, required this.child});
+
+  @override
+  State<ChangeFlash> createState() => _ChangeFlashState();
+}
+
+class _ChangeFlashState extends State<ChangeFlash>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(vsync: this);
+  Color _color = Colors.transparent;
+
+  @override
+  void didUpdateWidget(ChangeFlash old) {
+    super.didUpdateWidget(old);
+    if (widget.value == old.value) return;
+    final duration = context.motion(const Duration(milliseconds: 600));
+    if (duration == Duration.zero) return;
+    final pal = context.palette;
+    _color = widget.value < old.value ? pal.crimson : pal.verdant;
+    _controller
+      ..duration = duration
+      ..forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _controller,
+    child: widget.child,
+    builder: (context, child) {
+      // Aparece de golpe y se apaga: el ojo tiene que enganchar el cambio
+      // apenas ocurre, no ver cómo se enciende.
+      final fade = _controller.isAnimating
+          ? 1 - Curves.easeIn.transform(_controller.value)
+          : 0.0;
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: -4,
+            right: -4,
+            top: -2,
+            bottom: -2,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: _color.withAlpha((70 * fade).round()),
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ),
+          child!,
+        ],
+      );
+    },
   );
 }
 

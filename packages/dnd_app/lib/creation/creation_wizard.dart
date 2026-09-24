@@ -505,8 +505,11 @@ class _CreationWizardState extends State<CreationWizard> {
                       ? ''
                       : pending.length == 1
                       ? 'Falta: ${pending.single}'
-                      : 'Falta: ${pending.first} (y ${pending.length - 1} '
-                            '${pending.length == 2 ? 'cosa' : 'cosas'} más)',
+                      // Cada faltante trae su punto final: sin sacarlo quedaba
+                      // «0/2. (y 2 cosas más)».
+                      : 'Falta: ${pending.first.replaceFirst(RegExp(r'\.$'), '')} '
+                            '(y ${pending.length - 1} '
+                            '${pending.length == 2 ? 'cosa' : 'cosas'} más).',
                   textAlign: TextAlign.end,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

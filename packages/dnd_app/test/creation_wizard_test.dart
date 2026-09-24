@@ -108,6 +108,12 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
       await tester.pumpAndSettle();
       expect(body(CreationStep.clase).pixels, 0);
+
+      // Con más de un faltante, el pie dice el primero y cuántos quedan, sin
+      // cortarse y sin el punto del faltante antes del paréntesis.
+      final pending = tester.widget<Text>(find.textContaining('Falta:')).data!;
+      expect(pending, endsWith('(y 1 cosa más).'));
+      expect(pending, isNot(contains('. (')));
       expect(tester.takeException(), isNull);
     },
   );

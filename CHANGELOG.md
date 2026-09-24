@@ -136,7 +136,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Modificado
 
-- Sin cambios.
+- Creación de personaje: el pie de faltantes ya no deja un punto antes de
+  «(y N cosas más)».
 
 ### Eliminado
 

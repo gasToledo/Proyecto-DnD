@@ -12,6 +12,7 @@
     "accentColor": "#B0413E",
     "iconId": "shield",
     "hitDie": 10,
+    "suggestedScores": {"strength": 15, "dexterity": 14, "constitution": 13, "intelligence": 8, "wisdom": 10, "charisma": 12},
     "savingThrows": [
       "strength",
       "constitution"
@@ -375,6 +376,7 @@
     "accentColor": "#C0552B",
     "iconId": "rage",
     "hitDie": 12,
+    "suggestedScores": {"strength": 15, "dexterity": 13, "constitution": 14, "intelligence": 10, "wisdom": 12, "charisma": 8},
     "savingThrows": [
       "strength",
       "constitution"
@@ -794,6 +796,7 @@
     "accentColor": "#7D6B99",
     "iconId": "dagger",
     "hitDie": 8,
+    "suggestedScores": {"strength": 12, "dexterity": 15, "constitution": 13, "intelligence": 14, "wisdom": 10, "charisma": 8},
     "savingThrows": [
       "dexterity",
       "intelligence"
@@ -1129,6 +1132,7 @@
     "accentColor": "#2E86AB",
     "iconId": "fist",
     "hitDie": 8,
+    "suggestedScores": {"strength": 12, "dexterity": 15, "constitution": 13, "intelligence": 10, "wisdom": 14, "charisma": 8},
     "savingThrows": [
       "strength",
       "dexterity"
@@ -1559,6 +1563,7 @@
     "accentColor": "#4A6FA5",
     "iconId": "spellbook",
     "hitDie": 6,
+    "suggestedScores": {"strength": 8, "dexterity": 12, "constitution": 13, "intelligence": 15, "wisdom": 14, "charisma": 10},
     "savingThrows": [
       "intelligence",
       "wisdom"
@@ -1926,6 +1931,7 @@
     "accentColor": "#CBB26A",
     "iconId": "holy",
     "hitDie": 8,
+    "suggestedScores": {"strength": 14, "dexterity": 8, "constitution": 13, "intelligence": 10, "wisdom": 15, "charisma": 12},
     "savingThrows": [
       "wisdom",
       "charisma"
@@ -2226,6 +2232,7 @@
     "accentColor": "#4C8B3F",
     "iconId": "leaf",
     "hitDie": 8,
+    "suggestedScores": {"strength": 8, "dexterity": 12, "constitution": 14, "intelligence": 13, "wisdom": 15, "charisma": 10},
     "savingThrows": [
       "intelligence",
       "wisdom"
@@ -2666,6 +2673,7 @@
     "accentColor": "#D98E48",
     "iconId": "music",
     "hitDie": 8,
+    "suggestedScores": {"strength": 8, "dexterity": 14, "constitution": 12, "intelligence": 13, "wisdom": 10, "charisma": 15},
     "savingThrows": [
       "dexterity",
       "charisma"
@@ -2915,6 +2923,7 @@
     "accentColor": "#C13B5A",
     "iconId": "sparkle",
     "hitDie": 6,
+    "suggestedScores": {"strength": 10, "dexterity": 13, "constitution": 14, "intelligence": 8, "wisdom": 12, "charisma": 15},
     "savingThrows": [
       "constitution",
       "charisma"
@@ -3133,6 +3142,7 @@
     "accentColor": "#7E57C2",
     "iconId": "eye",
     "hitDie": 8,
+    "suggestedScores": {"strength": 8, "dexterity": 14, "constitution": 13, "intelligence": 12, "wisdom": 10, "charisma": 15},
     "savingThrows": [
       "wisdom",
       "charisma"
@@ -3493,6 +3503,7 @@
     "accentColor": "#C8A13A",
     "iconId": "oath",
     "hitDie": 10,
+    "suggestedScores": {"strength": 15, "dexterity": 10, "constitution": 13, "intelligence": 8, "wisdom": 12, "charisma": 14},
     "savingThrows": [
       "wisdom",
       "charisma"
@@ -3825,6 +3836,7 @@
     "accentColor": "#5B8C5A",
     "iconId": "bow",
     "hitDie": 10,
+    "suggestedScores": {"strength": 12, "dexterity": 15, "constitution": 13, "intelligence": 8, "wisdom": 14, "charisma": 10},
     "savingThrows": [
       "strength",
       "dexterity"

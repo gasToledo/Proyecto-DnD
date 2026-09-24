@@ -79,12 +79,14 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 - Sin cambios.
 
-## [Unreleased]
+## [0.13.0+1] - 2026-09-24
 
 ### Nuevo
 
 - Una cuenta sin personajes ofrece probar con uno de ejemplo: lo suma como
   personaje propio y abre su ficha, para recorrerla antes de crear el primero.
+- Creación de personaje: con el conjunto estándar se ofrece aplicar de un
+  toque el reparto que el SRD sugiere para la clase elegida.
 
 ### Modificado
 
@@ -94,6 +96,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   (incluido el primer paso de creación), «bonificador» en lugar de «bonus»,
   «Borrar» en todas las acciones de borrado y «archivo» en lugar de «pack» al
   importar homebrew. Los conteos ya no usan plurales entre paréntesis.
+- Las características se abrevian como en el SRD en castellano (FUE, DES,
+  CON, INT, SAB, CAR) y las distancias dicen «pies» en todas partes.
 - En el tema claro, el texto de los botones dorados pasa a blanco y llega al
   contraste mínimo de accesibilidad (antes quedaba por debajo).
 - Un cambio de PG, en la ficha o en el combate del DM, se marca con un destello
@@ -102,12 +106,8 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 - En el combate del DM, la marca de turno pasa de una fila a la siguiente sin
   saltar, y la planilla se desplaza para que la fila del turno quede a la
   vista.
-- El contenido del SRD se descarga en paralelo al abrir la aplicación, y no
-  archivo por archivo: la biblioteca aparece medio segundo antes.
-- Al abrir la aplicación, el homebrew, los personajes, los ajustes y la
-  versión se piden a la vez que el contenido y no uno detrás del otro.
-- Las características se abrevian como en el SRD en castellano (FUE, DES,
-  CON, INT, SAB, CAR) y las distancias dicen «pies» en todas partes.
+- El contenido del SRD, el homebrew, los personajes y los ajustes se piden en
+  paralelo al abrir la aplicación: el arranque con sesión tarda la mitad.
 - Creación de personaje: el paso «Aptitudes» pasa a llamarse
   «Competencias», los métodos de puntuación usan los nombres del SRD
   («Conjunto estándar», «Coste en puntos»), los modificadores dejan de verse
@@ -117,6 +117,26 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   sigue al paso activo, y elegir especie, clase o trasfondo baja hasta su
   detalle, donde están el linaje, el aumento de características y las
   maestrías. Al terminar se abre la ficha del personaje nuevo.
+- Creación de personaje: las opciones de equipo inicial dicen qué trae cada
+  una antes de elegirla, y las tarjetas de trasfondo muestran su dote de
+  origen y las características a las que suma.
+- `dnd_engine`: las clases del catálogo SRD declaran su reparto sugerido
+  (`suggestedScores`), y `Ability.code` separa los códigos de datos en inglés
+  de la abreviatura que se muestra.
+
+### Eliminado
+
+- Sin cambios.
+
+## [Unreleased]
+
+### Nuevo
+
+- Sin cambios.
+
+### Modificado
+
+- Sin cambios.
 
 ### Eliminado
 

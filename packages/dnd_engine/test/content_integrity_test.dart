@@ -428,6 +428,22 @@ void main() {
     'artificer',
   };
 
+  // La creación ofrece este reparto con un botón: uno que no fuera el conjunto
+  // estándar, o que dejara una característica afuera, se aplicaría igual.
+  test('cada clase del SRD sugiere un reparto del conjunto estándar', () {
+    final srd = [
+      for (final c in repo.classes.values)
+        if (c.source == ContentSource.srd2024) c,
+    ];
+    expect(srd, hasLength(12));
+    for (final c in srd) {
+      expect(c.suggestedScores.keys.toSet(), Ability.values.toSet(),
+          reason: '${c.id} no cubre las seis');
+      expect(c.suggestedScores.values.toList()..sort(), [8, 10, 12, 13, 14, 15],
+          reason: '${c.id} no es el conjunto estándar');
+    }
+  });
+
   test('el catálogo se cargó con volumen razonable', () {
     expect(repo.weapons.length, greaterThanOrEqualTo(30));
     expect(repo.armor.length, greaterThanOrEqualTo(12));

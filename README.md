@@ -131,9 +131,10 @@ visual en la [guía de diseño web](docs/desarrollo/diseno-web.md).
 
 ## El camino recorrido
 
-La versión **0.12.0** incorpora PNJ al Modo DM, con biblioteca propia, estado
-por campaña y bandos en combate, y un Bestiario para armar encuentros: filtro
-por valor de desafío y suma al combate desde el perfil.
+La versión **0.13.0** pule la llegada de alguien nuevo: un personaje de
+ejemplo para recorrer la ficha, una creación de personaje que en el teléfono
+lleva hasta cada elección y sugiere el reparto de puntuaciones de la clase,
+textos unificados con el SRD en castellano y un arranque que tarda la mitad.
 
 Consultá el [changelog](CHANGELOG.md) para conocer los cambios de cada versión
 y el [índice de documentación](docs/README.md) para profundizar en arquitectura,

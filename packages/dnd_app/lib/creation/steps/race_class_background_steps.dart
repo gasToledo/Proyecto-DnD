@@ -286,9 +286,10 @@ class _BackgroundStep extends StatelessWidget {
               _ChoiceCard(
                 icon: backgroundIcon(b),
                 title: b.name,
-                // La línea de sabor vive en el panel de detalle, no acá: la
-                // lista es para recorrer nombres y el detalle para leer.
-                subtitle: null,
+                // Lo que decide la elección —la dote de origen y a qué
+                // características suma— y no la línea de sabor, que vive en el
+                // detalle. Sin esto había que abrir uno por uno para comparar.
+                subtitle: _backgroundGist(b, repo),
                 source: b.source,
                 accent: context.palette.gold,
                 selected: draft.backgroundId == b.id,
@@ -470,3 +471,14 @@ class _AbilityDropdown extends StatelessWidget {
 
 /// Paso 4 · Puntuaciones: método, valores pendientes y una tarjeta por
 /// característica con el total, el aumento del trasfondo y el modificador.
+
+/// La dote de origen y las características a las que suma un trasfondo, en
+/// una línea para su tarjeta. Null si no trae ninguna de las dos (homebrew).
+String? _backgroundGist(Background b, ContentRepository repo) {
+  final parts = [
+    if (b.originFeatId case final id?) repo.feat(id)?.name ?? id,
+    if (b.abilityOptions.isNotEmpty)
+      b.abilityOptions.map((a) => a.abbr).join(' '),
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
+}

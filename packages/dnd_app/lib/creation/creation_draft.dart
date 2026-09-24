@@ -714,6 +714,22 @@ class CreationDraft {
     }
   }
 
+  /// Reparto del conjunto estándar que sugiere la clase (tabla del SRD), o
+  /// vacío. Solo con ese método: con otro los valores no son esos seis.
+  Map<Ability, int> get suggestedScores =>
+      scoreMethod == ScoreMethod.standardArray
+      ? klass?.suggestedScores ?? const {}
+      : const {};
+
+  /// Asigna de una vez el reparto sugerido por la clase.
+  void applySuggestedScores() {
+    final suggested = suggestedScores;
+    if (suggested.isEmpty) return;
+    assignedScores
+      ..clear()
+      ..addAll(suggested);
+  }
+
   /// Puntos ya gastados en la compra de puntos.
   int get pointsSpent => pointBuySpent(assignedScores.values);
 

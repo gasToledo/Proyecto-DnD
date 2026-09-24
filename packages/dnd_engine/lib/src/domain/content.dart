@@ -253,6 +253,11 @@ class CharacterClass {
   final List<StartingEquipmentOption> startingEquipment;
   final MulticlassRules? multiclass;
 
+  /// Reparto sugerido del conjunto estándar (15, 14, 13, 12, 10, 8), de la
+  /// tabla «Conjunto estándar por clase» del SRD. Vacío si el contenido no lo
+  /// trae (homebrew, clases fuera del SRD): la creación entonces no sugiere.
+  final Map<Ability, int> suggestedScores;
+
   const CharacterClass({
     required this.id,
     required this.name,
@@ -270,6 +275,7 @@ class CharacterClass {
     this.features = const [],
     this.startingEquipment = const [],
     this.multiclass,
+    this.suggestedScores = const {},
   });
 
   /// Rasgos activos hasta [level] inclusive, en orden de nivel.
@@ -312,6 +318,10 @@ class CharacterClass {
             .map((e) => StartingEquipmentOption.fromJson(
                 (e as Map).cast<String, dynamic>()))
             .toList(),
+        suggestedScores: {
+          for (final e in ((j['suggestedScores'] as Map?) ?? const {}).entries)
+            Ability.fromKey(e.key as String): e.value as int,
+        },
         multiclass: (j['multiclass'] as Map?) == null
             ? null
             : MulticlassRules.fromJson(

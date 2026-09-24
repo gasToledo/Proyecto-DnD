@@ -131,6 +131,22 @@ void main() {
     // test—, y las tres miran el mismo estado.
     await gotoEquipo(tester, 'Mago');
 
+    // --- Cada opción dice qué trae antes de elegirla, no «Opción A» a secas.
+    final optionA = repo.classes['wizard']!.startingEquipment.first;
+    final firstItem = repo.catalogEntry(optionA.grants.first.itemId!)!.name;
+    await tester.tap(find.byKey(const ValueKey('starting-equipment-clase')));
+    await tester.pumpAndSettle();
+    // Adentro del menú: «Daga» ya se ve más abajo, como equipo puesto.
+    expect(
+      find.descendant(
+        of: find.byType(DropdownMenuItem<String>),
+        matching: find.textContaining(firstItem),
+      ),
+      findsWidgets,
+    );
+    await tester.tap(find.text(optionA.label).last);
+    await tester.pumpAndSettle();
+
     // --- Lo que trajo: equipo, conjuros y sus contadores.
     expect(find.text('EQUIPO INICIAL'), findsOneWidget);
     expect(find.text('EQUIPO PUESTO'), findsOneWidget);

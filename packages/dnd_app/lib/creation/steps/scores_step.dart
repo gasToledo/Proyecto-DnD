@@ -85,6 +85,32 @@ class _ScoresStep extends StatelessWidget {
           _PointBuyBar(draft: draft, onChanged: onChanged)
         else
           _PoolBar(draft: draft, unassigned: unassigned, onChanged: onChanged),
+        // Quien llega por primera vez no sabe que a un mago le conviene la
+        // Inteligencia; la tabla del SRD lo dice por clase, y aplicarla es un
+        // toque en vez de seis desplegables.
+        if (draft.suggestedScores case final suggested
+            when suggested.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          AppHelpCallout(
+            icon: Icons.lightbulb_outline,
+            title: 'Reparto sugerido para ${draft.klass!.name}',
+            message: [
+              for (final a in Ability.values) '${a.abbr} ${suggested[a]}',
+            ].join(' · '),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                draft.applySuggestedScores();
+                onChanged();
+              },
+              icon: const Icon(Icons.auto_fix_high, size: 18),
+              label: const Text('Usar este reparto'),
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, box) {

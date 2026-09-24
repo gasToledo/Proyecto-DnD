@@ -52,6 +52,7 @@ class _StartingEquipmentSection extends StatelessWidget {
       const _SectionHeader(title: 'Equipo inicial'),
       const SizedBox(height: 12),
       _optionPicker(
+        context,
         'Clase',
         draft.klass?.startingEquipment ?? const [],
         draft.classEquipmentOptionId,
@@ -63,6 +64,7 @@ class _StartingEquipmentSection extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       _optionPicker(
+        context,
         'Trasfondo',
         draft.background?.startingEquipment ?? const [],
         draft.backgroundEquipmentOptionId,
@@ -116,6 +118,7 @@ class _StartingEquipmentSection extends StatelessWidget {
   );
 
   Widget _optionPicker(
+    BuildContext context,
     String label,
     List<StartingEquipmentOption> options,
     String? selected,
@@ -123,13 +126,54 @@ class _StartingEquipmentSection extends StatelessWidget {
   ) => DropdownButtonFormField<String>(
     key: ValueKey('starting-equipment-${label.toLowerCase()}'),
     initialValue: options.any((e) => e.id == selected) ? selected : null,
-    decoration: InputDecoration(labelText: 'Opción de $label'),
+    decoration: InputDecoration(labelText: 'Opción de ${label.toLowerCase()}'),
+    // Cada opción dice qué trae: «Opción A» y «Opción B» a secas obligaban a
+    // elegir a ciegas y enterarse después. Cerrado muestra solo el rótulo,
+    // porque la lista completa ya aparece debajo una vez elegido.
+    isExpanded: true,
+    itemHeight: null,
+    selectedItemBuilder: (_) => [
+      for (final option in options) Text(option.label),
+    ],
     items: [
       for (final option in options)
-        DropdownMenuItem(value: option.id, child: Text(option.label)),
+        DropdownMenuItem(
+          value: option.id,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(option.label),
+                Text(
+                  _optionContents(option),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ),
     ],
     onChanged: changed,
   );
+
+  String _optionContents(StartingEquipmentOption option) => [
+    for (final grant in option.grants) ...[
+      if (grant.itemId case final id?)
+        grant.quantity == 1
+            ? _itemName(id)
+            : '${_itemName(id)} ×${grant.quantity}',
+      if (grant.isChoice)
+        grant.chooseFromItemIds.length <= 3
+            ? grant.chooseFromItemIds.map(_itemName).join(' o ')
+            : '${grant.chooseCount} a elegir',
+      for (final coin in grant.coins.entries)
+        '${coin.value} ${coinLabels[coin.key] ?? coin.key}',
+    ],
+  ].join(' · ');
+
+  String _itemName(String id) => draft.repo.catalogEntry(id)?.name ?? id;
 }
 
 class _ReceivedEquipmentSection extends StatelessWidget {

@@ -924,4 +924,19 @@ void main() {
       expect(d.firstIncompleteStep, CreationStep.trasfondo);
     });
   });
+
+  // Quien llega por primera vez no sabe dónde poner el 15. El reparto sale de
+  // la tabla del SRD por clase, y solo vale para el conjunto estándar: con
+  // otro método los valores no son esos seis.
+  test('el reparto sugerido de la clase llena las seis puntuaciones', () {
+    final wizard = repo.characterClass('wizard')!;
+    final d = CreationDraft(repo)..classId = wizard.id;
+
+    expect(d.suggestedScores, wizard.suggestedScores);
+    d.applySuggestedScores();
+    expect(d.assignedScores, wizard.suggestedScores);
+
+    d.applyScoreMethod(ScoreMethod.pointBuy);
+    expect(d.suggestedScores, isEmpty);
+  });
 }

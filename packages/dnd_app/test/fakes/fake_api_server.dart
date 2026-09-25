@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:dnd_app/data/npc_bundle.dart';
 import 'package:dnd_engine/dnd_engine.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -814,6 +815,28 @@ class FakeApiServer {
       final npc = importNpcResult;
       if (npc == null) {
         return _json({'error': 'El ZIP no es un PNJ exportado.'}, 400);
+      }
+      // Como el servidor: el homebrew que trae la ficha queda en la cuenta.
+      // Sin esto el doble tapaba que el catálogo del cliente no se enteraba.
+      final bundled = NpcBundleCodec.preview(
+        base64Decode(_body(request)['bytes'] as String),
+      ).homebrew;
+      for (final MapEntry(key: category, value: docs) in bundled.entries) {
+        for (final doc in docs) {
+          final current = homebrew[category]?[doc['id']];
+          if (current != null && jsonEncode(current) != jsonEncode(doc)) {
+            return _json({
+              'error':
+                  'El PNJ trae homebrew que en tu cuenta ya existe con otro '
+                  'contenido: ${doc['name']} ($category).',
+            }, 400);
+          }
+        }
+      }
+      for (final MapEntry(key: category, value: docs) in bundled.entries) {
+        for (final doc in docs) {
+          (homebrew[category] ??= {})['${doc['id']}'] = doc;
+        }
       }
       final id = 'npc-${_npcCounter++}';
       final stored = Npc.fromJson(npc.toJson()..['id'] = id);

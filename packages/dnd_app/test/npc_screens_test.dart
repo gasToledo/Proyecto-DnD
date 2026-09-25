@@ -5,6 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:dnd_app/api/api_client.dart';
 import 'package:dnd_app/api/api_models.dart';
 import 'package:dnd_app/data/backup_bundle.dart';
+import 'package:dnd_app/data/homebrew_store.dart';
 import 'package:dnd_app/data/npc_bundle.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/app_widgets.dart';
@@ -805,6 +806,82 @@ void main() {
         server.campaignNpcs[(campaignId: 'tumba', npcId: id)],
         NpcStatus.alive,
       );
+      expect(tester.takeException(), isNull);
+    });
+
+    // La observación con un PNJ que llevaba un arma homebrew: el servidor la
+    // guardaba en la cuenta del DM, pero el catálogo en memoria se arma al
+    // abrir la app, y la ficha la mostraba como «No está en el catálogo»
+    // hasta recargar la página.
+    testWidgets('el homebrew que trae la ficha entra al catálogo al importar', (
+      tester,
+    ) async {
+      bigView(tester);
+      const arma = Weapon(
+        id: 'hb-bracamante-de-prueba',
+        name: 'Bracamante de prueba',
+        source: ContentSource.homebrew,
+        category: 'martial',
+        damageDice: '1d8',
+        damageType: 'slashing',
+      );
+      addTearDown(() => repo.weapons.remove(arma.id));
+      final sheet = Character(
+        id: 'ficha',
+        name: 'Mirra',
+        raceId: 'human',
+        classId: 'fighter',
+        backgroundId: 'soldier',
+        assignedScores: const {},
+        inventory: [InventoryEntry(itemId: arma.id)],
+      );
+      final conFicha = Npc(
+        id: 'mirra',
+        name: 'Mirra',
+        sheetKind: NpcSheetKind.character,
+      );
+      final server = FakeApiServer()..importNpcResult = conFicha;
+      final api = ApiClient(client: server.client);
+      final store = HomebrewStore(api);
+      final bytes = NpcBundleCodec.encode(
+        npc: conFicha,
+        sheet: sheet,
+        homebrew: {
+          'weapons': [arma.toJson()],
+        },
+      );
+      expect(repo.weapon(arma.id), isNull);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (_) => ImportNpcDialog(
+                  api: api,
+                  repo: repo,
+                  bytes: bytes,
+                  preview: NpcBundleCodec.preview(bytes),
+                  campaigns: const [],
+                  homebrew: store,
+                ),
+              ),
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+      await tester.tap(dialogAction('Importar'));
+      await tester.pumpAndSettle();
+
+      // En el catálogo, que es donde la busca la ficha, y en el store, que es
+      // lo que lista la sección Homebrew.
+      expect(repo.weapon(arma.id)?.name, arma.name);
+      expect(store.weapons.keys, contains(arma.id));
       expect(tester.takeException(), isNull);
     });
   });

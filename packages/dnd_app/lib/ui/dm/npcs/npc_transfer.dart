@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import '../../../api/api_client.dart';
 import '../../../api/api_exception.dart';
 import '../../../api/api_models.dart';
+import '../../../data/homebrew_store.dart';
 import '../../../data/npc_bundle.dart';
 import '../../../theme/app_theme.dart';
 import '../../../theme/app_widgets.dart';
@@ -172,6 +173,7 @@ Future<bool> importNpcFlow(
   required ApiClient api,
   required ContentRepository repo,
   required List<Campaign> campaigns,
+  HomebrewStore? homebrew,
 }) async {
   final picked = await FilePicker.platform.pickFiles(
     type: FileType.custom,
@@ -206,6 +208,7 @@ Future<bool> importNpcFlow(
       bytes: bytes,
       preview: preview,
       campaigns: campaigns,
+      homebrew: homebrew,
     ),
   );
   return imported != null;
@@ -222,6 +225,10 @@ class ImportNpcDialog extends StatefulWidget {
   final NpcBundlePreview preview;
   final List<Campaign> campaigns;
 
+  /// El homebrew de la cuenta, para sumarle el que traiga la ficha. Null en
+  /// los tests que no lo miran.
+  final HomebrewStore? homebrew;
+
   const ImportNpcDialog({
     super.key,
     required this.api,
@@ -229,6 +236,7 @@ class ImportNpcDialog extends StatefulWidget {
     required this.bytes,
     required this.preview,
     required this.campaigns,
+    this.homebrew,
   });
 
   @override
@@ -245,6 +253,32 @@ class _ImportNpcDialogState extends State<ImportNpcDialog> {
     widget.repo,
   );
 
+  /// El servidor guardó en la cuenta el homebrew que trae la ficha, pero el
+  /// catálogo en memoria se arma al abrir la app: sin recargarlo, la ficha
+  /// importada mostraba su arma como «No está en el catálogo» hasta recargar
+  /// la página. Se recarga el store compartido —y no solo el catálogo— para
+  /// que la sección Homebrew también lo vea.
+  ///
+  /// Si falla, el PNJ ya está importado: se avisa en vez de dejar el diálogo
+  /// abierto, que invitaría a importarlo dos veces.
+  Future<void> _mergeBundledHomebrew() async {
+    final store = widget.homebrew;
+    if (store == null || widget.preview.homebrewNames.isEmpty) return;
+    try {
+      await store.load();
+      widget.repo.addAll(store.toRepository());
+    } on ApiException {
+      if (mounted) {
+        showAppMessage(
+          context,
+          'El PNJ se importó, pero su homebrew aparece recién al recargar la '
+          'página.',
+          tone: AppMessageTone.error,
+        );
+      }
+    }
+  }
+
   Future<void> _import() async {
     setState(() {
       _busy = true;
@@ -255,6 +289,7 @@ class _ImportNpcDialogState extends State<ImportNpcDialog> {
         widget.bytes,
         campaignId: _campaignId,
       );
+      await _mergeBundledHomebrew();
       if (mounted) Navigator.of(context).pop(imported);
     } on ApiException catch (e) {
       if (mounted) {

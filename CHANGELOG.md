@@ -275,6 +275,9 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   se está («Códice · Dotes»).
 - En Homebrew, el botón de categorías usa otro ícono que el menú del Modo DM:
   en un teléfono eran dos ☰ iguales, uno encima del otro.
+- Importar un PNJ con ficha suma su homebrew al catálogo en el momento. Se
+  guardaba en la cuenta, pero la ficha mostraba esos objetos como «No está en
+  el catálogo» hasta recargar la página.
 
 ### Eliminado
 

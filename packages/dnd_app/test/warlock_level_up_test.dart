@@ -122,14 +122,50 @@ void main() {
       find.text('Te falta elegir un truco y un conjuro para continuar.'),
       findsOneWidget,
     );
+    // El cuerpo del paso dice lo mismo que el pie, no solo el cupo de
+    // preparados.
+    expect(
+      find.text(
+        'Trucos: ${antes.cantripIds.length} de '
+        '${despues.spellcasting!.cantripsKnown}',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Te falta elegir un truco.'), findsOneWidget);
+    expect(find.text('Te falta preparar un conjuro.'), findsOneWidget);
     // Continuar no avanza.
     await continuar(tester);
     expect(find.text('Preparar conjuros'), findsOneWidget);
 
     await completarConjurosDeClase(tester);
     expect(find.textContaining('Te falta elegir'), findsNothing);
+    expect(find.text('Conjuros actualizados'), findsOneWidget);
 
     await avanzarHastaConfirmar(tester, 'Confirmar nivel 4');
+    // La revisión cuenta lo elegido para la clase. Leía las listas planas,
+    // que el editor vacía al pasarlas al mapa por clase, y decía «6 → 0».
+    final fila = find.ancestor(
+      of: find.text('Trucos y conjuros elegidos'),
+      matching: find.byType(Row),
+    );
+    expect(
+      find.descendant(
+        of: fila.first,
+        matching: find.text(
+          '${antes.cantripIds.length + antes.spellIds.length}',
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: fila.first,
+        matching: find.text(
+          '${despues.spellcasting!.cantripsKnown + despues.spellcasting!.preparedCount}',
+        ),
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Confirmar nivel 4'));
     await tester.pumpAndSettle();
 
@@ -143,6 +179,54 @@ void main() {
       saved!.spellIdsFor('warlock'),
       hasLength(sheet.spellcasting!.preparedCount),
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('con el conjuro listo y el truco pendiente no se da por hecho', (
+    tester,
+  ) async {
+    // El estado de la observación en producción: los preparados completos y
+    // el truco nuevo sin elegir. La pantalla decía «Conjuros actualizados»
+    // con tilde y el truco pendiente solo aparecía en el pie.
+    final antes = brujo(
+      level: 3,
+      spells: const [
+        'hex',
+        'armor-of-agathys',
+        'charm-person',
+        'invisibility',
+        'mirror-image',
+      ],
+    );
+    await pump(tester, antes);
+
+    for (
+      var i = 0;
+      i < 10 && find.text('Preparar conjuros').evaluate().isEmpty;
+      i++
+    ) {
+      final carisma = find.widgetWithText(InkWell, 'Carisma');
+      if (find.text('Mejora tu personaje').evaluate().isNotEmpty &&
+          carisma.evaluate().isNotEmpty) {
+        await tester.ensureVisible(carisma.first);
+        await tester.pumpAndSettle();
+        await tester.tap(carisma.first);
+        await tester.pumpAndSettle();
+      }
+      await continuar(tester);
+    }
+    expect(find.text('Te falta preparar un conjuro.'), findsNothing);
+    expect(find.text('Te falta elegir un truco.'), findsOneWidget);
+
+    // Pasar por el editor y guardar sin tocar el truco.
+    await tester.tap(find.text('Preparar conjuros'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Guardar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Conjuros actualizados'), findsNothing);
+    expect(find.text('Preparar conjuros'), findsOneWidget);
+    expect(find.text('Te falta elegir un truco.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -770,7 +770,7 @@ void main() {
     ) {
       if (find.textContaining('Preparados:').evaluate().isNotEmpty) {
         sawPrepared = true;
-        expect(find.textContaining('cupos libres'), findsOneWidget);
+        expect(find.textContaining('Te falta preparar'), findsOneWidget);
         // Con cupo libre el paso ya no deja seguir: se llena como lo haría
         // el jugador.
         await completarConjurosDeClase(tester);

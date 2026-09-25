@@ -739,14 +739,17 @@ extension _LevelUpSections on _LevelUpScreenState {
           before: '—',
           after: _asiReviewLabel(),
         ),
+      // Por clase y no las listas planas: editar los conjuros en la subida los
+      // pasa al mapa por clase y vacía las planas, y la fila decía «4 → 0».
       if (_newCantrips != null || _newSpells != null)
         _ReviewRow(
           icon: Icons.auto_stories,
-          label: 'Conjuros preparados',
+          label: 'Trucos y conjuros elegidos',
           note: 'Selección actualizada',
           before:
-              '${widget.character.cantripIds.length + widget.character.spellIds.length}',
-          after: '${updated.cantripIds.length + updated.spellIds.length}',
+              '${widget.character.cantripIdsFor(_levelUpClassId).length + widget.character.spellIdsFor(_levelUpClassId).length}',
+          after:
+              '${updated.cantripIdsFor(_levelUpClassId).length + updated.spellIdsFor(_levelUpClassId).length}',
         ),
     ];
 
@@ -921,7 +924,17 @@ extension _LevelUpSections on _LevelUpScreenState {
       ))
         if (!granted.contains(id)) ?widget.repo.spell(id),
     ];
-    final free = after.preparedCount - chosen.length;
+    final chosenCantrips = [
+      for (final id in updated.cantripIdsFor(
+        targetBlock?.classId ?? updated.classId,
+      ))
+        if (!granted.contains(id)) ?widget.repo.spell(id),
+    ];
+    // Lo que falta sale de la misma regla que bloquea Continuar: con una
+    // cuenta propia la pantalla decía «5 de 5 · Conjuros actualizados» y el
+    // pie, en rojo, que faltaba un truco que acá no aparecía por ningún lado.
+    final pending = _pendingClassSpells;
+    final done = prepared && _classSpellsComplete;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -949,6 +962,25 @@ extension _LevelUpSections on _LevelUpScreenState {
           ].join(' · '),
           style: TextStyle(color: muted, fontSize: 13),
         ),
+        if (after.cantripsKnown > 0) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Trucos: ${chosenCantrips.length} de ${after.cantripsKnown}',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          if (chosenCantrips.isNotEmpty)
+            Text(
+              chosenCantrips.map((s) => s.name).join(' · '),
+              style: TextStyle(color: muted, fontSize: 13),
+            ),
+          if (pending.cantrips > 0)
+            Text(
+              pending.cantrips == 1
+                  ? 'Te falta elegir un truco.'
+                  : 'Te falta elegir ${pending.cantrips} trucos.',
+              style: TextStyle(color: context.palette.gold, fontSize: 13),
+            ),
+        ],
         if (after.preparedCount > 0) ...[
           const SizedBox(height: 10),
           Text(
@@ -960,20 +992,21 @@ extension _LevelUpSections on _LevelUpScreenState {
               chosen.map((s) => s.name).join(' · '),
               style: TextStyle(color: muted, fontSize: 13),
             ),
-          if (free > 0)
+          if (pending.prepared > 0)
             Text(
-              free == 1
-                  ? 'Te queda 1 cupo libre: podés preparar un conjuro más.'
-                  : 'Te quedan $free cupos libres: podés preparar $free '
-                        'conjuros más.',
+              pending.prepared == 1
+                  ? 'Te falta preparar un conjuro.'
+                  : 'Te falta preparar ${pending.prepared} conjuros.',
               style: TextStyle(color: context.palette.gold, fontSize: 13),
             ),
         ],
         const SizedBox(height: 8),
         OutlinedButton.icon(
           onPressed: () => _openSpellPrep(after, classId: targetBlock?.classId),
-          icon: Icon(prepared ? Icons.check : Icons.auto_stories, size: 18),
-          label: Text(prepared ? 'Conjuros actualizados' : 'Preparar conjuros'),
+          // La tilde solo cuando no falta nada: con «Conjuros actualizados» y
+          // un truco pendiente, nadie volvía a abrir el editor.
+          icon: Icon(done ? Icons.check : Icons.auto_stories, size: 18),
+          label: Text(done ? 'Conjuros actualizados' : 'Preparar conjuros'),
         ),
       ],
     );

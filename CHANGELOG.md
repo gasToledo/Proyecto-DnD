@@ -254,7 +254,12 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Modificado
 
-- Sin cambios.
+- El paso de conjuros de la subida de nivel muestra el cupo de trucos junto al
+  de preparados y dice qué falta elegir. Con el conjuro listo y el truco
+  pendiente decía «Conjuros actualizados» y el truco solo aparecía en el aviso
+  del pie.
+- La revisión final de la subida cuenta bien los trucos y conjuros elegidos:
+  después de pasar por el editor mostraba «4 → 0».
 
 ### Eliminado
 

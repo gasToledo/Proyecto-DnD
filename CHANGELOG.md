@@ -260,6 +260,10 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   del pie.
 - La revisión final de la subida cuenta bien los trucos y conjuros elegidos:
   después de pasar por el editor mostraba «4 → 0».
+- En el paso de conjuros a elección de la subida, los cupos que el nivel trae
+  sin llenar van primero y los ya elegidos quedan abajo, bajo «Elegidos en
+  niveles anteriores». El truco de Descarga Agónica aparecía al fondo, debajo
+  del Libro de las Sombras y de Iniciado en la Magia ya completos.
 
 ### Eliminado
 

@@ -530,37 +530,63 @@ extension _LevelUpSections on _LevelUpScreenState {
   }
 
   Widget _buildSpellChoicesSection() {
+    // Primero lo que esta subida trae sin llenar. En el orden del compilador,
+    // el truco de Descarga Agónica tomada a nivel 2 quedaba debajo del Libro
+    // de las Sombras y de Iniciado en la Magia, ya completos y con decenas de
+    // opciones. La partición se mide contra el personaje de antes de la
+    // subida y no contra lo elegido en vivo: así un cupo no salta de lugar
+    // en el momento en que se lo termina de llenar.
+    final slots = _spellChoiceSlots;
+    bool isNew(SpellChoiceSlot s) =>
+        _originalSpellChoiceFor(s.groupId).length < s.count;
+    final fresh = slots.where(isNew).toList();
+    final revisable = slots.where((s) => !isNew(s)).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final slot in _spellChoiceSlots) ...[
-          Eyebrow(
-            '${slot.name} '
-            '(${_spellChoiceFor(slot.groupId).length}/${slot.count})',
+        for (final slot in fresh) ..._spellChoiceSlotWidgets(slot),
+        if (fresh.isNotEmpty && revisable.isNotEmpty) ...[
+          Text(
+            'Elegidos en niveles anteriores',
+            style: Theme.of(context).textTheme.titleSmall,
           ),
-          // El título del paso promete conjuros siempre preparados; un cupo
-          // que solo señala uno ya conocido (Descarga Agónica) tiene que
-          // decir que no suma nada nuevo.
-          if (!slot.grantsSpells) ...[
-            const SizedBox(height: 4),
-            Text(
-              'Elegí uno que ya conocés: no se suma a tus conjuros, le agrega '
-              'el bono al daño.',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-          const SizedBox(height: 6),
-          _SpellChoiceGroup(
-            repo: widget.repo,
-            slot: slot,
-            chosen: _spellChoiceFor(slot.groupId),
-            onChanged: (ids) => _setSpellChoice(slot.groupId, ids),
+          const SizedBox(height: 2),
+          Text(
+            'Podés cambiarlos o dejarlos como están.',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
         ],
+        for (final slot in revisable) ..._spellChoiceSlotWidgets(slot),
       ],
     );
   }
+
+  List<Widget> _spellChoiceSlotWidgets(SpellChoiceSlot slot) => [
+    Eyebrow(
+      '${slot.name} '
+      '(${_spellChoiceFor(slot.groupId).length}/${slot.count})',
+    ),
+    // El título del paso promete conjuros siempre preparados; un cupo
+    // que solo señala uno ya conocido (Descarga Agónica) tiene que
+    // decir que no suma nada nuevo.
+    if (!slot.grantsSpells) ...[
+      const SizedBox(height: 4),
+      Text(
+        'Elegí uno que ya conocés: no se suma a tus conjuros, le agrega '
+        'el bono al daño.',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+    ],
+    const SizedBox(height: 6),
+    _SpellChoiceGroup(
+      repo: widget.repo,
+      slot: slot,
+      chosen: _spellChoiceFor(slot.groupId),
+      onChanged: (ids) => _setSpellChoice(slot.groupId, ids),
+    ),
+    const SizedBox(height: 22),
+  ];
 
   Widget _buildFeaturesStep() {
     final features = _gainedFeatures();

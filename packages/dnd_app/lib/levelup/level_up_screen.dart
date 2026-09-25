@@ -281,16 +281,33 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
   Map<String, Map<String, List<String>>> get _effectiveClassSpellChoices =>
       _newClassSpellChoices ?? widget.character.classSpellChoices;
 
-  List<String> _spellChoiceFor(String groupId) {
+  List<String> _spellChoiceFor(String groupId) => _spellChoiceIn(
+    groupId,
+    _effectiveSpellChoices,
+    _effectiveClassSpellChoices,
+  );
+
+  /// Lo elegido para [groupId] en el personaje **antes** de la subida. Separa
+  /// los cupos que esta subida trae sin llenar de los que solo se pueden
+  /// rehacer.
+  List<String> _originalSpellChoiceFor(String groupId) => _spellChoiceIn(
+    groupId,
+    widget.character.spellChoices,
+    widget.character.classSpellChoices,
+  );
+
+  static List<String> _spellChoiceIn(
+    String groupId,
+    Map<String, List<String>> flat,
+    Map<String, Map<String, List<String>>> byClass,
+  ) {
     final separator = groupId.indexOf(':');
     if (separator > 0) {
       final classId = groupId.substring(0, separator);
       final rawGroup = groupId.substring(separator + 1);
-      return _effectiveClassSpellChoices[classId]?[rawGroup] ??
-          _effectiveSpellChoices[groupId] ??
-          const [];
+      return byClass[classId]?[rawGroup] ?? flat[groupId] ?? const [];
     }
-    return _effectiveSpellChoices[groupId] ?? const [];
+    return flat[groupId] ?? const [];
   }
 
   void _setSpellChoice(String groupId, List<String> ids) {

@@ -32,6 +32,7 @@ void main() {
       'charm-person',
       'invisibility',
     ],
+    Map<String, List<String>> spellChoices = const {},
   }) => Character(
     id: 't-brujo',
     name: 'Nimble Fizzwick',
@@ -52,6 +53,7 @@ void main() {
     featureChoices: {'warlock-invocation': invocations},
     cantripIds: cantrips,
     spellIds: spells,
+    spellChoices: spellChoices,
   );
 
   Future<void> pump(
@@ -274,6 +276,76 @@ void main() {
     expect(find.text('Te faltan 5 conjuros para continuar.'), findsOneWidget);
     await continuar(tester);
     expect(find.textContaining('LIBRO DE LAS SOMBRAS: TRUCOS'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('el cupo nuevo va arriba de los ya elegidos', (tester) async {
+    // La observación de producción: con el Libro de las Sombras lleno desde
+    // nivel 1, el truco de Descarga Agónica aparecía al fondo del paso.
+    await pump(
+      tester,
+      brujo(
+        level: 1,
+        invocations: const ['pact-of-the-tome'],
+        spells: const ['hex', 'armor-of-agathys'],
+        spellChoices: const {
+          'pact-of-the-tome:cantrips': ['mage-hand', 'message', 'thaumaturgy'],
+          'pact-of-the-tome:rituals': ['find-familiar', 'identify'],
+        },
+      ),
+    );
+    await continuar(tester);
+    await continuar(tester);
+    for (final nombre in ['Descarga Agónica', 'Mente Sobrenatural']) {
+      final chip = find.widgetWithText(InkWell, nombre);
+      await tester.ensureVisible(chip);
+      await tester.pumpAndSettle();
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+    }
+    await continuar(tester);
+    for (
+      var i = 0;
+      i < 4 &&
+          find.textContaining('DESCARGA AGÓNICA: TRUCO').evaluate().isEmpty;
+      i++
+    ) {
+      await continuar(tester);
+    }
+
+    final descarga = find.textContaining('DESCARGA AGÓNICA: TRUCO');
+    final separador = find.text('Elegidos en niveles anteriores');
+    final libro = find.textContaining('LIBRO DE LAS SOMBRAS: TRUCOS');
+    expect(descarga, findsOneWidget);
+    expect(separador, findsOneWidget);
+    expect(libro, findsOneWidget);
+    expect(
+      tester.getTopLeft(descarga).dy,
+      lessThan(tester.getTopLeft(separador).dy),
+    );
+    expect(
+      tester.getTopLeft(separador).dy,
+      lessThan(tester.getTopLeft(libro).dy),
+    );
+
+    // Llenarlo no lo manda abajo con los ya elegidos: la partición se mide
+    // contra el personaje de antes de la subida.
+    final opcion = find
+        .ancestor(
+          of: find.textContaining('Descarga Sobrenatural'),
+          matching: find.byType(FilterChip),
+        )
+        .first;
+    await tester.ensureVisible(opcion);
+    await tester.pumpAndSettle();
+    final lugar = tester.getTopLeft(descarga).dy;
+    await tester.tap(opcion);
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('DESCARGA AGÓNICA: TRUCO (1/1)'),
+      findsOneWidget,
+    );
+    expect(tester.getTopLeft(descarga).dy, lugar);
     expect(tester.takeException(), isNull);
   });
 

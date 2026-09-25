@@ -214,7 +214,7 @@ void main() {
       );
       await openAdd(tester);
 
-      expect(inDialog(find.text('Ya está en la mesa')), findsOneWidget);
+      expect(inDialog(find.text('Ya está en el combate')), findsOneWidget);
       await tester.tap(inDialog(find.widgetWithText(ListTile, 'Mirra')));
       await tester.pumpAndSettle();
       expect(dialogAction('Sumar'), findsNothing);

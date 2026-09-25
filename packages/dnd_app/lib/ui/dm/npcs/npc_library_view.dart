@@ -181,7 +181,7 @@ class _NpcLibraryViewState extends State<NpcLibraryView> {
             spacing: 12,
             children: [
               const Text(
-                'PNJ',
+                'Biblioteca de PNJ',
                 style: TextStyle(fontFamily: 'Georgia', fontSize: 28),
               ),
               Text(

@@ -283,7 +283,7 @@ class _AddCombatantDialogState extends State<_AddCombatantDialog> {
         ),
         trailing: inTable
             ? Text(
-                'Ya está en la mesa',
+                'Ya está en el combate',
                 style: TextStyle(fontSize: 12, color: pal.textMuted),
               )
             : null,

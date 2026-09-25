@@ -263,8 +263,11 @@ class _EncounterViewState extends State<EncounterView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                // «Combate» y no «mesa»: en el resto del Modo DM la mesa es el
+                // grupo de jugadores de la campaña, y acá se hablaba de «los
+                // que no están en la mesa» refiriéndose a esos mismos.
                 const Text(
-                  'Armando la mesa',
+                  'Armando el combate',
                   style: TextStyle(fontFamily: 'Georgia', fontSize: 20),
                 ),
                 const SizedBox(height: 3),
@@ -412,7 +415,7 @@ class _EncounterViewState extends State<EncounterView> {
   Widget _quickAmount(BuildContext context) {
     const explicacion =
         'Es el número que aplican los botones de dañar y curar de cualquier '
-        'fila. Vale para toda la mesa.';
+        'fila. Vale para todo el combate.';
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
@@ -451,6 +454,7 @@ class _EncounterViewState extends State<EncounterView> {
   }
 
   Widget _encounterActions(BuildContext context) {
+    final preparing = widget.encounter?.isPreparing ?? false;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -460,17 +464,57 @@ class _EncounterViewState extends State<EncounterView> {
           icon: const Icon(Icons.add),
           label: const Text('Sumar al combate'),
         ),
+        // Mientras se arma no hay nada que terminar: «Terminar combate» antes
+        // de empezarlo no se entendía, y un registro de un combate que no se
+        // jugó no le sirve a nadie. La salida es descartarlo.
+        if (preparing)
+          OutlinedButton.icon(
+            onPressed: () => _confirmDiscard(context),
+            icon: const Icon(Icons.close),
+            label: const Text('Descartar combate'),
+          )
         // Icono + texto y sin carmesí: un banderín rojo suelto se leía como
         // "rendirse". Terminar el combate es el final normal de un encuentro,
         // no una acción de peligro — el carmesí queda para el botón de
         // confirmar, que sí descarta el orden de turnos.
-        OutlinedButton.icon(
-          onPressed: () => _confirmClose(context),
-          icon: const Icon(Icons.done_all),
-          label: const Text('Terminar combate'),
-        ),
+        else
+          OutlinedButton.icon(
+            onPressed: () => _confirmClose(context),
+            icon: const Icon(Icons.done_all),
+            label: const Text('Terminar combate'),
+          ),
       ],
     );
+  }
+
+  Future<void> _confirmDiscard(BuildContext context) async {
+    final pal = context.palette;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AppDialog(
+        icon: Icons.warning_amber_rounded,
+        iconColor: pal.crimson,
+        title: '¿Descartar el combate?',
+        content: const Text(
+          'Todavía no empezó: se borra lo que armaste y no queda registro.',
+        ),
+        actions: [
+          DialogAction(
+            'Cancelar',
+            keyHint: 'Esc',
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+          DialogAction(
+            'Descartar',
+            primary: true,
+            color: pal.crimson,
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    widget.onCloseEncounter(discard: true, deadNpcIds: const {});
   }
 
   Future<void> _add(BuildContext context) async {
@@ -1102,9 +1146,33 @@ class _EncounterViewState extends State<EncounterView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            preparing ? 'Todavía no están en la mesa' : 'Se sumaron tarde',
-            style: TextStyle(fontSize: 12, color: pal.textMuted),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  preparing
+                      ? 'Todavía no están en el combate'
+                      : 'Se sumaron tarde',
+                  style: TextStyle(fontSize: 12, color: pal.textMuted),
+                ),
+              ),
+              // Lo habitual es que pelee la mesa entera: de a uno eran tantos
+              // toques como jugadores. Solo mientras se arma, porque después
+              // cada uno necesita su iniciativa.
+              if (preparing && unadded.length > 1)
+                TextButton(
+                  onPressed: () {
+                    for (final member in unadded) {
+                      widget.onAddPlayer(
+                        member.memberId,
+                        member.character.name,
+                        0,
+                      );
+                    }
+                  },
+                  child: const Text('Sumar a todos'),
+                ),
+            ],
           ),
           const SizedBox(height: 4),
           for (final member in unadded)
@@ -1127,9 +1195,7 @@ class _EncounterViewState extends State<EncounterView> {
                             0,
                           )
                         : _promptInitiative(context, member),
-                    child: Text(
-                      preparing ? 'Sumar a la mesa' : 'Sumar a la iniciativa',
-                    ),
+                    child: Text(preparing ? 'Sumar' : 'Sumar a la iniciativa'),
                   ),
                 ],
               ),
@@ -1880,7 +1946,7 @@ class _CombatantRow extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Sacar de la mesa',
+            tooltip: 'Sacar del combate',
             visualDensity: VisualDensity.compact,
             onPressed: onRemove,
             icon: const Icon(Icons.close),

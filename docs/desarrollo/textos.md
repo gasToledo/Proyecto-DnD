@@ -35,7 +35,8 @@ cosas distintas, gana el catálogo.
 | CA | AC | |
 | conjuro | hechizo | |
 | espacio de conjuro | ranura | |
-| PNJ | NPC | |
+| PNJ | NPC | La colección global es la «Biblioteca de PNJ»; «PNJ» a secas es la sección de una campaña. |
+| mesa | — | Los jugadores de una campaña. Dentro de Combate se dice «combate»: «Sumar al combate», «Sacar del combate». |
 | DM | máster, DJ | Es el nombre del modo: «Modo DM». |
 | homebrew | contenido casero | En minúscula dentro de una frase. |
 | archivo (al importar o exportar) | pack | Es lo que la persona ve en su disco. |

@@ -140,7 +140,7 @@ void main() {
 
   group('Biblioteca', () {
     Future<void> openLibrary(WidgetTester tester) async {
-      await tester.tap(find.text('PNJ').first);
+      await tester.tap(find.text('Biblioteca de PNJ'));
       await tester.pumpAndSettle();
     }
 
@@ -476,7 +476,7 @@ void main() {
 
   group('PNJ de la campaña', () {
     Future<void> openCampaignNpcs(WidgetTester tester) async {
-      await tester.tap(find.text('PNJ').at(1));
+      await tester.tap(find.text('PNJ'));
       await tester.pumpAndSettle();
     }
 

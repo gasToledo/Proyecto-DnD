@@ -108,7 +108,7 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
               // El corte lo decide el ancho real del diálogo, no la ventana.
               final wide = box.maxWidth >= 520;
               final columns = [
-                _side(context, 'La mesa', players, vacio: 'Nadie de la mesa.'),
+                _side(context, 'Jugadores', players, vacio: 'Ningún jugador.'),
                 _side(
                   context,
                   'Monstruos y PNJ',
@@ -143,7 +143,7 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
                 ? 'Al confirmar arranca la ronda 1.'
                 : 'Falta la iniciativa de '
                       '${_joinNames([for (final c in missing) c.name])}. '
-                      'Si alguien no vino, sacalo de la mesa: cuando llegue '
+                      'Si alguien no vino, sacalo del combate: cuando llegue '
                       'se suma con su tirada.',
             style: TextStyle(
               fontSize: 12,

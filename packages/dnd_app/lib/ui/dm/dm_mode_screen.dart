@@ -329,11 +329,13 @@ class _DmModeScreenState extends State<DmModeScreen> {
                       onTap: () => _selectSection(null, inDrawer: inDrawer),
                     ),
                     // Pegado al Bestiario y por lo mismo: un PNJ es de la
-                    // cuenta, no de una mesa, y puede estar en varias.
+                    // cuenta, no de una mesa, y puede estar en varias. Se
+                    // llamaba «PNJ», igual que la sección de la campaña y con
+                    // el mismo ícono: dos entradas idénticas en el mismo cajón.
                     appNavItem(
                       context,
-                      icon: Icons.groups_2_outlined,
-                      label: 'PNJ',
+                      icon: Icons.contacts_outlined,
+                      label: 'Biblioteca de PNJ',
                       active: _section == null && _tool == _GlobalTool.pnj,
                       onTap: () => _selectSection(
                         null,
@@ -1653,7 +1655,11 @@ class _CampaignDetailState extends State<_CampaignDetail> {
                             if (_encounter case final encounter?)
                               _CampaignMeta(
                                 icon: Icons.local_fire_department_outlined,
-                                text: 'Combate · ronda ${encounter.round}',
+                                // Mientras se arma no hay ronda: «ronda 1» al
+                                // lado de «Armando el combate» se contradecía.
+                                text: encounter.isPreparing
+                                    ? 'Combate en preparación'
+                                    : 'Combate · ronda ${encounter.round}',
                                 highlighted: true,
                               ),
                           ],

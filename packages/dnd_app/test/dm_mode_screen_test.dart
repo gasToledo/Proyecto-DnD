@@ -1517,6 +1517,17 @@ void main() {
       expect(inPanel(find.text('Cimitarra')), findsOneWidget);
       expect(inPanel(find.text('Arco corto')), findsOneWidget);
       expect(inPanel(find.text('+4')), findsNWidgets(2));
+      // Los dados y el tipo de daño van en líneas separadas: juntos no
+      // entraban en la placa y el tipo salía «Perfor…».
+      final scimitar = repo
+          .creature('goblin-warrior')!
+          .actions
+          .firstWhere((a) => a.name == 'Cimitarra');
+      expect(inPanel(find.text(scimitar.damage!)), findsWidgets);
+      expect(
+        inPanel(find.text(DamageType.labelFor(scimitar.damageType!))),
+        findsWidgets,
+      );
       // Los PG, en cambio, son los del encuentro y no los del libro: son los
       // que bajan a golpes.
       expect(inPanel(find.text('10/10')), findsOneWidget);

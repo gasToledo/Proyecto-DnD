@@ -235,21 +235,26 @@ class _MemberSheetScreenState extends State<MemberSheetScreen> {
             ],
           ),
           const SizedBox(height: 16),
+          // Abreviados como en las tarjetas del roster: en la columna de 236 px
+          // cada plaqueta deja unos 44 px al rótulo, y «ARMADURA» salía
+          // «ARMA…». El nombre entero queda para el lector de pantalla.
           Row(
             children: [
               Expanded(
                 child: StatTile(
                   icon: Icons.shield,
-                  label: 'Armadura',
+                  label: 'CA',
                   value: '${sheet.armorClass}',
+                  semantics: 'Clase de armadura: ${sheet.armorClass}',
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: StatTile(
                   icon: Icons.bolt,
-                  label: 'Iniciativa',
+                  label: 'Inic',
                   value: _signed(sheet.initiative),
+                  semantics: 'Iniciativa: ${_signed(sheet.initiative)}',
                 ),
               ),
             ],
@@ -275,17 +280,19 @@ class _MemberSheetScreenState extends State<MemberSheetScreen> {
               Expanded(
                 child: StatTile(
                   icon: Icons.keyboard_double_arrow_right,
-                  label: 'Velocidad',
+                  label: 'Vel',
                   value: '${sheet.speed}',
                   suffix: ' pies',
+                  semantics: 'Velocidad: ${sheet.speed} pies',
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: StatTile(
                   icon: Icons.visibility_outlined,
-                  label: 'Perc. pasiva',
+                  label: 'Perc.',
                   value: '${sheet.passivePerception}',
+                  semantics: 'Percepción pasiva: ${sheet.passivePerception}',
                 ),
               ),
             ],

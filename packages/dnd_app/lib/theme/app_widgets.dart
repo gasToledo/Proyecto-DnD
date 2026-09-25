@@ -1047,6 +1047,9 @@ class StatTile extends StatelessWidget {
   final Color? valueColor;
   final Widget? footer;
 
+  /// Lo que lee el lector de pantalla, cuando [label] es una abreviatura.
+  final String? semantics;
+
   const StatTile({
     super.key,
     required this.label,
@@ -1056,13 +1059,14 @@ class StatTile extends StatelessWidget {
     this.suffix,
     this.valueColor,
     this.footer,
+    this.semantics,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     return Semantics(
-      label: '$label: $value${suffix ?? ''}',
+      label: semantics ?? '$label: $value${suffix ?? ''}',
       excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -2863,42 +2867,60 @@ Widget _profileAction(
   required bool first,
 }) {
   final pal = context.palette;
-  final damageText = [
-    ?a.damage,
-    if (a.damageType != null) DamageType.labelFor(a.damageType!),
-  ].join(' ');
+  // El tipo va en una línea aparte, debajo de los dados: en la placa de 150 px
+  // «1d6+2 Perforante» se cortaba en «Perfor…», y los dados son lo que se
+  // compara con el acierto de al lado.
+  final damageType = a.damageType == null
+      ? null
+      : DamageType.labelFor(a.damageType!);
+  final damageText = a.damage ?? damageType ?? '';
+  final damageDetail = a.damage == null ? null : damageType;
 
-  Widget plaque(String label, String value, {Color? color, double width = 0}) =>
-      SizedBox(
-        width: width == 0 ? null : width,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
-          decoration: BoxDecoration(
-            color: pal.plaque,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: pal.hairline),
+  Widget plaque(
+    String label,
+    String value, {
+    Color? color,
+    double width = 0,
+    String? detail,
+  }) => SizedBox(
+    width: width == 0 ? null : width,
+    child: Container(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+      decoration: BoxDecoration(
+        color: pal.plaque,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: pal.hairline),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _profileLabel(context, label, align: TextAlign.center),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              height: 1,
+              color: color,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _profileLabel(context, label, align: TextAlign.center),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                  color: color,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+          if (detail != null) ...[
+            const SizedBox(height: 3),
+            Text(
+              detail,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11.5, color: pal.textMuted),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 
   final name = Text(
     a.name,
@@ -2944,20 +2966,35 @@ Widget _profileAction(
             children: [
               Expanded(child: _prose(body)),
               const SizedBox(width: 16),
-              plaque(
-                'Acierto',
-                '+${a.attackBonus}',
-                color: pal.gold,
-                width: 74,
+              // Las tres placas a la misma altura aunque solo la de daño
+              // lleve segunda línea. `IntrinsicHeight` solo acá: alrededor de
+              // la fila entera las estiraría al alto de la prosa.
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    plaque(
+                      'Acierto',
+                      '+${a.attackBonus}',
+                      color: pal.gold,
+                      width: 74,
+                    ),
+                    if (damageText.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      plaque(
+                        'Daño',
+                        damageText,
+                        width: 150,
+                        detail: damageDetail,
+                      ),
+                    ],
+                    if (a.reach.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      plaque('Alcance', a.reach, width: 86),
+                    ],
+                  ],
+                ),
               ),
-              if (damageText.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                plaque('Daño', damageText, width: 150),
-              ],
-              if (a.reach.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                plaque('Alcance', a.reach, width: 86),
-              ],
             ],
           )
         : Column(
@@ -2970,7 +3007,8 @@ Widget _profileAction(
                 runSpacing: 8,
                 children: [
                   plaque('Acierto', '+${a.attackBonus}', color: pal.gold),
-                  if (damageText.isNotEmpty) plaque('Daño', damageText),
+                  if (damageText.isNotEmpty)
+                    plaque('Daño', damageText, detail: damageDetail),
                   if (a.reach.isNotEmpty) plaque('Alcance', a.reach),
                 ],
               ),

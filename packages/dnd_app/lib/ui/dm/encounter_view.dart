@@ -1624,21 +1624,32 @@ class _CombatantRow extends StatelessWidget {
                 ),
               ),
             ),
-            if (!_isPlayer) ...[const SizedBox(width: 8), _sidePill(context)],
           ],
         ),
-        if (meta.isNotEmpty) ...[
+        // El bando va abajo, con los datos, y no al lado del nombre: en la
+        // planilla la columna de identidad mide unos 150 px, y la pill le
+        // dejaba al nombre la mitad — «Guerrer…» no se distinguía del
+        // hobgoblin. El resumen de ataque se recorta antes; entero está en el
+        // panel del turno.
+        if (meta.isNotEmpty || !_isPlayer) ...[
           const SizedBox(height: 2),
-          Text(
-            meta,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11.5,
-              color: combatant.isDown
-                  ? pal.crimson
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          Row(
+            children: [
+              if (!_isPlayer) ...[_sidePill(context), const SizedBox(width: 6)],
+              Flexible(
+                child: Text(
+                  meta,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: combatant.isDown
+                        ? pal.crimson
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ],

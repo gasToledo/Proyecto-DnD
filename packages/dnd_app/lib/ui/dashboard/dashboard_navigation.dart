@@ -78,12 +78,8 @@ extension _DashboardNavigation on _DashboardScreenState {
             label: 'Códice',
             onTap: () => run(_openCodex),
           ),
-          appNavItem(
-            context,
-            icon: Icons.auto_fix_high,
-            label: 'Homebrew',
-            onTap: () => run(_openHomebrew),
-          ),
+          // Homebrew no está acá: crear contenido es trabajo del DM y se abre
+          // desde el Modo DM.
           appNavItem(
             context,
             icon: Icons.import_export,

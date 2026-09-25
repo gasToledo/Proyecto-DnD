@@ -60,41 +60,22 @@ extension _DashboardActions on _DashboardScreenState {
   }
 
   /// Abre el Códice. Es de solo lectura: no cambia ninguna ficha, así que al
-  /// volver no hay nada que recalcular, a diferencia de Homebrew.
+  /// volver no hay nada que recalcular, a diferencia del Modo DM.
   void _openCodex() {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => CodexScreen(repo: repo)));
   }
 
-  Future<void> _openHomebrew() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => HomebrewScreen(
-          repo: repo,
-          store: widget.homebrew,
-          // Una foto de las fichas, para que borrar homebrew pueda decir
-          // quién lo está usando. Desde ahí no se toca ningún personaje, así
-          // que no puede quedar vieja mientras la pantalla está abierta.
-          characters: controller.characters,
-        ),
-      ),
-    );
-    // Lo editado cambió el contenido debajo de personajes que siguen siendo
-    // los mismos objetos: sin descartar las fichas, las tarjetas quedarían
-    // con los números de antes.
-    if (mounted) _updateState(() => _sheets = Expando());
-  }
-
-  /// Entra al Modo DM. Es una pantalla más sobre el Navigator, como Homebrew:
-  /// volver atrás es salir, y no queda ningún estado prendido que recordar.
+  /// Entra al Modo DM. Es una pantalla más sobre el Navigator: volver atrás es
+  /// salir, y no queda ningún estado prendido que recordar.
   ///
   /// Envuelta en `PendingEventsGate` porque el chequeo del arranque de la app
   /// (ver `main.dart`) pasa una sola vez: si la pestaña ya estaba abierta y un
   /// jugador dejó de compartir mientras tanto, sin esto el DM no se entera
   /// hasta recargar la página entera.
-  void _openDmMode() {
-    Navigator.of(context).push(
+  Future<void> _openDmMode() async {
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PendingEventsGate(
           api: controller.api,
@@ -103,10 +84,16 @@ extension _DashboardActions on _DashboardScreenState {
             repo: repo,
             theme: widget.theme,
             settingsController: _settingsController,
+            homebrew: widget.homebrew,
+            characters: controller.characters,
           ),
         ),
       ),
     );
+    // Desde el Modo DM se edita el homebrew, que cambia el contenido debajo
+    // de personajes que siguen siendo los mismos objetos: sin descartar las
+    // fichas, las tarjetas quedarían con los números de antes.
+    if (mounted) _updateState(() => _sheets = Expando());
   }
 
   /// Las dos acciones de transferencia en un diálogo (antes era el menú del

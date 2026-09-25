@@ -264,6 +264,9 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   sin llenar van primero y los ya elegidos quedan abajo, bajo «Elegidos en
   niveles anteriores». El truco de Descarga Agónica aparecía al fondo, debajo
   del Libro de las Sombras y de Iniciado en la Magia ya completos.
+- Homebrew se abre desde el Modo DM, junto al Bestiario y los PNJ, y ya no
+  desde el panel del jugador: crear contenido es trabajo del DM. El homebrew
+  sigue siendo de la cuenta y se usa igual en sus personajes.
 
 ### Eliminado
 

@@ -7,7 +7,9 @@ import '../../api/api_client.dart';
 import '../../api/api_exception.dart';
 import '../../api/api_models.dart';
 import '../../data/campaigns_controller.dart';
+import '../../data/homebrew_store.dart';
 import '../../data/settings_service.dart';
+import '../../homebrew/homebrew_screen.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_widgets.dart';
 import '../../theme/class_visuals.dart';
@@ -44,12 +46,24 @@ class DmModeScreen extends StatefulWidget {
   final AppThemeController? theme;
   final SettingsController? settingsController;
 
+  /// El homebrew de la cuenta, que se edita desde acá: crear contenido es
+  /// trabajo del DM. Es una ubicación, no un permiso — cualquier cuenta entra
+  /// al Modo DM y su homebrew sigue siendo suyo. Null en los tests que no lo
+  /// usan, y entonces la entrada no aparece.
+  final HomebrewStore? homebrew;
+
+  /// Las fichas de la cuenta, para que Homebrew pueda decir quién usa lo que
+  /// se va a borrar (ver `HomebrewScreen.characters`).
+  final List<Character> characters;
+
   const DmModeScreen({
     super.key,
     required this.api,
     required this.repo,
     this.theme,
     this.settingsController,
+    this.homebrew,
+    this.characters = const [],
   });
 
   @override
@@ -94,6 +108,24 @@ class _DmModeScreenState extends State<DmModeScreen> {
       ),
     ),
   );
+
+  /// Abre Homebrew encima del Modo DM. Es una pantalla aparte y no una
+  /// sección: tiene su propio panel de categorías, igual que antes desde el
+  /// panel del jugador.
+  Future<void> _openHomebrew(HomebrewStore store) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => HomebrewScreen(
+          repo: widget.repo,
+          store: store,
+          characters: widget.characters,
+        ),
+      ),
+    );
+    // Lo editado cambió el catálogo en el lugar: el Bestiario y los combates
+    // se vuelven a dibujar con el contenido nuevo.
+    if (mounted) setState(() {});
+  }
 
   Campaign? get _effectiveSelection =>
       _campaigns.campaigns
@@ -326,6 +358,18 @@ class _DmModeScreenState extends State<DmModeScreen> {
                         npcLibrary: true,
                       ),
                     ),
+                    // Con el Bestiario y los PNJ: el contenido propio es de la
+                    // cuenta, no de una mesa.
+                    if (widget.homebrew case final store?)
+                      appNavItem(
+                        context,
+                        icon: Icons.auto_fix_high,
+                        label: 'Homebrew',
+                        onTap: () {
+                          if (inDrawer) Navigator.of(context).pop();
+                          _openHomebrew(store);
+                        },
+                      ),
                     const SizedBox(height: 12),
                     if (active.isNotEmpty) ...[
                       const _CampaignGroupLabel('En curso'),

@@ -10,7 +10,6 @@ import '../demo/demo_characters.dart';
 import '../data/homebrew_store.dart';
 import '../data/settings_service.dart';
 import '../data/transfer_service.dart';
-import '../homebrew/homebrew_screen.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
 import '../theme/class_visuals.dart';

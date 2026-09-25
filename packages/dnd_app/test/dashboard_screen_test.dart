@@ -532,8 +532,9 @@ void main() {
 
     // Panel lateral presente con sus secciones.
     expect(find.text('Personajes'), findsOneWidget);
-    expect(find.text('Homebrew'), findsOneWidget);
     expect(find.text('Importar / Exportar'), findsOneWidget);
+    // Crear contenido es trabajo del DM: Homebrew se abre desde el Modo DM.
+    expect(find.text('Homebrew'), findsNothing);
 
     // La tarjeta muestra los datos que antes obligaban a abrir la ficha.
     expect(find.text('Sagan "The Red"'), findsOneWidget);
@@ -547,8 +548,9 @@ void main() {
 
   // Las tarjetas guardan la ficha compilada para no recompilar el roster en
   // cada aviso del controlador. Homebrew, en cambio, edita el contenido debajo
-  // de personajes que no cambian: al volver, la tarjeta tiene que recalcularse.
-  testWidgets('al volver de Homebrew la tarjeta refleja el contenido editado', (
+  // de personajes que no cambian: al volver del Modo DM, desde donde se abre,
+  // la tarjeta tiene que recalcularse.
+  testWidgets('al volver del Modo DM la tarjeta refleja el homebrew editado', (
     tester,
   ) async {
     await pumpDashboard(tester, const Size(1280, 800));
@@ -557,14 +559,19 @@ void main() {
     final speed = CharacterCompiler(repo).compile(demoSagan()).speed;
     expect(find.text('$speed pies'), findsOneWidget);
 
+    await tester.tap(find.byKey(const ValueKey('dm-mode-button')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Homebrew'));
     await tester.pumpAndSettle();
+    expect(find.byType(HomebrewScreen), findsOneWidget);
     // Es lo que hace guardar una especie editada: reemplazarla en el repo.
     repo.races['human'] = Race.fromJson({
       ...human.toJson(),
       'speed': human.speed + 10,
     });
     Navigator.of(tester.element(find.byType(HomebrewScreen))).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('exit-dm-mode')));
     await tester.pumpAndSettle();
 
     expect(find.text('${speed + 10} pies'), findsOneWidget);
@@ -607,10 +614,10 @@ void main() {
     await pumpDashboard(tester, const Size(700, 800));
 
     // El panel no está fijo, pero sí accesible por el Drawer del AppBar.
-    expect(find.text('Homebrew'), findsNothing);
+    expect(find.text('Importar / Exportar'), findsNothing);
     await tester.tap(find.byTooltip('Open navigation menu'));
     await tester.pumpAndSettle();
-    expect(find.text('Homebrew'), findsOneWidget);
+    expect(find.text('Importar / Exportar'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

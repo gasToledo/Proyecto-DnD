@@ -469,7 +469,14 @@ class _DmModeScreenState extends State<DmModeScreen> {
           const SizedBox(height: 8),
           OutlinedButton.icon(
             key: const ValueKey('exit-dm-mode'),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              // Con el cajón abierto, el primer pop solo lo cierra: el cajón
+              // se registra como historia local de la ruta. Hace falta un
+              // segundo para salir del Modo DM.
+              final navigator = Navigator.of(context);
+              if (inDrawer) navigator.pop();
+              navigator.pop();
+            },
             icon: const Icon(Icons.person_outline, size: 16),
             style: OutlinedButton.styleFrom(
               foregroundColor: pal.gold,

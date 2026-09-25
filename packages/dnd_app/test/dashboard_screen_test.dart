@@ -9,6 +9,7 @@ import 'package:dnd_app/homebrew/homebrew_screen.dart';
 import 'package:dnd_app/theme/app_theme.dart';
 import 'package:dnd_app/theme/class_visuals.dart';
 import 'package:dnd_app/ui/dashboard_screen.dart';
+import 'package:dnd_app/ui/dm/dm_mode_screen.dart';
 import 'package:dnd_app/ui/sheet_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -625,6 +626,29 @@ void main() {
     await tester.tap(find.text('Bestiario'));
     await tester.pumpAndSettle();
     expect(find.byType(HomebrewView), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  // En un teléfono "Modo Jugador" vive adentro del cajón, y un pop solo
+  // cerraba el cajón: el botón parecía no hacer nada.
+  testWidgets('en un teléfono se vuelve al Modo Jugador desde el cajón', (
+    tester,
+  ) async {
+    await pumpDashboard(tester, const Size(390, 844));
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('dm-mode-button')));
+    await tester.pumpAndSettle();
+    expect(find.byType(DmModeScreen), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('exit-dm-mode')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DmModeScreen), findsNothing);
+    expect(find.text('Mis personajes'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

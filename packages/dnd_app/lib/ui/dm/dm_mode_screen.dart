@@ -53,7 +53,7 @@ class DmModeScreen extends StatefulWidget {
   final HomebrewStore? homebrew;
 
   /// Las fichas de la cuenta, para que Homebrew pueda decir quién usa lo que
-  /// se va a borrar (ver `HomebrewScreen.characters`).
+  /// se va a borrar (ver `HomebrewView.characters`).
   final List<Character> characters;
 
   const DmModeScreen({
@@ -88,10 +88,10 @@ class _DmModeScreenState extends State<DmModeScreen> {
   /// (elegir campaña, crearla, borrarla) salen del Bestiario solas.
   _CampaignSection? _section = _CampaignSection.mesa;
 
-  /// Con [_section] en `null`, si lo abierto es la biblioteca de PNJ en vez
-  /// del Bestiario. Las dos son globales —ni el catálogo ni los PNJ son de una
-  /// mesa— y comparten el mismo «ninguna sección de campaña».
-  bool _npcLibrary = false;
+  /// Con [_section] en `null`, cuál de las herramientas globales está
+  /// abierta. Las tres son de la cuenta y no de una mesa —el catálogo, los
+  /// PNJ y el homebrew— y comparten el mismo «ninguna sección de campaña».
+  _GlobalTool _tool = _GlobalTool.bestiario;
   String? _notebookChapterId;
   Object? _loadError;
 
@@ -108,24 +108,6 @@ class _DmModeScreenState extends State<DmModeScreen> {
       ),
     ),
   );
-
-  /// Abre Homebrew encima del Modo DM. Es una pantalla aparte y no una
-  /// sección: tiene su propio panel de categorías, igual que antes desde el
-  /// panel del jugador.
-  Future<void> _openHomebrew(HomebrewStore store) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => HomebrewScreen(
-          repo: widget.repo,
-          store: store,
-          characters: widget.characters,
-        ),
-      ),
-    );
-    // Lo editado cambió el catálogo en el lugar: el Bestiario y los combates
-    // se vuelven a dibujar con el contenido nuevo.
-    if (mounted) setState(() {});
-  }
 
   Campaign? get _effectiveSelection =>
       _campaigns.campaigns
@@ -342,7 +324,8 @@ class _DmModeScreenState extends State<DmModeScreen> {
                       context,
                       icon: Icons.pets_outlined,
                       label: 'Bestiario',
-                      active: _section == null && !_npcLibrary,
+                      active:
+                          _section == null && _tool == _GlobalTool.bestiario,
                       onTap: () => _selectSection(null, inDrawer: inDrawer),
                     ),
                     // Pegado al Bestiario y por lo mismo: un PNJ es de la
@@ -351,24 +334,28 @@ class _DmModeScreenState extends State<DmModeScreen> {
                       context,
                       icon: Icons.groups_2_outlined,
                       label: 'PNJ',
-                      active: _section == null && _npcLibrary,
+                      active: _section == null && _tool == _GlobalTool.pnj,
                       onTap: () => _selectSection(
                         null,
                         inDrawer: inDrawer,
-                        npcLibrary: true,
+                        tool: _GlobalTool.pnj,
                       ),
                     ),
-                    // Con el Bestiario y los PNJ: el contenido propio es de la
-                    // cuenta, no de una mesa.
-                    if (widget.homebrew case final store?)
+                    // Una sección más y no una pantalla encima: abierta con
+                    // push, en una ventana angosta su propio menú tapaba la
+                    // flecha de volver y no había forma de salir.
+                    if (widget.homebrew != null)
                       appNavItem(
                         context,
                         icon: Icons.auto_fix_high,
                         label: 'Homebrew',
-                        onTap: () {
-                          if (inDrawer) Navigator.of(context).pop();
-                          _openHomebrew(store);
-                        },
+                        active:
+                            _section == null && _tool == _GlobalTool.homebrew,
+                        onTap: () => _selectSection(
+                          null,
+                          inDrawer: inDrawer,
+                          tool: _GlobalTool.homebrew,
+                        ),
                       ),
                     const SizedBox(height: 12),
                     if (active.isNotEmpty) ...[
@@ -520,11 +507,11 @@ class _DmModeScreenState extends State<DmModeScreen> {
   void _selectSection(
     _CampaignSection? section, {
     required bool inDrawer,
-    bool npcLibrary = false,
+    _GlobalTool tool = _GlobalTool.bestiario,
   }) {
     setState(() {
       _section = section;
-      _npcLibrary = section == null && npcLibrary;
+      _tool = tool;
       _notebookChapterId = null;
     });
     if (inDrawer) Navigator.of(context).pop();
@@ -542,7 +529,16 @@ class _DmModeScreenState extends State<DmModeScreen> {
     // tiene que abrirse también cuando no hay ninguna (donde esto devolvería
     // el estado de bienvenida) y cuando el servidor no contestó.
     final section = _section;
-    if (section == null && _npcLibrary) {
+    if (section == null && _tool == _GlobalTool.homebrew) {
+      if (widget.homebrew case final store?) {
+        return HomebrewView(
+          repo: widget.repo,
+          store: store,
+          characters: widget.characters,
+        );
+      }
+    }
+    if (section == null && _tool == _GlobalTool.pnj) {
       return ListenableBuilder(
         listenable: _campaigns,
         builder: (context, _) => NpcLibraryView(
@@ -794,6 +790,9 @@ class _CampaignDetail extends StatefulWidget {
 }
 
 enum _CampaignSection { mesa, capitulos, cuaderno, pnj, combate }
+
+/// Las secciones de la cuenta, que se abren con [_CampaignSection] en null.
+enum _GlobalTool { bestiario, pnj, homebrew }
 
 enum _CampaignMenuAction { edit, delete }
 

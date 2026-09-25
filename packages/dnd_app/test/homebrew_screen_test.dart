@@ -31,12 +31,14 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+        home: HomebrewView(repo: repo, store: HomebrewStore(ApiClient())),
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Contenido homebrew'), findsOneWidget);
+    // Es una sección del Modo DM: con ancho no tiene barra propia, la de
+    // arriba es la del Modo DM.
+    expect(find.byType(AppBar), findsNothing);
     // Se entra por la portada, no por Armas.
     expect(find.text('Tu taller está vacío'), findsOneWidget);
 
@@ -101,7 +103,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: store),
+        home: HomebrewView(repo: repo, store: store),
       ),
     );
     await tester.pumpAndSettle();
@@ -134,7 +136,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+        home: HomebrewView(repo: repo, store: HomebrewStore(ApiClient())),
       ),
     );
     await tester.pumpAndSettle();
@@ -171,7 +173,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: store, characters: characters),
+        home: HomebrewView(repo: repo, store: store, characters: characters),
       ),
     );
     await tester.pumpAndSettle();
@@ -364,7 +366,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: store),
+        home: HomebrewView(repo: repo, store: store),
       ),
     );
     await tester.pumpAndSettle();
@@ -413,7 +415,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: store),
+        home: HomebrewView(repo: repo, store: store),
       ),
     );
     await tester.pumpAndSettle();
@@ -448,17 +450,21 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+        home: HomebrewView(repo: repo, store: HomebrewStore(ApiClient())),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Criaturas'), findsNothing);
-    await tester.tap(find.byIcon(Icons.menu));
+    expect(find.text('Homebrew · Portada'), findsOneWidget);
+    await tester.tap(find.byTooltip('Categorías de homebrew'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Criaturas'));
     await tester.pumpAndSettle();
+
+    // La barra dice dónde se está: el panel con las categorías quedó plegado.
+    expect(find.text('Homebrew · Criaturas'), findsOneWidget);
 
     // Angosto el botón se queda con el verbo: qué se agrega lo dice el título
     // que tiene al lado.
@@ -481,7 +487,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: store),
+        home: HomebrewView(repo: repo, store: store),
       ),
     );
     await tester.pumpAndSettle();
@@ -504,7 +510,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+        home: HomebrewView(repo: repo, store: HomebrewStore(ApiClient())),
       ),
     );
     await tester.pumpAndSettle();
@@ -918,7 +924,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: HomebrewScreen(repo: localRepo, store: store),
+          home: HomebrewView(repo: localRepo, store: store),
         ),
       );
       await settle();
@@ -996,7 +1002,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: HomebrewStore(ApiClient())),
+        home: HomebrewView(repo: repo, store: HomebrewStore(ApiClient())),
       ),
     );
     await tester.pumpAndSettle();
@@ -1037,7 +1043,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.dark,
-        home: HomebrewScreen(repo: repo, store: store),
+        home: HomebrewView(repo: repo, store: store),
       ),
     );
     await tester.pumpAndSettle();

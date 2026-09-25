@@ -1,6 +1,6 @@
 part of 'homebrew_screen.dart';
 
-extension _HomebrewSections on _HomebrewScreenState {
+extension _HomebrewSections on _HomebrewViewState {
   // ------------------------------------------------------- Panel y portada
 
   /// El panel de categorías: qué hay, cuánto hay y las dos acciones que valen

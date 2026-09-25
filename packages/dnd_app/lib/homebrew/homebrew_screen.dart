@@ -110,9 +110,10 @@ enum _Category {
   const _Category(this.label, this.icon, this.addLabel);
 }
 
-/// Editor de contenido homebrew. Lo creado se fusiona en el [ContentRepository]
-/// compartido, así queda disponible de inmediato en el wizard y la ficha.
-class HomebrewScreen extends StatefulWidget {
+/// Editor de contenido homebrew, una sección del Modo DM. Lo creado se fusiona
+/// en el [ContentRepository] compartido, así queda disponible de inmediato en
+/// el wizard y la ficha.
+class HomebrewView extends StatefulWidget {
   final ContentRepository repo;
   final HomebrewStore store;
 
@@ -122,7 +123,7 @@ class HomebrewScreen extends StatefulWidget {
   /// cambia.
   final List<Character> characters;
 
-  const HomebrewScreen({
+  const HomebrewView({
     super.key,
     required this.repo,
     required this.store,
@@ -130,10 +131,10 @@ class HomebrewScreen extends StatefulWidget {
   });
 
   @override
-  State<HomebrewScreen> createState() => _HomebrewScreenState();
+  State<HomebrewView> createState() => _HomebrewViewState();
 }
 
-class _HomebrewScreenState extends State<HomebrewScreen> {
+class _HomebrewViewState extends State<HomebrewView> {
   /// Ancho a partir del cual el panel de categorías entra al lado del
   /// contenido. Es el mismo corte que el Modo DM y el dashboard.
   static const double _wideBreakpoint = 900;
@@ -369,15 +370,34 @@ class _HomebrewScreenState extends State<HomebrewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // `LayoutBuilder` y no `MediaQuery`: esta pantalla también se abre desde el
-    // dashboard, que ya se comió 236 px de panel que `MediaQuery` no descuenta.
+    // `LayoutBuilder` y no `MediaQuery`: es una sección del Modo DM, que ya se
+    // comió 236 px de panel que `MediaQuery` no descuenta.
     return LayoutBuilder(
       builder: (context, box) {
         final wide = box.maxWidth >= _wideBreakpoint;
         return Scaffold(
-          appBar: AppBar(title: const Text('Contenido homebrew')),
-          // Angosto: el panel se pliega al Drawer y el AppBar se gana solo su
-          // botón de menú.
+          // Angosto, el panel de categorías se pliega a un Drawer que se abre
+          // desde esta barra. No es la barra de la app: la del Modo DM queda
+          // arriba con su propio menú, que es por donde se sale de acá. Por
+          // eso el botón dice qué abre en vez de heredar el «menú» genérico.
+          appBar: wide
+              ? null
+              : AppBar(
+                  primary: false,
+                  toolbarHeight: 48,
+                  leading: Builder(
+                    builder: (context) => IconButton(
+                      tooltip: 'Categorías de homebrew',
+                      icon: const Icon(Icons.menu),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
+                  ),
+                  title: Text(
+                    _needle.isNotEmpty
+                        ? 'Homebrew · Búsqueda'
+                        : 'Homebrew · ${_section?.label ?? 'Portada'}',
+                  ),
+                ),
           drawer: wide
               ? null
               : Drawer(child: SafeArea(child: _rail(context, inDrawer: true))),

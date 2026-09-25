@@ -154,7 +154,7 @@ void main() {
     await pumpCodex(tester, size: const Size(390, 844));
     final duelo = repo.feat('fs-dueling')!;
 
-    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.tap(find.byTooltip('Categorías del Códice'));
     await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(of: find.byType(Drawer), matching: find.text('Dotes')),

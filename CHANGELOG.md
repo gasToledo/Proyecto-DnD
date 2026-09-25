@@ -264,9 +264,14 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   sin llenar van primero y los ya elegidos quedan abajo, bajo «Elegidos en
   niveles anteriores». El truco de Descarga Agónica aparecía al fondo, debajo
   del Libro de las Sombras y de Iniciado en la Magia ya completos.
-- Homebrew se abre desde el Modo DM, junto al Bestiario y los PNJ, y ya no
-  desde el panel del jugador: crear contenido es trabajo del DM. El homebrew
-  sigue siendo de la cuenta y se usa igual en sus personajes.
+- Homebrew es una sección del Modo DM, junto al Bestiario y los PNJ, y ya no
+  está en el panel del jugador: crear contenido es trabajo del DM. El homebrew
+  sigue siendo de la cuenta y se usa igual en sus personajes. En pantallas
+  angostas sus categorías se abren desde la barra de la sección, y el menú del
+  Modo DM sigue arriba para ir a otra.
+- En pantallas angostas el Códice tiene la flecha de volver a la izquierda y
+  las categorías en un botón a la derecha. El menú de categorías ocupaba el
+  lugar de la flecha y no había forma de salir.
 
 ### Eliminado
 

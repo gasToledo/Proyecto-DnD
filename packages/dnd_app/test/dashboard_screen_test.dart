@@ -101,6 +101,25 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // En una ventana angosta el menú de categorías ocupaba el lugar de la
+  // flecha de volver: se entraba al Códice y no había forma de salir.
+  testWidgets('en un teléfono se sale del Códice con la flecha', (
+    tester,
+  ) async {
+    await pumpDashboard(tester, const Size(390, 844));
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Códice'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Categorías del Códice'), findsOneWidget);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    expect(find.text('Sagan "The Red"'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   /// Monta el dashboard con una cuenta dada, para las pruebas del pie.
   Future<FakeApiServer> pumpWithAccount(
     WidgetTester tester,
@@ -563,18 +582,45 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Homebrew'));
     await tester.pumpAndSettle();
-    expect(find.byType(HomebrewScreen), findsOneWidget);
+    expect(find.byType(HomebrewView), findsOneWidget);
     // Es lo que hace guardar una especie editada: reemplazarla en el repo.
     repo.races['human'] = Race.fromJson({
       ...human.toJson(),
       'speed': human.speed + 10,
     });
-    Navigator.of(tester.element(find.byType(HomebrewScreen))).pop();
-    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('exit-dm-mode')));
     await tester.pumpAndSettle();
 
     expect(find.text('${speed + 10} pies'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // Homebrew se abría con push encima del Modo DM, y en una pantalla angosta
+  // su propio menú ocupaba el lugar de la flecha de volver: no había forma de
+  // salir. Ahora es una sección, y el menú del Modo DM sigue arriba.
+  testWidgets('en un teléfono se sale de Homebrew por el menú del Modo DM', (
+    tester,
+  ) async {
+    await pumpDashboard(tester, const Size(390, 844));
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('dm-mode-button')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Homebrew'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomebrewView), findsOneWidget);
+    expect(find.byTooltip('Categorías de homebrew'), findsOneWidget);
+
+    // El menú del Modo DM sigue ahí y lleva a otra sección.
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bestiario'));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomebrewView), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

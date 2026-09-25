@@ -117,7 +117,24 @@ class _CodexScreenState extends State<CodexScreen> {
       builder: (context, box) {
         final wide = box.maxWidth >= _wideBreakpoint;
         return Scaffold(
-          appBar: AppBar(title: const Text('Códice')),
+          appBar: AppBar(
+            title: const Text('Códice'),
+            // Angosto, el Drawer de categorías se quedaba con el lugar de la
+            // flecha de volver y no había forma de salir del Códice. La
+            // flecha queda a la izquierda, y las categorías pasan a un botón
+            // a la derecha que dice qué abre.
+            leading: const BackButton(),
+            actions: [
+              if (!wide)
+                Builder(
+                  builder: (context) => IconButton(
+                    tooltip: 'Categorías del Códice',
+                    icon: const Icon(Icons.menu),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                ),
+            ],
+          ),
           drawer: wide
               ? null
               : Drawer(child: SafeArea(child: _rail(context, inDrawer: true))),

@@ -14,8 +14,7 @@ import '../../theme/app_widgets.dart';
 /// **A los monstruos les llega el número ya tirado** (d20 + su modificador,
 /// una tirada por copia) y el DM lo puede corregir; a los jugadores les llega
 /// en blanco, porque el número lo cantan ellos desde la mesa. Los PNJ van con
-/// los monstruos pero también en blanco: su iniciativa se carga a mano, como
-/// la de un personaje, aunque tengan bloque. Todos los
+/// los monstruos y como ellos, ya tirados: los maneja el DM. Todos los
 /// valores son el **final** —dado más modificador—, que es lo que se dice en
 /// voz alta.
 ///

@@ -758,6 +758,13 @@ void main() {
 
       expect(result, roll - 2);
     });
+
+    test('rollInitiativeWith suma 1d20 al modificador que se le pasa', () {
+      final result = rollInitiativeWith(3, random: Random(1));
+      final roll = Random(1).nextInt(20) + 1;
+
+      expect(result, roll + 3);
+    });
   });
 
   group('tags de combatiente', () {

@@ -461,19 +461,45 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('la tirada automática deja al PNJ para cargar a mano', (
+    // En la columna «Monstruos y PNJ», que solo la mitad trajera número se
+    // leía como un olvido. Los dos los maneja el DM y los dos vienen tirados.
+    testWidgets('la tirada automática también le propone número al PNJ', (
       tester,
     ) async {
+      final sheet = Character(
+        id: 'sheet-v',
+        name: 'Vadrik',
+        raceId: 'human',
+        classId: 'rogue',
+        backgroundId: 'criminal',
+        assignedScores: const {Ability.dexterity: 16},
+      );
       await pumpCombate(
         tester,
         seed: (s) {
           addNpc(s, blockNpc('mirra', 'Mirra', 'Bandido'));
+          addNpc(
+            s,
+            Npc(id: 'bruno', name: 'Bruno', sheetKind: NpcSheetKind.none),
+          );
+          s.characters[sheet.id] = sheet;
+          s.npcSheets.add(sheet.id);
+          addNpc(
+            s,
+            Npc(
+              id: 'vadrik',
+              name: 'Vadrik',
+              sheetKind: NpcSheetKind.character,
+              characterId: sheet.id,
+            ),
+          );
           s.encounters['tumba'] = Encounter(
             id: 'e',
             combatants: [
               goblin(id: 'g1'),
-              goblin(id: 'g2'),
               npcCombatant('mirra', 'Mirra', side: CombatantSide.enemy),
+              npcCombatant('bruno', 'Bruno', side: CombatantSide.neutral),
+              npcCombatant('vadrik', 'Vadrik', side: CombatantSide.ally),
             ],
           );
         },
@@ -481,14 +507,22 @@ void main() {
       await tester.tap(find.text('Tirar iniciativa'));
       await tester.pumpAndSettle();
 
-      String field(String id) => tester
-          .widget<TextField>(find.byKey(ValueKey('initiative-$id')))
-          .controller!
-          .text;
-      expect(field('g1'), isNotEmpty);
-      expect(field('g2'), isNotEmpty);
-      expect(field('c-mirra'), isEmpty);
-      expect(inDialog(find.text('MONSTRUOS Y PNJ')), findsOneWidget);
+      int field(String id) => int.parse(
+        tester
+            .widget<TextField>(find.byKey(ValueKey('initiative-$id')))
+            .controller!
+            .text,
+      );
+      // Mirra tira con su bloque, copiado del bandido.
+      final mod = creature('Bandido').initiativeModifier;
+      expect(field('c-mirra'), inInclusiveRange(1 + mod, 20 + mod));
+      // Bruno no tiene Destreza: el d20 solo.
+      expect(field('c-bruno'), inInclusiveRange(1, 20));
+      // Vadrik, con la iniciativa de su ficha compilada.
+      final vadrik = CharacterCompiler(repo).compile(sheet).initiative;
+      expect(vadrik, isNonZero);
+      expect(field('c-vadrik'), inInclusiveRange(1 + vadrik, 20 + vadrik));
+      expect(find.text('Al confirmar arranca la ronda 1.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

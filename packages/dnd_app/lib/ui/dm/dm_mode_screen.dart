@@ -1451,6 +1451,10 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   /// tirada por copia, con el modificador del perfil— y el DM lo puede
   /// corregir. A los jugadores se les deja en blanco: ese número lo cantan
   /// ellos desde la mesa, que es donde tiraron el dado de verdad.
+  ///
+  /// Los PNJ también vienen tirados, porque los maneja el DM igual que a los
+  /// monstruos. Antes venían en blanco, y en el diálogo parecía un olvido: la
+  /// columna dice «Monstruos y PNJ» y solo la mitad traía número.
   Future<void> _rollInitiative() async {
     // Primero lo que falte guardar: un monstruo recién sumado tiene que estar
     // en el diálogo para recibir su tirada.
@@ -1460,10 +1464,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     if (encounter == null) return;
 
     final suggested = <String, int>{
-      for (final c in encounter.combatants)
-        if (c.creatureId case final id?)
-          if (widget.repo.creature(id) case final creature?)
-            c.id: rollInitiative(creature),
+      for (final c in encounter.combatants) c.id: ?_suggestedInitiative(c),
     };
 
     final values = await showRollInitiativeDialog(
@@ -1473,6 +1474,30 @@ class _CampaignDetailState extends State<_CampaignDetail> {
     );
     if (values == null || !mounted) return;
     _saveEncounter((current) => current?.start(values));
+  }
+
+  /// La tirada que se le propone a [c], o null para un jugador o para lo que
+  /// no se sabe con qué tirar.
+  ///
+  /// Un PNJ con bloque tira con su bloque; uno con ficha, con la iniciativa de
+  /// su ficha compilada; uno sin estadísticas no tiene Destreza, y tira el d20
+  /// solo.
+  int? _suggestedInitiative(Combatant c) {
+    if (c.creatureId case final id?) {
+      final creature = widget.repo.creature(id);
+      return creature == null ? null : rollInitiative(creature);
+    }
+    final npcId = c.npcId;
+    if (npcId == null) return null;
+    final entry = _npcs?.where((e) => e.npc.id == npcId).firstOrNull;
+    if (entry == null) return null;
+    if (entry.npc.block case final block?) return rollInitiative(block);
+    if (entry.sheet case final sheet?) {
+      return rollInitiativeWith(
+        CharacterCompiler(widget.repo).compile(sheet).initiative,
+      );
+    }
+    return rollInitiativeWith(0);
   }
 
   void _setCombatantTags(String combatantId, List<String> tags) =>

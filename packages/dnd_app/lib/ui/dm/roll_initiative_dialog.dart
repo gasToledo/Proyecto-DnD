@@ -19,6 +19,11 @@ import '../../theme/app_widgets.dart';
 /// valores son el **final** —dado más modificador—, que es lo que se dice en
 /// voz alta.
 ///
+/// **No arranca con casilleros en blanco.** Antes un blanco entraba como cero:
+/// el combatiente quedaba último sin aviso y el DM se enteraba recién cuando
+/// le tocaba. El que no vino se saca de la mesa, y cuando llega se suma con
+/// su tirada desde «Se sumaron tarde».
+///
 /// Devuelve `{id del combatiente: iniciativa}`, o `null` si se canceló.
 Future<Map<String, int>?> showRollInitiativeDialog(
   BuildContext context, {
@@ -61,13 +66,20 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
     super.dispose();
   }
 
-  /// Solo entran los que tienen un número escrito. Uno en blanco se queda con
-  /// la iniciativa que ya tenía, que al armar la mesa es cero: va último, y el
-  /// DM lo corrige cuando el jugador llegue.
   Map<String, int> get _values => {
     for (final entry in _controllers.entries)
       entry.key: ?int.tryParse(entry.value.text.trim()),
   };
+
+  /// Los que todavía no tienen un número, en el orden del diálogo. Un «-»
+  /// solo tampoco es un número.
+  List<Combatant> get _missing {
+    final values = _values;
+    return [
+      for (final c in widget.combatants)
+        if (!values.containsKey(c.id)) c,
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +92,7 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
       for (final c in widget.combatants)
         if (c.kind != CombatantKind.player) c,
     ];
+    final missing = _missing;
 
     return AppDialog(
       title: 'Tirar iniciativa',
@@ -127,8 +140,16 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
           // texto se lee como un botón muerto.
           const SizedBox(height: 14),
           Text(
-            'Al confirmar arranca la ronda 1.',
-            style: TextStyle(fontSize: 12, color: pal.textMuted),
+            missing.isEmpty
+                ? 'Al confirmar arranca la ronda 1.'
+                : 'Falta la iniciativa de '
+                      '${_joinNames([for (final c in missing) c.name])}. '
+                      'Si alguien no vino, sacalo de la mesa: cuando llegue '
+                      'se suma con su tirada.',
+            style: TextStyle(
+              fontSize: 12,
+              color: missing.isEmpty ? pal.textMuted : pal.gold,
+            ),
           ),
         ],
       ),
@@ -142,10 +163,18 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
           'Empezar',
           primary: true,
           color: pal.verdant,
-          onPressed: () => Navigator.of(context).pop(_values),
+          onPressed: missing.isEmpty
+              ? () => Navigator.of(context).pop(_values)
+              : null,
         ),
       ],
     );
+  }
+
+  /// «Mirna», «Mirna y Bardo», «Mirna, Bardo y Yina».
+  String _joinNames(List<String> names) {
+    if (names.length <= 1) return names.join();
+    return '${names.take(names.length - 1).join(', ')} y ${names.last}';
   }
 
   Widget _side(
@@ -181,6 +210,9 @@ class _RollInitiativeDialogState extends State<_RollInitiativeDialog> {
                     child: TextField(
                       key: ValueKey('initiative-${combatant.id}'),
                       controller: _controllers[combatant.id],
+                      // El aviso de los que faltan y el botón dependen de
+                      // cada tecla.
+                      onChanged: (_) => setState(() {}),
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
                       // Un menos adelante y nada más: una Destreza baja resta.

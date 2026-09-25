@@ -1478,6 +1478,23 @@ class _CampaignDetailState extends State<_CampaignDetail> {
   void _setCombatantTags(String combatantId, List<String> tags) =>
       _saveEncounter((current) => current?.withTags(combatantId, tags));
 
+  /// `withCombatant` con el mismo id reemplaza y reordena, y el turno sigue en
+  /// quien lo tenía.
+  ///
+  /// ponytail: corregir a mitad de ronda puede hacer que alguien actúe dos
+  /// veces o se saltee esa ronda, según a qué lado del turno caiga. Es una
+  /// corrección puntual del DM, que ve el orden nuevo; si se vuelve habitual,
+  /// el orden nuevo debería regir recién desde la ronda siguiente.
+  void _setCombatantInitiative(String combatantId, int initiative) {
+    _saveEncounter((current) {
+      final combatant = current?.combatants
+          .where((c) => c.id == combatantId)
+          .firstOrNull;
+      if (combatant == null) return null;
+      return current!.withCombatant(combatant.copyWith(initiative: initiative));
+    });
+  }
+
   void _nextTurn() => _saveEncounter((current) => current?.next());
 
   void _adjustCombatantHp(String combatantId, int delta) {
@@ -1738,6 +1755,7 @@ class _CampaignDetailState extends State<_CampaignDetail> {
               onAdjustHp: _adjustCombatantHp,
               onRemoveCombatant: _removeCombatant,
               onSetTags: _setCombatantTags,
+              onSetInitiative: _setCombatantInitiative,
               onCloseEncounter: _closeEncounter,
             ),
           },

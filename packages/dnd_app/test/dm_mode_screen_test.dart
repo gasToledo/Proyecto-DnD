@@ -664,7 +664,8 @@ void main() {
     ///
     /// A los monstruos el diálogo se las trae ya tiradas; a los jugadores hay
     /// que escribírselas, así que quien necesite un número puntual lo pasa en
-    /// [initiatives] por nombre de combatiente.
+    /// [initiatives] por nombre de combatiente. El resto de los casilleros
+    /// vacíos se completa con 0: el diálogo no arranca con ninguno en blanco.
     Future<void> tirarIniciativa(
       WidgetTester tester, {
       Map<String, int> initiatives = const {},
@@ -686,6 +687,16 @@ void main() {
           ),
           '${entry.value}',
         );
+      }
+      final fields = find.descendant(
+        of: find.byType(AppDialog),
+        matching: find.byType(TextField),
+      );
+      for (var i = 0; i < fields.evaluate().length; i++) {
+        final field = fields.at(i);
+        if (tester.widget<TextField>(field).controller!.text.isEmpty) {
+          await tester.enterText(field, '0');
+        }
       }
       await tester.pumpAndSettle();
       await tester.tap(dialogAction('Empezar'));
@@ -1634,6 +1645,87 @@ void main() {
           .reduce((a, b) => a > b ? a : b);
       expect(encounter.current!.initiative, highest);
       expect(encounter.turnIndex, 0);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Un blanco entraba como cero: el jugador quedaba último sin aviso y ya no
+    // había forma de corregirlo.
+    testWidgets('no se empieza con una iniciativa en blanco', (tester) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar a la mesa'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Tirar iniciativa'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Falta la iniciativa de Sagan'), findsOne);
+      await tester.tap(dialogAction('Empezar'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppDialog), findsOneWidget);
+      expect(server.encounters['tumba']!.isPreparing, isTrue);
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AppDialog),
+          matching: find.byType(TextField),
+        ),
+        '12',
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Al confirmar arranca la ronda 1.'), findsOneWidget);
+      await tester.tap(dialogAction('Empezar'));
+      await tester.pumpAndSettle();
+
+      final encounter = server.encounters['tumba']!;
+      expect(encounter.isPreparing, isFalse);
+      expect(encounter.combatants.single.initiative, 12);
+      expect(tester.takeException(), isNull);
+    });
+
+    // Un número mal cargado se corrige tocándolo, y el orden se rehace sin
+    // quitarle el turno a quien lo tenía.
+    testWidgets('corregir una iniciativa reordena y conserva el turno', (
+      tester,
+    ) async {
+      final server = await pumpDmMode(tester, seed: seedTable);
+      await enterCode(tester, 'CODE-0001');
+      await openCombate(tester);
+      await tester.tap(find.text('Armar combate'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar a la mesa'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar al combate'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'goblin');
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Guerrero goblin'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sumar'));
+      await tester.pumpAndSettle();
+      // El goblin tira d20 + Destreza: con 40 Sagan arranca seguro.
+      await tirarIniciativa(tester, initiatives: {'Sagan': 40});
+      expect(server.encounters['tumba']!.current!.name, 'Sagan');
+
+      await tester.tap(find.byTooltip('Corregir iniciativa').first);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AppDialog),
+          matching: find.byType(TextField),
+        ),
+        '-5',
+      );
+      await tester.tap(dialogAction('Guardar'));
+      await tester.pumpAndSettle();
+
+      final encounter = server.encounters['tumba']!;
+      final sagan = encounter.combatants.last;
+      expect(sagan.name, 'Sagan');
+      expect(sagan.initiative, -5);
+      expect(encounter.current!.id, sagan.id);
       expect(tester.takeException(), isNull);
     });
   });

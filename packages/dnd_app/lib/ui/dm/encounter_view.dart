@@ -90,6 +90,9 @@ class EncounterView extends StatefulWidget {
   /// Reemplaza los efectos anotados de un combatiente.
   final void Function(String combatantId, List<String> tags) onSetTags;
 
+  /// Corrige la iniciativa de alguien que ya está en el orden.
+  final void Function(String combatantId, int initiative) onSetInitiative;
+
   /// Termina el combate. Con `discard: true` no queda registro — ver
   /// [_confirmClose]. [deadNpcIds] son los PNJ que el DM marcó muertos.
   final void Function({bool discard, Set<String> deadNpcIds}) onCloseEncounter;
@@ -112,6 +115,7 @@ class EncounterView extends StatefulWidget {
     required this.onAdjustHp,
     required this.onRemoveCombatant,
     required this.onSetTags,
+    required this.onSetInitiative,
     required this.onCloseEncounter,
   });
 
@@ -558,6 +562,7 @@ class _EncounterViewState extends State<EncounterView> {
               onSetTags: (tags) => widget.onSetTags(combatant.id, tags),
               onSetSide: (side) => widget.onSetSide(combatant.id, side),
               onConvertToNpc: () => _convertToNpc(context, combatant),
+              onEditInitiative: () => _editInitiative(context, combatant),
             ),
           ],
         ],
@@ -1149,6 +1154,22 @@ class _EncounterViewState extends State<EncounterView> {
     widget.onAddPlayer(member.memberId, member.character.name, initiative);
   }
 
+  Future<void> _editInitiative(
+    BuildContext context,
+    Combatant combatant,
+  ) async {
+    final value = await showTextPromptDialog(
+      context,
+      title: 'Iniciativa de ${combatant.name}',
+      label: 'Iniciativa',
+      current: '${combatant.initiative}',
+      keyboardType: TextInputType.number,
+    );
+    final initiative = value == null ? null : int.tryParse(value);
+    if (initiative == null || initiative == combatant.initiative) return;
+    widget.onSetInitiative(combatant.id, initiative);
+  }
+
   /// Pregunta cómo termina el combate: archivándolo o descartándolo.
   ///
   /// Las dos salidas viven en el mismo diálogo porque es exactamente el
@@ -1357,6 +1378,7 @@ class _CombatantRow extends StatelessWidget {
   final void Function(List<String> tags) onSetTags;
   final ValueChanged<CombatantSide> onSetSide;
   final VoidCallback onConvertToNpc;
+  final VoidCallback onEditInitiative;
 
   const _CombatantRow({
     super.key,
@@ -1374,6 +1396,7 @@ class _CombatantRow extends StatelessWidget {
     required this.onSetTags,
     required this.onSetSide,
     required this.onConvertToNpc,
+    required this.onEditInitiative,
   });
 
   bool get _isPlayer => combatant.kind == CombatantKind.player;
@@ -1510,7 +1533,7 @@ class _CombatantRow extends StatelessWidget {
       _ when acted => ('Actuó', pal.textMuted),
       _ => null,
     };
-    return Column(
+    final cell = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
@@ -1540,6 +1563,20 @@ class _CombatantRow extends StatelessWidget {
           ),
         ],
       ],
+    );
+    if (preparing) return cell;
+    // Tocable para corregir: un número mal tipeado al tirar, o el de un
+    // jugador que lo cantó distinto, no tiene otro lugar donde arreglarse.
+    return Tooltip(
+      message: 'Corregir iniciativa',
+      child: InkWell(
+        onTap: onEditInitiative,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: cell,
+        ),
+      ),
     );
   }
 

@@ -615,6 +615,14 @@ extension _SheetGeneralSection on _SheetScreenState {
                       slot.name,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
+                    // Mismo aviso que en la subida: este cupo no suma un
+                    // conjuro, apunta a uno que ya se conoce.
+                    if (!slot.grantsSpells)
+                      Text(
+                        'Elegí uno que ya conocés: no se suma a tus conjuros, '
+                        'le agrega el bono al daño.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     Builder(
                       builder: (context) {
                         final chosen = choices[slot.groupId] ??= [];

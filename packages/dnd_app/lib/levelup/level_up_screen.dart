@@ -118,6 +118,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     if (!_asiComplete) return false;
     if (_pendingChoices > 0) return false;
     if (_pendingSpellChoices > 0) return false;
+    if (_hasSpellcasting && !_classSpellsComplete) return false;
     return true;
   }
 
@@ -343,6 +344,14 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _abilityA?.name,
       _abilityB?.name,
       _impMode.name,
+      // Las invocaciones elegidas en esta misma subida traen sus propios
+      // cupos (Pacto del Grimorio, Descarga Agónica). Sin esto la firma no
+      // cambiaba al elegirlas y el paso de conjuros a elección no aparecía.
+      for (final e in _effectiveChoices.entries)
+        'f:${e.key}=${e.value.join(",")}',
+      for (final classEntry in _effectiveClassFeatureChoices.entries)
+        for (final e in classEntry.value.entries)
+          'f:${classEntry.key}:${e.key}=${e.value.join(",")}',
       for (final e in _effectiveSpellChoices.entries)
         '${e.key}=${e.value.join(",")}',
       for (final classEntry in _effectiveClassSpellChoices.entries)
@@ -606,6 +615,22 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     return _updatedSheetCache!;
   }
 
+  /// Trucos y conjuros de la clase que sube que quedan por elegir al nivel
+  /// nuevo. La regla —incluido que no cuente lo que no se puede elegir— es la
+  /// de la validación; acá solo se lee.
+  ({int cantrips, int prepared}) get _pendingClassSpells {
+    final pending = CharacterValidator(widget.repo)
+        .pendingClassSpells(_buildUpdated(), _updatedSheet)
+        .where((p) => p.classId == _levelUpClassId)
+        .firstOrNull;
+    return (cantrips: pending?.cantrips ?? 0, prepared: pending?.prepared ?? 0);
+  }
+
+  bool get _classSpellsComplete {
+    final p = _pendingClassSpells;
+    return p.cantrips == 0 && p.prepared == 0;
+  }
+
   _LevelUpStep get _activeStep {
     final steps = _steps;
     final index = _currentStep.clamp(0, steps.length - 1);
@@ -632,6 +657,9 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
     _LevelUpStepKind.featureChoices => _pendingChoices == 0,
     _LevelUpStepKind.proficiencies => _pendingProficiency == 0,
     _LevelUpStepKind.spellChoices => _pendingSpellChoices == 0,
+    // La subida a nivel 4 del Brujo se confirmaba sin el truco ni el conjuro
+    // nuevos, y la ficha quedaba corta sin que nada lo dijera.
+    _LevelUpStepKind.spells => _classSpellsComplete,
     _ => true,
   };
 
@@ -691,8 +719,21 @@ class _LevelUpScreenState extends State<LevelUpScreen> {
       _pendingSpellChoices == 1
           ? 'Te falta elegir un conjuro para continuar.'
           : 'Te faltan $_pendingSpellChoices conjuros para continuar.',
+    _LevelUpStepKind.spells when !_classSpellsComplete => _classSpellsMessage(
+      _pendingClassSpells,
+    ),
     _ => null,
   };
+
+  static String _classSpellsMessage(({int cantrips, int prepared}) p) {
+    final parts = [
+      if (p.cantrips == 1) 'un truco',
+      if (p.cantrips > 1) '${p.cantrips} trucos',
+      if (p.prepared == 1) 'un conjuro',
+      if (p.prepared > 1) '${p.prepared} conjuros',
+    ];
+    return 'Te falta elegir ${parts.join(' y ')} para continuar.';
+  }
 
   /// Construye el personaje tal como quedará tras confirmar (nivel, ASI/dote,
   /// PG y conjuros re-preparados). Se usa para confirmar y para previsualizar

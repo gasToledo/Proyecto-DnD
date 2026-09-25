@@ -6,6 +6,8 @@ import 'package:dnd_app/ui/spell_edit_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'level_up_helpers.dart';
+
 /// Regresión: en la subida de nivel, la sección de conjuros previsualiza el
 /// personaje llamando a `_buildUpdated()` en cada build. Cambiar a "Tomar dote"
 /// antes de elegir una dote no debe romper (antes: `_featId!` sobre null).
@@ -650,6 +652,10 @@ void main() {
         await tester.tap(find.widgetWithText(InkWell, 'Defensa'));
         await tester.pumpAndSettle();
       }
+      // El primer nivel de Paladín trae conjuros preparados que elegir.
+      if (find.textContaining('Te falta elegir').evaluate().isNotEmpty) {
+        await completarConjurosDeClase(tester);
+      }
       await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
     }
@@ -757,10 +763,17 @@ void main() {
     // El paso de conjuros dice cuántos hay preparados y avisa el cupo libre.
     var sawPrepared = false;
 
-    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
+    for (
+      var i = 0;
+      i < 12 && find.text('Confirmar nivel 2').evaluate().isEmpty;
+      i++
+    ) {
       if (find.textContaining('Preparados:').evaluate().isNotEmpty) {
         sawPrepared = true;
         expect(find.textContaining('cupos libres'), findsOneWidget);
+        // Con cupo libre el paso ya no deja seguir: se llena como lo haría
+        // el jugador.
+        await completarConjurosDeClase(tester);
       }
       await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
@@ -799,7 +812,7 @@ void main() {
       assignedScores: {for (final a in Ability.values) a: 12},
       hpPerLevel: const [8],
       featureChoices: const {
-        'warlock-invocation': ['pact-of-the-tome'],
+        'warlock-invocation': ['armor-of-shadows'],
       },
     );
     await pumpLevelUp(tester, brujo, onDone: (c) => saved = c);
@@ -822,10 +835,7 @@ void main() {
     }
     expect(find.text('INVOCACIONES SOBRENATURALES (3/3)'), findsOneWidget);
 
-    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
-      await tester.tap(find.text('Continuar'));
-      await tester.pumpAndSettle();
-    }
+    await avanzarHastaConfirmar(tester, 'Confirmar nivel 2');
     await tester.tap(find.text('Confirmar nivel 2'));
     await tester.pumpAndSettle();
 
@@ -850,7 +860,13 @@ void main() {
       assignedScores: {for (final a in Ability.values) a: 12},
       hpPerLevel: const [8],
       featureChoices: const {
-        'warlock-invocation': ['pact-of-the-tome'],
+        'warlock-invocation': ['armor-of-shadows'],
+      },
+      // Descarga Agónica apunta a un truco de Brujo conocido: sin trucos no
+      // hay a qué, y con los dos ya anotados el cupo nace completo.
+      cantripIds: const ['eldritch-blast', 'mind-sliver'],
+      spellChoices: const {
+        'agonizing-blast:cantrips': ['eldritch-blast', 'mind-sliver'],
       },
     );
     await pumpLevelUp(tester, brujo, onDone: (c) => saved = c);
@@ -876,15 +892,12 @@ void main() {
       findsOneWidget,
     );
 
-    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
-      await tester.tap(find.text('Continuar'));
-      await tester.pumpAndSettle();
-    }
+    await avanzarHastaConfirmar(tester, 'Confirmar nivel 2');
     await tester.tap(find.text('Confirmar nivel 2'));
     await tester.pumpAndSettle();
 
     expect(saved?.featureChoices['warlock-invocation'], [
-      'pact-of-the-tome',
+      'armor-of-shadows',
       'agonizing-blast',
       'agonizing-blast',
     ]);
@@ -1068,10 +1081,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('Te falta'), findsNothing);
 
-    while (find.text('Confirmar nivel 3').evaluate().isEmpty) {
-      await tester.tap(find.text('Continuar'));
-      await tester.pumpAndSettle();
-    }
+    await avanzarHastaConfirmar(tester, 'Confirmar nivel 3');
     await tester.tap(find.text('Confirmar nivel 3'));
     await tester.pumpAndSettle();
 
@@ -1169,10 +1179,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Avanzar hasta el final y confirmar.
-    while (find.text('Confirmar nivel 2').evaluate().isEmpty) {
-      await tester.tap(find.text('Continuar'));
-      await tester.pumpAndSettle();
-    }
+    await avanzarHastaConfirmar(tester, 'Confirmar nivel 2');
     await tester.tap(find.text('Confirmar nivel 2'));
     await tester.pumpAndSettle();
 
@@ -1392,6 +1399,10 @@ void main() {
   Future<void> advanceUntil(WidgetTester tester, String target) async {
     for (var i = 0; i < 12; i++) {
       if (find.text(target).evaluate().isNotEmpty) return;
+      // El paso de conjuros ya no deja seguir con cupo libre.
+      if (find.textContaining('Te falta elegir').evaluate().isNotEmpty) {
+        await completarConjurosDeClase(tester);
+      }
       await tester.tap(find.text('Continuar'));
       await tester.pumpAndSettle();
     }

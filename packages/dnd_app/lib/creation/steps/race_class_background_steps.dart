@@ -298,6 +298,10 @@ class _BackgroundStep extends StatelessWidget {
                 accent: context.palette.gold,
                 selected: draft.backgroundId == b.id,
                 onTap: () {
+                  if (draft.backgroundId != b.id) {
+                    // Otra dote puede no ofrecerla, o no las mismas opciones.
+                    draft.originFeatSpellcastingAbility = null;
+                  }
                   draft.backgroundId = b.id;
                   draft.spreadPlusTwo = null;
                   draft.spreadPlusOne = null;
@@ -364,6 +368,28 @@ class _BackgroundStep extends StatelessWidget {
                               description: t.description,
                             ),
                         ]),
+                        const SizedBox(height: 18),
+                      ],
+                      // Mismo selector que el del linaje en el paso Especie.
+                      // Sin él, el Acólito nacía con Iniciado en la Magia a
+                      // medio resolver y la advertencia en la ficha nueva.
+                      if (draft.originFeatWithAbilityChoice
+                          case final feat?) ...[
+                        _AbilityDropdown(
+                          label: 'Aptitud mágica de ${feat.name}',
+                          value: draft.originFeatSpellcastingAbility,
+                          options: feat.spellcastingAbilityOptions,
+                          onChanged: (ability) {
+                            draft.originFeatSpellcastingAbility = ability;
+                            onChanged();
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Se usa para la CD y los ataques de los conjuros de '
+                          'la dote.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
                         const SizedBox(height: 18),
                       ],
                       const Eyebrow('Aumento de característica'),

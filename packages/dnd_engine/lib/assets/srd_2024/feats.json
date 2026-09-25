@@ -28,6 +28,7 @@
     "category": "warlock-invocation",
     "repeatable": true,
     "effects": [
+      { "type": "spellDamageBonus", "groupId": "agonizing-blast:cantrips", "name": "Descarga Agónica: truco", "ability": "charisma", "fromClasses": ["warlock"] },
       { "type": "passiveTrait", "name": "Descarga Agónica", "description": "Requiere conocer un truco de Brujo que cause daño. Elegís uno y sumás tu modificador por Carisma a sus tiradas de daño. Repetible: cada vez elegís un truco distinto." }
     ],
     "prerequisite": { "minLevel": 2 }
@@ -345,6 +346,8 @@
     "category": "warlock-invocation",
     "repeatable": false,
     "effects": [
+      {"type":"spellChoice","groupId":"pact-of-the-tome:cantrips","name":"Libro de las Sombras: trucos","count":3,"minLevel":0,"maxLevel":0,"fromClasses":[],"replaceable":true},
+      {"type":"spellChoice","groupId":"pact-of-the-tome:rituals","name":"Libro de las Sombras: rituales","count":2,"minLevel":1,"maxLevel":1,"fromClasses":[],"ritualOnly":true,"replaceable":true},
       {
         "type": "passiveTrait",
         "name": "Pacto del Grimorio",

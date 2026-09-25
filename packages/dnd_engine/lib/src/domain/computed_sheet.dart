@@ -156,6 +156,12 @@ class InnateSpell {
   /// ficha en vez de mirar los efectos del linaje por su cuenta.
   final List<String> replaceableFrom;
 
+  /// Lanzamientos gratis por descanso, o 0 si es a voluntad. Lo calcula el
+  /// compilador porque depende del uso —bono de competencia, modificador de
+  /// característica o una sola vez— y la ficha lo muestra tal cual en vez de
+  /// rearmar la cuenta.
+  final int freeUses;
+
   const InnateSpell({
     required this.spellId,
     required this.name,
@@ -167,6 +173,7 @@ class InnateSpell {
     this.source = '',
     String? grantedSpellId,
     this.replaceableFrom = const [],
+    this.freeUses = 0,
   }) : grantedSpellId = grantedSpellId ?? spellId;
 
   bool get isCantrip => level == 0;
@@ -403,6 +410,13 @@ class SpellChoiceSlot {
   /// Si una elección ya hecha se puede cambiar más adelante.
   final bool replaceable;
 
+  /// Si lo elegido se **concede** (queda siempre preparado) o solo se
+  /// **señala** un conjuro que ya se conoce, como el truco de Descarga
+  /// Agónica. Comparten cupo, pendiente y UI de elección; lo único que cambia
+  /// es qué significa haber elegido, y la UI lo necesita para no prometer
+  /// "no ocupa cupo" sobre algo que no se está sumando.
+  final bool grantsSpells;
+
   const SpellChoiceSlot({
     required this.groupId,
     required this.name,
@@ -410,6 +424,7 @@ class SpellChoiceSlot {
     required this.options,
     this.chosen = const [],
     this.replaceable = false,
+    this.grantsSpells = true,
   });
 
   int get pending => (count - chosen.length).clamp(0, count);
@@ -421,7 +436,21 @@ class SpellChoiceSlot {
         'options': options,
         'chosen': chosen,
         'replaceable': replaceable,
+        if (!grantsSpells) 'grantsSpells': false,
       };
+}
+
+/// Un bono al daño de un conjuro concreto y de dónde sale: "+4 (Descarga
+/// Agónica)". Es un número ya resuelto; la ficha lo muestra sin recalcularlo.
+class SpellDamageBonus {
+  final int bonus;
+
+  /// Rasgo que lo concede, para nombrarlo en la ficha.
+  final String source;
+
+  const SpellDamageBonus({required this.bonus, required this.source});
+
+  Map<String, dynamic> toJson() => {'bonus': bonus, 'source': source};
 }
 
 /// Las formas de Forma Salvaje del druida: el pozo legal a su nivel y las que
@@ -881,6 +910,11 @@ class ComputedSheet {
   /// que es por donde el resto del sistema lo ve.
   final List<SpellChoiceSlot> spellChoiceSlots;
 
+  /// Bonos al daño por id de conjuro (Descarga Agónica sobre el truco
+  /// elegido). Lista porque la regla admite varias fuentes sobre conjuros
+  /// distintos y nada impide que un homebrew apile dos sobre el mismo.
+  final Map<String, List<SpellDamageBonus>> spellDamageBonuses;
+
   /// Formas de Forma Salvaje, o null si el personaje no es druida.
   final WildShapeSlot? wildShape;
 
@@ -939,6 +973,7 @@ class ComputedSheet {
     this.proficiencyChoiceSlots = const [],
     this.expertiseChoiceSlots = const [],
     this.spellChoiceSlots = const [],
+    this.spellDamageBonuses = const {},
     this.wildShape,
     this.languages = const {},
     this.languageChoiceSlots = const [],
@@ -1005,6 +1040,7 @@ class ComputedSheet {
     List<ProficiencyChoiceSlot>? proficiencyChoiceSlots,
     List<ProficiencyChoiceSlot>? expertiseChoiceSlots,
     List<SpellChoiceSlot>? spellChoiceSlots,
+    Map<String, List<SpellDamageBonus>>? spellDamageBonuses,
     Object? wildShape = _unset,
     Set<String>? languages,
     List<LanguageChoiceSlot>? languageChoiceSlots,
@@ -1070,6 +1106,7 @@ class ComputedSheet {
             proficiencyChoiceSlots ?? this.proficiencyChoiceSlots,
         expertiseChoiceSlots: expertiseChoiceSlots ?? this.expertiseChoiceSlots,
         spellChoiceSlots: spellChoiceSlots ?? this.spellChoiceSlots,
+        spellDamageBonuses: spellDamageBonuses ?? this.spellDamageBonuses,
         wildShape: identical(wildShape, _unset)
             ? this.wildShape
             : wildShape as WildShapeSlot?,

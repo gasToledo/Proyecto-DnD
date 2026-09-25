@@ -300,6 +300,10 @@ extension _SheetSpellsSection on _SheetScreenState {
       InnateSpellUse.oncePerShortRest => '1/descanso corto',
       InnateSpellUse.proficiencyBonusPerLongRest =>
         'Competencia/descanso largo',
+      // El número sale del sheet: la regla es "tantas como tu modificador",
+      // y nombrar la característica sin el número obligaba a hacer la cuenta.
+      InnateSpellUse.abilityModifierPerLongRest =>
+        '${innate.freeUses}/descanso largo (${innate.ability.abbr})',
     };
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
@@ -331,9 +335,13 @@ extension _SheetSpellsSection on _SheetScreenState {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$use · ${innate.ability.abbr} · '
-                    'CD ${innate.saveDc} · Ataque '
-                    '${innate.attackBonus >= 0 ? "+" : ""}${innate.attackBonus}',
+                    [
+                      use,
+                      innate.ability.abbr,
+                      'CD ${innate.saveDc}',
+                      'Ataque ${_signed(innate.attackBonus)}',
+                      ?_damageBonusText(innate.spellId),
+                    ].join(' · '),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -620,7 +628,11 @@ extension _SheetSpellsSection on _SheetScreenState {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${s.isCantrip ? "Truco" : "Nivel ${s.level}"} · ${s.school}',
+                          [
+                            s.isCantrip ? 'Truco' : 'Nivel ${s.level}',
+                            s.school,
+                            ?_damageBonusText(s.id),
+                          ].join(' · '),
                           style: TextStyle(fontSize: 12, color: muted),
                         ),
                       ],
@@ -650,6 +662,7 @@ extension _SheetSpellsSection on _SheetScreenState {
     final ability = innate?.ability ?? sc?.ability;
     final attackBonus = innate?.attackBonus ?? sc?.attackBonus;
     final saveDc = innate?.saveDc ?? sc?.saveDc;
+    final damage = _damageBonusText(s.id);
 
     showSpellDetailsDialog(
       context,
@@ -660,7 +673,19 @@ extension _SheetSpellsSection on _SheetScreenState {
           : 'Lanzás con ${ability.label} '
                 '(${_signed(sheet.abilityModifiers[ability]!)}). '
                 'Ataque de conjuro ${_signed(attackBonus!)} · '
-                'CD de salvación $saveDc.',
+                'CD de salvación $saveDc.'
+                '${damage == null ? '' : ' $damage.'}',
     );
+  }
+
+  /// "+4 al daño (Descarga Agónica)", o null si el conjuro no tiene bono. El
+  /// número sale del sheet: la prosa del conjuro sigue diciendo solo el dado,
+  /// y sin esto el jugador tenía que acordarse de sumar su Carisma.
+  String? _damageBonusText(String spellId) {
+    final bonuses = sheet.spellDamageBonuses[spellId];
+    if (bonuses == null || bonuses.isEmpty) return null;
+    final total = bonuses.fold<int>(0, (n, b) => n + b.bonus);
+    final sources = bonuses.map((b) => b.source).toSet().join(', ');
+    return '${_signed(total)} al daño ($sources)';
   }
 }

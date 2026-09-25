@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import '../data/content_repository.dart';
 import '../domain/ability.dart';
 import '../domain/character.dart';
@@ -724,6 +726,59 @@ class CharacterValidator {
       );
 
   /// Chequeos no bloqueantes sobre trucos y conjuros elegidos.
+  /// Cuántos trucos y conjuros de clase le faltan elegir a [c] en cada bloque
+  /// de lanzamiento de [sheet]. Solo cuenta lo que se **puede** elegir: si la
+  /// lista se agotó, el faltante es 0, porque reclamarlo sería un aviso
+  /// imposible de resolver.
+  ///
+  /// Es la misma regla para la advertencia de la ficha y para el paso de
+  /// conjuros de la subida de nivel, que no deja confirmar con un cupo nuevo
+  /// sin llenar. Vive acá para que la app no la duplique.
+  List<({String classId, int cantrips, int prepared})> pendingClassSpells(
+    Character c,
+    ComputedSheet sheet,
+  ) {
+    final granted = {
+      for (final s in sheet.innateSpells) s.spellId,
+      ...sheet.alwaysPreparedSpellIds,
+    };
+    return [
+      for (final block in sheet.spellcastingBlocks)
+        if (_pendingFor(c, sheet, block, granted) case final p)
+          (classId: block.classId, cantrips: p.cantrips, prepared: p.prepared),
+    ];
+  }
+
+  ({int cantrips, int prepared}) _pendingFor(
+    Character c,
+    ComputedSheet sheet,
+    SpellcastingBlock block,
+    Set<String> granted,
+  ) {
+    final sc = block.spellcasting;
+    final cantripIds = c.cantripIdsFor(block.classId);
+    final spellIds = c.spellIdsFor(block.classId);
+    final maxSlotLevel =
+        sc.slotsByLevel.keys.fold<int>(0, (m, l) => l > m ? l : m);
+    final free = [
+      for (final s in repo.spellsForList(sc.spellList,
+          extraSpellIds: sheet.spellListAdditionIds))
+        if (!granted.contains(s.id) &&
+            !cantripIds.contains(s.id) &&
+            !spellIds.contains(s.id))
+          s,
+    ];
+    final freeCantrips = free.where((s) => s.isCantrip).length;
+    final freeSpells = free
+        .where((s) =>
+            !s.isCantrip && (maxSlotLevel == 0 || s.level <= maxSlotLevel))
+        .length;
+    return (
+      cantrips: min(max(0, sc.cantripsKnown - cantripIds.length), freeCantrips),
+      prepared: min(max(0, sc.preparedCount - spellIds.length), freeSpells),
+    );
+  }
+
   void _validateSpells(
       Character c, ComputedSheet sheet, List<ValidationWarning> w) {
     // Un rasgo que concede un conjuro ya lo da "siempre preparado": volver a
@@ -767,6 +822,24 @@ class CharacterValidator {
           'too_many_cantrips',
           'Elegiste ${cantripIds.length} trucos para ${sc.spellList} pero '
               'conocés ${sc.cantripsKnown}.',
+        ));
+      }
+
+      final pending = _pendingFor(c, sheet, block, grantedSpellIds);
+      if (pending.cantrips > 0) {
+        w.add(ValidationWarning(
+          'cantrips_pending',
+          'Trucos de ${sc.spellList}: elegiste ${cantripIds.length} de '
+              '${sc.cantripsKnown}.',
+          WarningSeverity.info,
+        ));
+      }
+      if (pending.prepared > 0) {
+        w.add(ValidationWarning(
+          'prepared_pending',
+          'Conjuros de ${sc.spellList}: preparaste ${spellIds.length} de '
+              '${sc.preparedCount}.',
+          WarningSeverity.info,
         ));
       }
       for (final id in cantripIds) {

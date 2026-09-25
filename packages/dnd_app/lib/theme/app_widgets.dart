@@ -1633,7 +1633,9 @@ class CappedChipSelect extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            chip,
+            // Flexible: un nombre largo con la tilde de elegido no entraba en
+            // la línea junto al botón y la fila desbordaba.
+            Flexible(child: chip),
             IconButton(
               onPressed: () => info(e.key),
               icon: const Icon(Icons.info_outline, size: 17),
@@ -1808,6 +1810,8 @@ const innateSpellUseLabels = {
   InnateSpellUse.oncePerShortRest: 'una vez por descanso corto',
   InnateSpellUse.proficiencyBonusPerLongRest:
       'tantas veces como tu bono de competencia',
+  InnateSpellUse.abilityModifierPerLongRest:
+      'tantas veces como el modificador de la característica',
 };
 
 /// Un efecto en una línea legible, o null si es maquinaria que un jugador no

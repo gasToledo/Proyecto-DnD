@@ -677,6 +677,18 @@ class CharacterCompiler {
       multipleClasses,
     );
 
+    // Va después de las elecciones de conjuros porque su pozo las lee: un
+    // truco del Libro de las Sombras también es un truco conocido al que se le
+    // puede apuntar Descarga Agónica.
+    final damageBonuses = _resolveSpellDamageBonuses(
+      c,
+      builder,
+      proficiencySources,
+      classLevels.keys,
+      mods,
+    );
+    spellChoiceSlots.addAll(damageBonuses.slots);
+
     final innate = _resolveInnate(c, builder, mods, profBonus);
 
     // Idiomas. Común lo sabe todo personaje y no gasta una de las dos
@@ -804,6 +816,7 @@ class CharacterCompiler {
       proficiencyChoiceSlots: proficiencySlots,
       expertiseChoiceSlots: expertiseSlots,
       spellChoiceSlots: spellChoiceSlots,
+      spellDamageBonuses: damageBonuses.bonuses,
       wildShape: _resolveWildShape(c, builder),
       languages: knownLanguages,
       languageChoiceSlots: languageChoiceSlots,
@@ -1089,6 +1102,96 @@ class CharacterCompiler {
     return slots;
   }
 
+  /// Resuelve los bonos de daño sobre un truco elegido (Descarga Agónica).
+  ///
+  /// El cupo se arma por [SpellDamageBonusEffect.groupId] sumando una por cada
+  /// fuente que lo declara: la invocación es repetible y cada copia llega como
+  /// una fuente aparte (`feat:agonizing-blast:0`, `:1`). Lo elegido se guarda
+  /// en `Character.spellChoices`, pero **no** se vuelca en los siempre
+  /// preparados: el truco ya se conocía y lo único que se agrega es el número.
+  ({List<SpellChoiceSlot> slots, Map<String, List<SpellDamageBonus>> bonuses})
+      _resolveSpellDamageBonuses(
+    Character c,
+    SheetBuilder builder,
+    List<({String id, String name, List<Effect> effects})> sources,
+    Iterable<String> classIds,
+    Map<Ability, int> mods,
+  ) {
+    // `name` rotula el cupo ("Descarga Agónica: truco"); `source` nombra el
+    // rasgo junto al bono en la ficha, donde el rótulo del cupo sobra.
+    final byGroup = <String,
+        ({
+      SpellDamageBonusEffect effect,
+      String name,
+      String source,
+      int count,
+    })>{};
+    for (final source in sources) {
+      for (final effect in source.effects.whereType<SpellDamageBonusEffect>()) {
+        final prev = byGroup[effect.groupId];
+        byGroup[effect.groupId] = (
+          effect: effect,
+          name: effect.name.isEmpty ? source.name : effect.name,
+          source: source.name,
+          count: (prev?.count ?? 0) + 1,
+        );
+      }
+    }
+    if (byGroup.isEmpty) return (slots: const [], bonuses: const {});
+
+    // Trucos conocidos por cualquier vía: de clase, elegidos por un rasgo
+    // (quedan en los siempre preparados) o concedidos a voluntad.
+    final known = <String>{
+      for (final classId in classIds) ...c.cantripIdsFor(classId),
+      ...builder.alwaysPreparedSpellIds,
+      for (final g in builder.grantedSpells) g.spellId,
+    };
+
+    final slots = <SpellChoiceSlot>[];
+    final bonuses = <String, List<SpellDamageBonus>>{};
+    for (final MapEntry(key: groupId, value: group) in byGroup.entries) {
+      final effect = group.effect;
+      final pool = [
+        for (final id in known)
+          if (repo.spell(id) case final s?
+              when s.isCantrip &&
+                  (effect.fromClasses.isEmpty ||
+                      effect.fromClasses.any(s.classes.contains)))
+            s,
+      ]..sort(ContentRepository.compareSpells);
+      final options = [for (final s in pool) s.id];
+
+      final chosen = <String>[];
+      for (final id in c.spellChoices[groupId] ?? const <String>[]) {
+        if (chosen.length >= group.count) break;
+        if (options.contains(id) && !chosen.contains(id)) chosen.add(id);
+      }
+
+      slots.add(SpellChoiceSlot(
+        groupId: groupId,
+        name: group.name,
+        // Acotado a lo elegible: sin un truco de Brujo conocido la invocación
+        // no tiene a qué apuntar, y un cupo imposible de llenar trababa la
+        // subida de nivel para siempre. Que no califique es cosa del
+        // prerrequisito, no de este cupo.
+        count: min(group.count, options.length),
+        options: options,
+        chosen: chosen,
+        // La invocación se puede cambiar al subir de nivel, y con ella el
+        // truco al que apunta.
+        replaceable: true,
+        grantsSpells: false,
+      ));
+      final bonus = mods[effect.ability] ?? 0;
+      for (final id in chosen) {
+        bonuses
+            .putIfAbsent(id, () => [])
+            .add(SpellDamageBonus(bonus: bonus, source: group.source));
+      }
+    }
+    return (slots: slots, bonuses: bonuses);
+  }
+
   _InnateResult _resolveInnate(
     Character c,
     SheetBuilder builder,
@@ -1102,6 +1205,13 @@ class CharacterCompiler {
       if (granted == null) continue; // contenido incompleto: se ignora
       final spell = _replacementFor(c, g, granted);
       final mod = mods[g.ability] ?? 0;
+      final freeUses = switch (g.use) {
+        InnateSpellUse.atWill => 0,
+        InnateSpellUse.proficiencyBonusPerLongRest => proficiencyBonus,
+        // "Mínimo una": con Carisma 8 el rasgo no desaparece.
+        InnateSpellUse.abilityModifierPerLongRest => max(1, mod),
+        InnateSpellUse.oncePerLongRest || InnateSpellUse.oncePerShortRest => 1,
+      };
       spells.add(InnateSpell(
         spellId: spell.id,
         name: spell.name,
@@ -1112,6 +1222,7 @@ class CharacterCompiler {
         attackBonus: proficiencyBonus + mod,
         grantedSpellId: granted.id,
         replaceableFrom: g.replaceableFrom,
+        freeUses: freeUses,
       ));
       if (g.use != InnateSpellUse.atWill) {
         resources.add(CharacterResource(
@@ -1119,9 +1230,7 @@ class CharacterCompiler {
           // cambiar el truco devolvería los usos ya gastados.
           id: innateSpellResourceId(granted.id),
           name: spell.name,
-          max: g.use == InnateSpellUse.proficiencyBonusPerLongRest
-              ? proficiencyBonus
-              : 1,
+          max: freeUses,
           recharge: g.use == InnateSpellUse.oncePerShortRest
               ? RechargeOn.shortRest
               : RechargeOn.longRest,

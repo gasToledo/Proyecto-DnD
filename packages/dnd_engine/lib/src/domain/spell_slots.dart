@@ -52,7 +52,13 @@ enum InnateSpellUse {
 
   /// Gratis una cantidad de veces igual al bono de competencia por descanso
   /// largo; además se puede lanzar gastando un espacio de conjuro.
-  proficiencyBonusPerLongRest;
+  proficiencyBonusPerLongRest,
+
+  /// Gratis una cantidad de veces igual al modificador de la característica
+  /// del conjuro (mínimo una) por descanso largo; además se puede lanzar
+  /// gastando un espacio. Es Pasos del Feérico, que usaba el bono de
+  /// competencia a falta de este valor y le daba 2 usos a un Brujo con +3.
+  abilityModifierPerLongRest;
 
   String toJson() => switch (this) {
         InnateSpellUse.atWill => 'atWill',
@@ -60,6 +66,8 @@ enum InnateSpellUse {
         InnateSpellUse.oncePerShortRest => 'oncePerShortRest',
         InnateSpellUse.proficiencyBonusPerLongRest =>
           'proficiencyBonusPerLongRest',
+        InnateSpellUse.abilityModifierPerLongRest =>
+          'abilityModifierPerLongRest',
       };
 
   static InnateSpellUse fromJson(String? v) => switch (v) {
@@ -67,6 +75,8 @@ enum InnateSpellUse {
         'oncePerShortRest' => InnateSpellUse.oncePerShortRest,
         'proficiencyBonusPerLongRest' =>
           InnateSpellUse.proficiencyBonusPerLongRest,
+        'abilityModifierPerLongRest' =>
+          InnateSpellUse.abilityModifierPerLongRest,
         _ => InnateSpellUse.atWill,
       };
 }

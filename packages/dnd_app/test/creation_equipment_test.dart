@@ -213,10 +213,26 @@ void main() {
     // El aviso de que la regla no se aplicaba sola ya no corresponde: ahora la
     // aplica el motor y lo que hay que decidir es la mano.
     expect(find.textContaining('todavía no aplica'), findsNothing);
-    expect(find.text('Cómo las empuñás'), findsNothing);
 
-    await tapWeapon('Daga');
-    // Con una sola arma no hay mano secundaria que elegir, ni texto sobre ella.
+    // Lo recibido con competencia arranca puesto: antes las pastillas nacían
+    // apagadas y el personaje salía sin arma aunque el paso las listara.
+    bool puesta(String name) => tester
+        .widget<FilterChip>(
+          find
+              .ancestor(of: find.text(name), matching: find.byType(FilterChip))
+              .first,
+        )
+        .selected;
+    expect(puesta('Daga'), isTrue);
+    expect(puesta('Bastón'), isTrue);
+    expect(
+      find.text('Tocá una pieza para sacártela o ponértela.'),
+      findsOneWidget,
+    );
+
+    // Sacarse el bastón deja una sola arma, sin mano secundaria que elegir.
+    await tapWeapon('Bastón');
+    expect(puesta('Bastón'), isFalse);
     expect(find.byKey(const ValueKey('off-hand-dagger')), findsNothing);
     expect(find.text('Cómo las empuñás'), findsNothing);
     await tapWeapon('Bastón');

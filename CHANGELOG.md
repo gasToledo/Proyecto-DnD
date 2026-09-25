@@ -211,6 +211,41 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 - Sin cambios.
 
+## [0.15.0+1] - 2026-09-24
+
+### Nuevo
+
+- Pacto del Grimorio pide los tres trucos y los dos rituales del Libro de las
+  Sombras, al crear el personaje, al subir de nivel y desde la ficha. Quedan
+  siempre preparados sin ocupar cupo.
+- Descarga Agónica pide a qué truco de Brujo se aplica, y la ficha muestra el
+  bono al daño en ese truco y en su detalle («+4 al daño (Descarga
+  Agónica)»).
+- El asistente de creación pide la aptitud mágica de la dote de origen cuando
+  la deja elegir (Iniciado en la Magia del Acólito, entre otros).
+
+### Modificado
+
+- Pasos del Feérico da tantos usos gratis de Paso Brumoso como el modificador
+  de Carisma (mínimo uno), como dice la regla. Daba el bonificador por
+  competencia: 2 usos a un Brujo con +3.
+- La subida de nivel no se confirma con un truco o un conjuro nuevo sin
+  elegir, y el resumen marca la revisión de conjuros como decisión cuando el
+  nivel trae cupo nuevo. La ficha avisa si faltan trucos o conjuros
+  preparados.
+- Las elecciones de conjuros de una invocación tomada en la misma subida
+  aparecen en el paso de conjuros a elección; antes no se veían hasta
+  confirmar.
+- El equipo inicial arranca puesto: armadura, escudo y armas del paquete con
+  los que la clase es competente. El paso lo explica y respeta lo que el
+  jugador cambie a mano.
+- Las opciones de conjuros con botón de información ya no desbordan la línea
+  con nombres largos.
+
+### Eliminado
+
+- Sin cambios.
+
 ## [Unreleased]
 
 ### Nuevo

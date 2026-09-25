@@ -202,6 +202,15 @@ class _ReceivedEquipmentSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Las pastillas siempre fueron interruptores, pero se leían como una
+        // lista de lo recibido.
+        if (armor.isNotEmpty || weapons.isNotEmpty) ...[
+          Text(
+            'Tocá una pieza para sacártela o ponértela.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 10),
+        ],
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -213,6 +222,7 @@ class _ReceivedEquipmentSection extends StatelessWidget {
                     ? draft.shieldEquipped
                     : draft.equippedArmorId == item.id,
                 onSelected: (on) {
+                  draft.equipmentTouched = true;
                   if (item.isShield) {
                     draft.shieldEquipped = on;
                     // Con escudo no hay mano libre: una versátil marcada a dos
@@ -229,6 +239,7 @@ class _ReceivedEquipmentSection extends StatelessWidget {
                 label: Text(item.name),
                 selected: draft.weaponIds.contains(item.id),
                 onSelected: (on) {
+                  draft.equipmentTouched = true;
                   draft.weaponIds.remove(item.id);
                   if (on) draft.weaponIds.add(item.id);
                   onChanged();

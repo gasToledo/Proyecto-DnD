@@ -2482,7 +2482,7 @@
         "name": "Pasos del Feérico",
         "description": "Lanzás Paso Brumoso sin gastar espacio, con usos iguales a tu Carisma, y elegís un efecto adicional cada vez.",
         "effects": [
-          { "type": "grantSpell", "spellId": "misty-step", "ability": "charisma", "use": "proficiencyBonusPerLongRest" },
+          { "type": "grantSpell", "spellId": "misty-step", "ability": "charisma", "use": "abilityModifierPerLongRest" },
           { "type": "passiveTrait", "name": "Pasos del Feérico", "description": "Podés lanzar Paso Brumoso sin gastar espacio de conjuro una cantidad de veces igual a tu modificador de Carisma (mínimo una), y recuperás todos los usos al terminar un descanso largo. Además, siempre que lancés ese conjuro podés elegir uno de estos efectos adicionales. Paso Reparador: inmediatamente después de teletransportarte, vos o una criatura que puedas ver a 10 pies o menos obtienen 1d10 puntos de golpe temporales. Paso Provocador: las criaturas a 5 pies o menos del espacio que dejaste deben superar una salvación de Sabiduría contra tu CD de conjuros o tener desventaja en las tiradas de ataque contra criaturas que no seas vos hasta el inicio de tu siguiente turno." }
         ]
       },

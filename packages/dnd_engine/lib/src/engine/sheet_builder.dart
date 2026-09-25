@@ -332,6 +332,10 @@ class SheetBuilder {
         // repositorio para filtrar el pozo y el bloque de lanzamiento para
         // saber hasta qué nivel llega.
         break;
+      case SpellDamageBonusEffect():
+        // Marcador: el cupo se cuenta por fuente y el pozo sale de los trucos
+        // conocidos, dos cosas que acá todavía no se saben.
+        break;
       case LeveledEffect(:final minLevel, :final effects):
         // Por el camino normal no llega ninguno: el compilador los expande en
         // `applySource` para que las pasadas que leen la lista de efectos de

@@ -192,11 +192,13 @@ extension _LevelUpSections on _LevelUpScreenState {
           tag: 'ELEGÍS VOS',
         ),
       if (_hasSpellcasting)
-        const _LevelUpCard(
+        _LevelUpCard(
           icon: Icons.auto_stories,
           title: 'Revisar conjuros',
           body: 'Comprobá tus espacios y actualizá los conjuros preparados.',
-          tag: 'OPCIONAL',
+          // Decía «OPCIONAL» aunque el nivel trajera un truco o un conjuro
+          // nuevo, y el paso que sigue ahora no deja confirmar sin elegirlos.
+          tag: _classSpellsComplete ? 'OPCIONAL' : 'ELEGÍS VOS',
         ),
     ];
     final automatic = <Widget>[
@@ -536,6 +538,17 @@ extension _LevelUpSections on _LevelUpScreenState {
             '${slot.name} '
             '(${_spellChoiceFor(slot.groupId).length}/${slot.count})',
           ),
+          // El título del paso promete conjuros siempre preparados; un cupo
+          // que solo señala uno ya conocido (Descarga Agónica) tiene que
+          // decir que no suma nada nuevo.
+          if (!slot.grantsSpells) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Elegí uno que ya conocés: no se suma a tus conjuros, le agrega '
+              'el bono al daño.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
           const SizedBox(height: 6),
           _SpellChoiceGroup(
             repo: widget.repo,

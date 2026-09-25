@@ -262,6 +262,14 @@ sealed class Effect {
               ? null
               : Ability.fromKey(json['ability'] as String),
         ),
+      'spellDamageBonus' => SpellDamageBonusEffect(
+          groupId: json['groupId'] as String,
+          name: json['name'] as String? ?? '',
+          ability: Ability.fromKey(json['ability'] as String),
+          fromClasses: (json['fromClasses'] as List? ?? const [])
+              .map((e) => e as String)
+              .toList(),
+        ),
       'leveled' => LeveledEffect(
           minLevel: json['minLevel'] as int,
           effects: Effect.listFromJson(json['effects']),
@@ -987,6 +995,48 @@ class SpellChoiceEffect extends Effect {
         if (ritualOnly) 'ritualOnly': true,
         if (countFromProficiency) 'countFromProficiency': true,
         if (ability != null) 'ability': ability!.name,
+      };
+}
+
+/// Suma el modificador de [ability] al daño de un **truco que el personaje ya
+/// conoce**, elegido por el jugador: Descarga Agónica.
+///
+/// No es un [SpellChoiceEffect], aunque la elección se parezca y se guarde en
+/// el mismo `Character.spellChoices`. Aquel **concede** conjuros y los vuelca
+/// en los siempre preparados; este no concede nada, solo agrega un número a
+/// algo que ya se tenía. Si compartieran efecto, elegir un truco para la
+/// invocación lo haría aparecer como conocido aunque se lo hubiera olvidado.
+///
+/// El pozo son los trucos conocidos de alguna lista de [fromClasses] (vacío =
+/// todas). La regla pide además "que cause daño", pero los conjuros no tienen
+/// daño estructurado: la condición queda en la prosa del rasgo, y elegir uno
+/// sin daño no rompe nada, solo no suma.
+///
+/// Si la fuente se aplica varias veces —la invocación es repetible—, cada
+/// copia suma un cupo al mismo [groupId], y un truco no se puede elegir dos
+/// veces.
+class SpellDamageBonusEffect extends Effect {
+  final String groupId;
+
+  /// Rótulo del cupo. Vacío significa "usá el nombre del rasgo".
+  final String name;
+  final Ability ability;
+  final List<String> fromClasses;
+
+  const SpellDamageBonusEffect({
+    required this.groupId,
+    required this.ability,
+    this.name = '',
+    this.fromClasses = const [],
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'spellDamageBonus',
+        'groupId': groupId,
+        if (name.isNotEmpty) 'name': name,
+        'ability': ability.name,
+        'fromClasses': fromClasses,
       };
 }
 

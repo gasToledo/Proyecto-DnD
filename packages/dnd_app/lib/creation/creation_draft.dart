@@ -85,6 +85,14 @@ class CreationDraft {
     if (backgroundId is String && repo.background(backgroundId) != null) {
       draft.backgroundId = backgroundId;
     }
+    // Solo si la dote del trasfondo restaurado la sigue ofreciendo.
+    final originAbility = _ability(json['originFeatSpellcastingAbility']);
+    if (draft.originFeatWithAbilityChoice?.spellcastingAbilityOptions.contains(
+          originAbility,
+        ) ??
+        false) {
+      draft.originFeatSpellcastingAbility = originAbility;
+    }
 
     // `fightingStyleId` es el formato viejo del borrador: se lee al grupo que
     // le corresponde para no perder un borrador guardado antes del cambio.
@@ -246,6 +254,7 @@ class CreationDraft {
       draft.equippedArmorId = armorId;
     }
     draft.shieldEquipped = json['shieldEquipped'] == true;
+    draft.equipmentTouched = json['equipmentTouched'] == true;
     // `weaponId` (una sola arma) es el formato viejo del borrador; se lee para
     // no perder borradores guardados antes de permitir varias armas.
     final legacyWeaponId = json['weaponId'];
@@ -324,6 +333,11 @@ class CreationDraft {
   String? raceFeatId; // dote de origen de la especie (p.ej. Humano "Versátil")
   String? backgroundId;
 
+  /// Aptitud mágica elegida para la dote de origen del trasfondo. El
+  /// asistente no la pedía y el Acólito nacía con la advertencia de aptitud
+  /// pendiente; la ficha ya sabía guardarla (`featSpellcastingAbilities`).
+  Ability? originFeatSpellcastingAbility;
+
   // Conjuros elegidos (para clases lanzadoras).
   final Set<String> cantrips = {};
   final Set<String> spells = {};
@@ -354,6 +368,12 @@ class CreationDraft {
   final Map<String, bool> weaponOffHand = {};
   final Map<String, bool> weaponTwoHanded = {};
 
+  /// Si el jugador ya tocó a mano qué lleva puesto. Mientras sea false, lo
+  /// puesto sigue al paquete elegido (ver [pruneEquipment]); a partir del
+  /// primer toque manda lo que eligió. Se guarda con el borrador: si no,
+  /// recargar la página volvía a ponerle lo que se había sacado.
+  bool equipmentTouched = false;
+
   String name = '';
 
   // Detalles de sabor.
@@ -377,6 +397,7 @@ class CreationDraft {
     'raceSkills': raceSkills.toList(),
     'raceFeatId': raceFeatId,
     'backgroundId': backgroundId,
+    'originFeatSpellcastingAbility': originFeatSpellcastingAbility?.name,
     'cantrips': cantrips.toList(),
     'spells': spells.toList(),
     'spreadMode': spreadMode.name,
@@ -395,6 +416,7 @@ class CreationDraft {
     'weaponIds': weaponIds,
     'weaponOffHand': weaponOffHand,
     'weaponTwoHanded': weaponTwoHanded,
+    'equipmentTouched': equipmentTouched,
     'name': name,
     'alignment': alignment?.toJson(),
     'personalityTrait': personalityTrait,
@@ -421,6 +443,13 @@ class CreationDraft {
 
   Background? get background =>
       backgroundId == null ? null : repo.background(backgroundId!);
+
+  /// La dote de origen del trasfondo, si deja elegir su aptitud mágica
+  /// (Iniciado en la Magia). Null si no hay trasfondo o si su dote no lo pide.
+  Feat? get originFeatWithAbilityChoice {
+    final feat = repo.feat(background?.originFeatId ?? '');
+    return (feat?.spellcastingAbilityOptions.isNotEmpty ?? false) ? feat : null;
+  }
 
   StartingEquipmentOption? get classEquipmentOption =>
       _option(klass?.startingEquipment ?? const [], classEquipmentOptionId);
@@ -483,10 +512,6 @@ class CreationDraft {
       startingInventory.map((e) => e.itemId).toSet();
 
   void pruneEquipment() {
-    final received = receivedItemIds;
-    if (!received.contains(equippedArmorId)) equippedArmorId = null;
-    shieldEquipped = shieldEquipped && received.contains('shield');
-    weaponIds.removeWhere((id) => !received.contains(id));
     equipmentChoices.removeWhere((key, value) {
       final grant = selectedEquipmentGrants
           .where((e) => e.key == key)
@@ -494,6 +519,44 @@ class CreationDraft {
           .firstOrNull;
       return grant == null || !grant.chooseFromItemIds.contains(value);
     });
+    final received = receivedItemIds;
+    if (!equipmentTouched) {
+      _equipReceived(received);
+      return;
+    }
+    if (!received.contains(equippedArmorId)) equippedArmorId = null;
+    shieldEquipped = shieldEquipped && received.contains('shield');
+    weaponIds.removeWhere((id) => !received.contains(id));
+  }
+
+  /// Pone lo recibido con lo que el personaje es competente. Las pastillas de
+  /// «Equipo puesto» arrancaban apagadas y el Brujo nacía sin armadura ni arma
+  /// aunque el paso las listara: CA 12 en vez de 13 y el aviso de «No hay arma
+  /// equipada» en una ficha recién hecha.
+  ///
+  /// Lo que no se sabe usar no se pone: una armadura sin competencia da
+  /// desventaja y corta el lanzamiento de conjuros, y el jugador no lo pidió.
+  /// La competencia sale de la ficha compilada, no de una regla copiada acá.
+  void _equipReceived(Set<String> received) {
+    final sheet = previewSheet;
+    final armors = [
+      for (final id in received)
+        if (repo.armorPiece(id) case final a?
+            when sheet.armorProficiencies.contains(a.category))
+          a,
+    ];
+    final body = armors.where((a) => !a.isShield).toList()
+      ..sort((a, b) => b.baseAc.compareTo(a.baseAc));
+    equippedArmorId = body.firstOrNull?.id;
+    shieldEquipped = armors.any((a) => a.isShield);
+    weaponIds
+      ..clear()
+      ..addAll([
+        for (final id in received)
+          if (repo.weapon(id) case final w?
+              when w.isProficientWith(sheet.weaponProficiencies))
+            id,
+      ]);
   }
 
   /// Armas con las que la clase elegida es competente. La Maestría de Armas
@@ -530,6 +593,7 @@ class CreationDraft {
       speciesSpellcastingAbility?.name,
       chosenSize,
       backgroundId,
+      originFeatSpellcastingAbility?.name,
       raceFeatId,
       spreadMode.name,
       spreadPlusTwo?.name,
@@ -893,6 +957,10 @@ class CreationDraft {
 
       case CreationStep.trasfondo:
         if (background == null) return const ['Elegí un trasfondo.'];
+        if (originFeatWithAbilityChoice case final feat?
+            when originFeatSpellcastingAbility == null) {
+          return ['Elegí la aptitud mágica de ${feat.name}.'];
+        }
         if (spreadMode == AbilitySpreadMode.twoOne &&
             (spreadPlusTwo == null || spreadPlusOne == null)) {
           return const ['Asigná el +2 y el +1 de característica.'];
@@ -1053,6 +1121,13 @@ class CreationDraft {
       raceId: raceId ?? '',
       lineageId: lineage?.id,
       speciesSpellcastingAbility: speciesSpellcastingAbility,
+      featSpellcastingAbilities: {
+        if ((originFeatWithAbilityChoice, originFeatSpellcastingAbility) case (
+          final feat?,
+          final ability?,
+        ))
+          feat.id: ability,
+      },
       // Solo viaja si la especie realmente lo ofrece: así un tamaño que quedó
       // de una especie anterior no llega al personaje.
       chosenSize: sizeOptions.contains(chosenSize) ? chosenSize : null,

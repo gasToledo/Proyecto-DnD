@@ -227,8 +227,14 @@ void main() {
         cantripIds: ['fire-bolt'],
         spellIds: ['magic-missile', 'fireball'],
       );
-      final codes =
-          CharacterValidator(realRepo).validate(c).map((x) => x.code).toSet();
+      // Los cupos sin llenar (`cantrips_pending`, `prepared_pending`) son
+      // informativos y esta ficha los tiene a propósito: lo que se prueba es
+      // que nada de lo elegido esté mal.
+      final codes = CharacterValidator(realRepo)
+          .validate(c)
+          .map((x) => x.code)
+          .where((x) => !x.endsWith('_pending'))
+          .toSet();
       expect(codes.any((x) => x.startsWith('cantrip') || x.startsWith('spell')),
           isFalse);
     });

@@ -379,7 +379,8 @@ class _HomebrewViewState extends State<HomebrewView> {
           // Angosto, el panel de categorías se pliega a un Drawer que se abre
           // desde esta barra. No es la barra de la app: la del Modo DM queda
           // arriba con su propio menú, que es por donde se sale de acá. Por
-          // eso el botón dice qué abre en vez de heredar el «menú» genérico.
+          // eso el botón dice qué abre en vez de heredar el «menú» genérico,
+          // y no usa el mismo ícono: dos ☰ apilados no se distinguían.
           appBar: wide
               ? null
               : AppBar(
@@ -388,7 +389,7 @@ class _HomebrewViewState extends State<HomebrewView> {
                   leading: Builder(
                     builder: (context) => IconButton(
                       tooltip: 'Categorías de homebrew',
-                      icon: const Icon(Icons.menu),
+                      icon: const Icon(Icons.category_outlined),
                       onPressed: () => Scaffold.of(context).openDrawer(),
                     ),
                   ),

@@ -614,6 +614,10 @@ void main() {
 
     expect(find.byType(HomebrewView), findsOneWidget);
     expect(find.byTooltip('Categorías de homebrew'), findsOneWidget);
+    // Dos barras apiladas con el mismo ☰ no se distinguían: el de las
+    // categorías lleva otro ícono.
+    expect(find.byIcon(Icons.menu), findsOneWidget);
+    expect(find.byIcon(Icons.category_outlined), findsOneWidget);
 
     // El menú del Modo DM sigue ahí y lleva a otra sección.
     await tester.tap(find.byTooltip('Open navigation menu'));

@@ -118,7 +118,14 @@ class _CodexScreenState extends State<CodexScreen> {
         final wide = box.maxWidth >= _wideBreakpoint;
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Códice'),
+            // Dice dónde se está: angosto, el panel con la categoría marcada
+            // queda plegado y la lista sola no lo dice. Mismo criterio que la
+            // barra de Homebrew.
+            title: Text(switch ((_needle.isNotEmpty, _section)) {
+              (true, _) => 'Códice · Búsqueda',
+              (false, final section?) => 'Códice · ${section.label}',
+              (false, null) => 'Códice',
+            }),
             // Angosto, el Drawer de categorías se quedaba con el lugar de la
             // flecha de volver y no había forma de salir del Códice. La
             // flecha queda a la izquierda, y las categorías pasan a un botón

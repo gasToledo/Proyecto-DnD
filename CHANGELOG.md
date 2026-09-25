@@ -271,7 +271,10 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   Modo DM sigue arriba para ir a otra.
 - En pantallas angostas el Códice tiene la flecha de volver a la izquierda y
   las categorías en un botón a la derecha. El menú de categorías ocupaba el
-  lugar de la flecha y no había forma de salir.
+  lugar de la flecha y no había forma de salir. La barra dice en qué categoría
+  se está («Códice · Dotes»).
+- En Homebrew, el botón de categorías usa otro ícono que el menú del Modo DM:
+  en un teléfono eran dos ☰ iguales, uno encima del otro.
 
 ### Eliminado
 

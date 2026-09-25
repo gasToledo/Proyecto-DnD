@@ -160,6 +160,8 @@ void main() {
       find.descendant(of: find.byType(Drawer), matching: find.text('Dotes')),
     );
     await tester.pumpAndSettle();
+    // Con el panel plegado, la barra dice en qué categoría se está.
+    expect(find.text('Códice · Dotes'), findsOneWidget);
     await tester.enterText(find.byType(TextField).last, duelo.name);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('codex-feats-fs-dueling')));

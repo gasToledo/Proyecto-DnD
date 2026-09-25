@@ -20,6 +20,15 @@ void main() {
     expect(filterCreatures(all, query: 'ÁGUILA'), contains(eagle));
   });
 
+  // El SRD en español llama «goblin» al monstruo y «(trasgo)» a su etiqueta.
+  test('busca también en la línea de tipo', () {
+    final goblin = repo.creature('goblin-warrior')!;
+    expect(goblin.kind, contains('trasgo'));
+    expect(goblin.name, isNot(contains('trasgo')));
+
+    expect(filterCreatures(all, query: 'trasgo'), contains(goblin));
+  });
+
   test('el rango de VD es inclusivo y deja afuera a las que no tienen', () {
     final result = filterCreatures(all, minCr: 1, maxCr: 3);
 

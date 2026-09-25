@@ -54,6 +54,10 @@ const _todos = '__todos__';
 /// Bestiario y la solapa Bestiario de «Sumar al combate». Cuando eran dos, el
 /// buscador del combate no plegaba acentos y «aguila» no encontraba «Águila».
 ///
+/// Busca en el nombre y en la línea de tipo que se muestra debajo: el SRD en
+/// español llama «goblin» al monstruo y «(trasgo)» a su etiqueta, y quien
+/// buscaba lo que leía en la lista no encontraba nada.
+///
 /// Un rango de VD con cualquiera de los dos extremos deja afuera a las
 /// criaturas sin VD: quien pide «de 1 a 3» no está buscando al compañero de
 /// un conjuro, que no tiene desafío.
@@ -78,7 +82,9 @@ List<Creature> filterCreatures(
   final results = [
     for (final c in all)
       if ((typeId == null || c.creatureType?.id == typeId) &&
-          (needle.isEmpty || foldForSearch(c.name).contains(needle)) &&
+          (needle.isEmpty ||
+              foldForSearch(c.name).contains(needle) ||
+              foldForSearch(c.kind).contains(needle)) &&
           inRange(c.cr))
         c,
   ];

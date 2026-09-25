@@ -24,29 +24,17 @@ import 'add_monster_dialog.dart';
 /// usa Combate (`withMonsters`, en el engine).
 class BestiaryView extends StatefulWidget {
   final ContentRepository repo;
-
-  /// Null en el Códice, que solo consulta: sin API no hay combate al que
-  /// sumar, y el perfil se muestra sin botón ni aviso de campaña.
-  final ApiClient? api;
+  final ApiClient api;
 
   /// La campaña a cuyo combate se suma, o null si el DM no tiene ninguna.
   final Campaign? campaign;
-
-  /// La criatura abierta al entrar, o null para arrancar sin ninguna. La usa
-  /// el Códice cuando se llega desde su búsqueda general.
-  final String? initialCreatureId;
-
-  /// El texto con que arranca el buscador («Ver las N» del Códice).
-  final String initialQuery;
 
   const BestiaryView({
     super.key,
     required this.repo,
     required this.api,
     required this.campaign,
-    this.initialCreatureId,
-    this.initialQuery = '',
-  }) : assert(api != null || campaign == null);
+  });
 
   @override
   State<BestiaryView> createState() => _BestiaryViewState();
@@ -110,17 +98,13 @@ List<Creature> filterCreatures(
 }
 
 class _BestiaryViewState extends State<BestiaryView> {
-  late final _searchController = TextEditingController(
-    text: widget.initialQuery,
-  );
-  late String _query = widget.initialQuery;
+  final _searchController = TextEditingController();
+  String _query = '';
   String _type = _todos;
   num? _minCr;
   num? _maxCr;
   bool _sortByCr = false;
-  late Creature? _selected = widget.initialCreatureId == null
-      ? null
-      : widget.repo.creature(widget.initialCreatureId!);
+  Creature? _selected;
 
   /// Las sumas al combate, una detrás de otra. El diálogo se cierra antes de
   /// que el servidor responda, y dos sumas seguidas leerían el mismo combate:
@@ -144,8 +128,7 @@ class _BestiaryViewState extends State<BestiaryView> {
       try {
         // Se lee recién ahora, dentro de la fila: la numeración tiene que
         // continuar la del combate guardado, incluida la tanda anterior.
-        final api = widget.api!;
-        final current = await api.getEncounter(campaign.id);
+        final current = await widget.api.getEncounter(campaign.id);
         final next = (current ?? Encounter(id: _newId('encounter')))
             .withMonsters(
               choice.creature,
@@ -154,7 +137,7 @@ class _BestiaryViewState extends State<BestiaryView> {
               side: choice.side,
               rollHp: choice.rollHp,
             );
-        await api.saveEncounter(campaign.id, next);
+        await widget.api.saveEncounter(campaign.id, next);
         if (!mounted) return;
         final what = choice.count == 1
             ? choice.creature.name
@@ -476,7 +459,7 @@ class _BestiaryViewState extends State<BestiaryView> {
               ),
             ),
           )
-        else if (widget.api != null)
+        else
           Text(
             'Para sumarla a un combate, primero creá una campaña.',
             style: TextStyle(fontSize: 12.5, color: pal.textMuted),

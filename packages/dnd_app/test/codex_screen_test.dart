@@ -40,7 +40,6 @@ void main() {
     final magicos = repo.items.values.where((i) => i.isMagic).length;
     expect(find.text('${repo.spells.length}'), findsWidgets);
     expect(find.text('$magicos'), findsWidgets);
-    expect(find.text('${repo.creaturesSorted.length}'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 
@@ -132,23 +131,20 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  // Criaturas es el Bestiario del Modo DM, pero sin nada de combate: el Códice
-  // no tiene campaña a la que sumar.
-  testWidgets('una criatura muestra el perfil del Modo DM y nada de combate', (
+  // El Códice lo abre cualquier jugador, y los perfiles de los monstruos son
+  // del DM: se leen en el Bestiario del Modo DM y no acá.
+  testWidgets('no muestra las criaturas, ni en el panel ni en la búsqueda', (
     tester,
   ) async {
     await pumpCodex(tester);
-    final elemental = repo.creature('fire-elemental')!;
+    expect(find.text('Criaturas'), findsNothing);
 
-    await search(tester, elemental.name);
-    await tester.tap(
-      find.byKey(const ValueKey('codex-result-creatures-fire-elemental')),
+    final criatura = repo.creaturesSorted.firstWhere(
+      (c) => c.traits.isNotEmpty,
     );
-    await tester.pumpAndSettle();
-
-    expect(find.text(elemental.traits.first.name), findsWidgets);
-    expect(find.textContaining('Sumar al combate'), findsNothing);
-    expect(find.textContaining('creá una campaña'), findsNothing);
+    await search(tester, criatura.name);
+    expect(find.textContaining('Criaturas ·'), findsNothing);
+    expect(find.text(criatura.traits.first.name), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

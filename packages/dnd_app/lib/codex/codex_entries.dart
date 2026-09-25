@@ -70,9 +70,6 @@ List<CodexEntry> codexEntries(CodexCategory category, ContentRepository repo) =>
         for (final i in repo.itemsSorted)
           if (!i.isMagic) _gear(i),
       ],
-      CodexCategory.creatures => [
-        for (final c in repo.creaturesSorted) _creature(c, repo),
-      ],
     };
 
 // ------------------------------------------------------------ Por tipo
@@ -358,18 +355,6 @@ CodexEntry _gear(Item i) {
     ],
   );
 }
-
-/// Solo para la búsqueda general: la categoría la abre el Bestiario, que
-/// dibuja el perfil con `creatureProfileBody`.
-CodexEntry _creature(Creature c, ContentRepository repo) => CodexEntry(
-  id: c.id,
-  name: c.name,
-  subtitle: c.cr == null
-      ? c.kind
-      : 'VD ${challengeRatingLabel(c.cr!)} · ${c.kind}',
-  source: c.source,
-  body: (context) => creatureProfileBody(context, repo, c),
-);
 
 // ------------------------------------------------------------ Piezas
 

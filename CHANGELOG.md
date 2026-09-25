@@ -267,4 +267,6 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 
 ### Eliminado
 
-- Sin cambios.
+- El Códice ya no muestra las criaturas: lo abre cualquier jugador y los
+  perfiles de los monstruos son del DM. Se siguen leyendo en el Bestiario del
+  Modo DM.

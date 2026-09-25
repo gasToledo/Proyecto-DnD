@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../theme/app_widgets.dart';
-import '../ui/dm/bestiary_view.dart';
 
 part 'codex_category_view.dart';
 part 'codex_entries.dart';
@@ -25,8 +24,7 @@ enum CodexCategory {
   magicItems('Objetos mágicos', Icons.auto_fix_high_outlined, _magia),
   weapons('Armas', Icons.hardware, _magia),
   armor('Armaduras', Icons.security, _magia),
-  gear('Equipo', Icons.inventory_2_outlined, _magia),
-  creatures('Criaturas', Icons.pets_outlined, _mundo);
+  gear('Equipo', Icons.inventory_2_outlined, _magia);
 
   final String label;
   final IconData icon;
@@ -37,7 +35,6 @@ enum CodexCategory {
 
 const _personaje = 'Personaje';
 const _magia = 'Magia y equipo';
-const _mundo = 'Mundo y mesa';
 
 /// Cuántas coincidencias de cada categoría muestra la búsqueda general antes
 /// de ofrecer «Ver las N». Con una letra sola, «a» encuentra casi todo el
@@ -51,9 +48,9 @@ const _searchPreview = 5;
 /// lugar (la creación, el inventario, la subida de nivel) y editar contenido
 /// es Homebrew; acá se viene a leer qué hace algo.
 ///
-/// Las criaturas son el Bestiario del Modo DM sin el botón de combate: sus
-/// filtros por tipo y VD y el perfil (`creatureProfileBody`) son los mismos, y
-/// una segunda versión se habría desincronizado a la primera corrección.
+/// Las criaturas no están, y es a propósito: el Códice lo abre cualquier
+/// jugador, y los perfiles de los monstruos son del DM. Se consultan en el
+/// Bestiario del Modo DM.
 class CodexScreen extends StatefulWidget {
   final ContentRepository repo;
 
@@ -221,16 +218,6 @@ class _CodexScreenState extends State<CodexScreen> {
     // La clave reconstruye la vista al cambiar de categoría o de entrada: su
     // búsqueda y su selección son de esa categoría, no se heredan.
     final key = ValueKey('${section.name}-$_openId-$_openQuery');
-    if (section == CodexCategory.creatures) {
-      return BestiaryView(
-        key: key,
-        repo: widget.repo,
-        api: null,
-        campaign: null,
-        initialCreatureId: _openId,
-        initialQuery: _openQuery,
-      );
-    }
     return _CodexCategoryView(
       key: key,
       category: section,
@@ -261,7 +248,7 @@ class _CodexScreenState extends State<CodexScreen> {
           'marca de procedencia.',
           style: TextStyle(fontSize: 13, color: pal.textMuted),
         ),
-        for (final group in [_personaje, _magia, _mundo]) ...[
+        for (final group in [_personaje, _magia]) ...[
           const SizedBox(height: 20),
           Eyebrow(group),
           LayoutBuilder(

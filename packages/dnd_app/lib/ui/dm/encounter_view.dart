@@ -1814,21 +1814,46 @@ class _CombatantRow extends StatelessWidget {
     if (hp == null) return const SizedBox.shrink();
     final (current, max) = hp;
     if (max <= 0) return const SizedBox.shrink();
+    // La barra sigue en carmesí, que en la paleta es el color de los PG y no
+    // una alarma: el estado lo dice la palabra de la regla. A 0 no se muestra,
+    // porque ahí manda «Caído».
+    final bloodied = current > 0 && isBloodied(current, max);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        ChangeFlash(
-          value: current,
-          child: Text(
-            '$current/$max',
-            style: TextStyle(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w700,
-              color: pal.crimson,
-              fontFeatures: const [FontFeature.tabularFigures()],
+        Row(
+          children: [
+            ChangeFlash(
+              value: current,
+              child: Text(
+                '$current/$max',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: pal.crimson,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
             ),
-          ),
+            if (bloodied) ...[
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'MALTRECHO',
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    letterSpacing: .8,
+                    fontWeight: FontWeight.w600,
+                    color: pal.crimson,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 5),
         ThinBar(ratio: current / max, color: pal.crimson, track: pal.plaque),

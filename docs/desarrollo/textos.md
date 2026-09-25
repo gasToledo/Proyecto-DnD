@@ -33,6 +33,7 @@ cosas distintas, gana el catálogo.
 | salvación | tirada de salvación, TS | «SALV» solo como abreviatura en plaquetas. |
 | PG | HP | «Puntos de golpe» cuando hay lugar para la forma larga. |
 | CA | AC | |
+| maltrecho | bloodied, ensangrentado | Con la mitad de los PG o menos, como lo define el glosario del SRD. |
 | conjuro | hechizo | |
 | espacio de conjuro | ranura | |
 | PNJ | NPC | La colección global es la «Biblioteca de PNJ»; «PNJ» a secas es la sección de una campaña. |

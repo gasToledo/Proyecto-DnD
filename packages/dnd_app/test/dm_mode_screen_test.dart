@@ -967,6 +967,26 @@ void main() {
     List<String> tagsOf(FakeApiServer server) =>
         server.encounters['tumba']!.combatants.single.tags;
 
+    // La barra es carmesí siempre, que es el color de los PG: lo que avisa que
+    // un monstruo llegó a la mitad —y se le prende la «Furia maltrecha»— es
+    // la palabra de la regla.
+    testWidgets('a la mitad de los PG el monstruo se marca maltrecho', (
+      tester,
+    ) async {
+      final server = await withGoblin(tester);
+      await tirarIniciativa(tester);
+      expect(find.text('MALTRECHO'), findsNothing);
+
+      final max = server.encounters['tumba']!.combatants.single.maxHp;
+      await tester.enterText(find.byType(TextField).last, '${max - max ~/ 2}');
+      await tester.tap(find.byTooltip('Dañar'));
+      await tester.pumpAndSettle();
+
+      expect(server.encounters['tumba']!.combatants.single.currentHp, max ~/ 2);
+      expect(find.text('MALTRECHO'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     // El rótulo decía «Golpe rápido», pero el mismo número lo usa el botón de
     // curar: nombraba la mitad de lo que hace. Y que la cifra sea de toda la
     // mesa —y no de la fila que estás mirando— no lo decía nada.
@@ -1257,6 +1277,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.textContaining('Caído'), findsOneWidget);
+        // A 0 manda «Caído»: «maltrecho» al lado sería ruido.
+        expect(find.text('MALTRECHO'), findsNothing);
         final goblin = server.encounters['tumba']!.combatants.firstWhere(
           (c) => c.kind == CombatantKind.monster,
         );

@@ -189,6 +189,13 @@ class Combatant {
       );
 }
 
+/// Maltrecha: «le quedan la mitad de sus puntos de golpe o menos» (glosario
+/// del SRD 5.2). Hay rasgos de monstruo que dependen de eso —«Furia
+/// maltrecha», «Frenesí maltrecho»—, así que el DM tiene que verlo sin hacer
+/// la cuenta. Sin máximo no hay mitad: un PNJ sin estadísticas nunca lo está.
+bool isBloodied(int currentHp, int maxHp) =>
+    maxHp > 0 && currentHp * 2 <= maxHp;
+
 /// El turno de un jugador, visto desde su propia ficha.
 ///
 /// Deliberadamente los cuatro únicos valores que un jugador puede llegar a

@@ -742,6 +742,21 @@ void main() {
     });
   });
 
+  group('isBloodied', () {
+    test('la mitad exacta ya cuenta, y con máximo impar redondea para abajo',
+        () {
+      expect(isBloodied(10, 20), isTrue);
+      expect(isBloodied(11, 20), isFalse);
+      // 11 PG: la mitad es 5,5, así que 5 sí y 6 no.
+      expect(isBloodied(5, 11), isTrue);
+      expect(isBloodied(6, 11), isFalse);
+    });
+
+    test('sin máximo nunca está maltrecho', () {
+      expect(isBloodied(0, 0), isFalse);
+    });
+  });
+
   group('rollInitiative', () {
     test('suma 1d20 al modificador de Destreza de la criatura', () {
       final creature = _creature(dexScore: 14); // modificador +2

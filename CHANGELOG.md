@@ -278,6 +278,11 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 - Importar un PNJ con ficha suma su homebrew al catálogo en el momento. Se
   guardaba en la cuenta, pero la ficha mostraba esos objetos como «No está en
   el catálogo» hasta recargar la página.
+- La dote Alerta suma el bonificador por competencia a la iniciativa, y el
+  Emboscador Temible del Acechador en la Penumbra suma el modificador de
+  Sabiduría. Los dos eran solo texto: un Guardia con DES +2 mostraba +2 en vez
+  de +4. En Forma Salvaje el druida conserva esos bonos sobre la Destreza de
+  la bestia.
 
 ### Eliminado
 

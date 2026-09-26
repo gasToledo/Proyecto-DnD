@@ -1849,6 +1849,12 @@ String? describeEffect(Effect e, ContentRepository repo) => switch (e) {
   SpeedBonusEffect(:final feet) => 'Velocidad +$feet pies',
   SetSpeedEffect(:final feet) => 'Velocidad = $feet pies',
   ArmorClassBonusEffect(:final amount) => 'CA +$amount',
+  InitiativeBonusEffect(
+    :final amount,
+    :final addProficiency,
+    :final fromAbility,
+  ) =>
+    'Iniciativa ${[if (amount != 0) '+$amount', if (addProficiency) '+ bonif. de competencia', if (fromAbility != null) '+ mod. de ${fromAbility.abbr}'].join(' ')}',
   BonusMaxHpPerLevelEffect(:final perLevel) => 'PG máx +$perLevel por nivel',
   BonusMaxHpFlatEffect(:final amount) => 'PG máx +$amount',
   PassiveTraitEffect(:final name) => 'Pasiva: $name',

@@ -68,6 +68,13 @@ sealed class Effect {
       'bonusMaxHpFlat' => BonusMaxHpFlatEffect(json['amount'] as int),
       'bonusMaxHpPerLevel' => BonusMaxHpPerLevelEffect(json['perLevel'] as int),
       'armorClassBonus' => ArmorClassBonusEffect(json['amount'] as int),
+      'initiativeBonus' => InitiativeBonusEffect(
+          amount: json['amount'] as int? ?? 0,
+          addProficiency: json['addProficiency'] as bool? ?? false,
+          fromAbility: json['fromAbility'] != null
+              ? Ability.fromKey(json['fromAbility'] as String)
+              : null,
+        ),
       'unarmoredDefense' => UnarmoredDefenseEffect(
           Ability.fromKey(json['ability'] as String),
           allowShield: json['allowShield'] as bool? ?? false,
@@ -1284,6 +1291,43 @@ class ArmorClassBonusEffect extends Effect {
   @override
   Map<String, dynamic> toJson() =>
       {'type': 'armorClassBonus', 'amount': amount};
+}
+
+/// Bonificador permanente a la iniciativa, que la ficha suma al mod. de
+/// Destreza.
+///
+/// Existe por la dote Alerta (2024), que suma el bonificador por competencia,
+/// y por Emboscador Temible (Acechador en la Penumbra), que suma el mod. de
+/// Sabiduría. Los dos se guardan como referencia y no como número porque
+/// cambian solos: el bonificador sube con el nivel y la Sabiduría con una
+/// mejora de característica, y un `amount` fijo quedaría viejo.
+///
+/// Las ventajas a la iniciativa (Instinto Salvaje, Asesinar) no son esto —no
+/// mueven el modificador— y siguen como rasgo pasivo, igual que los dados que
+/// se tiran en el momento (Atlas del Aventurero, Juego de Pies Acompasado).
+class InitiativeBonusEffect extends Effect {
+  final int amount;
+
+  /// Suma además el bonificador por competencia del nivel total.
+  final bool addProficiency;
+
+  /// Suma además el modificador de esta característica, con piso en 0: las
+  /// reglas que lo dan dicen "podés sumar", y nadie elige sumar un negativo.
+  final Ability? fromAbility;
+
+  const InitiativeBonusEffect({
+    this.amount = 0,
+    this.addProficiency = false,
+    this.fromAbility,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'type': 'initiativeBonus',
+        'amount': amount,
+        'addProficiency': addProficiency,
+        if (fromAbility != null) 'fromAbility': fromAbility!.name,
+      };
 }
 
 /// Defensa sin Armadura: cuando no se lleva armadura, la CA base pasa a ser

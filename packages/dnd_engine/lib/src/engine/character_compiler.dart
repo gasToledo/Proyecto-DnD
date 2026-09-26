@@ -770,7 +770,11 @@ class CharacterCompiler {
       carriedWeight: InventoryOps.carriedWeight(c, repo),
       size: size,
       speed: speed,
-      initiative: dexMod,
+      initiative: dexMod +
+          builder.initiativeBonus +
+          (builder.initiativeAddsProficiency ? profBonus : 0) +
+          builder.initiativeAbilities
+              .fold<int>(0, (s, a) => s + max(0, mods[a]!)),
       darkvision: builder.darkvision,
       resistances: builder.resistances,
       immunities: builder.immunities,

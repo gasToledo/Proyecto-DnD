@@ -155,6 +155,16 @@ class SheetBuilder {
   int bonusMaxHpFlat = 0;
   int bonusMaxHpPerLevel = 0;
   int acBonus = 0;
+  int initiativeBonus = 0;
+
+  /// Bandera y no suma: el bonificador por competencia depende del nivel
+  /// total, que el compilador conoce al final, y dos fuentes no lo duplican.
+  bool initiativeAddsProficiency = false;
+
+  /// Características cuyo modificador se suma a la iniciativa. Mismo motivo:
+  /// los modificadores finales se conocen recién al terminar de aplicar
+  /// efectos.
+  final Set<Ability> initiativeAbilities = {};
 
   SheetBuilder({required this.baseScores, this.level = 1});
 
@@ -386,6 +396,14 @@ class SheetBuilder {
         bonusMaxHpPerLevel += perLevel;
       case ArmorClassBonusEffect(:final amount):
         acBonus += amount;
+      case InitiativeBonusEffect(
+          :final amount,
+          :final addProficiency,
+          :final fromAbility
+        ):
+        initiativeBonus += amount;
+        if (addProficiency) initiativeAddsProficiency = true;
+        if (fromAbility != null) initiativeAbilities.add(fromAbility);
       case UnarmoredDefenseEffect(:final ability, :final allowShield):
         unarmoredDefenseOptions.add(
           (classId: sourceClassId, ability: ability, allowShield: allowShield),

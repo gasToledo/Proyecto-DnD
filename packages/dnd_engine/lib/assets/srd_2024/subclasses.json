@@ -1842,6 +1842,7 @@
           { "type": "darkvision", "range": 90 },
           { "type": "passiveTrait", "name": "Emboscador Temible: Salto del Emboscador", "description": "Al comienzo de tu primer turno de cada combate, tu velocidad aumenta 10 pies hasta el final de ese turno." },
           { "type": "passiveTrait", "name": "Emboscador Temible: Golpe Temible", "description": "Cuando ataques a una criatura y la aciertes con un arma, podés infligir 2d6 de daño psíquico adicional. Solo una vez por turno, y podés usarlo una cantidad de veces igual a tu modificador de Sabiduría (mínimo una); recuperás todos los usos al terminar un descanso largo." },
+          { "type": "initiativeBonus", "fromAbility": "wisdom" },
           { "type": "passiveTrait", "name": "Emboscador Temible: Bonificador a la Iniciativa", "description": "Cuando tirés iniciativa, podés sumar tu modificador de Sabiduría a la tirada." },
           { "type": "passiveTrait", "name": "Vista Umbral", "description": "Sos invisible para las criaturas que dependen de la visión en la oscuridad para verte en ese ámbito." }
         ]

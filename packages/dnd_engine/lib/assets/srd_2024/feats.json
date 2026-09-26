@@ -405,6 +405,7 @@
     "source": "srd_2024",
     "category": "origin",
     "effects": [
+      { "type": "initiativeBonus", "addProficiency": true },
       {
         "type": "passiveTrait",
         "name": "Alerta",

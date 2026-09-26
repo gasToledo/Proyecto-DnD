@@ -68,7 +68,11 @@ ComputedSheet applyWildShape(ComputedSheet base, Creature beast) {
     armorClass: resolved.armorClass,
     size: beast.creatureSize?.label ?? base.size,
     speed: beast.walkSpeed,
-    initiative: mods[Ability.dexterity]!,
+    // La bestia pone la Destreza; lo demás de la iniciativa (Alerta) es del
+    // druida, que en 2024 conserva sus dotes transformado.
+    initiative: mods[Ability.dexterity]! +
+        base.initiative -
+        base.abilityModifiers[Ability.dexterity]!,
     // Se pasa siempre, incluso null: una bestia sin visión en la oscuridad
     // tiene que **borrar** la del druida, no heredarla. Para eso está el
     // centinela de `copyWith`.

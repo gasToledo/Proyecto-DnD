@@ -277,6 +277,12 @@ class AppTheme {
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: palette.plaque,
+        // Sin tilde: aparecía al elegir y ensanchaba la píldora, así que en un
+        // `Wrap` la fila se reacomodaba y lo de abajo se corría justo cuando
+        // se iba a tocar lo siguiente. La selección ya la marcan el borde, el
+        // fondo y el texto en oro (`onSecondaryContainer`), que no cambian el
+        // ancho.
+        showCheckmark: false,
         // El borde también marca la selección: sobre el fondo dorado suave, un
         // filete gris deja la píldora elegida casi igual que las demás.
         side: WidgetStateBorderSide.resolveWith(

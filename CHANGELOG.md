@@ -286,6 +286,10 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
 - El paso Clase de la creación arranca sin clase elegida, igual que la
   especie. Mostraba al Guerrero marcado sin que nadie lo eligiera, también al
   crear un PNJ jugable.
+- Las píldoras elegibles ya no llevan tilde al elegirlas: las ensanchaba, la
+  fila se reacomodaba y el toque siguiente caía en otra opción (estilos de
+  combate, idiomas, maestrías). La selección se sigue viendo por el borde, el
+  fondo y el texto dorados.
 
 ### Eliminado
 

@@ -109,8 +109,19 @@ void main() {
       await tester.pumpAndSettle();
       expect(body(CreationStep.clase).pixels, 0);
 
+      // La clase arranca sin elegir: el pie lo pide antes que nada.
+      expect(
+        tester.widget<Text>(find.textContaining('Falta:')).data,
+        'Falta: Elegí una clase.',
+      );
+
       // Con más de un faltante, el pie dice el primero y cuántos quedan, sin
       // cortarse y sin el punto del faltante antes del paréntesis.
+      final fighter = find.text(repo.characterClass('fighter')!.name).first;
+      await tester.ensureVisible(fighter);
+      await tester.pumpAndSettle();
+      await tester.tap(fighter);
+      await tester.pumpAndSettle();
       final pending = tester.widget<Text>(find.textContaining('Falta:')).data!;
       expect(pending, endsWith('(y 1 cosa más).'));
       expect(pending, isNot(contains('. (')));
@@ -202,11 +213,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // Especie -> Clase (Guerrero es la clase por defecto y pide 3 maestrías).
+    // Especie -> Clase -> Guerrero, que pide 3 maestrías.
     await tapOption(tester, 'Humano');
     await pickSize(tester);
     await tester.tap(find.widgetWithText(FilledButton, 'Siguiente'));
     await tester.pumpAndSettle();
+    await tapOption(tester, 'Guerrero');
 
     // La lista decía de qué armas se puede elegir pero no qué se gana al
     // hacerlo, que es lo que hay que saber para elegir.
@@ -391,8 +403,8 @@ void main() {
     await pickSize(tester);
     await next();
 
-    // El Guerrero es la clase por defecto y no deja avanzar sin estilo de
-    // combate ni las 3 maestrías.
+    // El Guerrero no deja avanzar sin estilo de combate ni las 3 maestrías.
+    await tapOption(tester, 'Guerrero');
     final defense = find.widgetWithText(ChoiceChip, 'Defensa');
     await tester.ensureVisible(defense);
     await tester.pumpAndSettle();

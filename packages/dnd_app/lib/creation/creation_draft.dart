@@ -295,8 +295,10 @@ class CreationDraft {
     return draft;
   }
 
-  // Clase (por ahora, única del MVP).
-  String classId = 'fighter';
+  /// Clase elegida. Arranca vacía, igual que la especie: con un valor por
+  /// defecto el paso Clase mostraba al Guerrero marcado sin que nadie lo
+  /// eligiera, y se podía avanzar sin haber decidido.
+  String? classId;
 
   /// Elecciones abiertas resueltas: id de grupo → ids de opción.
   final Map<String, List<String>> featureChoices = {};
@@ -422,7 +424,8 @@ class CreationDraft {
     'personalityTrait': personalityTrait,
   };
 
-  CharacterClass? get klass => repo.characterClass(classId);
+  CharacterClass? get klass =>
+      classId == null ? null : repo.characterClass(classId!);
   Race? get race => raceId == null ? null : repo.race(raceId!);
   List<Lineage> get lineageOptions =>
       raceId == null ? const [] : repo.lineagesForRace(raceId!);
@@ -1131,7 +1134,7 @@ class CreationDraft {
       // Solo viaja si la especie realmente lo ofrece: así un tamaño que quedó
       // de una especie anterior no llega al personaje.
       chosenSize: sizeOptions.contains(chosenSize) ? chosenSize : null,
-      classId: classId,
+      classId: classId ?? '',
       backgroundId: backgroundId ?? '',
       level: 1,
       assignedScores: {

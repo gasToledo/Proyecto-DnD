@@ -792,8 +792,17 @@ void main() {
       expect(d.pendingFor(CreationStep.raza), isEmpty);
     });
 
+    test('Clase arranca sin elegir y lo pide', () {
+      // Con un valor por defecto el paso mostraba al Guerrero marcado sin que
+      // nadie lo eligiera.
+      final d = newDraft();
+      expect(d.classId, isNull);
+      expect(d.klass, isNull);
+      expect(d.pendingFor(CreationStep.clase), ['Elegí una clase.']);
+    });
+
     test('Clase (Guerrero) exige estilo de combate y maestrías', () {
-      final d = newDraft(); // classId = fighter por defecto
+      final d = newDraft()..classId = 'fighter';
       expect(d.pendingFor(CreationStep.clase), isNotEmpty);
       completeClase(d);
       expect(d.pendingFor(CreationStep.clase), isEmpty);
@@ -860,7 +869,9 @@ void main() {
 
     test('Equipo exige paquetes; Detalles y Resumen no bloquean', () {
       final d = newDraft()
-        ..backgroundId = 'soldier'; // Guerrero: no lanza conjuros
+        ..classId =
+            'fighter' // no lanza conjuros
+        ..backgroundId = 'soldier';
       expect(d.pendingFor(CreationStep.equipo), isNotEmpty);
       d
         ..classEquipmentOptionId = 'C'
@@ -873,7 +884,7 @@ void main() {
     test(
       'el cupo de habilidades no bloquea si quedan menos opciones elegibles',
       () {
-        final d = newDraft(); // Guerrero: elige 2 de 9 opciones
+        final d = newDraft()..classId = 'fighter'; // elige 2 de 9 opciones
         final fighter = repo.characterClass('fighter')!;
         final from = fighter.skillChoiceFrom;
         expect(fighter.skillChoiceCount, 2);
@@ -913,6 +924,12 @@ void main() {
       d.raceId = 'dwarf';
       expect(d.pendingFor(CreationStep.raza), isEmpty);
       expect(d.canGoTo(CreationStep.clase), isTrue);
+      expect(
+        d.canGoTo(CreationStep.trasfondo),
+        isFalse,
+        reason: 'todavía no hay clase',
+      );
+      d.classId = 'fighter';
       expect(
         d.canGoTo(CreationStep.trasfondo),
         isFalse,

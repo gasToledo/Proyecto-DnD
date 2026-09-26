@@ -283,6 +283,9 @@ actualización están definidos en [Versionado y changelog](docs/desarrollo/vers
   Sabiduría. Los dos eran solo texto: un Guardia con DES +2 mostraba +2 en vez
   de +4. En Forma Salvaje el druida conserva esos bonos sobre la Destreza de
   la bestia.
+- El paso Clase de la creación arranca sin clase elegida, igual que la
+  especie. Mostraba al Guerrero marcado sin que nadie lo eligiera, también al
+  crear un PNJ jugable.
 
 ### Eliminado
 
